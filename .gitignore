@@ -1,3 +1,20 @@
+# Project specific
+dev/
+
+# Large model files (bundled locally but not committed)
+assets/models/*.onnx
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
 # Miscellaneous
 *.class
 *.lock

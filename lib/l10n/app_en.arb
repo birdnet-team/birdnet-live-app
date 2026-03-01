@@ -1,0 +1,320 @@
+{
+  "@@locale": "en",
+  "appTitle": "BirdNET Live",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  "liveMode": "Live",
+  "@liveMode": {
+    "description": "Live mode tab label"
+  },
+  "surveyMode": "Survey",
+  "@surveyMode": {
+    "description": "Survey mode tab label"
+  },
+  "pointCountMode": "Point Count",
+  "@pointCountMode": {
+    "description": "Point Count mode tab label"
+  },
+  "fileAnalysisMode": "File Analysis",
+  "@fileAnalysisMode": {
+    "description": "File Analysis mode tab label"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About screen title"
+  },
+  "onboardingWelcomeTitle": "Welcome to BirdNET Live",
+  "@onboardingWelcomeTitle": {
+    "description": "Onboarding welcome screen title"
+  },
+  "onboardingWelcomeBody": "Real-time bird species identification powered by on-device AI. No internet required.",
+  "@onboardingWelcomeBody": {
+    "description": "Onboarding welcome screen body text"
+  },
+  "onboardingFeaturesTitle": "Four Modes",
+  "@onboardingFeaturesTitle": {
+    "description": "Onboarding features screen title"
+  },
+  "onboardingFeaturesBody": "Live monitoring, background surveys, timed point counts, and offline file analysis — all with real-time spectrogram visualization.",
+  "@onboardingFeaturesBody": {
+    "description": "Onboarding features screen body text"
+  },
+  "onboardingPermissionsTitle": "Permissions",
+  "@onboardingPermissionsTitle": {
+    "description": "Onboarding permissions screen title"
+  },
+  "onboardingPermissionsBody": "BirdNET Live needs microphone access for audio capture. Location access is used for geotagging detections. All processing stays on your device.",
+  "@onboardingPermissionsBody": {
+    "description": "Onboarding permissions screen body text"
+  },
+  "onboardingReadyTitle": "Ready to Start",
+  "@onboardingReadyTitle": {
+    "description": "Onboarding ready screen title"
+  },
+  "onboardingReadyBody": "You're all set. Open the app and start identifying birds around you.",
+  "@onboardingReadyBody": {
+    "description": "Onboarding ready screen body text"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button label"
+  },
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button label"
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Next button label"
+  },
+  "done": "Done",
+  "@done": {
+    "description": "Done button label"
+  },
+  "termsOfUseTitle": "Terms of Use",
+  "@termsOfUseTitle": {
+    "description": "Terms of use dialog title"
+  },
+  "privacyPolicyTitle": "Privacy Policy",
+  "@privacyPolicyTitle": {
+    "description": "Privacy policy dialog title"
+  },
+  "acceptTerms": "Accept",
+  "@acceptTerms": {
+    "description": "Accept terms button"
+  },
+  "declineTerms": "Decline",
+  "@declineTerms": {
+    "description": "Decline terms button"
+  },
+  "termsRequiredMessage": "You must accept the Terms of Use and Privacy Policy to use this app.",
+  "@termsRequiredMessage": {
+    "description": "Message shown when terms are not accepted"
+  },
+  "permissionMicrophoneTitle": "Microphone",
+  "@permissionMicrophoneTitle": {
+    "description": "Microphone permission label"
+  },
+  "permissionMicrophoneDescription": "Required for audio capture and bird identification",
+  "@permissionMicrophoneDescription": {
+    "description": "Microphone permission description"
+  },
+  "permissionLocationTitle": "Location",
+  "@permissionLocationTitle": {
+    "description": "Location permission label"
+  },
+  "permissionLocationDescription": "Used for geotagging detections and survey GPS tracking",
+  "@permissionLocationDescription": {
+    "description": "Location permission description"
+  },
+  "permissionStorageTitle": "Storage",
+  "@permissionStorageTitle": {
+    "description": "Storage permission label"
+  },
+  "permissionStorageDescription": "Required for saving recordings and exporting data",
+  "@permissionStorageDescription": {
+    "description": "Storage permission description"
+  },
+  "permissionNotificationTitle": "Notifications",
+  "@permissionNotificationTitle": {
+    "description": "Notification permission label"
+  },
+  "permissionNotificationDescription": "Used for background survey alerts",
+  "@permissionNotificationDescription": {
+    "description": "Notification permission description"
+  },
+  "permissionGranted": "Granted",
+  "@permissionGranted": {
+    "description": "Permission granted status"
+  },
+  "permissionDenied": "Denied",
+  "@permissionDenied": {
+    "description": "Permission denied status"
+  },
+  "permissionRequest": "Grant",
+  "@permissionRequest": {
+    "description": "Request permission button"
+  },
+  "openSettings": "Open Settings",
+  "@openSettings": {
+    "description": "Open system settings button"
+  },
+  "consentMapTilesTitle": "Map Tiles",
+  "@consentMapTilesTitle": {
+    "description": "Map tile consent title"
+  },
+  "consentMapTilesDescription": "Download map tiles from OpenTopoMap for GPS visualization. This requires an internet connection.",
+  "@consentMapTilesDescription": {
+    "description": "Map tile consent description"
+  },
+  "consentAllow": "Allow",
+  "@consentAllow": {
+    "description": "Allow consent button"
+  },
+  "consentDeny": "Deny",
+  "@consentDeny": {
+    "description": "Deny consent button"
+  },
+  "settingsAudio": "Audio",
+  "@settingsAudio": {
+    "description": "Audio settings category"
+  },
+  "settingsInference": "Inference",
+  "@settingsInference": {
+    "description": "Inference settings category"
+  },
+  "settingsSpectrogram": "Spectrogram",
+  "@settingsSpectrogram": {
+    "description": "Spectrogram settings category"
+  },
+  "settingsRecording": "Recording",
+  "@settingsRecording": {
+    "description": "Recording settings category"
+  },
+  "settingsSurvey": "Survey",
+  "@settingsSurvey": {
+    "description": "Survey mode settings category"
+  },
+  "settingsPointCount": "Point Count",
+  "@settingsPointCount": {
+    "description": "Point Count mode settings category"
+  },
+  "settingsExport": "Export & Sync",
+  "@settingsExport": {
+    "description": "Export settings category"
+  },
+  "settingsMap": "Map",
+  "@settingsMap": {
+    "description": "Map settings category"
+  },
+  "settingsGeneral": "General",
+  "@settingsGeneral": {
+    "description": "General settings category"
+  },
+  "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Language selection setting"
+  },
+  "settingsTheme": "Theme",
+  "@settingsTheme": {
+    "description": "Theme selection setting"
+  },
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Dark theme option"
+  },
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Light theme option"
+  },
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": {
+    "description": "System theme option"
+  },
+  "settingsResetOnboarding": "Reset Onboarding",
+  "@settingsResetOnboarding": {
+    "description": "Reset onboarding setting"
+  },
+  "settingsClearData": "Clear All Data",
+  "@settingsClearData": {
+    "description": "Clear all data setting"
+  },
+  "settingsClearDataConfirmTitle": "Clear All Data?",
+  "@settingsClearDataConfirmTitle": {
+    "description": "Clear data confirmation dialog title"
+  },
+  "settingsClearDataConfirmMessage": "This will permanently delete all detections, sessions, and recordings. This action cannot be undone.",
+  "@settingsClearDataConfirmMessage": {
+    "description": "Clear data confirmation message"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button"
+  },
+  "aboutVersion": "Version",
+  "@aboutVersion": {
+    "description": "Version label in about screen"
+  },
+  "aboutModelVersion": "Model",
+  "@aboutModelVersion": {
+    "description": "Model version label in about screen"
+  },
+  "aboutModelName": "BirdNET+ V3.0-preview3 Global (FP16)",
+  "@aboutModelName": {
+    "description": "Model name shown in about screen"
+  },
+  "aboutSpeciesCount": "{count} species",
+  "@aboutSpeciesCount": {
+    "description": "Species count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutCredits": "Credits",
+  "@aboutCredits": {
+    "description": "Credits section title"
+  },
+  "aboutCreditsDescription": "BirdNET is developed by the K. Lisa Yang Center for Conservation Bioacoustics at the Cornell Lab of Ornithology and Chemnitz University of Technology.",
+  "@aboutCreditsDescription": {
+    "description": "Credits description"
+  },
+  "aboutLicenses": "Open Source Licenses",
+  "@aboutLicenses": {
+    "description": "Open source licenses link"
+  },
+  "aboutGitHub": "GitHub",
+  "@aboutGitHub": {
+    "description": "GitHub link label"
+  },
+  "aboutPrivacyPolicy": "Privacy Policy",
+  "@aboutPrivacyPolicy": {
+    "description": "Privacy policy link label"
+  },
+  "aboutTermsOfUse": "Terms of Use",
+  "@aboutTermsOfUse": {
+    "description": "Terms of use link label"
+  },
+  "errorPermissionRequired": "Permission required",
+  "@errorPermissionRequired": {
+    "description": "Error message when permission is not granted"
+  },
+  "errorMicrophoneRequired": "Microphone access is required for bird identification. Please grant microphone permission in settings.",
+  "@errorMicrophoneRequired": {
+    "description": "Error message when microphone permission is denied"
+  },
+  "homeSubtitle": "On-device bird species identification",
+  "@homeSubtitle": {
+    "description": "Subtitle shown on the main menu screen"
+  },
+  "liveModeDescription": "Real-time identification with spectrogram",
+  "@liveModeDescription": {
+    "description": "Description for Live mode on the main menu"
+  },
+  "surveyModeDescription": "Background biodiversity monitoring",
+  "@surveyModeDescription": {
+    "description": "Description for Survey mode on the main menu"
+  },
+  "pointCountModeDescription": "Timed point count surveys",
+  "@pointCountModeDescription": {
+    "description": "Description for Point Count mode on the main menu"
+  },
+  "fileAnalysisModeDescription": "Analyse recordings offline",
+  "@fileAnalysisModeDescription": {
+    "description": "Description for File Analysis mode on the main menu"
+  },
+  "comingSoon": "Coming Soon",
+  "@comingSoon": {
+    "description": "Badge label for unimplemented features"
+  }
+}

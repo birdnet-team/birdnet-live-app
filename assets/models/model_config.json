@@ -1,0 +1,45 @@
+{
+  "name": "BirdNET+ V3.0-preview3 Global (FP16)",
+  "version": "3.0-preview3",
+  "description": "Global species classifier covering 11,560 species across birds, amphibians, mammals, and insects.",
+
+  "audio": {
+    "sampleRate": 32000,
+    "channels": 1
+  },
+
+  "onnx": {
+    "modelFile": "BirdNET+_V3.0-preview3_Global_11K_FP16.onnx",
+    "inputName": "input",
+    "outputNames": {
+      "predictions": "predictions",
+      "embeddings": "embeddings"
+    }
+  },
+
+  "labels": {
+    "file": "labels.csv",
+    "delimiter": ";",
+    "hasHeader": true,
+    "columns": {
+      "index": "idx",
+      "id": "id",
+      "scientificName": "sci_name",
+      "commonName": "com_name",
+      "className": "class",
+      "order": "order"
+    }
+  },
+
+  "inference": {
+    "supportedWindowSeconds": [3, 5, 10],
+    "defaultWindowSeconds": 3,
+    "defaultSensitivity": 1.0,
+    "defaultConfidenceThreshold": 0.15,
+    "defaultTopK": 10,
+    "temporalPooling": {
+      "maxWindows": 5,
+      "alpha": 5.0
+    }
+  }
+}

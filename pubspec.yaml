@@ -1,0 +1,56 @@
+name: birdnet_live
+description: "Real-time bird species identification using on-device ONNX inference"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.6.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Storage
+  shared_preferences: ^2.3.4
+  path_provider: ^2.1.5
+
+  # Permissions
+  permission_handler: ^11.3.1
+
+  # Audio
+  record: ^6.2.0
+  fftea: ^1.2.0
+
+  # Inference
+  onnxruntime: ^1.4.1
+
+  # UI & UX
+  introduction_screen: ^3.1.14
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  package_info_plus: ^8.1.3
+
+  # Localization
+  intl: any
+  just_audio: ^0.10.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/images/
+    - assets/models/
+    - assets/test_fixtures/
