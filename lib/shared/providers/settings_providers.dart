@@ -85,18 +85,25 @@ final dbCeilingProvider =
   return DoubleSettingNotifier(prefs, PrefKeys.dbCeiling, 0);
 });
 
-/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 15).
+/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 20).
 final spectrogramDurationProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 15);
+  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 20);
 });
 
-/// Maximum frequency displayed in the spectrogram in Hz (default 10000).
+/// Maximum frequency displayed in the spectrogram in Hz (default 12000).
 final spectrogramMaxFreqProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.spectrogramMaxFreq, 10000);
+  return IntSettingNotifier(prefs, PrefKeys.spectrogramMaxFreq, 12000);
+});
+
+/// Whether to use logarithmic amplitude scaling (default true).
+final logAmplitudeProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.logAmplitude, true);
 });
 
 // ---------------------------------------------------------------------------

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
@@ -68,6 +71,7 @@ class SpectrogramWidget extends StatefulWidget {
     this.showFrequencyAxis = true,
     this.showTimeAxis = true,
     this.maxDisplayFrequency = 0,
+    this.logAmplitude = true,
   });
 
   /// The audio ring buffer to read samples from.
@@ -109,6 +113,12 @@ class SpectrogramWidget extends StatefulWidget {
   /// frequency are rendered and overlay labels are drawn every 2 kHz.
   /// When 0 the full Nyquist range is shown.
   final int maxDisplayFrequency;
+
+  /// Whether to apply logarithmic amplitude scaling.
+  ///
+  /// When true, normalised magnitudes are passed through a log curve that
+  /// compresses the dynamic range, making quieter sounds more visible.
+  final bool logAmplitude;
 
   @override
   State<SpectrogramWidget> createState() => _SpectrogramWidgetState();
@@ -173,7 +183,8 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
         oldWidget.dbCeiling != widget.dbCeiling ||
         oldWidget.colorMapName != widget.colorMapName ||
         oldWidget.maxColumns != widget.maxColumns ||
-        oldWidget.maxDisplayFrequency != widget.maxDisplayFrequency) {
+        oldWidget.maxDisplayFrequency != widget.maxDisplayFrequency ||
+        oldWidget.logAmplitude != widget.logAmplitude) {
       _initProcessor();
     }
 
@@ -252,12 +263,35 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     // Read the most recent fftSize samples and add a single column.
     final samples = widget.ringBuffer.readLast(widget.fftSize);
     final column = _fft.process(samples);
+
+    // Apply logarithmic amplitude scaling if enabled.
+    if (widget.logAmplitude) {
+      _applyLogScaling(column);
+    }
+
     _painter.addColumn(column);
     _columnsEmitted++;
 
     // Trigger a repaint via the listenable — setState alone does NOT
     // repaint a CustomPaint when the painter reference is unchanged.
     _repaintNotifier.value++;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Log amplitude scaling
+  // ---------------------------------------------------------------------------
+
+  /// Applies a logarithmic curve to normalised [0, 1] values in [column].
+  ///
+  /// Uses `log(1 + v * k) / log(1 + k)` with k = 10 to compress the
+  /// dynamic range, making quieter sounds more visible in the spectrogram.
+  static void _applyLogScaling(Float64List column) {
+    const k = 10.0;
+    // Pre-computed denominator: log(1 + k) = log(11).
+    final denom = math.log(1.0 + k);
+    for (var i = 0; i < column.length; i++) {
+      column[i] = math.log(1.0 + column[i] * k) / denom;
+    }
   }
 
   // ---------------------------------------------------------------------------

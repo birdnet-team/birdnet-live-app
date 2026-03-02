@@ -72,6 +72,18 @@ void main() {
     test('includeAudio defaults to false', () {
       expect(container.read(includeAudioProvider), false);
     });
+
+    test('spectrogramDuration defaults to 20', () {
+      expect(container.read(spectrogramDurationProvider), 20);
+    });
+
+    test('spectrogramMaxFreq defaults to 12000', () {
+      expect(container.read(spectrogramMaxFreqProvider), 12000);
+    });
+
+    test('logAmplitude defaults to true', () {
+      expect(container.read(logAmplitudeProvider), true);
+    });
   });
 
   group('Settings providers persist changes', () {

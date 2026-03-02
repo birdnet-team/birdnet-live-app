@@ -5,12 +5,102 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../about/about_screen.dart';
+import '../audio/audio_providers.dart';
+
+// ---------------------------------------------------------------------------
+// Settings context — determines which settings are visible
+// ---------------------------------------------------------------------------
+
+/// The screen context from which settings are opened.
+///
+/// Each settings section is tagged with a set of contexts it belongs to.
+/// When the settings screen is opened from a specific screen, only relevant
+/// sections are shown.
+enum SettingsContext {
+  /// Show all settings (e.g. from a global settings entry point).
+  all,
+
+  /// Live monitoring mode.
+  live,
+
+  /// Survey mode (future).
+  survey,
+
+  /// Point-count mode (future).
+  pointCount,
+
+  /// File / recording analysis mode (future).
+  fileAnalysis,
+}
 
 /// Settings screen with categorized preferences.
 ///
-/// Categories: Audio, Inference, Spectrogram, Recording, Export, General.
+/// Pass a [settingsContext] to filter sections to only those relevant for
+/// the given screen.  Defaults to [SettingsContext.all] which shows
+/// everything.
+///
+/// Categories: General, Audio, Inference, Spectrogram, Recording, Export,
+/// About.
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({
+    super.key,
+    this.settingsContext = SettingsContext.all,
+  });
+
+  /// Which screen opened this settings page — controls section visibility.
+  final SettingsContext settingsContext;
+
+  /// Mapping from section tag to the set of contexts it appears in.
+  ///
+  /// [SettingsContext.all] is implicitly included for every section —
+  /// when the screen is opened with [SettingsContext.all] everything shows.
+  static const Map<String, Set<SettingsContext>> _sectionContexts = {
+    'general': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
+    'audio': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+    },
+    'inference': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
+    'spectrogram': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+    },
+    'recording': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+    },
+    'export': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
+    'about': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
+  };
+
+  /// Returns `true` if [section] should be visible for the current context.
+  bool _showSection(String section) {
+    if (settingsContext == SettingsContext.all) return true;
+    return _sectionContexts[section]?.contains(settingsContext) ?? true;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,184 +113,206 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: [
           // --- General ---
-          _SectionHeader(title: l10n.settingsGeneral),
-          _ThemeTile(l10n: l10n),
-          _LanguageTile(l10n: l10n),
-          ListTile(
-            leading: const Icon(Icons.restart_alt),
-            title: Text(l10n.settingsResetOnboarding),
-            onTap: () {
-              ref.read(onboardingCompleteProvider.notifier).reset();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Onboarding will show on next launch')),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: Text(
-              l10n.settingsClearData,
-              style: const TextStyle(color: Colors.red),
+          if (_showSection('general')) ...[
+            _SectionHeader(title: l10n.settingsGeneral),
+            _ThemeTile(l10n: l10n),
+            _LanguageTile(l10n: l10n),
+            ListTile(
+              leading: const Icon(Icons.restart_alt),
+              title: Text(l10n.settingsResetOnboarding),
+              onTap: () {
+                ref.read(onboardingCompleteProvider.notifier).reset();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Onboarding will show on next launch')),
+                );
+              },
             ),
-            onTap: () => _showClearDataDialog(context, ref, l10n),
-          ),
-
-          const Divider(),
+            ListTile(
+              leading: const Icon(Icons.delete_forever, color: Colors.red),
+              title: Text(
+                l10n.settingsClearData,
+                style: const TextStyle(color: Colors.red),
+              ),
+              onTap: () => _showClearDataDialog(context, ref, l10n),
+            ),
+            const Divider(),
+          ],
 
           // --- Audio ---
-          _SectionHeader(title: l10n.settingsAudio),
-          _SliderTile(
-            title: 'Gain',
-            value: ref.watch(audioGainProvider),
-            min: 0.0,
-            max: 2.0,
-            divisions: 20,
-            format: (v) => v.toStringAsFixed(1),
-            onChanged: (v) => ref.read(audioGainProvider.notifier).set(v),
-          ),
-          _SliderTile(
-            title: 'High-pass filter (Hz)',
-            value: ref.watch(highPassFilterProvider),
-            min: 0,
-            max: 500,
-            divisions: 50,
-            format: (v) => '${v.toInt()} Hz',
-            onChanged: (v) => ref.read(highPassFilterProvider.notifier).set(v),
-          ),
-
-          const Divider(),
+          if (_showSection('audio')) ...[
+            _SectionHeader(title: l10n.settingsAudio),
+            _SliderTile(
+              title: 'Gain',
+              value: ref.watch(audioGainProvider),
+              min: 0.0,
+              max: 2.0,
+              divisions: 20,
+              format: (v) => v.toStringAsFixed(1),
+              onChanged: (v) => ref.read(audioGainProvider.notifier).set(v),
+            ),
+            _SliderTile(
+              title: 'High-pass filter (Hz)',
+              value: ref.watch(highPassFilterProvider),
+              min: 0,
+              max: 500,
+              divisions: 50,
+              format: (v) => '${v.toInt()} Hz',
+              onChanged: (v) =>
+                  ref.read(highPassFilterProvider.notifier).set(v),
+            ),
+            _MicInputTile(),
+            const Divider(),
+          ],
 
           // --- Inference ---
-          _SectionHeader(title: l10n.settingsInference),
-          _ChoiceTile<int>(
-            title: 'Window duration',
-            value: ref.watch(windowDurationProvider),
-            options: const {3: '3s', 5: '5s', 10: '10s'},
-            onChanged: (v) => ref.read(windowDurationProvider.notifier).set(v),
-          ),
-          _SliderTile(
-            title: 'Confidence threshold',
-            value: ref.watch(confidenceThresholdProvider).toDouble(),
-            min: 0,
-            max: 100,
-            divisions: 100,
-            format: (v) => '${v.toInt()}%',
-            onChanged: (v) =>
-                ref.read(confidenceThresholdProvider.notifier).set(v.toInt()),
-          ),
-          _ChoiceTile<double>(
-            title: 'Inference rate',
-            value: ref.watch(inferenceRateProvider),
-            options: {0.25: '0.25 Hz', 0.5: '0.5 Hz', 1.0: '1 Hz', 2.0: '2 Hz'},
-            onChanged: (v) => ref.read(inferenceRateProvider.notifier).set(v),
-          ),
-
-          const Divider(),
+          if (_showSection('inference')) ...[
+            _SectionHeader(title: l10n.settingsInference),
+            _ChoiceTile<int>(
+              title: 'Window duration',
+              value: ref.watch(windowDurationProvider),
+              options: const {3: '3s', 5: '5s', 10: '10s'},
+              onChanged: (v) =>
+                  ref.read(windowDurationProvider.notifier).set(v),
+            ),
+            _SliderTile(
+              title: 'Confidence threshold',
+              value: ref.watch(confidenceThresholdProvider).toDouble(),
+              min: 0,
+              max: 100,
+              divisions: 100,
+              format: (v) => '${v.toInt()}%',
+              onChanged: (v) =>
+                  ref.read(confidenceThresholdProvider.notifier).set(v.toInt()),
+            ),
+            _ChoiceTile<double>(
+              title: 'Inference rate',
+              value: ref.watch(inferenceRateProvider),
+              options: {
+                0.25: '0.25 Hz',
+                0.5: '0.5 Hz',
+                1.0: '1 Hz',
+                2.0: '2 Hz',
+              },
+              onChanged: (v) => ref.read(inferenceRateProvider.notifier).set(v),
+            ),
+            const Divider(),
+          ],
 
           // --- Spectrogram ---
-          _SectionHeader(title: l10n.settingsSpectrogram),
-          _ChoiceTile<int>(
-            title: 'FFT size',
-            value: ref.watch(fftSizeProvider),
-            options: const {
-              512: '512',
-              1024: '1024',
-              2048: '2048',
-              4096: '4096'
-            },
-            onChanged: (v) => ref.read(fftSizeProvider.notifier).set(v),
-          ),
-          _ChoiceTile<String>(
-            title: 'Color map',
-            value: ref.watch(colorMapProvider),
-            options: const {
-              'viridis': 'Viridis',
-              'magma': 'Magma',
-              'grayscale': 'Grayscale',
-            },
-            onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
-          ),
-          _ChoiceTile<int>(
-            title: 'Duration (scroll speed)',
-            value: ref.watch(spectrogramDurationProvider),
-            options: const {
-              5: '5 s',
-              10: '10 s',
-              15: '15 s',
-              20: '20 s',
-              30: '30 s',
-            },
-            onChanged: (v) =>
-                ref.read(spectrogramDurationProvider.notifier).set(v),
-          ),
-          _ChoiceTile<int>(
-            title: 'Frequency range',
-            value: ref.watch(spectrogramMaxFreqProvider),
-            options: const {
-              4000: '4 kHz',
-              6000: '6 kHz',
-              8000: '8 kHz',
-              10000: '10 kHz',
-              12000: '12 kHz',
-              16000: '16 kHz',
-            },
-            onChanged: (v) =>
-                ref.read(spectrogramMaxFreqProvider.notifier).set(v),
-          ),
-
-          const Divider(),
+          if (_showSection('spectrogram')) ...[
+            _SectionHeader(title: l10n.settingsSpectrogram),
+            _ChoiceTile<int>(
+              title: 'FFT size',
+              value: ref.watch(fftSizeProvider),
+              options: const {
+                512: '512',
+                1024: '1024',
+                2048: '2048',
+                4096: '4096',
+              },
+              onChanged: (v) => ref.read(fftSizeProvider.notifier).set(v),
+            ),
+            _ChoiceTile<String>(
+              title: 'Color map',
+              value: ref.watch(colorMapProvider),
+              options: const {
+                'viridis': 'Viridis',
+                'magma': 'Magma',
+                'grayscale': 'Grayscale',
+              },
+              onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
+            ),
+            _ChoiceTile<int>(
+              title: 'Duration (scroll speed)',
+              value: ref.watch(spectrogramDurationProvider),
+              options: const {
+                5: '5 s',
+                10: '10 s',
+                15: '15 s',
+                20: '20 s',
+                30: '30 s',
+              },
+              onChanged: (v) =>
+                  ref.read(spectrogramDurationProvider.notifier).set(v),
+            ),
+            _ChoiceTile<int>(
+              title: 'Frequency range',
+              value: ref.watch(spectrogramMaxFreqProvider),
+              options: const {
+                4000: '4 kHz',
+                6000: '6 kHz',
+                8000: '8 kHz',
+                10000: '10 kHz',
+                12000: '12 kHz',
+                16000: '16 kHz',
+              },
+              onChanged: (v) =>
+                  ref.read(spectrogramMaxFreqProvider.notifier).set(v),
+            ),
+            SwitchListTile(
+              title: const Text('Log amplitude'),
+              subtitle: const Text('Logarithmic scaling for better visibility'),
+              value: ref.watch(logAmplitudeProvider),
+              onChanged: (v) => ref.read(logAmplitudeProvider.notifier).set(v),
+            ),
+            const Divider(),
+          ],
 
           // --- Recording ---
-          _SectionHeader(title: l10n.settingsRecording),
-          _ChoiceTile<String>(
-            title: 'Format',
-            value: ref.watch(recordingFormatProvider),
-            options: const {'wav': 'WAV', 'flac': 'FLAC'},
-            onChanged: (v) => ref.read(recordingFormatProvider.notifier).set(v),
-          ),
-          _ChoiceTile<String>(
-            title: 'Mode',
-            value: ref.watch(recordingModeProvider),
-            options: const {
-              'off': 'Off',
-              'full': 'Full',
-              'detections': 'Detections only'
-            },
-            onChanged: (v) => ref.read(recordingModeProvider.notifier).set(v),
-          ),
-
-          const Divider(),
+          if (_showSection('recording')) ...[
+            _SectionHeader(title: l10n.settingsRecording),
+            _ChoiceTile<String>(
+              title: 'Format',
+              value: ref.watch(recordingFormatProvider),
+              options: const {'wav': 'WAV', 'flac': 'FLAC'},
+              onChanged: (v) =>
+                  ref.read(recordingFormatProvider.notifier).set(v),
+            ),
+            _ChoiceTile<String>(
+              title: 'Mode',
+              value: ref.watch(recordingModeProvider),
+              options: const {
+                'off': 'Off',
+                'full': 'Full',
+                'detections': 'Detections only',
+              },
+              onChanged: (v) => ref.read(recordingModeProvider.notifier).set(v),
+            ),
+            const Divider(),
+          ],
 
           // --- Export ---
-          _SectionHeader(title: l10n.settingsExport),
-          _ChoiceTile<String>(
-            title: 'Format',
-            value: ref.watch(exportFormatProvider),
-            options: const {'csv': 'CSV', 'json': 'JSON', 'gpx': 'GPX'},
-            onChanged: (v) => ref.read(exportFormatProvider.notifier).set(v),
-          ),
-          SwitchListTile(
-            title: const Text('Include audio files'),
-            value: ref.watch(includeAudioProvider),
-            onChanged: (v) => ref.read(includeAudioProvider.notifier).set(v),
-          ),
-
-          const Divider(),
+          if (_showSection('export')) ...[
+            _SectionHeader(title: l10n.settingsExport),
+            _ChoiceTile<String>(
+              title: 'Format',
+              value: ref.watch(exportFormatProvider),
+              options: const {'csv': 'CSV', 'json': 'JSON', 'gpx': 'GPX'},
+              onChanged: (v) => ref.read(exportFormatProvider.notifier).set(v),
+            ),
+            SwitchListTile(
+              title: const Text('Include audio files'),
+              value: ref.watch(includeAudioProvider),
+              onChanged: (v) => ref.read(includeAudioProvider.notifier).set(v),
+            ),
+            const Divider(),
+          ],
 
           // --- About ---
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(l10n.about),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const AboutScreen(),
-                ),
-              );
-            },
-          ),
+          if (_showSection('about'))
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.about),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const AboutScreen(),
+                  ),
+                );
+              },
+            ),
 
           const SizedBox(height: 32),
         ],
@@ -392,6 +504,100 @@ class _ChoiceTile<T> extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
+    );
+  }
+}
+
+/// Dropdown that lists available audio input devices.
+///
+/// Uses [inputDevicesProvider] (async) to fetch the device list and
+/// [selectedDeviceProvider] to track the current selection.
+class _MicInputTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final devicesAsync = ref.watch(inputDevicesProvider);
+    final selected = ref.watch(selectedDeviceProvider);
+
+    return devicesAsync.when(
+      loading: () => const ListTile(
+        title: Text('Microphone'),
+        trailing: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (_, __) => const ListTile(
+        title: Text('Microphone'),
+        trailing: Text('Error'),
+      ),
+      data: (devices) {
+        // Find the label for the currently selected device.
+        final selectedLabel = selected == null
+            ? 'System default'
+            : devices
+                    .where((d) => d.id == selected)
+                    .map((d) => d.label.isEmpty ? d.id : d.label)
+                    .firstOrNull ??
+                selected;
+
+        return ListTile(
+          title: const Text('Microphone'),
+          trailing: Text(
+            selectedLabel,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          onTap: () => _showDevicePicker(context, ref, devices, selected),
+        );
+      },
+    );
+  }
+
+  void _showDevicePicker(
+    BuildContext context,
+    WidgetRef ref,
+    List<InputDeviceInfo> devices,
+    String? selected,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Select microphone',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+              ),
+              RadioListTile<String?>(
+                title: const Text('System default'),
+                value: null,
+                groupValue: selected,
+                onChanged: (v) {
+                  ref.read(selectedDeviceProvider.notifier).state = v;
+                  Navigator.of(context).pop();
+                },
+              ),
+              ...devices.map(
+                (d) => RadioListTile<String?>(
+                  title: Text(d.label.isEmpty ? d.id : d.label),
+                  value: d.id,
+                  groupValue: selected,
+                  onChanged: (v) {
+                    ref.read(selectedDeviceProvider.notifier).state = v;
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/services/wakelock_service.dart';
 
 import '../../shared/providers/settings_providers.dart';
 import '../audio/audio_capture_service.dart';
@@ -108,6 +109,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         return;
       }
 
+      // Keep screen on during live recording.
+      await WakelockService.enable();
+
       // Start audio capture.
       await captureNotifier.start(deviceId: deviceId);
 
@@ -133,10 +137,20 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    // Ensure screen lock is released when leaving the live screen.
+    WakelockService.disable();
+    super.dispose();
+  }
+
   /// Finalise and save the session when leaving the live screen.
   Future<void> _finalizeAndSave() async {
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
+
+    // Release screen wakelock.
+    await WakelockService.disable();
 
     // Stop audio capture if still running.
     await captureNotifier.stop();
@@ -156,26 +170,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final liveState = ref.watch(liveStateProvider);
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
     final detections = ref.watch(sessionDetectionsProvider);
-
-    // Edge-to-edge overlay styling.
-    SystemChrome.setSystemUIOverlayStyle(
-      isDark
-          ? SystemUiOverlayStyle.light.copyWith(
-              statusBarColor: Colors.transparent,
-              systemNavigationBarColor: Colors.transparent,
-            )
-          : SystemUiOverlayStyle.dark.copyWith(
-              statusBarColor: Colors.transparent,
-              systemNavigationBarColor: Colors.transparent,
-            ),
-    );
 
     return PopScope(
       canPop: false,
@@ -339,7 +339,9 @@ class _CompactStatusBar extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const SettingsScreen(),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.live,
+                  ),
                 ),
               );
             },
@@ -558,6 +560,8 @@ class _LiveSpectrogram extends ConsumerWidget {
     const sampleRate = 32000; // AppConstants.sampleRate
     final maxColumns = (durationSec * sampleRate / hopSize).round();
 
+    final logAmplitude = ref.watch(logAmplitudeProvider);
+
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isCapturing,
@@ -569,6 +573,7 @@ class _LiveSpectrogram extends ConsumerWidget {
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,
+      logAmplitude: logAmplitude,
     );
   }
 }

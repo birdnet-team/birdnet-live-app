@@ -32,10 +32,13 @@ class AboutScreen extends ConsumerWidget {
           Center(
             child: Column(
               children: [
-                Icon(
-                  Icons.flutter_dash,
-                  size: 80,
-                  color: theme.colorScheme.primary,
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo-birdnet-circle.png',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(

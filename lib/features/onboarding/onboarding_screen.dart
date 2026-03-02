@@ -24,7 +24,16 @@ class OnboardingScreen extends ConsumerWidget {
         PageViewModel(
           title: l10n.onboardingWelcomeTitle,
           body: l10n.onboardingWelcomeBody,
-          image: _buildIcon(Icons.flutter_dash, theme),
+          image: Center(
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/logo-birdnet-circle.png',
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
           decoration: _pageDecoration(theme),
         ),
         // 2. Features
@@ -71,7 +80,12 @@ class OnboardingScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(5),
         ),
       ),
-      controlsPadding: const EdgeInsets.all(16),
+      controlsPadding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        16 + MediaQuery.of(context).viewPadding.bottom,
+      ),
     );
   }
 

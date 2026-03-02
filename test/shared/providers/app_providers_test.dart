@@ -7,12 +7,12 @@ import 'package:birdnet_live/shared/providers/app_providers.dart';
 
 void main() {
   group('ThemeModeNotifier', () {
-    test('defaults to dark theme', () async {
+    test('defaults to system theme', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       final notifier = ThemeModeNotifier(prefs);
 
-      expect(notifier.state, ThemeMode.dark);
+      expect(notifier.state, ThemeMode.system);
     });
 
     test('persists theme mode', () async {
@@ -144,7 +144,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      expect(container.read(themeModeProvider), ThemeMode.dark);
+      expect(container.read(themeModeProvider), ThemeMode.system);
       expect(container.read(localeProvider), isNull);
       expect(container.read(onboardingCompleteProvider), false);
       expect(container.read(termsAcceptedProvider), false);
