@@ -41,5 +41,15 @@
       "maxWindows": 5,
       "alpha": 5.0
     }
+  },
+
+  "geoModel": {
+    "modelFile": "BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx",
+    "labelsFile": "BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt",
+    "inputName": "input",
+    "outputName": "output",
+    "speciesCount": 11827,
+    "defaultThreshold": 0.03,
+    "modelVersion": 2
   }
 }

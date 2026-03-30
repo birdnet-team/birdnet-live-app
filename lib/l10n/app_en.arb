@@ -200,6 +200,18 @@
   "@settingsLanguage": {
     "description": "Language selection setting"
   },
+  "settingsAppLanguage": "App Language",
+  "@settingsAppLanguage": {
+    "description": "UI language selection setting"
+  },
+  "settingsSpeciesLanguage": "Species Names",
+  "@settingsSpeciesLanguage": {
+    "description": "Species name language selection setting"
+  },
+  "settingsSpeciesLanguageSystem": "Follow app language",
+  "@settingsSpeciesLanguageSystem": {
+    "description": "Option to follow app language for species names"
+  },
   "settingsTheme": "Theme",
   "@settingsTheme": {
     "description": "Theme selection setting"
@@ -316,5 +328,86 @@
   "comingSoon": "Coming Soon",
   "@comingSoon": {
     "description": "Badge label for unimplemented features"
+  },
+  "exploreMode": "Explore",
+  "@exploreMode": {
+    "description": "Explore mode tab label"
+  },
+  "exploreModeDescription": "Browse species in your area",
+  "@exploreModeDescription": {
+    "description": "Description for Explore mode on the main menu"
+  },
+  "exploreTitle": "Explore",
+  "@exploreTitle": {
+    "description": "Explore screen app bar title"
+  },
+  "exploreRefresh": "Refresh",
+  "@exploreRefresh": {
+    "description": "Refresh button tooltip on explore screen"
+  },
+  "exploreNoLocation": "Location not available",
+  "@exploreNoLocation": {
+    "description": "Shown when GPS location cannot be obtained"
+  },
+  "exploreLocating": "Getting location…",
+  "@exploreLocating": {
+    "description": "Shown while waiting for GPS fix"
+  },
+  "exploreLocationError": "Location error",
+  "@exploreLocationError": {
+    "description": "Shown when GPS returns an error"
+  },
+  "exploreNoSpecies": "No species data for this location",
+  "@exploreNoSpecies": {
+    "description": "Shown when no species are predicted for the location"
+  },
+  "exploreSpeciesCount": "{count} species",
+  "@exploreSpeciesCount": {
+    "description": "Species count label for explore screen",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLocation": "Location",
+  "@settingsLocation": {
+    "description": "Location settings section title"
+  },
+  "settingsUseGps": "Use GPS",
+  "@settingsUseGps": {
+    "description": "Toggle for GPS location"
+  },
+  "settingsUseGpsDescription": "Use device GPS for location. When disabled, use manual coordinates.",
+  "@settingsUseGpsDescription": {
+    "description": "Description for GPS toggle"
+  },
+  "settingsLatitude": "Latitude",
+  "@settingsLatitude": {
+    "description": "Manual latitude setting label"
+  },
+  "settingsLongitude": "Longitude",
+  "@settingsLongitude": {
+    "description": "Manual longitude setting label"
+  },
+  "settingsSpeciesFilter": "Species filter",
+  "@settingsSpeciesFilter": {
+    "description": "Species filter mode setting label"
+  },
+  "settingsFilterOff": "Off",
+  "@settingsFilterOff": {
+    "description": "Species filter off option"
+  },
+  "settingsFilterGeoExclude": "Location filter",
+  "@settingsFilterGeoExclude": {
+    "description": "Geo-exclude filter option"
+  },
+  "settingsFilterGeoMerge": "Location weighting",
+  "@settingsFilterGeoMerge": {
+    "description": "Geo-merge filter option"
+  },
+  "settingsGeoThreshold": "Geo-filter threshold",
+  "@settingsGeoThreshold": {
+    "description": "Geo-model probability threshold setting label"
   }
 }

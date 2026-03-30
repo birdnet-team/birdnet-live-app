@@ -3,19 +3,22 @@
 // =============================================================================
 //
 // Shows the accumulated detections from the current live session.  Each
-// detection is displayed as a tile with:
+// detection is displayed as a card with:
 //
-//   • Species common name (primary text).
-//   • Scientific name (secondary text).
-//   • Confidence bar + percentage.
-//   • Timestamp (relative "time ago" format).
-//   • Tap action to play back the detection audio clip (if available).
+//   • Thumbnail image (4:3)
+//   • Common name (full row, not truncated)
+//   • Scientific name + confidence bar
 //
-// The list auto-scrolls to show the newest detection at the top.
+// Tapping a detection opens the species info overlay.
 // =============================================================================
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/providers/settings_providers.dart';
+import '../../../shared/services/taxonomy_service.dart';
+import '../../explore/explore_providers.dart';
 import '../live_session.dart';
 
 /// Displays a scrollable list of species detections.
@@ -35,7 +38,7 @@ class DetectionList extends StatelessWidget {
   /// Whether the session is actively running.
   final bool isActive;
 
-  /// Called when a detection tile is tapped (for playback).
+  /// Called when a detection tile is tapped.
   final void Function(DetectionRecord detection)? onDetectionTap;
 
   @override
@@ -60,7 +63,7 @@ class DetectionList extends StatelessWidget {
 }
 
 /// A single detection entry in the list.
-class DetectionTile extends StatelessWidget {
+class DetectionTile extends ConsumerWidget {
   const DetectionTile({
     super.key,
     required this.detection,
@@ -71,67 +74,99 @@ class DetectionTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final hasClip = detection.audioClipPath != null;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+
+    // Resolve localized common name, falling back to English inference name.
+    final displayName = taxonomyAsync.valueOrNull
+            ?.lookup(detection.scientificName)
+            ?.commonNameForLocale(speciesLocale) ??
+        detection.commonName;
 
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── Species info ──────────────────────────────────
+            // ── Thumbnail (4:3) ───────────────────────────────
+            SizedBox(
+              width: 60,
+              height: 45,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: CachedNetworkImage(
+                  imageUrl: TaxonomyService.thumbUrl(
+                    detection.scientificName,
+                  ),
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Container(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                  ),
+                  errorWidget: (_, __, ___) => Container(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.flutter_dash,
+                      size: 20,
+                      color: theme.colorScheme.onSurface.withAlpha(60),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // ── Name + sci name + confidence ──────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Common name — full width, wraps if needed
                   Text(
-                    detection.commonName,
-                    style: theme.textTheme.bodyLarge?.copyWith(
+                    displayName,
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    detection.scientificName,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: theme.colorScheme.onSurface.withAlpha(153),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 12),
-
-            // ── Confidence bar + percentage ───────────────────
-            SizedBox(
-              width: 100,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    detection.confidencePercent,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: _confidenceColor(
-                        detection.confidence,
-                        theme,
+                  // Scientific name + confidence on one row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          detection.scientificName,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurface.withAlpha(153),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Text(
+                        detection.confidencePercent,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _confidenceColor(
+                            detection.confidence,
+                            theme,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
+                  // Confidence bar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
                       value: detection.confidence,
-                      minHeight: 4,
+                      minHeight: 3,
                       backgroundColor:
                           theme.colorScheme.surfaceContainerHighest,
                       valueColor: AlwaysStoppedAnimation<Color>(
@@ -145,26 +180,11 @@ class DetectionTile extends StatelessWidget {
 
             const SizedBox(width: 8),
 
-            // ── Time + play icon ──────────────────────────────
-            SizedBox(
-              width: 48,
-              child: Column(
-                children: [
-                  Text(
-                    _formatTimeAgo(detection.timestamp),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withAlpha(128),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (hasClip)
-                    Icon(
-                      Icons.play_circle_outline,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
-                ],
-              ),
+            // ── Chevron ───────────────────────────────────────
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: theme.colorScheme.onSurface.withAlpha(80),
             ),
           ],
         ),
@@ -177,16 +197,6 @@ class DetectionTile extends StatelessWidget {
     if (confidence >= 0.7) return Colors.green;
     if (confidence >= 0.4) return Colors.amber;
     return Colors.red;
-  }
-
-  /// Format a timestamp as relative "time ago".
-  static String _formatTimeAgo(DateTime timestamp) {
-    final diff = DateTime.now().difference(timestamp);
-    if (diff.inSeconds < 5) return 'now';
-    if (diff.inSeconds < 60) return '${diff.inSeconds}s';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-    if (diff.inHours < 24) return '${diff.inHours}h';
-    return '${diff.inDays}d';
   }
 }
 

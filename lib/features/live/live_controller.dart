@@ -45,6 +45,7 @@ import '../audio/ring_buffer.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
+import '../inference/species_filter.dart';
 import '../recording/recording_service.dart';
 import 'live_session.dart';
 
@@ -118,6 +119,15 @@ class LiveController {
 
   /// Whether an inference cycle is currently in progress.
   bool _inferring = false;
+
+  /// Geo-model scores for species filtering (set at session start).
+  Map<String, double>? _geoScores;
+
+  /// Active species filter mode for the current session.
+  SpeciesFilterMode _filterMode = SpeciesFilterMode.off;
+
+  /// Geo-model threshold for the current session.
+  double _geoThreshold = 0.03;
 
   // ── Getters ───────────────────────────────────────────────────────────
 
@@ -244,12 +254,16 @@ class LiveController {
   /// [confidenceThreshold] — minimum confidence (0–100 scale).
   /// [speciesFilterMode] — species filter setting.
   /// [recordingMode] — recording behaviour.
+  /// [geoScores] — optional geo-model predictions for species filtering.
+  /// [geoThreshold] — minimum geo score for the geoExclude filter.
   Future<void> startSession({
     required int windowDuration,
     required double inferenceRate,
     required int confidenceThreshold,
     required String speciesFilterMode,
     required RecordingMode recordingMode,
+    Map<String, double>? geoScores,
+    double geoThreshold = 0.03,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -270,6 +284,16 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _isolate.resetPooling();
+
+    // Store geo-filter state for this session.
+    _geoScores = geoScores;
+    _geoThreshold = geoThreshold;
+    _filterMode = switch (speciesFilterMode) {
+      'geoExclude' => SpeciesFilterMode.geoExclude,
+      'geoMerge' => SpeciesFilterMode.geoMerge,
+      'customList' => SpeciesFilterMode.customList,
+      _ => SpeciesFilterMode.off,
+    };
 
     // Start recording if enabled.
     if (recordingMode != RecordingMode.off) {
@@ -452,14 +476,23 @@ class LiveController {
 
       _latestDetections = detections;
 
+      // Apply species filter (geo-model or custom list).
+      final filteredDetections = SpeciesFilter.apply(
+        detections: detections,
+        mode: _filterMode,
+        geoScores: _geoScores,
+        geoThreshold: _geoThreshold,
+        confidenceThreshold: confidenceThreshold / 100.0,
+      );
+
       // Update the live detection list (replaced each cycle, like the PWA).
       // Each species appears at most once with its current score.
       _currentLiveDetections = [
-        for (final d in detections) DetectionRecord.fromDetection(d),
+        for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
       // Accumulate to session history (for session saving / stats).
-      if (_session != null && detections.isNotEmpty) {
+      if (_session != null && filteredDetections.isNotEmpty) {
         // Save detection clip if in detectionsOnly mode.
         String? clipPath;
         if (recordingService.mode == RecordingMode.detectionsOnly) {
@@ -469,7 +502,7 @@ class LiveController {
           );
         }
 
-        for (final detection in detections) {
+        for (final detection in filteredDetections) {
           final record = DetectionRecord.fromDetection(
             detection,
             audioClipPath: clipPath,

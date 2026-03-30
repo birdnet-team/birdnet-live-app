@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -51,7 +53,7 @@ final inferenceRateProvider =
 final speciesFilterModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.speciesFilterMode, 'off');
+  return StringSettingNotifier(prefs, PrefKeys.speciesFilterMode, 'geoExclude');
 });
 
 // ---------------------------------------------------------------------------
@@ -153,6 +155,64 @@ final includeAudioProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return BoolSettingNotifier(prefs, PrefKeys.includeAudio, false);
+});
+
+// ---------------------------------------------------------------------------
+// Location / Geo Settings
+// ---------------------------------------------------------------------------
+
+/// Use GPS for location (default true).  When false the manual coordinates
+/// are used instead.
+final useGpsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.useGps, true);
+});
+
+/// Geo-model probability threshold (0.0 – 1.0, default 0.03).
+final geoThresholdProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DoubleSettingNotifier(prefs, PrefKeys.geoThreshold, 0.03);
+});
+
+/// Manual latitude for when GPS is disabled (default 52.52 — Berlin).
+final manualLatitudeProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DoubleSettingNotifier(prefs, PrefKeys.manualLatitude, 52.52);
+});
+
+/// Manual longitude for when GPS is disabled (default 13.405 — Berlin).
+final manualLongitudeProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DoubleSettingNotifier(prefs, PrefKeys.manualLongitude, 13.405);
+});
+
+// ---------------------------------------------------------------------------
+// Species Language
+// ---------------------------------------------------------------------------
+
+/// Species name language code ('system', 'en', 'de', 'es', etc.).
+///
+/// When 'system', follows the app locale.
+final speciesLanguageProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return StringSettingNotifier(prefs, PrefKeys.speciesLanguage, 'system');
+});
+
+/// Resolved species locale code (never 'system').
+///
+/// Resolves 'system' → app locale → platform locale → 'en'.
+final effectiveSpeciesLocaleProvider = Provider<String>((ref) {
+  final setting = ref.watch(speciesLanguageProvider);
+  if (setting != 'system') return setting;
+
+  final appLocale = ref.watch(localeProvider);
+  if (appLocale != null) return appLocale.languageCode;
+
+  return PlatformDispatcher.instance.locale.languageCode;
 });
 
 // ===========================================================================

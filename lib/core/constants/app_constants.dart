@@ -47,6 +47,7 @@ abstract final class PrefKeys {
   static const String termsAccepted = 'terms_accepted';
   static const String themeMode = 'theme_mode';
   static const String locale = 'locale';
+  static const String speciesLanguage = 'species_language';
 
   // Audio settings
   static const String audioGain = 'audio_gain';
@@ -76,4 +77,10 @@ abstract final class PrefKeys {
   // Export settings
   static const String exportFormat = 'export_format';
   static const String includeAudio = 'include_audio';
+
+  // Location / geo settings
+  static const String useGps = 'use_gps';
+  static const String geoThreshold = 'geo_threshold';
+  static const String manualLatitude = 'manual_latitude';
+  static const String manualLongitude = 'manual_longitude';
 }

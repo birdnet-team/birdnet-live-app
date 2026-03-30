@@ -39,6 +39,13 @@ dependencies:
   intl: any
   just_audio: ^0.10.5
 
+  # Location
+  geolocator: ^13.0.2
+
+  # Network & Images
+  http: ^1.2.2
+  cached_network_image: ^3.4.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

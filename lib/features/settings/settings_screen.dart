@@ -88,6 +88,11 @@ class SettingsScreen extends ConsumerWidget {
       SettingsContext.pointCount,
       SettingsContext.fileAnalysis,
     },
+    'location': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+    },
     'about': {
       SettingsContext.live,
       SettingsContext.survey,
@@ -117,6 +122,7 @@ class SettingsScreen extends ConsumerWidget {
             _SectionHeader(title: l10n.settingsGeneral),
             _ThemeTile(l10n: l10n),
             _LanguageTile(l10n: l10n),
+            _SpeciesLanguageTile(l10n: l10n),
             ListTile(
               leading: const Icon(Icons.restart_alt),
               title: Text(l10n.settingsResetOnboarding),
@@ -282,6 +288,62 @@ class SettingsScreen extends ConsumerWidget {
             const Divider(),
           ],
 
+          // --- Location / Geo ---
+          if (_showSection('location')) ...[
+            _SectionHeader(title: l10n.settingsLocation),
+            SwitchListTile(
+              title: Text(l10n.settingsUseGps),
+              subtitle: Text(l10n.settingsUseGpsDescription),
+              value: ref.watch(useGpsProvider),
+              onChanged: (v) => ref.read(useGpsProvider.notifier).set(v),
+            ),
+            if (!ref.watch(useGpsProvider)) ...[
+              _SliderTile(
+                title: l10n.settingsLatitude,
+                value: ref.watch(manualLatitudeProvider),
+                min: -90,
+                max: 90,
+                divisions: 1800,
+                format: (v) => v.toStringAsFixed(2),
+                onChanged: (v) =>
+                    ref.read(manualLatitudeProvider.notifier).set(v),
+              ),
+              _SliderTile(
+                title: l10n.settingsLongitude,
+                value: ref.watch(manualLongitudeProvider),
+                min: -180,
+                max: 180,
+                divisions: 3600,
+                format: (v) => v.toStringAsFixed(2),
+                onChanged: (v) =>
+                    ref.read(manualLongitudeProvider.notifier).set(v),
+              ),
+            ],
+            _ChoiceTile<String>(
+              title: l10n.settingsSpeciesFilter,
+              value: ref.watch(speciesFilterModeProvider),
+              options: {
+                'off': l10n.settingsFilterOff,
+                'geoExclude': l10n.settingsFilterGeoExclude,
+                'geoMerge': l10n.settingsFilterGeoMerge,
+              },
+              onChanged: (v) =>
+                  ref.read(speciesFilterModeProvider.notifier).set(v),
+            ),
+            if (ref.watch(speciesFilterModeProvider) != 'off')
+              _SliderTile(
+                title: l10n.settingsGeoThreshold,
+                value: ref.watch(geoThresholdProvider),
+                min: 0.0,
+                max: 0.5,
+                divisions: 50,
+                format: (v) => v.toStringAsFixed(2),
+                onChanged: (v) =>
+                    ref.read(geoThresholdProvider.notifier).set(v),
+              ),
+            const Divider(),
+          ],
+
           // --- Export ---
           if (_showSection('export')) ...[
             _SectionHeader(title: l10n.settingsExport),
@@ -419,7 +481,7 @@ class _LanguageTile extends ConsumerWidget {
 
     return ListTile(
       leading: const Icon(Icons.language),
-      title: Text(l10n.settingsLanguage),
+      title: Text(l10n.settingsAppLanguage),
       trailing: DropdownButton<String?>(
         value: locale?.languageCode,
         underline: const SizedBox.shrink(),
@@ -432,6 +494,73 @@ class _LanguageTile extends ConsumerWidget {
           ref
               .read(localeProvider.notifier)
               .setLocale(value == null ? null : Locale(value));
+        },
+      ),
+    );
+  }
+}
+
+/// Available species name locales (code → native name).
+const _speciesLanguages = <String, String>{
+  'system': '', // placeholder — label comes from l10n
+  'en': 'English',
+  'de': 'Deutsch',
+  'es': 'Español',
+  'fr': 'Français',
+  'pl': 'Polski',
+  'nl': 'Nederlands',
+  'ru': 'Русский',
+  'ja': '日本語',
+  'cs': 'Čeština',
+  'pt': 'Português',
+  'ca': 'Català',
+  'no': 'Norsk',
+  'bg': 'Български',
+  'sv': 'Svenska',
+  'da': 'Dansk',
+  'zh-CN': '中文 (简体)',
+  'tr': 'Türkçe',
+  'sk': 'Slovenčina',
+  'sr': 'Српски',
+  'uk': 'Українська',
+  'fi': 'Suomi',
+  'es_ES': 'Español (España)',
+  'es_MX': 'Español (México)',
+  'es_EC': 'Español (Ecuador)',
+  'pt_PT': 'Português (Portugal)',
+  'hr': 'Hrvatski',
+  'lt': 'Lietuvių',
+  'fa': 'فارسی',
+  'cy': 'Cymraeg',
+  'et': 'Eesti',
+};
+
+class _SpeciesLanguageTile extends ConsumerWidget {
+  const _SpeciesLanguageTile({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final speciesLang = ref.watch(speciesLanguageProvider);
+
+    return ListTile(
+      leading: const Icon(Icons.pets),
+      title: Text(l10n.settingsSpeciesLanguage),
+      trailing: DropdownButton<String>(
+        value: speciesLang,
+        underline: const SizedBox.shrink(),
+        items: _speciesLanguages.entries.map((e) {
+          return DropdownMenuItem(
+            value: e.key,
+            child: Text(
+              e.key == 'system' ? l10n.settingsSpeciesLanguageSystem : e.value,
+            ),
+          );
+        }).toList(),
+        onChanged: (value) {
+          if (value != null) {
+            ref.read(speciesLanguageProvider.notifier).set(value);
+          }
         },
       ),
     );

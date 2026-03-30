@@ -84,6 +84,22 @@ void main() {
     test('logAmplitude defaults to true', () {
       expect(container.read(logAmplitudeProvider), true);
     });
+
+    test('useGps defaults to true', () {
+      expect(container.read(useGpsProvider), true);
+    });
+
+    test('geoThreshold defaults to 0.03', () {
+      expect(container.read(geoThresholdProvider), 0.03);
+    });
+
+    test('manualLatitude defaults to 52.52', () {
+      expect(container.read(manualLatitudeProvider), 52.52);
+    });
+
+    test('manualLongitude defaults to 13.405', () {
+      expect(container.read(manualLongitudeProvider), 13.405);
+    });
   });
 
   group('Settings providers persist changes', () {

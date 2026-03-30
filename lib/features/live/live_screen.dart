@@ -7,7 +7,8 @@ import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
-
+import '../explore/explore_providers.dart';
+import '../explore/widgets/species_info_overlay.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -122,6 +123,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       final filterMode = ref.read(speciesFilterModeProvider);
       final recordingModeStr = ref.read(recordingModeProvider);
       final recordingMode = recordingModeFromString(recordingModeStr);
+      final geoThreshold = ref.read(geoThresholdProvider);
+
+      // Fetch geo-model scores (if available) for species filtering.
+      final geoScores = await ref.read(geoScoresProvider.future);
 
       // Start inference session.
       await controller.startSession(
@@ -130,6 +135,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         confidenceThreshold: confidenceThreshold,
         speciesFilterMode: filterMode,
         recordingMode: recordingMode,
+        geoScores: geoScores,
+        geoThreshold: geoThreshold,
       );
 
       _isStarting = false;
@@ -236,11 +243,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                       detections: detections,
                       isActive: isActive || isPaused,
                       onDetectionTap: (detection) {
-                        if (detection.audioClipPath != null) {
-                          ref
-                              .read(liveControllerProvider)
-                              .playClip(detection.audioClipPath!);
-                        }
+                        SpeciesInfoOverlay.show(
+                          context,
+                          ref,
+                          scientificName: detection.scientificName,
+                          commonName: detection.commonName,
+                        );
                       },
                     ),
                   ),

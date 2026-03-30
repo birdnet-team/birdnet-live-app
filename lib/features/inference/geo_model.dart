@@ -1,5 +1,5 @@
 // =============================================================================
-// Geo-Model — Location-based species prediction
+// Geo-Model — Location-based species prediction using ONNX
 // =============================================================================
 //
 // A secondary ONNX model that predicts which species are likely to be present
@@ -9,20 +9,21 @@
 // ### Model interface
 //
 // ```
-// Input:  lat (float), lon (float), week (int 1–48, 4 weeks per month)
-// Output: per-species probability vector
+// Input:  float32 [1, 3]  — [latitude, longitude, week]
+// Output: float32 [1, N]  — per-species probability vector
 // ```
 //
 // The geo-model has its own labels file which overlaps significantly — but
 // not 100% — with the audio classifier's labels.  Species are matched
 // between models by scientific name.
 //
-// ### Current status
+// ### Labels format (tab-delimited, no header)
 //
-// The actual ONNX model is not yet available.  This class provides the full
-// public interface with a **dummy implementation** that returns plausible
-// placeholder scores.  When the real model is delivered, only the internal
-// `predict` body needs to change.
+// ```
+// 1044390	Orientopsaltria phaeophila	Orientopsaltria phaeophila
+// ```
+//
+// Each line: `id<TAB>scientific_name<TAB>common_name`
 //
 // ### Week numbering
 //
@@ -31,61 +32,133 @@
 //   - February → weeks 5–8
 //   - …
 //   - December → weeks 45–48
+//
+// ### Reusability
+//
+// This class is designed to be reusable across features (live mode, explore
+// screen, survey mode).  It is a standalone service with no UI dependencies.
 // =============================================================================
 
-import 'dart:math' as math;
+import 'dart:io';
 
-import 'label_parser.dart';
-import 'models/species.dart';
+import 'package:flutter/foundation.dart';
+import 'package:onnxruntime/onnxruntime.dart';
 
-/// Location-based species predictor.
+/// A species entry from the geo-model's own labels file.
+class GeoSpecies {
+  const GeoSpecies({
+    required this.index,
+    required this.id,
+    required this.scientificName,
+    required this.commonName,
+  });
+
+  /// Zero-based index in the geo-model output vector.
+  final int index;
+
+  /// Sparse internal ID (from the labels file).
+  final int id;
+
+  /// Binomial scientific name.
+  final String scientificName;
+
+  /// Common name.
+  final String commonName;
+
+  @override
+  String toString() => 'GeoSpecies($index: $commonName [$scientificName])';
+}
+
+/// Location-based species predictor backed by an ONNX model.
 ///
 /// Predicts which species are expected at a given lat/lon/week and returns
 /// a scored list used to filter audio classifier results.
 class GeoModel {
-  /// Creates an uninitialised geo-model.  Call [loadLabels] before [predict].
+  /// Creates an uninitialised geo-model.  Call [loadLabels] + [loadModel]
+  /// before [predict].
   GeoModel();
 
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
 
-  List<Species> _labels = const [];
-  bool _modelLoaded = false;
+  List<GeoSpecies> _labels = const [];
+  OrtSession? _session;
+  bool _envInitialised = false;
+
+  /// Configured tensor names (set from model config or defaults).
+  String _inputName = 'input';
+  String _outputName = 'output';
 
   /// Whether the geo-model is initialised and ready for predictions.
-  bool get isReady => _labels.isNotEmpty && _modelLoaded;
+  bool get isReady => _labels.isNotEmpty && _session != null;
 
   /// The geo-model's own species labels.
-  List<Species> get labels => _labels;
+  List<GeoSpecies> get labels => _labels;
 
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
 
-  /// Load the geo-model's own labels CSV.
+  /// Parse the geo-model's labels file (tab-delimited, no header).
   ///
-  /// The labels file uses the same semicolon-delimited format as the audio
-  /// model but may contain a different (overlapping) set of species.
-  void loadLabels(String labelsCsv) {
-    _labels = LabelParser.parse(labelsCsv);
+  /// Each line: `id\tscientific_name\tcommon_name`
+  void loadLabels(String labelsText) {
+    final lines = labelsText.split('\n').where((l) => l.trim().isNotEmpty);
+    final parsed = <GeoSpecies>[];
+    var idx = 0;
+    for (final line in lines) {
+      final parts = line.split('\t');
+      if (parts.length >= 2) {
+        parsed.add(GeoSpecies(
+          index: idx,
+          id: int.tryParse(parts[0].trim()) ?? 0,
+          scientificName: parts[1].trim(),
+          commonName: parts.length >= 3 ? parts[2].trim() : parts[1].trim(),
+        ));
+        idx++;
+      }
+    }
+    _labels = parsed;
+    debugPrint('[GeoModel] loaded ${_labels.length} labels');
   }
 
-  /// Load the geo-model ONNX file from [modelBytes].
+  /// Load the geo-model ONNX file from a path on disk.
   ///
-  /// **Dummy implementation** — marks the model as loaded without actually
-  /// initialising an ONNX session.  Replace with real ONNX loading when the
-  /// model becomes available.
-  Future<void> loadModel(/* Uint8List modelBytes */) async {
-    // TODO: Replace with OrtSession.fromBuffer(modelBytes, opts) when the
-    // real geo-model ONNX file is available.
-    _modelLoaded = true;
+  /// [inputName] and [outputName] configure the tensor names.
+  Future<void> loadModel(
+    String modelPath, {
+    String inputName = 'input',
+    String outputName = 'output',
+  }) async {
+    _inputName = inputName;
+    _outputName = outputName;
+
+    if (!_envInitialised) {
+      OrtEnv.instance.init();
+      _envInitialised = true;
+    }
+
+    _session?.release();
+
+    final modelFile = File(modelPath);
+    if (!modelFile.existsSync()) {
+      throw FileSystemException('Geo-model file not found', modelPath);
+    }
+
+    final bytes = await modelFile.readAsBytes();
+    final sessionOptions = OrtSessionOptions();
+    _session = OrtSession.fromBuffer(bytes, sessionOptions);
+
+    debugPrint('[GeoModel] model loaded from $modelPath');
+    debugPrint('[GeoModel] input: $_inputName, output: $_outputName');
   }
 
   /// Release all resources.
   void dispose() {
+    _session?.release();
+    _session = null;
     _labels = const [];
-    _modelLoaded = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -95,15 +168,11 @@ class GeoModel {
   /// Predict species probabilities for a geographic location and week.
   ///
   /// Returns a map of **scientific name → probability** for every species in
-  /// the geo-model's label set.  Only species with probability ≥ 0 are
-  /// included (typically all of them).
+  /// the geo-model's label set.
   ///
   /// [latitude]  in degrees (−90 to +90).
   /// [longitude] in degrees (−180 to +180).
   /// [week]      week of the year (1–48, 4 per month).
-  ///
-  /// **Dummy implementation** — returns deterministic scores seeded from the
-  /// location hash so that results are reproducible but vary by position.
   Map<String, double> predict({
     required double latitude,
     required double longitude,
@@ -115,27 +184,66 @@ class GeoModel {
 
     assert(week >= 1 && week <= 48, 'week must be 1–48, got $week');
 
-    // ----- Dummy implementation -----
-    // Generate plausible per-species scores that vary by location/week.
-    // This allows the full filtering pipeline to be tested end-to-end.
-    final rng = math.Random(
-      latitude.hashCode ^ longitude.hashCode ^ week.hashCode,
+    // Build input tensor: [1, 3] = [lat, lon, week]
+    final inputData = Float32List.fromList([
+      latitude,
+      longitude,
+      week.toDouble(),
+    ]);
+    final inputTensor = OrtValueTensor.createTensorWithDataList(
+      inputData,
+      [1, 3],
     );
 
-    final scores = <String, double>{};
-    for (final sp in _labels) {
-      // ~60 % of species get a nonzero score (simulates regional filtering).
-      final score = rng.nextDouble();
-      scores[sp.scientificName] = score;
+    // Run inference.
+    final inputs = {_inputName: inputTensor};
+    final outputs = _session!.run(
+      OrtRunOptions(),
+      inputs,
+    );
+
+    // Extract output probabilities.
+    final outputValue = outputs.firstOrNull;
+    if (outputValue == null) {
+      throw StateError('Geo-model returned no output');
     }
+    final rawOutput = outputValue.value;
+
+    // The output is typically List<List<double>> for shape [1, N].
+    List<double> probabilities;
+    if (rawOutput is List<List<double>>) {
+      probabilities = rawOutput.first;
+    } else if (rawOutput is List) {
+      // Flatten if needed.
+      probabilities = rawOutput.cast<double>();
+    } else {
+      throw StateError(
+          'Unexpected geo-model output type: ${rawOutput.runtimeType}');
+    }
+
+    // Build the result map.
+    final scores = <String, double>{};
+    final count = probabilities.length < _labels.length
+        ? probabilities.length
+        : _labels.length;
+    for (var i = 0; i < count; i++) {
+      scores[_labels[i].scientificName] = probabilities[i];
+    }
+
+    // Release tensors.
+    inputTensor.release();
+    for (final o in outputs) {
+      o?.release();
+    }
+
     return scores;
   }
 
-  /// Return the subset of species whose geo-model score meets [threshold].
+  /// Return the subset of species whose geo-model score meets [threshold],
+  /// sorted by descending probability.
   ///
-  /// Convenience wrapper around [predict] for simple include/exclude
-  /// filtering.
-  Set<String> expectedSpecies({
+  /// Returns a list of [GeoSpeciesScore] tuples.
+  List<GeoSpeciesScore> expectedSpecies({
     required double latitude,
     required double longitude,
     required int week,
@@ -146,10 +254,38 @@ class GeoModel {
       longitude: longitude,
       week: week,
     );
-    return {
-      for (final entry in scores.entries)
-        if (entry.value >= threshold) entry.key,
-    };
+
+    final results = <GeoSpeciesScore>[];
+    for (final entry in scores.entries) {
+      if (entry.value >= threshold) {
+        final label = _labels.firstWhere(
+          (l) => l.scientificName == entry.key,
+          orElse: () => GeoSpecies(
+            index: -1,
+            id: 0,
+            scientificName: entry.key,
+            commonName: entry.key,
+          ),
+        );
+        results.add(GeoSpeciesScore(
+          scientificName: entry.key,
+          commonName: label.commonName,
+          score: entry.value,
+        ));
+      }
+    }
+
+    results.sort((a, b) => b.score.compareTo(a.score));
+    return results;
+  }
+
+  /// Return geo-model scores as a map (for use with [SpeciesFilter]).
+  Map<String, double> geoScoresForFilter({
+    required double latitude,
+    required double longitude,
+    required int week,
+  }) {
+    return predict(latitude: latitude, longitude: longitude, week: week);
   }
 
   // ---------------------------------------------------------------------------
@@ -164,4 +300,21 @@ class GeoModel {
     final weekInMonth = ((dt.day - 1) / 7).floor().clamp(0, 3); // 0–3
     return monthBase + weekInMonth + 1; // 1–48
   }
+}
+
+/// A species with its geo-model probability score.
+class GeoSpeciesScore {
+  const GeoSpeciesScore({
+    required this.scientificName,
+    required this.commonName,
+    required this.score,
+  });
+
+  final String scientificName;
+  final String commonName;
+  final double score;
+
+  @override
+  String toString() =>
+      'GeoSpeciesScore($commonName [$scientificName]: ${score.toStringAsFixed(3)})';
 }

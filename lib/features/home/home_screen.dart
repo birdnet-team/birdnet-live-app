@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../about/about_screen.dart';
+import '../explore/explore_screen.dart';
 import '../live/live_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -143,16 +144,16 @@ class _ModeGrid extends StatelessWidget {
             onTap: () => _openLive(context),
           ),
           _ModeCard(
-            icon: Icons.route_rounded,
-            label: l10n.surveyMode,
-            description: l10n.surveyModeDescription,
+            icon: Icons.location_on_rounded,
+            label: l10n.pointCountMode,
+            description: l10n.pointCountModeDescription,
             color: theme.colorScheme.secondary,
             comingSoon: true,
           ),
           _ModeCard(
-            icon: Icons.pin_drop_rounded,
-            label: l10n.pointCountMode,
-            description: l10n.pointCountModeDescription,
+            icon: Icons.route_rounded,
+            label: l10n.surveyMode,
+            description: l10n.surveyModeDescription,
             color: theme.colorScheme.tertiary,
             comingSoon: true,
           ),
@@ -309,6 +310,27 @@ class _Footer extends StatelessWidget {
           ),
           label: Text(
             l10n.settings,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withAlpha(153),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        TextButton.icon(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ExploreScreen(),
+              ),
+            );
+          },
+          icon: Icon(
+            Icons.search_rounded,
+            size: 18,
+            color: theme.colorScheme.onSurface.withAlpha(153),
+          ),
+          label: Text(
+            l10n.exploreMode,
             style: TextStyle(
               color: theme.colorScheme.onSurface.withAlpha(153),
             ),
