@@ -112,11 +112,11 @@ final logAmplitudeProvider =
 // Recording Settings
 // ---------------------------------------------------------------------------
 
-/// Recording format ('wav' or 'flac', default 'wav').
+/// Recording format ('wav' or 'flac', default 'flac').
 final recordingFormatProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.recordingFormat, 'wav');
+  return StringSettingNotifier(prefs, PrefKeys.recordingFormat, 'flac');
 });
 
 /// Recording mode ('full', 'detections', 'off' — default 'off').

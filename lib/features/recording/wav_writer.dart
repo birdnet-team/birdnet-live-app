@@ -32,15 +32,17 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'audio_file_writer.dart';
+
 /// Utility for writing audio samples to WAV files.
 ///
 /// Supports streaming writes for ongoing recording and one-shot writes for
 /// saving audio clips.
-class WavWriter {
+class WavWriter implements AudioFileWriter {
   /// Create a streaming WAV writer.
   ///
   /// The file header is written immediately with a placeholder data size.
-  /// Call [writeSamples] to append audio data, then [close] to finalise the
+  /// Call [writeSamples] to append audio data, then [close] to finalize the
   /// header with the correct data size.
   WavWriter({
     required this.filePath,
@@ -49,7 +51,7 @@ class WavWriter {
     this.bitsPerSample = 16,
   });
 
-  /// Output file path.
+  @override
   final String filePath;
 
   /// Audio sample rate in Hz.
@@ -66,6 +68,7 @@ class WavWriter {
   bool _closed = false;
 
   /// Whether the writer has been opened.
+  @override
   bool get isOpen => _file != null && !_closed;
 
   /// Total bytes of PCM data written so far.
@@ -79,6 +82,7 @@ class WavWriter {
       Duration(microseconds: (samplesWritten * 1000000 ~/ sampleRate));
 
   /// Open the file and write the WAV header (with placeholder sizes).
+  @override
   Future<void> open() async {
     if (_file != null) return;
     final file = File(filePath);
@@ -91,8 +95,9 @@ class WavWriter {
 
   /// Append audio samples.
   ///
-  /// [samples] should contain float32 values normalised to [-1.0, 1.0].
+  /// [samples] should contain float32 values normalized to [-1.0, 1.0].
   /// They are converted to 16-bit PCM integers before writing.
+  @override
   Future<void> writeSamples(Float32List samples) async {
     if (_file == null || _closed) {
       throw StateError('WavWriter is not open. Call open() first.');
@@ -102,9 +107,10 @@ class WavWriter {
     _dataSize += pcm.length;
   }
 
-  /// Finalise the WAV header and close the file.
+  /// Finalize the WAV header and close the file.
   ///
   /// After calling this, the writer cannot be used again.
+  @override
   Future<void> close() async {
     if (_file == null || _closed) return;
     _closed = true;

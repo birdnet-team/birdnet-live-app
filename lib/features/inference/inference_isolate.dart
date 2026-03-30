@@ -82,7 +82,7 @@ class InferenceIsolate {
   /// Loading from a file path instead of raw bytes avoids serialising ~259 MB
   /// through the isolate port, which would triple peak memory usage.
   ///
-  /// This method waits until the worker isolate has fully initialised the
+  /// This method waits until the worker isolate has fully initialized the
   /// ONNX session.  If initialisation fails, the future completes with an
   /// error.
   Future<void> start({
@@ -200,7 +200,7 @@ class InferenceIsolate {
 
 /// Top-level function that runs inside the background isolate.
 ///
-/// Receives an [_WorkerInit] with the model path and labels CSV, initialises
+/// Receives an [_WorkerInit] with the model path and labels CSV, initializes
 /// the [InferenceService], then processes [_WorkerRequest] messages in a loop.
 Future<void> _workerEntryPoint(_WorkerInit init) async {
   final receivePort = ReceivePort();
@@ -212,7 +212,7 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
     Map<String, dynamic>.from(init.configJson),
   );
 
-  // Initialise the model — signal success or failure back to main isolate.
+  // Initialize the model — signal success or failure back to main isolate.
   final InferenceService service;
   try {
     debugPrint(
@@ -222,13 +222,13 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
     debugPrint('[InferenceIsolate] model bytes read: ${modelBytes.length}');
 
     final svc = InferenceService();
-    await svc.initialise(
+    await svc.initialize(
       modelBytes: modelBytes,
       labelsCsv: init.labelsCsv,
       config: config,
     );
     service = svc;
-    debugPrint('[InferenceIsolate] model initialised');
+    debugPrint('[InferenceIsolate] model initialized');
     init.sendPort.send(const _WorkerReady());
   } catch (e) {
     debugPrint('[InferenceIsolate] init error: $e');
@@ -298,12 +298,12 @@ class _WorkerInit {
 
   /// Absolute path to the `.onnx` model file on the device filesystem.
   ///
-  /// The isolate reads the file directly, avoiding the need to serialise
+  /// The isolate reads the file directly, avoiding the need to serialize
   /// hundreds of megabytes of model bytes through the isolate port.
   final String modelFilePath;
   final String labelsCsv;
 
-  /// Serialised [ModelConfig] as a JSON map.
+  /// Serialized [ModelConfig] as a JSON map.
   ///
   /// We pass a plain map instead of [ModelConfig] because [Isolate.spawn]
   /// can only send primitive/transferable types.
@@ -352,7 +352,7 @@ class _WorkerReady {
   const _WorkerReady();
 }
 
-/// Signal that the worker failed to initialise the model.
+/// Signal that the worker failed to initialize the model.
 class _WorkerInitError {
   const _WorkerInitError(this.error);
   final String error;

@@ -30,6 +30,8 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 
 import '../audio/ring_buffer.dart';
+import 'audio_file_writer.dart';
+import 'flac_encoder.dart';
 import 'wav_writer.dart';
 
 /// Recording mode for live sessions.
@@ -46,7 +48,7 @@ enum RecordingMode {
 
 /// Parses a [RecordingMode] from its string name.
 ///
-/// Returns [RecordingMode.off] for unrecognised values.
+/// Returns [RecordingMode.off] for unrecognized values.
 RecordingMode recordingModeFromString(String value) {
   switch (value) {
     case 'full':
@@ -83,10 +85,11 @@ class RecordingService {
   /// Seconds of audio to include after a detection.
   final int postBufferSeconds;
 
-  WavWriter? _writer;
+  AudioFileWriter? _writer;
   Timer? _flushTimer;
   String? _sessionDir;
   RecordingMode _mode = RecordingMode.off;
+  String _format = 'flac';
   bool _isRecording = false;
   int _lastFlushPosition = 0;
 
@@ -96,21 +99,26 @@ class RecordingService {
   /// Current recording mode.
   RecordingMode get mode => _mode;
 
+  /// Current audio file format ('wav' or 'flac').
+  String get format => _format;
+
   /// Path to the session recording directory.
   String? get sessionDir => _sessionDir;
 
   /// Start recording for the given session.
   ///
   /// [sessionId] is used to create the output directory.
-  /// [mode] determines the recording behaviour.
+  /// [mode] determines the recording behavior.
   Future<String?> startRecording({
     required String sessionId,
     required RecordingMode mode,
+    String format = 'flac',
   }) async {
     if (mode == RecordingMode.off) return null;
     if (_isRecording) return _sessionDir;
 
     _mode = mode;
+    _format = format;
     _isRecording = true;
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -118,8 +126,11 @@ class RecordingService {
     await Directory(_sessionDir!).create(recursive: true);
 
     if (mode == RecordingMode.full) {
-      final filePath = '$_sessionDir/full.wav';
-      _writer = WavWriter(filePath: filePath, sampleRate: sampleRate);
+      final ext = format == 'flac' ? 'flac' : 'wav';
+      final filePath = '$_sessionDir/full.$ext';
+      _writer = format == 'flac'
+          ? FlacEncoder(filePath: filePath, sampleRate: sampleRate)
+          : WavWriter(filePath: filePath, sampleRate: sampleRate);
       await _writer!.open();
       _lastFlushPosition = ringBuffer.totalWritten;
 
@@ -136,7 +147,7 @@ class RecordingService {
   /// Save an audio clip around a detection.
   ///
   /// Reads `preBufferSeconds + postBufferSeconds` of audio from the ring
-  /// buffer centred on the current write position (i.e., the detection
+  /// buffer centered on the current write position (i.e., the detection
   /// just happened).
   ///
   /// Returns the file path of the saved clip, or `null` if not recording.
@@ -151,17 +162,26 @@ class RecordingService {
     // Skip silent clips (all zeros = no audio captured yet).
     if (_isAllSilent(samples)) return null;
 
-    final filePath = '$_sessionDir/$clipName.wav';
-    await WavWriter.writeFile(
-      filePath: filePath,
-      samples: samples,
-      sampleRate: sampleRate,
-    );
+    final ext = _format == 'flac' ? 'flac' : 'wav';
+    final filePath = '$_sessionDir/$clipName.$ext';
+    if (_format == 'flac') {
+      await FlacEncoder.writeFile(
+        filePath: filePath,
+        samples: samples,
+        sampleRate: sampleRate,
+      );
+    } else {
+      await WavWriter.writeFile(
+        filePath: filePath,
+        samples: samples,
+        sampleRate: sampleRate,
+      );
+    }
 
     return filePath;
   }
 
-  /// Stop the ongoing recording and finalise any open files.
+  /// Stop the ongoing recording and finalize any open files.
   ///
   /// Returns the path to the full recording file (if mode was `full`)
   /// or the session directory (if mode was `detectionsOnly`).

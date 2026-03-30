@@ -9,7 +9,7 @@
 //   - **Recording path**: optional filesystem path to the recorded WAV file.
 //   - **Settings snapshot**: inference settings active during the session.
 //
-// Sessions are serialisable to / from JSON for persistence via the session
+// Sessions are serializable to / from JSON for persistence via the session
 // repository.
 // =============================================================================
 
@@ -37,7 +37,7 @@ class SessionSettings {
   /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
   final String speciesFilterMode;
 
-  /// Deserialise from JSON.
+  /// Deserialize from JSON.
   factory SessionSettings.fromJson(Map<String, dynamic> json) {
     return SessionSettings(
       windowDuration: json['windowDuration'] as int? ?? 3,
@@ -47,7 +47,7 @@ class SessionSettings {
     );
   }
 
-  /// Serialise to JSON.
+  /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
         'windowDuration': windowDuration,
         'confidenceThreshold': confidenceThreshold,
@@ -98,7 +98,7 @@ class DetectionRecord {
     );
   }
 
-  /// Deserialise from JSON.
+  /// Deserialize from JSON.
   factory DetectionRecord.fromJson(Map<String, dynamic> json) {
     return DetectionRecord(
       scientificName: json['scientificName'] as String,
@@ -109,7 +109,7 @@ class DetectionRecord {
     );
   }
 
-  /// Serialise to JSON.
+  /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
         'scientificName': scientificName,
         'commonName': commonName,
@@ -191,7 +191,7 @@ class LiveSession {
     endTime ??= DateTime.now();
   }
 
-  /// Deserialise from JSON.
+  /// Deserialize from JSON.
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
@@ -210,7 +210,7 @@ class LiveSession {
     );
   }
 
-  /// Serialise to JSON.
+  /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
         'id': id,
         'startTime': startTime.toIso8601String(),

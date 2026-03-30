@@ -74,7 +74,7 @@ class GeoSpecies {
 /// Predicts which species are expected at a given lat/lon/week and returns
 /// a scored list used to filter audio classifier results.
 class GeoModel {
-  /// Creates an uninitialised geo-model.  Call [loadLabels] + [loadModel]
+  /// Creates an uninitialized geo-model.  Call [loadLabels] + [loadModel]
   /// before [predict].
   GeoModel();
 
@@ -84,13 +84,13 @@ class GeoModel {
 
   List<GeoSpecies> _labels = const [];
   OrtSession? _session;
-  bool _envInitialised = false;
+  bool _envInitialized = false;
 
   /// Configured tensor names (set from model config or defaults).
   String _inputName = 'input';
   String _outputName = 'output';
 
-  /// Whether the geo-model is initialised and ready for predictions.
+  /// Whether the geo-model is initialized and ready for predictions.
   bool get isReady => _labels.isNotEmpty && _session != null;
 
   /// The geo-model's own species labels.
@@ -134,9 +134,9 @@ class GeoModel {
     _inputName = inputName;
     _outputName = outputName;
 
-    if (!_envInitialised) {
+    if (!_envInitialized) {
       OrtEnv.instance.init();
-      _envInitialised = true;
+      _envInitialized = true;
     }
 
     _session?.release();

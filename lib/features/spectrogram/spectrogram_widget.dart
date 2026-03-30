@@ -21,7 +21,7 @@ import 'spectrogram_painter.dart';
 // A [Ticker] drives the animation at up to 60 fps.  On each tick the widget:
 //
 //   1. Reads the most recent [fftSize] samples from the [RingBuffer].
-//   2. Passes them through [FftProcessor.process] to get normalised dB bins.
+//   2. Passes them through [FftProcessor.process] to get normalized dB bins.
 //   3. Pushes the resulting column into [SpectrogramPainter.addColumn].
 //   4. Calls `setState` which triggers `CustomPaint.markNeedsPaint`.
 //
@@ -52,7 +52,7 @@ import 'spectrogram_painter.dart';
 /// ### Configurable parameters
 ///
 /// * [fftSize] — FFT window size (power of two, default 2048).
-/// * [colorMapName] — colour palette (see [SpectrogramColorMap.names]).
+/// * [colorMapName] — color palette (see [SpectrogramColorMap.names]).
 /// * [dbFloor] / [dbCeiling] — dynamic range in dB.
 /// * [maxColumns] — number of FFT columns visible (scrolling width).
 /// * [hopSize] — samples between successive FFT frames.  Smaller = smoother
@@ -85,13 +85,13 @@ class SpectrogramWidget extends StatefulWidget {
   /// FFT window size (must be a power of two).
   final int fftSize;
 
-  /// Colour map name — must be one of [SpectrogramColorMap.names].
+  /// Color map name — must be one of [SpectrogramColorMap.names].
   final String colorMapName;
 
-  /// Lower dB bound (maps to the darkest colour).
+  /// Lower dB bound (maps to the darkest color).
   final double dbFloor;
 
-  /// Upper dB bound (maps to the brightest colour).
+  /// Upper dB bound (maps to the brightest color).
   final double dbCeiling;
 
   /// Maximum number of visible columns (determines scrolling width).
@@ -116,7 +116,7 @@ class SpectrogramWidget extends StatefulWidget {
 
   /// Whether to apply logarithmic amplitude scaling.
   ///
-  /// When true, normalised magnitudes are passed through a log curve that
+  /// When true, normalized magnitudes are passed through a log curve that
   /// compresses the dynamic range, making quieter sounds more visible.
   final bool logAmplitude;
 
@@ -281,7 +281,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   // Log amplitude scaling
   // ---------------------------------------------------------------------------
 
-  /// Applies a logarithmic curve to normalised [0, 1] values in [column].
+  /// Applies a logarithmic curve to normalized [0, 1] values in [column].
   ///
   /// Uses `log(1 + v * k) / log(1 + k)` with k = 10 to compress the
   /// dynamic range, making quieter sounds more visible in the spectrogram.

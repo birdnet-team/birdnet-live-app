@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../about/about_screen.dart';
 import '../explore/explore_screen.dart';
+import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -292,72 +293,96 @@ class _Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        TextButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const SettingsScreen(),
-              ),
-            );
-          },
-          icon: Icon(
-            Icons.settings_outlined,
-            size: 18,
-            color: theme.colorScheme.onSurface.withAlpha(153),
-          ),
-          label: Text(
-            l10n.settings,
-            style: TextStyle(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.settings_outlined,
+              size: 18,
               color: theme.colorScheme.onSurface.withAlpha(153),
             ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        TextButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ExploreScreen(),
+            label: Text(
+              l10n.settings,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withAlpha(153),
               ),
-            );
-          },
-          icon: Icon(
-            Icons.search_rounded,
-            size: 18,
-            color: theme.colorScheme.onSurface.withAlpha(153),
-          ),
-          label: Text(
-            l10n.exploreMode,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withAlpha(153),
             ),
           ),
-        ),
-        const SizedBox(width: 16),
-        TextButton.icon(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const AboutScreen(),
-              ),
-            );
-          },
-          icon: Icon(
-            Icons.info_outline,
-            size: 18,
-            color: theme.colorScheme.onSurface.withAlpha(153),
-          ),
-          label: Text(
-            l10n.about,
-            style: TextStyle(
+          const SizedBox(width: 16),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ExploreScreen(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.search_rounded,
+              size: 18,
               color: theme.colorScheme.onSurface.withAlpha(153),
             ),
+            label: Text(
+              l10n.exploreMode,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withAlpha(153),
+              ),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SessionLibraryScreen(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.library_music_outlined,
+              size: 18,
+              color: theme.colorScheme.onSurface.withAlpha(153),
+            ),
+            label: Text(
+              l10n.sessionLibraryTitle,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withAlpha(153),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const AboutScreen(),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.info_outline,
+              size: 18,
+              color: theme.colorScheme.onSurface.withAlpha(153),
+            ),
+            label: Text(
+              l10n.about,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withAlpha(153),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

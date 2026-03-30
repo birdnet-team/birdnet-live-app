@@ -192,7 +192,7 @@ class DetectionTile extends ConsumerWidget {
     );
   }
 
-  /// Map confidence to a colour: red → amber → green.
+  /// Map confidence to a color: red → amber → green.
   Color _confidenceColor(double confidence, ThemeData theme) {
     if (confidence >= 0.7) return Colors.green;
     if (confidence >= 0.4) return Colors.amber;

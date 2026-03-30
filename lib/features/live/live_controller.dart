@@ -5,12 +5,12 @@
 // The central coordinator for Live Mode.  Manages the complete lifecycle:
 //
 //   1. **Model loading** — loads model config, ONNX bytes, and labels from
-//      Flutter assets, then initialises the inference isolate.
+//      Flutter assets, then initializes the inference isolate.
 //   2. **Inference loop** — timer-based, reads audio from the ring buffer
 //      at the configured inference rate, runs classification, and
 //      accumulates detections.
 //   3. **Session management** — creates a [LiveSession] on start, records
-//      detections, optionally triggers recording, finalises on stop.
+//      detections, optionally triggers recording, finalizes on stop.
 //   4. **Playback** — uses `just_audio` to play back detection audio clips.
 //
 // ### State machine
@@ -128,6 +128,13 @@ class LiveController {
 
   /// Geo-model threshold for the current session.
   double _geoThreshold = 0.03;
+
+  /// Whether per-detection audio clips should be saved.
+  bool _saveDetectionClips = false;
+
+  /// Maximum number of in-memory detections (older entries are still
+  /// persisted in the [LiveSession] object).
+  static const int _maxInMemoryDetections = 500;
 
   // ── Getters ───────────────────────────────────────────────────────────
 
@@ -253,7 +260,8 @@ class LiveController {
   /// [inferenceRate] — how often to run inference (Hz).
   /// [confidenceThreshold] — minimum confidence (0–100 scale).
   /// [speciesFilterMode] — species filter setting.
-  /// [recordingMode] — recording behaviour.
+  /// [recordingMode] — recording behavior.
+  /// [recordingFormat] — audio file format ('wav' or 'flac').
   /// [geoScores] — optional geo-model predictions for species filtering.
   /// [geoThreshold] — minimum geo score for the geoExclude filter.
   Future<void> startSession({
@@ -262,6 +270,7 @@ class LiveController {
     required int confidenceThreshold,
     required String speciesFilterMode,
     required RecordingMode recordingMode,
+    String recordingFormat = 'flac',
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
   }) async {
@@ -295,14 +304,16 @@ class LiveController {
       _ => SpeciesFilterMode.off,
     };
 
-    // Start recording if enabled.
-    if (recordingMode != RecordingMode.off) {
-      final dir = await recordingService.startRecording(
-        sessionId: sessionId,
-        mode: recordingMode,
-      );
-      _session!.recordingPath = dir;
-    }
+    // Always record full audio so sessions can be reviewed.
+    final dir = await recordingService.startRecording(
+      sessionId: sessionId,
+      mode: RecordingMode.full,
+      format: recordingFormat,
+    );
+    _session!.recordingPath = dir;
+
+    // Also save per-detection clips if the user configured it.
+    _saveDetectionClips = recordingMode == RecordingMode.detectionsOnly;
 
     _state = LiveState.active;
     _notifyListeners();
@@ -333,7 +344,7 @@ class LiveController {
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
 
-    // Pause recording (don't finalise).
+    // Pause recording (don't finalize).
     await recordingService.stopRecording();
 
     _state = LiveState.paused;
@@ -350,16 +361,12 @@ class LiveController {
 
     final settings = _session!.settings;
 
-    // Restart recording if it was active.
-    if (_session!.recordingPath != null) {
-      final mode = recordingService.mode;
-      if (mode != RecordingMode.off) {
-        await recordingService.startRecording(
-          sessionId: _session!.id,
-          mode: mode,
-        );
-      }
-    }
+    // Restart full recording.
+    await recordingService.startRecording(
+      sessionId: _session!.id,
+      mode: RecordingMode.full,
+      format: recordingService.format,
+    );
 
     _state = LiveState.active;
     _notifyListeners();
@@ -377,7 +384,7 @@ class LiveController {
     );
   }
 
-  /// Finalise and stop the current session completely.
+  /// Finalize and stop the current session completely.
   ///
   /// Called when leaving the live screen.  Returns the completed
   /// [LiveSession] for persistence, or null if there is no session.
@@ -406,7 +413,7 @@ class LiveController {
     _state = LiveState.ready;
     _notifyListeners();
 
-    debugPrint('[LiveController] session finalised');
+    debugPrint('[LiveController] session finalized');
     return completedSession;
   }
 
@@ -493,9 +500,9 @@ class LiveController {
 
       // Accumulate to session history (for session saving / stats).
       if (_session != null && filteredDetections.isNotEmpty) {
-        // Save detection clip if in detectionsOnly mode.
+        // Save detection clip if user requested per-detection clips.
         String? clipPath;
-        if (recordingService.mode == RecordingMode.detectionsOnly) {
+        if (_saveDetectionClips) {
           final clipName = 'clip_${DateTime.now().millisecondsSinceEpoch}';
           clipPath = await recordingService.saveDetectionClip(
             clipName: clipName,
@@ -509,6 +516,14 @@ class LiveController {
           );
           _session!.addDetection(record);
           _sessionDetections.insert(0, record); // newest first
+        }
+
+        // Cap in-memory list to avoid unbounded growth.
+        if (_sessionDetections.length > _maxInMemoryDetections) {
+          _sessionDetections.removeRange(
+            _maxInMemoryDetections,
+            _sessionDetections.length,
+          );
         }
       }
 

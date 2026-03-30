@@ -20,7 +20,7 @@
 // Output: <embeddingsName>  — float32 [batch, M]       (feature vectors, optional)
 // ```
 //
-// Audio must be mono float32 normalised to [-1.0, 1.0].  If the provided
+// Audio must be mono float32 normalized to [-1.0, 1.0].  If the provided
 // audio is shorter than the expected window it is zero-padded on the right.
 //
 // ### Threading
@@ -47,7 +47,7 @@ import 'package:onnxruntime/onnxruntime.dart';
 /// resource cleanup.  Not intended for direct UI consumption — use
 /// [InferenceService] or [InferenceIsolate] instead.
 class ClassifierModel {
-  /// Creates a new model instance.  Call [loadModel] to initialise.
+  /// Creates a new model instance.  Call [loadModel] to initialize.
   ClassifierModel();
 
   // ---------------------------------------------------------------------------
@@ -55,7 +55,7 @@ class ClassifierModel {
   // ---------------------------------------------------------------------------
 
   OrtSession? _session;
-  bool _envInitialised = false;
+  bool _envInitialized = false;
 
   /// Tensor name used for the audio input.
   String _inputName = 'input';
@@ -93,7 +93,7 @@ class ClassifierModel {
   /// - [embeddingsName] — name of the embeddings output tensor, or `null` if
   ///   the model does not produce embeddings (default `"embeddings"`).
   ///
-  /// Initialises the ORT environment on first call.  May throw if the model
+  /// Initializes the ORT environment on first call.  May throw if the model
   /// bytes are invalid.
   Future<void> loadModel(
     Uint8List modelBytes, {
@@ -104,9 +104,9 @@ class ClassifierModel {
     _inputName = inputName;
     _predictionsName = predictionsName;
     _embeddingsName = embeddingsName;
-    if (!_envInitialised) {
+    if (!_envInitialized) {
       OrtEnv.instance.init();
-      _envInitialised = true;
+      _envInitialized = true;
     }
 
     // Release previous session if reloading.
@@ -259,9 +259,9 @@ class ClassifierModel {
   void dispose() {
     _session?.release();
     _session = null;
-    if (_envInitialised) {
+    if (_envInitialized) {
       OrtEnv.instance.release();
-      _envInitialised = false;
+      _envInitialized = false;
     }
   }
 

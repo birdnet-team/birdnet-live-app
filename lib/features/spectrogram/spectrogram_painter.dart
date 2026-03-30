@@ -10,7 +10,7 @@ import 'color_maps.dart';
 // =============================================================================
 //
 // The painter maintains a rolling history of FFT columns.  Each column is a
-// [Float64List] of normalised magnitudes (0–1) per frequency bin, newest on
+// [Float64List] of normalized magnitudes (0–1) per frequency bin, newest on
 // the right.  The widget that owns this painter is responsible for calling
 // `addColumn()` to push new data and then requesting a repaint.
 //
@@ -23,7 +23,7 @@ import 'color_maps.dart';
 // 1. On each paint where new columns have arrived:
 //    a. Create a [PictureRecorder] + offscreen [Canvas].
 //    b. Draw the previous [_spectrogramImage] shifted left by N columns.
-//    c. Draw the N new columns as coloured rectangles on the right edge.
+//    c. Draw the N new columns as colored rectangles on the right edge.
 //    d. Call [Picture.toImageSync] to produce a new GPU-backed [ui.Image].
 //
 // 2. The resulting image is composited to the main canvas with a single
@@ -72,7 +72,7 @@ class SpectrogramPainter extends CustomPainter {
   /// Number of frequency bins per column (fftSize / 2 + 1).
   final int binCount;
 
-  /// Active colour map name (e.g., 'viridis', 'birdnet').
+  /// Active color map name (e.g., 'viridis', 'birdnet').
   final String colorMapName;
 
   /// Audio sample rate in Hz — used for frequency axis labels.
@@ -99,7 +99,7 @@ class SpectrogramPainter extends CustomPainter {
   // Internal state
   // ---------------------------------------------------------------------------
 
-  /// Pre-fetched colour look-up table (256 ARGB entries).
+  /// Pre-fetched color look-up table (256 ARGB entries).
   final Int32List _lut;
 
   /// Rolling list of FFT columns (oldest first, newest last).
@@ -351,7 +351,7 @@ class SpectrogramPainter extends CustomPainter {
       ..strokeWidth = 0.5;
 
     for (final freq in labelFreqs) {
-      // Normalise frequency to vertical position (0 = bottom = 0 Hz).
+      // Normalize frequency to vertical position (0 = bottom = 0 Hz).
       final normY = freq / nyquist;
       final y = spectrogramRect.bottom - normY * spectrogramRect.height;
 

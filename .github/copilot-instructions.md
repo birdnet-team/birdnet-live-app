@@ -36,7 +36,7 @@ lib/
 ### Key Patterns
 
 - **Riverpod providers** connect services to UI. Settings use generic `StateNotifierProvider` (DoubleSettingNotifier, IntSettingNotifier, etc.) backed by `SharedPreferences`.
-- **PrefKeys** in `core/constants/app_constants.dart` — all `SharedPreferences` key strings are centralised here.
+- **PrefKeys** in `core/constants/app_constants.dart` — all `SharedPreferences` key strings are centralized here.
 - **Model config** is JSON-driven (`assets/models/model_config.json`). No model parameters are hardcoded.
 - **ONNX inference** runs in a background isolate (audio classifier) or on the main thread (geo-model). Models are extracted from assets to disk on first launch.
 - **Species filter** (`features/inference/species_filter.dart`) applies geographic or custom filtering to audio detections. Modes: off, geoExclude, geoMerge, customList.
@@ -62,6 +62,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 
 ## Coding Conventions
 
+- **American English**: All code, comments, documentation, and user-facing strings must use American English spelling (e.g., "color" not "colour", "initialize" not "initialise", "behavior" not "behaviour", "analyze" not "analyse", "center" not "centre", "serialize" not "serialise").
 - **Localization**: All user-facing strings go in `lib/l10n/app_en.arb` (English) and `app_de.arb` (German). Use `l10n.keyName` in widgets.
 - **Settings**: Add new settings via `PrefKeys` constant + provider in `settings_providers.dart` + UI in `settings_screen.dart` with `_sectionContexts` mapping.
 - **File headers**: Each Dart file has a `// ===...` block comment explaining purpose, usage, and design rationale.
@@ -74,6 +75,6 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 flutter pub get          # Install dependencies
 flutter analyze          # Static analysis
 flutter test             # Run unit tests
-flutter gen-l10n         # Regenerate localisation (auto on build)
+flutter gen-l10n         # Regenerate localization (auto on build)
 flutter run              # Run on connected device
 ```

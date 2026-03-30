@@ -49,8 +49,8 @@ void main() {
       expect(container.read(colorMapProvider), 'viridis');
     });
 
-    test('recordingFormat defaults to wav', () {
-      expect(container.read(recordingFormatProvider), 'wav');
+    test('recordingFormat defaults to flac', () {
+      expect(container.read(recordingFormatProvider), 'flac');
     });
 
     test('recordingMode defaults to off', () {

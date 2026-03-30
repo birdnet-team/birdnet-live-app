@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
@@ -9,6 +10,7 @@ import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
+import '../history/session_review_screen.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -20,14 +22,14 @@ import 'widgets/detection_list_widget.dart';
 // Live Mode Screen — Edge-to-Edge Layout
 // =============================================================================
 //
-// Maximises screen real estate for the spectrogram and detection list.
+// Maximizes screen real estate for the spectrogram and detection list.
 //
 // Layout (top → bottom):
 //   1. Compact status bar: back arrow · status text · settings gear
 //   2. Spectrogram       (flex: 2)
 //   3. Session info bar  (conditional, ~24 px)
 //   4. Detection list    (flex: 3)
-//   5. FAB mic/stop button (bottom-centre, 56×56)
+//   5. FAB mic/stop button (bottom-center, 56×56)
 //
 // The screen is its own route (pushed from HomeScreen) so it has a Scaffold
 // with no AppBar — edge-to-edge with SafeArea only at top/bottom.
@@ -83,10 +85,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final deviceId = ref.read(selectedDeviceProvider);
 
     if (controller.state == LiveState.active) {
-      // ── Pause session (stop capture + inference, keep session) ──
-      await controller.pauseSession();
-      await captureNotifier.stop();
-      _onControllerStateChanged();
+      // ── Stop session → confirm, then go to review ────────────
+      await _confirmStop();
     } else if (controller.state == LiveState.paused) {
       // ── Resume the same session ──────────────────────────────────
       await captureNotifier.start(deviceId: deviceId);
@@ -123,6 +123,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       final filterMode = ref.read(speciesFilterModeProvider);
       final recordingModeStr = ref.read(recordingModeProvider);
       final recordingMode = recordingModeFromString(recordingModeStr);
+      final recordingFormat = ref.read(recordingFormatProvider);
       final geoThreshold = ref.read(geoThresholdProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
@@ -135,6 +136,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         confidenceThreshold: confidenceThreshold,
         speciesFilterMode: filterMode,
         recordingMode: recordingMode,
+        recordingFormat: recordingFormat,
         geoScores: geoScores,
         geoThreshold: geoThreshold,
       );
@@ -144,6 +146,30 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     }
   }
 
+  /// Show confirmation dialog, then finalize and navigate to review.
+  Future<void> _confirmStop() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionStopTitle),
+        content: Text(l10n.sessionStopMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.sessionStopConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await _finalizeAndReview();
+  }
+
   @override
   void dispose() {
     // Ensure screen lock is released when leaving the live screen.
@@ -151,8 +177,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     super.dispose();
   }
 
-  /// Finalise and save the session when leaving the live screen.
-  Future<void> _finalizeAndSave() async {
+  /// Finalize and save the session when leaving the live screen.
+  Future<void> _finalizeAndReview() async {
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
 
@@ -162,15 +188,27 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     // Stop audio capture if still running.
     await captureNotifier.stop();
 
-    // Finalise the session (works from both active and paused states).
+    // Finalize the session (works from both active and paused states).
     final session = await controller.finalizeSession();
     _onControllerStateChanged();
 
-    // Persist completed session.
-    if (session != null) {
+    if (session != null && session.detections.isNotEmpty && mounted) {
+      // Persist completed session.
       final repo = ref.read(sessionRepositoryProvider);
       await repo.save(session);
       ref.invalidate(sessionListProvider);
+
+      // Navigate to session review (replace live screen on the stack).
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => SessionReviewScreen(session: session),
+          ),
+        );
+      }
+    } else {
+      // No detections — just go back.
+      if (mounted) Navigator.of(context).pop();
     }
   }
 
@@ -188,11 +226,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        await _finalizeAndSave();
-        if (context.mounted) Navigator.of(context).pop();
+        if (liveState == LiveState.active || liveState == LiveState.paused) {
+          await _confirmStop();
+        } else {
+          Navigator.of(context).pop();
+        }
       },
       child: Scaffold(
-        // ── Bottom-centre capture button ───────────────────────
+        // ── Bottom-center capture button ─────────────────────────
         floatingActionButton: _CaptureButton(
           isActive: isActive,
           isPaused: isPaused,
@@ -210,9 +251,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 ref: ref,
               ),
 
-              // ── Model Status Banner ─────────────────────────────
-              if (liveState == LiveState.loading ||
-                  liveState == LiveState.error)
+              // ── Error Banner ────────────────────────────────────
+              if (liveState == LiveState.error)
                 _StatusBanner(liveState: liveState, ref: ref),
 
               // ── Spectrogram ─────────────────────────────────────
@@ -271,7 +311,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
 /// Compact top bar: ← back | status text | settings ⚙.
 ///
-/// Height: ~48 dp.  No AppBar — just a thin Row to maximise vertical space.
+/// Height: ~48 dp.  No AppBar — just a thin Row to maximize vertical space.
 class _CompactStatusBar extends StatelessWidget {
   const _CompactStatusBar({
     required this.liveState,
@@ -361,7 +401,7 @@ class _CompactStatusBar extends StatelessWidget {
   }
 }
 
-/// Circular microphone / stop button — bottom-centre FAB (56×56).
+/// Circular microphone / stop button — bottom-center FAB (56×56).
 class _CaptureButton extends StatelessWidget {
   const _CaptureButton({
     required this.isActive,
@@ -424,7 +464,7 @@ class _CaptureButton extends StatelessWidget {
   }
 }
 
-/// Banner showing model loading or error state.
+/// Banner showing model error state with retry button.
 class _StatusBanner extends StatelessWidget {
   const _StatusBanner({
     required this.liveState,
@@ -437,56 +477,36 @@ class _StatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isError = liveState == LiveState.error;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isError
-            ? theme.colorScheme.errorContainer
-            : theme.colorScheme.primaryContainer,
+        color: theme.colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          if (!isError) ...[
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.onPrimaryContainer,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (isError)
-            Icon(
-              Icons.error_outline,
-              size: 16,
-              color: theme.colorScheme.onErrorContainer,
-            ),
-          if (isError) const SizedBox(width: 8),
+          Icon(
+            Icons.error_outline,
+            size: 16,
+            color: theme.colorScheme.onErrorContainer,
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              isError
-                  ? 'Model loading failed. Check assets.'
-                  : 'Loading model…',
+              'Model loading failed. Check assets.',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isError
-                    ? theme.colorScheme.onErrorContainer
-                    : theme.colorScheme.onPrimaryContainer,
+                color: theme.colorScheme.onErrorContainer,
               ),
             ),
           ),
-          if (isError)
-            TextButton(
-              onPressed: () {
-                ref.read(liveControllerProvider).loadModel();
-              },
-              child: const Text('Retry'),
-            ),
+          TextButton(
+            onPressed: () {
+              ref.read(liveControllerProvider).loadModel();
+            },
+            child: const Text('Retry'),
+          ),
         ],
       ),
     );

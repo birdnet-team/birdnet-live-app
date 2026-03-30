@@ -10,7 +10,7 @@ void main() {
     // ─── Name registry ─────────────────────────────────────────────────────
 
     group('names', () {
-      test('contains expected colour map names', () {
+      test('contains expected color map names', () {
         expect(SpectrogramColorMap.names, contains('viridis'));
         expect(SpectrogramColorMap.names, contains('magma'));
         expect(SpectrogramColorMap.names, contains('inferno'));

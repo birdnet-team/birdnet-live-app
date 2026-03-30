@@ -70,7 +70,7 @@ class ModelConfig {
   // JSON
   // ---------------------------------------------------------------------------
 
-  /// Deserialise from a decoded JSON map.
+  /// Deserialize from a decoded JSON map.
   ///
   /// Throws [FormatException] or [TypeError] if required fields are missing or
   /// have the wrong type.
@@ -87,7 +87,7 @@ class ModelConfig {
     );
   }
 
-  /// Serialise to a JSON-compatible map.
+  /// Serialize to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
         'name': name,
         'version': version,
@@ -213,7 +213,7 @@ class LabelsConfig {
 
   /// Mapping from [Species] field names to CSV column header names.
   ///
-  /// Recognised keys:
+  /// Recognized keys:
   /// - `index` — zero-based output tensor position (auto-generated from row
   ///   order if omitted or if the CSV has no such column).
   /// - `id` — sparse internal ID (defaults to index if omitted).

@@ -25,8 +25,8 @@ import 'package:fftea/fftea.dart';
 //    constant avoids `−∞` for zero-power bins.
 //
 // 4. **Clamp**   — Values are clamped to a configurable `[dbFloor, dbCeiling]`
-//    range and linearly normalised to `[0.0, 1.0]` so they can feed directly
-//    into a colour-map lookup.
+//    range and linearly normalized to `[0.0, 1.0]` so they can feed directly
+//    into a color-map lookup.
 //
 // ### Thread safety
 //
@@ -36,7 +36,7 @@ import 'package:fftea/fftea.dart';
 // **not** safe to share across isolates.
 // =============================================================================
 
-/// Performs windowed FFT and converts the result to a normalised dB magnitude
+/// Performs windowed FFT and converts the result to a normalized dB magnitude
 /// spectrum suitable for spectrogram rendering.
 ///
 /// Create one instance and reuse it — the constructor pre-allocates all
@@ -45,7 +45,7 @@ class FftProcessor {
   /// Creates a processor for a fixed [fftSize] (must be a power of two).
   ///
   /// [dbFloor] and [dbCeiling] define the dynamic range mapped to
-  /// normalised output [0.0, 1.0].  Typical values:
+  /// normalized output [0.0, 1.0].  Typical values:
   ///   • `dbFloor  = -80`  (quiet background noise)
   ///   • `dbCeiling =  0`  (digital full-scale)
   FftProcessor({
@@ -67,10 +67,10 @@ class FftProcessor {
   /// Number of samples per FFT frame (must be a power of two).
   final int fftSize;
 
-  /// Lower bound in dB — values below are clamped to 0.0 in normalised output.
+  /// Lower bound in dB — values below are clamped to 0.0 in normalized output.
   final double dbFloor;
 
-  /// Upper bound in dB — values above are clamped to 1.0 in normalised output.
+  /// Upper bound in dB — values above are clamped to 1.0 in normalized output.
   final double dbCeiling;
 
   // ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ class FftProcessor {
   /// ```
   double binHz(int sampleRate) => sampleRate / fftSize;
 
-  /// Return the centre frequency of bin [index] for the given [sampleRate].
+  /// Return the center frequency of bin [index] for the given [sampleRate].
   double binFrequency(int index, int sampleRate) =>
       index * sampleRate / fftSize;
 
@@ -104,7 +104,7 @@ class FftProcessor {
   // Processing
   // ---------------------------------------------------------------------------
 
-  /// Process a time-domain frame and return **normalised** magnitudes.
+  /// Process a time-domain frame and return **normalized** magnitudes.
   ///
   /// [samples] must have at least [fftSize] elements.  If longer, only the
   /// first [fftSize] samples are used.
@@ -124,13 +124,13 @@ class FftProcessor {
     // 2. Run FFT — returns interleaved [re0, im0, re1, im1, …].
     final spectrum = _fft.realFft(windowed);
 
-    // 3. Convert to normalised dB magnitudes.
-    return _spectrumToNormalisedDb(spectrum);
+    // 3. Convert to normalized dB magnitudes.
+    return _spectrumToNormalizedDb(spectrum);
   }
 
-  /// Process a frame and return **raw dB** magnitudes (not normalised).
+  /// Process a frame and return **raw dB** magnitudes (not normalized).
   ///
-  /// Useful for axis-label rendering or custom colour scaling.
+  /// Useful for axis-label rendering or custom color scaling.
   Float64List processRawDb(Float32List samples) {
     assert(samples.length >= fftSize);
 
@@ -176,9 +176,9 @@ class FftProcessor {
     return result;
   }
 
-  /// Convert spectrum to normalised [0, 1] magnitudes clamped to the
+  /// Convert spectrum to normalized [0, 1] magnitudes clamped to the
   /// configured dB range.
-  Float64List _spectrumToNormalisedDb(Float64x2List spectrum) {
+  Float64List _spectrumToNormalizedDb(Float64x2List spectrum) {
     final db = _spectrumToDb(spectrum);
     final range = dbCeiling - dbFloor;
     if (range <= 0) return Float64List(_binCount); // safety

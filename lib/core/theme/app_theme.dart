@@ -21,7 +21,7 @@ import 'package:flutter/material.dart';
 //   • High-contrast text (>7 : 1 on dark, >4.5 : 1 on light)
 // =============================================================================
 
-/// Centralised theme definitions for BirdNET Live.
+/// Centralized theme definitions for BirdNET Live.
 ///
 /// Call [AppTheme.dark] or [AppTheme.light] to obtain a fully-configured
 /// [ThemeData] with Material 3 enabled, the brand blue palette, and
@@ -50,8 +50,8 @@ abstract final class AppTheme {
 
   /// Dark theme — default for field use.
   ///
-  /// Optimised for outdoor birding: high-contrast text on true-black,
-  /// battery-efficient on OLED, and the blue brand colour lightened just
+  /// Optimized for outdoor birding: high-contrast text on true-black,
+  /// battery-efficient on OLED, and the blue brand color lightened just
   /// enough to remain legible.
   static ThemeData dark() {
     const colorScheme = ColorScheme.dark(

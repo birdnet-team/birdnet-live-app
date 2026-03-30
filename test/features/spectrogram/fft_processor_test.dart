@@ -71,7 +71,7 @@ void main() {
         expect(result.length, fft.binCount);
       });
 
-      test('output values are in [0, 1] range for normalised mode', () {
+      test('output values are in [0, 1] range for normalized mode', () {
         final fft = FftProcessor(fftSize: 512);
         // Random signal to avoid all-zero edge case.
         final rng = math.Random(42);
@@ -88,7 +88,7 @@ void main() {
         }
       });
 
-      test('silence produces very low normalised values', () {
+      test('silence produces very low normalized values', () {
         final fft = FftProcessor(fftSize: 256);
         final silence = Float32List(256);
         final result = fft.process(silence);

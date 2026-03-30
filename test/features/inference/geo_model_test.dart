@@ -3,7 +3,7 @@
 // =============================================================================
 //
 // Verifies the geo-model's label parsing, week calculation, lifecycle, and
-// data class behaviour.  ONNX inference tests are skipped here since they
+// data class behavior.  ONNX inference tests are skipped here since they
 // require the real model file — see integration_test/ for those.
 // =============================================================================
 

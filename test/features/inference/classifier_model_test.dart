@@ -6,7 +6,7 @@
 // in unit tests (no native runtime), these tests focus on:
 //
 //   1. Pre-inference state validation (isLoaded, StateError on predict).
-//   2. ModelOutput data class behaviour.
+//   2. ModelOutput data class behavior.
 //   3. The internal _flatten helper (tested indirectly via public API).
 //
 // Full model integration tests require a device or emulator with the ONNX

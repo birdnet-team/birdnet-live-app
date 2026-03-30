@@ -99,5 +99,18 @@
   "settingsFilterOff": "Aus",
   "settingsFilterGeoExclude": "Standortfilter",
   "settingsFilterGeoMerge": "Standortgewichtung",
-  "settingsGeoThreshold": "Geo-Filter-Schwellenwert"
+  "settingsGeoThreshold": "Geo-Filter-Schwellenwert",
+  "sessionStopTitle": "Sitzung beenden?",
+  "sessionStopMessage": "Die Aufnahme wird gestoppt und die Sitzungsübersicht geöffnet.",
+  "sessionStopConfirm": "Sitzung beenden",
+  "sessionReviewTitle": "Sitzungsübersicht",
+  "sessionNoDetections": "Keine Erkennungen in dieser Sitzung.",
+  "sessionSpeciesCount": "{count} Arten",
+  "sessionDetectionCount": "{count} Erkennungen",
+  "sessionDiscard": "Verwerfen",
+  "sessionDiscardTitle": "Sitzung verwerfen?",
+  "sessionDiscardMessage": "Diese Sitzung und ihre Aufnahme werden dauerhaft gelöscht.",
+  "sessionShare": "Teilen",
+  "sessionLibraryTitle": "Sitzungen",
+  "sessionLibraryEmpty": "Noch keine gespeicherten Sitzungen."
 }

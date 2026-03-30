@@ -321,7 +321,7 @@
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
-  "fileAnalysisModeDescription": "Analyse recordings offline",
+  "fileAnalysisModeDescription": "Analyze recordings offline",
   "@fileAnalysisModeDescription": {
     "description": "Description for File Analysis mode on the main menu"
   },
@@ -409,5 +409,67 @@
   "settingsGeoThreshold": "Geo-filter threshold",
   "@settingsGeoThreshold": {
     "description": "Geo-model probability threshold setting label"
+  },
+  "sessionStopTitle": "End Session?",
+  "@sessionStopTitle": {
+    "description": "Stop confirmation dialog title"
+  },
+  "sessionStopMessage": "This will stop recording and open the session review.",
+  "@sessionStopMessage": {
+    "description": "Stop confirmation dialog message"
+  },
+  "sessionStopConfirm": "End Session",
+  "@sessionStopConfirm": {
+    "description": "Stop confirmation dialog confirm button"
+  },
+  "sessionReviewTitle": "Session Review",
+  "@sessionReviewTitle": {
+    "description": "Session review screen title"
+  },
+  "sessionNoDetections": "No detections in this session.",
+  "@sessionNoDetections": {
+    "description": "Empty state text for session review"
+  },
+  "sessionSpeciesCount": "{count} species",
+  "@sessionSpeciesCount": {
+    "description": "Species count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionDetectionCount": "{count} detections",
+  "@sessionDetectionCount": {
+    "description": "Detection count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionDiscard": "Discard",
+  "@sessionDiscard": {
+    "description": "Discard session button label"
+  },
+  "sessionDiscardTitle": "Discard Session?",
+  "@sessionDiscardTitle": {
+    "description": "Discard confirmation dialog title"
+  },
+  "sessionDiscardMessage": "This session and its recording will be permanently deleted.",
+  "@sessionDiscardMessage": {
+    "description": "Discard confirmation dialog message"
+  },
+  "sessionShare": "Share",
+  "@sessionShare": {
+    "description": "Share session button label"
+  },
+  "sessionLibraryTitle": "Sessions",
+  "@sessionLibraryTitle": {
+    "description": "Session library screen title"
+  },
+  "sessionLibraryEmpty": "No saved sessions yet.",
+  "@sessionLibraryEmpty": {
+    "description": "Empty state text for session library"
   }
 }

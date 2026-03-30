@@ -18,7 +18,7 @@ import 'ring_buffer.dart';
 // ```
 // Microphone (Oboe / AVAudioEngine)
 //   → Uint8List (PCM16 little-endian, 32 kHz mono)
-//   → _pcm16ToFloat32 (normalised −1.0 … 1.0)
+//   → _pcm16ToFloat32 (normalized −1.0 … 1.0)
 //   → RingBuffer.write
 //   → downstream consumers (spectrogram, inference, recording)
 // ```

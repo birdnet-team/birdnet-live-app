@@ -88,9 +88,9 @@ void main() {
       });
     });
 
-    // ─── Various colour maps ───────────────────────────────────────────────
+    // ─── Various color maps ───────────────────────────────────────────────
 
-    group('works with all colour maps', () {
+    group('works with all color maps', () {
       for (final name in [
         'viridis',
         'magma',
@@ -98,7 +98,7 @@ void main() {
         'grayscale',
         'birdnet'
       ]) {
-        test('creates painter with $name colour map', () {
+        test('creates painter with $name color map', () {
           final p = SpectrogramPainter(
             maxColumns: 50,
             binCount: 129,

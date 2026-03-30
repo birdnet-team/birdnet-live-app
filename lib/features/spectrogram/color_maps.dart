@@ -5,41 +5,41 @@ import 'dart:ui' show Color;
 // Spectrogram Color Maps
 // =============================================================================
 //
-// Each color map converts a normalised magnitude value in [0.0, 1.0] to an
-// ARGB colour suitable for painting spectrogram pixels.
+// Each color map converts a normalized magnitude value in [0.0, 1.0] to an
+// ARGB color suitable for painting spectrogram pixels.
 //
 // Several scientifically-popular palettes are provided:
 //
-//   • **Viridis**    — perceptually uniform, colour-blind friendly (default).
+//   • **Viridis**    — perceptually uniform, color-blind friendly (default).
 //   • **Magma**      — dark-to-bright purple/orange heat map.
 //   • **Inferno**    — dark black → vivid yellow fire tones.
 //   • **Grayscale**  — simple luminance ramp.
 //   • **BirdNET**    — custom palette matching the BirdNET brand blue (#0D6EFD)
-//                      used as the mid-range colour, from dark navy through
+//                      used as the mid-range color, from dark navy through
 //                      brand blue to bright white.
 //
 // ### Performance
 //
-// Colour maps are pre-computed as 256-entry lookup tables (LUTs) of raw
+// Color maps are pre-computed as 256-entry lookup tables (LUTs) of raw
 // `int` (ARGB8888) values stored in [Int32List].  At render time the painter
-// does a single integer index into the LUT — no floating-point colour math
+// does a single integer index into the LUT — no floating-point color math
 // on the hot path.
 //
-// ### Adding a new colour map
+// ### Adding a new color map
 //
 // 1. Define the gradient stops in [SpectrogramColorMap._registry].
 // 2. Use `_buildLut` to interpolate the stops into a 256-entry table.
 // 3. Register the name in [SpectrogramColorMap.names].
 // =============================================================================
 
-/// Registry of named colour maps plus a fast per-pixel lookup.
+/// Registry of named color maps plus a fast per-pixel lookup.
 ///
-/// Obtain a colour map LUT with [SpectrogramColorMap.lut] and index into it
+/// Obtain a color map LUT with [SpectrogramColorMap.lut] and index into it
 /// with `lut[(value * 255).round().clamp(0, 255)]`.
 abstract final class SpectrogramColorMap {
   // ─── Public API ────────────────────────────────────────────────────────────
 
-  /// Ordered list of available colour map names for settings UI.
+  /// Ordered list of available color map names for settings UI.
   static const List<String> names = [
     'viridis',
     'magma',
@@ -48,7 +48,7 @@ abstract final class SpectrogramColorMap {
     'birdnet',
   ];
 
-  /// Return a 256-entry ARGB lookup table for the given colour map [name].
+  /// Return a 256-entry ARGB lookup table for the given color map [name].
   ///
   /// Throws [ArgumentError] if [name] is not in [names].
   static Int32List lut(String name) {
@@ -57,7 +57,7 @@ abstract final class SpectrogramColorMap {
 
     final stops = _registry[name];
     if (stops == null) {
-      throw ArgumentError.value(name, 'name', 'Unknown colour map');
+      throw ArgumentError.value(name, 'name', 'Unknown color map');
     }
 
     final table = _buildLut(stops);
@@ -65,8 +65,8 @@ abstract final class SpectrogramColorMap {
     return table;
   }
 
-  /// Convert a normalised [value] (0.0–1.0) directly to a [Color] using
-  /// the colour map identified by [name].
+  /// Convert a normalized [value] (0.0–1.0) directly to a [Color] using
+  /// the color map identified by [name].
   ///
   /// Slightly slower than the LUT path — prefer [lut] in hot loops.
   static Color color(String name, double value) {
@@ -77,7 +77,7 @@ abstract final class SpectrogramColorMap {
 
   // ─── Internal ──────────────────────────────────────────────────────────────
 
-  /// Lazily-populated LUT cache (one per colour map name).
+  /// Lazily-populated LUT cache (one per color map name).
   static final Map<String, Int32List> _cache = {};
 
   /// Gradient stop definitions.  Each list entry is a `(position, color)`
@@ -108,7 +108,7 @@ abstract final class SpectrogramColorMap {
       _GradientStop(0.00, const Color(0xFF000000)),
       _GradientStop(1.00, const Color(0xFFFFFFFF)),
     ],
-    // Brand-themed colour map: dark navy → brand blue (#0D6EFD) → white.
+    // Brand-themed color map: dark navy → brand blue (#0D6EFD) → white.
     'birdnet': [
       _GradientStop(0.00, const Color(0xFF000820)),
       _GradientStop(0.30, const Color(0xFF002F6C)),
@@ -163,13 +163,13 @@ abstract final class SpectrogramColorMap {
       (a + (b - a) * f).round().clamp(0, 255);
 }
 
-/// Internal gradient stop: a normalised position and its colour.
+/// Internal gradient stop: a normalized position and its color.
 class _GradientStop {
   const _GradientStop(this.position, this.color);
 
   /// Position in [0.0, 1.0].
   final double position;
 
-  /// ARGB colour at this position.
+  /// ARGB color at this position.
   final Color color;
 }

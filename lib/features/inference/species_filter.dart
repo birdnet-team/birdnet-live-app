@@ -9,7 +9,7 @@
 //
 // ### Filter modes
 //
-// | Mode           | Behaviour                                              |
+// | Mode           | Behavior                                               |
 // |----------------|--------------------------------------------------------|
 // | `off`          | No filtering — all species eligible.                   |
 // | `geoExclude`   | Keep only species the geo-model predicted (≥ threshold).|

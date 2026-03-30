@@ -35,6 +35,9 @@ dependencies:
   share_plus: ^10.1.4
   package_info_plus: ^8.1.3
 
+  # Export
+  archive: ^4.0.2
+
   # Localization
   intl: any
   just_audio: ^0.10.5

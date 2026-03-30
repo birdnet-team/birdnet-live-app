@@ -72,6 +72,6 @@ nav:
       - Database: developer/database.md
       - API Integration: developer/api-integration.md
       - Releasing: developer/releasing.md
-  - API:
-      - Sync API: api/sync-api.md
+  - API Reference:
+      - Taxonomy & Sync API: api/sync-api.md
   - Privacy Policy: privacy.md
