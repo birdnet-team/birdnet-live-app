@@ -112,5 +112,12 @@
   "sessionDiscardMessage": "Diese Sitzung und ihre Aufnahme werden dauerhaft gelöscht.",
   "sessionShare": "Teilen",
   "sessionLibraryTitle": "Sitzungen",
-  "sessionLibraryEmpty": "Noch keine gespeicherten Sitzungen."
+  "sessionLibraryEmpty": "Noch keine gespeicherten Sitzungen.",
+  "sessionDeleteDetectionTitle": "Erkennung entfernen?",
+  "sessionDeleteDetectionMessage": "Diese Erkennung aus der Sitzung entfernen? Speichern zum Übernehmen.",
+  "sessionRemove": "Entfernen",
+  "sessionSave": "Speichern",
+  "sessionSaved": "Sitzung gespeichert",
+  "sessionUnsavedChanges": "Es gibt ungespeicherte Änderungen. Speichern oder verwerfen?",
+  "sessionDetections": "{count} Erkennungen"
 }

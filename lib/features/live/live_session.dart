@@ -13,6 +13,8 @@
 // repository.
 // =============================================================================
 
+import 'package:intl/intl.dart';
+
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
 
@@ -168,6 +170,14 @@ class LiveSession {
 
   /// Whether this session is still active (no end time).
   bool get isActive => endTime == null;
+
+  /// Human-readable session name for display and export filenames.
+  ///
+  /// Format: `BirdNET-Live_Session_2026-03-30_14-30-00`
+  String get displayName {
+    final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(startTime);
+    return 'BirdNET-Live_Session_$dt';
+  }
 
   /// Duration of the session.
   Duration get duration => (endTime ?? DateTime.now()).difference(startTime);

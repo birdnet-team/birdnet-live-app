@@ -91,6 +91,7 @@ class RecordingService {
   RecordingMode _mode = RecordingMode.off;
   String _format = 'flac';
   bool _isRecording = false;
+  bool _flushing = false;
   int _lastFlushPosition = 0;
 
   /// Whether a recording is currently in progress.
@@ -192,8 +193,13 @@ class RecordingService {
     _flushTimer?.cancel();
     _flushTimer = null;
 
+    // Wait for any in-progress flush to finish before the final one.
+    while (_flushing) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+
     if (_mode == RecordingMode.full && _writer != null) {
-      // Final flush.
+      // Final flush (timer is cancelled, no concurrency risk).
       await _flushBuffer();
       await _writer!.close();
       final path = _writer!.filePath;
@@ -219,22 +225,33 @@ class RecordingService {
   // Private helpers
   // ---------------------------------------------------------------------------
 
-  /// Flush new audio data from the ring buffer into the WAV writer.
+  /// Flush new audio data from the ring buffer into the file writer.
+  ///
+  /// Guarded by [_flushing] to prevent concurrent calls — the periodic
+  /// timer can fire while a previous flush (FLAC encoding + I/O) is still
+  /// running.  Without this guard, overlapping flushes corrupt the
+  /// encoder's internal buffer and cause unbounded memory growth.
   Future<void> _flushBuffer() async {
+    if (_flushing) return;
     if (_writer == null || !_writer!.isOpen) return;
 
-    final currentTotal = ringBuffer.totalWritten;
-    final newSamples = currentTotal - _lastFlushPosition;
+    _flushing = true;
+    try {
+      final currentTotal = ringBuffer.totalWritten;
+      final newSamples = currentTotal - _lastFlushPosition;
 
-    if (newSamples <= 0) return;
+      if (newSamples <= 0) return;
 
-    // Read only the new samples since last flush.
-    final samplesToRead =
-        newSamples > ringBuffer.capacity ? ringBuffer.capacity : newSamples;
-    final samples = ringBuffer.readLast(samplesToRead);
+      // Read only the new samples since last flush.
+      final samplesToRead =
+          newSamples > ringBuffer.capacity ? ringBuffer.capacity : newSamples;
+      final samples = ringBuffer.readLast(samplesToRead);
 
-    await _writer!.writeSamples(samples);
-    _lastFlushPosition = currentTotal;
+      await _writer!.writeSamples(samples);
+      _lastFlushPosition = currentTotal;
+    } finally {
+      _flushing = false;
+    }
   }
 
   /// Check if all samples in the buffer are zero (silent).

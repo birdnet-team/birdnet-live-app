@@ -471,5 +471,38 @@
   "sessionLibraryEmpty": "No saved sessions yet.",
   "@sessionLibraryEmpty": {
     "description": "Empty state text for session library"
+  },
+  "sessionDeleteDetectionTitle": "Remove Detection?",
+  "@sessionDeleteDetectionTitle": {
+    "description": "Title for detection deletion confirmation dialog"
+  },
+  "sessionDeleteDetectionMessage": "Remove this detection from the session? Save to apply.",
+  "@sessionDeleteDetectionMessage": {
+    "description": "Body text for detection deletion confirmation dialog"
+  },
+  "sessionRemove": "Remove",
+  "@sessionRemove": {
+    "description": "Remove button label"
+  },
+  "sessionSave": "Save",
+  "@sessionSave": {
+    "description": "Save session button label"
+  },
+  "sessionSaved": "Session saved",
+  "@sessionSaved": {
+    "description": "Snackbar text after saving session"
+  },
+  "sessionUnsavedChanges": "You have unsaved changes. Save or discard?",
+  "@sessionUnsavedChanges": {
+    "description": "Warning when leaving session review with unsaved changes"
+  },
+  "sessionDetections": "{count} detections",
+  "@sessionDetections": {
+    "description": "Detection count label within a species row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

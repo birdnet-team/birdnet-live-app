@@ -144,9 +144,14 @@ class _SessionTile extends StatelessWidget {
           color: theme.colorScheme.onPrimaryContainer,
         ),
       ),
-      title: Text(dateStr),
+      title: Text(
+        session.displayName,
+        style: theme.textTheme.bodyMedium,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       subtitle: Text(
-        '${_formatDuration(duration)} · '
+        '$dateStr · ${_formatDuration(duration)} · '
         '${l10n.sessionSpeciesCount(species)} · '
         '${l10n.sessionDetectionCount(detections)}',
       ),

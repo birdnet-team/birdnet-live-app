@@ -82,21 +82,27 @@ Future<String?> buildSessionZip(LiveSession session) async {
 
   final archive = Archive();
 
+  // Use the session display name for all exported filenames.
+  final baseName = session.displayName;
+  final audioExt = p.extension(audioPath); // .wav or .flac
+
   // Add the audio file (WAV or FLAC).
   final audioBytes = await File(audioPath).readAsBytes();
-  final audioName = p.basename(audioPath);
-  archive.addFile(ArchiveFile(audioName, audioBytes.length, audioBytes));
+  archive.addFile(
+    ArchiveFile('$baseName$audioExt', audioBytes.length, audioBytes),
+  );
 
   // Add the Raven selection table.
   final table = buildRavenSelectionTable(session);
   final tableBytes = Uint8List.fromList(table.codeUnits);
-  final tableName = '${p.basenameWithoutExtension(audioPath)}.selections.txt';
-  archive.addFile(ArchiveFile(tableName, tableBytes.length, tableBytes));
+  archive.addFile(
+    ArchiveFile('$baseName.selections.txt', tableBytes.length, tableBytes),
+  );
 
   // Encode and write to a temp file alongside the audio.
   final zipBytes = ZipEncoder().encode(archive);
 
-  final zipName = '${p.basenameWithoutExtension(audioPath)}.zip';
+  final zipName = '$baseName.zip';
   final zipPath = p.join(p.dirname(audioPath), zipName);
   await File(zipPath).writeAsBytes(zipBytes);
 

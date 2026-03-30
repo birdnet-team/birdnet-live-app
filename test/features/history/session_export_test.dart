@@ -179,8 +179,11 @@ void main() {
       final archive = ZipDecoder().decodeBytes(zipBytes);
 
       final names = archive.map((f) => f.name).toList();
-      expect(names, contains('full.wav'));
-      expect(names, contains('full.selections.txt'));
+      expect(names, contains('BirdNET-Live_Session_2025-06-15_08-00-00.wav'));
+      expect(
+        names,
+        contains('BirdNET-Live_Session_2025-06-15_08-00-00.selections.txt'),
+      );
 
       // Verify the selection table inside the ZIP.
       final tableFile =
