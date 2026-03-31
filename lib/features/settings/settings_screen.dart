@@ -350,7 +350,11 @@ class SettingsScreen extends ConsumerWidget {
             _ChoiceTile<String>(
               title: 'Format',
               value: ref.watch(exportFormatProvider),
-              options: const {'csv': 'CSV', 'json': 'JSON', 'gpx': 'GPX'},
+              options: const {
+                'raven': 'Raven Selection Table',
+                'csv': 'CSV',
+                'json': 'JSON'
+              },
               onChanged: (v) => ref.read(exportFormatProvider.notifier).set(v),
             ),
             SwitchListTile(
@@ -544,7 +548,7 @@ class _SpeciesLanguageTile extends ConsumerWidget {
     final speciesLang = ref.watch(speciesLanguageProvider);
 
     return ListTile(
-      leading: const Icon(Icons.pets),
+      leading: const Icon(Icons.flutter_dash),
       title: Text(l10n.settingsSpeciesLanguage),
       trailing: DropdownButton<String>(
         value: speciesLang,

@@ -147,7 +147,7 @@ final postBufferProvider =
 final exportFormatProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.exportFormat, 'csv');
+  return StringSettingNotifier(prefs, PrefKeys.exportFormat, 'raven');
 });
 
 /// Include audio files in export (default false).

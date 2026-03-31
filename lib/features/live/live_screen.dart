@@ -543,7 +543,7 @@ class _SessionInfoBar extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.pets,
+            Icons.flutter_dash,
             size: 14,
             color: theme.colorScheme.primary,
           ),

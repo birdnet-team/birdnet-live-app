@@ -264,9 +264,12 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     final samples = widget.ringBuffer.readLast(widget.fftSize);
     final column = _fft.process(samples);
 
-    // Apply logarithmic amplitude scaling if enabled.
-    if (widget.logAmplitude) {
-      _applyLogScaling(column);
+    // The FFT processor already outputs Decibels (a logarithmic scale).
+    // An additional log curve here compresses dynamic range too aggressively
+    // and elevates the noise floor, so we use an exponential curve if
+    // the user disabled log amplitude, to increase contrast.
+    if (!widget.logAmplitude) {
+      _applyExponentialContrast(column);
     }
 
     _painter.addColumn(column);
@@ -278,19 +281,17 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   }
 
   // ---------------------------------------------------------------------------
-  // Log amplitude scaling
+  // Linear / Contrast amplitude scaling
   // ---------------------------------------------------------------------------
 
-  /// Applies a logarithmic curve to normalized [0, 1] values in [column].
+  /// Applies an exponential curve to normalized [0, 1] dB values in [column].
   ///
-  /// Uses `log(1 + v * k) / log(1 + k)` with k = 10 to compress the
-  /// dynamic range, making quieter sounds more visible in the spectrogram.
-  static void _applyLogScaling(Float64List column) {
-    const k = 10.0;
-    // Pre-computed denominator: log(1 + k) = log(11).
-    final denom = math.log(1.0 + k);
+  /// This expands the dynamic range (squashing quieter sounds towards 0),
+  /// effectively pushing down the noise floor. Used when true 'logAmplitude' is off.
+  static void _applyExponentialContrast(Float64List column) {
+    const power = 2.0;
     for (var i = 0; i < column.length; i++) {
-      column[i] = math.log(1.0 + column[i] * k) / denom;
+      column[i] = math.pow(column[i], power).toDouble();
     }
   }
 
