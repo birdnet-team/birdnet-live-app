@@ -492,9 +492,9 @@ class AudioDecoder {
         }
       } else {
         for (var i = 0; i < samplesInPartition; i++) {
-          // Read unary quotient (count of 1s terminated by 0).
+          // Read unary quotient (count of 0s terminated by 1).
           var quotient = 0;
-          while (reader.readBits(1) == 1) {
+          while (reader.readBits(1) == 0) {
             quotient++;
           }
           // Read remainder.

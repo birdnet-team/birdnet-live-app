@@ -192,7 +192,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final session = await controller.finalizeSession();
     _onControllerStateChanged();
 
-    if (session != null && session.detections.isNotEmpty && mounted) {
+    if (session != null && mounted) {
       // Persist completed session.
       final repo = ref.read(sessionRepositoryProvider);
       await repo.save(session);
@@ -207,7 +207,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         );
       }
     } else {
-      // No detections — just go back.
       if (mounted) Navigator.of(context).pop();
     }
   }

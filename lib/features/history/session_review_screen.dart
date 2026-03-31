@@ -11,14 +11,15 @@
 //     confidence, total count, and first/last timestamps.
 //
 //   • **Consecutive clustering** — Within a species, adjacent detections
-//     (≤ 10 s apart) are grouped into time-span clusters so that a bird
-//     calling for 30 continuous seconds shows as one cluster, not 10 rows.
+//     whose gap is shorter than the inference window duration are grouped
+//     into time-span clusters so that a bird calling for 30 continuous
+//     seconds shows as one cluster, not 10 rows.
 //
 //   • **Playback highlighting** — When audio plays through a detection's
 //     timestamp, the corresponding species row pulses with a highlight so
 //     the user can visually follow along.
 //
-//   • **Scrolling spectrogram** — A strip above the player shows ~8 seconds
+//   • **Scrolling spectrogram** — A strip above the player shows ~10 seconds
 //     of decoded audio centered on the playback position, scrolling in
 //     real-time.  Detection markers are overlaid.
 //
@@ -33,11 +34,12 @@
 //
 //   1. AppBar with session name, save / share / discard actions.
 //   2. Summary header — date, duration, species count, detections.
-//   3. Spectrogram strip — ~120 dp tall scrolling FFT view.
+//   3. Spectrogram strip — ~160 dp tall scrolling FFT view.
 //   4. Audio player bar — play/pause, seek slider, position / duration.
 //   5. Species detection list — expandable rows, scrollable.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
@@ -86,17 +88,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool _audioAvailable = false;
   bool _isDirty = false;
 
-  /// Decoded audio for the spectrogram (null until loaded).
-  DecodedAudio? _decodedAudio;
+  /// Pre-computed spectrogram image covering the entire recording.
+  ui.Image? _spectrogramImage;
 
-  /// Whether the audio file is being decoded.
+  /// Whether the audio is being decoded and the spectrogram computed.
   bool _decoding = false;
 
   @override
   void initState() {
     super.initState();
     _detections = List.of(widget.session.detections);
-    _speciesGroups = _buildSpeciesGroups(_detections);
+    _speciesGroups = _buildSpeciesGroups(
+      _detections,
+      widget.session.settings.windowDuration,
+    );
     _initAudio();
   }
 
@@ -136,7 +141,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     setState(() => _decoding = true);
     try {
       final audio = await AudioDecoder.decodeFile(path);
-      if (mounted) setState(() => _decodedAudio = audio);
+      if (!mounted) return;
+      await _buildSpectrogramImage(audio);
     } catch (_) {
       // Spectrogram unavailable — non-fatal.
     } finally {
@@ -144,8 +150,93 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
   }
 
+  /// Pre-compute the entire session spectrogram as a [ui.Image].
+  ///
+  /// Uses a fixed FFT size and hop.  Each pixel column = one FFT frame.
+  /// The painter scrolls through the image using pixels-per-second.
+  Future<void> _buildSpectrogramImage(DecodedAudio audio) async {
+    const fftSize = 1024;
+    const hop = 512;
+    const maxFreqHz = 16000;
+    const dbFloor = -80.0;
+    const dbCeiling = 0.0;
+
+    if (audio.totalSamples < fftSize) return;
+
+    final numCols = (audio.totalSamples - fftSize) ~/ hop + 1;
+    if (numCols <= 0) return;
+
+    final nyquist = audio.sampleRate / 2;
+    final binCount = fftSize ~/ 2 + 1;
+    final displayBins =
+        (maxFreqHz / nyquist * binCount).round().clamp(1, binCount);
+
+    final lut = SpectrogramColorMap.lut('viridis');
+    final pixels = Uint8List(numCols * displayBins * 4);
+
+    // Periodic Hann window (matches FftProcessor).
+    final hann = Float64List(fftSize);
+    final hannFactor = 2.0 * math.pi / fftSize;
+    for (var i = 0; i < fftSize; i++) {
+      hann[i] = 0.5 * (1.0 - math.cos(hannFactor * i));
+    }
+    final fft = FFT(fftSize);
+
+    for (var c = 0; c < numCols; c++) {
+      if (c > 0 && c % 200 == 0) {
+        await Future.delayed(Duration.zero);
+        if (!mounted) return;
+      }
+
+      final colSample = c * hop;
+      final chunk = audio.readFloat32(colSample, fftSize);
+      final input = Float64List(fftSize);
+      for (var i = 0; i < fftSize; i++) {
+        input[i] = chunk[i] * hann[i];
+      }
+      final spectrum = fft.realFft(input);
+
+      for (var bin = 0; bin < displayBins; bin++) {
+        final re = spectrum[bin].x;
+        final im = spectrum[bin].y;
+        final power = re * re + im * im;
+        final db = 10 * math.log(power + 1e-10) / math.ln10;
+        final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
+
+        final y = displayBins - 1 - bin;
+        final pxOffset = (y * numCols + c) * 4;
+        final lutIdx = (norm * 255).round().clamp(0, 255);
+        final color = lut[lutIdx];
+        pixels[pxOffset] = (color >> 16) & 0xFF;
+        pixels[pxOffset + 1] = (color >> 8) & 0xFF;
+        pixels[pxOffset + 2] = color & 0xFF;
+        pixels[pxOffset + 3] = (color >> 24) & 0xFF;
+      }
+    }
+
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      pixels,
+      numCols,
+      displayBins,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
+    final image = await completer.future;
+
+    if (mounted) {
+      setState(() {
+        _spectrogramImage?.dispose();
+        _spectrogramImage = image;
+      });
+    } else {
+      image.dispose();
+    }
+  }
+
   @override
   void dispose() {
+    _spectrogramImage?.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -266,7 +357,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       for (final r in cluster.records) {
         _detections.remove(r);
       }
-      _speciesGroups = _buildSpeciesGroups(_detections);
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
       _isDirty = true;
     });
   }
@@ -283,6 +377,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (!_audioAvailable || _duration == Duration.zero) return;
     _player.seek(position);
     if (!_isPlaying) _player.play();
+  }
+
+  void _pausePlayer() {
+    if (_isPlaying) _player.pause();
   }
 
   // ── Build ───────────────────────────────────────────────────────────
@@ -349,14 +447,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             // ── Spectrogram strip ───────────────────────────
             if (_audioAvailable)
               _SpectrogramStrip(
-                decodedAudio: _decodedAudio,
+                spectrogramImage: _spectrogramImage,
                 decoding: _decoding,
                 position: _position,
                 duration: _duration,
-                sessionStart: widget.session.startTime,
-                detections: _detections,
-                windowDuration: widget.session.settings.windowDuration,
                 onSeek: _seekToPosition,
+                onPause: _pausePlayer,
+                isPlaying: _isPlaying,
               ),
 
             // ── Audio player ────────────────────────────────
@@ -439,11 +536,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   ///
   /// 1. Group all detections by scientific name.
   /// 2. Sort each group by timestamp.
-  /// 3. Within each species, merge consecutive detections that are ≤ 10 s
-  ///    apart into clusters.
+  /// 3. Within each species, merge consecutive detections whose gap is
+  ///    shorter than [maxGapSec] into clusters.
   /// 4. Sort species by their earliest detection.
   static List<_SpeciesGroup> _buildSpeciesGroups(
     List<DetectionRecord> records,
+    int maxGapSec,
   ) {
     if (records.isEmpty) return const [];
 
@@ -457,14 +555,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final sorted = List.of(entry.value)
         ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-      // Merge consecutive detections ≤ 10 s apart into clusters.
+      // Merge consecutive detections within one inference window.
       final clusters = <_DetectionCluster>[];
       var current = <DetectionRecord>[sorted.first];
 
       for (var i = 1; i < sorted.length; i++) {
         final gap =
             sorted[i].timestamp.difference(sorted[i - 1].timestamp).inSeconds;
-        if (gap <= 10) {
+        if (gap <= maxGapSec) {
           current.add(sorted[i]);
         } else {
           clusters.add(_DetectionCluster(current));
@@ -489,7 +587,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 // Data Models
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// A cluster of consecutive detections of the same species (≤ 10 s gaps).
+/// A cluster of consecutive detections of the same species.
 class _DetectionCluster {
   _DetectionCluster(this.records) : assert(records.isNotEmpty);
 
@@ -619,98 +717,123 @@ class _StatChip extends StatelessWidget {
 // Spectrogram Strip
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// Shows a scrolling spectrogram synchronized with the audio playback position.
+/// Shows a scrollable spectrogram from a pre-computed image.
 ///
-/// Displays ~8 seconds of audio centered on the playhead.  A vertical line
-/// marks the current position.  Detection time ranges are overlaid as
-/// semi-transparent colored bars.
-class _SpectrogramStrip extends StatelessWidget {
+/// The painter derives pixels-per-second from image width / player duration,
+/// ensuring perfect alignment regardless of sample rate discrepancies.
+class _SpectrogramStrip extends StatefulWidget {
   const _SpectrogramStrip({
-    required this.decodedAudio,
+    required this.spectrogramImage,
     required this.decoding,
     required this.position,
     required this.duration,
-    required this.sessionStart,
-    required this.detections,
-    required this.windowDuration,
     required this.onSeek,
+    required this.onPause,
+    required this.isPlaying,
   });
 
-  final DecodedAudio? decodedAudio;
+  final ui.Image? spectrogramImage;
   final bool decoding;
   final Duration position;
   final Duration duration;
-  final DateTime sessionStart;
-  final List<DetectionRecord> detections;
-  final int windowDuration;
   final ValueChanged<Duration> onSeek;
+  final VoidCallback onPause;
+  final bool isPlaying;
+
+  @override
+  State<_SpectrogramStrip> createState() => _SpectrogramStripState();
+}
+
+class _SpectrogramStripState extends State<_SpectrogramStrip> {
+  /// When non-null the view is pinned to this center (user panned).
+  /// When null the view follows the playback position.
+  double? _pannedCenterSec;
+
+  double get _viewCenterSec =>
+      _pannedCenterSec ?? widget.position.inMicroseconds / 1000000.0;
+
+  @override
+  void didUpdateWidget(_SpectrogramStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When playback resumes while the view is panned, seek to the panned
+    // position so playback continues from the white center marker.
+    if (widget.isPlaying && !oldWidget.isPlaying && _pannedCenterSec != null) {
+      final seekTarget = _pannedCenterSec!;
+      _pannedCenterSec = null;
+      widget.onSeek(Duration(microseconds: (seekTarget * 1e6).round()));
+    } else if (widget.isPlaying && !oldWidget.isPlaying) {
+      _pannedCenterSec = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (decoding) {
+    if (widget.decoding || widget.spectrogramImage == null) {
       return Container(
-        height: 120,
+        height: 160,
         color: Colors.black,
-        child: const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
+        child: widget.decoding
+            ? const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
       );
     }
 
-    if (decodedAudio == null) {
-      return const SizedBox.shrink();
-    }
-
     return GestureDetector(
-      onTapDown: (details) => _handleTap(details, context),
-      onHorizontalDragUpdate: (details) => _handleDrag(details, context),
+      onTapDown: _handleTap,
+      onHorizontalDragUpdate: _handleDrag,
       child: Container(
-        height: 120,
+        height: 160,
         color: Colors.black,
         child: CustomPaint(
           painter: _ReviewSpectrogramPainter(
-            audio: decodedAudio!,
-            position: position,
-            duration: duration,
-            sessionStart: sessionStart,
-            detections: detections,
-            windowDuration: windowDuration,
-            colorMapName: 'viridis',
+            spectrogramImage: widget.spectrogramImage!,
+            centerSec: _viewCenterSec,
+            durationSec: widget.duration.inMicroseconds / 1000000.0,
             colorScheme: theme.colorScheme,
           ),
-          size: const Size(double.infinity, 120),
+          size: const Size(double.infinity, 160),
         ),
       ),
     );
   }
 
-  void _handleTap(TapDownDetails details, BuildContext context) {
+  void _handleTap(TapDownDetails details) {
     final box = context.findRenderObject() as RenderBox?;
-    if (box == null || duration == Duration.zero) return;
-    _seekFromX(details.localPosition.dx, box.size.width);
-  }
-
-  void _handleDrag(DragUpdateDetails details, BuildContext context) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || duration == Duration.zero) return;
-    _seekFromX(details.localPosition.dx, box.size.width);
-  }
-
-  void _seekFromX(double x, double width) {
+    if (box == null || widget.duration == Duration.zero) return;
     const viewSeconds = _ReviewSpectrogramPainter._viewSeconds;
-    final centerSec = position.inMicroseconds / 1000000.0;
-    final startSec = centerSec - viewSeconds / 2;
-    final fraction = x / width;
+    final startSec = _viewCenterSec - viewSeconds / 2;
+    final fraction = details.localPosition.dx / box.size.width;
     final targetSec = startSec + fraction * viewSeconds;
     final clampedMs =
-        (targetSec * 1000).round().clamp(0, duration.inMilliseconds);
-    onSeek(Duration(milliseconds: clampedMs));
+        (targetSec * 1000).round().clamp(0, widget.duration.inMilliseconds);
+    widget.onSeek(Duration(milliseconds: clampedMs));
+    setState(() => _pannedCenterSec = null);
+  }
+
+  void _handleDrag(DragUpdateDetails details) {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final secPerPixel = _ReviewSpectrogramPainter._viewSeconds / box.size.width;
+    final durationSec = widget.duration.inMicroseconds / 1000000.0;
+
+    // Pause playback on first drag gesture.
+    if (widget.isPlaying && _pannedCenterSec == null) {
+      widget.onPause();
+    }
+
+    setState(() {
+      _pannedCenterSec ??= widget.position.inMicroseconds / 1000000.0;
+      _pannedCenterSec = (_pannedCenterSec! - details.delta.dx * secPerPixel)
+          .clamp(0.0, durationSec);
+    });
   }
 }
 
@@ -718,141 +841,79 @@ class _SpectrogramStrip extends StatelessWidget {
 // Review Spectrogram Painter
 // ═════════════════════════════════════════════════════════════════════════════
 
-/// Paints a windowed spectrogram view for session review.
+/// Viewport-blit painter for the pre-computed spectrogram image.
 ///
-/// Unlike the live [SpectrogramPainter] which scrolls columns in real-time,
-/// this painter computes FFT columns on demand for a window around the
-/// current playback position.
+/// Derives pixels-per-second from `imageWidth / durationSec` so the
+/// spectrogram always spans exactly the player duration.  No sample-rate
+/// dependency — the image is simply stretched to fit the timeline.
 class _ReviewSpectrogramPainter extends CustomPainter {
   _ReviewSpectrogramPainter({
-    required this.audio,
-    required this.position,
-    required this.duration,
-    required this.sessionStart,
-    required this.detections,
-    required this.windowDuration,
-    required this.colorMapName,
+    required this.spectrogramImage,
+    required this.centerSec,
+    required this.durationSec,
     required this.colorScheme,
-  }) : _lut = SpectrogramColorMap.lut(colorMapName);
+  });
 
-  final DecodedAudio audio;
-  final Duration position;
-  final Duration duration;
-  final DateTime sessionStart;
-  final List<DetectionRecord> detections;
-  final int windowDuration;
-  final String colorMapName;
+  final ui.Image spectrogramImage;
+  final double centerSec;
+  final double durationSec;
   final ColorScheme colorScheme;
-  final Int32List _lut;
 
-  static const int _fftSize = 1024;
-  static const int _hopSize = 256;
-  static const double _viewSeconds = 8.0;
-  static const double _dbFloor = -80.0;
-  static const double _dbCeiling = 0.0;
-  static const int _maxFreqHz = 16000;
+  /// How many seconds of audio the widget viewport shows.
+  static const double _viewSeconds = 10.0;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (duration == Duration.zero) return;
+    if (durationSec <= 0) return;
 
-    final centerSec = position.inMicroseconds / 1000000.0;
+    final imgW = spectrogramImage.width.toDouble();
+    final imgH = spectrogramImage.height.toDouble();
+
+    // Derive pixel mapping from image width and player duration.
+    final pxPerSec = imgW / durationSec;
+
     final startSec = centerSec - _viewSeconds / 2;
-    final numColumns = size.width.ceil();
+    final endSec = centerSec + _viewSeconds / 2;
 
-    // How many frequency bins to show (up to 16 kHz).
-    final nyquist = audio.sampleRate / 2;
-    final binCount = _fftSize ~/ 2 + 1;
-    final displayBins =
-        (_maxFreqHz / nyquist * binCount).round().clamp(1, binCount);
+    // Convert time to image pixel x.
+    final srcX1 = (startSec * pxPerSec).clamp(0.0, imgW);
+    final srcX2 = (endSec * pxPerSec).clamp(0.0, imgW);
 
-    final secPerPixel = _viewSeconds / numColumns;
+    // Destination x: offset when the view extends before/after the image.
+    final dstX1 = startSec < 0 ? (-startSec / _viewSeconds * size.width) : 0.0;
+    final dstX2 = endSec > durationSec
+        ? size.width - ((endSec - durationSec) / _viewSeconds * size.width)
+        : size.width;
 
-    // Pre-compute Hann window.
-    final hannWindow = Float64List(_fftSize);
-    for (var i = 0; i < _fftSize; i++) {
-      hannWindow[i] = 0.5 * (1 - math.cos(2 * math.pi * i / (_fftSize - 1)));
-    }
-    final fft = FFT(_fftSize);
-
-    final Paint cellPaint = Paint()..style = PaintingStyle.fill;
-    final binHeight = size.height / displayBins;
-
-    for (var col = 0; col < numColumns; col++) {
-      final colTimeSec = startSec + col * secPerPixel;
-      final colSample = (colTimeSec * audio.sampleRate).round();
-
-      if (colSample + _fftSize < 0 || colSample >= audio.totalSamples) {
-        continue;
-      }
-
-      final chunk = audio.readFloat32(colSample, _fftSize);
-      final input = Float64List(_fftSize);
-      for (var i = 0; i < _fftSize; i++) {
-        input[i] = chunk[i] * hannWindow[i];
-      }
-
-      final spectrum = fft.realFft(input);
-
-      final x = col.toDouble();
-      for (var bin = 0; bin < displayBins; bin++) {
-        final y = size.height - (bin + 1) * binHeight;
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
-        final db = 10 * math.log(power + 1e-10) / math.ln10;
-        final norm =
-            ((db - _dbFloor) / (_dbCeiling - _dbFloor)).clamp(0.0, 1.0);
-
-        if (norm < 0.005) continue;
-
-        final lutIdx = (norm * 255).round().clamp(0, 255);
-        cellPaint.color = Color(_lut[lutIdx]);
-        canvas.drawRect(Rect.fromLTWH(x, y, 1.2, binHeight + 0.5), cellPaint);
-      }
+    if (srcX2 > srcX1 && dstX2 > dstX1) {
+      canvas.drawImageRect(
+        spectrogramImage,
+        Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+        Rect.fromLTRB(dstX1, 0, dstX2, size.height),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
     }
 
-    // ── Detection overlays ────────────────────────────────────────────
-    final overlayPaint = Paint()
-      ..color = colorScheme.primary.withAlpha(35)
-      ..style = PaintingStyle.fill;
-    final borderPaint = Paint()
-      ..color = colorScheme.primary.withAlpha(90)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    for (final d in detections) {
-      final detOffset =
-          d.timestamp.difference(sessionStart).inMicroseconds / 1000000.0;
-      final detEnd = detOffset + windowDuration;
-      final x1 = ((detOffset - startSec) / secPerPixel).clamp(0.0, size.width);
-      final x2 = ((detEnd - startSec) / secPerPixel).clamp(0.0, size.width);
-      if (x2 <= 0 || x1 >= size.width) continue;
-      final rect = Rect.fromLTRB(x1, 0, x2, size.height);
-      canvas.drawRect(rect, overlayPaint);
-      canvas.drawRect(rect, borderPaint);
-    }
-
-    // ── Playhead ──────────────────────────────────────────────────────
-    final playheadX = size.width / 2;
+    // ── Playhead (fixed at center) ────────────────────────────────────
     canvas.drawLine(
-      Offset(playheadX, 0),
-      Offset(playheadX, size.height),
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
       Paint()
         ..color = Colors.white
         ..strokeWidth = 1.5,
     );
 
     // ── Time labels ───────────────────────────────────────────────────
+    final pxPerSecScreen = size.width / _viewSeconds;
     final textStyle = TextStyle(
       color: Colors.white.withAlpha(180),
       fontSize: 9,
     );
     final tp = TextPainter(textDirection: ui.TextDirection.ltr);
     final firstLabel = ((startSec / 2).ceil() * 2).toDouble();
-    for (var t = firstLabel; t < startSec + _viewSeconds; t += 2) {
+    for (var t = firstLabel; t < endSec; t += 2) {
       if (t < 0) continue;
-      final x = (t - startSec) / secPerPixel;
+      final x = (t - startSec) * pxPerSecScreen;
       if (x < 0 || x > size.width - 30) continue;
       tp.text = TextSpan(text: _fmtSec(t), style: textStyle);
       tp.layout();
@@ -873,11 +934,9 @@ class _ReviewSpectrogramPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ReviewSpectrogramPainter old) {
-    return old.position != position ||
-        old.duration != duration ||
-        old.colorMapName != colorMapName ||
-        !identical(old.audio, audio) ||
-        !identical(old.detections, detections);
+    return old.centerSec != centerSec ||
+        old.durationSec != durationSec ||
+        !identical(old.spectrogramImage, spectrogramImage);
   }
 }
 
@@ -907,7 +966,7 @@ class _AudioPlayerBar extends StatelessWidget {
         children: [
           IconButton(
             icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle),
-            iconSize: 36,
+            iconSize: 44,
             color: theme.colorScheme.primary,
             onPressed: () {
               if (isPlaying) {
@@ -929,8 +988,8 @@ class _AudioPlayerBar extends StatelessWidget {
             child: SliderTheme(
               data: SliderThemeData(
                 trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
                 activeTrackColor: theme.colorScheme.primary,
                 inactiveTrackColor: theme.colorScheme.surfaceContainerHighest,
                 thumbColor: theme.colorScheme.primary,
@@ -1045,14 +1104,14 @@ class _SpeciesTile extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.play_arrow_rounded,
-                            size: 18,
+                            size: 24,
                             color: theme.colorScheme.primary,
                           ),
                           Text(
                             offsetStr,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: theme.colorScheme.primary,
-                              fontSize: 9,
+                              fontSize: 10,
                             ),
                           ),
                         ],
@@ -1137,7 +1196,7 @@ class _SpeciesTile extends ConsumerWidget {
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
                       Icons.expand_more,
-                      size: 20,
+                      size: 24,
                       color: theme.colorScheme.onSurface.withAlpha(120),
                     ),
                   ),
@@ -1219,16 +1278,19 @@ class _ClusterRow extends StatelessWidget {
         : '${_fmtOffset(start)} – ${_fmtOffset(end)}';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
         children: [
           InkWell(
             onTap: onSeek,
-            borderRadius: BorderRadius.circular(12),
-            child: Icon(
-              Icons.play_arrow_rounded,
-              size: 16,
-              color: theme.colorScheme.primary,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                Icons.play_arrow_rounded,
+                size: 22,
+                color: theme.colorScheme.primary,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -1260,11 +1322,14 @@ class _ClusterRow extends StatelessWidget {
           const SizedBox(width: 4),
           InkWell(
             onTap: onDelete,
-            borderRadius: BorderRadius.circular(12),
-            child: Icon(
-              Icons.close,
-              size: 16,
-              color: theme.colorScheme.onSurface.withAlpha(100),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                Icons.close,
+                size: 22,
+                color: theme.colorScheme.onSurface.withAlpha(100),
+              ),
             ),
           ),
         ],
