@@ -394,8 +394,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
+          final nav = Navigator.of(context);
           final canPop = await _onWillPop();
-          if (canPop && mounted) Navigator.of(context).pop();
+          if (canPop) nav.pop();
         }
       },
       child: Scaffold(

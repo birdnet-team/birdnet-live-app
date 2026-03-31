@@ -167,7 +167,7 @@ class AudioDecoder {
     // Byte 4: metadata header.  Bytes 8–41: STREAMINFO body (34 bytes).
     final si = ByteData.sublistView(bytes, 8, 42);
 
-    final minBlock = si.getUint16(0, Endian.big);
+    
     final maxBlock = si.getUint16(2, Endian.big);
 
     // Bytes 10-12: sample rate (20 bits), channels-1 (3 bits), bps-1 (5 bits).
@@ -228,14 +228,14 @@ class AudioDecoder {
     // blocking strategy.
     if (!_syncToFrame(reader)) return null;
 
-    final frameStart = reader.bytePosition - 2;
+    
 
     // Already consumed 2 sync bytes.  Next nibble is block-size code.
     final bsAndSr = reader.readBits(8);
     final blockSizeCode = bsAndSr >> 4;
     final sampleRateCode = bsAndSr & 0x0F;
 
-    final channelAndBps = reader.readBits(8);
+    reader.readBits(8);
     // ignore channel and bps — we know from STREAMINFO.
 
     // Frame number (FLAC UTF-8 encoding).
@@ -475,7 +475,7 @@ class AudioDecoder {
     final escapeCode = method == 0 ? 15 : 31;
 
     final residuals = <int>[];
-    final totalResiduals = blockSize - predictorOrder;
+    
 
     for (var p = 0; p < nPartitions; p++) {
       final samplesInPartition = p == 0
