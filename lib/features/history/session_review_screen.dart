@@ -48,6 +48,7 @@ import 'dart:ui' as ui;
 
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -549,13 +550,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// 1. Group all detections by scientific name.
   /// 2. Sort each group by timestamp.
   /// 3. Within each species, merge consecutive detections whose gap is
-  ///    shorter than [maxGapSec] into clusters.
+  ///    shorter than [maxGapSec] or 3s into clusters.
   /// 4. Sort species by their earliest detection.
   static List<_SpeciesGroup> _buildSpeciesGroups(
     List<DetectionRecord> records,
     int maxGapSec,
   ) {
     if (records.isEmpty) return const [];
+
+    // Force grouping gap to be at least 3 seconds.
+    final effectiveMaxGapSec = math.max(3, maxGapSec);
 
     final bySpecies = <String, List<DetectionRecord>>{};
     for (final r in records) {
@@ -567,14 +571,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final sorted = List.of(entry.value)
         ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-      // Merge consecutive detections within one inference window.
+      // Merge consecutive detections.
       final clusters = <_DetectionCluster>[];
       var current = <DetectionRecord>[sorted.first];
 
       for (var i = 1; i < sorted.length; i++) {
         final gap =
             sorted[i].timestamp.difference(sorted[i - 1].timestamp).inSeconds;
-        if (gap <= maxGapSec) {
+        if (gap <= effectiveMaxGapSec) {
           current.add(sorted[i]);
         } else {
           clusters.add(_DetectionCluster(current));

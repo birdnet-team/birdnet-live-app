@@ -79,6 +79,44 @@ class GeoModel {
   GeoModel();
 
   // ---------------------------------------------------------------------------
+  // 48-Week Predictions (all species at once)
+  // ---------------------------------------------------------------------------
+
+  /// Run the geo-model for all 48 weeks at a given location and return
+  /// a map of scientific name → List<double>(48) probabilities.
+  ///
+  /// This runs 48 single-sample inferences (the model input is [1,3])
+  /// but collects results for every species in one pass — much more
+  /// efficient than calling per-species.
+  Map<String, List<double>> predictAllWeeks({
+    required double latitude,
+    required double longitude,
+  }) {
+    if (!isReady) {
+      throw StateError('GeoModel not ready. Call loadLabels() + loadModel().');
+    }
+
+    // Pre-allocate result lists.
+    final results = <String, List<double>>{};
+    for (final label in _labels) {
+      results[label.scientificName] = List<double>.filled(48, 0.0);
+    }
+
+    for (int w = 1; w <= 48; w++) {
+      final scores = predict(
+        latitude: latitude,
+        longitude: longitude,
+        week: w,
+      );
+      for (final entry in scores.entries) {
+        results[entry.key]?[w - 1] = entry.value;
+      }
+    }
+
+    return results;
+  }
+
+  // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
 

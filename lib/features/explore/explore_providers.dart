@@ -22,6 +22,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -138,16 +139,21 @@ class ExploreSpecies {
     required this.commonName,
     required this.geoScore,
     this.taxonomy,
+    this.weeklyScores,
   });
 
   final String scientificName;
   final String commonName;
   final double geoScore;
   final TaxonomySpecies? taxonomy;
+
+  /// 48-week probability curve (index 0 = week 1, etc.). Null until loaded.
+  final List<double>? weeklyScores;
 }
 
 /// Species expected at the user's current location and time, ranked by
-/// geo-model probability and enriched with taxonomy metadata.
+/// geo-model probability for the current week and enriched with taxonomy
+/// metadata and 48-week probability curves.
 ///
 /// Invalidate [currentLocationProvider] to refresh after a location change.
 final exploreSpeciesProvider =
@@ -160,24 +166,49 @@ final exploreSpeciesProvider =
 
   if (location == null) return const [];
 
-  final week = GeoModel.dateTimeToWeek(DateTime.now());
+  final currentWeek = GeoModel.dateTimeToWeek(DateTime.now());
 
-  final geoResults = geoModel.expectedSpecies(
-    latitude: location.latitude,
-    longitude: location.longitude,
-    week: week,
+  // Run all 48 weeks in one batch (48 inference calls, but collects all
+  // species at once — much cheaper than per-species).
+  final allWeeks = await compute(
+    _predictAllWeeksIsolate,
+    _PredictAllWeeksParams(
+      geoModel: geoModel,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    ),
   );
 
-  return geoResults.map((geo) {
-    final taxonomy = taxonomyService.lookup(geo.scientificName);
-    return ExploreSpecies(
-      scientificName: geo.scientificName,
-      commonName:
-          taxonomy?.commonNameForLocale(speciesLocale) ?? geo.commonName,
-      geoScore: geo.score,
-      taxonomy: taxonomy,
+  // Build species list filtered by current-week score.
+  const threshold = 0.03;
+  final results = <ExploreSpecies>[];
+
+  for (final entry in allWeeks.entries) {
+    final sciName = entry.key;
+    final weeklyScores = entry.value;
+    final currentScore = weeklyScores[currentWeek - 1];
+
+    if (currentScore < threshold) continue;
+
+    final taxonomy = taxonomyService.lookup(sciName);
+    final geoLabel = geoModel.labels.where(
+      (l) => l.scientificName == sciName,
     );
-  }).toList();
+    final commonName = taxonomy?.commonNameForLocale(speciesLocale) ??
+        (geoLabel.isNotEmpty ? geoLabel.first.commonName : sciName);
+
+    results.add(ExploreSpecies(
+      scientificName: sciName,
+      commonName: commonName,
+      geoScore: currentScore,
+      taxonomy: taxonomy,
+      weeklyScores: weeklyScores,
+    ));
+  }
+
+  // Sort by current-week probability (descending).
+  results.sort((a, b) => b.geoScore.compareTo(a.geoScore));
+  return results;
 });
 
 /// Geo-model scores as a `Map<scientificName, score>` for use by the
@@ -197,3 +228,48 @@ final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
     week: week,
   );
 });
+
+// ---------------------------------------------------------------------------
+// Isolate helper for heavy 48-week computation
+// ---------------------------------------------------------------------------
+
+class _PredictAllWeeksParams {
+  const _PredictAllWeeksParams({
+    required this.geoModel,
+    required this.latitude,
+    required this.longitude,
+  });
+  final GeoModel geoModel;
+  final double latitude;
+  final double longitude;
+}
+
+Map<String, List<double>> _predictAllWeeksIsolate(
+    _PredictAllWeeksParams params) {
+  return params.geoModel.predictAllWeeks(
+    latitude: params.latitude,
+    longitude: params.longitude,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Probability category mapping
+// ---------------------------------------------------------------------------
+
+/// Maps a geo-model probability (0–1) to a qualitative frequency label.
+String probabilityCategory(double score) {
+  if (score >= 0.4) return 'Abundant';
+  if (score >= 0.2) return 'Common';
+  if (score >= 0.1) return 'Uncommon';
+  if (score >= 0.05) return 'Occasional';
+  return 'Rare';
+}
+
+/// Returns a color for the probability category.
+Color probabilityCategoryColor(double score) {
+  if (score >= 0.4) return const Color(0xFF2E7D32); // green
+  if (score >= 0.2) return const Color(0xFF558B2F); // light green
+  if (score >= 0.1) return const Color(0xFFF9A825); // amber
+  if (score >= 0.05) return const Color(0xFFEF6C00); // orange
+  return const Color(0xFFD32F2F); // red
+}

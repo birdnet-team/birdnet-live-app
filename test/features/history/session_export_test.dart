@@ -131,7 +131,7 @@ void main() {
     });
   });
 
-  group('buildSessionZip', () {
+  group('buildSessionExport', () {
     late Directory tempDir;
 
     setUp(() {
@@ -142,18 +142,20 @@ void main() {
       if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
 
-    test('returns null when recording path is null', () async {
+    test('returns file without ZIP when recording path is null', () async {
       final session = _makeSession(recordingPath: null);
-      final result = await buildSessionZip(session);
-      expect(result, isNull);
+      final result = await buildSessionExport(session, format: 'raven', includeAudio: true);
+      expect(result, isNotNull);
+      expect(result!.endsWith('.txt'), isTrue);
     });
 
-    test('returns null when recording file does not exist', () async {
+    test('returns file without ZIP when recording file does not exist', () async {
       final session = _makeSession(
         recordingPath: '${tempDir.path}/nonexistent.wav',
       );
-      final result = await buildSessionZip(session);
-      expect(result, isNull);
+      final result = await buildSessionExport(session, format: 'raven', includeAudio: true);
+      expect(result, isNotNull);
+      expect(result!.endsWith('.txt'), isTrue);
     });
 
     test('creates a ZIP with wav and selection table', () async {
@@ -170,7 +172,7 @@ void main() {
         ],
       );
 
-      final zipPath = await buildSessionZip(session);
+      final zipPath = await buildSessionExport(session, format: 'raven', includeAudio: true);
       expect(zipPath, isNotNull);
       expect(File(zipPath!).existsSync(), isTrue);
 

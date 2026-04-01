@@ -56,10 +56,9 @@ class SessionLibraryScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
+          return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: sessions.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final session = sessions[index];
               return _SessionTile(
@@ -129,35 +128,101 @@ class _SessionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final dateStr = DateFormat.yMMMd().add_Hm().format(session.startTime);
-    final duration = session.duration;
-    final species = session.uniqueSpeciesCount;
-    final detections = session.detections.length;
+    final dateStr = DateFormat.yMMMd().format(session.startTime);
+    final timeStr = DateFormat.jm().format(session.startTime);
 
-    return ListTile(
-      onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: theme.colorScheme.primaryContainer,
-        child: Icon(
-          Icons.mic,
-          color: theme.colorScheme.onPrimaryContainer,
+    final duration = session.duration;
+    final speciesCount = session.uniqueSpeciesCount;
+    final detectionCount = session.detections.length;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.graphic_eq_rounded,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.displayName.isNotEmpty
+                              ? session.displayName
+                              : 'Unknown Session',
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today_outlined,
+                                size: 14,
+                                color: theme.colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$dateStr at $timeStr',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete_outline,
+                        color: theme.colorScheme.error),
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _StatBadge(
+                    icon: Icons.timer_outlined,
+                    label: _formatDuration(duration),
+                  ),
+                  _StatBadge(
+                    icon: Icons.pets_outlined,
+                    label: '$speciesCount spp.',
+                  ),
+                  _StatBadge(
+                    icon: Icons.music_note_outlined,
+                    label: '$detectionCount det.',
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-      title: Text(
-        session.displayName,
-        style: theme.textTheme.bodyMedium,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        '$dateStr · ${_formatDuration(duration)} · '
-        '${l10n.sessionSpeciesCount(species)} · '
-        '${l10n.sessionDetectionCount(detections)}',
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.delete_outline, size: 20),
-        onPressed: onDelete,
       ),
     );
   }
@@ -168,5 +233,31 @@ class _SessionTile extends StatelessWidget {
     final seconds = d.inSeconds.remainder(60);
     if (hours > 0) return '${hours}h ${minutes}m';
     return '${minutes}m ${seconds}s';
+  }
+}
+
+class _StatBadge extends StatelessWidget {
+  const _StatBadge({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: theme.colorScheme.primary),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
   }
 }

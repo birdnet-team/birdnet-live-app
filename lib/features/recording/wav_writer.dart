@@ -104,6 +104,8 @@ class WavWriter implements AudioFileWriter {
     }
     final pcm = _float32ToPcm16(samples);
     await _file!.writeFrom(pcm);
+    await _file!
+        .flush(); // Prevent OS file caching from causing OOM on long recordings
     _dataSize += pcm.length;
   }
 

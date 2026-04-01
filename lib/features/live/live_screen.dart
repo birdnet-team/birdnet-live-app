@@ -513,7 +513,7 @@ class _StatusBanner extends StatelessWidget {
 }
 
 /// Session info bar showing detection count and duration.
-class _SessionInfoBar extends StatelessWidget {
+class _SessionInfoBar extends ConsumerWidget {
   const _SessionInfoBar({
     required this.liveCount,
     required this.controller,
@@ -526,24 +526,50 @@ class _SessionInfoBar extends StatelessWidget {
   final LiveController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+
+    // Calculate total detections
+    final totalDetections = controller.sessionDetections.length;
+
     // Unique species across the entire session (cumulative).
     final totalUnique = controller.sessionDetections
         .map((d) => d.scientificName)
         .toSet()
         .length;
 
-    final label = liveCount > 0
-        ? '$liveCount detected now · $totalUnique species this session'
-        : '$totalUnique species this session';
+    // Estimate file size and duration
+    int durationSec = 0;
+    if (controller.session != null) {
+      durationSec = controller.session!.duration.inSeconds;
+    }
+
+    final recordingFormat = ref.read(recordingFormatProvider);
+    // Estimate: Wav is ~96 kB/s, FLAC is ~60 kB/s
+    final bytesPerSec = recordingFormat == 'flac' ? 60000 : 96000;
+    final estimatedBytes = durationSec * bytesPerSec;
+    final mb = estimatedBytes / (1024 * 1024);
+
+    final String durationStr = _formatDuration(durationSec);
+
+    final List<String> parts = [];
+    if (liveCount > 0) parts.add('$liveCount now');
+    parts.add('$totalUnique spp');
+    parts.add('$totalDetections det');
+    if (durationSec > 0) {
+      parts.add(durationStr);
+      parts.add('${mb.toStringAsFixed(1)}MB');
+    }
+
+    final label = parts.join(' • ');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.flutter_dash,
+            Icons.info_outline,
             size: 14,
             color: theme.colorScheme.primary,
           ),
@@ -557,6 +583,17 @@ class _SessionInfoBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDuration(int sec) {
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    if (m >= 60) {
+      final h = m ~/ 60;
+      final rh = m % 60;
+      return '${h}h ${rh}m';
+    }
+    return '${m}:${s.toString().padLeft(2, '0')}';
   }
 }
 

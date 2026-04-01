@@ -9,6 +9,8 @@
   "about": "Über",
   "onboardingWelcomeTitle": "Willkommen bei BirdNET Live",
   "onboardingWelcomeBody": "Echtzeit-Vogelartenerkennung mit KI direkt auf dem Gerät. Kein Internet erforderlich.",
+  "onboardingHowItWorksTitle": "Wie es funktioniert",
+  "onboardingHowItWorksBody": "BirdNET Live hört kontinuierlich auf Ihre Umgebung. Es analysiert Audio mithilfe eines lokalen KI-Modells, um Vogelarten in Echtzeit zu identifizieren. Erkennungen werden auf einem live scrollenden Spektrogramm hervorgehoben. Alles wird lokal verarbeitet, d. h. es funktioniert komplett offline und schützt Ihre Privatsphäre.",
   "onboardingFeaturesTitle": "Vier Modi",
   "onboardingFeaturesBody": "Live-Überwachung, Hintergrund-Erfassungen, zeitgesteuerte Punktzählungen und Offline-Dateianalyse — alles mit Echtzeit-Spektrogramm.",
   "onboardingPermissionsTitle": "Berechtigungen",

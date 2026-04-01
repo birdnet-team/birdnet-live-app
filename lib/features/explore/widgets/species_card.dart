@@ -14,6 +14,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/services/taxonomy_service.dart';
+import '../explore_providers.dart';
 
 /// A compact species card with a 4:3 thumbnail.
 class SpeciesCard extends StatelessWidget {
@@ -63,27 +64,16 @@ class SpeciesCard extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: TaxonomyService.thumbUrl(scientificName),
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.flutter_dash,
-                    size: 28,
-                    color: theme.colorScheme.onSurface.withAlpha(60),
-                  ),
+                placeholder: (_, __) => Image.asset(
+                  'assets/images/dummy_species.png',
+                  fit: BoxFit.cover,
                 ),
-                errorWidget: (_, __, ___) => Container(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    size: 24,
-                    color: theme.colorScheme.onSurface.withAlpha(60),
-                  ),
+                errorWidget: (_, __, ___) => Image.asset(
+                  'assets/images/dummy_species.png',
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-
-            const SizedBox(width: 12),
-
             // ── Names ─────────────────────────────────────────
             Expanded(
               child: Padding(
@@ -118,14 +108,29 @@ class SpeciesCard extends StatelessWidget {
             // ── Score indicator ───────────────────────────────
             if (confidence != null || geoScore != null)
               Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Text(
-                  confidence != null
-                      ? '${(confidence! * 100).toStringAsFixed(0)}%'
-                      : '${(geoScore! * 100).toStringAsFixed(1)}%',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
+                padding: const EdgeInsets.only(right: 8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: probabilityCategoryColor(geoScore ?? confidence ?? 0)
+                        .withAlpha(30),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color:
+                          probabilityCategoryColor(geoScore ?? confidence ?? 0)
+                              .withAlpha(120),
+                    ),
+                  ),
+                  child: Text(
+                    confidence != null
+                        ? '${(confidence! * 100).toStringAsFixed(0)}%'
+                        : probabilityCategory(geoScore!),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color:
+                          probabilityCategoryColor(geoScore ?? confidence ?? 0),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),

@@ -514,8 +514,37 @@ class LiveController {
             detection,
             audioClipPath: clipPath,
           );
-          _session!.addDetection(record);
-          _sessionDetections.insert(0, record); // newest first
+
+          // Check if we should merge with a recent detection of the same species
+          final recentMatchIdx = _sessionDetections.indexWhere((r) =>
+              r.scientificName == record.scientificName &&
+              record.timestamp.difference(r.timestamp).inMilliseconds.abs() <=
+                  3000);
+
+          if (recentMatchIdx != -1) {
+            // Update the existing record if the new one has higher confidence
+            final existing = _sessionDetections[recentMatchIdx];
+            if (record.confidence > existing.confidence) {
+              final updated = DetectionRecord(
+                scientificName: existing.scientificName,
+                commonName: existing.commonName,
+                confidence:
+                    record.confidence, // Update to new higher confidence
+                timestamp: existing.timestamp, // Keep original timestamp
+                audioClipPath: existing.audioClipPath ?? record.audioClipPath,
+              );
+              _sessionDetections[recentMatchIdx] = updated;
+
+              // Also update in session
+              final sessionIdx = _session!.detections.indexOf(existing);
+              if (sessionIdx != -1) {
+                _session!.detections[sessionIdx] = updated;
+              }
+            }
+          } else {
+            _session!.addDetection(record);
+            _sessionDetections.insert(0, record); // newest first
+          }
         }
 
         // Cap in-memory list to avoid unbounded growth.

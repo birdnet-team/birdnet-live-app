@@ -36,21 +36,28 @@ class OnboardingScreen extends ConsumerWidget {
           ),
           decoration: _pageDecoration(theme),
         ),
-        // 2. Features
+        // 2. How It Works
+        PageViewModel(
+          title: l10n.onboardingHowItWorksTitle,
+          body: l10n.onboardingHowItWorksBody,
+          image: _buildIcon(Icons.mic_rounded, theme),
+          decoration: _pageDecoration(theme),
+        ),
+        // 3. Features
         PageViewModel(
           title: l10n.onboardingFeaturesTitle,
           body: l10n.onboardingFeaturesBody,
           image: _buildIcon(Icons.grid_view_rounded, theme),
           decoration: _pageDecoration(theme),
         ),
-        // 3. Permissions
+        // 4. Permissions
         PageViewModel(
           title: l10n.onboardingPermissionsTitle,
           body: l10n.onboardingPermissionsBody,
           image: _buildIcon(Icons.security, theme),
           decoration: _pageDecoration(theme),
         ),
-        // 4. Ready
+        // 5. Ready
         PageViewModel(
           title: l10n.onboardingReadyTitle,
           body: l10n.onboardingReadyBody,

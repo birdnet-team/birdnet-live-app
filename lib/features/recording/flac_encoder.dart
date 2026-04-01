@@ -646,6 +646,8 @@ class FlacEncoder implements AudioFileWriter {
       tail.setRange(0, rem, _pending, offset);
       _pending = tail;
     }
+    await _file!
+        .flush(); // Prevent OS file caching from causing OOM on long recordings
   }
 
   @override

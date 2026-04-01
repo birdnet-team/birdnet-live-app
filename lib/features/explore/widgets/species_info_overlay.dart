@@ -25,6 +25,7 @@ import '../../../shared/models/taxonomy_species.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
 import '../explore_providers.dart';
+import '../../inference/geo_model.dart';
 
 /// Shows a modal bottom sheet with detailed species information.
 class SpeciesInfoOverlay {
@@ -138,19 +139,13 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 child: CachedNetworkImage(
                   imageUrl: TaxonomyService.mediumUrl(widget.scientificName),
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                  placeholder: (_, __) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      size: 64,
-                      color: theme.colorScheme.onSurface.withAlpha(60),
-                    ),
+                  errorWidget: (_, __, ___) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -202,6 +197,11 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                       ),
                     ),
                   ),
+
+                // ── 48-Week Probability Chart ──────────────────────────────
+                _WeeklyProbabilityChart(
+                  scientificName: widget.scientificName,
+                ),
 
                 // ── External links ───────────────────────────────
                 Padding(
@@ -286,6 +286,156 @@ class _LinkChip extends StatelessWidget {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 48-Week Probability Chart
+// ---------------------------------------------------------------------------
+
+class _WeeklyProbabilityChart extends ConsumerWidget {
+  const _WeeklyProbabilityChart({required this.scientificName});
+
+  final String scientificName;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final speciesAsync = ref.watch(exploreSpeciesProvider);
+
+    return speciesAsync.when(
+      data: (speciesList) {
+        // Find this species in the already-computed explore list.
+        final match = speciesList.where(
+          (s) => s.scientificName == scientificName,
+        );
+        final probs = match.isNotEmpty ? match.first.weeklyScores : null;
+
+        if (probs == null || probs.every((p) => p == 0)) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'No probability data for this location.',
+              style: theme.textTheme.bodySmall,
+            ),
+          );
+        }
+
+        final currentWeekIndex = GeoModel.dateTimeToWeek(DateTime.now()) - 1;
+        final currentScore = probs[currentWeekIndex];
+        final category = probabilityCategory(currentScore);
+        final categoryColor = probabilityCategoryColor(currentScore);
+
+        // Find max for scaling.
+        var maxProb = 0.0;
+        for (final p in probs) {
+          if (p > maxProb) maxProb = p;
+        }
+        if (maxProb == 0) maxProb = 1.0;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+              child: Row(
+                children: [
+                  Text(
+                    'Expected Frequency',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: categoryColor.withAlpha(30),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      category,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: categoryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Predicted presence across 48 weeks based on your location.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(180),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 80,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: List.generate(48, (index) {
+                    final normalized = probs[index] / maxProb;
+                    final isCurrentWeek = index == currentWeekIndex;
+                    return Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                        height: (normalized * 80).clamp(1.0, 80.0),
+                        decoration: BoxDecoration(
+                          color: isCurrentWeek
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.primary.withAlpha(
+                                  (50 + (normalized * 205))
+                                      .toInt()
+                                      .clamp(0, 255),
+                                ),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(2)),
+                          border: isCurrentWeek
+                              ? Border.all(
+                                  color: theme.colorScheme.onSurface,
+                                  width: 1.5,
+                                )
+                              : null,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            // Month labels
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text('Jan', style: TextStyle(fontSize: 10)),
+                  Text('Apr', style: TextStyle(fontSize: 10)),
+                  Text('Jul', style: TextStyle(fontSize: 10)),
+                  Text('Oct', style: TextStyle(fontSize: 10)),
+                  Text('Dec', style: TextStyle(fontSize: 10)),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
+      error: (_, __) => const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: Text('Failed to load chart')),
+      ),
     );
   }
 }

@@ -161,26 +161,70 @@ class _SpectrogramStrip extends StatefulWidget {
   State<_SpectrogramStrip> createState() => _SpectrogramStripState();
 }
 
-class _SpectrogramStripState extends State<_SpectrogramStrip> {
+class _SpectrogramStripState extends State<_SpectrogramStrip>
+    with SingleTickerProviderStateMixin {
   /// When non-null the view is pinned to this center (user panned).
   /// When null the view follows the playback position.
   double? _pannedCenterSec;
 
-  double get _viewCenterSec =>
-      _pannedCenterSec ?? widget.position.inMicroseconds / 1000000.0;
+  late final Ticker _ticker;
+  double _interpolatedPositionSec = 0.0;
+  DateTime _lastTickTime = DateTime.now();
+
+  double get _viewCenterSec => _pannedCenterSec ?? _interpolatedPositionSec;
+
+  @override
+  void initState() {
+    super.initState();
+    _interpolatedPositionSec = widget.position.inMicroseconds / 1000000.0;
+    _ticker = createTicker((elapsed) {
+      if (widget.isPlaying && _pannedCenterSec == null) {
+        final now = DateTime.now();
+        final delta = now.difference(_lastTickTime).inMicroseconds / 1000000.0;
+        setState(() {
+          _interpolatedPositionSec += delta;
+        });
+        _lastTickTime = now;
+      } else {
+        _lastTickTime = DateTime.now();
+      }
+    });
+    _ticker.start();
+  }
 
   @override
   void didUpdateWidget(_SpectrogramStrip oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Sync interpolated position with the source of truth whenever it updates
+    if (widget.position != oldWidget.position) {
+      final actualSec = widget.position.inMicroseconds / 1000000.0;
+      // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
+      if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
+        _interpolatedPositionSec = actualSec;
+      }
+    }
+
+    if (widget.isPlaying && !oldWidget.isPlaying) {
+      _lastTickTime = DateTime.now();
+    }
+
     // When playback resumes while the view is panned, seek to the panned
     // position so playback continues from the white center marker.
     if (widget.isPlaying && !oldWidget.isPlaying && _pannedCenterSec != null) {
       final seekTarget = _pannedCenterSec!;
       _pannedCenterSec = null;
+      _interpolatedPositionSec = seekTarget;
       widget.onSeek(Duration(microseconds: (seekTarget * 1e6).round()));
     } else if (widget.isPlaying && !oldWidget.isPlaying) {
       _pannedCenterSec = null;
     }
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
   }
 
   @override
@@ -514,8 +558,9 @@ class _SpeciesTile extends ConsumerWidget {
                     onTap: () => onSeekCluster(group.clusters.first),
                     borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      width: 46,
-                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -700,17 +745,17 @@ class _ClusterRow extends StatelessWidget {
         children: [
           InkWell(
             onTap: onSeek,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             child: Padding(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(12),
               child: Icon(
                 Icons.play_arrow_rounded,
-                size: 22,
+                size: 24,
                 color: theme.colorScheme.primary,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           Expanded(
             child: Text(
               timeStr,
@@ -739,12 +784,12 @@ class _ClusterRow extends StatelessWidget {
           const SizedBox(width: 4),
           InkWell(
             onTap: onDelete,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             child: Padding(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(12),
               child: Icon(
                 Icons.close,
-                size: 22,
+                size: 24,
                 color: theme.colorScheme.onSurface.withAlpha(100),
               ),
             ),

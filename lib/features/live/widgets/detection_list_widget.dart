@@ -103,16 +103,13 @@ class DetectionTile extends ConsumerWidget {
                     detection.scientificName,
                   ),
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
+                  placeholder: (_, __) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.flutter_dash,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withAlpha(60),
-                    ),
+                  errorWidget: (_, __, ___) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),

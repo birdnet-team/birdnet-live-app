@@ -36,6 +36,14 @@
   "@onboardingWelcomeBody": {
     "description": "Onboarding welcome screen body text"
   },
+  "onboardingHowItWorksTitle": "How It Works",
+  "@onboardingHowItWorksTitle": {
+    "description": "Onboarding how it works screen title"
+  },
+  "onboardingHowItWorksBody": "BirdNET Live continuously listens to your surroundings. It analyzes audio using an on-device artificial intelligence model to identify bird species in real-time. Detections are highlighted on a live scrolling spectrogram. Everything is processed locally, meaning it works entirely offline and protects your privacy.",
+  "@onboardingHowItWorksBody": {
+    "description": "Onboarding how it works body text"
+  },
   "onboardingFeaturesTitle": "Four Modes",
   "@onboardingFeaturesTitle": {
     "description": "Onboarding features screen title"

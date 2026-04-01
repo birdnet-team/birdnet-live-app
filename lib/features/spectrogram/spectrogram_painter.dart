@@ -259,7 +259,8 @@ class SpectrogramPainter extends CustomPainter {
     final recorder = ui.PictureRecorder();
     final offscreen = Canvas(recorder);
 
-    final clearPaint = Paint()..color = const Color(0xFF000000);
+    // Use the base color of the selected color map for clearing, not pure black.
+    final clearPaint = Paint()..color = Color(_lut[0]);
 
     if (_spectrogramImage != null &&
         _spectrogramImage!.width == imgW &&
@@ -313,9 +314,11 @@ class SpectrogramPainter extends CustomPainter {
         // Flip vertically — low frequencies at the bottom.
         final srcBin = imgH - 1 - y;
         final value = srcBin < column.length ? column[srcBin] : 0.0;
-        if (value < 0.005) continue; // Background already black.
 
+        // If the value maps to the 0th index, it's already the background color.
         final lutIndex = (value * 255).round().clamp(0, 255);
+        if (lutIndex == 0) continue;
+
         _cellPaint.color = Color(_lut[lutIndex]);
         canvas.drawRect(Rect.fromLTWH(x, y.toDouble(), 1, 1), _cellPaint);
       }
@@ -486,10 +489,10 @@ class SpectrogramPainter extends CustomPainter {
 
   /// Paint the empty state shown when no data is available.
   void _paintEmptyState(Canvas canvas, Size size) {
-    // Just fill with a very dark background.
+    // Fill with the base color of the selected color map.
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = const Color(0xFF0A0A0A),
+      Paint()..color = Color(_lut[0]),
     );
   }
 }
