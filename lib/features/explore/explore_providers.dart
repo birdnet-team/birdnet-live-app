@@ -102,7 +102,7 @@ final geoModelProvider = FutureProvider<GeoModel>((ref) async {
 
   // Ensure ONNX file is on disk (same pattern as the audio model).
   // Use modelVersion from config to detect when asset has been updated.
-  final modelVersion = geoConfig['modelVersion'] as int? ?? 0;
+  final modelVersion = geoConfig['version'] as String? ?? '0';
   final appDir = await getApplicationDocumentsDirectory();
   final versionedName = '${modelFile}_v$modelVersion';
   final onnxFile = File('${appDir.path}/$versionedName');
@@ -168,15 +168,10 @@ final exploreSpeciesProvider =
 
   final currentWeek = GeoModel.dateTimeToWeek(DateTime.now());
 
-  // Run all 48 weeks in one batch (48 inference calls, but collects all
-  // species at once — much cheaper than per-species).
-  final allWeeks = await compute(
-    _predictAllWeeksIsolate,
-    _PredictAllWeeksParams(
-      geoModel: geoModel,
-      latitude: location.latitude,
-      longitude: location.longitude,
-    ),
+  // Run all 48 weeks directly (no isolate — small model, fast inference).
+  final allWeeks = geoModel.predictAllWeeks(
+    latitude: location.latitude,
+    longitude: location.longitude,
   );
 
   // Build species list filtered by current-week score.
@@ -208,6 +203,25 @@ final exploreSpeciesProvider =
 
   // Sort by current-week probability (descending).
   results.sort((a, b) => b.geoScore.compareTo(a.geoScore));
+
+  // Normalize scores against the top species (max score = 100.0).
+  if (results.isNotEmpty) {
+    final maxScore = results.first.geoScore;
+    if (maxScore > 0) {
+      for (var i = 0; i < results.length; i++) {
+        final r = results[i];
+        results[i] = ExploreSpecies(
+          scientificName: r.scientificName,
+          commonName: r.commonName,
+          geoScore: (r.geoScore / maxScore) * 100.0,
+          taxonomy: r.taxonomy,
+          weeklyScores:
+              r.weeklyScores?.map((s) => (s / maxScore) * 100.0).toList(),
+        );
+      }
+    }
+  }
+
   return results;
 });
 
@@ -230,46 +244,23 @@ final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
 });
 
 // ---------------------------------------------------------------------------
-// Isolate helper for heavy 48-week computation
-// ---------------------------------------------------------------------------
-
-class _PredictAllWeeksParams {
-  const _PredictAllWeeksParams({
-    required this.geoModel,
-    required this.latitude,
-    required this.longitude,
-  });
-  final GeoModel geoModel;
-  final double latitude;
-  final double longitude;
-}
-
-Map<String, List<double>> _predictAllWeeksIsolate(
-    _PredictAllWeeksParams params) {
-  return params.geoModel.predictAllWeeks(
-    latitude: params.latitude,
-    longitude: params.longitude,
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Probability category mapping
 // ---------------------------------------------------------------------------
 
-/// Maps a geo-model probability (0–1) to a qualitative frequency label.
+/// Maps a normalized geo model score (0–100) to a qualitative frequency label.
 String probabilityCategory(double score) {
-  if (score >= 0.4) return 'Abundant';
-  if (score >= 0.2) return 'Common';
-  if (score >= 0.1) return 'Uncommon';
-  if (score >= 0.05) return 'Occasional';
+  if (score >= 80) return 'Abundant';
+  if (score >= 60) return 'Common';
+  if (score >= 40) return 'Uncommon';
+  if (score >= 20) return 'Occasional';
   return 'Rare';
 }
 
 /// Returns a color for the probability category.
 Color probabilityCategoryColor(double score) {
-  if (score >= 0.4) return const Color(0xFF2E7D32); // green
-  if (score >= 0.2) return const Color(0xFF558B2F); // light green
-  if (score >= 0.1) return const Color(0xFFF9A825); // amber
-  if (score >= 0.05) return const Color(0xFFEF6C00); // orange
+  if (score >= 80) return const Color(0xFF2E7D32); // forest green
+  if (score >= 60) return const Color(0xFFAFB42B); // yellow-green
+  if (score >= 40) return const Color(0xFFFBC02D); // yellow/amber
+  if (score >= 20) return const Color(0xFFF57C00); // orange
   return const Color(0xFFD32F2F); // red
 }

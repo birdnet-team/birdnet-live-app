@@ -195,13 +195,17 @@ class LiveController {
       final configJson = await rootBundle.loadString(
         AppConstants.modelConfigAssetPath,
       );
+      final fullConfig = json.decode(configJson) as Map<String, dynamic>;
       _config = ModelConfig.fromJson(
-        json.decode(configJson) as Map<String, dynamic>,
+        fullConfig['audioModel'] as Map<String, dynamic>,
       );
       debugPrint('[LiveController] config loaded: ${_config!.onnx.modelFile}');
 
       // Ensure model file exists on the filesystem.
-      final modelFilePath = await _ensureModelOnDisk(_config!.onnx.modelFile);
+      final modelFilePath = await _ensureModelOnDisk(
+        _config!.onnx.modelFile,
+        _config!.version,
+      );
       debugPrint('[LiveController] model on disk: $modelFilePath');
 
       // Load labels CSV.
@@ -230,9 +234,10 @@ class LiveController {
 
   /// Copy the model asset to the app's documents directory if it doesn't
   /// already exist on disk, and return the absolute file path.
-  Future<String> _ensureModelOnDisk(String fileName) async {
+  Future<String> _ensureModelOnDisk(String fileName, String version) async {
     final appDir = await getApplicationDocumentsDirectory();
-    final modelFile = File('${appDir.path}/$fileName');
+    final versionedName = '${fileName}_v$version';
+    final modelFile = File('${appDir.path}/$versionedName');
 
     if (!modelFile.existsSync()) {
       debugPrint('[LiveController] extracting model to ${modelFile.path} …');

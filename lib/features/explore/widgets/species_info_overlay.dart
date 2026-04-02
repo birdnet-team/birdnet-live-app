@@ -382,17 +382,22 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: List.generate(48, (index) {
-                    final normalized = probs[index] / maxProb;
+                    final score = probs[index];
+                    final normalized = score / maxProb;
                     final isCurrentWeek = index == currentWeekIndex;
+
+                    final baseColor = theme.colorScheme.primary;
+                    final activeColor = theme.colorScheme.tertiary;
+
                     return Expanded(
                       child: Container(
                         margin: const EdgeInsets.symmetric(horizontal: 0.5),
                         height: (normalized * 80).clamp(1.0, 80.0),
                         decoration: BoxDecoration(
                           color: isCurrentWeek
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.primary.withAlpha(
-                                  (50 + (normalized * 205))
+                              ? activeColor
+                              : baseColor.withAlpha(
+                                  (50 + (normalized * 150))
                                       .toInt()
                                       .clamp(0, 255),
                                 ),

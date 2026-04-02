@@ -85,6 +85,7 @@ class ExploreScreen extends ConsumerWidget {
                       scientificName: s.scientificName,
                       commonName: s.commonName,
                       geoScore: s.geoScore,
+                      weeklyScores: s.weeklyScores,
                       onTap: () => SpeciesInfoOverlay.show(
                         context,
                         ref,
