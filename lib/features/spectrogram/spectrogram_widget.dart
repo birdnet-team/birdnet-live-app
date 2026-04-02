@@ -136,6 +136,9 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   /// The CustomPainter holding the scrolling column buffer.
   late SpectrogramPainter _painter;
 
+  /// True after [_initProcessor] has run at least once.
+  bool _painterInitialized = false;
+
   /// Ticker driving the 60 fps animation loop.
   late Ticker _ticker;
 
@@ -211,6 +214,12 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
 
   /// (Re)create the FFT processor and painter with current widget config.
   void _initProcessor() {
+    // Dispose the previous painter's GPU image before replacing it to prevent
+    // a ui.Image texture leak when settings change while the widget is live.
+    // Guard against the first call from initState before _painter is assigned.
+    if (_painterInitialized) _painter.clear();
+    _painterInitialized = true;
+
     _fft = FftProcessor(
       fftSize: widget.fftSize,
       dbFloor: widget.dbFloor,

@@ -186,14 +186,23 @@ class LiveSession {
   int get uniqueSpeciesCount =>
       detections.map((d) => d.scientificName).toSet().length;
 
+  // Maximum number of detection records kept in memory per session.
+  // At ~1 Hz inference this allows >2.7 hours of continuous recording.
+  static const int _maxDetections = 10000;
+
   /// Add a detection to the session.
   void addDetection(DetectionRecord record) {
-    detections.add(record);
+    if (detections.length < _maxDetections) {
+      detections.add(record);
+    }
   }
 
   /// Add multiple detections from a single inference cycle.
   void addDetections(List<DetectionRecord> records) {
-    detections.addAll(records);
+    final remaining = _maxDetections - detections.length;
+    if (remaining > 0) {
+      detections.addAll(records.take(remaining));
+    }
   }
 
   /// End the session.
