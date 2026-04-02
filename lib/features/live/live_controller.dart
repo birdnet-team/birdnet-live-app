@@ -475,6 +475,15 @@ class LiveController {
       debugPrint('[LiveController] inference: totalWritten=$totalWritten, '
           'windowSamples=$windowSamples, sampleRate=$sampleRate');
 
+      // Temporary: log max absolute value of audio window to guarantee it's not silent
+      if (audioSamples.isNotEmpty) {
+        final maxAbsValue = audioSamples.fold<double>(
+          0.0,
+          (max, sample) => sample.abs() > max ? sample.abs() : max,
+        );
+        debugPrint('[LiveController] audio window max abs value: $maxAbsValue');
+      }
+
       debugPrint('[LiveController] running inference …');
       final detections = await _isolate.infer(
         audioSamples,
