@@ -284,9 +284,12 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     _painter.addColumn(column);
     _columnsEmitted++;
 
-    // Trigger a repaint via the listenable — setState alone does NOT
-    // repaint a CustomPaint when the painter reference is unchanged.
-    _repaintNotifier.value++;
+    // Build the spectrogram image asynchronously (uses toImage instead of
+    // toImageSync to avoid a GPU memory leak).  Fire-and-forget: the
+    // painter's _isBuilding guard prevents concurrent builds.
+    _painter.rebuildImageAsync().then((_) {
+      if (mounted) _repaintNotifier.value++;
+    });
   }
 
   // ---------------------------------------------------------------------------

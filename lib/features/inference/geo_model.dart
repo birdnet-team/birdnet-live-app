@@ -187,6 +187,8 @@ class GeoModel {
     final bytes = await modelFile.readAsBytes();
     final sessionOptions = OrtSessionOptions();
     _session = OrtSession.fromBuffer(bytes, sessionOptions);
+    sessionOptions
+        .release(); // options are consumed by fromBuffer; release native memory
 
     debugPrint('[GeoModel] model loaded from $modelPath');
     debugPrint('[GeoModel] input: $_inputName, output: $_outputName');
@@ -233,48 +235,52 @@ class GeoModel {
       [1, 3],
     );
 
-    // Run inference.
-    final inputs = {_inputName: inputTensor};
-    final outputs = _session!.run(
-      OrtRunOptions(),
-      inputs,
-    );
+    final runOptions = OrtRunOptions();
 
-    // Extract output probabilities.
-    final outputValue = outputs.firstOrNull;
-    if (outputValue == null) {
-      throw StateError('Geo-model returned no output');
+    try {
+      // Run inference.
+      final inputs = {_inputName: inputTensor};
+      final outputs = _session!.run(runOptions, inputs);
+
+      // Extract output probabilities.
+      final outputValue = outputs.firstOrNull;
+      if (outputValue == null) {
+        throw StateError('Geo-model returned no output');
+      }
+      final rawOutput = outputValue.value;
+
+      // The output is typically List<List<double>> for shape [1, N].
+      List<double> probabilities;
+      if (rawOutput is List<List<double>>) {
+        probabilities = rawOutput.first;
+      } else if (rawOutput is List) {
+        // Flatten if needed.
+        probabilities = rawOutput.cast<double>();
+      } else {
+        throw StateError(
+            'Unexpected geo-model output type: ${rawOutput.runtimeType}');
+      }
+
+      // Build the result map.
+      final scores = <String, double>{};
+      final count = probabilities.length < _labels.length
+          ? probabilities.length
+          : _labels.length;
+      for (var i = 0; i < count; i++) {
+        scores[_labels[i].scientificName] = probabilities[i];
+      }
+
+      // Release output tensors.
+      for (final o in outputs) {
+        o?.release();
+      }
+
+      return scores;
+    } finally {
+      // Release native resources.
+      inputTensor.release();
+      runOptions.release();
     }
-    final rawOutput = outputValue.value;
-
-    // The output is typically List<List<double>> for shape [1, N].
-    List<double> probabilities;
-    if (rawOutput is List<List<double>>) {
-      probabilities = rawOutput.first;
-    } else if (rawOutput is List) {
-      // Flatten if needed.
-      probabilities = rawOutput.cast<double>();
-    } else {
-      throw StateError(
-          'Unexpected geo-model output type: ${rawOutput.runtimeType}');
-    }
-
-    // Build the result map.
-    final scores = <String, double>{};
-    final count = probabilities.length < _labels.length
-        ? probabilities.length
-        : _labels.length;
-    for (var i = 0; i < count; i++) {
-      scores[_labels[i].scientificName] = probabilities[i];
-    }
-
-    // Release tensors.
-    inputTensor.release();
-    for (final o in outputs) {
-      o?.release();
-    }
-
-    return scores;
   }
 
   /// Return the subset of species whose geo-model score meets [threshold],

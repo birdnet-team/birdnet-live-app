@@ -41,6 +41,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/services/memory_monitor.dart';
 import '../audio/ring_buffer.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
@@ -119,6 +120,9 @@ class LiveController {
 
   /// Whether an inference cycle is currently in progress.
   bool _inferring = false;
+
+  /// Inference cycle counter for periodic memory logging.
+  int _inferenceCycleCount = 0;
 
   /// Geo-model scores for species filtering (set at session start).
   Map<String, double>? _geoScores;
@@ -309,6 +313,11 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _isolate.resetPooling();
+    _inferenceCycleCount = 0;
+
+    // Start memory monitoring for this session.
+    MemoryMonitor.startPeriodic(intervalSeconds: 10);
+    MemoryMonitor.logOnce(tag: 'session-start');
 
     // Store geo-filter state for this session.
     _geoScores = geoScores;
@@ -418,6 +427,11 @@ class LiveController {
       _session!.recordingPath = recordingPath;
     }
 
+    // Stop memory monitoring and print summary.
+    MemoryMonitor.logOnce(tag: 'session-end');
+    MemoryMonitor.printSummary();
+    MemoryMonitor.stop();
+
     _session!.end();
     final completedSession = _session!;
 
@@ -477,12 +491,18 @@ class LiveController {
     }
 
     _inferring = true;
+    _inferenceCycleCount++;
 
     try {
       final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
       final windowSamples = windowDuration * sampleRate;
       final totalWritten = ringBuffer.totalWritten;
       final audioSamples = ringBuffer.readLast(windowSamples);
+
+      // Log memory every 10 cycles (~10s at 1Hz) to track growth.
+      if (_inferenceCycleCount % 10 == 0) {
+        MemoryMonitor.logOnce(tag: 'cycle-$_inferenceCycleCount');
+      }
 
       debugPrint('[LiveController] running inference …');
       final detections = await _isolate.infer(
