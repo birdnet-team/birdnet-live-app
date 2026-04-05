@@ -4,13 +4,11 @@
     "version": "3.0-preview3-opset18",
     "description": "Global species classifier covering 11,560 species across birds, amphibians, mammals, and insects.",
     "modelFile": "BirdNET+_V3.0-preview3_Global_11K_FP16.onnx",
-    "speciesCount": 11560,
-
+    "speciesCount": 5250,
     "audio": {
       "sampleRate": 32000,
       "channels": 1
     },
-
     "onnx": {
       "modelFile": "BirdNET+_V3.0-preview3_Global_11K_FP16.onnx",
       "inputName": "input",
@@ -19,7 +17,6 @@
         "embeddings": "embeddings"
       }
     },
-
     "labels": {
       "file": "BirdNET+_V3.0-preview3_Global_11K_Labels.csv",
       "delimiter": ";",
@@ -33,9 +30,12 @@
         "order": "order"
       }
     },
-
     "inference": {
-      "supportedWindowSeconds": [3, 5, 10],
+      "supportedWindowSeconds": [
+        3,
+        5,
+        10
+      ],
       "defaultWindowSeconds": 3,
       "defaultSensitivity": 1.0,
       "defaultConfidenceThreshold": 0.15,
@@ -46,7 +46,6 @@
       }
     }
   },
-
   "geoModel": {
     "name": "BirdNET+ Geomodel V3.0.1 Global 12K (FP16)",
     "version": "3.0.1",
@@ -55,7 +54,7 @@
     "labelsFile": "BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt",
     "inputName": "input",
     "outputName": "probabilities",
-    "speciesCount": 11827,
+    "speciesCount": 5250,
     "defaultThreshold": 0.03
   }
 }

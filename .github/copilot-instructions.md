@@ -45,12 +45,24 @@ lib/
 
 | Asset | Purpose | Size |
 |-------|---------|------|
-| `BirdNET+_V3.0-preview3_Global_11K_FP16.onnx` | Audio classifier (11,560 species) | ~259 MB |
-| `BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx` | Location-based species prediction | ~7 MB |
-| `labels.csv` | Audio classifier labels (comma-delimited) | |
+| `BirdNET+_V3.0-preview3_Global_11K_FP16.onnx` | Audio classifier (5,250 species after pruning) | ~152 MB |
+| `BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx` | Location-based species prediction | ~6 MB |
+| `labels.csv` | Audio classifier labels (semicolon-delimited, UTF-8 BOM) | |
 | `BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt` | Geo-model labels (tab-delimited: `id\tsci_name\tcom_name`) | |
-| `taxonomy.csv` | Rich species metadata (13,968 species, comma-delimited with header) | |
+| `taxonomy.csv` | Rich species metadata (comma-delimited with header) | |
 | `model_config.json` | JSON config for both ONNX models | |
+
+### Model Build Pipeline
+
+The `.onnx` files in `assets/models/` are **not checked in** (gitignored). They are built from raw source models in `dev/models/` using a Python pipeline:
+
+```bash
+python dev/build_models.py          # prune species + fix for ARM64 ORT 1.15
+```
+
+This runs three steps: (1) prune to 5,250-species intersection, (2) fix audio model for ARM64 FP16 precision & ORT 1.15 opset compatibility, (3) decompose geo model LayerNorm. See **`dev/MODELS.md`** for full details on what each script does and why.
+
+**Key constraint**: Android ORT 1.15.1 (`flutter_onnxruntime 1.4.1`) uses native FP16 NEON on ARM64, causing precision loss in deep CNNs. The audio model stores weights as FP16 but runs all compute in FP32 via inserted Cast nodes.
 
 ### Taxonomy API
 
