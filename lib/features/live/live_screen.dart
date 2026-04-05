@@ -127,7 +127,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       final geoThreshold = ref.read(geoThresholdProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
+      // Also fetch the full geo-model species names for model intersection.
       final geoScores = await ref.read(geoScoresProvider.future);
+      final geoSpeciesNames =
+          await ref.read(geoModelSpeciesNamesProvider.future);
 
       // Start inference session.
       await controller.startSession(
@@ -139,6 +142,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         recordingFormat: recordingFormat,
         geoScores: geoScores,
         geoThreshold: geoThreshold,
+        geoModelSpeciesNames: geoSpeciesNames,
       );
 
       _isStarting = false;

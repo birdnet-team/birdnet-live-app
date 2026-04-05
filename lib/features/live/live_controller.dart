@@ -123,6 +123,13 @@ class LiveController {
   /// Geo-model scores for species filtering (set at session start).
   Map<String, double>? _geoScores;
 
+  /// All scientific names in the geo-model's label file.
+  ///
+  /// When set, detections for species absent from the geo-model are always
+  /// removed regardless of the active [_filterMode].  This ensures the live
+  /// screen only shows species both models know about.
+  Set<String>? _geoModelSpeciesNames;
+
   /// Active species filter mode for the current session.
   SpeciesFilterMode _filterMode = SpeciesFilterMode.off;
 
@@ -269,6 +276,9 @@ class LiveController {
   /// [recordingFormat] — audio file format ('wav' or 'flac').
   /// [geoScores] — optional geo-model predictions for species filtering.
   /// [geoThreshold] — minimum geo score for the geoExclude filter.
+  /// [geoModelSpeciesNames] — all scientific names in the geo-model labels;
+  ///   when provided, detections for species absent from the geo-model are
+  ///   always removed regardless of the active filter mode.
   Future<void> startSession({
     required int windowDuration,
     required double inferenceRate,
@@ -278,6 +288,7 @@ class LiveController {
     String recordingFormat = 'flac',
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
+    Set<String>? geoModelSpeciesNames,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -302,6 +313,7 @@ class LiveController {
     // Store geo-filter state for this session.
     _geoScores = geoScores;
     _geoThreshold = geoThreshold;
+    _geoModelSpeciesNames = geoModelSpeciesNames;
     _filterMode = switch (speciesFilterMode) {
       'geoExclude' => SpeciesFilterMode.geoExclude,
       'geoMerge' => SpeciesFilterMode.geoMerge,
@@ -486,13 +498,22 @@ class LiveController {
       _latestDetections = detections;
 
       // Apply species filter (geo-model or custom list).
-      final filteredDetections = SpeciesFilter.apply(
+      final speciesFiltered = SpeciesFilter.apply(
         detections: detections,
         mode: _filterMode,
         geoScores: _geoScores,
         geoThreshold: _geoThreshold,
         confidenceThreshold: confidenceThreshold / 100.0,
       );
+
+      // Restrict to the intersection of both models: only keep detections
+      // for species the geo-model also knows, regardless of filter mode.
+      final geoNames = _geoModelSpeciesNames;
+      final filteredDetections = geoNames == null
+          ? speciesFiltered
+          : speciesFiltered
+              .where((d) => geoNames.contains(d.species.scientificName))
+              .toList();
 
       // Update the live detection list (replaced each cycle, like the PWA).
       // Each species appears at most once with its current score.

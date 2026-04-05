@@ -13,11 +13,15 @@
 //
 // taxonomyServiceProvider (loaded from CSV asset)
 //
+// audioLabelsSetProvider (scientific names the audio model can detect)
+//
 // geoModelProvider (loaded from ONNX + labels assets)
-//   └─ exploreSpeciesProvider (combines geo + taxonomy)
+//   └─ geoModelSpeciesNamesProvider (set of all geo-model scientific names)
+//   └─ exploreSpeciesProvider (combines geo + taxonomy, intersected with audio)
 // ```
 //
-// The geoModelProvider is also usable from live mode for species filtering.
+// The geoModelProvider and geoModelSpeciesNamesProvider are also used from
+// live mode to restrict detections to species both models know about.
 // =============================================================================
 
 import 'dart:convert';
@@ -35,6 +39,51 @@ import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../core/services/location_service.dart';
 import '../inference/geo_model.dart';
+
+// ---------------------------------------------------------------------------
+// Audio labels intersection set
+// ---------------------------------------------------------------------------
+
+/// Scientific names of every species the audio classifier model can detect.
+///
+/// Parsed from the labels CSV only — no ONNX loaded.  Used to intersect
+/// with the geo-model species list so that:
+///   - Explore only shows species the audio model can also detect.
+///   - Live only shows detections for species the geo-model also knows.
+final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
+  final configJson =
+      await rootBundle.loadString(AppConstants.modelConfigAssetPath);
+  final fullConfig = json.decode(configJson) as Map<String, dynamic>;
+  final labelsConfig = (fullConfig['audioModel']
+      as Map<String, dynamic>)['labels'] as Map<String, dynamic>;
+
+  final file = labelsConfig['file'] as String;
+  final delimiter = labelsConfig['delimiter'] as String? ?? ';';
+  final cols = labelsConfig['columns'] as Map<String, dynamic>? ?? const {};
+  final sciNameColHeader = cols['scientificName'] as String? ?? 'sci_name';
+
+  final csvText =
+      await rootBundle.loadString('${AppConstants.modelAssetsDir}/$file');
+  final lines = csvText
+      .split('\n')
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty)
+      .toList();
+  if (lines.isEmpty) return {};
+
+  final headers = lines.first.split(delimiter).map((h) => h.trim()).toList();
+  final sciIdx = headers.indexOf(sciNameColHeader);
+  if (sciIdx < 0) return {};
+
+  return lines
+      .skip(1)
+      .map((l) {
+        final parts = l.split(delimiter);
+        return sciIdx < parts.length ? parts[sciIdx].trim() : '';
+      })
+      .where((s) => s.isNotEmpty)
+      .toSet();
+});
 
 // ---------------------------------------------------------------------------
 // Location
@@ -128,6 +177,16 @@ final geoModelProvider = FutureProvider<GeoModel>((ref) async {
   return geoModel;
 });
 
+/// Set of all scientific names in the geo-model's label file.
+///
+/// Available regardless of location — derived from the already-loaded
+/// [GeoModel].  Used by the live controller to restrict detections to
+/// species both models know about.
+final geoModelSpeciesNamesProvider = FutureProvider<Set<String>>((ref) async {
+  final geoModel = await ref.watch(geoModelProvider.future);
+  return geoModel.labels.map((l) => l.scientificName).toSet();
+});
+
 // ---------------------------------------------------------------------------
 // Explore — species list for current location & time
 // ---------------------------------------------------------------------------
@@ -155,6 +214,9 @@ class ExploreSpecies {
 /// geo-model probability for the current week and enriched with taxonomy
 /// metadata and 48-week probability curves.
 ///
+/// Only species present in both the geo-model and the audio classifier are
+/// included — the audio model must be able to detect what is shown.
+///
 /// Invalidate [currentLocationProvider] to refresh after a location change.
 final exploreSpeciesProvider =
     FutureProvider<List<ExploreSpecies>>((ref) async {
@@ -163,6 +225,7 @@ final exploreSpeciesProvider =
   final geoModel = await ref.watch(geoModelProvider.future);
   final taxonomyService = await ref.watch(taxonomyServiceProvider.future);
   final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+  final audioLabels = await ref.watch(audioLabelsSetProvider.future);
 
   if (location == null) return const [];
 
@@ -184,6 +247,9 @@ final exploreSpeciesProvider =
     final currentScore = weeklyScores[currentWeek - 1];
 
     if (currentScore < threshold) continue;
+
+    // Only include species the audio model can also detect.
+    if (!audioLabels.contains(sciName)) continue;
 
     final taxonomy = taxonomyService.lookup(sciName);
     final geoLabel = geoModel.labels.where(
