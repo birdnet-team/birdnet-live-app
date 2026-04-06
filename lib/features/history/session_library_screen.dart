@@ -19,17 +19,95 @@ import '../live/live_session.dart';
 import 'session_review_screen.dart';
 
 /// Displays a list of all saved sessions from the session repository.
-class SessionLibraryScreen extends ConsumerWidget {
+class SessionLibraryScreen extends ConsumerStatefulWidget {
   const SessionLibraryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SessionLibraryScreen> createState() =>
+      _SessionLibraryScreenState();
+}
+
+class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
+  final _searchController = TextEditingController();
+  bool _showSearch = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Returns `true` if [session] matches the current search query.
+  ///
+  /// Matches against: date string, session type label, location name,
+  /// lat/lon coordinates, and all detection species (common + scientific).
+  bool _matchesQuery(LiveSession session, String query, AppLocalizations l10n) {
+    final q = query.toLowerCase();
+
+    // Date / time.
+    final dateStr =
+        DateFormat.yMMMd().add_Hm().format(session.startTime).toLowerCase();
+    if (dateStr.contains(q)) return true;
+
+    // Session type label.
+    if (_sessionTypeLabel(l10n, session.type).toLowerCase().contains(q)) {
+      return true;
+    }
+
+    // Location name or coordinates.
+    final loc = session.locationName?.toLowerCase();
+    if (loc != null && loc.contains(q)) return true;
+    if (session.latitude != null && session.longitude != null) {
+      final coords = '${session.latitude!.toStringAsFixed(4)}, '
+          '${session.longitude!.toStringAsFixed(4)}';
+      if (coords.contains(q)) return true;
+    }
+
+    // Species (common and scientific names).
+    for (final d in session.detections) {
+      if (d.commonName.toLowerCase().contains(q)) return true;
+      if (d.scientificName.toLowerCase().contains(q)) return true;
+    }
+
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final sessionsAsync = ref.watch(sessionListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.sessionLibraryTitle)),
+      appBar: AppBar(
+        title: _showSearch
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.sessionLibrarySearchHint,
+                  border: InputBorder.none,
+                ),
+                style: theme.textTheme.titleMedium,
+                onChanged: (_) => setState(() {}),
+              )
+            : Text(l10n.sessionLibraryTitle),
+        actions: [
+          if (_showSearch)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() {
+                _searchController.clear();
+                _showSearch = false;
+              }),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => setState(() => _showSearch = true),
+            ),
+        ],
+      ),
       body: sessionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
@@ -56,15 +134,33 @@ class SessionLibraryScreen extends ConsumerWidget {
             );
           }
 
+          final query = _searchController.text.trim();
+          final filtered = query.isEmpty
+              ? sessions
+              : sessions
+                  .where((s) => _matchesQuery(s, query, l10n))
+                  .toList();
+
+          if (filtered.isEmpty) {
+            return Center(
+              child: Text(
+                l10n.sessionLibraryNoResults,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
+            );
+          }
+
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: sessions.length,
+            itemCount: filtered.length,
             itemBuilder: (context, index) {
-              final session = sessions[index];
+              final session = filtered[index];
               return _SessionTile(
                 session: session,
-                onTap: () => _openReview(context, ref, session),
-                onDelete: () => _confirmDelete(context, ref, session),
+                onTap: () => _openReview(session),
+                onDelete: () => _confirmDelete(session),
               );
             },
           );
@@ -73,7 +169,7 @@ class SessionLibraryScreen extends ConsumerWidget {
     );
   }
 
-  void _openReview(BuildContext context, WidgetRef ref, LiveSession session) {
+  void _openReview(LiveSession session) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => SessionReviewScreen(session: session),
@@ -81,11 +177,7 @@ class SessionLibraryScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    LiveSession session,
-  ) async {
+  Future<void> _confirmDelete(LiveSession session) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,

@@ -115,6 +115,8 @@
   "sessionShare": "Teilen",
   "sessionLibraryTitle": "Sitzungen",
   "sessionLibraryEmpty": "Noch keine gespeicherten Sitzungen.",
+  "sessionLibrarySearchHint": "Sitzungen durchsuchen…",
+  "sessionLibraryNoResults": "Keine passenden Sitzungen.",
   "sessionDeleteDetectionTitle": "Erkennung entfernen?",
   "sessionDeleteDetectionMessage": "Diese Erkennung aus der Sitzung entfernen? Speichern zum Übernehmen.",
   "sessionRemove": "Entfernen",

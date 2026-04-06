@@ -480,6 +480,14 @@
   "@sessionLibraryEmpty": {
     "description": "Empty state text for session library"
   },
+  "sessionLibrarySearchHint": "Search sessions…",
+  "@sessionLibrarySearchHint": {
+    "description": "Hint text for the session library search field"
+  },
+  "sessionLibraryNoResults": "No matching sessions.",
+  "@sessionLibraryNoResults": {
+    "description": "Shown when no sessions match the search query"
+  },
   "sessionDeleteDetectionTitle": "Remove Detection?",
   "@sessionDeleteDetectionTitle": {
     "description": "Title for detection deletion confirmation dialog"
