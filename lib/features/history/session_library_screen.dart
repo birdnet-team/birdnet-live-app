@@ -137,9 +137,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           final query = _searchController.text.trim();
           final filtered = query.isEmpty
               ? sessions
-              : sessions
-                  .where((s) => _matchesQuery(s, query, l10n))
-                  .toList();
+              : sessions.where((s) => _matchesQuery(s, query, l10n)).toList();
 
           if (filtered.isEmpty) {
             return Center(
