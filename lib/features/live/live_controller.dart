@@ -143,6 +143,14 @@ class LiveController {
   /// Whether per-detection audio clips should be saved.
   bool _saveDetectionClips = false;
 
+  /// Species currently shown on the live screen (have visible cards).
+  ///
+  /// Maps scientific name → active [DetectionRecord] in [_sessionDetections].
+  /// A species is added when it first appears in inference results and
+  /// removed when it drops out.  Re-appearance after removal creates a
+  /// brand-new detection record for session review.
+  final Map<String, DetectionRecord> _activeCardSpecies = {};
+
   /// Maximum number of in-memory detections (older entries are still
   /// persisted in the [LiveSession] object).
   static const int _maxInMemoryDetections = 500;
@@ -312,8 +320,10 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
+    ringBuffer.clear();
 
     // Start memory monitoring for this session.
     MemoryMonitor.startPeriodic(intervalSeconds: 10);
@@ -440,6 +450,7 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
 
     _state = LiveState.ready;
     _notifyListeners();
@@ -541,11 +552,33 @@ class LiveController {
         for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
-      // Accumulate to session history (for session saving / stats).
-      if (_session != null && filteredDetections.isNotEmpty) {
-        // Save detection clip if user requested per-detection clips.
+      // ── Detection counting: card-visibility based ─────────────────
+      //
+      // A species counts as ONE detection for as long as its card is
+      // continuously visible on the live screen.  Only when the card
+      // disappears (species drops out of inference results) and later
+      // reappears does it become a SECOND detection for session review.
+      if (_session != null) {
+        // Determine which species are present this cycle.
+        final currentNames = <String>{
+          for (final d in filteredDetections) d.species.scientificName,
+        };
+
+        // Species that just appeared (not currently tracked) → new detection.
+        final appeared =
+            currentNames.difference(_activeCardSpecies.keys.toSet());
+
+        // Species that disappeared → remove from tracking.
+        final disappeared =
+            _activeCardSpecies.keys.toSet().difference(currentNames);
+        for (final name in disappeared) {
+          _activeCardSpecies.remove(name);
+        }
+
+        // Save detection clip if user requested per-detection clips
+        // and there are new species appearing.
         String? clipPath;
-        if (_saveDetectionClips) {
+        if (_saveDetectionClips && appeared.isNotEmpty) {
           final clipName = 'clip_${DateTime.now().millisecondsSinceEpoch}';
           clipPath = await recordingService.saveDetectionClip(
             clipName: clipName,
@@ -553,40 +586,34 @@ class LiveController {
         }
 
         for (final detection in filteredDetections) {
-          final record = DetectionRecord.fromDetection(
-            detection,
-            audioClipPath: clipPath,
-          );
+          final name = detection.species.scientificName;
 
-          // Check if we should merge with a recent detection of the same species
-          final recentMatchIdx = _sessionDetections.indexWhere((r) =>
-              r.scientificName == record.scientificName &&
-              record.timestamp.difference(r.timestamp).inMilliseconds.abs() <=
-                  3000);
-
-          if (recentMatchIdx != -1) {
-            // Update the existing record if the new one has higher confidence
-            final existing = _sessionDetections[recentMatchIdx];
-            if (record.confidence > existing.confidence) {
+          if (appeared.contains(name)) {
+            // New detection — species just appeared on screen.
+            final record = DetectionRecord.fromDetection(
+              detection,
+              audioClipPath: clipPath,
+            );
+            _session!.addDetection(record);
+            _sessionDetections.insert(0, record);
+            _activeCardSpecies[name] = record;
+          } else if (_activeCardSpecies.containsKey(name)) {
+            // Ongoing — update confidence if higher (same detection).
+            final existing = _activeCardSpecies[name]!;
+            if (detection.confidence > existing.confidence) {
               final updated = DetectionRecord(
                 scientificName: existing.scientificName,
                 commonName: existing.commonName,
-                confidence:
-                    record.confidence, // Update to new higher confidence
-                timestamp: existing.timestamp, // Keep original timestamp
-                audioClipPath: existing.audioClipPath ?? record.audioClipPath,
+                confidence: detection.confidence,
+                timestamp: existing.timestamp,
+                audioClipPath: existing.audioClipPath ?? clipPath,
               );
-              _sessionDetections[recentMatchIdx] = updated;
-
-              // Also update in session
-              final sessionIdx = _session!.detections.indexOf(existing);
-              if (sessionIdx != -1) {
-                _session!.detections[sessionIdx] = updated;
-              }
+              final sessionIdx = _sessionDetections.indexOf(existing);
+              if (sessionIdx != -1) _sessionDetections[sessionIdx] = updated;
+              final lsIdx = _session!.detections.indexOf(existing);
+              if (lsIdx != -1) _session!.detections[lsIdx] = updated;
+              _activeCardSpecies[name] = updated;
             }
-          } else {
-            _session!.addDetection(record);
-            _sessionDetections.insert(0, record); // newest first
           }
         }
 

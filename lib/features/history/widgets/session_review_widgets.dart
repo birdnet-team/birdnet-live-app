@@ -4,6 +4,23 @@ part of '../session_review_screen.dart';
 // Data Models
 // ═════════════════════════════════════════════════════════════════════════════
 
+/// Snapshot of mutable review state for undo/redo.
+class _ReviewSnapshot {
+  _ReviewSnapshot({
+    required this.detections,
+    required this.annotations,
+    required this.trimStartSec,
+    required this.trimEndSec,
+    required this.clipOffsetSec,
+  });
+
+  final List<DetectionRecord> detections;
+  final List<SessionAnnotation> annotations;
+  final double? trimStartSec;
+  final double? trimEndSec;
+  final double clipOffsetSec;
+}
+
 /// A cluster of consecutive detections of the same species.
 class _DetectionCluster {
   _DetectionCluster(this.records) : assert(records.isNotEmpty);
@@ -51,10 +68,14 @@ class _SummaryHeader extends StatelessWidget {
   const _SummaryHeader({
     required this.session,
     required this.detectionCount,
+    this.locationName,
+    this.onShowMap,
   });
 
   final LiveSession session;
   final int detectionCount;
+  final String? locationName;
+  final VoidCallback? onShowMap;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +118,35 @@ class _SummaryHeader extends StatelessWidget {
               ),
             ],
           ),
+          if (session.latitude != null && session.longitude != null) ...[
+            const SizedBox(height: 6),
+            InkWell(
+              onTap: onShowMap,
+              borderRadius: BorderRadius.circular(4),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on_outlined,
+                      size: 16, color: theme.colorScheme.primary),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      locationName ??
+                          '${session.latitude!.toStringAsFixed(4)}, '
+                              '${session.longitude!.toStringAsFixed(4)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(Icons.chevron_right,
+                      size: 16,
+                      color: theme.colorScheme.onSurface.withAlpha(100)),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -233,7 +283,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 
     if (widget.decoding || widget.spectrogramImage == null) {
       return Container(
-        height: 160,
+        height: 150,
         color: Colors.black,
         child: widget.decoding
             ? const Center(
@@ -251,7 +301,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       onTapDown: _handleTap,
       onHorizontalDragUpdate: _handleDrag,
       child: Container(
-        height: 160,
+        height: 150,
         color: Colors.black,
         child: CustomPaint(
           painter: _ReviewSpectrogramPainter(
@@ -260,7 +310,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
             durationSec: widget.duration.inMicroseconds / 1000000.0,
             colorScheme: theme.colorScheme,
           ),
-          size: const Size(double.infinity, 160),
+          size: const Size(double.infinity, 150),
         ),
       ),
     );
@@ -402,89 +452,37 @@ class _ReviewSpectrogramPainter extends CustomPainter {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// Audio Player Bar
+// Play/Pause Button Overlay
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _AudioPlayerBar extends StatelessWidget {
-  const _AudioPlayerBar({
-    required this.player,
-    required this.position,
-    required this.duration,
+/// Semi-transparent play/pause button overlaid on the spectrogram strip.
+class _PlayPauseButton extends StatelessWidget {
+  const _PlayPauseButton({
     required this.isPlaying,
+    required this.onToggle,
   });
 
-  final AudioPlayer player;
-  final Duration position;
-  final Duration duration;
   final bool isPlaying;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle),
-            iconSize: 44,
-            color: theme.colorScheme.primary,
-            onPressed: () {
-              if (isPlaying) {
-                player.pause();
-              } else {
-                player.play();
-              }
-            },
+    return Material(
+      color: Colors.black54,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(
+            isPlaying ? Icons.pause : Icons.play_arrow,
+            color: Colors.white,
+            size: 24,
           ),
-          SizedBox(
-            width: 44,
-            child: Text(
-              _formatPosition(position),
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-            child: SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-                activeTrackColor: theme.colorScheme.primary,
-                inactiveTrackColor: theme.colorScheme.surfaceContainerHighest,
-                thumbColor: theme.colorScheme.primary,
-              ),
-              child: Slider(
-                value: duration.inMilliseconds > 0
-                    ? position.inMilliseconds
-                        .clamp(0, duration.inMilliseconds)
-                        .toDouble()
-                    : 0,
-                max: duration.inMilliseconds.toDouble(),
-                onChanged: (v) =>
-                    player.seek(Duration(milliseconds: v.toInt())),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 44,
-            child: Text(
-              _formatPosition(duration),
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
+        ),
       ),
     );
-  }
-
-  String _formatPosition(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (d.inHours > 0) return '${d.inHours}:$m:$s';
-    return '$m:$s';
   }
 }
 
@@ -502,6 +500,7 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onSpeciesInfo,
     required this.onSeekCluster,
     required this.onDeleteCluster,
+    required this.onReplaceCluster,
   });
 
   final _SpeciesGroup group;
@@ -512,6 +511,7 @@ class _SpeciesTile extends ConsumerWidget {
   final VoidCallback onSpeciesInfo;
   final ValueChanged<_DetectionCluster> onSeekCluster;
   final ValueChanged<_DetectionCluster> onDeleteCluster;
+  final ValueChanged<_DetectionCluster> onReplaceCluster;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -680,6 +680,7 @@ class _SpeciesTile extends ConsumerWidget {
                       sessionStart: sessionStart,
                       onSeek: () => onSeekCluster(cluster),
                       onDelete: () => onDeleteCluster(cluster),
+                      onReplace: () => onReplaceCluster(cluster),
                     ),
                 ],
               ),
@@ -720,12 +721,14 @@ class _ClusterRow extends StatelessWidget {
     required this.sessionStart,
     required this.onSeek,
     required this.onDelete,
+    required this.onReplace,
   });
 
   final _DetectionCluster cluster;
   final DateTime sessionStart;
   final VoidCallback onSeek;
   final VoidCallback onDelete;
+  final VoidCallback onReplace;
 
   @override
   Widget build(BuildContext context) {
@@ -783,6 +786,18 @@ class _ClusterRow extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           InkWell(
+            onTap: onReplace,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Icon(
+                Icons.swap_horiz,
+                size: 24,
+                color: theme.colorScheme.onSurface.withAlpha(100),
+              ),
+            ),
+          ),
+          InkWell(
             onTap: onDelete,
             borderRadius: BorderRadius.circular(24),
             child: Padding(
@@ -804,5 +819,1045 @@ class _ClusterRow extends StatelessWidget {
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     if (d.inHours > 0) return '${d.inHours}:$m:$s';
     return '$m:$s';
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Add Species Overlay — Search and insert a manual detection
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Insertion mode chosen by the user when adding a manual species detection.
+enum _InsertMode {
+  /// Insert a single detection with confidence 1.0 at the session start.
+  global,
+
+  /// Insert at a specific playback timestamp.
+  atTimestamp,
+
+  /// Replace an existing detection.
+  replace,
+}
+
+/// Full-screen overlay for searching and adding a species to the session.
+///
+/// Returns a [_AddSpeciesResult] or null if cancelled.
+class _AddSpeciesOverlay extends ConsumerStatefulWidget {
+  const _AddSpeciesOverlay({
+    required this.sessionStart,
+    required this.positionSec,
+    required this.existingDetections,
+    this.initialMode,
+    this.initialReplaceTarget,
+  });
+
+  final DateTime sessionStart;
+  final double positionSec;
+  final List<DetectionRecord> existingDetections;
+  final _InsertMode? initialMode;
+  final DetectionRecord? initialReplaceTarget;
+
+  @override
+  ConsumerState<_AddSpeciesOverlay> createState() => _AddSpeciesOverlayState();
+}
+
+class _AddSpeciesResult {
+  _AddSpeciesResult({
+    required this.scientificName,
+    required this.commonName,
+    required this.mode,
+    this.replaceRecord,
+  });
+
+  final String scientificName;
+  final String commonName;
+  final _InsertMode mode;
+  final DetectionRecord? replaceRecord;
+}
+
+class _AddSpeciesOverlayState extends ConsumerState<_AddSpeciesOverlay> {
+  final _searchController = TextEditingController();
+  List<TaxonomySpecies> _results = [];
+  late _InsertMode _mode;
+  DetectionRecord? _replaceTarget;
+
+  @override
+  void initState() {
+    super.initState();
+    _mode = widget.initialMode ?? _InsertMode.global;
+    _replaceTarget = widget.initialReplaceTarget;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    final svc = ref.read(taxonomyServiceProvider).valueOrNull;
+    if (svc == null) return;
+    final geoScores = ref.read(geoScoresProvider).valueOrNull;
+    setState(() {
+      if (query.isEmpty) {
+        _results = [];
+        return;
+      }
+      // Fetch a larger pool, then sort by geo score + text relevance.
+      final raw = svc.search(query, limit: 200);
+      if (geoScores != null && geoScores.isNotEmpty) {
+        final lower = query.toLowerCase();
+        raw.sort((a, b) {
+          final scoreA = geoScores[a.scientificName] ?? 0.0;
+          final scoreB = geoScores[b.scientificName] ?? 0.0;
+          if (scoreA != scoreB) return scoreB.compareTo(scoreA);
+          final aStarts = a.commonName.toLowerCase().startsWith(lower) ||
+              a.scientificName.toLowerCase().startsWith(lower);
+          final bStarts = b.commonName.toLowerCase().startsWith(lower) ||
+              b.scientificName.toLowerCase().startsWith(lower);
+          if (aStarts != bStarts) return aStarts ? -1 : 1;
+          return a.commonName.compareTo(b.commonName);
+        });
+      }
+      _results = raw.length > 30 ? raw.sublist(0, 30) : raw;
+    });
+  }
+
+  void _selectSpecies(String sciName, String comName) {
+    Navigator.of(context).pop(
+      _AddSpeciesResult(
+        scientificName: sciName,
+        commonName: comName,
+        mode: _mode,
+        replaceRecord: _mode == _InsertMode.replace ? _replaceTarget : null,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
+    final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.sessionAddSpecies),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Column(
+        children: [
+          // ── Search field ──────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: l10n.sessionSearchSpecies,
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
+              ),
+              onChanged: _onSearchChanged,
+            ),
+          ),
+
+          // ── Insert mode selector ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SegmentedButton<_InsertMode>(
+              segments: [
+                ButtonSegment(
+                  value: _InsertMode.global,
+                  label: Text(
+                    l10n.sessionInsertGlobally,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  icon: const Icon(Icons.public, size: 16),
+                ),
+                ButtonSegment(
+                  value: _InsertMode.atTimestamp,
+                  label: Text(
+                    l10n.sessionInsertAtTimestamp,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  icon: const Icon(Icons.schedule, size: 16),
+                ),
+                ButtonSegment(
+                  value: _InsertMode.replace,
+                  label: Text(
+                    l10n.sessionReplaceDetection,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  icon: const Icon(Icons.swap_horiz, size: 16),
+                ),
+              ],
+              selected: {_mode},
+              onSelectionChanged: (s) => setState(() => _mode = s.first),
+            ),
+          ),
+
+          // ── Replace target picker (shown only in replace mode) ──
+          if (_mode == _InsertMode.replace) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: DropdownButtonFormField<DetectionRecord>(
+                value: _replaceTarget,
+                decoration: InputDecoration(
+                  labelText: l10n.sessionReplaceDetection,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                items: widget.existingDetections.map((d) {
+                  final locName = taxonomyAsync.valueOrNull
+                          ?.lookup(d.scientificName)
+                          ?.commonNameForLocale(speciesLocale) ??
+                      d.commonName;
+                  return DropdownMenuItem(
+                    value: d,
+                    child: Text(
+                      '$locName (${d.confidencePercent})',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _replaceTarget = v),
+              ),
+            ),
+          ],
+
+          const Divider(height: 16),
+
+          // ── Unknown / Other quick action ───────────────────
+          ListTile(
+            leading: Icon(
+              Icons.help_outline,
+              color: theme.colorScheme.tertiary,
+            ),
+            title: Text(l10n.sessionUnknownSpecies),
+            subtitle: Text(
+              DetectionRecord.unknownSpeciesName,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            onTap: () => _selectSpecies(
+              DetectionRecord.unknownSpeciesName,
+              DetectionRecord.unknownCommonName,
+            ),
+          ),
+          const Divider(height: 1),
+
+          // ── Search results ────────────────────────────────
+          Expanded(
+            child: ListView.builder(
+              itemCount: _results.length,
+              itemBuilder: (context, index) {
+                final sp = _results[index];
+                final locName = sp.commonNameForLocale(speciesLocale);
+                return ListTile(
+                  title: Text(locName),
+                  subtitle: Text(
+                    sp.scientificName,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  onTap: () => _selectSpecies(sp.scientificName, sp.commonName),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Annotations Section
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Collapsible section listing session annotations with an add button.
+class _AnnotationsSection extends StatefulWidget {
+  const _AnnotationsSection({
+    required this.annotations,
+    required this.positionSec,
+    required this.onAdd,
+    required this.onDelete,
+  });
+
+  final List<SessionAnnotation> annotations;
+  final double positionSec;
+  final ValueChanged<SessionAnnotation> onAdd;
+  final ValueChanged<int> onDelete;
+
+  @override
+  State<_AnnotationsSection> createState() => _AnnotationsSectionState();
+}
+
+class _AnnotationsSectionState extends State<_AnnotationsSection> {
+  final _textController = TextEditingController();
+  bool _atTimestamp = false;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+    widget.onAdd(SessionAnnotation(
+      text: text,
+      createdAt: DateTime.now(),
+      offsetInRecording: _atTimestamp ? widget.positionSec : null,
+    ));
+    _textController.clear();
+    setState(() => _atTimestamp = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Header ──────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            l10n.sessionAnnotations,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+
+        // ── Existing annotations ────────────────────────────
+        for (var i = 0; i < widget.annotations.length; i++)
+          _AnnotationRow(
+            annotation: widget.annotations[i],
+            onDelete: () => widget.onDelete(i),
+          ),
+
+        // ── Add annotation ──────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _textController,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAddAnnotation,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                  ),
+                  maxLines: 2,
+                  minLines: 1,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _submit(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _atTimestamp ? Icons.schedule : Icons.public,
+                      size: 20,
+                      color: _atTimestamp
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface.withAlpha(120),
+                    ),
+                    tooltip: _atTimestamp
+                        ? l10n.sessionInsertAtTimestamp
+                        : l10n.sessionAnnotationGlobal,
+                    onPressed: () =>
+                        setState(() => _atTimestamp = !_atTimestamp),
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.send,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    onPressed: _submit,
+                    constraints: const BoxConstraints(
+                      minWidth: 36,
+                      minHeight: 36,
+                    ),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AnnotationRow extends StatelessWidget {
+  const _AnnotationRow({
+    required this.annotation,
+    required this.onDelete,
+  });
+
+  final SessionAnnotation annotation;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    String offsetLabel;
+    if (annotation.offsetInRecording != null) {
+      final m = annotation.offsetInRecording! ~/ 60;
+      final s = (annotation.offsetInRecording! % 60).toInt();
+      offsetLabel =
+          '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    } else {
+      offsetLabel = l10n.sessionAnnotationGlobal;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              offsetLabel,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              annotation.text,
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          InkWell(
+            onTap: onDelete,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Icon(
+                Icons.close,
+                size: 16,
+                color: theme.colorScheme.onSurface.withAlpha(100),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Trim Handles — Overlay for recording start/end trimming
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Overlay painted on top of the spectrogram strip showing trim handles.
+///
+/// Users drag the left handle for trim-start and right handle for trim-end,
+/// similar to video cropping in Google Photos.
+class _TrimOverlay extends StatefulWidget {
+  const _TrimOverlay({
+    required this.durationSec,
+    required this.initialStartSec,
+    required this.initialEndSec,
+    required this.onChanged,
+  });
+
+  final double durationSec;
+  final double initialStartSec;
+  final double initialEndSec;
+  final void Function(double startSec, double endSec) onChanged;
+
+  @override
+  State<_TrimOverlay> createState() => _TrimOverlayState();
+}
+
+class _TrimOverlayState extends State<_TrimOverlay> {
+  late double _startFrac;
+  late double _endFrac;
+  bool _draggingStart = false;
+  bool _draggingEnd = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startFrac = widget.durationSec > 0
+        ? (widget.initialStartSec / widget.durationSec).clamp(0.0, 1.0)
+        : 0.0;
+    _endFrac = widget.durationSec > 0
+        ? (widget.initialEndSec / widget.durationSec).clamp(0.0, 1.0)
+        : 1.0;
+  }
+
+  void _reportChange() {
+    widget.onChanged(
+      _startFrac * widget.durationSec,
+      _endFrac * widget.durationSec,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        final leftX = _startFrac * w;
+        final rightX = _endFrac * w;
+
+        return GestureDetector(
+          onHorizontalDragStart: (d) {
+            final x = d.localPosition.dx;
+            // Decide which handle is closest.
+            if ((x - leftX).abs() < (x - rightX).abs()) {
+              _draggingStart = true;
+              _draggingEnd = false;
+            } else {
+              _draggingStart = false;
+              _draggingEnd = true;
+            }
+          },
+          onHorizontalDragUpdate: (d) {
+            setState(() {
+              final frac = (d.localPosition.dx / w).clamp(0.0, 1.0);
+              if (_draggingStart) {
+                _startFrac = math.min(frac, _endFrac - 0.01);
+              } else if (_draggingEnd) {
+                _endFrac = math.max(frac, _startFrac + 0.01);
+              }
+            });
+          },
+          onHorizontalDragEnd: (_) {
+            _draggingStart = false;
+            _draggingEnd = false;
+            _reportChange();
+          },
+          child: CustomPaint(
+            painter: _TrimOverlayPainter(
+              startFrac: _startFrac,
+              endFrac: _endFrac,
+              accentColor: theme.colorScheme.primary,
+            ),
+            size: Size(w, h),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TrimOverlayPainter extends CustomPainter {
+  _TrimOverlayPainter({
+    required this.startFrac,
+    required this.endFrac,
+    required this.accentColor,
+  });
+
+  final double startFrac;
+  final double endFrac;
+  final Color accentColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dimPaint = Paint()..color = Colors.black.withAlpha(140);
+    final handlePaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.fill;
+
+    // Dimmed regions outside the trim.
+    canvas.drawRect(
+      Rect.fromLTRB(0, 0, startFrac * size.width, size.height),
+      dimPaint,
+    );
+    canvas.drawRect(
+      Rect.fromLTRB(endFrac * size.width, 0, size.width, size.height),
+      dimPaint,
+    );
+
+    // Top/bottom borders of the selected region.
+    final borderPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawRect(
+      Rect.fromLTRB(
+        startFrac * size.width,
+        0,
+        endFrac * size.width,
+        size.height,
+      ),
+      borderPaint,
+    );
+
+    // Left handle.
+    const hw = 14.0;
+    const hh = 32.0;
+    final ly = (size.height - hh) / 2;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(startFrac * size.width - hw / 2, ly, hw, hh),
+        const Radius.circular(4),
+      ),
+      handlePaint,
+    );
+    // Grip lines on left handle.
+    final gripPaint = Paint()
+      ..color = Colors.white.withAlpha(200)
+      ..strokeWidth = 1.5;
+    for (var i = -1; i <= 1; i++) {
+      final cx = startFrac * size.width;
+      final cy = size.height / 2 + i * 5.0;
+      canvas.drawLine(Offset(cx - 3, cy), Offset(cx + 3, cy), gripPaint);
+    }
+
+    // Right handle.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(endFrac * size.width - hw / 2, ly, hw, hh),
+        const Radius.circular(4),
+      ),
+      handlePaint,
+    );
+    for (var i = -1; i <= 1; i++) {
+      final cx = endFrac * size.width;
+      final cy = size.height / 2 + i * 5.0;
+      canvas.drawLine(Offset(cx - 3, cy), Offset(cx + 3, cy), gripPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrimOverlayPainter old) =>
+      old.startFrac != startFrac || old.endFrac != endFrac;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Zoomable Trim Spectrogram View
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Full-recording spectrogram with pinch-to-zoom, scroll, and trim handles.
+///
+/// Replaces the fixed-viewport spectrogram strip when trim mode is active.
+/// At zoom=1 the entire recording fits on screen.  Pinch to zoom in for
+/// precise handle placement.  Drag horizontally to scroll when zoomed.
+class _TrimSpectrogramView extends StatefulWidget {
+  const _TrimSpectrogramView({
+    required this.spectrogramImage,
+    required this.durationSec,
+    required this.initialStartSec,
+    required this.initialEndSec,
+    required this.onChanged,
+  });
+
+  final ui.Image spectrogramImage;
+  final double durationSec;
+  final double initialStartSec;
+  final double initialEndSec;
+  final void Function(double startSec, double endSec) onChanged;
+
+  @override
+  State<_TrimSpectrogramView> createState() => _TrimSpectrogramViewState();
+}
+
+class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
+  double _zoom = 1.0;
+  double _scrollSec = 0.0;
+  double _baseZoom = 1.0;
+  Offset? _lastFocalPoint;
+  late double _startSec;
+  late double _endSec;
+  String? _activeDrag; // 'start', 'end', or null for zoom/pan
+
+  @override
+  void initState() {
+    super.initState();
+    _startSec = widget.initialStartSec;
+    _endSec = widget.initialEndSec;
+  }
+
+  double get _viewDurationSec => widget.durationSec / _zoom;
+
+  double _secToX(double sec, double width) {
+    return (sec - _scrollSec) / _viewDurationSec * width;
+  }
+
+  double _xToSec(double x, double width) {
+    return _scrollSec + x / width * _viewDurationSec;
+  }
+
+  void _clampScroll() {
+    final maxScroll = widget.durationSec - _viewDurationSec;
+    _scrollSec = _scrollSec.clamp(0.0, math.max(0.0, maxScroll));
+  }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final w = box.size.width;
+    final startX = _secToX(_startSec, w);
+    final endX = _secToX(_endSec, w);
+    final touchX = details.localFocalPoint.dx;
+
+    const handleThreshold = 28.0;
+    final distToStart = (touchX - startX).abs();
+    final distToEnd = (touchX - endX).abs();
+    if (distToStart < handleThreshold && distToStart <= distToEnd) {
+      _activeDrag = 'start';
+    } else if (distToEnd < handleThreshold) {
+      _activeDrag = 'end';
+    } else {
+      _activeDrag = null;
+      _baseZoom = _zoom;
+      _lastFocalPoint = details.localFocalPoint;
+    }
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final w = box.size.width;
+
+    if (_activeDrag != null) {
+      final sec =
+          _xToSec(details.localFocalPoint.dx, w).clamp(0.0, widget.durationSec);
+      setState(() {
+        if (_activeDrag == 'start') {
+          _startSec = math.min(sec, _endSec - 0.5);
+        } else {
+          _endSec = math.max(sec, _startSec + 0.5);
+        }
+      });
+    } else {
+      setState(() {
+        _zoom = (_baseZoom * details.scale).clamp(1.0, 20.0);
+        final dx = details.localFocalPoint.dx -
+            (_lastFocalPoint?.dx ?? details.localFocalPoint.dx);
+        final secPerPx = _viewDurationSec / w;
+        _scrollSec -= dx * secPerPx;
+        _clampScroll();
+        _lastFocalPoint = details.localFocalPoint;
+      });
+    }
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (_activeDrag != null) {
+      widget.onChanged(_startSec, _endSec);
+    }
+    _activeDrag = null;
+    _lastFocalPoint = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onScaleStart: _onScaleStart,
+      onScaleUpdate: _onScaleUpdate,
+      onScaleEnd: _onScaleEnd,
+      child: Container(
+        height: 150,
+        color: Colors.black,
+        child: CustomPaint(
+          painter: _TrimSpectrogramPainter(
+            spectrogramImage: widget.spectrogramImage,
+            durationSec: widget.durationSec,
+            scrollSec: _scrollSec,
+            viewDurationSec: _viewDurationSec,
+            trimStartSec: _startSec,
+            trimEndSec: _endSec,
+            accentColor: theme.colorScheme.primary,
+          ),
+          size: const Size(double.infinity, 150),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrimSpectrogramPainter extends CustomPainter {
+  _TrimSpectrogramPainter({
+    required this.spectrogramImage,
+    required this.durationSec,
+    required this.scrollSec,
+    required this.viewDurationSec,
+    required this.trimStartSec,
+    required this.trimEndSec,
+    required this.accentColor,
+  });
+
+  final ui.Image spectrogramImage;
+  final double durationSec;
+  final double scrollSec;
+  final double viewDurationSec;
+  final double trimStartSec;
+  final double trimEndSec;
+  final Color accentColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (durationSec <= 0) return;
+    final imgW = spectrogramImage.width.toDouble();
+    final imgH = spectrogramImage.height.toDouble();
+    final pxPerSec = imgW / durationSec;
+
+    // Draw the visible portion of the spectrogram.
+    final srcX1 = (scrollSec * pxPerSec).clamp(0.0, imgW);
+    final srcX2 = ((scrollSec + viewDurationSec) * pxPerSec).clamp(0.0, imgW);
+    if (srcX2 > srcX1) {
+      canvas.drawImageRect(
+        spectrogramImage,
+        Rect.fromLTRB(srcX1, 0, srcX2, imgH),
+        Rect.fromLTRB(0, 0, size.width, size.height),
+        Paint()..filterQuality = FilterQuality.medium,
+      );
+    }
+
+    // Dimmed regions outside the trim selection.
+    final dimPaint = Paint()..color = Colors.black.withAlpha(140);
+    final trimStartX =
+        (trimStartSec - scrollSec) / viewDurationSec * size.width;
+    final trimEndX = (trimEndSec - scrollSec) / viewDurationSec * size.width;
+
+    if (trimStartX > 0) {
+      canvas.drawRect(
+        Rect.fromLTRB(0, 0, trimStartX.clamp(0, size.width), size.height),
+        dimPaint,
+      );
+    }
+    if (trimEndX < size.width) {
+      canvas.drawRect(
+        Rect.fromLTRB(
+            trimEndX.clamp(0, size.width), 0, size.width, size.height),
+        dimPaint,
+      );
+    }
+
+    // Border around the selected region.
+    final borderPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawRect(
+      Rect.fromLTRB(
+        trimStartX.clamp(0, size.width),
+        0,
+        trimEndX.clamp(0, size.width),
+        size.height,
+      ),
+      borderPaint,
+    );
+
+    // ── Trim handles ──────────────────────────────────────────────
+    const hw = 14.0;
+    const hh = 32.0;
+    final handlePaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.fill;
+    final gripPaint = Paint()
+      ..color = Colors.white.withAlpha(200)
+      ..strokeWidth = 1.5;
+    for (final hx in [trimStartX, trimEndX]) {
+      if (hx < -hw || hx > size.width + hw) continue;
+      final ly = (size.height - hh) / 2;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(hx - hw / 2, ly, hw, hh),
+          const Radius.circular(4),
+        ),
+        handlePaint,
+      );
+      for (var i = -1; i <= 1; i++) {
+        final cy = size.height / 2 + i * 5.0;
+        canvas.drawLine(Offset(hx - 3, cy), Offset(hx + 3, cy), gripPaint);
+      }
+    }
+
+    // ── Time labels ───────────────────────────────────────────────
+    final textStyle = TextStyle(
+      color: Colors.white.withAlpha(180),
+      fontSize: 9,
+    );
+    final tp = TextPainter(textDirection: ui.TextDirection.ltr);
+    double interval = 2.0;
+    if (viewDurationSec > 120) {
+      interval = 30.0;
+    } else if (viewDurationSec > 60) {
+      interval = 10.0;
+    } else if (viewDurationSec > 30) {
+      interval = 5.0;
+    }
+
+    final firstLabel = ((scrollSec / interval).ceil() * interval);
+    for (var t = firstLabel; t < scrollSec + viewDurationSec; t += interval) {
+      final x = (t - scrollSec) / viewDurationSec * size.width;
+      if (x < 0 || x > size.width - 30) continue;
+      final m = t ~/ 60;
+      final s = (t % 60).toInt();
+      tp.text = TextSpan(
+        text: '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}',
+        style: textStyle,
+      );
+      tp.layout();
+      tp.paint(canvas, Offset(x + 2, size.height - tp.height - 2));
+      canvas.drawLine(
+        Offset(x, size.height - 2),
+        Offset(x, size.height),
+        Paint()..color = Colors.white.withAlpha(60),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrimSpectrogramPainter old) => true;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Help Dialog
+// ═════════════════════════════════════════════════════════════════════════════
+
+/// Bottom sheet displaying help documentation for the session review screen.
+class _SessionHelpSheet extends StatelessWidget {
+  const _SessionHelpSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            children: [
+              // Drag handle.
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withAlpha(60),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Text(
+                l10n.sessionHelpTitle,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _helpSection(
+                theme,
+                icon: Icons.info_outline,
+                body: l10n.sessionHelpOverview,
+              ),
+              _helpSection(
+                theme,
+                icon: Icons.add_circle_outline,
+                body: l10n.sessionHelpAddSpecies,
+              ),
+              _helpSection(
+                theme,
+                icon: Icons.note_add_outlined,
+                body: l10n.sessionHelpAnnotations,
+              ),
+              _helpSection(
+                theme,
+                icon: Icons.content_cut,
+                body: l10n.sessionHelpTrimming,
+              ),
+              _helpSection(
+                theme,
+                icon: Icons.share,
+                body: l10n.sessionHelpExport,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _helpSection(ThemeData theme,
+      {required IconData icon, required String body}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 22, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(body, style: theme.textTheme.bodyMedium),
+          ),
+        ],
+      ),
+    );
   }
 }

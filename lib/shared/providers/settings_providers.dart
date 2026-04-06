@@ -150,11 +150,11 @@ final exportFormatProvider =
   return StringSettingNotifier(prefs, PrefKeys.exportFormat, 'raven');
 });
 
-/// Include audio files in export (default false).
+/// Include audio files in export (default true).
 final includeAudioProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return BoolSettingNotifier(prefs, PrefKeys.includeAudio, false);
+  return BoolSettingNotifier(prefs, PrefKeys.includeAudio, true);
 });
 
 // ---------------------------------------------------------------------------

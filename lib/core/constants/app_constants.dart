@@ -83,4 +83,5 @@ abstract final class PrefKeys {
   static const String geoThreshold = 'geo_threshold';
   static const String manualLatitude = 'manual_latitude';
   static const String manualLongitude = 'manual_longitude';
+  static const String mapTileConsent = 'map_tile_consent';
 }

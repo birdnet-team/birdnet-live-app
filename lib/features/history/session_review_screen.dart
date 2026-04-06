@@ -55,6 +55,7 @@ import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
@@ -63,6 +64,9 @@ import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
+import 'session_map_screen.dart';
+import '../settings/settings_screen.dart';
+import '../../core/services/reverse_geocoding_service.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -82,6 +86,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── State ───────────────────────────────────────────────────────────
 
   late List<DetectionRecord> _detections;
+  late List<SessionAnnotation> _annotations;
   late List<_SpeciesGroup> _speciesGroups;
   final Set<String> _expandedSpecies = {};
   final AudioPlayer _player = AudioPlayer();
@@ -90,22 +95,148 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool _isPlaying = false;
   bool _audioAvailable = false;
   bool _isDirty = false;
+  bool _trimMode = false;
+  double? _trimStartSec;
+  double? _trimEndSec;
 
-  /// Pre-computed spectrogram image covering the entire recording.
+  /// Pre-trim-mode values of [_trimStartSec]/[_trimEndSec], saved when
+  /// entering trim mode so the undo snapshot captures the real pre-trim state
+  /// instead of the transient handle positions set by [_onTrimChanged].
+  double? _preTrimStartSec;
+  double? _preTrimEndSec;
+
+  // ── Clip state (after trim is applied) ─────────────────────────────
+
+  /// Offset in original-recording seconds of the clip start (0 = no clip).
+  double _clipOffsetSec = 0.0;
+
+  /// Full recording duration before any clip was applied.
+  double _fullDurationSec = 0.0;
+
+  /// Full-recording spectrogram (never cropped).  Kept for undo / trim view.
+  ui.Image? _fullSpectrogramImage;
+
+  // ── Undo / Redo ────────────────────────────────────────────────────
+
+  final List<_ReviewSnapshot> _undoStack = [];
+  final List<_ReviewSnapshot> _redoStack = [];
+
+  /// Pre-computed spectrogram image covering the current playback range.
+  /// When a clip is active this is cropped to the trimmed region.
   ui.Image? _spectrogramImage;
 
   /// Whether the audio is being decoded and the spectrogram computed.
   bool _decoding = false;
 
+  bool get _canUndo => _undoStack.isNotEmpty;
+  bool get _canRedo => _redoStack.isNotEmpty;
+
+  /// Cached reverse-geocoded location name for display.
+  String? _locationName;
+
+  _ReviewSnapshot _takeSnapshot() => _ReviewSnapshot(
+        detections: List.of(_detections),
+        annotations: List.of(_annotations),
+        trimStartSec: _trimStartSec,
+        trimEndSec: _trimEndSec,
+        clipOffsetSec: _clipOffsetSec,
+      );
+
+  void _pushUndo() {
+    _undoStack.add(_takeSnapshot());
+    _redoStack.clear();
+  }
+
+  void _undo() {
+    if (!_canUndo) return;
+    _redoStack.add(_takeSnapshot());
+    final snap = _undoStack.removeLast();
+    setState(() {
+      _detections = snap.detections;
+      _annotations = snap.annotations;
+      _trimStartSec = snap.trimStartSec;
+      _trimEndSec = snap.trimEndSec;
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = _undoStack.isNotEmpty;
+    });
+    _syncPlayerClip(snap.clipOffsetSec);
+  }
+
+  void _redo() {
+    if (!_canRedo) return;
+    _undoStack.add(_takeSnapshot());
+    final snap = _redoStack.removeLast();
+    setState(() {
+      _detections = snap.detections;
+      _annotations = snap.annotations;
+      _trimStartSec = snap.trimStartSec;
+      _trimEndSec = snap.trimEndSec;
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
+    _syncPlayerClip(snap.clipOffsetSec);
+  }
+
+  /// Re-synchronize the player clip and spectrogram after restoring a
+  /// snapshot (undo/redo).  [snapshotClipOffset] is the clip offset that
+  /// was active when the snapshot was taken.
+  Future<void> _syncPlayerClip(double snapshotClipOffset) async {
+    if (snapshotClipOffset == _clipOffsetSec) return; // No clip change.
+
+    if (snapshotClipOffset > 0) {
+      // Re-apply clip matching the snapshot's trim range.
+      final start = _trimStartSec ?? 0.0;
+      final end = _trimEndSec ?? _fullDurationSec;
+      final startDur = Duration(microseconds: (start * 1e6).round());
+      final endDur = Duration(microseconds: (end * 1e6).round());
+      final clippedDur = await _player.setClip(start: startDur, end: endDur);
+      await _player.seek(Duration.zero);
+      await _cropSpectrogramForClip(start, end);
+      if (mounted) {
+        setState(() {
+          _clipOffsetSec = snapshotClipOffset;
+          _duration = clippedDur ?? (endDur - startDur);
+          _position = Duration.zero;
+        });
+      }
+    } else {
+      // Remove clip — restore full recording.
+      await _player.setClip();
+      await _player.seek(Duration.zero);
+      if (mounted) {
+        setState(() {
+          _clipOffsetSec = 0.0;
+          _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
+          _position = Duration.zero;
+          if (_spectrogramImage != null &&
+              !identical(_spectrogramImage, _fullSpectrogramImage)) {
+            _spectrogramImage!.dispose();
+          }
+          _spectrogramImage = _fullSpectrogramImage;
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _detections = List.of(widget.session.detections);
+    _annotations = List.of(widget.session.annotations);
+    _trimStartSec = widget.session.trimStartSec;
+    _trimEndSec = widget.session.trimEndSec;
     _speciesGroups = _buildSpeciesGroups(
       _detections,
       widget.session.settings.windowDuration,
     );
     _initAudio();
+    _resolveLocation();
   }
 
   Future<void> _initAudio() async {
@@ -117,11 +248,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (!mounted) return;
       setState(() {
         _duration = dur ?? Duration.zero;
+        _fullDurationSec = _duration.inMicroseconds / 1e6;
         _audioAvailable = true;
       });
 
       _player.positionStream.listen((pos) {
-        if (mounted) setState(() => _position = pos);
+        if (!mounted) return;
+        setState(() => _position = pos);
       });
       _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -137,6 +270,32 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _decodeAudioForSpectrogram(path);
     } catch (_) {
       // Audio not available — review still works without playback.
+    }
+  }
+
+  /// Attempt to reverse-geocode the session location.
+  ///
+  /// If the session already has a [locationName] (e.g. from a previous save),
+  /// that value is reused.  Otherwise a network request via the Nominatim API
+  /// is made and the result is persisted so future opens skip the request.
+  Future<void> _resolveLocation() async {
+    final lat = widget.session.latitude;
+    final lon = widget.session.longitude;
+    if (lat == null || lon == null) return;
+
+    // Use cached name if already resolved.
+    if (widget.session.locationName != null) {
+      setState(() => _locationName = widget.session.locationName);
+      return;
+    }
+
+    final name = await reverseGeocode(latitude: lat, longitude: lon);
+    if (name != null && mounted) {
+      setState(() => _locationName = name);
+      // Persist so we don't re-fetch next time.
+      widget.session.locationName = name;
+      final repo = ref.read(sessionRepositoryProvider);
+      await repo.save(widget.session);
     }
   }
 
@@ -229,7 +388,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     if (mounted) {
       setState(() {
-        _spectrogramImage?.dispose();
+        _fullSpectrogramImage?.dispose();
+        _fullSpectrogramImage = image;
         _spectrogramImage = image;
       });
     } else {
@@ -237,9 +397,58 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
   }
 
+  /// Crop the full spectrogram to the current clip range and update
+  /// [_spectrogramImage].  Must be called whenever the clip changes.
+  Future<void> _cropSpectrogramForClip(
+    double startSec,
+    double endSec,
+  ) async {
+    final src = _fullSpectrogramImage;
+    if (src == null || _fullDurationSec <= 0) return;
+
+    final startFrac = (startSec / _fullDurationSec).clamp(0.0, 1.0);
+    final endFrac = (endSec / _fullDurationSec).clamp(0.0, 1.0);
+    final srcStartX = (startFrac * src.width).round();
+    final srcEndX = (endFrac * src.width).round();
+    final cropWidth = srcEndX - srcStartX;
+    if (cropWidth <= 0) return;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawImageRect(
+      src,
+      Rect.fromLTRB(
+        srcStartX.toDouble(),
+        0,
+        srcEndX.toDouble(),
+        src.height.toDouble(),
+      ),
+      Rect.fromLTWH(0, 0, cropWidth.toDouble(), src.height.toDouble()),
+      Paint(),
+    );
+    final picture = recorder.endRecording();
+    final cropped = await picture.toImage(cropWidth, src.height);
+    picture.dispose();
+
+    if (mounted) {
+      setState(() {
+        if (_spectrogramImage != null &&
+            !identical(_spectrogramImage, _fullSpectrogramImage)) {
+          _spectrogramImage!.dispose();
+        }
+        _spectrogramImage = cropped;
+      });
+    } else {
+      cropped.dispose();
+    }
+  }
+
   @override
   void dispose() {
-    _spectrogramImage?.dispose();
+    if (!identical(_spectrogramImage, _fullSpectrogramImage)) {
+      _spectrogramImage?.dispose();
+    }
+    _fullSpectrogramImage?.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -278,10 +487,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     widget.session.detections
       ..clear()
       ..addAll(_detections);
+    widget.session.annotations
+      ..clear()
+      ..addAll(_annotations);
+    widget.session.trimStartSec = _trimStartSec;
+    widget.session.trimEndSec = _trimEndSec;
     final repo = ref.read(sessionRepositoryProvider);
     await repo.save(widget.session);
     ref.invalidate(sessionListProvider);
-    setState(() => _isDirty = false);
+    setState(() {
+      _isDirty = false;
+      _undoStack.clear();
+      _redoStack.clear();
+    });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -340,6 +558,192 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     Navigator.of(context).pop();
   }
 
+  // ── Add Species ───────────────────────────────────────────────────
+
+  Future<void> _addSpecies() async {
+    final positionSec = _position.inMicroseconds / 1000000.0;
+    final result = await Navigator.of(context).push<_AddSpeciesResult>(
+      MaterialPageRoute(
+        builder: (_) => _AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    _pushUndo();
+    setState(() {
+      switch (result.mode) {
+        case _InsertMode.global:
+          // Insert global detection — applies to the whole session.
+          _detections.add(DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: 1.0,
+            timestamp: widget.session.startTime,
+            source: DetectionSource.manualGlobal,
+          ));
+          break;
+
+        case _InsertMode.atTimestamp:
+          // Insert at the current playhead position.
+          final ts = widget.session.startTime.add(_position);
+          _detections.add(DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: 1.0,
+            timestamp: ts,
+            source: DetectionSource.manual,
+          ));
+          break;
+
+        case _InsertMode.replace:
+          if (result.replaceRecord != null) {
+            final idx = _detections.indexOf(result.replaceRecord!);
+            if (idx != -1) {
+              _detections[idx] = DetectionRecord(
+                scientificName: result.scientificName,
+                commonName: result.commonName,
+                confidence: result.replaceRecord!.confidence,
+                timestamp: result.replaceRecord!.timestamp,
+                audioClipPath: result.replaceRecord!.audioClipPath,
+                source: DetectionSource.manual,
+              );
+            }
+          }
+          break;
+      }
+
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
+  }
+
+  // ── Annotations ───────────────────────────────────────────────────
+
+  void _addAnnotation(SessionAnnotation annotation) {
+    _pushUndo();
+    setState(() {
+      _annotations.add(annotation);
+      _isDirty = true;
+    });
+  }
+
+  void _deleteAnnotation(int index) {
+    _pushUndo();
+    setState(() {
+      _annotations.removeAt(index);
+      _isDirty = true;
+    });
+  }
+
+  // ── Trim ──────────────────────────────────────────────────────────
+
+  void _toggleTrimMode() {
+    if (!_trimMode) {
+      // Entering trim mode — remember the applied trim state so _applyTrim
+      // can build an accurate undo snapshot.
+      _preTrimStartSec = _trimStartSec;
+      _preTrimEndSec = _trimEndSec;
+    }
+    setState(() => _trimMode = !_trimMode);
+  }
+
+  void _onTrimChanged(double startSec, double endSec) {
+    _trimStartSec = startSec;
+    _trimEndSec = endSec;
+  }
+
+  Future<void> _applyTrim() async {
+    if (_trimStartSec == null && _trimEndSec == null) return;
+    final start = _trimStartSec ?? 0.0;
+    final end = _trimEndSec ?? _fullDurationSec;
+
+    // Build undo snapshot with the state *before* trim mode was entered.
+    // _trimStartSec/_trimEndSec now hold transient handle positions from
+    // _onTrimChanged; the pre-trim values were saved by _toggleTrimMode.
+    _undoStack.add(_ReviewSnapshot(
+      detections: List.of(_detections),
+      annotations: List.of(_annotations),
+      trimStartSec: _preTrimStartSec,
+      trimEndSec: _preTrimEndSec,
+      clipOffsetSec: _clipOffsetSec,
+    ));
+    _redoStack.clear();
+
+    setState(() {
+      _detections.removeWhere((d) {
+        final offsetSec =
+            d.timestamp.difference(widget.session.startTime).inMicroseconds /
+                1000000.0;
+        return offsetSec < start || offsetSec > end;
+      });
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+      _trimMode = false;
+    });
+
+    // Clip the player to the trimmed range.
+    final startDur = Duration(microseconds: (start * 1e6).round());
+    final endDur = Duration(microseconds: (end * 1e6).round());
+    final clippedDur = await _player.setClip(start: startDur, end: endDur);
+    await _player.seek(Duration.zero);
+
+    // Crop the spectrogram to the trimmed portion.
+    await _cropSpectrogramForClip(start, end);
+
+    if (mounted) {
+      setState(() {
+        _clipOffsetSec = start;
+        _duration = clippedDur ?? (endDur - startDur);
+        _position = Duration.zero;
+      });
+    }
+  }
+
+  Future<void> _resetTrim() async {
+    _pushUndo();
+
+    // Remove the player clip and restore the full recording.
+    await _player.setClip();
+    await _player.seek(Duration.zero);
+
+    setState(() {
+      _trimStartSec = null;
+      _trimEndSec = null;
+      _clipOffsetSec = 0.0;
+      _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
+      _position = Duration.zero;
+      // Restore the full-recording spectrogram.
+      if (_spectrogramImage != null &&
+          !identical(_spectrogramImage, _fullSpectrogramImage)) {
+        _spectrogramImage!.dispose();
+      }
+      _spectrogramImage = _fullSpectrogramImage;
+      _isDirty = true;
+      _trimMode = false;
+    });
+  }
+
+  // ── Help ──────────────────────────────────────────────────────────
+
+  void _showHelp() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _SessionHelpSheet(),
+    );
+  }
+
   Future<void> _confirmDeleteDetection(
     _SpeciesGroup group,
     _DetectionCluster cluster,
@@ -365,6 +769,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
     if (confirmed != true || !mounted) return;
 
+    _pushUndo();
     setState(() {
       for (final r in cluster.records) {
         _detections.remove(r);
@@ -380,19 +785,173 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   void _seekToCluster(_DetectionCluster cluster) {
     if (!_audioAvailable || _duration == Duration.zero) return;
     final offset = cluster.firstTimestamp.difference(widget.session.startTime);
-    if (offset.isNegative || offset > _duration) return;
-    _player.seek(offset);
+    // Subtract the clip offset so the seek is relative to the clipped range.
+    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
+    final seekPos = offset - clipOffset;
+    if (seekPos.isNegative || seekPos > _duration) return;
+    _player.seek(seekPos);
     if (!_isPlaying) _player.play();
   }
 
   void _seekToPosition(Duration position) {
     if (!_audioAvailable || _duration == Duration.zero) return;
+    if (position.isNegative) position = Duration.zero;
+    if (position > _duration) position = _duration;
     _player.seek(position);
     if (!_isPlaying) _player.play();
   }
 
   void _pausePlayer() {
     if (_isPlaying) _player.pause();
+  }
+
+  // ── Add Content Menu ──────────────────────────────────────────────
+
+  Future<void> _showAddMenu() async {
+    final l10n = AppLocalizations.of(context)!;
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: Text(l10n.sessionAddSpecies),
+              onTap: () => Navigator.of(ctx).pop('species'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.note_add_outlined),
+              title: Text(l10n.sessionAddAnnotationOption),
+              onTap: () => Navigator.of(ctx).pop('annotation'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || value == null) return;
+    if (value == 'species') {
+      _addSpecies();
+    } else if (value == 'annotation') {
+      _showAnnotationInput();
+    }
+  }
+
+  void _showAnnotationInput() {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    var atTimestamp = false;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          title: Text(l10n.sessionAddAnnotationOption),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAddAnnotation,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  maxLines: 5,
+                  minLines: 2,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      avatar: const Icon(Icons.public, size: 18),
+                      label: Text(l10n.sessionAnnotationGlobal),
+                      selected: !atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = false),
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(Icons.schedule, size: 18),
+                      label: Text(l10n.sessionInsertAtTimestamp),
+                      selected: atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = true),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                if (text.isEmpty) return;
+                final positionSec = _position.inMicroseconds / 1000000.0;
+                _addAnnotation(SessionAnnotation(
+                  text: text,
+                  createdAt: DateTime.now(),
+                  offsetInRecording: atTimestamp ? positionSec : null,
+                ));
+                Navigator.of(ctx).pop();
+              },
+              child: Text(l10n.sessionAddAnnotationOption),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _replaceDetection(_DetectionCluster cluster) async {
+    final positionSec = _position.inMicroseconds / 1000000.0;
+    final target = cluster.records.first;
+    final result = await Navigator.of(context).push<_AddSpeciesResult>(
+      MaterialPageRoute(
+        builder: (_) => _AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+          initialMode: _InsertMode.replace,
+          initialReplaceTarget: target,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    _pushUndo();
+    setState(() {
+      if (result.replaceRecord != null) {
+        final idx = _detections.indexOf(result.replaceRecord!);
+        if (idx != -1) {
+          _detections[idx] = DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: result.replaceRecord!.confidence,
+            timestamp: result.replaceRecord!.timestamp,
+            audioClipPath: result.replaceRecord!.audioClipPath,
+            source: DetectionSource.manual,
+          );
+        }
+      }
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
   }
 
   // ── Build ───────────────────────────────────────────────────────────
@@ -414,9 +973,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            widget.session.displayName,
-            style: theme.textTheme.titleSmall,
-            overflow: TextOverflow.ellipsis,
+            _sessionReviewTitle(l10n, widget.session),
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),
@@ -430,52 +987,208 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             },
           ),
           actions: [
-            if (_isDirty)
-              IconButton(
-                icon: const Icon(Icons.save),
-                tooltip: l10n.sessionSave,
-                onPressed: _save,
-              ),
-            if (_audioAvailable)
-              IconButton(
-                icon: const Icon(Icons.share),
-                tooltip: l10n.sessionShare,
-                onPressed: _share,
-              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: l10n.sessionDiscard,
-              onPressed: _discard,
+              icon: const Icon(Icons.tune_rounded),
+              tooltip: l10n.settings,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              ),
             ),
           ],
         ),
         body: Column(
           children: [
+            // ── Toolbar ─────────────────────────────────────
+            Container(
+              color: theme.colorScheme.surfaceContainerLow,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: l10n.sessionAddContent,
+                    onPressed: _showAddMenu,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.undo,
+                        color: _canUndo
+                            ? null
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionUndo,
+                    onPressed: _canUndo ? _undo : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.redo,
+                        color: _canRedo
+                            ? null
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionRedo,
+                    onPressed: _canRedo ? _redo : null,
+                  ),
+                  if (_audioAvailable)
+                    IconButton(
+                      icon: Icon(
+                        _trimMode
+                            ? Icons.content_cut
+                            : Icons.content_cut_outlined,
+                      ),
+                      tooltip: l10n.sessionTrimRecording,
+                      onPressed: _toggleTrimMode,
+                      color: _trimMode ? theme.colorScheme.primary : null,
+                    ),
+                  IconButton(
+                    icon: Icon(Icons.save,
+                        color: _isDirty
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionSave,
+                    onPressed: _isDirty ? _save : null,
+                  ),
+                  if (_audioAvailable)
+                    IconButton(
+                      icon: const Icon(Icons.share),
+                      tooltip: l10n.sessionShare,
+                      onPressed: _share,
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: l10n.sessionDiscard,
+                    onPressed: _discard,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.help_outline),
+                    tooltip: l10n.sessionHelpTitle,
+                    onPressed: _showHelp,
+                  ),
+                ],
+              ),
+            ),
+
             // ── Summary header ──────────────────────────────
             _SummaryHeader(
               session: widget.session,
               detectionCount: _detections.length,
+              locationName: _locationName,
+              onShowMap: widget.session.latitude != null
+                  ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => SessionMapScreen(
+                            latitude: widget.session.latitude!,
+                            longitude: widget.session.longitude!,
+                            locationName: _locationName,
+                          ),
+                        ),
+                      )
+                  : null,
             ),
 
-            // ── Spectrogram strip ───────────────────────────
-            if (_audioAvailable)
-              _SpectrogramStrip(
-                spectrogramImage: _spectrogramImage,
-                decoding: _decoding,
-                position: _position,
-                duration: _duration,
-                onSeek: _seekToPosition,
-                onPause: _pausePlayer,
-                isPlaying: _isPlaying,
+            // ── Spectrogram ─────────────────────────────────
+            if (_audioAvailable) ...[
+              if (_trimMode &&
+                  (_fullSpectrogramImage ?? _spectrogramImage) != null)
+                _TrimSpectrogramView(
+                  spectrogramImage:
+                      (_fullSpectrogramImage ?? _spectrogramImage)!,
+                  durationSec: _fullDurationSec > 0
+                      ? _fullDurationSec
+                      : _duration.inMicroseconds / 1000000.0,
+                  initialStartSec: _trimStartSec ?? 0.0,
+                  initialEndSec: _trimEndSec ??
+                      (_fullDurationSec > 0
+                          ? _fullDurationSec
+                          : _duration.inMicroseconds / 1000000.0),
+                  onChanged: _onTrimChanged,
+                )
+              else
+                Stack(
+                  children: [
+                    _SpectrogramStrip(
+                      spectrogramImage: _spectrogramImage,
+                      decoding: _decoding,
+                      position: _position,
+                      duration: _duration,
+                      onSeek: _seekToPosition,
+                      onPause: _pausePlayer,
+                      isPlaying: _isPlaying,
+                    ),
+                    Positioned(
+                      left: 8,
+                      bottom: 8,
+                      child: _PlayPauseButton(
+                        isPlaying: _isPlaying,
+                        onToggle: () {
+                          if (_isPlaying) {
+                            _player.pause();
+                          } else {
+                            _player.play();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+
+            // ── Trim confirm bar ────────────────────────────
+            if (_trimMode)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      l10n.sessionTrimRecording,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: _resetTrim,
+                      child: Text(l10n.sessionTrimReset),
+                    ),
+                    const SizedBox(width: 4),
+                    FilledButton(
+                      onPressed: _applyTrim,
+                      child: Text(l10n.sessionTrimApply),
+                    ),
+                  ],
+                ),
               ),
 
-            // ── Audio player ────────────────────────────────
-            if (_audioAvailable)
-              _AudioPlayerBar(
-                player: _player,
-                position: _position,
-                duration: _duration,
-                isPlaying: _isPlaying,
+            // ── Annotation chips ────────────────────────────
+            if (_annotations.isNotEmpty)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    for (var i = 0; i < _annotations.length; i++)
+                      Chip(
+                        label: Text(
+                          _annotations[i].text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        avatar: Icon(
+                          _annotations[i].offsetInRecording != null
+                              ? Icons.schedule
+                              : Icons.public,
+                          size: 16,
+                        ),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        onDeleted: () => _deleteAnnotation(i),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
+                ),
               ),
 
             const Divider(height: 1),
@@ -521,6 +1234,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           onSeekCluster: _seekToCluster,
                           onDeleteCluster: (cluster) =>
                               _confirmDeleteDetection(group, cluster),
+                          onReplaceCluster: _replaceDetection,
                         );
                       },
                     ),
@@ -535,10 +1249,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool _isSpeciesActive(_SpeciesGroup group) {
     if (!_isPlaying && !_audioAvailable) return false;
     final windowSec = widget.session.settings.windowDuration;
+    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
     for (final r in group.allRecords) {
       final offset = r.timestamp.difference(widget.session.startTime);
-      final detEnd = offset + Duration(seconds: windowSec);
-      if (_position >= offset && _position <= detEnd) return true;
+      // Map the absolute offset into clip-relative coordinates.
+      final rel = offset - clipOffset;
+      final detEnd = rel + Duration(seconds: windowSec);
+      if (_position >= rel && _position <= detEnd) return true;
     }
     return false;
   }
@@ -596,5 +1313,38 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     groups.sort((a, b) => a.firstTimestamp.compareTo(b.firstTimestamp));
     return groups;
+  }
+}
+
+/// Returns a localized display label for the given [SessionType].
+String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
+  switch (type) {
+    case SessionType.live:
+      return l10n.sessionTypeLive;
+    case SessionType.fileUpload:
+      return l10n.sessionTypeFileUpload;
+    case SessionType.pointCount:
+      return l10n.sessionTypePointCount;
+    case SessionType.survey:
+      return l10n.sessionTypeSurvey;
+  }
+}
+
+/// Returns a numbered review-screen title such as "Live Session #3 Review".
+///
+/// Falls back to just the un-numbered type label when [session.sessionNumber]
+/// is `null` (legacy sessions).
+String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
+  final n = session.sessionNumber;
+  if (n == null) return _sessionTypeLabel(l10n, session.type);
+  switch (session.type) {
+    case SessionType.live:
+      return l10n.sessionTitleLiveNum(n);
+    case SessionType.fileUpload:
+      return l10n.sessionTitleFileUploadNum(n);
+    case SessionType.pointCount:
+      return l10n.sessionTitlePointCountNum(n);
+    case SessionType.survey:
+      return l10n.sessionTitleSurveyNum(n);
   }
 }

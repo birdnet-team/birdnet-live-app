@@ -158,7 +158,7 @@ class _SessionTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.graphic_eq_rounded,
+                      _sessionTypeIcon(session.type),
                       color: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
@@ -168,9 +168,8 @@ class _SessionTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          session.displayName.isNotEmpty
-                              ? session.displayName
-                              : 'Unknown Session',
+                          _sessionCardTitle(
+                              AppLocalizations.of(context)!, session),
                           style: theme.textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.bold),
                           maxLines: 1,
@@ -202,7 +201,28 @@ class _SessionTile extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              if (_topSpecies(session).isNotEmpty) ...[
+                const SizedBox(height: 12),
+                ..._topSpecies(session).map((name) => Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 2),
+                      child: Row(
+                        children: [
+                          Icon(Icons.music_note_rounded,
+                              size: 14, color: theme.colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -259,5 +279,62 @@ class _StatBadge extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Returns a localized display label for the given [SessionType].
+String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
+  switch (type) {
+    case SessionType.live:
+      return l10n.sessionTypeLive;
+    case SessionType.fileUpload:
+      return l10n.sessionTypeFileUpload;
+    case SessionType.pointCount:
+      return l10n.sessionTypePointCount;
+    case SessionType.survey:
+      return l10n.sessionTypeSurvey;
+  }
+}
+
+/// Returns the icon matching the session type used on the home screen.
+IconData _sessionTypeIcon(SessionType type) {
+  switch (type) {
+    case SessionType.live:
+      return Icons.mic_rounded;
+    case SessionType.fileUpload:
+      return Icons.audio_file_rounded;
+    case SessionType.pointCount:
+      return Icons.location_on_rounded;
+    case SessionType.survey:
+      return Icons.route_rounded;
+  }
+}
+
+/// Returns the common names of the top 3 most-detected species.
+List<String> _topSpecies(LiveSession session) {
+  final counts = <String, int>{};
+  for (final d in session.detections) {
+    counts[d.commonName] = (counts[d.commonName] ?? 0) + 1;
+  }
+  final sorted = counts.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+  return sorted.take(3).map((e) => e.key).toList();
+}
+
+/// Returns a numbered card title such as "Live Session #3".
+///
+/// Falls back to the plain type label for legacy sessions without a number.
+String _sessionCardTitle(AppLocalizations l10n, LiveSession session) {
+  final n = session.sessionNumber;
+  if (n == null) return _sessionTypeLabel(l10n, session.type);
+  switch (session.type) {
+    case SessionType.live:
+      return l10n.sessionCardLiveNum(n);
+    case SessionType.fileUpload:
+      return l10n.sessionCardFileUploadNum(n);
+    case SessionType.pointCount:
+      return l10n.sessionCardPointCountNum(n);
+    case SessionType.survey:
+      return l10n.sessionCardSurveyNum(n);
   }
 }

@@ -45,6 +45,10 @@ dependencies:
   # Location
   geolocator: ^13.0.2
 
+  # Map
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
   # Network & Images
   http: ^1.2.2
   cached_network_image: ^3.4.1

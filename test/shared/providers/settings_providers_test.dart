@@ -69,8 +69,8 @@ void main() {
       expect(container.read(exportFormatProvider), 'raven');
     });
 
-    test('includeAudio defaults to false', () {
-      expect(container.read(includeAudioProvider), false);
+    test('includeAudio defaults to true', () {
+      expect(container.read(includeAudioProvider), true);
     });
 
     test('spectrogramDuration defaults to 15', () {

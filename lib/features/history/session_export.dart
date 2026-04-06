@@ -40,13 +40,18 @@ String buildRavenSelectionTable(LiveSession session) {
   );
 
   final windowSeconds = session.settings.windowDuration;
+  final sessionDurationSec = session.endTime != null
+      ? session.endTime!.difference(session.startTime).inMilliseconds / 1000.0
+      : 0.0;
 
   for (var i = 0; i < session.detections.length; i++) {
     final d = session.detections[i];
+    final isGlobal = d.source == DetectionSource.manualGlobal;
 
-    final beginSec =
-        d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
-    final endSec = beginSec + windowSeconds;
+    final beginSec = isGlobal
+        ? 0.0
+        : d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
+    final endSec = isGlobal ? sessionDurationSec : beginSec + windowSeconds;
 
     buf.writeln(
       '${i + 1}\t'
@@ -74,8 +79,10 @@ String buildCsvExport(LiveSession session) {
       'Timestamp,Begin Time (s),Common Name,Scientific Name,Confidence');
 
   for (final d in session.detections) {
-    final beginSec =
-        d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
+    final isGlobal = d.source == DetectionSource.manualGlobal;
+    final beginSec = isGlobal
+        ? 0.0
+        : d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
 
     // Simple CSV escaping for species names
     final commonName =
@@ -109,6 +116,8 @@ String buildJsonExport(LiveSession session) {
       'inferenceRate': session.settings.inferenceRate,
       'speciesFilterMode': session.settings.speciesFilterMode,
     },
+    if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
+    if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
     'detections': session.detections.map((d) {
       final beginSec =
           d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
@@ -118,8 +127,11 @@ String buildJsonExport(LiveSession session) {
         'commonName': d.commonName,
         'scientificName': d.scientificName,
         'confidence': num.parse(d.confidence.toStringAsFixed(4)),
+        if (d.source != DetectionSource.auto) 'source': d.source.name,
       };
     }).toList(),
+    if (session.annotations.isNotEmpty)
+      'annotations': session.annotations.map((a) => a.toJson()).toList(),
   };
 
   return const JsonEncoder.withIndent('  ').convert(map);
@@ -172,11 +184,21 @@ Future<String?> buildSessionExport(
       ArchiveFile('$baseName$extension', bytes.length, bytes),
     );
 
+    // Include annotations as a plain-text file if present.
+    if (session.annotations.isNotEmpty) {
+      final annotationsTxt = _buildAnnotationsText(session);
+      final annotationsBytes = Uint8List.fromList(utf8.encode(annotationsTxt));
+      archive.addFile(
+        ArchiveFile('$baseName.annotations.txt', annotationsBytes.length,
+            annotationsBytes),
+      );
+    }
+
     final zipBytes = ZipEncoder().encode(archive);
 
     final zipName = '$baseName.zip';
     final zipPath = p.join(p.dirname(audioPath), zipName);
-    await File(zipPath).writeAsBytes(zipBytes!);
+    await File(zipPath).writeAsBytes(zipBytes);
 
     return zipPath;
   } else {
@@ -187,4 +209,26 @@ Future<String?> buildSessionExport(
 
     return filePath;
   }
+}
+
+/// Builds a human-readable text file of session annotations.
+String _buildAnnotationsText(LiveSession session) {
+  final buf = StringBuffer();
+  buf.writeln('# Annotations for ${session.displayName}');
+  buf.writeln('# Session: ${session.startTime.toIso8601String()}');
+  buf.writeln();
+
+  for (final a in session.annotations) {
+    if (a.offsetInRecording != null) {
+      final m = a.offsetInRecording! ~/ 60;
+      final s = (a.offsetInRecording! % 60).toInt();
+      buf.write(
+          '[${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}] ');
+    } else {
+      buf.write('[Global] ');
+    }
+    buf.writeln(a.text);
+  }
+
+  return buf.toString();
 }

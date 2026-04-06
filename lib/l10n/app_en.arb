@@ -32,7 +32,7 @@
   "@onboardingWelcomeTitle": {
     "description": "Onboarding welcome screen title"
   },
-  "onboardingWelcomeBody": "Real-time bird species identification powered by on-device AI. No internet required.",
+  "onboardingWelcomeBody": "AI-powered bioacoustic monitoring for field researchers and citizen scientists. Runs entirely on-device — no internet required.",
   "@onboardingWelcomeBody": {
     "description": "Onboarding welcome screen body text"
   },
@@ -48,7 +48,7 @@
   "@onboardingFeaturesTitle": {
     "description": "Onboarding features screen title"
   },
-  "onboardingFeaturesBody": "Live monitoring, background surveys, timed point counts, and offline file analysis — all with real-time spectrogram visualization.",
+  "onboardingFeaturesBody": "Live monitoring, timed point counts, transect surveys, and offline file analysis — built for standardized field protocols with real-time spectrogram visualization.",
   "@onboardingFeaturesBody": {
     "description": "Onboarding features screen body text"
   },
@@ -64,7 +64,7 @@
   "@onboardingReadyTitle": {
     "description": "Onboarding ready screen title"
   },
-  "onboardingReadyBody": "You're all set. Open the app and start identifying birds around you.",
+  "onboardingReadyBody": "You're all set. Head into the field and start monitoring.",
   "@onboardingReadyBody": {
     "description": "Onboarding ready screen body text"
   },
@@ -313,11 +313,11 @@
   "@errorMicrophoneRequired": {
     "description": "Error message when microphone permission is denied"
   },
-  "homeSubtitle": "On-device bird species identification",
+  "homeSubtitle": "The bioacoustics companion app",
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },
-  "liveModeDescription": "Real-time identification with spectrogram",
+  "liveModeDescription": "Real-time species ID",
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
@@ -329,7 +329,7 @@
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
-  "fileAnalysisModeDescription": "Analyze recordings offline",
+  "fileAnalysisModeDescription": "Analyze field recordings offline",
   "@fileAnalysisModeDescription": {
     "description": "Description for File Analysis mode on the main menu"
   },
@@ -341,7 +341,7 @@
   "@exploreMode": {
     "description": "Explore mode tab label"
   },
-  "exploreModeDescription": "Browse species in your area",
+  "exploreModeDescription": "Explore species at your study site",
   "@exploreModeDescription": {
     "description": "Description for Explore mode on the main menu"
   },
@@ -512,5 +512,197 @@
         "type": "int"
       }
     }
+  },
+  "sessionDurationWarningTitle": "Still Recording",
+  "@sessionDurationWarningTitle": {
+    "description": "Title for the 10-minute session duration warning dialog"
+  },
+  "sessionDurationWarningMessage": "You have been recording for 10 minutes. Do you want to continue?",
+  "@sessionDurationWarningMessage": {
+    "description": "Body text for the session duration warning dialog"
+  },
+  "sessionContinue": "Continue",
+  "@sessionContinue": {
+    "description": "Continue button label in the session duration warning dialog"
+  },
+  "sessionAddSpecies": "Add Species",
+  "@sessionAddSpecies": {
+    "description": "Button label to add a species to the session"
+  },
+  "sessionSearchSpecies": "Search species…",
+  "@sessionSearchSpecies": {
+    "description": "Hint text for the species search field"
+  },
+  "sessionInsertGlobally": "Insert globally",
+  "@sessionInsertGlobally": {
+    "description": "Option to insert a species detection for the entire session"
+  },
+  "sessionInsertAtTimestamp": "Insert at playback position",
+  "@sessionInsertAtTimestamp": {
+    "description": "Option to insert a species detection at the current playback timestamp"
+  },
+  "sessionReplaceDetection": "Replace this detection",
+  "@sessionReplaceDetection": {
+    "description": "Option to replace an existing detection with a different species"
+  },
+  "sessionUnknownSpecies": "Unknown / Other",
+  "@sessionUnknownSpecies": {
+    "description": "Label for the unknown or unidentified species category"
+  },
+  "sessionAnnotations": "Annotations",
+  "@sessionAnnotations": {
+    "description": "Section title for session annotations"
+  },
+  "sessionAddAnnotation": "Add annotation…",
+  "@sessionAddAnnotation": {
+    "description": "Hint text for the annotation input field"
+  },
+  "sessionAnnotationGlobal": "Global",
+  "@sessionAnnotationGlobal": {
+    "description": "Label for an annotation not tied to a specific timestamp"
+  },
+  "sessionTrimRecording": "Trim Recording",
+  "@sessionTrimRecording": {
+    "description": "Button label to enter trim mode for the recording"
+  },
+  "sessionTrimApply": "Apply Trim",
+  "@sessionTrimApply": {
+    "description": "Button label to apply the current trim selection"
+  },
+  "sessionTrimReset": "Reset Trim",
+  "@sessionTrimReset": {
+    "description": "Button label to reset trim handles to full recording"
+  },
+  "sessionTrimWarning": "Detections outside the trimmed range will be removed.",
+  "@sessionTrimWarning": {
+    "description": "Warning shown when applying a trim that removes detections"
+  },
+  "sessionHelpTitle": "Session Review Help",
+  "@sessionHelpTitle": {
+    "description": "Title for the session review help dialog"
+  },
+  "sessionHelpOverview": "The session review lets you examine, edit, and export your bird detection session. Tap species rows to see individual detections. Use the spectrogram to navigate the recording.",
+  "@sessionHelpOverview": {
+    "description": "Overview section of the session review help"
+  },
+  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. Use \"Unknown / Other\" for unidentified calls.",
+  "@sessionHelpAddSpecies": {
+    "description": "Help text explaining the add species feature"
+  },
+  "sessionHelpAnnotations": "Annotations: Add text notes to your session. Annotations can be global or tied to a specific timestamp. They are included in exported bundles.",
+  "@sessionHelpAnnotations": {
+    "description": "Help text explaining annotations"
+  },
+  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim.",
+  "@sessionHelpTrimming": {
+    "description": "Help text explaining recording trimming"
+  },
+  "sessionHelpExport": "Export & Share: Use the share button to export your session as a ZIP bundle containing the recording, detections (CSV, JSON, Raven Pro), and annotations.",
+  "@sessionHelpExport": {
+    "description": "Help text explaining export and sharing"
+  },
+  "sessionManualDetection": "Manual",
+  "@sessionManualDetection": {
+    "description": "Badge label for manually added detections"
+  },
+  "sessionAddContent": "Add to Session",
+  "@sessionAddContent": {
+    "description": "Title for the bottom sheet with add options"
+  },
+  "sessionAddAnnotationOption": "Add Annotation",
+  "@sessionAddAnnotationOption": {
+    "description": "Option to add an annotation from the + menu"
+  },
+  "sessionTypeLive": "Live Session",
+  "@sessionTypeLive": {
+    "description": "Title for a live recording session"
+  },
+  "sessionTypeFileUpload": "File Upload",
+  "@sessionTypeFileUpload": {
+    "description": "Title for a file upload analysis session"
+  },
+  "sessionTypePointCount": "Point Count",
+  "@sessionTypePointCount": {
+    "description": "Title for a point-count survey session"
+  },
+  "sessionTypeSurvey": "Survey Session",
+  "@sessionTypeSurvey": {
+    "description": "Title for a background survey session"
+  },
+  "sessionUndo": "Undo",
+  "@sessionUndo": {
+    "description": "Tooltip for the undo button in session review"
+  },
+  "sessionRedo": "Redo",
+  "@sessionRedo": {
+    "description": "Tooltip for the redo button in session review"
+  },
+  "sessionTitleLiveNum": "Live Session #{number} Review",
+  "@sessionTitleLiveNum": {
+    "description": "AppBar title for a numbered live session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitleFileUploadNum": "File Upload #{number} Review",
+  "@sessionTitleFileUploadNum": {
+    "description": "AppBar title for a numbered file-upload session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitlePointCountNum": "Point Count #{number} Review",
+  "@sessionTitlePointCountNum": {
+    "description": "AppBar title for a numbered point-count session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitleSurveyNum": "Survey #{number} Review",
+  "@sessionTitleSurveyNum": {
+    "description": "AppBar title for a numbered survey session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardLiveNum": "Live Session #{number}",
+  "@sessionCardLiveNum": {
+    "description": "Card title for a numbered live session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardFileUploadNum": "File Upload #{number}",
+  "@sessionCardFileUploadNum": {
+    "description": "Card title for a numbered file-upload session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardPointCountNum": "Point Count #{number}",
+  "@sessionCardPointCountNum": {
+    "description": "Card title for a numbered point-count session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardSurveyNum": "Survey #{number}",
+  "@sessionCardSurveyNum": {
+    "description": "Card title for a numbered survey session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "mapTileConsentTitle": "Map Tiles",
+  "@mapTileConsentTitle": {
+    "description": "Title for the map tile consent dialog"
+  },
+  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server.\n\nDo you agree to load map tiles?",
+  "@mapTileConsentBody": {
+    "description": "Body text for the map tile consent dialog"
+  },
+  "mapTileConsentCancel": "Cancel",
+  "@mapTileConsentCancel": {
+    "description": "Cancel button in map tile consent dialog"
+  },
+  "mapTileConsentAllow": "Allow",
+  "@mapTileConsentAllow": {
+    "description": "Allow button in map tile consent dialog"
+  },
+  "mapLoadButton": "Load Map",
+  "@mapLoadButton": {
+    "description": "Button to load the map after granting consent"
+  },
+  "mapLoadHint": "Requires connecting to OpenStreetMap tile servers.",
+  "@mapLoadHint": {
+    "description": "Hint shown below the Load Map button"
+  },
+  "recordingLocation": "Recording Location",
+  "@recordingLocation": {
+    "description": "Title for the map screen showing the recording location"
   }
 }
