@@ -95,8 +95,8 @@ class _SummaryHeader extends StatelessWidget {
         children: [
           Text(
             dateStr,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(153),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(178),
             ),
           ),
           const SizedBox(height: 6),
@@ -126,23 +126,23 @@ class _SummaryHeader extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.location_on_outlined,
-                      size: 16, color: theme.colorScheme.primary),
+                      size: 18, color: theme.colorScheme.primary),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
                       locationName ??
                           '${session.latitude!.toStringAsFixed(4)}, '
                               '${session.longitude!.toStringAsFixed(4)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.primary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(Icons.chevron_right,
-                      size: 16,
-                      color: theme.colorScheme.onSurface.withAlpha(100)),
+                  Icon(Icons.map_outlined,
+                      size: 18,
+                      color: theme.colorScheme.primary.withAlpha(178)),
                 ],
               ),
             ),
@@ -172,9 +172,9 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: theme.colorScheme.primary),
+        Icon(icon, size: 18, color: theme.colorScheme.primary),
         const SizedBox(width: 4),
-        Text(label, style: theme.textTheme.bodySmall),
+        Text(label, style: theme.textTheme.bodyMedium),
       ],
     );
   }

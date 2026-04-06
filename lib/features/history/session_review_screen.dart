@@ -266,10 +266,38 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         }
       });
 
-      // Decode audio for spectrogram in the background.
-      _decodeAudioForSpectrogram(path);
+      // Decode audio for spectrogram, then restore saved trim if present.
+      await _decodeAudioForSpectrogram(path);
+      await _restoreSavedTrim();
     } catch (_) {
       // Audio not available — review still works without playback.
+    }
+  }
+
+  /// Re-apply a previously saved trim after audio and spectrogram are loaded.
+  ///
+  /// When a session with trim values is reopened, [_initAudio] loads the full
+  /// recording.  This method clips the player and crops the spectrogram to
+  /// match the persisted trim range so the user sees the trimmed state.
+  Future<void> _restoreSavedTrim() async {
+    if (_trimStartSec == null && _trimEndSec == null) return;
+
+    final start = _trimStartSec ?? 0.0;
+    final end = _trimEndSec ?? _fullDurationSec;
+
+    final startDur = Duration(microseconds: (start * 1e6).round());
+    final endDur = Duration(microseconds: (end * 1e6).round());
+    final clippedDur = await _player.setClip(start: startDur, end: endDur);
+    await _player.seek(Duration.zero);
+
+    await _cropSpectrogramForClip(start, end);
+
+    if (mounted) {
+      setState(() {
+        _clipOffsetSec = start;
+        _duration = clippedDur ?? (endDur - startDur);
+        _position = Duration.zero;
+      });
     }
   }
 
