@@ -46,6 +46,7 @@ import 'dart:typed_data';
 
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -57,6 +58,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/taxonomy_service.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../live/live_providers.dart';

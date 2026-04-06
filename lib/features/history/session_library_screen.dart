@@ -18,6 +18,9 @@ import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import 'session_review_screen.dart';
 
+/// How sessions are ordered in the library.
+enum _SortMode { dateDesc, dateAsc, nameAsc, nameDesc }
+
 /// Displays a list of all saved sessions from the session repository.
 class SessionLibraryScreen extends ConsumerStatefulWidget {
   const SessionLibraryScreen({super.key});
@@ -30,6 +33,7 @@ class SessionLibraryScreen extends ConsumerStatefulWidget {
 class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   final _searchController = TextEditingController();
   bool _showSearch = false;
+  _SortMode _sortMode = _SortMode.dateDesc;
 
   @override
   void dispose() {
@@ -72,6 +76,45 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     return false;
   }
 
+  PopupMenuItem<_SortMode> _sortMenuItem(
+    _SortMode mode,
+    String label,
+    AppLocalizations l10n,
+  ) {
+    return PopupMenuItem<_SortMode>(
+      value: mode,
+      child: Row(
+        children: [
+          if (mode == _sortMode)
+            Icon(Icons.check,
+                size: 18, color: Theme.of(context).colorScheme.primary)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  List<LiveSession> _applySorting(List<LiveSession> sessions) {
+    final l10n = AppLocalizations.of(context)!;
+    final sorted = List.of(sessions);
+    switch (_sortMode) {
+      case _SortMode.dateDesc:
+        sorted.sort((a, b) => b.startTime.compareTo(a.startTime));
+      case _SortMode.dateAsc:
+        sorted.sort((a, b) => a.startTime.compareTo(b.startTime));
+      case _SortMode.nameAsc:
+        sorted.sort((a, b) =>
+            _sessionCardTitle(l10n, a).compareTo(_sessionCardTitle(l10n, b)));
+      case _SortMode.nameDesc:
+        sorted.sort((a, b) =>
+            _sessionCardTitle(l10n, b).compareTo(_sessionCardTitle(l10n, a)));
+    }
+    return sorted;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -101,11 +144,25 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 _showSearch = false;
               }),
             )
-          else
+          else ...[
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () => setState(() => _showSearch = true),
             ),
+            PopupMenuButton<_SortMode>(
+              icon: const Icon(Icons.sort),
+              tooltip: l10n.sessionLibrarySortTooltip,
+              onSelected: (mode) => setState(() => _sortMode = mode),
+              itemBuilder: (_) => [
+                _sortMenuItem(
+                    _SortMode.dateDesc, l10n.sessionSortDateNewest, l10n),
+                _sortMenuItem(
+                    _SortMode.dateAsc, l10n.sessionSortDateOldest, l10n),
+                _sortMenuItem(_SortMode.nameAsc, l10n.sessionSortNameAZ, l10n),
+                _sortMenuItem(_SortMode.nameDesc, l10n.sessionSortNameZA, l10n),
+              ],
+            ),
+          ],
         ],
       ),
       body: sessionsAsync.when(
@@ -135,9 +192,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
           }
 
           final query = _searchController.text.trim();
-          final filtered = query.isEmpty
+          final matched = query.isEmpty
               ? sessions
               : sessions.where((s) => _matchesQuery(s, query, l10n)).toList();
+          final filtered = _applySorting(matched);
 
           if (filtered.isEmpty) {
             return Center(

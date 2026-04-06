@@ -582,6 +582,29 @@ class _SpeciesTile extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
 
+                  // Species thumbnail.
+                  SizedBox(
+                    width: 48,
+                    height: 36,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            TaxonomyService.thumbUrl(group.scientificName),
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Image.asset(
+                          'assets/images/dummy_species.png',
+                          fit: BoxFit.cover,
+                        ),
+                        errorWidget: (_, __, ___) => Image.asset(
+                          'assets/images/dummy_species.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
                   // Species info.
                   Expanded(
                     child: Column(

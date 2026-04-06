@@ -307,7 +307,7 @@ class _Footer extends StatelessWidget {
               );
             },
             icon: Icon(
-              Icons.settings_outlined,
+              Icons.tune_rounded,
               size: 18,
               color: theme.colorScheme.onSurface.withAlpha(153),
             ),

@@ -488,6 +488,26 @@
   "@sessionLibraryNoResults": {
     "description": "Shown when no sessions match the search query"
   },
+  "sessionLibrarySortTooltip": "Sort sessions",
+  "@sessionLibrarySortTooltip": {
+    "description": "Tooltip for the sort button in the session library"
+  },
+  "sessionSortDateNewest": "Newest first",
+  "@sessionSortDateNewest": {
+    "description": "Sort sessions by date, newest first"
+  },
+  "sessionSortDateOldest": "Oldest first",
+  "@sessionSortDateOldest": {
+    "description": "Sort sessions by date, oldest first"
+  },
+  "sessionSortNameAZ": "Name A–Z",
+  "@sessionSortNameAZ": {
+    "description": "Sort sessions alphabetically by name, A to Z"
+  },
+  "sessionSortNameZA": "Name Z–A",
+  "@sessionSortNameZA": {
+    "description": "Sort sessions alphabetically by name, Z to A"
+  },
   "sessionDeleteDetectionTitle": "Remove Detection?",
   "@sessionDeleteDetectionTitle": {
     "description": "Title for detection deletion confirmation dialog"
