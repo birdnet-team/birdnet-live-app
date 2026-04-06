@@ -65,7 +65,6 @@ flutter:
   assets:
     - assets/images/
     - assets/models/
-    - assets/test_fixtures/
 
 flutter_launcher_icons:
   android: true

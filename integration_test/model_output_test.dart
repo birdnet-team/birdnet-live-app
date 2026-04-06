@@ -14,6 +14,7 @@
 // =============================================================================
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
@@ -43,8 +44,9 @@ void main() {
     final configJson = await rootBundle.loadString(
       'assets/models/model_config.json',
     );
+    final configMap = jsonDecode(configJson) as Map<String, dynamic>;
     config = ModelConfig.fromJson(
-      jsonDecode(configJson) as Map<String, dynamic>,
+      configMap['audioModel'] as Map<String, dynamic>,
     );
 
     // --- Load labels ---
@@ -66,9 +68,13 @@ void main() {
     );
 
     // --- Load test fixture metadata ---
-    final metaJson = await rootBundle.loadString(
-      'assets/test_fixtures/test_windows_meta.json',
-    );
+    // Push before running: adb push assets/test_fixtures /data/local/tmp/test_fixtures
+    const fixtureDir = '/data/local/tmp/test_fixtures';
+    final metaFile = File('$fixtureDir/test_windows_meta.json');
+    expect(metaFile.existsSync(), isTrue,
+        reason:
+            'Run: adb push assets/test_fixtures /data/local/tmp/test_fixtures');
+    final metaJson = await metaFile.readAsString();
     final meta = jsonDecode(metaJson) as Map<String, dynamic>;
     fixtureWindows = (meta['windows'] as List).cast<Map<String, dynamic>>();
     windowSamples = meta['windowSamples'] as int;
@@ -76,10 +82,8 @@ void main() {
     topK = meta['topK'] as int;
 
     // --- Load test fixture audio (raw Float32LE) ---
-    final audioData = await rootBundle.load(
-      'assets/test_fixtures/test_windows.bin',
-    );
-    allAudioSamples = audioData.buffer.asFloat32List();
+    final audioBytes = await File('$fixtureDir/test_windows.bin').readAsBytes();
+    allAudioSamples = audioBytes.buffer.asFloat32List();
   });
 
   tearDownAll(() {

@@ -116,10 +116,15 @@ void main() {
   testWidgets(
       'Audio classifier on soundscape_32k.raw detects birds (Blue Jay, House Finch)',
       (tester) async {
-    // Read raw 32kHz audio from test fixtures
-    final bytesData =
-        await rootBundle.load('assets/test_fixtures/soundscape_32k.raw');
-    final audioSamples = bytesData.buffer.asFloat32List();
+    // Read raw 32kHz audio from test fixtures on device storage.
+    // Push before running: adb push assets/test_fixtures /data/local/tmp/test_fixtures
+    final fixtureFile =
+        File('/data/local/tmp/test_fixtures/soundscape_32k.raw');
+    expect(fixtureFile.existsSync(), isTrue,
+        reason:
+            'Run: adb push assets/test_fixtures /data/local/tmp/test_fixtures');
+    final bytes = await fixtureFile.readAsBytes();
+    final audioSamples = bytes.buffer.asFloat32List();
 
     final sampleRate = config.audio.sampleRate;
     final windowDuration = 3;

@@ -89,4 +89,18 @@ flutter analyze          # Static analysis
 flutter test             # Run unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
 flutter run              # Run on connected device
+flutter build apk --release   # Release APK (~185 MB)
+flutter build appbundle       # Android App Bundle (preferred for Play Store)
 ```
+
+### Release Build Notes
+
+- **Release APK is ~185 MB** (vs ~420 MB debug). The audio ONNX model (145 MB, stored uncompressed for memory-mapping) accounts for ~78%.
+- **ABI filter**: Only `arm64-v8a` is included (`android/app/build.gradle`). No 32-bit ARM or x86 native libs are shipped.
+- **R8 shrink + minify** is enabled for release builds. ProGuard rules in `android/app/proguard-rules.pro` keep ONNX Runtime JNI bindings.
+- **Test fixtures** (`assets/test_fixtures/`) are **not bundled** in the APK. For integration tests, push them to the device first:
+  ```bash
+  adb push assets/test_fixtures /data/local/tmp/test_fixtures
+  flutter test integration_test/geo_soundscape_test.dart -d <device_id>
+  ```
+- **App Bundle**: Use `flutter build appbundle` for Play Store — delivers only the user's architecture, reducing download size further.
