@@ -200,9 +200,9 @@ void main() {
       windowSamples: windowSamples,
     );
 
-    // BirdNET V3 has 11,560 species classes.
+    // BirdNET V3 pruned to 5,250-species intersection.
     expect(output.predictions.length, equals(labels.length));
-    expect(output.predictions.length, equals(11560));
+    expect(output.predictions.length, equals(5250));
 
     // Embeddings should be 1,280-dimensional.
     expect(output.embeddings, isNotNull);

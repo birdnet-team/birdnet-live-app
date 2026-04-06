@@ -13,16 +13,16 @@
       "endSec": 3.0,
       "detections": [
         {
-          "speciesIndex": 8627,
+          "speciesIndex": 3897,
           "scientificName": "Poecile atricapillus",
           "commonName": "Black-capped Chickadee",
-          "confidence": 0.904935
+          "confidence": 0.922922
         },
         {
-          "speciesIndex": 10485,
-          "scientificName": "Tachycineta bicolor",
-          "commonName": "Tree Swallow",
-          "confidence": 0.11653
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.460793
         }
       ]
     },
@@ -31,7 +31,14 @@
       "originalWindowIndex": 1,
       "startSec": 1.0,
       "endSec": 4.0,
-      "detections": []
+      "detections": [
+        {
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.348852
+        }
+      ]
     },
     {
       "fixtureIndex": 2,
@@ -40,16 +47,16 @@
       "endSec": 10.0,
       "detections": [
         {
-          "speciesIndex": 4848,
+          "speciesIndex": 2281,
           "scientificName": "Haemorhous mexicanus",
           "commonName": "House Finch",
-          "confidence": 0.699197
+          "confidence": 0.866819
         },
         {
-          "speciesIndex": 5464,
+          "speciesIndex": 2537,
           "scientificName": "Junco hyemalis",
           "commonName": "Dark-eyed Junco",
-          "confidence": 0.445447
+          "confidence": 0.596998
         }
       ]
     },
@@ -60,10 +67,16 @@
       "endSec": 19.0,
       "detections": [
         {
-          "speciesIndex": 3220,
+          "speciesIndex": 1556,
           "scientificName": "Cyanocitta cristata",
           "commonName": "Blue Jay",
-          "confidence": 0.677916
+          "confidence": 0.836134
+        },
+        {
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.129077
         }
       ]
     },
@@ -74,22 +87,22 @@
       "endSec": 36.0,
       "detections": [
         {
-          "speciesIndex": 5464,
+          "speciesIndex": 2537,
           "scientificName": "Junco hyemalis",
           "commonName": "Dark-eyed Junco",
-          "confidence": 0.907182
+          "confidence": 0.949476
         },
         {
-          "speciesIndex": 3220,
-          "scientificName": "Cyanocitta cristata",
-          "commonName": "Blue Jay",
-          "confidence": 0.811666
-        },
-        {
-          "speciesIndex": 4848,
+          "speciesIndex": 2281,
           "scientificName": "Haemorhous mexicanus",
           "commonName": "House Finch",
-          "confidence": 0.442349
+          "confidence": 0.847076
+        },
+        {
+          "speciesIndex": 1556,
+          "scientificName": "Cyanocitta cristata",
+          "commonName": "Blue Jay",
+          "confidence": 0.831854
         }
       ]
     },
@@ -100,22 +113,28 @@
       "endSec": 52.0,
       "detections": [
         {
-          "speciesIndex": 4848,
-          "scientificName": "Haemorhous mexicanus",
-          "commonName": "House Finch",
-          "confidence": 0.846806
-        },
-        {
-          "speciesIndex": 3220,
+          "speciesIndex": 1556,
           "scientificName": "Cyanocitta cristata",
           "commonName": "Blue Jay",
-          "confidence": 0.269964
+          "confidence": 0.747523
         },
         {
-          "speciesIndex": 1870,
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.709102
+        },
+        {
+          "speciesIndex": 4576,
+          "scientificName": "Spinus tristis",
+          "commonName": "American Goldfinch",
+          "confidence": 0.231725
+        },
+        {
+          "speciesIndex": 916,
           "scientificName": "Cardinalis cardinalis",
           "commonName": "Northern Cardinal",
-          "confidence": 0.214487
+          "confidence": 0.201085
         }
       ]
     },
@@ -126,22 +145,22 @@
       "endSec": 64.0,
       "detections": [
         {
-          "speciesIndex": 5464,
+          "speciesIndex": 2537,
           "scientificName": "Junco hyemalis",
           "commonName": "Dark-eyed Junco",
-          "confidence": 0.867145
+          "confidence": 0.94671
         },
         {
-          "speciesIndex": 3220,
+          "speciesIndex": 1556,
           "scientificName": "Cyanocitta cristata",
           "commonName": "Blue Jay",
-          "confidence": 0.661191
+          "confidence": 0.781662
         },
         {
-          "speciesIndex": 2644,
-          "scientificName": "Coccothraustes vespertinus",
-          "commonName": "Evening Grosbeak",
-          "confidence": 0.498069
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.744034
         }
       ]
     },
@@ -152,10 +171,16 @@
       "endSec": 74.0,
       "detections": [
         {
-          "speciesIndex": 6018,
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.608537
+        },
+        {
+          "speciesIndex": 2819,
           "scientificName": "Loxia curvirostra",
           "commonName": "Red Crossbill",
-          "confidence": 0.701497
+          "confidence": 0.114341
         }
       ]
     },
@@ -166,16 +191,16 @@
       "endSec": 83.0,
       "detections": [
         {
-          "speciesIndex": 1870,
+          "speciesIndex": 916,
           "scientificName": "Cardinalis cardinalis",
           "commonName": "Northern Cardinal",
-          "confidence": 0.774998
+          "confidence": 0.790968
         },
         {
-          "speciesIndex": 4848,
+          "speciesIndex": 2281,
           "scientificName": "Haemorhous mexicanus",
           "commonName": "House Finch",
-          "confidence": 0.520921
+          "confidence": 0.757676
         }
       ]
     },
@@ -186,16 +211,16 @@
       "endSec": 120.0,
       "detections": [
         {
-          "speciesIndex": 6018,
-          "scientificName": "Loxia curvirostra",
-          "commonName": "Red Crossbill",
-          "confidence": 0.430771
+          "speciesIndex": 4576,
+          "scientificName": "Spinus tristis",
+          "commonName": "American Goldfinch",
+          "confidence": 0.513345
         },
         {
-          "speciesIndex": 2467,
-          "scientificName": "Cinclus mexicanus",
-          "commonName": "American Dipper",
-          "confidence": 0.2546
+          "speciesIndex": 2281,
+          "scientificName": "Haemorhous mexicanus",
+          "commonName": "House Finch",
+          "confidence": 0.172583
         }
       ]
     }
