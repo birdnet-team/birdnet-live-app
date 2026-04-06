@@ -513,6 +513,43 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     return false; // Dialog dismissed.
   }
 
+  Future<void> _showRenameDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(
+      text: widget.session.customName ??
+          _sessionReviewTitle(l10n, widget.session),
+    );
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionRenameTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.sessionRenameHint),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result == null) return;
+    final trimmed = result.trim();
+    setState(() {
+      widget.session.customName = trimmed.isEmpty ? null : trimmed;
+      _isDirty = true;
+    });
+  }
+
   Future<void> _save() async {
     widget.session.detections
       ..clear()
@@ -1002,8 +1039,29 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            _sessionReviewTitle(l10n, widget.session),
+          title: GestureDetector(
+            onTap: _showRenameDialog,
+            child: Tooltip(
+              message: l10n.sessionRenameTap,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      _sessionReviewTitle(l10n, widget.session),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.edit,
+                      size: 16,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withAlpha(153)),
+                ],
+              ),
+            ),
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),
@@ -1365,6 +1423,9 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
 /// Falls back to just the un-numbered type label when [session.sessionNumber]
 /// is `null` (legacy sessions).
 String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
+  if (session.customName != null && session.customName!.isNotEmpty) {
+    return session.customName!;
+  }
   final n = session.sessionNumber;
   if (n == null) return _sessionTypeLabel(l10n, session.type);
   switch (session.type) {

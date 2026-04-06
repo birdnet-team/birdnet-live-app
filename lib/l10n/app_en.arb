@@ -732,5 +732,17 @@
   "recordingLocation": "Recording Location",
   "@recordingLocation": {
     "description": "Title for the map screen showing the recording location"
+  },
+  "sessionRenameTitle": "Rename Session",
+  "@sessionRenameTitle": {
+    "description": "Title for the session rename dialog"
+  },
+  "sessionRenameHint": "Enter a custom name",
+  "@sessionRenameHint": {
+    "description": "Hint text in the session rename text field"
+  },
+  "sessionRenameTap": "Tap to rename",
+  "@sessionRenameTap": {
+    "description": "Tooltip on the session title edit icon"
   }
 }

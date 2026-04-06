@@ -150,7 +150,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
               onPressed: () => setState(() => _showSearch = true),
             ),
             PopupMenuButton<_SortMode>(
-              icon: const Icon(Icons.sort),
+              icon: const Icon(Icons.swap_vert),
               tooltip: l10n.sessionLibrarySortTooltip,
               onSelected: (mode) => setState(() => _sortMode = mode),
               itemBuilder: (_) => [
@@ -350,25 +350,21 @@ class _SessionTile extends StatelessWidget {
                 ],
               ),
               if (_topSpecies(session).isNotEmpty) ...[
-                const SizedBox(height: 12),
-                ..._topSpecies(session).map((name) => Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 2),
-                      child: Row(
-                        children: [
-                          Icon(Icons.music_note_rounded,
-                              size: 14, color: theme.colorScheme.primary),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              name,
-                              style: theme.textTheme.bodySmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: _topSpecies(session)
+                      .map((name) => Chip(
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                            label:
+                                Text(name, style: theme.textTheme.labelSmall),
+                            padding: EdgeInsets.zero,
+                          ))
+                      .toList(),
+                ),
               ],
               const SizedBox(height: 12),
               Row(
@@ -458,7 +454,7 @@ IconData _sessionTypeIcon(SessionType type) {
   }
 }
 
-/// Returns the common names of the top 3 most-detected species.
+/// Returns the common names of the top 5 most-detected species.
 List<String> _topSpecies(LiveSession session) {
   final counts = <String, int>{};
   for (final d in session.detections) {
@@ -466,13 +462,16 @@ List<String> _topSpecies(LiveSession session) {
   }
   final sorted = counts.entries.toList()
     ..sort((a, b) => b.value.compareTo(a.value));
-  return sorted.take(3).map((e) => e.key).toList();
+  return sorted.take(5).map((e) => e.key).toList();
 }
 
 /// Returns a numbered card title such as "Live Session #3".
 ///
 /// Falls back to the plain type label for legacy sessions without a number.
 String _sessionCardTitle(AppLocalizations l10n, LiveSession session) {
+  if (session.customName != null && session.customName!.isNotEmpty) {
+    return session.customName!;
+  }
   final n = session.sessionNumber;
   if (n == null) return _sessionTypeLabel(l10n, session.type);
   switch (session.type) {

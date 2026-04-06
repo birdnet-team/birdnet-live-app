@@ -231,6 +231,7 @@ class LiveSession {
     required this.startTime,
     this.type = SessionType.live,
     this.sessionNumber,
+    this.customName,
     this.endTime,
     List<DetectionRecord>? detections,
     this.recordingPath,
@@ -255,6 +256,12 @@ class LiveSession {
   /// Assigned when the session is first saved.  Legacy sessions that
   /// pre-date this field will have `null`.
   int? sessionNumber;
+
+  /// User-defined session name (e.g. "Morning walk").
+  ///
+  /// When set, overrides the auto-generated numbered title for display
+  /// and export filenames.
+  String? customName;
 
   /// When the session started.
   final DateTime startTime;
@@ -304,6 +311,9 @@ class LiveSession {
   /// Format: `BirdNET-Live_Session_2026-03-30_14-30-00_#123`
   /// Falls back to timestamp only for legacy sessions without a number.
   String get displayName {
+    if (customName != null && customName!.isNotEmpty) {
+      return customName!;
+    }
     final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(startTime);
     final suffix = sessionNumber != null ? '_#$sessionNumber' : '';
     return 'BirdNET-Live_Session_$dt$suffix';
@@ -371,6 +381,7 @@ class LiveSession {
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       locationName: json['locationName'] as String?,
+      customName: json['customName'] as String?,
     );
   }
 
@@ -391,6 +402,7 @@ class LiveSession {
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         if (locationName != null) 'locationName': locationName,
+        if (customName != null) 'customName': customName,
       };
 
   @override
