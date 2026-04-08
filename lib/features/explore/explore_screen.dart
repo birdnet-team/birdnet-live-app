@@ -176,12 +176,8 @@ class _LocationHeaderState extends State<_LocationHeader> {
                         ),
                       );
                     }
-                    final coords =
-                        '${loc.latitude.toStringAsFixed(3)}, ${loc.longitude.toStringAsFixed(3)}';
                     return Text(
-                      _locationName != null
-                          ? '$_locationName ($coords)'
-                          : coords,
+                      _locationName ?? l10n.exploreLocating,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withAlpha(150),
                       ),
@@ -201,23 +197,33 @@ class _LocationHeaderState extends State<_LocationHeader> {
                   ),
                 ),
               ),
-              Text(
-                l10n.exploreSpeciesCount(widget.speciesCount),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(150),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => _showExploreHelp(context),
                 child: Icon(
                   Icons.help_outline,
-                  size: 16,
+                  size: 22,
                   color: theme.colorScheme.onSurface.withAlpha(120),
                 ),
               ),
             ],
+          ),
+          // Coordinates row
+          locationAsync.when(
+            data: (loc) {
+              if (loc == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(left: 24, top: 2),
+                child: Text(
+                  '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                    fontSize: 11,
+                  ),
+                ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),

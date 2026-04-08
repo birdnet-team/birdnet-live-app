@@ -426,13 +426,7 @@ class SettingsScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.restart_alt),
               title: Text(l10n.settingsResetOnboarding),
-              onTap: () {
-                ref.read(onboardingCompleteProvider.notifier).reset();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Onboarding will show on next launch')),
-                );
-              },
+              onTap: () => _showResetOnboardingDialog(context, ref, l10n),
             ),
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
@@ -450,7 +444,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearDataDialog(
+  void _showResetOnboardingDialog(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
@@ -458,8 +452,8 @@ class SettingsScreen extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.settingsClearDataConfirmTitle),
-        content: Text(l10n.settingsClearDataConfirmMessage),
+        title: Text(l10n.settingsResetOnboardingConfirmTitle),
+        content: Text(l10n.settingsResetOnboardingConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -467,17 +461,72 @@ class SettingsScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              // TODO: Clear session database and recordings
+              ref.read(onboardingCompleteProvider.notifier).reset();
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All data cleared')),
+                SnackBar(content: Text(l10n.settingsOnboardingReset)),
               );
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: Text(l10n.confirm),
           ),
         ],
       ),
+    );
+  }
+
+  void _showClearDataDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final typed = controller.text.trim().toUpperCase() == 'DELETE';
+            return AlertDialog(
+              title: Text(l10n.settingsClearDataConfirmTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.settingsClearDataConfirmMessage),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsClearDataTypeConfirm,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: typed
+                      ? () {
+                          // TODO: Clear session database and recordings
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.settingsDataCleared)),
+                          );
+                        }
+                      : null,
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -151,6 +151,20 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 ),
               ),
 
+              // ── Image credit (below photo) ────────────────────
+              if (_detail?.imageAuthor != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                  child: Text(
+                    'Photo: ${_detail!.imageAuthor}'
+                    '${_detail!.imageLicense != null ? ' (${_detail!.imageLicense})' : ''}'
+                    '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(100),
+                    ),
+                  ),
+                ),
+
               // ── Names ────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -263,20 +277,6 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                     ),
                   ),
                 ],
-
-                // ── Image credit ─────────────────────────────────
-                if (_detail!.imageAuthor != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      'Photo: ${_detail!.imageAuthor}'
-                      '${_detail!.imageLicense != null ? ' (${_detail!.imageLicense})' : ''}'
-                      '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withAlpha(100),
-                      ),
-                    ),
-                  ),
               ],
 
               const SizedBox(height: 32),

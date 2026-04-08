@@ -19,6 +19,9 @@ abstract final class AppConstants {
   /// Support email address.
   static const String supportEmail = 'ccb-birdnet@cornell.edu';
 
+  /// BirdNET website URL.
+  static const String birdnetUrl = 'https://birdnet.cornell.edu';
+
   /// Path to the model configuration JSON asset.
   ///
   /// The config file describes the ONNX model, its label format, tensor
