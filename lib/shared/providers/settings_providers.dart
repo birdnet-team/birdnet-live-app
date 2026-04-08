@@ -168,6 +168,13 @@ final useGpsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
   return BoolSettingNotifier(prefs, PrefKeys.useGps, true);
 });
 
+/// Show scientific names below common names (default true).
+final showSciNamesProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.showSciNames, true);
+});
+
 /// Geo-model probability threshold (0.0 – 1.0, default 0.03).
 final geoThresholdProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {

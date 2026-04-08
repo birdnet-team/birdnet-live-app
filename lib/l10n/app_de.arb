@@ -92,6 +92,7 @@
   "exploreLocationError": "Standortfehler",
   "exploreNoSpecies": "Keine Artdaten für diesen Standort",
   "exploreSpeciesCount": "{count} Arten",
+  "exploreInfoNote": "Arten, die laut BirdNETs Geo-Modell an diesem Standort vorkommen können.",
   "settingsLocation": "Standort",
   "settingsUseGps": "GPS verwenden",
   "settingsUseGpsDescription": "Geräte-GPS für den Standort verwenden. Bei Deaktivierung manuelle Koordinaten nutzen.",
@@ -177,5 +178,19 @@
   "recordingLocation": "Aufnahmestandort",
   "sessionRenameTitle": "Session umbenennen",
   "sessionRenameHint": "Eigenen Namen eingeben",
-  "sessionRenameTap": "Tippen zum Umbenennen"
+  "sessionRenameTap": "Tippen zum Umbenennen",
+  "settingsShowSciNames": "Wissenschaftliche Namen anzeigen",
+  "settingsShowSciNamesDescription": "Wissenschaftliche Namen unter den Trivialnamen auf allen Bildschirmen anzeigen",
+  "monthJ": "J",
+  "monthF": "F",
+  "monthM": "M",
+  "monthA": "A",
+  "monthMay": "M",
+  "monthJun": "J",
+  "monthJul": "J",
+  "monthAug": "A",
+  "monthS": "S",
+  "monthO": "O",
+  "monthN": "N",
+  "monthD": "D"
 }

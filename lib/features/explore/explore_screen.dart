@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/services/reverse_geocoding_service.dart';
 import 'explore_providers.dart';
 import 'widgets/species_card.dart';
 import 'widgets/species_info_overlay.dart';
@@ -108,7 +109,7 @@ class ExploreScreen extends ConsumerWidget {
 // Location header — shows coordinates and species count
 // ---------------------------------------------------------------------------
 
-class _LocationHeader extends StatelessWidget {
+class _LocationHeader extends StatefulWidget {
   const _LocationHeader({
     required this.ref,
     required this.speciesCount,
@@ -118,50 +119,102 @@ class _LocationHeader extends StatelessWidget {
   final int speciesCount;
 
   @override
+  State<_LocationHeader> createState() => _LocationHeaderState();
+}
+
+class _LocationHeaderState extends State<_LocationHeader> {
+  String? _locationName;
+  bool _geocoded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryGeocode();
+  }
+
+  Future<void> _tryGeocode() async {
+    final loc = widget.ref.read(currentLocationProvider).valueOrNull;
+    if (loc == null || _geocoded) return;
+    _geocoded = true;
+    final name = await reverseGeocode(
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+    );
+    if (mounted && name != null) {
+      setState(() => _locationName = name);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final locationAsync = ref.watch(currentLocationProvider);
+    final locationAsync = widget.ref.watch(currentLocationProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.location_on,
-            size: 18,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: locationAsync.when(
-              data: (loc) => Text(
-                loc != null
-                    ? '${loc.latitude.toStringAsFixed(3)}, ${loc.longitude.toStringAsFixed(3)}'
-                    : l10n.exploreNoLocation,
+          Row(
+            children: [
+              Icon(
+                Icons.location_on,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: locationAsync.when(
+                  data: (loc) {
+                    if (loc == null) {
+                      return Text(
+                        l10n.exploreNoLocation,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(150),
+                        ),
+                      );
+                    }
+                    final coords =
+                        '${loc.latitude.toStringAsFixed(3)}, ${loc.longitude.toStringAsFixed(3)}';
+                    return Text(
+                      _locationName != null
+                          ? '$_locationName ($coords)'
+                          : coords,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withAlpha(150),
+                      ),
+                    );
+                  },
+                  loading: () => Text(
+                    l10n.exploreLocating,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(150),
+                    ),
+                  ),
+                  error: (_, __) => Text(
+                    l10n.exploreLocationError,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                l10n.exploreSpeciesCount(widget.speciesCount),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withAlpha(150),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              loading: () => Text(
-                l10n.exploreLocating,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(150),
-                ),
-              ),
-              error: (_, __) => Text(
-                l10n.exploreLocationError,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ),
+            ],
           ),
+          const SizedBox(height: 4),
           Text(
-            l10n.exploreSpeciesCount(speciesCount),
+            l10n.exploreInfoNote,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(150),
-              fontWeight: FontWeight.w600,
+              fontSize: 11,
+              color: theme.colorScheme.onSurface.withAlpha(120),
             ),
           ),
         ],

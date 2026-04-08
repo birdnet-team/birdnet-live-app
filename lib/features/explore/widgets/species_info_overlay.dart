@@ -164,13 +164,15 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  widget.scientificName,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: theme.colorScheme.onSurface.withAlpha(170),
-                  ),
-                ),
+                child: ref.watch(showSciNamesProvider)
+                    ? Text(
+                        widget.scientificName,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurface.withAlpha(170),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
 
               // ── Loading indicator ────────────────────────────
@@ -327,12 +329,8 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
         final category = probabilityCategory(currentScore);
         final categoryColor = probabilityCategoryColor(currentScore);
 
-        // Find max for scaling.
-        var maxProb = 0.0;
-        for (final p in probs) {
-          if (p > maxProb) maxProb = p;
-        }
-        if (maxProb == 0) maxProb = 1.0;
+        // Normalize to 100 (= the #1 species peak from the provider).
+        const maxProb = 100.0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -380,35 +378,39 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: List.generate(48, (index) {
                     final score = probs[index];
-                    final normalized = score / maxProb;
+                    final normalized = (score / maxProb).clamp(0.0, 1.0);
                     final isCurrentWeek = index == currentWeekIndex;
+
+                    final barHeight =
+                        score > 0 ? (normalized * 80).clamp(2.0, 80.0) : 0.0;
 
                     final baseColor = theme.colorScheme.primary;
                     final activeColor = theme.colorScheme.tertiary;
 
                     return Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 0.5),
-                        height: (normalized * 80).clamp(1.0, 80.0),
-                        decoration: BoxDecoration(
-                          color: isCurrentWeek
-                              ? activeColor
-                              : baseColor.withAlpha(
-                                  (50 + (normalized * 150))
-                                      .toInt()
-                                      .clamp(0, 255),
-                                ),
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(2)),
-                          border: isCurrentWeek
-                              ? Border.all(
-                                  color: theme.colorScheme.onSurface,
-                                  width: 1.5,
-                                )
-                              : null,
+                      child: Center(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                          height: barHeight,
+                          decoration: BoxDecoration(
+                            color: isCurrentWeek
+                                ? activeColor
+                                : baseColor.withAlpha(
+                                    (50 + (normalized * 150))
+                                        .toInt()
+                                        .clamp(0, 255),
+                                  ),
+                            borderRadius: BorderRadius.circular(2),
+                            border: isCurrentWeek
+                                ? Border.all(
+                                    color: theme.colorScheme.onSurface,
+                                    width: 1.5,
+                                  )
+                                : null,
+                          ),
                         ),
                       ),
                     );

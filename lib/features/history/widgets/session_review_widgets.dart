@@ -518,6 +518,7 @@ class _SpeciesTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+    final showSciNames = ref.watch(showSciNamesProvider);
 
     final displayName = taxonomyAsync.valueOrNull
             ?.lookup(group.scientificName)
@@ -646,18 +647,20 @@ class _SpeciesTile extends ConsumerWidget {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Expanded(
-                              child: Text(
-                                group.scientificName,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  fontStyle: FontStyle.italic,
-                                  color: theme.colorScheme.onSurface
-                                      .withAlpha(153),
+                            if (showSciNames)
+                              Expanded(
+                                child: Text(
+                                  group.scientificName,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                    color: theme.colorScheme.onSurface
+                                        .withAlpha(153),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
+                            if (!showSciNames) const Spacer(),
                             const SizedBox(width: 8),
                             Text(
                               group.bestConfidencePercent,

@@ -378,6 +378,10 @@
       }
     }
   },
+  "exploreInfoNote": "Species predicted to occur at this location, based on BirdNET's geo-model.",
+  "@exploreInfoNote": {
+    "description": "Short note explaining what the explore species list shows"
+  },
   "settingsLocation": "Location",
   "@settingsLocation": {
     "description": "Location settings section title"
@@ -744,5 +748,25 @@
   "sessionRenameTap": "Tap to rename",
   "@sessionRenameTap": {
     "description": "Tooltip on the session title edit icon"
-  }
+  },
+  "settingsShowSciNames": "Show scientific names",
+  "@settingsShowSciNames": {
+    "description": "Toggle to show or hide scientific names below common names"
+  },
+  "settingsShowSciNamesDescription": "Display scientific names below common names on all screens",
+  "@settingsShowSciNamesDescription": {
+    "description": "Subtitle for the show scientific names toggle"
+  },
+  "monthJ": "J",
+  "monthF": "F",
+  "monthM": "M",
+  "monthA": "A",
+  "monthMay": "M",
+  "monthJun": "J",
+  "monthJul": "J",
+  "monthAug": "A",
+  "monthS": "S",
+  "monthO": "O",
+  "monthN": "N",
+  "monthD": "D"
 }

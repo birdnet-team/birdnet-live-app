@@ -123,6 +123,12 @@ class SettingsScreen extends ConsumerWidget {
             _ThemeTile(l10n: l10n),
             _LanguageTile(l10n: l10n),
             _SpeciesLanguageTile(l10n: l10n),
+            SwitchListTile(
+              title: Text(l10n.settingsShowSciNames),
+              subtitle: Text(l10n.settingsShowSciNamesDescription),
+              value: ref.watch(showSciNamesProvider),
+              onChanged: (v) => ref.read(showSciNamesProvider.notifier).set(v),
+            ),
             ListTile(
               leading: const Icon(Icons.restart_alt),
               title: Text(l10n.settingsResetOnboarding),

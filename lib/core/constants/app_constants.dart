@@ -84,4 +84,7 @@ abstract final class PrefKeys {
   static const String manualLatitude = 'manual_latitude';
   static const String manualLongitude = 'manual_longitude';
   static const String mapTileConsent = 'map_tile_consent';
+
+  // Display settings
+  static const String showSciNames = 'show_sci_names';
 }
