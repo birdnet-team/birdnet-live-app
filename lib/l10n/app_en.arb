@@ -665,22 +665,22 @@
   "@sessionRedo": {
     "description": "Tooltip for the redo button in session review"
   },
-  "sessionTitleLiveNum": "Live Session #{number} Review",
+  "sessionTitleLiveNum": "Live Session #{number}",
   "@sessionTitleLiveNum": {
     "description": "AppBar title for a numbered live session review",
     "placeholders": { "number": { "type": "int" } }
   },
-  "sessionTitleFileUploadNum": "File Upload #{number} Review",
+  "sessionTitleFileUploadNum": "File Upload #{number}",
   "@sessionTitleFileUploadNum": {
     "description": "AppBar title for a numbered file-upload session review",
     "placeholders": { "number": { "type": "int" } }
   },
-  "sessionTitlePointCountNum": "Point Count #{number} Review",
+  "sessionTitlePointCountNum": "Point Count #{number}",
   "@sessionTitlePointCountNum": {
     "description": "AppBar title for a numbered point-count session review",
     "placeholders": { "number": { "type": "int" } }
   },
-  "sessionTitleSurveyNum": "Survey #{number} Review",
+  "sessionTitleSurveyNum": "Survey #{number}",
   "@sessionTitleSurveyNum": {
     "description": "AppBar title for a numbered survey session review",
     "placeholders": { "number": { "type": "int" } }

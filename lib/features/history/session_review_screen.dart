@@ -541,7 +541,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         ],
       ),
     );
-    controller.dispose();
     if (result == null) return;
     final trimmed = result.trim();
     setState(() {
