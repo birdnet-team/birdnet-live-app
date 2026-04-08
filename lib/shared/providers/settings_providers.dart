@@ -49,6 +49,25 @@ final inferenceRateProvider =
   return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
 });
 
+/// Sensitivity (0.5 – 1.5, default 1.0).
+///
+/// Shifts the sigmoid curve: >1 boosts weak signals (more detections),
+/// <1 suppresses weak signals (fewer false positives).
+final sensitivityProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DoubleSettingNotifier(prefs, PrefKeys.sensitivity, 1.0);
+});
+
+/// Score pooling mode ('off', 'average', 'max', 'lme' — default 'lme').
+///
+/// Controls how scores from consecutive inference windows are combined.
+final scorePoolingProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return StringSettingNotifier(prefs, PrefKeys.scorePooling, 'lme');
+});
+
 /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
 final speciesFilterModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {

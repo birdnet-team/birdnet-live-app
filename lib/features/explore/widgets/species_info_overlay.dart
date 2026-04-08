@@ -19,6 +19,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/models/taxonomy_species.dart';
@@ -188,9 +189,9 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
               if (!_loading && _detail != null) ...[
                 if (_detail!.descriptionForLocale(
                         ref.watch(effectiveSpeciesLocaleProvider)) !=
-                    null)
+                    null) ...[
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                     child: Text(
                       _detail!.descriptionForLocale(
                           ref.watch(effectiveSpeciesLocaleProvider))!,
@@ -199,6 +200,20 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                       ),
                     ),
                   ),
+                  if (_detail!.descriptionSource != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                      child: Text(
+                        AppLocalizations.of(context)!.speciesDescriptionSource(
+                          _detail!.descriptionSource!,
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(100),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                ],
 
                 // ── 48-Week Probability Chart ──────────────────────────────
                 _WeeklyProbabilityChart(
@@ -206,34 +221,48 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 ),
 
                 // ── External links ───────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      if (_detail!.ebirdUrl != null)
-                        _LinkChip(
-                          label: 'eBird',
-                          icon: Icons.public,
-                          url: _detail!.ebirdUrl!,
-                        ),
-                      if (_detail!.inatUrl != null)
-                        _LinkChip(
-                          label: 'iNaturalist',
-                          icon: Icons.nature_people,
-                          url: _detail!.inatUrl!,
-                        ),
-                      if (_detail!.wikipediaUrls != null &&
-                          _detail!.wikipediaUrls!.isNotEmpty)
-                        _LinkChip(
-                          label: 'Wikipedia',
-                          icon: Icons.menu_book,
-                          url: _detail!.wikipediaUrls!.values.first,
-                        ),
-                    ],
+                if (_detail!.ebirdUrl != null ||
+                    _detail!.inatUrl != null ||
+                    (_detail!.wikipediaUrls != null &&
+                        _detail!.wikipediaUrls!.isNotEmpty)) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                    child: Text(
+                      AppLocalizations.of(context)!.speciesLearnMore,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withAlpha(150),
+                      ),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if (_detail!.ebirdUrl != null)
+                          _LinkChip(
+                            label: 'eBird',
+                            iconAsset: 'assets/images/icon-ebird.png',
+                            url: _detail!.ebirdUrl!,
+                          ),
+                        if (_detail!.inatUrl != null)
+                          _LinkChip(
+                            label: 'iNaturalist',
+                            iconAsset: 'assets/images/icon-inat.png',
+                            url: _detail!.inatUrl!,
+                          ),
+                        if (_detail!.wikipediaUrls != null &&
+                            _detail!.wikipediaUrls!.isNotEmpty)
+                          _LinkChip(
+                            label: 'Wikipedia',
+                            iconAsset: 'assets/images/icon-wikipedia.png',
+                            url: _detail!.wikipediaUrls!.values.first,
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // ── Image credit ─────────────────────────────────
                 if (_detail!.imageAuthor != null)
@@ -266,12 +295,12 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
 class _LinkChip extends StatelessWidget {
   const _LinkChip({
     required this.label,
-    required this.icon,
+    required this.iconAsset,
     required this.url,
   });
 
   final String label;
-  final IconData icon;
+  final String iconAsset;
   final String url;
 
   @override
@@ -279,8 +308,27 @@ class _LinkChip extends StatelessWidget {
     final theme = Theme.of(context);
 
     return ActionChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
+      avatar: ClipOval(
+        child: Image.asset(
+          iconAsset,
+          width: 18,
+          height: 18,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Icon(Icons.public, size: 18),
+        ),
+      ),
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.open_in_new,
+            size: 12,
+            color: theme.colorScheme.onSurface.withAlpha(120),
+          ),
+        ],
+      ),
       labelStyle: theme.textTheme.bodySmall,
       onPressed: () async {
         final uri = Uri.parse(url);

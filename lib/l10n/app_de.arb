@@ -192,5 +192,19 @@
   "monthS": "S",
   "monthO": "O",
   "monthN": "N",
-  "monthD": "D"
+  "monthD": "D",
+  "exploreHelpTitle": "Über die Artvorhersagen",
+  "exploreHelpBody": "Diese Liste zeigt Arten, die laut BirdNETs Geo-Modell an Ihrem Standort vorkommen könnten — ein neuronales Netz, trainiert mit GBIF-Beobachtungsdaten und Umweltmerkmalen.\n\nDas Modell prognostiziert, welche Arten an einer gegebenen Koordinate und Jahreszeit wahrscheinlich vorkommen. Es ist ein Hilfsmittel für Gelegenheitsnutzer und Citizen Scientists, kein präzises Verbreitungsmodell. Forscher sollten expertengeprüfte Artenlisten verwenden.",
+  "exploreHelpLearnMore": "Mehr über das Geo-Modell erfahren",
+  "speciesDescriptionSource": "Quelle: {source}",
+  "speciesLearnMore": "Mehr über diese Art erfahren",
+  "settingsSensitivity": "Empfindlichkeit",
+  "settingsSensitivityDescription": "Höhere Werte erkennen mehr Arten, erhöhen aber Fehlerkennungen",
+  "settingsScorePooling": "Score-Pooling",
+  "settingsPoolingOff": "Aus",
+  "settingsPoolingAverage": "Durchschnitt",
+  "settingsPoolingMax": "Max",
+  "settingsPoolingLME": "LME",
+  "settingsDangerZone": "Gefahrenzone",
+  "settingsSampleRate": "Abtastrate"
 }

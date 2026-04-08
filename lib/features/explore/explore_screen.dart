@@ -16,6 +16,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import 'explore_providers.dart';
@@ -207,15 +208,73 @@ class _LocationHeaderState extends State<_LocationHeader> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => _showExploreHelp(context),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 16,
+                  color: theme.colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.exploreInfoNote,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 11,
-              color: theme.colorScheme.onSurface.withAlpha(120),
-            ),
+        ],
+      ),
+    );
+  }
+
+  void _showExploreHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.exploreHelpTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.exploreHelpBody,
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final uri =
+                      Uri.parse('https://birdnet-team.github.io/geomodel/');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.open_in_new,
+                        size: 16, color: theme.colorScheme.primary),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        l10n.exploreHelpLearnMore,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),

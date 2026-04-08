@@ -58,6 +58,8 @@ abstract final class PrefKeys {
   static const String confidenceThreshold = 'confidence_threshold';
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
+  static const String sensitivity = 'sensitivity';
+  static const String scorePooling = 'score_pooling';
 
   // Spectrogram settings
   static const String fftSize = 'fft_size';

@@ -124,29 +124,18 @@ class SettingsScreen extends ConsumerWidget {
             _LanguageTile(l10n: l10n),
             _SpeciesLanguageTile(l10n: l10n),
             SwitchListTile(
+              secondary: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo-birdnet-circle.png',
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.cover,
+                ),
+              ),
               title: Text(l10n.settingsShowSciNames),
               subtitle: Text(l10n.settingsShowSciNamesDescription),
               value: ref.watch(showSciNamesProvider),
               onChanged: (v) => ref.read(showSciNamesProvider.notifier).set(v),
-            ),
-            ListTile(
-              leading: const Icon(Icons.restart_alt),
-              title: Text(l10n.settingsResetOnboarding),
-              onTap: () {
-                ref.read(onboardingCompleteProvider.notifier).reset();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Onboarding will show on next launch')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_forever, color: Colors.red),
-              title: Text(
-                l10n.settingsClearData,
-                style: const TextStyle(color: Colors.red),
-              ),
-              onTap: () => _showClearDataDialog(context, ref, l10n),
             ),
             const Divider(),
           ],
@@ -197,6 +186,15 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) =>
                   ref.read(confidenceThresholdProvider.notifier).set(v.toInt()),
             ),
+            _SliderTile(
+              title: l10n.settingsSensitivity,
+              value: ref.watch(sensitivityProvider),
+              min: 0.5,
+              max: 1.5,
+              divisions: 20,
+              format: (v) => v.toStringAsFixed(2),
+              onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
+            ),
             _ChoiceTile<double>(
               title: 'Inference rate',
               value: ref.watch(inferenceRateProvider),
@@ -207,6 +205,17 @@ class SettingsScreen extends ConsumerWidget {
                 2.0: '2 Hz',
               },
               onChanged: (v) => ref.read(inferenceRateProvider.notifier).set(v),
+            ),
+            _ChoiceTile<String>(
+              title: l10n.settingsScorePooling,
+              value: ref.watch(scorePoolingProvider),
+              options: {
+                'off': l10n.settingsPoolingOff,
+                'average': l10n.settingsPoolingAverage,
+                'max': l10n.settingsPoolingMax,
+                'lme': l10n.settingsPoolingLME,
+              },
+              onChanged: (v) => ref.read(scorePoolingProvider.notifier).set(v),
             ),
             const Divider(),
           ],
@@ -385,6 +394,31 @@ class SettingsScreen extends ConsumerWidget {
                 );
               },
             ),
+
+          // --- Danger Zone ---
+          if (_showSection('general')) ...[
+            const Divider(),
+            _SectionHeader(title: l10n.settingsDangerZone),
+            ListTile(
+              leading: const Icon(Icons.restart_alt),
+              title: Text(l10n.settingsResetOnboarding),
+              onTap: () {
+                ref.read(onboardingCompleteProvider.notifier).reset();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Onboarding will show on next launch')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_forever, color: Colors.red),
+              title: Text(
+                l10n.settingsClearData,
+                style: const TextStyle(color: Colors.red),
+              ),
+              onTap: () => _showClearDataDialog(context, ref, l10n),
+            ),
+          ],
 
           const SizedBox(height: 32),
         ],
