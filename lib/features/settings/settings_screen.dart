@@ -119,7 +119,10 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // --- General ---
           if (_showSection('general')) ...[
-            _SectionHeader(title: l10n.settingsGeneral),
+            _SectionHeader(
+              title: l10n.settingsGeneral,
+              subtitle: l10n.settingsGeneralDescription,
+            ),
             _ThemeTile(l10n: l10n),
             _LanguageTile(l10n: l10n),
             _SpeciesLanguageTile(l10n: l10n),
@@ -142,7 +145,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Audio ---
           if (_showSection('audio')) ...[
-            _SectionHeader(title: l10n.settingsAudio),
+            _SectionHeader(
+              title: l10n.settingsAudio,
+              subtitle: l10n.settingsAudioDescription,
+            ),
             _SliderTile(
               title: 'Gain',
               value: ref.watch(audioGainProvider),
@@ -168,7 +174,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Inference ---
           if (_showSection('inference')) ...[
-            _SectionHeader(title: l10n.settingsInference),
+            _SectionHeader(
+              title: l10n.settingsInference,
+              subtitle: l10n.settingsInferenceDescription,
+            ),
             _ChoiceTile<int>(
               title: 'Window duration',
               value: ref.watch(windowDurationProvider),
@@ -222,7 +231,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Spectrogram ---
           if (_showSection('spectrogram')) ...[
-            _SectionHeader(title: l10n.settingsSpectrogram),
+            _SectionHeader(
+              title: l10n.settingsSpectrogram,
+              subtitle: l10n.settingsSpectrogramDescription,
+            ),
             _ChoiceTile<int>(
               title: 'FFT size',
               value: ref.watch(fftSizeProvider),
@@ -282,7 +294,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Recording ---
           if (_showSection('recording')) ...[
-            _SectionHeader(title: l10n.settingsRecording),
+            _SectionHeader(
+              title: l10n.settingsRecording,
+              subtitle: l10n.settingsRecordingDescription,
+            ),
             _ChoiceTile<String>(
               title: 'Format',
               value: ref.watch(recordingFormatProvider),
@@ -305,7 +320,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Location / Geo ---
           if (_showSection('location')) ...[
-            _SectionHeader(title: l10n.settingsLocation),
+            _SectionHeader(
+              title: l10n.settingsLocation,
+              subtitle: l10n.settingsLocationDescription,
+            ),
             SwitchListTile(
               title: Text(l10n.settingsUseGps),
               subtitle: Text(l10n.settingsUseGpsDescription),
@@ -361,7 +379,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Export ---
           if (_showSection('export')) ...[
-            _SectionHeader(title: l10n.settingsExport),
+            _SectionHeader(
+              title: l10n.settingsExport,
+              subtitle: l10n.settingsExportDescription,
+            ),
             _ChoiceTile<String>(
               title: 'Format',
               value: ref.watch(exportFormatProvider),
@@ -398,7 +419,10 @@ class SettingsScreen extends ConsumerWidget {
           // --- Danger Zone ---
           if (_showSection('general')) ...[
             const Divider(),
-            _SectionHeader(title: l10n.settingsDangerZone),
+            _SectionHeader(
+              title: l10n.settingsDangerZone,
+              subtitle: l10n.settingsDangerZoneDescription,
+            ),
             ListTile(
               leading: const Icon(Icons.restart_alt),
               title: Text(l10n.settingsResetOnboarding),
@@ -463,19 +487,35 @@ class SettingsScreen extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
+  const _SectionHeader({required this.title, this.subtitle});
   final String title;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          if (subtitle != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                subtitle!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
             ),
+        ],
       ),
     );
   }

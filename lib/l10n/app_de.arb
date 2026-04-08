@@ -206,5 +206,13 @@
   "settingsPoolingMax": "Max",
   "settingsPoolingLME": "LME",
   "settingsDangerZone": "Gefahrenzone",
-  "settingsSampleRate": "Abtastrate"
+  "settingsSampleRate": "Abtastrate",
+  "settingsGeneralDescription": "Erscheinungsbild, Sprache und Anzeigeeinstellungen",
+  "settingsAudioDescription": "Mikrofoneingabe, Verstärkung und Filterung",
+  "settingsInferenceDescription": "Wie das neuronale Netz Audio analysiert und Detektionen bewertet",
+  "settingsSpectrogramDescription": "Visuelle Darstellung der Audiofrequenzen über die Zeit",
+  "settingsRecordingDescription": "Audio während Live-Sessions auf Speicher sichern",
+  "settingsLocationDescription": "GPS, Koordinaten und geografische Artfilterung",
+  "settingsExportDescription": "Dateiformat und Inhalt für Session-Exporte",
+  "settingsDangerZoneDescription": "Unumkehrbare Aktionen — App-Daten zurücksetzen oder löschen"
 }

@@ -829,5 +829,37 @@
   "settingsSampleRate": "Sample rate",
   "@settingsSampleRate": {
     "description": "Audio sample rate setting label"
+  },
+  "settingsGeneralDescription": "Appearance, language, and display preferences",
+  "@settingsGeneralDescription": {
+    "description": "Subtitle for General settings section"
+  },
+  "settingsAudioDescription": "Microphone input, gain, and filtering",
+  "@settingsAudioDescription": {
+    "description": "Subtitle for Audio settings section"
+  },
+  "settingsInferenceDescription": "How the neural network analyzes audio and scores detections",
+  "@settingsInferenceDescription": {
+    "description": "Subtitle for Inference settings section"
+  },
+  "settingsSpectrogramDescription": "Visual representation of audio frequencies over time",
+  "@settingsSpectrogramDescription": {
+    "description": "Subtitle for Spectrogram settings section"
+  },
+  "settingsRecordingDescription": "Save audio to disk during live sessions",
+  "@settingsRecordingDescription": {
+    "description": "Subtitle for Recording settings section"
+  },
+  "settingsLocationDescription": "GPS, coordinates, and geographic species filtering",
+  "@settingsLocationDescription": {
+    "description": "Subtitle for Location settings section"
+  },
+  "settingsExportDescription": "File format and content for session exports",
+  "@settingsExportDescription": {
+    "description": "Subtitle for Export settings section"
+  },
+  "settingsDangerZoneDescription": "Irreversible actions — reset or delete app data",
+  "@settingsDangerZoneDescription": {
+    "description": "Subtitle for Danger Zone settings section"
   }
 }
