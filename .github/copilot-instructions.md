@@ -80,7 +80,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 - **File headers**: Each Dart file has a `// ===...` block comment explaining purpose, usage, and design rationale.
 - **Tests**: Unit tests mirror the `lib/` structure under `test/`. Use `flutter test` to run.
 - **No hardcoded values**: Model parameters, API URLs, and thresholds come from config or constants.
-- **Version bumping**: Bump the patch version in `pubspec.yaml` (e.g. `0.1.24` → `0.1.25`) with each user-facing change set. The build number tracks the patch number (e.g. `0.1.25+25`).
+- **Version bumping**: `pubspec.yaml` is the **single source of truth** for the app version. Bump the patch version there (e.g. `0.1.27+27` → `0.1.28+28`) with each user-facing change set, then run `dart dev/sync_version.dart` to propagate the version to the README badge and any other files. The build number tracks the patch number.
 
 ## Commands
 
@@ -89,6 +89,7 @@ flutter pub get          # Install dependencies
 flutter analyze          # Static analysis
 flutter test             # Run unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
+dart dev/sync_version.dart    # Propagate pubspec version to README badge
 flutter run              # Run on connected device
 flutter build apk --release   # Release APK (~185 MB)
 flutter build appbundle       # Android App Bundle (preferred for Play Store)

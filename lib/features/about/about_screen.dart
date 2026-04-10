@@ -158,7 +158,7 @@ class AboutScreen extends ConsumerWidget {
           ListTile(
             leading: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                theme.colorScheme.primary,
+                theme.colorScheme.onSurfaceVariant,
                 BlendMode.srcIn,
               ),
               child: Image.asset(
