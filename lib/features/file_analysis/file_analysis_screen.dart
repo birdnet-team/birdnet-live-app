@@ -762,29 +762,28 @@ class _LocationStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // ── Choice tiles ─────────────────────────────────────
-          _ChoiceTile(
-            icon: Icons.my_location,
-            title: l10n.fileAnalysisLocationGps,
-            subtitle: l10n.fileAnalysisLocationGpsSubtitle,
-            selected: choice == _LocationChoice.gps,
-            onTap: () => onChoiceChanged(_LocationChoice.gps),
-          ),
-          const SizedBox(height: 8),
-          _ChoiceTile(
-            icon: Icons.edit_location_alt,
-            title: l10n.fileAnalysisLocationManual,
-            subtitle: l10n.fileAnalysisLocationManualSubtitle,
-            selected: choice == _LocationChoice.manual,
-            onTap: () => onChoiceChanged(_LocationChoice.manual),
-          ),
-          const SizedBox(height: 8),
-          _ChoiceTile(
-            icon: Icons.location_off,
-            title: l10n.fileAnalysisLocationSkip,
-            subtitle: l10n.fileAnalysisLocationSkipSubtitle,
-            selected: choice == _LocationChoice.skip,
-            onTap: () => onChoiceChanged(_LocationChoice.skip),
+          // ── Location mode selector ──────────────────────────
+          SegmentedButton<_LocationChoice>(
+            segments: [
+              ButtonSegment(
+                value: _LocationChoice.gps,
+                icon: const Icon(Icons.my_location, size: 18),
+                label: Text(l10n.fileAnalysisLocationGps),
+              ),
+              ButtonSegment(
+                value: _LocationChoice.manual,
+                icon: const Icon(Icons.edit_location_alt, size: 18),
+                label: Text(l10n.fileAnalysisLocationManual),
+              ),
+              ButtonSegment(
+                value: _LocationChoice.skip,
+                icon: const Icon(Icons.location_off, size: 18),
+                label: Text(l10n.fileAnalysisLocationSkip),
+              ),
+            ],
+            selected: {choice},
+            onSelectionChanged: (s) => onChoiceChanged(s.first),
+            showSelectedIcon: false,
           ),
 
           // ── GPS result ───────────────────────────────────────
@@ -949,79 +948,6 @@ class _DatePickerTile extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _ChoiceTile extends StatelessWidget {
-  const _ChoiceTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: selected ? 2 : 0,
-      color: selected
-          ? theme.colorScheme.primaryContainer
-          : theme.colorScheme.surfaceContainerHighest,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: selected
-                    ? theme.colorScheme.onPrimaryContainer
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: selected
-                            ? theme.colorScheme.onPrimaryContainer
-                            : null,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: selected
-                            ? theme.colorScheme.onPrimaryContainer
-                                .withAlpha(179)
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (selected)
-                Icon(Icons.check_circle,
-                    color: theme.colorScheme.onPrimaryContainer),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -970,29 +970,17 @@
   "@fileAnalysisLocationSubtitle": {
     "description": "Subtitle for location step"
   },
-  "fileAnalysisLocationGps": "Use current location",
+  "fileAnalysisLocationGps": "Current",
   "@fileAnalysisLocationGps": {
-    "description": "Choice: use GPS for location"
+    "description": "Segmented button label: use current GPS location"
   },
-  "fileAnalysisLocationGpsSubtitle": "Use your device's GPS",
-  "@fileAnalysisLocationGpsSubtitle": {
-    "description": "Subtitle for GPS choice"
-  },
-  "fileAnalysisLocationManual": "Enter manually",
+  "fileAnalysisLocationManual": "Manual",
   "@fileAnalysisLocationManual": {
-    "description": "Choice: enter coordinates manually"
+    "description": "Segmented button label: enter coordinates manually"
   },
-  "fileAnalysisLocationManualSubtitle": "Type coordinates or pick on map",
-  "@fileAnalysisLocationManualSubtitle": {
-    "description": "Subtitle for manual entry choice"
-  },
-  "fileAnalysisLocationSkip": "Skip location",
+  "fileAnalysisLocationSkip": "None",
   "@fileAnalysisLocationSkip": {
-    "description": "Choice: skip providing location"
-  },
-  "fileAnalysisLocationSkipSubtitle": "Analyze without geographic filtering",
-  "@fileAnalysisLocationSkipSubtitle": {
-    "description": "Subtitle for skip choice"
+    "description": "Segmented button label: skip location"
   },
   "fileAnalysisLocationRefresh": "Refresh location",
   "@fileAnalysisLocationRefresh": {
