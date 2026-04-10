@@ -129,7 +129,12 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   Future<void> _pickFile() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['wav', 'wave', 'flac'],
+      allowedExtensions: [
+        'wav', 'wave', 'flac', // Lossless (pure-Dart decoder)
+        'mp3', 'ogg', 'oga', 'opus', // Compressed (native decoder)
+        'm4a', 'aac', 'mp4', // AAC containers
+        'wma', 'amr', // Other
+      ],
       allowMultiple: false,
     );
 

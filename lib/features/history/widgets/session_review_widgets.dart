@@ -118,8 +118,8 @@ class _SummaryHeader extends StatelessWidget {
               ),
             ],
           ),
-          if (session.latitude != null && session.longitude != null) ...[
-            const SizedBox(height: 6),
+          const SizedBox(height: 6),
+          if (session.latitude != null && session.longitude != null)
             InkWell(
               onTap: onShowMap,
               borderRadius: BorderRadius.circular(4),
@@ -145,8 +145,22 @@ class _SummaryHeader extends StatelessWidget {
                       color: theme.colorScheme.primary.withAlpha(178)),
                 ],
               ),
+            )
+          else
+            Row(
+              children: [
+                Icon(Icons.location_off_outlined,
+                    size: 18,
+                    color: theme.colorScheme.onSurface.withAlpha(120)),
+                const SizedBox(width: 4),
+                Text(
+                  l10n.sessionNoLocation,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(120),
+                  ),
+                ),
+              ],
             ),
-          ],
         ],
       ),
     );

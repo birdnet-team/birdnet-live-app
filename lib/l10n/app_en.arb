@@ -512,6 +512,10 @@
   "@sessionDiscardMessage": {
     "description": "Discard confirmation dialog message"
   },
+  "sessionNoLocation": "No location",
+  "@sessionNoLocation": {
+    "description": "Shown in session review and library card when the session has no GPS coordinates"
+  },
   "sessionShare": "Share",
   "@sessionShare": {
     "description": "Share session button label"
@@ -933,7 +937,7 @@
   "@fileAnalysisPickTitle": {
     "description": "Title for file selection step"
   },
-  "fileAnalysisPickSubtitle": "Choose a WAV or FLAC recording to analyze for bird species.",
+  "fileAnalysisPickSubtitle": "Choose an audio recording to analyze for bird species. Supports WAV, FLAC, MP3, OGG, M4A, OPUS, and more.",
   "@fileAnalysisPickSubtitle": {
     "description": "Subtitle for file selection step"
   },

@@ -67,7 +67,38 @@ class DecodedAudio {
 class AudioDecoder {
   AudioDecoder._();
 
+  /// Check whether the file can be decoded by the pure-Dart decoders
+  /// (WAV or FLAC), based on magic bytes.  Reads only the first 4 bytes.
+  static Future<bool> canDecodeDart(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(4);
+      if (header.length < 4) return false;
+      // WAV: RIFF header.
+      if (header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46) {
+        return true;
+      }
+      // FLAC: fLaC header.
+      if (header[0] == 0x66 &&
+          header[1] == 0x4C &&
+          header[2] == 0x61 &&
+          header[3] == 0x43) {
+        return true;
+      }
+      return false;
+    } finally {
+      await raf.close();
+    }
+  }
+
   /// Auto-detect format (WAV or FLAC) and decode.
+  ///
+  /// For compressed formats (MP3, OGG, AAC, etc.) this will throw a
+  /// [FormatException].  Use [NativeAudioDecoder.decodeFile] instead.
   static Future<DecodedAudio> decodeFile(String path) async {
     final file = File(path);
     final bytes = await file.readAsBytes();
@@ -167,7 +198,6 @@ class AudioDecoder {
     // Byte 4: metadata header.  Bytes 8–41: STREAMINFO body (34 bytes).
     final si = ByteData.sublistView(bytes, 8, 42);
 
-    
     final maxBlock = si.getUint16(2, Endian.big);
 
     // Bytes 10-12: sample rate (20 bits), channels-1 (3 bits), bps-1 (5 bits).
@@ -227,8 +257,6 @@ class AudioDecoder {
     // The sync code is 0b 1111_1111 1111_10xx where xx encodes the
     // blocking strategy.
     if (!_syncToFrame(reader)) return null;
-
-    
 
     // Already consumed 2 sync bytes.  Next nibble is block-size code.
     final bsAndSr = reader.readBits(8);
@@ -475,7 +503,6 @@ class AudioDecoder {
     final escapeCode = method == 0 ? 15 : 31;
 
     final residuals = <int>[];
-    
 
     for (var p = 0; p < nPartitions; p++) {
       final samplesInPartition = p == 0

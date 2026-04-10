@@ -42,6 +42,7 @@ import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
+import '../recording/native_audio_decoder.dart';
 
 // =============================================================================
 // State
@@ -248,13 +249,26 @@ class FileAnalysisController {
     final format = switch (ext) {
       'wav' || 'wave' => 'WAV',
       'flac' => 'FLAC',
+      'mp3' => 'MP3',
+      'ogg' || 'oga' => 'OGG',
+      'm4a' || 'aac' || 'mp4' => 'AAC',
+      'opus' => 'OPUS',
+      'wma' => 'WMA',
+      'amr' => 'AMR',
       _ => ext.toUpperCase(),
     };
 
-    // Decode in background isolate.
-    final decoded = await dart_isolate.Isolate.run(
-      () => AudioDecoder.decodeFile(path),
-    );
+    // Decode: use pure-Dart decoder for WAV/FLAC (in isolate),
+    // native MediaCodec for compressed formats (main thread).
+    final canDart = await AudioDecoder.canDecodeDart(path);
+    final DecodedAudio decoded;
+    if (canDart) {
+      decoded = await dart_isolate.Isolate.run(
+        () => AudioDecoder.decodeFile(path),
+      );
+    } else {
+      decoded = await NativeAudioDecoder.decodeFile(path);
+    }
 
     return AudioFileInfo(
       path: path,
@@ -306,11 +320,17 @@ class FileAnalysisController {
     _notifyListeners();
 
     try {
-      // 1. Decode the audio file in a background isolate.
+      // 1. Decode the audio file.
       debugPrint('[FileAnalysis] decoding $filePath ...');
-      final decoded = await dart_isolate.Isolate.run(
-        () => AudioDecoder.decodeFile(filePath),
-      );
+      final canDart = await AudioDecoder.canDecodeDart(filePath);
+      final DecodedAudio decoded;
+      if (canDart) {
+        decoded = await dart_isolate.Isolate.run(
+          () => AudioDecoder.decodeFile(filePath),
+        );
+      } else {
+        decoded = await NativeAudioDecoder.decodeFile(filePath);
+      }
       debugPrint('[FileAnalysis] decoded: ${decoded.totalSamples} samples, '
           '${decoded.sampleRate} Hz, ${decoded.duration}');
 

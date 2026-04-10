@@ -337,6 +337,34 @@ class _SessionTile extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              session.latitude != null
+                                  ? Icons.location_on_outlined
+                                  : Icons.location_off_outlined,
+                              size: 14,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                session.locationName ??
+                                    (session.latitude != null &&
+                                            session.longitude != null
+                                        ? '${session.latitude!.toStringAsFixed(4)}, '
+                                            '${session.longitude!.toStringAsFixed(4)}'
+                                        : AppLocalizations.of(context)!
+                                            .sessionNoLocation),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

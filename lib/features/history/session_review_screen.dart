@@ -64,6 +64,7 @@ import '../explore/widgets/species_info_overlay.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
+import '../recording/native_audio_decoder.dart';
 import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
@@ -332,7 +333,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _decodeAudioForSpectrogram(String path) async {
     setState(() => _decoding = true);
     try {
-      final audio = await AudioDecoder.decodeFile(path);
+      // Use pure-Dart decoder for WAV/FLAC, native for compressed formats.
+      final DecodedAudio audio;
+      if (await AudioDecoder.canDecodeDart(path)) {
+        audio = await AudioDecoder.decodeFile(path);
+      } else {
+        audio = await NativeAudioDecoder.decodeFile(path);
+      }
       if (!mounted) return;
       await _buildSpectrogramImage(audio);
     } catch (_) {

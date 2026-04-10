@@ -123,6 +123,7 @@
   "sessionDiscard": "Verwerfen",
   "sessionDiscardTitle": "Session verwerfen?",
   "sessionDiscardMessage": "Diese Session und ihre Aufnahme werden dauerhaft gelöscht.",
+  "sessionNoLocation": "Kein Standort",
   "sessionShare": "Teilen",
   "sessionLibraryTitle": "Sessions",
   "sessionLibraryEmpty": "Noch keine gespeicherten Sessions.",
@@ -235,7 +236,7 @@
   "fileAnalysisStepAnalyze": "Analyse",
 
   "fileAnalysisPickTitle": "Audiodatei auswählen",
-  "fileAnalysisPickSubtitle": "Wählen Sie eine WAV- oder FLAC-Aufnahme zur Vogelartenerkennung.",
+  "fileAnalysisPickSubtitle": "Wählen Sie eine Audioaufnahme zur Vogelartenerkennung. Unterstützt WAV, FLAC, MP3, OGG, M4A, OPUS und mehr.",
   "fileAnalysisPickButton": "Datei wählen",
   "fileAnalysisChangeFile": "Datei ändern",
   "fileAnalysisReading": "Datei wird gelesen…",
