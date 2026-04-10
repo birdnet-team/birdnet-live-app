@@ -108,12 +108,11 @@ class SpectrogramPainter extends CustomPainter {
   /// Accumulated spectrogram image — shift-blitted on each paint.
   ui.Image? _spectrogramImage;
 
-  /// Number of new columns added since the last paint.
+  /// Number of new columns added since the last image build.
   int _newSinceLastPaint = 0;
 
-  /// Whether [_columns] changed since the last paint and the image needs
-  /// rebuilding.
-  bool _dirty = true;
+  /// Whether an async image build is currently in progress.
+  bool _isBuilding = false;
 
   /// Reusable paint for drawing individual bin cells.
   final Paint _cellPaint = Paint()..style = PaintingStyle.fill;
@@ -134,7 +133,6 @@ class SpectrogramPainter extends CustomPainter {
       _columns.removeAt(0);
     }
     _newSinceLastPaint++;
-    _dirty = true;
   }
 
   /// Number of columns currently held.
@@ -146,7 +144,7 @@ class SpectrogramPainter extends CustomPainter {
     _spectrogramImage?.dispose();
     _spectrogramImage = null;
     _newSinceLastPaint = 0;
-    _dirty = true;
+    _isBuilding = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -174,19 +172,9 @@ class SpectrogramPainter extends CustomPainter {
     final h = spectrogramRect.height.ceil();
     if (w <= 0 || h <= 0) return;
 
-    // Compute how many bins to render based on maxDisplayFrequency.
-    final nyquist = sampleRate / 2;
+    // Compute effective max frequency for axis overlay.
     final effectiveMaxFreq =
-        maxDisplayFrequency > 0 ? maxDisplayFrequency : nyquist.toInt();
-    final displayBins =
-        (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
-
-    // Rebuild the spectrogram image synchronously if data changed.
-    if (_dirty && _newSinceLastPaint > 0) {
-      _updateSpectrogramImage(w, h, displayBins);
-      _newSinceLastPaint = 0;
-      _dirty = false;
-    }
+        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
 
     // Draw the spectrogram image scaled to the display area.
     // The internal image is at 1:1 pixel resolution (maxColumns × binCount).
@@ -221,9 +209,8 @@ class SpectrogramPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant SpectrogramPainter oldDelegate) {
-    // Repaint on any structural change or new data.
-    return _dirty ||
-        oldDelegate.colorMapName != colorMapName ||
+    // Repaint on any structural change.
+    return oldDelegate.colorMapName != colorMapName ||
         oldDelegate.binCount != binCount ||
         oldDelegate.maxColumns != maxColumns ||
         oldDelegate.maxDisplayFrequency != maxDisplayFrequency;
@@ -233,38 +220,59 @@ class SpectrogramPainter extends CustomPainter {
   // Synchronous image building — canvas-shift at 1:1 pixel resolution
   // ---------------------------------------------------------------------------
 
-  /// Build or update the spectrogram image synchronously.
+  // ---------------------------------------------------------------------------
+  // Async image building — replaces synchronous toImageSync to avoid
+  // a GPU memory leak in the Flutter engine (toImageSync leaks ~42 KB
+  // per call, causing OOM after ~3 min of continuous spectrogram updates).
+  // ---------------------------------------------------------------------------
+
+  /// Number of frequency bins to display (constant per painter lifetime).
+  int get displayBins {
+    final effectiveMaxFreq =
+        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    return (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
+  }
+
+  /// Asynchronously rebuild the spectrogram image if new columns have
+  /// been added since the last build.  Returns immediately if a build
+  /// is already in progress.
   ///
-  /// The internal image is sized at **1:1 pixel resolution**: width equals
-  /// the current column count (up to [maxColumns]) and height equals
-  /// [binCount].  Each FFT column occupies exactly 1 pixel of width and
-  /// each frequency bin occupies exactly 1 pixel of height.  The final
-  /// display scaling is handled by [drawImageRect] in [paint], which uses
-  /// GPU bilinear filtering for a smooth result.
+  /// Call this from the widget's tick callback after [addColumn].
+  Future<void> rebuildImageAsync() async {
+    if (_isBuilding || _newSinceLastPaint == 0 || _columns.isEmpty) return;
+    _isBuilding = true;
+    try {
+      final colsToProcess = _newSinceLastPaint;
+      await _buildImageAsync(colsToProcess);
+      // Only subtract the columns we actually processed — more may have
+      // arrived during the async gap.
+      _newSinceLastPaint -= colsToProcess;
+    } finally {
+      _isBuilding = false;
+    }
+  }
+
+  /// Build or update the spectrogram image asynchronously.
   ///
-  /// Working at 1:1 instead of display resolution:
-  /// - reduces [Picture.toImageSync] cost (smaller rasterization target)
-  /// - eliminates sub-pixel column widths that caused aliasing
-  /// - makes the shift a clean integer-pixel blit
-  void _updateSpectrogramImage(int displayW, int displayH, int displayBins) {
+  /// Uses [Picture.toImage] (async) instead of [Picture.toImageSync] to
+  /// avoid a GPU texture leak on Android.  The async variant properly
+  /// reclaims textures through the raster thread's resource lifecycle.
+  Future<void> _buildImageAsync(int newCols) async {
     final cols = _columns.length;
     if (cols == 0) return;
 
-    // Always use maxColumns width so the display-to-image ratio is constant.
-    // When fewer columns have been collected, the left side stays black.
     final imgW = maxColumns;
     final imgH = displayBins;
-    final newCols = _newSinceLastPaint.clamp(0, cols);
+    newCols = newCols.clamp(0, cols);
 
     final recorder = ui.PictureRecorder();
     final offscreen = Canvas(recorder);
 
-    final clearPaint = Paint()..color = const Color(0xFF000000);
+    final clearPaint = Paint()..color = Color(_lut[0]);
 
     if (_spectrogramImage != null &&
         _spectrogramImage!.width == imgW &&
         newCols < imgW) {
-      // Shift old image left by newCols pixels.
       final keepW = imgW - newCols;
 
       offscreen.drawImageRect(
@@ -274,26 +282,25 @@ class SpectrogramPainter extends CustomPainter {
         Paint()..filterQuality = FilterQuality.none,
       );
 
-      // Black-fill the rightmost strip (new column area).
       offscreen.drawRect(
         Rect.fromLTWH(keepW.toDouble(), 0, newCols.toDouble(), imgH.toDouble()),
         clearPaint,
       );
     } else {
-      // No previous image or size changed — black background.
       offscreen.drawRect(
         Rect.fromLTWH(0, 0, imgW.toDouble(), imgH.toDouble()),
         clearPaint,
       );
     }
 
-    // Draw new columns as 1 px-wide strips at the right edge.
     _drawNewColumnsPixel(offscreen, imgW, imgH, newCols);
 
     final picture = recorder.endRecording();
-    _spectrogramImage?.dispose();
-    _spectrogramImage = picture.toImageSync(imgW, imgH);
+    final newImage = await picture.toImage(imgW, imgH);
     picture.dispose();
+
+    _spectrogramImage?.dispose();
+    _spectrogramImage = newImage;
   }
 
   /// Draw [newCols] new columns at 1:1 pixel resolution.
@@ -313,9 +320,11 @@ class SpectrogramPainter extends CustomPainter {
         // Flip vertically — low frequencies at the bottom.
         final srcBin = imgH - 1 - y;
         final value = srcBin < column.length ? column[srcBin] : 0.0;
-        if (value < 0.005) continue; // Background already black.
 
+        // If the value maps to the 0th index, it's already the background color.
         final lutIndex = (value * 255).round().clamp(0, 255);
+        if (lutIndex == 0) continue;
+
         _cellPaint.color = Color(_lut[lutIndex]);
         canvas.drawRect(Rect.fromLTWH(x, y.toDouble(), 1, 1), _cellPaint);
       }
@@ -486,10 +495,10 @@ class SpectrogramPainter extends CustomPainter {
 
   /// Paint the empty state shown when no data is available.
   void _paintEmptyState(Canvas canvas, Size size) {
-    // Just fill with a very dark background.
+    // Fill with the base color of the selected color map.
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = const Color(0xFF0A0A0A),
+      Paint()..color = Color(_lut[0]),
     );
   }
 }

@@ -58,6 +58,34 @@ class SessionSettings {
       };
 }
 
+/// The type of session (maps to one of the four app modes).
+enum SessionType {
+  /// Real-time microphone-based identification session.
+  live,
+
+  /// Offline analysis of an uploaded audio file.
+  fileUpload,
+
+  /// Timed point-count survey at a fixed location.
+  pointCount,
+
+  /// Background survey session with GPS tracking.
+  survey,
+}
+
+/// How a detection was created.
+enum DetectionSource {
+  /// Automatically detected by the inference model.
+  auto,
+
+  /// Manually added by the user in session review at a specific timestamp.
+  manual,
+
+  /// Manually added as a session-wide (global) annotation — not tied to a
+  /// specific time window.
+  manualGlobal,
+}
+
 /// A timestamped detection record for session persistence.
 ///
 /// Unlike [Detection] (which holds a full [Species] object), this stores
@@ -69,9 +97,12 @@ class DetectionRecord {
     required this.confidence,
     required this.timestamp,
     this.audioClipPath,
+    this.source = DetectionSource.auto,
   });
 
   /// Scientific name of the detected species.
+  ///
+  /// Use [unknownSpeciesName] for unknown / unidentifiable detections.
   final String scientificName;
 
   /// Common (vernacular) name of the detected species.
@@ -85,6 +116,18 @@ class DetectionRecord {
 
   /// Path to the saved audio clip for this detection (if available).
   final String? audioClipPath;
+
+  /// How this detection was created.
+  final DetectionSource source;
+
+  /// Scientific name placeholder for unknown / unidentifiable species.
+  static const String unknownSpeciesName = 'Unknown species';
+
+  /// Common name placeholder for unknown / unidentifiable species.
+  static const String unknownCommonName = 'Unknown / Other';
+
+  /// Whether this represents an unknown species.
+  bool get isUnknown => scientificName == unknownSpeciesName;
 
   /// Create from a live [Detection].
   factory DetectionRecord.fromDetection(
@@ -108,6 +151,11 @@ class DetectionRecord {
       confidence: (json['confidence'] as num).toDouble(),
       timestamp: DateTime.parse(json['timestamp'] as String),
       audioClipPath: json['audioClipPath'] as String?,
+      source: switch (json['source'] as String?) {
+        'manual' => DetectionSource.manual,
+        'manualGlobal' => DetectionSource.manualGlobal,
+        _ => DetectionSource.auto,
+      },
     );
   }
 
@@ -118,6 +166,7 @@ class DetectionRecord {
         'confidence': confidence,
         'timestamp': timestamp.toIso8601String(),
         if (audioClipPath != null) 'audioClipPath': audioClipPath,
+        if (source != DetectionSource.auto) 'source': source.name,
       };
 
   /// Confidence expressed as a percentage string, e.g. "87.3 %".
@@ -139,19 +188,80 @@ class DetectionRecord {
   int get hashCode => Object.hash(scientificName, confidence, timestamp);
 }
 
+/// A user-created text annotation associated with a session.
+///
+/// Annotations can describe environmental conditions, location context,
+/// or any observation the user wants to record alongside the audio.
+class SessionAnnotation {
+  const SessionAnnotation({
+    required this.text,
+    required this.createdAt,
+    this.offsetInRecording,
+  });
+
+  /// Free-form annotation text.
+  final String text;
+
+  /// When the annotation was created.
+  final DateTime createdAt;
+
+  /// Optional offset (seconds from session start) this annotation refers to.
+  /// When null, the annotation is considered session-global.
+  final double? offsetInRecording;
+
+  factory SessionAnnotation.fromJson(Map<String, dynamic> json) {
+    return SessionAnnotation(
+      text: json['text'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      offsetInRecording: (json['offsetInRecording'] as num?)?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'text': text,
+        'createdAt': createdAt.toIso8601String(),
+        if (offsetInRecording != null) 'offsetInRecording': offsetInRecording,
+      };
+}
+
 /// A complete live identification session.
 class LiveSession {
   LiveSession({
     required this.id,
     required this.startTime,
+    this.type = SessionType.live,
+    this.sessionNumber,
+    this.customName,
     this.endTime,
     List<DetectionRecord>? detections,
     this.recordingPath,
     required this.settings,
-  }) : detections = detections ?? [];
+    List<SessionAnnotation>? annotations,
+    this.trimStartSec,
+    this.trimEndSec,
+    this.latitude,
+    this.longitude,
+    this.locationName,
+  })  : detections = detections ?? [],
+        annotations = annotations ?? [];
 
   /// Unique session identifier (ISO 8601 timestamp-based).
   final String id;
+
+  /// The type of session (live, file upload, point count, survey).
+  final SessionType type;
+
+  /// Sequential session number within this [type] (starting at 1).
+  ///
+  /// Assigned when the session is first saved.  Legacy sessions that
+  /// pre-date this field will have `null`.
+  int? sessionNumber;
+
+  /// User-defined session name (e.g. "Morning walk").
+  ///
+  /// When set, overrides the auto-generated numbered title for display
+  /// and export filenames.
+  String? customName;
 
   /// When the session started.
   final DateTime startTime;
@@ -168,15 +278,45 @@ class LiveSession {
   /// Inference settings that were active during this session.
   final SessionSettings settings;
 
+  /// User annotations (environmental notes, observations, etc.).
+  final List<SessionAnnotation> annotations;
+
+  /// Trim start offset in seconds from the original recording start.
+  ///
+  /// When non-null, audio and detections before this offset are excluded
+  /// from exports and the review timeline.
+  double? trimStartSec;
+
+  /// Trim end offset in seconds from the original recording start.
+  ///
+  /// When non-null, audio and detections after this offset are excluded.
+  double? trimEndSec;
+
+  /// Recording location latitude (null if location unavailable).
+  double? latitude;
+
+  /// Recording location longitude (null if location unavailable).
+  double? longitude;
+
+  /// Reverse-geocoded location name (e.g. "Berlin, Germany").
+  ///
+  /// Populated on first review when internet is available.
+  String? locationName;
+
   /// Whether this session is still active (no end time).
   bool get isActive => endTime == null;
 
   /// Human-readable session name for display and export filenames.
   ///
-  /// Format: `BirdNET-Live_Session_2026-03-30_14-30-00`
+  /// Format: `BirdNET-Live_Session_2026-03-30_14-30-00_#123`
+  /// Falls back to timestamp only for legacy sessions without a number.
   String get displayName {
+    if (customName != null && customName!.isNotEmpty) {
+      return customName!;
+    }
     final dt = DateFormat('yyyy-MM-dd_HH-mm-ss').format(startTime);
-    return 'BirdNET-Live_Session_$dt';
+    final suffix = sessionNumber != null ? '_#$sessionNumber' : '';
+    return 'BirdNET-Live_Session_$dt$suffix';
   }
 
   /// Duration of the session.
@@ -186,14 +326,23 @@ class LiveSession {
   int get uniqueSpeciesCount =>
       detections.map((d) => d.scientificName).toSet().length;
 
+  // Maximum number of detection records kept in memory per session.
+  // At ~1 Hz inference this allows >2.7 hours of continuous recording.
+  static const int _maxDetections = 10000;
+
   /// Add a detection to the session.
   void addDetection(DetectionRecord record) {
-    detections.add(record);
+    if (detections.length < _maxDetections) {
+      detections.add(record);
+    }
   }
 
   /// Add multiple detections from a single inference cycle.
   void addDetections(List<DetectionRecord> records) {
-    detections.addAll(records);
+    final remaining = _maxDetections - detections.length;
+    if (remaining > 0) {
+      detections.addAll(records.take(remaining));
+    }
   }
 
   /// End the session.
@@ -205,6 +354,11 @@ class LiveSession {
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
+      type: SessionType.values.firstWhere(
+        (t) => t.name == (json['type'] as String?),
+        orElse: () => SessionType.live,
+      ),
+      sessionNumber: json['sessionNumber'] as int?,
       startTime: DateTime.parse(json['startTime'] as String),
       endTime: json['endTime'] != null
           ? DateTime.parse(json['endTime'] as String)
@@ -217,17 +371,38 @@ class LiveSession {
       settings: SessionSettings.fromJson(
         json['settings'] as Map<String, dynamic>? ?? {},
       ),
+      annotations: (json['annotations'] as List<dynamic>?)
+              ?.map(
+                  (a) => SessionAnnotation.fromJson(a as Map<String, dynamic>))
+              .toList() ??
+          [],
+      trimStartSec: (json['trimStartSec'] as num?)?.toDouble(),
+      trimEndSec: (json['trimEndSec'] as num?)?.toDouble(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
+      locationName: json['locationName'] as String?,
+      customName: json['customName'] as String?,
     );
   }
 
   /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
         'id': id,
+        if (type != SessionType.live) 'type': type.name,
+        if (sessionNumber != null) 'sessionNumber': sessionNumber,
         'startTime': startTime.toIso8601String(),
         if (endTime != null) 'endTime': endTime!.toIso8601String(),
         'detections': detections.map((d) => d.toJson()).toList(),
         if (recordingPath != null) 'recordingPath': recordingPath,
         'settings': settings.toJson(),
+        if (annotations.isNotEmpty)
+          'annotations': annotations.map((a) => a.toJson()).toList(),
+        if (trimStartSec != null) 'trimStartSec': trimStartSec,
+        if (trimEndSec != null) 'trimEndSec': trimEndSec,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
+        if (locationName != null) 'locationName': locationName,
+        if (customName != null) 'customName': customName,
       };
 
   @override

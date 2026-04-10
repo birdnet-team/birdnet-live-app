@@ -45,12 +45,24 @@ lib/
 
 | Asset | Purpose | Size |
 |-------|---------|------|
-| `BirdNET+_V3.0-preview3_Global_11K_FP16.onnx` | Audio classifier (11,560 species) | ~259 MB |
-| `BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx` | Location-based species prediction | ~7 MB |
-| `labels.csv` | Audio classifier labels (comma-delimited) | |
-| `BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt` | Geo-model labels (tab-delimited: `id\tsci_name\tcom_name`) | |
-| `taxonomy.csv` | Rich species metadata (13,968 species, comma-delimited with header) | |
+| `BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx` | Audio classifier (5,250 species, pruned) | ~152 MB |
+| `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_FP16.onnx` | Location-based species prediction | ~6 MB |
+| `labels.csv` | Audio classifier labels (semicolon-delimited, UTF-8 BOM) | |
+| `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_Labels.txt` | Geo-model labels (tab-delimited: `id\tsci_name\tcom_name`) | |
+| `taxonomy.csv` | Rich species metadata (comma-delimited with header) | |
 | `model_config.json` | JSON config for both ONNX models | |
+
+### Model Build Pipeline
+
+The `.onnx` files in `assets/models/` are **not checked in** (gitignored). They are built from raw source models in `dev/models/` using a Python pipeline:
+
+```bash
+python dev/build_models.py          # prune species + fix for ARM64 ORT 1.15
+```
+
+This runs three steps: (1) prune to 5,250-species intersection, (2) fix audio model for ARM64 FP16 precision & ORT 1.15 opset compatibility, (3) decompose geo model LayerNorm. See **`dev/MODELS.md`** for full details on what each script does and why.
+
+**Key constraint**: Android ORT 1.15.1 (`flutter_onnxruntime 1.4.1`) uses native FP16 NEON on ARM64, causing precision loss in deep CNNs. The audio model stores weights as FP16 but runs all compute in FP32 via inserted Cast nodes.
 
 ### Taxonomy API
 
@@ -68,6 +80,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 - **File headers**: Each Dart file has a `// ===...` block comment explaining purpose, usage, and design rationale.
 - **Tests**: Unit tests mirror the `lib/` structure under `test/`. Use `flutter test` to run.
 - **No hardcoded values**: Model parameters, API URLs, and thresholds come from config or constants.
+- **Version bumping**: `pubspec.yaml` is the **single source of truth** for the app version. Bump the patch version there (e.g. `0.1.27+27` → `0.1.28+28`) with each user-facing change set, then run `dart dev/sync_version.dart` to propagate the version to the README badge and any other files. The build number tracks the patch number.
 
 ## Commands
 
@@ -76,5 +89,20 @@ flutter pub get          # Install dependencies
 flutter analyze          # Static analysis
 flutter test             # Run unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
+dart dev/sync_version.dart    # Propagate pubspec version to README badge
 flutter run              # Run on connected device
+flutter build apk --release   # Release APK (~185 MB)
+flutter build appbundle       # Android App Bundle (preferred for Play Store)
 ```
+
+### Release Build Notes
+
+- **Release APK is ~185 MB** (vs ~420 MB debug). The audio ONNX model (145 MB, stored uncompressed for memory-mapping) accounts for ~78%.
+- **ABI filter**: Only `arm64-v8a` is included (`android/app/build.gradle`). No 32-bit ARM or x86 native libs are shipped.
+- **R8 shrink + minify** is enabled for release builds. ProGuard rules in `android/app/proguard-rules.pro` keep ONNX Runtime JNI bindings.
+- **Test fixtures** (`assets/test_fixtures/`) are **not bundled** in the APK. For integration tests, push them to the device first:
+  ```bash
+  adb push assets/test_fixtures /data/local/tmp/test_fixtures
+  flutter test integration_test/geo_soundscape_test.dart -d <device_id>
+  ```
+- **App Bundle**: Use `flutter build appbundle` for Play Store — delivers only the user's architecture, reducing download size further.

@@ -7,11 +7,11 @@ Common issues and solutions.
 1. **Check microphone permission** — the app needs microphone access to capture audio.
 2. **Lower the confidence threshold** in Settings (default is 25%).
 3. **Ensure the session is active** — the mic button should show a red stop icon.
-4. **Wait for model loading** — the first launch extracts a ~259 MB model file, which takes time.
+4. **Wait for model loading** — the first launch extracts a ~152 MB model file, which takes time.
 
 ## Model Loading Failed
 
-- **Insufficient storage**: The app needs ~300 MB of free space for the model file.
+- **Insufficient storage**: The app needs ~300 MB of free space for model files.
 - **Corrupted extraction**: Clear app data and restart to re-extract the model.
 - **Crash on startup**: Check that your device has enough RAM (at least 2 GB free).
 

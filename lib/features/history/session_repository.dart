@@ -145,6 +145,21 @@ class SessionRepository {
     return count;
   }
 
+  /// Return the next sequential session number for [type].
+  ///
+  /// Scans all saved sessions of the same type and returns
+  /// `max(sessionNumber) + 1`, or `1` if none exist yet.
+  Future<int> nextSessionNumber(SessionType type) async {
+    final sessions = await listAll();
+    var maxNum = 0;
+    for (final s in sessions) {
+      if (s.type == type && s.sessionNumber != null) {
+        if (s.sessionNumber! > maxNum) maxNum = s.sessionNumber!;
+      }
+    }
+    return maxNum + 1;
+  }
+
   /// Sanitise a session ID for use as a filename.
   static String _sanitiseId(String id) =>
       id.replaceAll(RegExp(r'[<>:"/\\|?*]'), '-');

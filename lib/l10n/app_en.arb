@@ -32,15 +32,23 @@
   "@onboardingWelcomeTitle": {
     "description": "Onboarding welcome screen title"
   },
-  "onboardingWelcomeBody": "Real-time bird species identification powered by on-device AI. No internet required.",
+  "onboardingWelcomeBody": "AI-powered bioacoustic monitoring for field researchers and citizen scientists. Runs entirely on-device — no internet required.",
   "@onboardingWelcomeBody": {
     "description": "Onboarding welcome screen body text"
+  },
+  "onboardingHowItWorksTitle": "How It Works",
+  "@onboardingHowItWorksTitle": {
+    "description": "Onboarding how it works screen title"
+  },
+  "onboardingHowItWorksBody": "BirdNET Live continuously listens to your surroundings. It analyzes audio using an on-device artificial intelligence model to identify bird species in real-time. Detections are highlighted on a live scrolling spectrogram. Everything is processed locally, meaning it works entirely offline and protects your privacy.",
+  "@onboardingHowItWorksBody": {
+    "description": "Onboarding how it works body text"
   },
   "onboardingFeaturesTitle": "Four Modes",
   "@onboardingFeaturesTitle": {
     "description": "Onboarding features screen title"
   },
-  "onboardingFeaturesBody": "Live monitoring, background surveys, timed point counts, and offline file analysis — all with real-time spectrogram visualization.",
+  "onboardingFeaturesBody": "Live monitoring, timed point counts, transect surveys, and offline file analysis — built for standardized field protocols with real-time spectrogram visualization.",
   "@onboardingFeaturesBody": {
     "description": "Onboarding features screen body text"
   },
@@ -56,7 +64,7 @@
   "@onboardingReadyTitle": {
     "description": "Onboarding ready screen title"
   },
-  "onboardingReadyBody": "You're all set. Open the app and start identifying birds around you.",
+  "onboardingReadyBody": "You're all set. Head into the field and start monitoring.",
   "@onboardingReadyBody": {
     "description": "Onboarding ready screen body text"
   },
@@ -244,6 +252,26 @@
   "@settingsClearDataConfirmMessage": {
     "description": "Clear data confirmation message"
   },
+  "settingsClearDataTypeConfirm": "Type DELETE to confirm",
+  "@settingsClearDataTypeConfirm": {
+    "description": "Instruction to type DELETE to confirm data deletion"
+  },
+  "settingsResetOnboardingConfirmTitle": "Reset Onboarding?",
+  "@settingsResetOnboardingConfirmTitle": {
+    "description": "Reset onboarding confirmation dialog title"
+  },
+  "settingsResetOnboardingConfirmMessage": "The onboarding walkthrough will show again on next launch.",
+  "@settingsResetOnboardingConfirmMessage": {
+    "description": "Reset onboarding confirmation message"
+  },
+  "settingsOnboardingReset": "Onboarding will show on next launch",
+  "@settingsOnboardingReset": {
+    "description": "Snackbar message after reset onboarding"
+  },
+  "settingsDataCleared": "All data cleared",
+  "@settingsDataCleared": {
+    "description": "Snackbar message after clearing all data"
+  },
   "cancel": "Cancel",
   "@cancel": {
     "description": "Cancel button"
@@ -256,13 +284,13 @@
   "@aboutVersion": {
     "description": "Version label in about screen"
   },
-  "aboutModelVersion": "Model",
+  "aboutModelVersion": "Audio Model",
   "@aboutModelVersion": {
-    "description": "Model version label in about screen"
+    "description": "Audio model section title in about screen"
   },
-  "aboutModelName": "BirdNET+ V3.0-preview3 Global (FP16)",
+  "aboutModelName": "BirdNET+ V3.0-preview3 Global (pruned, FP16)",
   "@aboutModelName": {
-    "description": "Model name shown in about screen"
+    "description": "Audio model name shown in about screen"
   },
   "aboutSpeciesCount": "{count} species",
   "@aboutSpeciesCount": {
@@ -273,19 +301,31 @@
       }
     }
   },
+  "aboutGeoModel": "Geo-Model",
+  "@aboutGeoModel": {
+    "description": "Geo-model section title"
+  },
+  "aboutGeoModelName": "BirdNET Geomodel V3.0.1 Global (pruned, FP16)",
+  "@aboutGeoModelName": {
+    "description": "Geo-model name shown in about screen"
+  },
+  "aboutGeoModelDescription": "Predicts which species are likely at a given location and time of year.",
+  "@aboutGeoModelDescription": {
+    "description": "Geo-model description"
+  },
   "aboutCredits": "Credits",
   "@aboutCredits": {
     "description": "Credits section title"
   },
-  "aboutCreditsDescription": "BirdNET is developed by the K. Lisa Yang Center for Conservation Bioacoustics at the Cornell Lab of Ornithology and Chemnitz University of Technology.",
+  "aboutCreditsDescription": "BirdNET is developed by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology.",
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },
-  "aboutLicenses": "Open Source Licenses",
-  "@aboutLicenses": {
-    "description": "Open source licenses link"
+  "aboutWebsite": "BirdNET Website",
+  "@aboutWebsite": {
+    "description": "BirdNET website link label"
   },
-  "aboutGitHub": "GitHub",
+  "aboutGitHub": "This app on GitHub",
   "@aboutGitHub": {
     "description": "GitHub link label"
   },
@@ -305,11 +345,11 @@
   "@errorMicrophoneRequired": {
     "description": "Error message when microphone permission is denied"
   },
-  "homeSubtitle": "On-device bird species identification",
+  "homeSubtitle": "The bioacoustics companion app",
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },
-  "liveModeDescription": "Real-time identification with spectrogram",
+  "liveModeDescription": "Real-time species ID",
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
@@ -321,7 +361,7 @@
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
-  "fileAnalysisModeDescription": "Analyze recordings offline",
+  "fileAnalysisModeDescription": "Analyze field recordings offline",
   "@fileAnalysisModeDescription": {
     "description": "Description for File Analysis mode on the main menu"
   },
@@ -333,7 +373,7 @@
   "@exploreMode": {
     "description": "Explore mode tab label"
   },
-  "exploreModeDescription": "Browse species in your area",
+  "exploreModeDescription": "Explore species at your study site",
   "@exploreModeDescription": {
     "description": "Description for Explore mode on the main menu"
   },
@@ -369,6 +409,10 @@
         "type": "int"
       }
     }
+  },
+  "exploreInfoNote": "Species predicted to occur at this location, based on BirdNET's geo-model.",
+  "@exploreInfoNote": {
+    "description": "Short note explaining what the explore species list shows"
   },
   "settingsLocation": "Location",
   "@settingsLocation": {
@@ -460,6 +504,10 @@
   "@sessionDiscardMessage": {
     "description": "Discard confirmation dialog message"
   },
+  "sessionNoLocation": "No location",
+  "@sessionNoLocation": {
+    "description": "Shown in session review and library card when the session has no GPS coordinates"
+  },
   "sessionShare": "Share",
   "@sessionShare": {
     "description": "Share session button label"
@@ -471,6 +519,34 @@
   "sessionLibraryEmpty": "No saved sessions yet.",
   "@sessionLibraryEmpty": {
     "description": "Empty state text for session library"
+  },
+  "sessionLibrarySearchHint": "Search sessions…",
+  "@sessionLibrarySearchHint": {
+    "description": "Hint text for the session library search field"
+  },
+  "sessionLibraryNoResults": "No matching sessions.",
+  "@sessionLibraryNoResults": {
+    "description": "Shown when no sessions match the search query"
+  },
+  "sessionLibrarySortTooltip": "Sort sessions",
+  "@sessionLibrarySortTooltip": {
+    "description": "Tooltip for the sort button in the session library"
+  },
+  "sessionSortDateNewest": "Newest first",
+  "@sessionSortDateNewest": {
+    "description": "Sort sessions by date, newest first"
+  },
+  "sessionSortDateOldest": "Oldest first",
+  "@sessionSortDateOldest": {
+    "description": "Sort sessions by date, oldest first"
+  },
+  "sessionSortNameAZ": "Name A–Z",
+  "@sessionSortNameAZ": {
+    "description": "Sort sessions alphabetically by name, A to Z"
+  },
+  "sessionSortNameZA": "Name Z–A",
+  "@sessionSortNameZA": {
+    "description": "Sort sessions alphabetically by name, Z to A"
   },
   "sessionDeleteDetectionTitle": "Remove Detection?",
   "@sessionDeleteDetectionTitle": {
@@ -504,5 +580,506 @@
         "type": "int"
       }
     }
+  },
+  "sessionDurationWarningTitle": "Still Recording",
+  "@sessionDurationWarningTitle": {
+    "description": "Title for the 10-minute session duration warning dialog"
+  },
+  "sessionDurationWarningMessage": "You have been recording for 10 minutes. Do you want to continue?",
+  "@sessionDurationWarningMessage": {
+    "description": "Body text for the session duration warning dialog"
+  },
+  "sessionContinue": "Continue",
+  "@sessionContinue": {
+    "description": "Continue button label in the session duration warning dialog"
+  },
+  "sessionAddSpecies": "Add Species",
+  "@sessionAddSpecies": {
+    "description": "Button label to add a species to the session"
+  },
+  "sessionSearchSpecies": "Search species…",
+  "@sessionSearchSpecies": {
+    "description": "Hint text for the species search field"
+  },
+  "sessionInsertGlobally": "Insert globally",
+  "@sessionInsertGlobally": {
+    "description": "Option to insert a species detection for the entire session"
+  },
+  "sessionInsertAtTimestamp": "Insert at playback position",
+  "@sessionInsertAtTimestamp": {
+    "description": "Option to insert a species detection at the current playback timestamp"
+  },
+  "sessionReplaceDetection": "Replace this detection",
+  "@sessionReplaceDetection": {
+    "description": "Option to replace an existing detection with a different species"
+  },
+  "sessionUnknownSpecies": "Unknown / Other",
+  "@sessionUnknownSpecies": {
+    "description": "Label for the unknown or unidentified species category"
+  },
+  "sessionAnnotations": "Annotations",
+  "@sessionAnnotations": {
+    "description": "Section title for session annotations"
+  },
+  "sessionAddAnnotation": "Add annotation…",
+  "@sessionAddAnnotation": {
+    "description": "Hint text for the annotation input field"
+  },
+  "sessionAnnotationGlobal": "Global",
+  "@sessionAnnotationGlobal": {
+    "description": "Label for an annotation not tied to a specific timestamp"
+  },
+  "sessionTrimRecording": "Trim Recording",
+  "@sessionTrimRecording": {
+    "description": "Button label to enter trim mode for the recording"
+  },
+  "sessionTrimApply": "Apply Trim",
+  "@sessionTrimApply": {
+    "description": "Button label to apply the current trim selection"
+  },
+  "sessionTrimReset": "Reset Trim",
+  "@sessionTrimReset": {
+    "description": "Button label to reset trim handles to full recording"
+  },
+  "sessionTrimWarning": "Detections outside the trimmed range will be removed.",
+  "@sessionTrimWarning": {
+    "description": "Warning shown when applying a trim that removes detections"
+  },
+  "sessionHelpTitle": "Session Review Help",
+  "@sessionHelpTitle": {
+    "description": "Title for the session review help dialog"
+  },
+  "sessionHelpOverview": "The session review lets you examine, edit, and export your bird detection session. Tap species rows to see individual detections. Use the spectrogram to navigate the recording.",
+  "@sessionHelpOverview": {
+    "description": "Overview section of the session review help"
+  },
+  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. Use \"Unknown / Other\" for unidentified calls.",
+  "@sessionHelpAddSpecies": {
+    "description": "Help text explaining the add species feature"
+  },
+  "sessionHelpAnnotations": "Annotations: Add text notes to your session. Annotations can be global or tied to a specific timestamp. They are included in exported bundles.",
+  "@sessionHelpAnnotations": {
+    "description": "Help text explaining annotations"
+  },
+  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim.",
+  "@sessionHelpTrimming": {
+    "description": "Help text explaining recording trimming"
+  },
+  "sessionHelpExport": "Export & Share: Use the share button to export your session as a ZIP bundle containing the recording, detections (CSV, JSON, Raven Pro), and annotations.",
+  "@sessionHelpExport": {
+    "description": "Help text explaining export and sharing"
+  },
+  "sessionManualDetection": "Manual",
+  "@sessionManualDetection": {
+    "description": "Badge label for manually added detections"
+  },
+  "sessionAddContent": "Add to Session",
+  "@sessionAddContent": {
+    "description": "Title for the bottom sheet with add options"
+  },
+  "sessionAddAnnotationOption": "Add Annotation",
+  "@sessionAddAnnotationOption": {
+    "description": "Option to add an annotation from the + menu"
+  },
+  "sessionTypeLive": "Live Session",
+  "@sessionTypeLive": {
+    "description": "Title for a live recording session"
+  },
+  "sessionTypeFileUpload": "File Upload",
+  "@sessionTypeFileUpload": {
+    "description": "Title for a file upload analysis session"
+  },
+  "sessionTypePointCount": "Point Count",
+  "@sessionTypePointCount": {
+    "description": "Title for a point-count survey session"
+  },
+  "sessionTypeSurvey": "Survey Session",
+  "@sessionTypeSurvey": {
+    "description": "Title for a background survey session"
+  },
+  "sessionUndo": "Undo",
+  "@sessionUndo": {
+    "description": "Tooltip for the undo button in session review"
+  },
+  "sessionRedo": "Redo",
+  "@sessionRedo": {
+    "description": "Tooltip for the redo button in session review"
+  },
+  "sessionTitleLiveNum": "Live Session #{number}",
+  "@sessionTitleLiveNum": {
+    "description": "AppBar title for a numbered live session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitleFileUploadNum": "File Upload #{number}",
+  "@sessionTitleFileUploadNum": {
+    "description": "AppBar title for a numbered file-upload session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitlePointCountNum": "Point Count #{number}",
+  "@sessionTitlePointCountNum": {
+    "description": "AppBar title for a numbered point-count session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitleSurveyNum": "Survey #{number}",
+  "@sessionTitleSurveyNum": {
+    "description": "AppBar title for a numbered survey session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardLiveNum": "Live Session #{number}",
+  "@sessionCardLiveNum": {
+    "description": "Card title for a numbered live session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardFileUploadNum": "File Upload #{number}",
+  "@sessionCardFileUploadNum": {
+    "description": "Card title for a numbered file-upload session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardPointCountNum": "Point Count #{number}",
+  "@sessionCardPointCountNum": {
+    "description": "Card title for a numbered point-count session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardSurveyNum": "Survey #{number}",
+  "@sessionCardSurveyNum": {
+    "description": "Card title for a numbered survey session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "mapTileConsentTitle": "Map Tiles",
+  "@mapTileConsentTitle": {
+    "description": "Title for the map tile consent dialog"
+  },
+  "mapTileConsentBody": "Loading the map connects to OpenStreetMap tile servers. Your IP address and approximate location will be visible to the tile server.\n\nDo you agree to load map tiles?",
+  "@mapTileConsentBody": {
+    "description": "Body text for the map tile consent dialog"
+  },
+  "mapTileConsentCancel": "Cancel",
+  "@mapTileConsentCancel": {
+    "description": "Cancel button in map tile consent dialog"
+  },
+  "mapTileConsentAllow": "Allow",
+  "@mapTileConsentAllow": {
+    "description": "Allow button in map tile consent dialog"
+  },
+  "mapLoadButton": "Load Map",
+  "@mapLoadButton": {
+    "description": "Button to load the map after granting consent"
+  },
+  "mapLoadHint": "Requires connecting to OpenStreetMap tile servers.",
+  "@mapLoadHint": {
+    "description": "Hint shown below the Load Map button"
+  },
+  "recordingLocation": "Recording Location",
+  "@recordingLocation": {
+    "description": "Title for the map screen showing the recording location"
+  },
+  "sessionRenameTitle": "Rename Session",
+  "@sessionRenameTitle": {
+    "description": "Title for the session rename dialog"
+  },
+  "sessionRenameHint": "Enter a custom name",
+  "@sessionRenameHint": {
+    "description": "Hint text in the session rename text field"
+  },
+  "sessionRenameTap": "Tap to rename",
+  "@sessionRenameTap": {
+    "description": "Tooltip on the session title edit icon"
+  },
+  "settingsShowSciNames": "Show scientific names",
+  "@settingsShowSciNames": {
+    "description": "Toggle to show or hide scientific names below common names"
+  },
+  "settingsShowSciNamesDescription": "Display scientific names below common names on all screens",
+  "@settingsShowSciNamesDescription": {
+    "description": "Subtitle for the show scientific names toggle"
+  },
+  "monthJ": "J",
+  "monthF": "F",
+  "monthM": "M",
+  "monthA": "A",
+  "monthMay": "M",
+  "monthJun": "J",
+  "monthJul": "J",
+  "monthAug": "A",
+  "monthS": "S",
+  "monthO": "O",
+  "monthN": "N",
+  "monthD": "D",
+  "exploreHelpTitle": "About Species Predictions",
+  "@exploreHelpTitle": {
+    "description": "Title for explore screen help overlay"
+  },
+  "exploreHelpBody": "This list shows species predicted to occur at your location based on BirdNET's geo-model — a neural network trained on GBIF occurrence data and environmental features.\n\nThe model predicts which species are likely present at a given coordinate and time of year. It is a convenience tool for casual users and citizen scientists, not a precise distribution model. Researchers should use expert-curated species lists instead.",
+  "@exploreHelpBody": {
+    "description": "Body text for explore screen help overlay"
+  },
+  "exploreHelpLearnMore": "Learn more about the geo-model",
+  "@exploreHelpLearnMore": {
+    "description": "Link label to the geomodel documentation"
+  },
+  "speciesDescriptionSource": "Source: {source}",
+  "@speciesDescriptionSource": {
+    "description": "Attribution for species description source",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "speciesLearnMore": "Learn more about this species",
+  "@speciesLearnMore": {
+    "description": "Label above external species links"
+  },
+  "settingsSensitivity": "Sensitivity",
+  "@settingsSensitivity": {
+    "description": "Sensitivity setting label"
+  },
+  "settingsSensitivityDescription": "Higher values detect more species but increase false positives",
+  "@settingsSensitivityDescription": {
+    "description": "Subtitle for sensitivity slider"
+  },
+  "settingsScorePooling": "Score pooling",
+  "@settingsScorePooling": {
+    "description": "Temporal score pooling setting label"
+  },
+  "settingsPoolingOff": "Off",
+  "@settingsPoolingOff": {
+    "description": "No temporal pooling"
+  },
+  "settingsPoolingAverage": "Average",
+  "@settingsPoolingAverage": {
+    "description": "Average temporal pooling"
+  },
+  "settingsPoolingMax": "Max",
+  "@settingsPoolingMax": {
+    "description": "Max temporal pooling"
+  },
+  "settingsPoolingLME": "LME",
+  "@settingsPoolingLME": {
+    "description": "Log-mean-exp temporal pooling"
+  },
+  "settingsDangerZone": "Danger Zone",
+  "@settingsDangerZone": {
+    "description": "Section header for destructive settings"
+  },
+  "settingsSampleRate": "Sample rate",
+  "@settingsSampleRate": {
+    "description": "Audio sample rate setting label"
+  },
+  "settingsGeneralDescription": "Appearance, language, and display preferences. Toggle scientific names for detailed species identification.",
+  "@settingsGeneralDescription": {
+    "description": "Subtitle for General settings section"
+  },
+  "settingsAudioDescription": "Microphone input, gain, and filtering. Increase gain in quiet environments; use the high-pass filter to reduce wind noise.",
+  "@settingsAudioDescription": {
+    "description": "Subtitle for Audio settings section"
+  },
+  "settingsInferenceDescription": "Controls how the neural network analyzes audio. Sensitivity shifts the detection curve \u2014 higher values catch faint calls but may increase false positives. Score pooling determines how overlapping windows are combined.",
+  "@settingsInferenceDescription": {
+    "description": "Subtitle for Inference settings section"
+  },
+  "settingsSpectrogramDescription": "Visual display of audio frequencies over time. Larger FFT sizes give finer frequency resolution; shorter durations scroll faster.",
+  "@settingsSpectrogramDescription": {
+    "description": "Subtitle for Spectrogram settings section"
+  },
+  "settingsRecordingDescription": "Save audio to disk during live sessions. Full mode records everything; detection-only mode saves clips around identified species.",
+  "@settingsRecordingDescription": {
+    "description": "Subtitle for Recording settings section"
+  },
+  "settingsLocationDescription": "GPS and geographic species filtering. The geo-model uses your coordinates to predict local species and filter unlikely detections.",
+  "@settingsLocationDescription": {
+    "description": "Subtitle for Location settings section"
+  },
+  "settingsExportDescription": "File format and content for session exports. Raven tables are compatible with Cornell's Raven Pro software.",
+  "@settingsExportDescription": {
+    "description": "Subtitle for Export settings section"
+  },
+  "settingsDangerZoneDescription": "Irreversible actions — reset or delete app data",
+  "@settingsDangerZoneDescription": {
+    "description": "Subtitle for Danger Zone settings section"
+  },
+
+  "settingsWindowDuration": "Window duration",
+  "@settingsWindowDuration": {
+    "description": "Label for analysis window duration setting"
+  },
+  "settingsConfidenceThreshold": "Confidence threshold",
+  "@settingsConfidenceThreshold": {
+    "description": "Label for confidence threshold setting"
+  },
+
+  "fileAnalysisStepFile": "File",
+  "@fileAnalysisStepFile": {
+    "description": "Step indicator label for file selection step"
+  },
+  "fileAnalysisStepLocation": "Location",
+  "@fileAnalysisStepLocation": {
+    "description": "Step indicator label for location step"
+  },
+  "fileAnalysisStepParams": "Settings",
+  "@fileAnalysisStepParams": {
+    "description": "Step indicator label for parameters step"
+  },
+  "fileAnalysisStepAnalyze": "Analyze",
+  "@fileAnalysisStepAnalyze": {
+    "description": "Step indicator label for analysis step"
+  },
+
+  "fileAnalysisPickTitle": "Select Audio File",
+  "@fileAnalysisPickTitle": {
+    "description": "Title for file selection step"
+  },
+  "fileAnalysisPickSubtitle": "Choose an audio recording to analyze for bird species. Supports WAV, FLAC, MP3, OGG, M4A, OPUS, and more.",
+  "@fileAnalysisPickSubtitle": {
+    "description": "Subtitle for file selection step"
+  },
+  "fileAnalysisPickButton": "Choose File",
+  "@fileAnalysisPickButton": {
+    "description": "Button label to open file picker"
+  },
+  "fileAnalysisChangeFile": "Change File",
+  "@fileAnalysisChangeFile": {
+    "description": "Button label to pick a different file"
+  },
+  "fileAnalysisReading": "Reading file…",
+  "@fileAnalysisReading": {
+    "description": "Shown while inspecting the selected audio file"
+  },
+  "fileAnalysisFormat": "Format",
+  "@fileAnalysisFormat": {
+    "description": "Label for audio format metadata"
+  },
+  "fileAnalysisDuration": "Duration",
+  "@fileAnalysisDuration": {
+    "description": "Label for audio duration metadata"
+  },
+  "fileAnalysisSize": "Size",
+  "@fileAnalysisSize": {
+    "description": "Label for file size metadata"
+  },
+  "fileAnalysisSampleRate": "Sample rate",
+  "@fileAnalysisSampleRate": {
+    "description": "Label for sample rate metadata"
+  },
+
+  "fileAnalysisLocationTitle": "Recording Location",
+  "@fileAnalysisLocationTitle": {
+    "description": "Title for location step"
+  },
+  "fileAnalysisLocationSubtitle": "Adding a location enables geographic species filtering for more accurate results.",
+  "@fileAnalysisLocationSubtitle": {
+    "description": "Subtitle for location step"
+  },
+  "fileAnalysisLocationGps": "Current",
+  "@fileAnalysisLocationGps": {
+    "description": "Segmented button label: use current GPS location"
+  },
+  "fileAnalysisLocationManual": "Manual",
+  "@fileAnalysisLocationManual": {
+    "description": "Segmented button label: enter coordinates manually"
+  },
+  "fileAnalysisLocationSkip": "None",
+  "@fileAnalysisLocationSkip": {
+    "description": "Segmented button label: skip location"
+  },
+  "fileAnalysisLocationRefresh": "Refresh location",
+  "@fileAnalysisLocationRefresh": {
+    "description": "Button to re-fetch GPS location"
+  },
+  "fileAnalysisLocationFetch": "Get location",
+  "@fileAnalysisLocationFetch": {
+    "description": "Button to fetch GPS location"
+  },
+  "fileAnalysisLatitude": "Latitude",
+  "@fileAnalysisLatitude": {
+    "description": "Label for latitude input field"
+  },
+  "fileAnalysisLongitude": "Longitude",
+  "@fileAnalysisLongitude": {
+    "description": "Label for longitude input field"
+  },
+  "fileAnalysisPickOnMap": "Pick on map",
+  "@fileAnalysisPickOnMap": {
+    "description": "Button to open map picker for location"
+  },
+  "fileAnalysisMapConfirm": "Use this location",
+  "@fileAnalysisMapConfirm": {
+    "description": "Button to confirm map-picked location"
+  },
+
+  "fileAnalysisDateTitle": "Recording Date (optional)",
+  "@fileAnalysisDateTitle": {
+    "description": "Title for recording date section in file upload"
+  },
+  "fileAnalysisDateSubtitle": "Optional. Used for seasonal species filtering if set.",
+  "@fileAnalysisDateSubtitle": {
+    "description": "Subtitle explaining why recording date matters"
+  },
+  "fileAnalysisDateToday": "Today (default)",
+  "@fileAnalysisDateToday": {
+    "description": "Label shown when no recording date is selected"
+  },
+  "fileAnalysisDateClear": "Reset to today",
+  "@fileAnalysisDateClear": {
+    "description": "Tooltip for clearing the selected recording date"
+  },
+
+  "fileAnalysisParamsTitle": "Analysis Settings",
+  "@fileAnalysisParamsTitle": {
+    "description": "Title for parameters step"
+  },
+  "fileAnalysisParamsSubtitle": "Configure how the audio will be analyzed. Defaults come from your global settings.",
+  "@fileAnalysisParamsSubtitle": {
+    "description": "Subtitle for parameters step"
+  },
+  "fileAnalysisOverlap": "Window overlap",
+  "@fileAnalysisOverlap": {
+    "description": "Label for overlap parameter"
+  },
+
+  "fileAnalysisAnalyzeTitle": "Run Analysis",
+  "@fileAnalysisAnalyzeTitle": {
+    "description": "Title for analysis step"
+  },
+  "fileAnalysisReadyMessage": "Everything is set. Tap the button below to start analyzing your file.",
+  "@fileAnalysisReadyMessage": {
+    "description": "Message shown before starting analysis"
+  },
+  "fileAnalysisProgressWindows": "Window {current} of {total}",
+  "@fileAnalysisProgressWindows": {
+    "description": "Progress label showing current and total windows",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fileAnalysisDetections": "Detections",
+  "@fileAnalysisDetections": {
+    "description": "Label for detections count"
+  },
+  "fileAnalysisSpecies": "Species",
+  "@fileAnalysisSpecies": {
+    "description": "Label for species count"
+  },
+  "fileAnalysisError": "Analysis Error",
+  "@fileAnalysisError": {
+    "description": "Error card title"
+  },
+
+  "fileAnalysisBack": "Back",
+  "@fileAnalysisBack": {
+    "description": "Back button in wizard navigation"
+  },
+  "fileAnalysisNext": "Next",
+  "@fileAnalysisNext": {
+    "description": "Next button in wizard navigation"
+  },
+  "fileAnalysisStart": "Start Analysis",
+  "@fileAnalysisStart": {
+    "description": "Button to begin file analysis"
   }
 }

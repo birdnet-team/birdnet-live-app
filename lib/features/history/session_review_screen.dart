@@ -11,14 +11,15 @@
 //     confidence, total count, and first/last timestamps.
 //
 //   • **Consecutive clustering** — Within a species, adjacent detections
-//     (≤ 10 s apart) are grouped into time-span clusters so that a bird
-//     calling for 30 continuous seconds shows as one cluster, not 10 rows.
+//     whose gap is shorter than the inference window duration are grouped
+//     into time-span clusters so that a bird calling for 30 continuous
+//     seconds shows as one cluster, not 10 rows.
 //
 //   • **Playback highlighting** — When audio plays through a detection's
 //     timestamp, the corresponding species row pulses with a highlight so
 //     the user can visually follow along.
 //
-//   • **Scrolling spectrogram** — A strip above the player shows ~8 seconds
+//   • **Scrolling spectrogram** — A strip above the player shows ~10 seconds
 //     of decoded audio centered on the playback position, scrolling in
 //     real-time.  Detection markers are overlaid.
 //
@@ -33,33 +34,46 @@
 //
 //   1. AppBar with session name, save / share / discard actions.
 //   2. Summary header — date, duration, species count, detections.
-//   3. Spectrogram strip — ~120 dp tall scrolling FFT view.
+//   3. Spectrogram strip — ~160 dp tall scrolling FFT view.
 //   4. Audio player bar — play/pause, seek slider, position / duration.
 //   5. Species detection list — expandable rows, scrollable.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'dart:ui' as ui;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fftea/fftea.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/constants/app_constants.dart';
+import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/taxonomy_service.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
+import '../recording/native_audio_decoder.dart';
 import '../spectrogram/color_maps.dart';
 import 'session_export.dart';
+import 'session_map_screen.dart';
+import '../settings/settings_screen.dart';
+import '../../core/services/reverse_geocoding_service.dart';
+
+part 'widgets/session_review_widgets.dart';
 
 /// Review screen displayed after a live session ends.
 class SessionReviewScreen extends ConsumerStatefulWidget {
@@ -77,6 +91,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── State ───────────────────────────────────────────────────────────
 
   late List<DetectionRecord> _detections;
+  late List<SessionAnnotation> _annotations;
   late List<_SpeciesGroup> _speciesGroups;
   final Set<String> _expandedSpecies = {};
   final AudioPlayer _player = AudioPlayer();
@@ -85,19 +100,148 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool _isPlaying = false;
   bool _audioAvailable = false;
   bool _isDirty = false;
+  bool _trimMode = false;
+  double? _trimStartSec;
+  double? _trimEndSec;
 
-  /// Decoded audio for the spectrogram (null until loaded).
-  DecodedAudio? _decodedAudio;
+  /// Pre-trim-mode values of [_trimStartSec]/[_trimEndSec], saved when
+  /// entering trim mode so the undo snapshot captures the real pre-trim state
+  /// instead of the transient handle positions set by [_onTrimChanged].
+  double? _preTrimStartSec;
+  double? _preTrimEndSec;
 
-  /// Whether the audio file is being decoded.
+  // ── Clip state (after trim is applied) ─────────────────────────────
+
+  /// Offset in original-recording seconds of the clip start (0 = no clip).
+  double _clipOffsetSec = 0.0;
+
+  /// Full recording duration before any clip was applied.
+  double _fullDurationSec = 0.0;
+
+  /// Full-recording spectrogram (never cropped).  Kept for undo / trim view.
+  ui.Image? _fullSpectrogramImage;
+
+  // ── Undo / Redo ────────────────────────────────────────────────────
+
+  final List<_ReviewSnapshot> _undoStack = [];
+  final List<_ReviewSnapshot> _redoStack = [];
+
+  /// Pre-computed spectrogram image covering the current playback range.
+  /// When a clip is active this is cropped to the trimmed region.
+  ui.Image? _spectrogramImage;
+
+  /// Whether the audio is being decoded and the spectrogram computed.
   bool _decoding = false;
+
+  bool get _canUndo => _undoStack.isNotEmpty;
+  bool get _canRedo => _redoStack.isNotEmpty;
+
+  /// Cached reverse-geocoded location name for display.
+  String? _locationName;
+
+  _ReviewSnapshot _takeSnapshot() => _ReviewSnapshot(
+        detections: List.of(_detections),
+        annotations: List.of(_annotations),
+        trimStartSec: _trimStartSec,
+        trimEndSec: _trimEndSec,
+        clipOffsetSec: _clipOffsetSec,
+      );
+
+  void _pushUndo() {
+    _undoStack.add(_takeSnapshot());
+    _redoStack.clear();
+  }
+
+  void _undo() {
+    if (!_canUndo) return;
+    _redoStack.add(_takeSnapshot());
+    final snap = _undoStack.removeLast();
+    setState(() {
+      _detections = snap.detections;
+      _annotations = snap.annotations;
+      _trimStartSec = snap.trimStartSec;
+      _trimEndSec = snap.trimEndSec;
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = _undoStack.isNotEmpty;
+    });
+    _syncPlayerClip(snap.clipOffsetSec);
+  }
+
+  void _redo() {
+    if (!_canRedo) return;
+    _undoStack.add(_takeSnapshot());
+    final snap = _redoStack.removeLast();
+    setState(() {
+      _detections = snap.detections;
+      _annotations = snap.annotations;
+      _trimStartSec = snap.trimStartSec;
+      _trimEndSec = snap.trimEndSec;
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
+    _syncPlayerClip(snap.clipOffsetSec);
+  }
+
+  /// Re-synchronize the player clip and spectrogram after restoring a
+  /// snapshot (undo/redo).  [snapshotClipOffset] is the clip offset that
+  /// was active when the snapshot was taken.
+  Future<void> _syncPlayerClip(double snapshotClipOffset) async {
+    if (snapshotClipOffset == _clipOffsetSec) return; // No clip change.
+
+    if (snapshotClipOffset > 0) {
+      // Re-apply clip matching the snapshot's trim range.
+      final start = _trimStartSec ?? 0.0;
+      final end = _trimEndSec ?? _fullDurationSec;
+      final startDur = Duration(microseconds: (start * 1e6).round());
+      final endDur = Duration(microseconds: (end * 1e6).round());
+      final clippedDur = await _player.setClip(start: startDur, end: endDur);
+      await _player.seek(Duration.zero);
+      await _cropSpectrogramForClip(start, end);
+      if (mounted) {
+        setState(() {
+          _clipOffsetSec = snapshotClipOffset;
+          _duration = clippedDur ?? (endDur - startDur);
+          _position = Duration.zero;
+        });
+      }
+    } else {
+      // Remove clip — restore full recording.
+      await _player.setClip();
+      await _player.seek(Duration.zero);
+      if (mounted) {
+        setState(() {
+          _clipOffsetSec = 0.0;
+          _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
+          _position = Duration.zero;
+          if (_spectrogramImage != null &&
+              !identical(_spectrogramImage, _fullSpectrogramImage)) {
+            _spectrogramImage!.dispose();
+          }
+          _spectrogramImage = _fullSpectrogramImage;
+        });
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _detections = List.of(widget.session.detections);
-    _speciesGroups = _buildSpeciesGroups(_detections);
+    _annotations = List.of(widget.session.annotations);
+    _trimStartSec = widget.session.trimStartSec;
+    _trimEndSec = widget.session.trimEndSec;
+    _speciesGroups = _buildSpeciesGroups(
+      _detections,
+      widget.session.settings.windowDuration,
+    );
     _initAudio();
+    _resolveLocation();
   }
 
   Future<void> _initAudio() async {
@@ -109,11 +253,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (!mounted) return;
       setState(() {
         _duration = dur ?? Duration.zero;
+        _fullDurationSec = _duration.inMicroseconds / 1e6;
         _audioAvailable = true;
       });
 
       _player.positionStream.listen((pos) {
-        if (mounted) setState(() => _position = pos);
+        if (!mounted) return;
+        setState(() => _position = pos);
       });
       _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -125,18 +271,81 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         }
       });
 
-      // Decode audio for spectrogram in the background.
-      _decodeAudioForSpectrogram(path);
+      // Decode audio for spectrogram, then restore saved trim if present.
+      await _decodeAudioForSpectrogram(path);
+      await _restoreSavedTrim();
     } catch (_) {
       // Audio not available — review still works without playback.
+    }
+  }
+
+  /// Re-apply a previously saved trim after audio and spectrogram are loaded.
+  ///
+  /// When a session with trim values is reopened, [_initAudio] loads the full
+  /// recording.  This method clips the player and crops the spectrogram to
+  /// match the persisted trim range so the user sees the trimmed state.
+  Future<void> _restoreSavedTrim() async {
+    if (_trimStartSec == null && _trimEndSec == null) return;
+
+    final start = _trimStartSec ?? 0.0;
+    final end = _trimEndSec ?? _fullDurationSec;
+
+    final startDur = Duration(microseconds: (start * 1e6).round());
+    final endDur = Duration(microseconds: (end * 1e6).round());
+    final clippedDur = await _player.setClip(start: startDur, end: endDur);
+    await _player.seek(Duration.zero);
+
+    await _cropSpectrogramForClip(start, end);
+
+    if (mounted) {
+      setState(() {
+        _clipOffsetSec = start;
+        _duration = clippedDur ?? (endDur - startDur);
+        _position = Duration.zero;
+      });
+    }
+  }
+
+  /// Attempt to reverse-geocode the session location.
+  ///
+  /// If the session already has a [locationName] (e.g. from a previous save),
+  /// that value is reused.  Otherwise a network request via the Nominatim API
+  /// is made and the result is persisted so future opens skip the request.
+  Future<void> _resolveLocation() async {
+    final lat = widget.session.latitude;
+    final lon = widget.session.longitude;
+    if (lat == null || lon == null) return;
+
+    // Use cached name if already resolved.
+    if (widget.session.locationName != null) {
+      setState(() => _locationName = widget.session.locationName);
+      return;
+    }
+
+    final name = await reverseGeocode(latitude: lat, longitude: lon);
+    if (name != null && mounted) {
+      setState(() => _locationName = name);
+      // Persist so we don't re-fetch next time.
+      widget.session.locationName = name;
+      final repo = ref.read(sessionRepositoryProvider);
+      await repo.save(widget.session);
     }
   }
 
   Future<void> _decodeAudioForSpectrogram(String path) async {
     setState(() => _decoding = true);
     try {
-      final audio = await AudioDecoder.decodeFile(path);
-      if (mounted) setState(() => _decodedAudio = audio);
+      // Use pure-Dart decoder for WAV/FLAC, native for compressed formats.
+      DecodedAudio audio;
+      if (await AudioDecoder.canDecodeDart(path)) {
+        audio = await AudioDecoder.decodeFile(path);
+      } else {
+        audio = await NativeAudioDecoder.decodeFile(path);
+      }
+      if (!mounted) return;
+      // Resample to model sample rate so spectrogram matches inference.
+      audio = audio.resampleTo(AppConstants.sampleRate);
+      await _buildSpectrogramImage(audio);
     } catch (_) {
       // Spectrogram unavailable — non-fatal.
     } finally {
@@ -144,8 +353,143 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
   }
 
+  /// Pre-compute the entire session spectrogram as a [ui.Image].
+  ///
+  /// Uses a fixed FFT size and hop.  Each pixel column = one FFT frame.
+  /// The painter scrolls through the image using pixels-per-second.
+  Future<void> _buildSpectrogramImage(DecodedAudio audio) async {
+    const fftSize = 1024;
+    const hop = 512;
+    const maxFreqHz = 16000;
+    const dbFloor = -80.0;
+    const dbCeiling = 0.0;
+
+    if (audio.totalSamples < fftSize) return;
+
+    final numCols = (audio.totalSamples - fftSize) ~/ hop + 1;
+    if (numCols <= 0) return;
+
+    final nyquist = audio.sampleRate / 2;
+    final binCount = fftSize ~/ 2 + 1;
+    final displayBins =
+        (maxFreqHz / nyquist * binCount).round().clamp(1, binCount);
+
+    final lut = SpectrogramColorMap.lut('viridis');
+    final pixels = Uint8List(numCols * displayBins * 4);
+
+    // Periodic Hann window (matches FftProcessor).
+    final hann = Float64List(fftSize);
+    final hannFactor = 2.0 * math.pi / fftSize;
+    for (var i = 0; i < fftSize; i++) {
+      hann[i] = 0.5 * (1.0 - math.cos(hannFactor * i));
+    }
+    final fft = FFT(fftSize);
+
+    for (var c = 0; c < numCols; c++) {
+      if (c > 0 && c % 200 == 0) {
+        await Future.delayed(Duration.zero);
+        if (!mounted) return;
+      }
+
+      final colSample = c * hop;
+      final chunk = audio.readFloat32(colSample, fftSize);
+      final input = Float64List(fftSize);
+      for (var i = 0; i < fftSize; i++) {
+        input[i] = chunk[i] * hann[i];
+      }
+      final spectrum = fft.realFft(input);
+
+      for (var bin = 0; bin < displayBins; bin++) {
+        final re = spectrum[bin].x;
+        final im = spectrum[bin].y;
+        final power = re * re + im * im;
+        final db = 10 * math.log(power + 1e-10) / math.ln10;
+        final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
+
+        final y = displayBins - 1 - bin;
+        final pxOffset = (y * numCols + c) * 4;
+        final lutIdx = (norm * 255).round().clamp(0, 255);
+        final color = lut[lutIdx];
+        pixels[pxOffset] = (color >> 16) & 0xFF;
+        pixels[pxOffset + 1] = (color >> 8) & 0xFF;
+        pixels[pxOffset + 2] = color & 0xFF;
+        pixels[pxOffset + 3] = (color >> 24) & 0xFF;
+      }
+    }
+
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      pixels,
+      numCols,
+      displayBins,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
+    final image = await completer.future;
+
+    if (mounted) {
+      setState(() {
+        _fullSpectrogramImage?.dispose();
+        _fullSpectrogramImage = image;
+        _spectrogramImage = image;
+      });
+    } else {
+      image.dispose();
+    }
+  }
+
+  /// Crop the full spectrogram to the current clip range and update
+  /// [_spectrogramImage].  Must be called whenever the clip changes.
+  Future<void> _cropSpectrogramForClip(
+    double startSec,
+    double endSec,
+  ) async {
+    final src = _fullSpectrogramImage;
+    if (src == null || _fullDurationSec <= 0) return;
+
+    final startFrac = (startSec / _fullDurationSec).clamp(0.0, 1.0);
+    final endFrac = (endSec / _fullDurationSec).clamp(0.0, 1.0);
+    final srcStartX = (startFrac * src.width).round();
+    final srcEndX = (endFrac * src.width).round();
+    final cropWidth = srcEndX - srcStartX;
+    if (cropWidth <= 0) return;
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawImageRect(
+      src,
+      Rect.fromLTRB(
+        srcStartX.toDouble(),
+        0,
+        srcEndX.toDouble(),
+        src.height.toDouble(),
+      ),
+      Rect.fromLTWH(0, 0, cropWidth.toDouble(), src.height.toDouble()),
+      Paint(),
+    );
+    final picture = recorder.endRecording();
+    final cropped = await picture.toImage(cropWidth, src.height);
+    picture.dispose();
+
+    if (mounted) {
+      setState(() {
+        if (_spectrogramImage != null &&
+            !identical(_spectrogramImage, _fullSpectrogramImage)) {
+          _spectrogramImage!.dispose();
+        }
+        _spectrogramImage = cropped;
+      });
+    } else {
+      cropped.dispose();
+    }
+  }
+
   @override
   void dispose() {
+    if (!identical(_spectrogramImage, _fullSpectrogramImage)) {
+      _spectrogramImage?.dispose();
+    }
+    _fullSpectrogramImage?.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -180,14 +524,59 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     return false; // Dialog dismissed.
   }
 
+  Future<void> _showRenameDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(
+      text: widget.session.customName ??
+          _sessionReviewTitle(l10n, widget.session),
+    );
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionRenameTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.sessionRenameHint),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
+    );
+    if (result == null) return;
+    final trimmed = result.trim();
+    setState(() {
+      widget.session.customName = trimmed.isEmpty ? null : trimmed;
+      _isDirty = true;
+    });
+  }
+
   Future<void> _save() async {
     widget.session.detections
       ..clear()
       ..addAll(_detections);
+    widget.session.annotations
+      ..clear()
+      ..addAll(_annotations);
+    widget.session.trimStartSec = _trimStartSec;
+    widget.session.trimEndSec = _trimEndSec;
     final repo = ref.read(sessionRepositoryProvider);
     await repo.save(widget.session);
     ref.invalidate(sessionListProvider);
-    setState(() => _isDirty = false);
+    setState(() {
+      _isDirty = false;
+      _undoStack.clear();
+      _redoStack.clear();
+    });
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -226,15 +615,210 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _share() async {
-    // Save pending changes before sharing so the ZIP is up to date.
+    // Save pending changes before sharing so the export is up to date.
     if (_isDirty) await _save();
-    final zipPath = await buildSessionZip(widget.session);
-    if (zipPath == null) return;
-    await Share.shareXFiles([XFile(zipPath)]);
+
+    final exportFormat = ref.read(exportFormatProvider);
+    final includeAudio = ref.read(includeAudioProvider);
+
+    final exportPath = await buildSessionExport(
+      widget.session,
+      format: exportFormat,
+      includeAudio: includeAudio,
+    );
+
+    if (exportPath == null) return;
+    await Share.shareXFiles([XFile(exportPath)]);
   }
 
   void _done() {
     Navigator.of(context).pop();
+  }
+
+  // ── Add Species ───────────────────────────────────────────────────
+
+  Future<void> _addSpecies() async {
+    final positionSec = _position.inMicroseconds / 1000000.0;
+    final result = await Navigator.of(context).push<_AddSpeciesResult>(
+      MaterialPageRoute(
+        builder: (_) => _AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    _pushUndo();
+    setState(() {
+      switch (result.mode) {
+        case _InsertMode.global:
+          // Insert global detection — applies to the whole session.
+          _detections.add(DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: 1.0,
+            timestamp: widget.session.startTime,
+            source: DetectionSource.manualGlobal,
+          ));
+          break;
+
+        case _InsertMode.atTimestamp:
+          // Insert at the current playhead position.
+          final ts = widget.session.startTime.add(_position);
+          _detections.add(DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: 1.0,
+            timestamp: ts,
+            source: DetectionSource.manual,
+          ));
+          break;
+
+        case _InsertMode.replace:
+          if (result.replaceRecord != null) {
+            final idx = _detections.indexOf(result.replaceRecord!);
+            if (idx != -1) {
+              _detections[idx] = DetectionRecord(
+                scientificName: result.scientificName,
+                commonName: result.commonName,
+                confidence: result.replaceRecord!.confidence,
+                timestamp: result.replaceRecord!.timestamp,
+                audioClipPath: result.replaceRecord!.audioClipPath,
+                source: DetectionSource.manual,
+              );
+            }
+          }
+          break;
+      }
+
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
+  }
+
+  // ── Annotations ───────────────────────────────────────────────────
+
+  void _addAnnotation(SessionAnnotation annotation) {
+    _pushUndo();
+    setState(() {
+      _annotations.add(annotation);
+      _isDirty = true;
+    });
+  }
+
+  void _deleteAnnotation(int index) {
+    _pushUndo();
+    setState(() {
+      _annotations.removeAt(index);
+      _isDirty = true;
+    });
+  }
+
+  // ── Trim ──────────────────────────────────────────────────────────
+
+  void _toggleTrimMode() {
+    if (!_trimMode) {
+      // Entering trim mode — remember the applied trim state so _applyTrim
+      // can build an accurate undo snapshot.
+      _preTrimStartSec = _trimStartSec;
+      _preTrimEndSec = _trimEndSec;
+    }
+    setState(() => _trimMode = !_trimMode);
+  }
+
+  void _onTrimChanged(double startSec, double endSec) {
+    _trimStartSec = startSec;
+    _trimEndSec = endSec;
+  }
+
+  Future<void> _applyTrim() async {
+    if (_trimStartSec == null && _trimEndSec == null) return;
+    final start = _trimStartSec ?? 0.0;
+    final end = _trimEndSec ?? _fullDurationSec;
+
+    // Build undo snapshot with the state *before* trim mode was entered.
+    // _trimStartSec/_trimEndSec now hold transient handle positions from
+    // _onTrimChanged; the pre-trim values were saved by _toggleTrimMode.
+    _undoStack.add(_ReviewSnapshot(
+      detections: List.of(_detections),
+      annotations: List.of(_annotations),
+      trimStartSec: _preTrimStartSec,
+      trimEndSec: _preTrimEndSec,
+      clipOffsetSec: _clipOffsetSec,
+    ));
+    _redoStack.clear();
+
+    setState(() {
+      _detections.removeWhere((d) {
+        final offsetSec =
+            d.timestamp.difference(widget.session.startTime).inMicroseconds /
+                1000000.0;
+        return offsetSec < start || offsetSec > end;
+      });
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+      _trimMode = false;
+    });
+
+    // Clip the player to the trimmed range.
+    final startDur = Duration(microseconds: (start * 1e6).round());
+    final endDur = Duration(microseconds: (end * 1e6).round());
+    final clippedDur = await _player.setClip(start: startDur, end: endDur);
+    await _player.seek(Duration.zero);
+
+    // Crop the spectrogram to the trimmed portion.
+    await _cropSpectrogramForClip(start, end);
+
+    if (mounted) {
+      setState(() {
+        _clipOffsetSec = start;
+        _duration = clippedDur ?? (endDur - startDur);
+        _position = Duration.zero;
+      });
+    }
+  }
+
+  Future<void> _resetTrim() async {
+    _pushUndo();
+
+    // Remove the player clip and restore the full recording.
+    await _player.setClip();
+    await _player.seek(Duration.zero);
+
+    setState(() {
+      _trimStartSec = null;
+      _trimEndSec = null;
+      _clipOffsetSec = 0.0;
+      _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
+      _position = Duration.zero;
+      // Restore the full-recording spectrogram.
+      if (_spectrogramImage != null &&
+          !identical(_spectrogramImage, _fullSpectrogramImage)) {
+        _spectrogramImage!.dispose();
+      }
+      _spectrogramImage = _fullSpectrogramImage;
+      _isDirty = true;
+      _trimMode = false;
+    });
+  }
+
+  // ── Help ──────────────────────────────────────────────────────────
+
+  void _showHelp() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const _SessionHelpSheet(),
+    );
   }
 
   Future<void> _confirmDeleteDetection(
@@ -262,11 +846,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
     if (confirmed != true || !mounted) return;
 
+    _pushUndo();
     setState(() {
       for (final r in cluster.records) {
         _detections.remove(r);
       }
-      _speciesGroups = _buildSpeciesGroups(_detections);
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
       _isDirty = true;
     });
   }
@@ -274,15 +862,173 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   void _seekToCluster(_DetectionCluster cluster) {
     if (!_audioAvailable || _duration == Duration.zero) return;
     final offset = cluster.firstTimestamp.difference(widget.session.startTime);
-    if (offset.isNegative || offset > _duration) return;
-    _player.seek(offset);
+    // Subtract the clip offset so the seek is relative to the clipped range.
+    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
+    final seekPos = offset - clipOffset;
+    if (seekPos.isNegative || seekPos > _duration) return;
+    _player.seek(seekPos);
     if (!_isPlaying) _player.play();
   }
 
   void _seekToPosition(Duration position) {
     if (!_audioAvailable || _duration == Duration.zero) return;
+    if (position.isNegative) position = Duration.zero;
+    if (position > _duration) position = _duration;
     _player.seek(position);
     if (!_isPlaying) _player.play();
+  }
+
+  void _pausePlayer() {
+    if (_isPlaying) _player.pause();
+  }
+
+  // ── Add Content Menu ──────────────────────────────────────────────
+
+  Future<void> _showAddMenu() async {
+    final l10n = AppLocalizations.of(context)!;
+    final value = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: Text(l10n.sessionAddSpecies),
+              onTap: () => Navigator.of(ctx).pop('species'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.note_add_outlined),
+              title: Text(l10n.sessionAddAnnotationOption),
+              onTap: () => Navigator.of(ctx).pop('annotation'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || value == null) return;
+    if (value == 'species') {
+      _addSpecies();
+    } else if (value == 'annotation') {
+      _showAnnotationInput();
+    }
+  }
+
+  void _showAnnotationInput() {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    var atTimestamp = false;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          title: Text(l10n.sessionAddAnnotationOption),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAddAnnotation,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  maxLines: 5,
+                  minLines: 2,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      avatar: const Icon(Icons.public, size: 18),
+                      label: Text(l10n.sessionAnnotationGlobal),
+                      selected: !atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = false),
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(Icons.schedule, size: 18),
+                      label: Text(l10n.sessionInsertAtTimestamp),
+                      selected: atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = true),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                if (text.isEmpty) return;
+                final positionSec = _position.inMicroseconds / 1000000.0;
+                _addAnnotation(SessionAnnotation(
+                  text: text,
+                  createdAt: DateTime.now(),
+                  offsetInRecording: atTimestamp ? positionSec : null,
+                ));
+                Navigator.of(ctx).pop();
+              },
+              child: Text(l10n.sessionAddAnnotationOption),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _replaceDetection(_DetectionCluster cluster) async {
+    final positionSec = _position.inMicroseconds / 1000000.0;
+    final target = cluster.records.first;
+    final result = await Navigator.of(context).push<_AddSpeciesResult>(
+      MaterialPageRoute(
+        builder: (_) => _AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+          initialMode: _InsertMode.replace,
+          initialReplaceTarget: target,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    if (result == null || !mounted) return;
+
+    _pushUndo();
+    setState(() {
+      if (result.replaceRecord != null) {
+        final idx = _detections.indexOf(result.replaceRecord!);
+        if (idx != -1) {
+          _detections[idx] = DetectionRecord(
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            confidence: result.replaceRecord!.confidence,
+            timestamp: result.replaceRecord!.timestamp,
+            audioClipPath: result.replaceRecord!.audioClipPath,
+            source: DetectionSource.manual,
+          );
+        }
+      }
+      _speciesGroups = _buildSpeciesGroups(
+        _detections,
+        widget.session.settings.windowDuration,
+      );
+      _isDirty = true;
+    });
   }
 
   // ── Build ───────────────────────────────────────────────────────────
@@ -296,16 +1042,36 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
+          final nav = Navigator.of(context);
           final canPop = await _onWillPop();
-          if (canPop && mounted) Navigator.of(context).pop();
+          if (canPop) nav.pop();
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            widget.session.displayName,
-            style: theme.textTheme.titleSmall,
-            overflow: TextOverflow.ellipsis,
+          title: GestureDetector(
+            onTap: _showRenameDialog,
+            child: Tooltip(
+              message: l10n.sessionRenameTap,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      _sessionReviewTitle(l10n, widget.session),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.edit,
+                      size: 16,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withAlpha(153)),
+                ],
+              ),
+            ),
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),
@@ -319,53 +1085,208 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             },
           ),
           actions: [
-            if (_isDirty)
-              IconButton(
-                icon: const Icon(Icons.save),
-                tooltip: l10n.sessionSave,
-                onPressed: _save,
-              ),
-            if (_audioAvailable)
-              IconButton(
-                icon: const Icon(Icons.share),
-                tooltip: l10n.sessionShare,
-                onPressed: _share,
-              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              tooltip: l10n.sessionDiscard,
-              onPressed: _discard,
+              icon: const Icon(Icons.tune_rounded),
+              tooltip: l10n.settings,
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SettingsScreen(),
+                ),
+              ),
             ),
           ],
         ),
         body: Column(
           children: [
+            // ── Toolbar ─────────────────────────────────────
+            Container(
+              color: theme.colorScheme.surfaceContainerLow,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: l10n.sessionAddContent,
+                    onPressed: _showAddMenu,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.undo,
+                        color: _canUndo
+                            ? null
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionUndo,
+                    onPressed: _canUndo ? _undo : null,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.redo,
+                        color: _canRedo
+                            ? null
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionRedo,
+                    onPressed: _canRedo ? _redo : null,
+                  ),
+                  if (_audioAvailable)
+                    IconButton(
+                      icon: Icon(
+                        _trimMode
+                            ? Icons.content_cut
+                            : Icons.content_cut_outlined,
+                      ),
+                      tooltip: l10n.sessionTrimRecording,
+                      onPressed: _toggleTrimMode,
+                      color: _trimMode ? theme.colorScheme.primary : null,
+                    ),
+                  IconButton(
+                    icon: Icon(Icons.save,
+                        color: _isDirty
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface.withAlpha(80)),
+                    tooltip: l10n.sessionSave,
+                    onPressed: _isDirty ? _save : null,
+                  ),
+                  if (_audioAvailable)
+                    IconButton(
+                      icon: const Icon(Icons.share),
+                      tooltip: l10n.sessionShare,
+                      onPressed: _share,
+                    ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: l10n.sessionDiscard,
+                    onPressed: _discard,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.help_outline),
+                    tooltip: l10n.sessionHelpTitle,
+                    onPressed: _showHelp,
+                  ),
+                ],
+              ),
+            ),
+
             // ── Summary header ──────────────────────────────
             _SummaryHeader(
               session: widget.session,
               detectionCount: _detections.length,
+              locationName: _locationName,
+              onShowMap: widget.session.latitude != null
+                  ? () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => SessionMapScreen(
+                            latitude: widget.session.latitude!,
+                            longitude: widget.session.longitude!,
+                            locationName: _locationName,
+                          ),
+                        ),
+                      )
+                  : null,
             ),
 
-            // ── Spectrogram strip ───────────────────────────
-            if (_audioAvailable)
-              _SpectrogramStrip(
-                decodedAudio: _decodedAudio,
-                decoding: _decoding,
-                position: _position,
-                duration: _duration,
-                sessionStart: widget.session.startTime,
-                detections: _detections,
-                windowDuration: widget.session.settings.windowDuration,
-                onSeek: _seekToPosition,
+            // ── Spectrogram ─────────────────────────────────
+            if (_audioAvailable) ...[
+              if (_trimMode &&
+                  (_fullSpectrogramImage ?? _spectrogramImage) != null)
+                _TrimSpectrogramView(
+                  spectrogramImage:
+                      (_fullSpectrogramImage ?? _spectrogramImage)!,
+                  durationSec: _fullDurationSec > 0
+                      ? _fullDurationSec
+                      : _duration.inMicroseconds / 1000000.0,
+                  initialStartSec: _trimStartSec ?? 0.0,
+                  initialEndSec: _trimEndSec ??
+                      (_fullDurationSec > 0
+                          ? _fullDurationSec
+                          : _duration.inMicroseconds / 1000000.0),
+                  onChanged: _onTrimChanged,
+                )
+              else
+                Stack(
+                  children: [
+                    _SpectrogramStrip(
+                      spectrogramImage: _spectrogramImage,
+                      decoding: _decoding,
+                      position: _position,
+                      duration: _duration,
+                      onSeek: _seekToPosition,
+                      onPause: _pausePlayer,
+                      isPlaying: _isPlaying,
+                    ),
+                    Positioned(
+                      left: 8,
+                      bottom: 8,
+                      child: _PlayPauseButton(
+                        isPlaying: _isPlaying,
+                        onToggle: () {
+                          if (_isPlaying) {
+                            _player.pause();
+                          } else {
+                            _player.play();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+
+            // ── Trim confirm bar ────────────────────────────
+            if (_trimMode)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      l10n.sessionTrimRecording,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: _resetTrim,
+                      child: Text(l10n.sessionTrimReset),
+                    ),
+                    const SizedBox(width: 4),
+                    FilledButton(
+                      onPressed: _applyTrim,
+                      child: Text(l10n.sessionTrimApply),
+                    ),
+                  ],
+                ),
               ),
 
-            // ── Audio player ────────────────────────────────
-            if (_audioAvailable)
-              _AudioPlayerBar(
-                player: _player,
-                position: _position,
-                duration: _duration,
-                isPlaying: _isPlaying,
+            // ── Annotation chips ────────────────────────────
+            if (_annotations.isNotEmpty)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: [
+                    for (var i = 0; i < _annotations.length; i++)
+                      Chip(
+                        label: Text(
+                          _annotations[i].text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        avatar: Icon(
+                          _annotations[i].offsetInRecording != null
+                              ? Icons.schedule
+                              : Icons.public,
+                          size: 16,
+                        ),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        onDeleted: () => _deleteAnnotation(i),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                  ],
+                ),
               ),
 
             const Divider(height: 1),
@@ -411,6 +1332,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                           onSeekCluster: _seekToCluster,
                           onDeleteCluster: (cluster) =>
                               _confirmDeleteDetection(group, cluster),
+                          onReplaceCluster: _replaceDetection,
                         );
                       },
                     ),
@@ -425,10 +1347,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool _isSpeciesActive(_SpeciesGroup group) {
     if (!_isPlaying && !_audioAvailable) return false;
     final windowSec = widget.session.settings.windowDuration;
+    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
     for (final r in group.allRecords) {
       final offset = r.timestamp.difference(widget.session.startTime);
-      final detEnd = offset + Duration(seconds: windowSec);
-      if (_position >= offset && _position <= detEnd) return true;
+      // Map the absolute offset into clip-relative coordinates.
+      final rel = offset - clipOffset;
+      final detEnd = rel + Duration(seconds: windowSec);
+      if (_position >= rel && _position <= detEnd) return true;
     }
     return false;
   }
@@ -439,13 +1364,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   ///
   /// 1. Group all detections by scientific name.
   /// 2. Sort each group by timestamp.
-  /// 3. Within each species, merge consecutive detections that are ≤ 10 s
-  ///    apart into clusters.
+  /// 3. Within each species, merge consecutive detections whose gap is
+  ///    shorter than [maxGapSec] or 3s into clusters.
   /// 4. Sort species by their earliest detection.
   static List<_SpeciesGroup> _buildSpeciesGroups(
     List<DetectionRecord> records,
+    int maxGapSec,
   ) {
     if (records.isEmpty) return const [];
+
+    // Force grouping gap to be at least 3 seconds.
+    final effectiveMaxGapSec = math.max(3, maxGapSec);
 
     final bySpecies = <String, List<DetectionRecord>>{};
     for (final r in records) {
@@ -457,14 +1386,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final sorted = List.of(entry.value)
         ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
-      // Merge consecutive detections ≤ 10 s apart into clusters.
+      // Merge consecutive detections.
       final clusters = <_DetectionCluster>[];
       var current = <DetectionRecord>[sorted.first];
 
       for (var i = 1; i < sorted.length; i++) {
         final gap =
             sorted[i].timestamp.difference(sorted[i - 1].timestamp).inSeconds;
-        if (gap <= 10) {
+        if (gap <= effectiveMaxGapSec) {
           current.add(sorted[i]);
         } else {
           clusters.add(_DetectionCluster(current));
@@ -485,797 +1414,38 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// Data Models
-// ═════════════════════════════════════════════════════════════════════════════
-
-/// A cluster of consecutive detections of the same species (≤ 10 s gaps).
-class _DetectionCluster {
-  _DetectionCluster(this.records) : assert(records.isNotEmpty);
-
-  final List<DetectionRecord> records;
-
-  int get count => records.length;
-  DateTime get firstTimestamp => records.first.timestamp;
-  DateTime get lastTimestamp => records.last.timestamp;
-  double get bestConfidence =>
-      records.map((r) => r.confidence).reduce(math.max);
-  String get bestConfidencePercent =>
-      '${(bestConfidence * 100).toStringAsFixed(1)} %';
-}
-
-/// All detections of one species, subdivided into time-span clusters.
-class _SpeciesGroup {
-  _SpeciesGroup({
-    required this.scientificName,
-    required this.commonName,
-    required this.clusters,
-  });
-
-  final String scientificName;
-  final String commonName;
-  final List<_DetectionCluster> clusters;
-
-  int get totalCount => clusters.fold<int>(0, (sum, c) => sum + c.count);
-  double get bestConfidence =>
-      clusters.map((c) => c.bestConfidence).reduce(math.max);
-  String get bestConfidencePercent =>
-      '${(bestConfidence * 100).toStringAsFixed(1)} %';
-  DateTime get firstTimestamp => clusters.first.firstTimestamp;
-  DateTime get lastTimestamp => clusters.last.lastTimestamp;
-
-  List<DetectionRecord> get allRecords =>
-      clusters.expand((c) => c.records).toList();
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Summary Header
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _SummaryHeader extends StatelessWidget {
-  const _SummaryHeader({
-    required this.session,
-    required this.detectionCount,
-  });
-
-  final LiveSession session;
-  final int detectionCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final duration = session.duration;
-    final species =
-        session.detections.map((d) => d.scientificName).toSet().length;
-    final dateStr = DateFormat.yMMMd().add_Hm().format(session.startTime);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      color: theme.colorScheme.surfaceContainerLow,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            dateStr,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(153),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              _StatChip(
-                icon: Icons.timer_outlined,
-                label: _formatDuration(duration),
-              ),
-              const SizedBox(width: 16),
-              _StatChip(
-                icon: Icons.pets,
-                label: l10n.sessionSpeciesCount(species),
-              ),
-              const SizedBox(width: 16),
-              _StatChip(
-                icon: Icons.graphic_eq,
-                label: l10n.sessionDetectionCount(detectionCount),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDuration(Duration d) {
-    final hours = d.inHours;
-    final minutes = d.inMinutes.remainder(60);
-    final seconds = d.inSeconds.remainder(60);
-    if (hours > 0) return '${hours}h ${minutes}m';
-    return '${minutes}m ${seconds}s';
+/// Returns a localized display label for the given [SessionType].
+String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
+  switch (type) {
+    case SessionType.live:
+      return l10n.sessionTypeLive;
+    case SessionType.fileUpload:
+      return l10n.sessionTypeFileUpload;
+    case SessionType.pointCount:
+      return l10n.sessionTypePointCount;
+    case SessionType.survey:
+      return l10n.sessionTypeSurvey;
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.icon, required this.label});
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: theme.colorScheme.primary),
-        const SizedBox(width: 4),
-        Text(label, style: theme.textTheme.bodySmall),
-      ],
-    );
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Spectrogram Strip
-// ═════════════════════════════════════════════════════════════════════════════
-
-/// Shows a scrolling spectrogram synchronized with the audio playback position.
+/// Returns a numbered review-screen title such as "Live Session #3 Review".
 ///
-/// Displays ~8 seconds of audio centered on the playhead.  A vertical line
-/// marks the current position.  Detection time ranges are overlaid as
-/// semi-transparent colored bars.
-class _SpectrogramStrip extends StatelessWidget {
-  const _SpectrogramStrip({
-    required this.decodedAudio,
-    required this.decoding,
-    required this.position,
-    required this.duration,
-    required this.sessionStart,
-    required this.detections,
-    required this.windowDuration,
-    required this.onSeek,
-  });
-
-  final DecodedAudio? decodedAudio;
-  final bool decoding;
-  final Duration position;
-  final Duration duration;
-  final DateTime sessionStart;
-  final List<DetectionRecord> detections;
-  final int windowDuration;
-  final ValueChanged<Duration> onSeek;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (decoding) {
-      return Container(
-        height: 120,
-        color: Colors.black,
-        child: const Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      );
-    }
-
-    if (decodedAudio == null) {
-      return const SizedBox.shrink();
-    }
-
-    return GestureDetector(
-      onTapDown: (details) => _handleTap(details, context),
-      onHorizontalDragUpdate: (details) => _handleDrag(details, context),
-      child: Container(
-        height: 120,
-        color: Colors.black,
-        child: CustomPaint(
-          painter: _ReviewSpectrogramPainter(
-            audio: decodedAudio!,
-            position: position,
-            duration: duration,
-            sessionStart: sessionStart,
-            detections: detections,
-            windowDuration: windowDuration,
-            colorMapName: 'viridis',
-            colorScheme: theme.colorScheme,
-          ),
-          size: const Size(double.infinity, 120),
-        ),
-      ),
-    );
+/// Falls back to just the un-numbered type label when [session.sessionNumber]
+/// is `null` (legacy sessions).
+String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
+  if (session.customName != null && session.customName!.isNotEmpty) {
+    return session.customName!;
   }
-
-  void _handleTap(TapDownDetails details, BuildContext context) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || duration == Duration.zero) return;
-    _seekFromX(details.localPosition.dx, box.size.width);
-  }
-
-  void _handleDrag(DragUpdateDetails details, BuildContext context) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || duration == Duration.zero) return;
-    _seekFromX(details.localPosition.dx, box.size.width);
-  }
-
-  void _seekFromX(double x, double width) {
-    const viewSeconds = _ReviewSpectrogramPainter._viewSeconds;
-    final centerSec = position.inMicroseconds / 1000000.0;
-    final startSec = centerSec - viewSeconds / 2;
-    final fraction = x / width;
-    final targetSec = startSec + fraction * viewSeconds;
-    final clampedMs =
-        (targetSec * 1000).round().clamp(0, duration.inMilliseconds);
-    onSeek(Duration(milliseconds: clampedMs));
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Review Spectrogram Painter
-// ═════════════════════════════════════════════════════════════════════════════
-
-/// Paints a windowed spectrogram view for session review.
-///
-/// Unlike the live [SpectrogramPainter] which scrolls columns in real-time,
-/// this painter computes FFT columns on demand for a window around the
-/// current playback position.
-class _ReviewSpectrogramPainter extends CustomPainter {
-  _ReviewSpectrogramPainter({
-    required this.audio,
-    required this.position,
-    required this.duration,
-    required this.sessionStart,
-    required this.detections,
-    required this.windowDuration,
-    required this.colorMapName,
-    required this.colorScheme,
-  }) : _lut = SpectrogramColorMap.lut(colorMapName);
-
-  final DecodedAudio audio;
-  final Duration position;
-  final Duration duration;
-  final DateTime sessionStart;
-  final List<DetectionRecord> detections;
-  final int windowDuration;
-  final String colorMapName;
-  final ColorScheme colorScheme;
-  final Int32List _lut;
-
-  static const int _fftSize = 1024;
-  static const int _hopSize = 256;
-  static const double _viewSeconds = 8.0;
-  static const double _dbFloor = -80.0;
-  static const double _dbCeiling = 0.0;
-  static const int _maxFreqHz = 16000;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (duration == Duration.zero) return;
-
-    final centerSec = position.inMicroseconds / 1000000.0;
-    final startSec = centerSec - _viewSeconds / 2;
-    final numColumns = size.width.ceil();
-
-    // How many frequency bins to show (up to 16 kHz).
-    final nyquist = audio.sampleRate / 2;
-    final binCount = _fftSize ~/ 2 + 1;
-    final displayBins =
-        (_maxFreqHz / nyquist * binCount).round().clamp(1, binCount);
-
-    final secPerPixel = _viewSeconds / numColumns;
-
-    // Pre-compute Hann window.
-    final hannWindow = Float64List(_fftSize);
-    for (var i = 0; i < _fftSize; i++) {
-      hannWindow[i] = 0.5 * (1 - math.cos(2 * math.pi * i / (_fftSize - 1)));
-    }
-    final fft = FFT(_fftSize);
-
-    final Paint cellPaint = Paint()..style = PaintingStyle.fill;
-    final binHeight = size.height / displayBins;
-
-    for (var col = 0; col < numColumns; col++) {
-      final colTimeSec = startSec + col * secPerPixel;
-      final colSample = (colTimeSec * audio.sampleRate).round();
-
-      if (colSample + _fftSize < 0 || colSample >= audio.totalSamples) {
-        continue;
-      }
-
-      final chunk = audio.readFloat32(colSample, _fftSize);
-      final input = Float64List(_fftSize);
-      for (var i = 0; i < _fftSize; i++) {
-        input[i] = chunk[i] * hannWindow[i];
-      }
-
-      final spectrum = fft.realFft(input);
-
-      final x = col.toDouble();
-      for (var bin = 0; bin < displayBins; bin++) {
-        final y = size.height - (bin + 1) * binHeight;
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
-        final db = 10 * math.log(power + 1e-10) / math.ln10;
-        final norm =
-            ((db - _dbFloor) / (_dbCeiling - _dbFloor)).clamp(0.0, 1.0);
-
-        if (norm < 0.005) continue;
-
-        final lutIdx = (norm * 255).round().clamp(0, 255);
-        cellPaint.color = Color(_lut[lutIdx]);
-        canvas.drawRect(Rect.fromLTWH(x, y, 1.2, binHeight + 0.5), cellPaint);
-      }
-    }
-
-    // ── Detection overlays ────────────────────────────────────────────
-    final overlayPaint = Paint()
-      ..color = colorScheme.primary.withAlpha(35)
-      ..style = PaintingStyle.fill;
-    final borderPaint = Paint()
-      ..color = colorScheme.primary.withAlpha(90)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    for (final d in detections) {
-      final detOffset =
-          d.timestamp.difference(sessionStart).inMicroseconds / 1000000.0;
-      final detEnd = detOffset + windowDuration;
-      final x1 = ((detOffset - startSec) / secPerPixel).clamp(0.0, size.width);
-      final x2 = ((detEnd - startSec) / secPerPixel).clamp(0.0, size.width);
-      if (x2 <= 0 || x1 >= size.width) continue;
-      final rect = Rect.fromLTRB(x1, 0, x2, size.height);
-      canvas.drawRect(rect, overlayPaint);
-      canvas.drawRect(rect, borderPaint);
-    }
-
-    // ── Playhead ──────────────────────────────────────────────────────
-    final playheadX = size.width / 2;
-    canvas.drawLine(
-      Offset(playheadX, 0),
-      Offset(playheadX, size.height),
-      Paint()
-        ..color = Colors.white
-        ..strokeWidth = 1.5,
-    );
-
-    // ── Time labels ───────────────────────────────────────────────────
-    final textStyle = TextStyle(
-      color: Colors.white.withAlpha(180),
-      fontSize: 9,
-    );
-    final tp = TextPainter(textDirection: ui.TextDirection.ltr);
-    final firstLabel = ((startSec / 2).ceil() * 2).toDouble();
-    for (var t = firstLabel; t < startSec + _viewSeconds; t += 2) {
-      if (t < 0) continue;
-      final x = (t - startSec) / secPerPixel;
-      if (x < 0 || x > size.width - 30) continue;
-      tp.text = TextSpan(text: _fmtSec(t), style: textStyle);
-      tp.layout();
-      tp.paint(canvas, Offset(x + 2, size.height - tp.height - 2));
-      canvas.drawLine(
-        Offset(x, size.height - 2),
-        Offset(x, size.height),
-        Paint()..color = Colors.white.withAlpha(60),
-      );
-    }
-  }
-
-  String _fmtSec(double sec) {
-    final m = sec ~/ 60;
-    final s = (sec % 60).toInt();
-    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  bool shouldRepaint(covariant _ReviewSpectrogramPainter old) {
-    return old.position != position ||
-        old.duration != duration ||
-        old.colorMapName != colorMapName ||
-        !identical(old.audio, audio) ||
-        !identical(old.detections, detections);
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Audio Player Bar
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _AudioPlayerBar extends StatelessWidget {
-  const _AudioPlayerBar({
-    required this.player,
-    required this.position,
-    required this.duration,
-    required this.isPlaying,
-  });
-
-  final AudioPlayer player;
-  final Duration position;
-  final Duration duration;
-  final bool isPlaying;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle),
-            iconSize: 36,
-            color: theme.colorScheme.primary,
-            onPressed: () {
-              if (isPlaying) {
-                player.pause();
-              } else {
-                player.play();
-              }
-            },
-          ),
-          SizedBox(
-            width: 44,
-            child: Text(
-              _formatPosition(position),
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-            child: SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                activeTrackColor: theme.colorScheme.primary,
-                inactiveTrackColor: theme.colorScheme.surfaceContainerHighest,
-                thumbColor: theme.colorScheme.primary,
-              ),
-              child: Slider(
-                value: duration.inMilliseconds > 0
-                    ? position.inMilliseconds
-                        .clamp(0, duration.inMilliseconds)
-                        .toDouble()
-                    : 0,
-                max: duration.inMilliseconds.toDouble(),
-                onChanged: (v) =>
-                    player.seek(Duration(milliseconds: v.toInt())),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 44,
-            child: Text(
-              _formatPosition(duration),
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatPosition(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (d.inHours > 0) return '${d.inHours}:$m:$s';
-    return '$m:$s';
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Species Tile — Expandable row for one species
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _SpeciesTile extends ConsumerWidget {
-  const _SpeciesTile({
-    required this.group,
-    required this.sessionStart,
-    required this.isExpanded,
-    required this.isActive,
-    required this.onToggleExpand,
-    required this.onSpeciesInfo,
-    required this.onSeekCluster,
-    required this.onDeleteCluster,
-  });
-
-  final _SpeciesGroup group;
-  final DateTime sessionStart;
-  final bool isExpanded;
-  final bool isActive;
-  final VoidCallback onToggleExpand;
-  final VoidCallback onSpeciesInfo;
-  final ValueChanged<_DetectionCluster> onSeekCluster;
-  final ValueChanged<_DetectionCluster> onDeleteCluster;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
-    final taxonomyAsync = ref.watch(taxonomyServiceProvider);
-
-    final displayName = taxonomyAsync.valueOrNull
-            ?.lookup(group.scientificName)
-            ?.commonNameForLocale(speciesLocale) ??
-        group.commonName;
-
-    final offset = group.firstTimestamp.difference(sessionStart);
-    final offsetStr = _fmtOffset(offset);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-      decoration: BoxDecoration(
-        color: isActive
-            ? theme.colorScheme.primaryContainer.withAlpha(90)
-            : Colors.transparent,
-        border: isActive
-            ? Border(
-                left: BorderSide(
-                  color: theme.colorScheme.primary,
-                  width: 3,
-                ),
-              )
-            : null,
-      ),
-      child: Column(
-        children: [
-          // ── Main species row ───────────────────────────────
-          InkWell(
-            onTap: onToggleExpand,
-            onLongPress: onSpeciesInfo,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  // Seek to first detection.
-                  InkWell(
-                    onTap: () => onSeekCluster(group.clusters.first),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: 46,
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.play_arrow_rounded,
-                            size: 18,
-                            color: theme.colorScheme.primary,
-                          ),
-                          Text(
-                            offsetStr,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontSize: 9,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Species info.
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                displayName,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (group.totalCount > 1)
-                              Container(
-                                margin: const EdgeInsets.only(left: 6),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '×${group.totalCount}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                group.scientificName,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  fontStyle: FontStyle.italic,
-                                  color: theme.colorScheme.onSurface
-                                      .withAlpha(153),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              group.bestConfidencePercent,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: _confidenceColor(
-                                  group.bestConfidence,
-                                  theme,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Expand chevron.
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.expand_more,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withAlpha(120),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Expanded cluster list ─────────────────────────
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Padding(
-              padding: const EdgeInsets.only(left: 56, bottom: 4),
-              child: Column(
-                children: [
-                  for (final cluster in group.clusters)
-                    _ClusterRow(
-                      cluster: cluster,
-                      sessionStart: sessionStart,
-                      onSeek: () => onSeekCluster(cluster),
-                      onDelete: () => onDeleteCluster(cluster),
-                    ),
-                ],
-              ),
-            ),
-            crossFadeState: isExpanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
-          ),
-
-          const Divider(height: 1, indent: 60),
-        ],
-      ),
-    );
-  }
-
-  String _fmtOffset(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (d.inHours > 0) return '${d.inHours}:$m:$s';
-    return '$m:$s';
-  }
-
-  Color _confidenceColor(double confidence, ThemeData theme) {
-    if (confidence >= 0.7) return Colors.green;
-    if (confidence >= 0.4) return Colors.amber;
-    return Colors.red;
-  }
-}
-
-// ═════════════════════════════════════════════════════════════════════════════
-// Cluster Row — One time-span cluster within an expanded species
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _ClusterRow extends StatelessWidget {
-  const _ClusterRow({
-    required this.cluster,
-    required this.sessionStart,
-    required this.onSeek,
-    required this.onDelete,
-  });
-
-  final _DetectionCluster cluster;
-  final DateTime sessionStart;
-  final VoidCallback onSeek;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final start = cluster.firstTimestamp.difference(sessionStart);
-    final end = cluster.lastTimestamp.difference(sessionStart) +
-        const Duration(seconds: 3); // Include window duration.
-    final isSingle = cluster.count == 1;
-
-    final timeStr = isSingle
-        ? _fmtOffset(start)
-        : '${_fmtOffset(start)} – ${_fmtOffset(end)}';
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 8),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: onSeek,
-            borderRadius: BorderRadius.circular(12),
-            child: Icon(
-              Icons.play_arrow_rounded,
-              size: 16,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              timeStr,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withAlpha(180),
-              ),
-            ),
-          ),
-          if (cluster.count > 1)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(
-                '×${cluster.count}',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(120),
-                ),
-              ),
-            ),
-          Text(
-            cluster.bestConfidencePercent,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: theme.colorScheme.onSurface.withAlpha(180),
-            ),
-          ),
-          const SizedBox(width: 4),
-          InkWell(
-            onTap: onDelete,
-            borderRadius: BorderRadius.circular(12),
-            child: Icon(
-              Icons.close,
-              size: 16,
-              color: theme.colorScheme.onSurface.withAlpha(100),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _fmtOffset(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    if (d.inHours > 0) return '${d.inHours}:$m:$s';
-    return '$m:$s';
+  final n = session.sessionNumber;
+  if (n == null) return _sessionTypeLabel(l10n, session.type);
+  switch (session.type) {
+    case SessionType.live:
+      return l10n.sessionTitleLiveNum(n);
+    case SessionType.fileUpload:
+      return l10n.sessionTitleFileUploadNum(n);
+    case SessionType.pointCount:
+      return l10n.sessionTitlePointCountNum(n);
+    case SessionType.survey:
+      return l10n.sessionTitleSurveyNum(n);
   }
 }

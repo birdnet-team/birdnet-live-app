@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -43,12 +45,19 @@ class LiveScreen extends ConsumerStatefulWidget {
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
 }
 
-class _LiveScreenState extends ConsumerState<LiveScreen> {
+class _LiveScreenState extends ConsumerState<LiveScreen>
+    with WidgetsBindingObserver {
   bool _isStarting = false;
+  Timer? _sessionTimer;
+  bool _durationWarningShown = false;
+
+  /// Duration after which a warning dialog is shown to the user.
+  static const _warningDuration = Duration(minutes: 10);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
     final controller = ref.read(liveControllerProvider);
@@ -96,6 +105,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         controller.state == LiveState.idle) {
       // ── Start a brand-new session ────────────────────────────────
       _isStarting = true;
+      _durationWarningShown = false;
+      _pausedByLifecycle = false;
       setState(() {});
 
       // Ensure model is loaded.
@@ -127,7 +138,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       final geoThreshold = ref.read(geoThresholdProvider);
 
       // Fetch geo-model scores (if available) for species filtering.
+      // Also fetch the full geo-model species names for model intersection.
       final geoScores = await ref.read(geoScoresProvider.future);
+      final geoSpeciesNames =
+          await ref.read(geoModelSpeciesNamesProvider.future);
 
       // Start inference session.
       await controller.startSession(
@@ -139,10 +153,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         recordingFormat: recordingFormat,
         geoScores: geoScores,
         geoThreshold: geoThreshold,
+        geoModelSpeciesNames: geoSpeciesNames,
       );
 
       _isStarting = false;
       _onControllerStateChanged();
+      _startSessionTimer();
     }
   }
 
@@ -172,13 +188,99 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _sessionTimer?.cancel();
     // Ensure screen lock is released when leaving the live screen.
     WakelockService.disable();
     super.dispose();
   }
 
+  // ── App lifecycle ─────────────────────────────────────────────────────
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = ref.read(liveControllerProvider);
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      // App going to background — pause session to stop recording/inference.
+      if (controller.state == LiveState.active) {
+        _pauseSessionForBackground();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // App returning to foreground — resume if we paused for background.
+      if (controller.state == LiveState.paused && _pausedByLifecycle) {
+        _resumeSessionFromBackground();
+      }
+    }
+  }
+
+  bool _pausedByLifecycle = false;
+
+  Future<void> _pauseSessionForBackground() async {
+    _pausedByLifecycle = true;
+    _sessionTimer?.cancel();
+    final controller = ref.read(liveControllerProvider);
+    final captureNotifier = ref.read(captureStateProvider.notifier);
+    await captureNotifier.stop();
+    await controller.pauseSession();
+    _onControllerStateChanged();
+  }
+
+  Future<void> _resumeSessionFromBackground() async {
+    _pausedByLifecycle = false;
+    final controller = ref.read(liveControllerProvider);
+    final captureNotifier = ref.read(captureStateProvider.notifier);
+    final deviceId = ref.read(selectedDeviceProvider);
+    await captureNotifier.start(deviceId: deviceId);
+    await controller.resumeSession();
+    _onControllerStateChanged();
+    _startSessionTimer();
+  }
+
+  // ── Session duration timer ────────────────────────────────────────────
+
+  void _startSessionTimer() {
+    _sessionTimer?.cancel();
+    if (_durationWarningShown) return;
+    final controller = ref.read(liveControllerProvider);
+    final elapsed = controller.session?.duration ?? Duration.zero;
+    final remaining = _warningDuration - elapsed;
+    if (remaining <= Duration.zero) return;
+    _sessionTimer = Timer(remaining, _showDurationWarning);
+  }
+
+  Future<void> _showDurationWarning() async {
+    if (!mounted || _durationWarningShown) return;
+    _durationWarningShown = true;
+    final l10n = AppLocalizations.of(context)!;
+    final shouldContinue = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionDurationWarningTitle),
+        content: Text(l10n.sessionDurationWarningMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.sessionStopConfirm),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.sessionContinue),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (shouldContinue != true) {
+      await _finalizeAndReview();
+    }
+  }
+
   /// Finalize and save the session when leaving the live screen.
   Future<void> _finalizeAndReview() async {
+    _sessionTimer?.cancel();
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
 
@@ -192,9 +294,23 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final session = await controller.finalizeSession();
     _onControllerStateChanged();
 
-    if (session != null && session.detections.isNotEmpty && mounted) {
-      // Persist completed session.
+    if (session != null && mounted) {
+      // Assign a per-type sequential session number.
       final repo = ref.read(sessionRepositoryProvider);
+      session.sessionNumber = await repo.nextSessionNumber(session.type);
+
+      // Capture recording location (best effort — null if unavailable).
+      try {
+        final location = await ref.read(currentLocationProvider.future);
+        if (location != null) {
+          session.latitude = location.latitude;
+          session.longitude = location.longitude;
+        }
+      } catch (_) {
+        // Location unavailable — leave fields null.
+      }
+
+      // Persist completed session.
       await repo.save(session);
       ref.invalidate(sessionListProvider);
 
@@ -207,7 +323,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         );
       }
     } else {
-      // No detections — just go back.
       if (mounted) Navigator.of(context).pop();
     }
   }
@@ -264,12 +379,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 ),
               ),
 
-              // ── Session Info ────────────────────────────────────
-              if (isActive || isPaused)
-                _SessionInfoBar(
-                  liveCount: detections.length,
-                  controller: ref.read(liveControllerProvider),
-                ),
+              // ── Session Info (always present to avoid layout shift) ──
+              _SessionInfoBar(
+                liveCount: detections.length,
+                controller: ref.read(liveControllerProvider),
+                visible: isActive || isPaused,
+              ),
 
               // ── Detection List ──────────────────────────────────
               Expanded(
@@ -514,10 +629,15 @@ class _StatusBanner extends StatelessWidget {
 }
 
 /// Session info bar showing detection count and duration.
-class _SessionInfoBar extends StatelessWidget {
+///
+/// Always present in the layout to prevent the spectrogram from resizing
+/// when a session starts.  When [visible] is false, the bar still occupies
+/// space but renders transparent placeholder content.
+class _SessionInfoBar extends ConsumerWidget {
   const _SessionInfoBar({
     required this.liveCount,
     required this.controller,
+    required this.visible,
   });
 
   /// Number of species currently shown in the live view.
@@ -526,25 +646,62 @@ class _SessionInfoBar extends StatelessWidget {
   /// Controller for reading cumulative session stats.
   final LiveController controller;
 
+  /// Whether to show actual stats (true) or an invisible placeholder (false).
+  final bool visible;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+
+    if (!visible) {
+      // Invisible placeholder — same height, no content.
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(12, 4, 12, 0),
+        child: SizedBox(height: 20),
+      );
+    }
+
+    // Calculate total detections
+    final totalDetections = controller.sessionDetections.length;
+
     // Unique species across the entire session (cumulative).
     final totalUnique = controller.sessionDetections
         .map((d) => d.scientificName)
         .toSet()
         .length;
 
-    final label = liveCount > 0
-        ? '$liveCount detected now · $totalUnique species this session'
-        : '$totalUnique species this session';
+    // Estimate file size and duration
+    int durationSec = 0;
+    if (controller.session != null) {
+      durationSec = controller.session!.duration.inSeconds;
+    }
+
+    final recordingFormat = ref.read(recordingFormatProvider);
+    // Estimate: Wav is ~96 kB/s, FLAC is ~60 kB/s
+    final bytesPerSec = recordingFormat == 'flac' ? 60000 : 96000;
+    final estimatedBytes = durationSec * bytesPerSec;
+    final mb = estimatedBytes / (1024 * 1024);
+
+    final String durationStr = _formatDuration(durationSec);
+
+    final List<String> parts = [];
+    if (liveCount > 0) parts.add('$liveCount now');
+    parts.add('$totalUnique spp');
+    parts.add('$totalDetections det');
+    if (durationSec > 0) {
+      parts.add(durationStr);
+      parts.add('${mb.toStringAsFixed(1)}MB');
+    }
+
+    final label = parts.join(' • ');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.pets,
+            Icons.info_outline,
             size: 14,
             color: theme.colorScheme.primary,
           ),
@@ -558,6 +715,17 @@ class _SessionInfoBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _formatDuration(int sec) {
+    final m = sec ~/ 60;
+    final s = sec % 60;
+    if (m >= 60) {
+      final h = m ~/ 60;
+      final rh = m % 60;
+      return '${h}h ${rh}m';
+    }
+    return '${m}:${s.toString().padLeft(2, '0')}';
   }
 }
 

@@ -78,6 +78,7 @@ class DetectionTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+    final showSciNames = ref.watch(showSciNamesProvider);
 
     // Resolve localized common name, falling back to English inference name.
     final displayName = taxonomyAsync.valueOrNull
@@ -103,16 +104,13 @@ class DetectionTile extends ConsumerWidget {
                     detection.scientificName,
                   ),
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
+                  placeholder: (_, __) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
-                  errorWidget: (_, __, ___) => Container(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.flutter_dash,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withAlpha(60),
-                    ),
+                  errorWidget: (_, __, ___) => Image.asset(
+                    'assets/images/dummy_species.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -136,17 +134,19 @@ class DetectionTile extends ConsumerWidget {
                   // Scientific name + confidence on one row
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          detection.scientificName,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: theme.colorScheme.onSurface.withAlpha(153),
+                      if (showSciNames)
+                        Expanded(
+                          child: Text(
+                            detection.scientificName,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontStyle: FontStyle.italic,
+                              color: theme.colorScheme.onSurface.withAlpha(153),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                      if (!showSciNames) const Spacer(),
                       const SizedBox(width: 8),
                       Text(
                         detection.confidencePercent,

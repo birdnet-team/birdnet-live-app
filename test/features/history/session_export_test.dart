@@ -2,6 +2,7 @@
 // Session Export Tests — Raven selection table and ZIP bundle
 // =============================================================================
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive.dart';
@@ -131,7 +132,7 @@ void main() {
     });
   });
 
-  group('buildSessionZip', () {
+  group('buildSessionExport', () {
     late Directory tempDir;
 
     setUp(() {
@@ -142,18 +143,23 @@ void main() {
       if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
     });
 
-    test('returns null when recording path is null', () async {
+    test('returns file without ZIP when recording path is null', () async {
       final session = _makeSession(recordingPath: null);
-      final result = await buildSessionZip(session);
-      expect(result, isNull);
+      final result = await buildSessionExport(session,
+          format: 'raven', includeAudio: true);
+      expect(result, isNotNull);
+      expect(result!.endsWith('.txt'), isTrue);
     });
 
-    test('returns null when recording file does not exist', () async {
+    test('returns file without ZIP when recording file does not exist',
+        () async {
       final session = _makeSession(
         recordingPath: '${tempDir.path}/nonexistent.wav',
       );
-      final result = await buildSessionZip(session);
-      expect(result, isNull);
+      final result = await buildSessionExport(session,
+          format: 'raven', includeAudio: true);
+      expect(result, isNotNull);
+      expect(result!.endsWith('.txt'), isTrue);
     });
 
     test('creates a ZIP with wav and selection table', () async {
@@ -170,7 +176,8 @@ void main() {
         ],
       );
 
-      final zipPath = await buildSessionZip(session);
+      final zipPath = await buildSessionExport(session,
+          format: 'raven', includeAudio: true);
       expect(zipPath, isNotNull);
       expect(File(zipPath!).existsSync(), isTrue);
 
@@ -191,6 +198,174 @@ void main() {
       final tableContent = String.fromCharCodes(tableFile.content as List<int>);
       expect(tableContent, contains('Selection\t'));
       expect(tableContent, contains('Turdus merula'));
+    });
+  });
+
+  // ── JSON export: new fields ──────────────────────────────────────────
+
+  group('buildJsonExport new fields', () {
+    test('includes trim offsets when set', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.91,
+              const Duration(seconds: 5), start),
+        ],
+      );
+      session.trimStartSec = 2.0;
+      session.trimEndSec = 250.0;
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+
+      expect(map['trimStartSec'], 2.0);
+      expect(map['trimEndSec'], 250.0);
+    });
+
+    test('omits trim offsets when null', () {
+      final session = _makeSession();
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+
+      expect(map.containsKey('trimStartSec'), isFalse);
+      expect(map.containsKey('trimEndSec'), isFalse);
+    });
+
+    test('includes source for manual detections', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          DetectionRecord(
+            scientificName: 'Turdus merula',
+            commonName: 'Eurasian Blackbird',
+            confidence: 1.0,
+            timestamp: start.add(const Duration(seconds: 10)),
+            source: DetectionSource.manual,
+          ),
+        ],
+      );
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final det = (map['detections'] as List).first as Map<String, dynamic>;
+
+      expect(det['source'], 'manual');
+    });
+
+    test('omits source for auto detections', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det('Turdus merula', 'Eurasian Blackbird', 0.91,
+              const Duration(seconds: 5), start),
+        ],
+      );
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final det = (map['detections'] as List).first as Map<String, dynamic>;
+
+      expect(det.containsKey('source'), isFalse);
+    });
+
+    test('includes annotations when present', () {
+      final session = _makeSession();
+      session.annotations.addAll([
+        SessionAnnotation(
+          text: 'Global note',
+          createdAt: DateTime.utc(2025, 6, 15, 8, 1),
+        ),
+        SessionAnnotation(
+          text: 'Timed note',
+          createdAt: DateTime.utc(2025, 6, 15, 8, 2),
+          offsetInRecording: 30.0,
+        ),
+      ]);
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+
+      expect(map.containsKey('annotations'), isTrue);
+      final annotations = map['annotations'] as List;
+      expect(annotations.length, 2);
+      expect((annotations[0] as Map)['text'], 'Global note');
+      expect((annotations[1] as Map)['offsetInRecording'], 30.0);
+    });
+
+    test('omits annotations when empty', () {
+      final session = _makeSession();
+
+      final jsonStr = buildJsonExport(session);
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+
+      expect(map.containsKey('annotations'), isFalse);
+    });
+  });
+
+  // ── ZIP bundle: annotations file ────────────────────────────────────
+
+  group('ZIP bundle with annotations', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('session_export_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test('includes annotations.txt when annotations present', () async {
+      final wavPath = '${tempDir.path}/full.wav';
+      File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+      final session = _makeSession(recordingPath: wavPath);
+      session.annotations.addAll([
+        SessionAnnotation(
+          text: 'Clear morning',
+          createdAt: DateTime.utc(2025, 6, 15, 8, 0),
+        ),
+        SessionAnnotation(
+          text: 'Robin singing nearby',
+          createdAt: DateTime.utc(2025, 6, 15, 8, 1),
+          offsetInRecording: 65.0,
+        ),
+      ]);
+
+      final zipPath = await buildSessionExport(session,
+          format: 'raven', includeAudio: true);
+      expect(zipPath, isNotNull);
+
+      final zipBytes = File(zipPath!).readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+
+      final names = archive.map((f) => f.name).toList();
+      expect(names, contains(endsWith('.annotations.txt')));
+
+      final annotFile =
+          archive.firstWhere((f) => f.name.endsWith('.annotations.txt'));
+      final content = String.fromCharCodes(annotFile.content as List<int>);
+
+      expect(content, contains('[Global] Clear morning'));
+      expect(content, contains('[01:05] Robin singing nearby'));
+    });
+
+    test('no annotations.txt when annotations empty', () async {
+      final wavPath = '${tempDir.path}/full.wav';
+      File(wavPath).writeAsBytesSync([0x52, 0x49, 0x46, 0x46]);
+
+      final session = _makeSession(recordingPath: wavPath);
+
+      final zipPath = await buildSessionExport(session,
+          format: 'raven', includeAudio: true);
+      expect(zipPath, isNotNull);
+
+      final zipBytes = File(zipPath!).readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+
+      final names = archive.map((f) => f.name).toList();
+      expect(names.any((n) => n.contains('annotations')), isFalse);
     });
   });
 }

@@ -32,7 +32,7 @@ void main() {
   // ── Helper ────────────────────────────────────────────────────────────
 
   /// Generate a sine wave as Float32List.
-  Float32List _sineWave(int numSamples,
+  Float32List sineWave(int numSamples,
       {double freq = 440.0, double sampleRate = 32000.0}) {
     final samples = Float32List(numSamples);
     for (int i = 0; i < numSamples; i++) {
@@ -42,7 +42,7 @@ void main() {
   }
 
   /// Generate silence.
-  Float32List _silence(int numSamples) => Float32List(numSamples);
+  Float32List silence(int numSamples) => Float32List(numSamples);
 
   // ── File structure ────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ void main() {
       final path = '${tempDir.path}/magic.flac';
       final encoder = FlacEncoder(filePath: path);
       await encoder.open();
-      await encoder.writeSamples(_sineWave(1000));
+      await encoder.writeSamples(sineWave(1000));
       await encoder.close();
 
       final bytes = File(path).readAsBytesSync();
@@ -65,7 +65,7 @@ void main() {
       final path = '${tempDir.path}/streaminfo.flac';
       final encoder = FlacEncoder(filePath: path, sampleRate: 32000);
       await encoder.open();
-      await encoder.writeSamples(_sineWave(8000));
+      await encoder.writeSamples(sineWave(8000));
       await encoder.close();
 
       final bytes = File(path).readAsBytesSync();
@@ -84,7 +84,7 @@ void main() {
       final path = '${tempDir.path}/rate.flac';
       final encoder = FlacEncoder(filePath: path, sampleRate: 32000);
       await encoder.open();
-      await encoder.writeSamples(_sineWave(4096));
+      await encoder.writeSamples(sineWave(4096));
       await encoder.close();
 
       final bytes = File(path).readAsBytesSync();
@@ -100,7 +100,7 @@ void main() {
       const numSamples = 5000;
       final encoder = FlacEncoder(filePath: path, sampleRate: 32000);
       await encoder.open();
-      await encoder.writeSamples(_sineWave(numSamples));
+      await encoder.writeSamples(sineWave(numSamples));
       await encoder.close();
 
       final bytes = File(path).readAsBytesSync();
@@ -116,7 +116,7 @@ void main() {
       final path = '${tempDir.path}/sync.flac';
       final encoder = FlacEncoder(filePath: path);
       await encoder.open();
-      await encoder.writeSamples(_sineWave(8192)); // 2 full blocks
+      await encoder.writeSamples(sineWave(8192)); // 2 full blocks
       await encoder.close();
 
       final bytes = File(path).readAsBytesSync();
@@ -135,7 +135,7 @@ void main() {
     test('FLAC file is smaller than raw PCM for sine wave', () async {
       final path = '${tempDir.path}/compress.flac';
       const numSamples = 32000; // 1 second at 32 kHz
-      final samples = _sineWave(numSamples);
+      final samples = sineWave(numSamples);
       await FlacEncoder.writeFile(
           filePath: path, samples: samples, sampleRate: 32000);
 
@@ -151,7 +151,7 @@ void main() {
       final path = '${tempDir.path}/silent.flac';
       const numSamples = 32000;
       await FlacEncoder.writeFile(
-          filePath: path, samples: _silence(numSamples), sampleRate: 32000);
+          filePath: path, samples: silence(numSamples), sampleRate: 32000);
 
       final flacSize = File(path).lengthSync();
       // Silence should compress very well — CONSTANT subframes.
@@ -171,7 +171,7 @@ void main() {
 
       // Write in small chunks (not aligned to block size).
       for (int i = 0; i < 10; i++) {
-        await encoder.writeSamples(_sineWave(1000));
+        await encoder.writeSamples(sineWave(1000));
       }
       await encoder.close();
 
@@ -187,7 +187,7 @@ void main() {
       expect(encoder.isOpen, isFalse);
       await encoder.open();
       expect(encoder.isOpen, isTrue);
-      await encoder.writeSamples(_sineWave(100));
+      await encoder.writeSamples(sineWave(100));
       expect(encoder.isOpen, isTrue);
       await encoder.close();
       expect(encoder.isOpen, isFalse);
@@ -200,7 +200,7 @@ void main() {
       await encoder.close();
 
       expect(
-        () => encoder.writeSamples(_sineWave(100)),
+        () => encoder.writeSamples(sineWave(100)),
         throwsStateError,
       );
     });
@@ -210,10 +210,10 @@ void main() {
       final encoder = FlacEncoder(filePath: path, sampleRate: 32000);
       await encoder.open();
 
-      await encoder.writeSamples(_sineWave(32000)); // 1 second
+      await encoder.writeSamples(sineWave(32000)); // 1 second
       expect(encoder.duration.inMilliseconds, closeTo(1000, 1));
 
-      await encoder.writeSamples(_sineWave(16000)); // +0.5 seconds
+      await encoder.writeSamples(sineWave(16000)); // +0.5 seconds
       expect(encoder.duration.inMilliseconds, closeTo(1500, 1));
 
       await encoder.close();
@@ -227,7 +227,7 @@ void main() {
       final path = '${tempDir.path}/oneshot.flac';
       await FlacEncoder.writeFile(
         filePath: path,
-        samples: _sineWave(4096),
+        samples: sineWave(4096),
         sampleRate: 32000,
       );
 
@@ -239,7 +239,7 @@ void main() {
       final path = '${tempDir.path}/sub/dir/nested.flac';
       await FlacEncoder.writeFile(
         filePath: path,
-        samples: _sineWave(1000),
+        samples: sineWave(1000),
         sampleRate: 32000,
       );
 
@@ -273,7 +273,7 @@ void main() {
       const blockSize = 4096;
       await FlacEncoder.writeFile(
         filePath: path,
-        samples: _sineWave(blockSize * 3), // exactly 3 blocks
+        samples: sineWave(blockSize * 3), // exactly 3 blocks
         sampleRate: 32000,
       );
 
@@ -289,7 +289,7 @@ void main() {
       const blockSize = 4096;
       await FlacEncoder.writeFile(
         filePath: path,
-        samples: _sineWave(blockSize + 1),
+        samples: sineWave(blockSize + 1),
         sampleRate: 32000,
       );
 

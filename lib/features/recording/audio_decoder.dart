@@ -4,8 +4,9 @@
 //
 // Provides file→PCM decoding for session review spectrograms.  Supports:
 //
-//   • **WAV** — Standard RIFF/WAVE mono 16-bit PCM.  Header is parsed to
-//     locate the `data` chunk; samples are read directly.
+//   • **WAV** — RIFF/WAVE files: 8/16/24/32-bit PCM and 32/64-bit IEEE
+//     float.  Multi-channel files are downmixed by taking channel 0.
+//     All bit depths are converted to signed 16-bit output.
 //
 //   • **FLAC** — Lossless codec.  The decoder handles the subset of FLAC
 //     produced by our [FlacEncoder]: mono 16-bit with CONSTANT, VERBATIM,
@@ -61,13 +62,71 @@ class DecodedAudio {
     }
     return result;
   }
+
+  /// Resample to [targetRate] Hz using linear interpolation.
+  ///
+  /// Returns `this` unchanged if [sampleRate] already equals [targetRate].
+  DecodedAudio resampleTo(int targetRate) {
+    if (sampleRate == targetRate) return this;
+
+    final ratio = sampleRate / targetRate;
+    final newLength = (samples.length / ratio).floor();
+    final resampled = Int16List(newLength);
+
+    for (var i = 0; i < newLength; i++) {
+      final srcPos = i * ratio;
+      final srcIndex = srcPos.toInt();
+      final frac = srcPos - srcIndex;
+
+      if (srcIndex + 1 < samples.length) {
+        resampled[i] =
+            (samples[srcIndex] * (1.0 - frac) + samples[srcIndex + 1] * frac)
+                .round();
+      } else {
+        resampled[i] = samples[srcIndex];
+      }
+    }
+
+    return DecodedAudio(samples: resampled, sampleRate: targetRate);
+  }
 }
 
 /// Decodes audio files to raw PCM samples.
 class AudioDecoder {
   AudioDecoder._();
 
+  /// Check whether the file can be decoded by the pure-Dart decoders
+  /// (WAV or FLAC), based on magic bytes.  Reads only the first 4 bytes.
+  static Future<bool> canDecodeDart(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(4);
+      if (header.length < 4) return false;
+      // WAV: RIFF header.
+      if (header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46) {
+        return true;
+      }
+      // FLAC: fLaC header.
+      if (header[0] == 0x66 &&
+          header[1] == 0x4C &&
+          header[2] == 0x61 &&
+          header[3] == 0x43) {
+        return true;
+      }
+      return false;
+    } finally {
+      await raf.close();
+    }
+  }
+
   /// Auto-detect format (WAV or FLAC) and decode.
+  ///
+  /// For compressed formats (MP3, OGG, AAC, etc.) this will throw a
+  /// [FormatException].  Use [NativeAudioDecoder.decodeFile] instead.
   static Future<DecodedAudio> decodeFile(String path) async {
     final file = File(path);
     final bytes = await file.readAsBytes();
@@ -108,6 +167,7 @@ class AudioDecoder {
     }
 
     // Scan for "fmt " and "data" chunks.
+    int audioFormat = 0; // 1 = PCM, 3 = IEEE float
     int sampleRate = 0;
     int bitsPerSample = 0;
     int channels = 0;
@@ -120,6 +180,7 @@ class AudioDecoder {
       final chunkSize = bd.getUint32(pos + 4, Endian.little);
 
       if (chunkId == 'fmt ') {
+        audioFormat = bd.getUint16(pos + 8, Endian.little);
         channels = bd.getUint16(pos + 10, Endian.little);
         sampleRate = bd.getUint32(pos + 12, Endian.little);
         bitsPerSample = bd.getUint16(pos + 22, Endian.little);
@@ -137,20 +198,53 @@ class AudioDecoder {
       throw const FormatException('WAV file missing fmt or data chunk');
     }
 
-    if (bitsPerSample != 16) {
-      throw FormatException(
-          'Only 16-bit WAV supported, got $bitsPerSample-bit');
-    }
-
-    // Read Int16 samples (mono channel 0 only).
+    // Read samples from channel 0, converting to Int16.
     final bytesPerSample = bitsPerSample ~/ 8;
-    final totalFrames = dataSize ~/ (bytesPerSample * channels);
+    final frameSize = bytesPerSample * channels;
+    final totalFrames = dataSize ~/ frameSize;
     final samples = Int16List(totalFrames);
     final dataView = ByteData.sublistView(bytes, dataOffset);
 
-    for (var i = 0; i < totalFrames; i++) {
-      samples[i] =
-          dataView.getInt16(i * channels * bytesPerSample, Endian.little);
+    if (audioFormat == 3 && bitsPerSample == 32) {
+      // IEEE 32-bit float → Int16.
+      for (var i = 0; i < totalFrames; i++) {
+        final f = dataView.getFloat32(i * frameSize, Endian.little);
+        samples[i] = (f * 32767.0).round().clamp(-32768, 32767);
+      }
+    } else if (audioFormat == 3 && bitsPerSample == 64) {
+      // IEEE 64-bit float → Int16.
+      for (var i = 0; i < totalFrames; i++) {
+        final f = dataView.getFloat64(i * frameSize, Endian.little);
+        samples[i] = (f * 32767.0).round().clamp(-32768, 32767);
+      }
+    } else if (bitsPerSample == 16) {
+      // 16-bit PCM — direct read.
+      for (var i = 0; i < totalFrames; i++) {
+        samples[i] = dataView.getInt16(i * frameSize, Endian.little);
+      }
+    } else if (bitsPerSample == 24) {
+      // 24-bit PCM → Int16 (drop lower 8 bits).
+      for (var i = 0; i < totalFrames; i++) {
+        final offset = i * frameSize;
+        final lo = bytes[dataOffset + offset + 1];
+        final hi = bytes[dataOffset + offset + 2];
+        // Combine upper 16 bits: hi is signed, lo is unsigned.
+        samples[i] = (hi << 8) | lo;
+      }
+    } else if (bitsPerSample == 32 && audioFormat == 1) {
+      // 32-bit integer PCM → Int16 (take upper 16 bits).
+      for (var i = 0; i < totalFrames; i++) {
+        final v = dataView.getInt32(i * frameSize, Endian.little);
+        samples[i] = (v >> 16).clamp(-32768, 32767);
+      }
+    } else if (bitsPerSample == 8) {
+      // 8-bit unsigned PCM → Int16.
+      for (var i = 0; i < totalFrames; i++) {
+        samples[i] = (bytes[dataOffset + i * frameSize] - 128) << 8;
+      }
+    } else {
+      throw FormatException(
+          'Unsupported WAV format: $bitsPerSample-bit, format=$audioFormat');
     }
 
     return DecodedAudio(samples: samples, sampleRate: sampleRate);
@@ -167,7 +261,6 @@ class AudioDecoder {
     // Byte 4: metadata header.  Bytes 8–41: STREAMINFO body (34 bytes).
     final si = ByteData.sublistView(bytes, 8, 42);
 
-    final minBlock = si.getUint16(0, Endian.big);
     final maxBlock = si.getUint16(2, Endian.big);
 
     // Bytes 10-12: sample rate (20 bits), channels-1 (3 bits), bps-1 (5 bits).
@@ -228,14 +321,12 @@ class AudioDecoder {
     // blocking strategy.
     if (!_syncToFrame(reader)) return null;
 
-    final frameStart = reader.bytePosition - 2;
-
     // Already consumed 2 sync bytes.  Next nibble is block-size code.
     final bsAndSr = reader.readBits(8);
     final blockSizeCode = bsAndSr >> 4;
     final sampleRateCode = bsAndSr & 0x0F;
 
-    final channelAndBps = reader.readBits(8);
+    reader.readBits(8);
     // ignore channel and bps — we know from STREAMINFO.
 
     // Frame number (FLAC UTF-8 encoding).
@@ -475,7 +566,6 @@ class AudioDecoder {
     final escapeCode = method == 0 ? 15 : 31;
 
     final residuals = <int>[];
-    final totalResiduals = blockSize - predictorOrder;
 
     for (var p = 0; p < nPartitions; p++) {
       final samplesInPartition = p == 0
@@ -492,9 +582,9 @@ class AudioDecoder {
         }
       } else {
         for (var i = 0; i < samplesInPartition; i++) {
-          // Read unary quotient (count of 1s terminated by 0).
+          // Read unary quotient (count of 0s terminated by 1).
           var quotient = 0;
-          while (reader.readBits(1) == 1) {
+          while (reader.readBits(1) == 0) {
             quotient++;
           }
           // Read remainder.

@@ -114,6 +114,8 @@ class ClassifierModel {
 
     final sessionOptions = OrtSessionOptions();
     _session = OrtSession.fromBuffer(modelBytes, sessionOptions);
+    sessionOptions
+        .release(); // options are consumed by fromBuffer; release native memory
 
     // Resolve output tensor indices by name so we don't rely on graph order.
     _resolveOutputIndices();

@@ -34,7 +34,7 @@ class AboutScreen extends ConsumerWidget {
               children: [
                 ClipOval(
                   child: Image.asset(
-                    'assets/images/logo-birdnet-circle.png',
+                    'assets/images/app-icon.png',
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
@@ -64,7 +64,7 @@ class AboutScreen extends ConsumerWidget {
 
           const SizedBox(height: 32),
 
-          // Model info
+          // Audio model info
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -83,6 +83,43 @@ class AboutScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     l10n.aboutSpeciesCount(AppConstants.speciesCount),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(153),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Geo-model info
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.aboutGeoModel,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(l10n.aboutGeoModelName),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.aboutSpeciesCount(AppConstants.speciesCount),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(153),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.aboutGeoModelDescription,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withAlpha(153),
                     ),
@@ -119,6 +156,22 @@ class AboutScreen extends ConsumerWidget {
 
           // Links
           ListTile(
+            leading: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.onSurfaceVariant,
+                BlendMode.srcIn,
+              ),
+              child: Image.asset(
+                'assets/images/icon-birdnet.png',
+                width: 24,
+                height: 24,
+              ),
+            ),
+            title: Text(l10n.aboutWebsite),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => _launchUrl(AppConstants.birdnetUrl),
+          ),
+          ListTile(
             leading: const Icon(Icons.code),
             title: Text(l10n.aboutGitHub),
             trailing: const Icon(Icons.open_in_new),
@@ -133,41 +186,9 @@ class AboutScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.gavel),
             title: Text(l10n.aboutTermsOfUse),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // Show in-app terms
-              showDialog<void>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: Text(l10n.aboutTermsOfUse),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      'BirdNET Live is open-source software distributed under the MIT License. '
-                      'Species identifications are model predictions. '
-                      'All processing happens on-device.',
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.description_outlined),
-            title: Text(l10n.aboutLicenses),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              showLicensePage(
-                context: context,
-                applicationName: AppConstants.appName,
-                applicationVersion: packageInfo.valueOrNull?.version,
-              );
-            },
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => _launchUrl(
+                '${AppConstants.githubUrl}/blob/main/TERMS_OF_USE.md'),
           ),
 
           const SizedBox(height: 32),

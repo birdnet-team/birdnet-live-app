@@ -252,7 +252,8 @@ void main() {
 
       final content = file.readAsStringSync();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final config = ModelConfig.fromJson(json);
+      final config =
+          ModelConfig.fromJson(json['audioModel'] as Map<String, dynamic>);
 
       expect(config.name, contains('BirdNET'));
       expect(config.audio.sampleRate, 32000);
@@ -260,7 +261,7 @@ void main() {
       expect(config.onnx.inputName, 'input');
       expect(config.onnx.predictionsName, 'predictions');
       expect(config.onnx.embeddingsName, 'embeddings');
-      expect(config.labels.file, 'labels.csv');
+      expect(config.labels.file, contains('Labels.csv'));
       expect(config.labels.delimiter, ';');
       expect(config.inference.supportedWindowSeconds, contains(3));
       expect(config.inference.defaultConfidenceThreshold, 0.15);

@@ -119,35 +119,28 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // --- General ---
           if (_showSection('general')) ...[
-            _SectionHeader(title: l10n.settingsGeneral),
+            _SectionHeader(
+              title: l10n.settingsGeneral,
+              subtitle: l10n.settingsGeneralDescription,
+            ),
             _ThemeTile(l10n: l10n),
             _LanguageTile(l10n: l10n),
             _SpeciesLanguageTile(l10n: l10n),
-            ListTile(
-              leading: const Icon(Icons.restart_alt),
-              title: Text(l10n.settingsResetOnboarding),
-              onTap: () {
-                ref.read(onboardingCompleteProvider.notifier).reset();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Onboarding will show on next launch')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_forever, color: Colors.red),
-              title: Text(
-                l10n.settingsClearData,
-                style: const TextStyle(color: Colors.red),
-              ),
-              onTap: () => _showClearDataDialog(context, ref, l10n),
+            SwitchListTile(
+              title: Text(l10n.settingsShowSciNames),
+              subtitle: Text(l10n.settingsShowSciNamesDescription),
+              value: ref.watch(showSciNamesProvider),
+              onChanged: (v) => ref.read(showSciNamesProvider.notifier).set(v),
             ),
             const Divider(),
           ],
 
           // --- Audio ---
           if (_showSection('audio')) ...[
-            _SectionHeader(title: l10n.settingsAudio),
+            _SectionHeader(
+              title: l10n.settingsAudio,
+              subtitle: l10n.settingsAudioDescription,
+            ),
             _SliderTile(
               title: 'Gain',
               value: ref.watch(audioGainProvider),
@@ -173,7 +166,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Inference ---
           if (_showSection('inference')) ...[
-            _SectionHeader(title: l10n.settingsInference),
+            _SectionHeader(
+              title: l10n.settingsInference,
+              subtitle: l10n.settingsInferenceDescription,
+            ),
             _ChoiceTile<int>(
               title: 'Window duration',
               value: ref.watch(windowDurationProvider),
@@ -191,6 +187,15 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) =>
                   ref.read(confidenceThresholdProvider.notifier).set(v.toInt()),
             ),
+            _SliderTile(
+              title: l10n.settingsSensitivity,
+              value: ref.watch(sensitivityProvider),
+              min: 0.5,
+              max: 1.5,
+              divisions: 20,
+              format: (v) => v.toStringAsFixed(2),
+              onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
+            ),
             _ChoiceTile<double>(
               title: 'Inference rate',
               value: ref.watch(inferenceRateProvider),
@@ -202,12 +207,26 @@ class SettingsScreen extends ConsumerWidget {
               },
               onChanged: (v) => ref.read(inferenceRateProvider.notifier).set(v),
             ),
+            _ChoiceTile<String>(
+              title: l10n.settingsScorePooling,
+              value: ref.watch(scorePoolingProvider),
+              options: {
+                'off': l10n.settingsPoolingOff,
+                'average': l10n.settingsPoolingAverage,
+                'max': l10n.settingsPoolingMax,
+                'lme': l10n.settingsPoolingLME,
+              },
+              onChanged: (v) => ref.read(scorePoolingProvider.notifier).set(v),
+            ),
             const Divider(),
           ],
 
           // --- Spectrogram ---
           if (_showSection('spectrogram')) ...[
-            _SectionHeader(title: l10n.settingsSpectrogram),
+            _SectionHeader(
+              title: l10n.settingsSpectrogram,
+              subtitle: l10n.settingsSpectrogramDescription,
+            ),
             _ChoiceTile<int>(
               title: 'FFT size',
               value: ref.watch(fftSizeProvider),
@@ -267,7 +286,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Recording ---
           if (_showSection('recording')) ...[
-            _SectionHeader(title: l10n.settingsRecording),
+            _SectionHeader(
+              title: l10n.settingsRecording,
+              subtitle: l10n.settingsRecordingDescription,
+            ),
             _ChoiceTile<String>(
               title: 'Format',
               value: ref.watch(recordingFormatProvider),
@@ -290,7 +312,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Location / Geo ---
           if (_showSection('location')) ...[
-            _SectionHeader(title: l10n.settingsLocation),
+            _SectionHeader(
+              title: l10n.settingsLocation,
+              subtitle: l10n.settingsLocationDescription,
+            ),
             SwitchListTile(
               title: Text(l10n.settingsUseGps),
               subtitle: Text(l10n.settingsUseGpsDescription),
@@ -346,11 +371,18 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- Export ---
           if (_showSection('export')) ...[
-            _SectionHeader(title: l10n.settingsExport),
+            _SectionHeader(
+              title: l10n.settingsExport,
+              subtitle: l10n.settingsExportDescription,
+            ),
             _ChoiceTile<String>(
               title: 'Format',
               value: ref.watch(exportFormatProvider),
-              options: const {'csv': 'CSV', 'json': 'JSON', 'gpx': 'GPX'},
+              options: const {
+                'raven': 'Raven Selection Table',
+                'csv': 'CSV',
+                'json': 'JSON'
+              },
               onChanged: (v) => ref.read(exportFormatProvider.notifier).set(v),
             ),
             SwitchListTile(
@@ -364,7 +396,6 @@ class SettingsScreen extends ConsumerWidget {
           // --- About ---
           if (_showSection('about'))
             ListTile(
-              leading: const Icon(Icons.info_outline),
               title: Text(l10n.about),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -376,7 +407,57 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
 
+          // --- Danger Zone ---
+          if (_showSection('general')) ...[
+            const Divider(),
+            _SectionHeader(
+              title: l10n.settingsDangerZone,
+              subtitle: l10n.settingsDangerZoneDescription,
+            ),
+            ListTile(
+              title: Text(l10n.settingsResetOnboarding),
+              onTap: () => _showResetOnboardingDialog(context, ref, l10n),
+            ),
+            ListTile(
+              title: Text(
+                l10n.settingsClearData,
+                style: const TextStyle(color: Colors.red),
+              ),
+              onTap: () => _showClearDataDialog(context, ref, l10n),
+            ),
+          ],
+
           const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  void _showResetOnboardingDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsResetOnboardingConfirmTitle),
+        content: Text(l10n.settingsResetOnboardingConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(onboardingCompleteProvider.notifier).reset();
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.settingsOnboardingReset)),
+              );
+            },
+            child: Text(l10n.confirm),
+          ),
         ],
       ),
     );
@@ -389,27 +470,52 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.settingsClearDataConfirmTitle),
-        content: Text(l10n.settingsClearDataConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              // TODO: Clear session database and recordings
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All data cleared')),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(l10n.confirm),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final controller = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final typed = controller.text.trim().toUpperCase() == 'DELETE';
+            return AlertDialog(
+              title: Text(l10n.settingsClearDataConfirmTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.settingsClearDataConfirmMessage),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: l10n.settingsClearDataTypeConfirm,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: typed
+                      ? () {
+                          // TODO: Clear session database and recordings
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.settingsDataCleared)),
+                          );
+                        }
+                      : null,
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -419,19 +525,35 @@ class SettingsScreen extends ConsumerWidget {
 // ---------------------------------------------------------------------------
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
+  const _SectionHeader({required this.title, this.subtitle});
   final String title;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          if (subtitle != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                subtitle!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
             ),
+        ],
       ),
     );
   }
@@ -446,7 +568,6 @@ class _ThemeTile extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return ListTile(
-      leading: const Icon(Icons.brightness_6),
       title: Text(l10n.settingsTheme),
       trailing: SegmentedButton<ThemeMode>(
         segments: [
@@ -480,7 +601,6 @@ class _LanguageTile extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return ListTile(
-      leading: const Icon(Icons.language),
       title: Text(l10n.settingsAppLanguage),
       trailing: DropdownButton<String?>(
         value: locale?.languageCode,
@@ -544,7 +664,6 @@ class _SpeciesLanguageTile extends ConsumerWidget {
     final speciesLang = ref.watch(speciesLanguageProvider);
 
     return ListTile(
-      leading: const Icon(Icons.pets),
       title: Text(l10n.settingsSpeciesLanguage),
       trailing: DropdownButton<String>(
         value: speciesLang,

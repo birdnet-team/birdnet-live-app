@@ -6,6 +6,7 @@ import '../about/about_screen.dart';
 import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
+import '../file_analysis/file_analysis_screen.dart';
 import '../settings/settings_screen.dart';
 
 // =============================================================================
@@ -64,13 +65,14 @@ class HomeScreen extends ConsumerWidget {
 // Logo Header
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _LogoHeader extends StatelessWidget {
+class _LogoHeader extends ConsumerWidget {
   const _LogoHeader({required this.l10n, required this.theme});
   final AppLocalizations l10n;
   final ThemeData theme;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final packageInfo = ref.watch(packageInfoProvider);
     return Column(
       children: [
         // Circular logo with subtle glow.
@@ -89,7 +91,7 @@ class _LogoHeader extends StatelessWidget {
           ),
           child: ClipOval(
             child: Image.asset(
-              'assets/images/logo-birdnet-circle.png',
+              'assets/images/app-icon.png',
               width: 96,
               height: 96,
               fit: BoxFit.cover,
@@ -110,6 +112,17 @@ class _LogoHeader extends StatelessWidget {
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurface.withAlpha(153),
           ),
+        ),
+        const SizedBox(height: 4),
+        packageInfo.when(
+          data: (info) => Text(
+            'v${info.version}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(100),
+            ),
+          ),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
         ),
       ],
     );
@@ -163,7 +176,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.fileAnalysisMode,
             description: l10n.fileAnalysisModeDescription,
             color: theme.colorScheme.secondary,
-            comingSoon: true,
+            onTap: () => _openFileAnalysis(context),
           ),
         ],
       ),
@@ -174,6 +187,14 @@ class _ModeGrid extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const LiveScreen(),
+      ),
+    );
+  }
+
+  void _openFileAnalysis(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const FileAnalysisScreen(),
       ),
     );
   }
@@ -307,7 +328,7 @@ class _Footer extends StatelessWidget {
               );
             },
             icon: Icon(
-              Icons.settings_outlined,
+              Icons.tune_rounded,
               size: 18,
               color: theme.colorScheme.onSurface.withAlpha(153),
             ),

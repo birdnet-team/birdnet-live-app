@@ -1,7 +1,7 @@
 name: birdnet_live
 description: "Real-time bird species identification using on-device ONNX inference"
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.27+27
 
 environment:
   sdk: ^3.6.2
@@ -45,9 +45,18 @@ dependencies:
   # Location
   geolocator: ^13.0.2
 
+  # Map
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # Icons
+  material_design_icons_flutter: ^7.0.7296
+
   # Network & Images
   http: ^1.2.2
   cached_network_image: ^3.4.1
+  path: ^1.9.0
+  file_picker: ^11.0.2
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +73,6 @@ flutter:
   assets:
     - assets/images/
     - assets/models/
-    - assets/test_fixtures/
 
 flutter_launcher_icons:
   android: true

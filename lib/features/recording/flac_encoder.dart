@@ -113,8 +113,15 @@ int _crc16(List<int> data) {
 // Bit-level writer (MSB-first)
 // =============================================================================
 
+/// Bit-level MSB-first writer backed by a [BytesBuilder].
+///
+/// Uses [BytesBuilder] (internally a [Uint8List]) instead of a plain
+/// [List<int>] to avoid the 8× memory overhead that Dart's tagged-pointer
+/// representation imposes on growable integer lists.  Each byte is stored
+/// as a single byte rather than an 8-byte heap slot, cutting the temporary
+/// allocation per FLAC frame from ~40 KB down to ~5 KB.
 class _BitWriter {
-  final List<int> _bytes = [];
+  final _bb = BytesBuilder();
   int _buffer = 0;
   int _bits = 0;
 
@@ -124,7 +131,7 @@ class _BitWriter {
       _buffer = (_buffer << 1) | ((value >> i) & 1);
       _bits++;
       if (_bits == 8) {
-        _bytes.add(_buffer & 0xFF);
+        _bb.addByte(_buffer & 0xFF);
         _buffer = 0;
         _bits = 0;
       }
@@ -144,8 +151,8 @@ class _BitWriter {
     if (_bits > 0) writeBits(0, 8 - _bits);
   }
 
-  /// Return all accumulated bytes.
-  Uint8List toBytes() => Uint8List.fromList(_bytes);
+  /// Return all accumulated bytes as a [Uint8List].
+  Uint8List toBytes() => _bb.toBytes();
 }
 
 // =============================================================================
@@ -454,14 +461,13 @@ Uint8List _encodeFrame(
   final subBytes = sw.toBytes();
 
   // ── Assemble: header + CRC-8 + subframe + CRC-16 ─────────────────────
-  final prelude = Uint8List(headerBytes.length + 1 + subBytes.length);
-  prelude.setAll(0, headerBytes);
-  prelude[headerBytes.length] = crc8;
-  prelude.setAll(headerBytes.length + 1, subBytes);
-
-  final crc16 = _crc16(prelude);
-  final frame = Uint8List(prelude.length + 2);
-  frame.setAll(0, prelude);
+  // Build the whole frame in a single allocation to avoid an intermediate
+  // `prelude` copy.  CRC-16 covers all bytes except the last two.
+  final frame = Uint8List(headerBytes.length + 1 + subBytes.length + 2);
+  frame.setAll(0, headerBytes);
+  frame[headerBytes.length] = crc8;
+  frame.setAll(headerBytes.length + 1, subBytes);
+  final crc16 = _crc16(Uint8List.sublistView(frame, 0, frame.length - 2));
   frame[frame.length - 2] = (crc16 >> 8) & 0xFF;
   frame[frame.length - 1] = crc16 & 0xFF;
   return frame;
@@ -646,6 +652,8 @@ class FlacEncoder implements AudioFileWriter {
       tail.setRange(0, rem, _pending, offset);
       _pending = tail;
     }
+    await _file!
+        .flush(); // Prevent OS file caching from causing OOM on long recordings
   }
 
   @override

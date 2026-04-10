@@ -49,6 +49,25 @@ final inferenceRateProvider =
   return DoubleSettingNotifier(prefs, PrefKeys.inferenceRate, 1.0);
 });
 
+/// Sensitivity (0.5 – 1.5, default 1.0).
+///
+/// Shifts the sigmoid curve: >1 boosts weak signals (more detections),
+/// <1 suppresses weak signals (fewer false positives).
+final sensitivityProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return DoubleSettingNotifier(prefs, PrefKeys.sensitivity, 1.0);
+});
+
+/// Score pooling mode ('off', 'average', 'max', 'lme' — default 'lme').
+///
+/// Controls how scores from consecutive inference windows are combined.
+final scorePoolingProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return StringSettingNotifier(prefs, PrefKeys.scorePooling, 'lme');
+});
+
 /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
 final speciesFilterModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
@@ -87,18 +106,18 @@ final dbCeilingProvider =
   return DoubleSettingNotifier(prefs, PrefKeys.dbCeiling, 0);
 });
 
-/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 20).
+/// Spectrogram visible duration in seconds (5, 10, 15, 20, 30 — default 15).
 final spectrogramDurationProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 20);
+  return IntSettingNotifier(prefs, PrefKeys.spectrogramDuration, 15);
 });
 
-/// Maximum frequency displayed in the spectrogram in Hz (default 12000).
+/// Maximum frequency displayed in the spectrogram in Hz (default 16000).
 final spectrogramMaxFreqProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return IntSettingNotifier(prefs, PrefKeys.spectrogramMaxFreq, 12000);
+  return IntSettingNotifier(prefs, PrefKeys.spectrogramMaxFreq, 16000);
 });
 
 /// Whether to use logarithmic amplitude scaling (default true).
@@ -147,14 +166,14 @@ final postBufferProvider =
 final exportFormatProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return StringSettingNotifier(prefs, PrefKeys.exportFormat, 'csv');
+  return StringSettingNotifier(prefs, PrefKeys.exportFormat, 'raven');
 });
 
-/// Include audio files in export (default false).
+/// Include audio files in export (default true).
 final includeAudioProvider =
     StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return BoolSettingNotifier(prefs, PrefKeys.includeAudio, false);
+  return BoolSettingNotifier(prefs, PrefKeys.includeAudio, true);
 });
 
 // ---------------------------------------------------------------------------
@@ -166,6 +185,13 @@ final includeAudioProvider =
 final useGpsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return BoolSettingNotifier(prefs, PrefKeys.useGps, true);
+});
+
+/// Show scientific names below common names (default true).
+final showSciNamesProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.showSciNames, true);
 });
 
 /// Geo-model probability threshold (0.0 – 1.0, default 0.03).

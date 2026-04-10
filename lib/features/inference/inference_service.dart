@@ -190,13 +190,15 @@ class InferenceService {
       sens,
     );
 
-    return PostProcessor.topK(
+    final detections = PostProcessor.topK(
       scores: adjusted,
       labels: _labels,
       k: k,
       threshold: thresh,
       timestamp: now,
     );
+
+    return detections;
   }
 
   /// Clear the temporal pooling buffer.

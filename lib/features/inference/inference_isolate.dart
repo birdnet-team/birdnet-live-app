@@ -198,6 +198,34 @@ class InferenceIsolate {
 // Worker isolate entry point
 // =============================================================================
 
+/// Load the ONNX model in a **separate async scope** so that the ~259 MB
+/// `modelBytes` Uint8List becomes eligible for GC as soon as this function
+/// returns.  Dart's async state machine retains local variables that are live
+/// across `await` points as persistent fields — if this loading code lived
+/// directly inside the long-running [_workerEntryPoint], the model bytes would
+/// never be collected because that function's state machine stays alive for the
+/// lifetime of the isolate.
+Future<InferenceService> _loadModelInIsolate({
+  required String modelFilePath,
+  required String labelsCsv,
+  required ModelConfig config,
+}) async {
+  debugPrint('[InferenceIsolate] loading model from file: $modelFilePath');
+  final modelFile = File(modelFilePath);
+  final modelBytes = await modelFile.readAsBytes();
+  debugPrint('[InferenceIsolate] model bytes read: ${modelBytes.length}');
+
+  final svc = InferenceService();
+  await svc.initialize(
+    modelBytes: modelBytes,
+    labelsCsv: labelsCsv,
+    config: config,
+  );
+  debugPrint('[InferenceIsolate] model initialized');
+  // modelBytes (~259 MB) becomes unreachable when this frame is collected.
+  return svc;
+}
+
 /// Top-level function that runs inside the background isolate.
 ///
 /// Receives an [_WorkerInit] with the model path and labels CSV, initializes
@@ -212,23 +240,15 @@ Future<void> _workerEntryPoint(_WorkerInit init) async {
     Map<String, dynamic>.from(init.configJson),
   );
 
-  // Initialize the model — signal success or failure back to main isolate.
+  // Initialize the model in a separate async function so the large
+  // modelBytes buffer is not retained by this function's async state machine.
   final InferenceService service;
   try {
-    debugPrint(
-        '[InferenceIsolate] loading model from file: ${init.modelFilePath}');
-    final modelFile = File(init.modelFilePath);
-    final modelBytes = await modelFile.readAsBytes();
-    debugPrint('[InferenceIsolate] model bytes read: ${modelBytes.length}');
-
-    final svc = InferenceService();
-    await svc.initialize(
-      modelBytes: modelBytes,
+    service = await _loadModelInIsolate(
+      modelFilePath: init.modelFilePath,
       labelsCsv: init.labelsCsv,
       config: config,
     );
-    service = svc;
-    debugPrint('[InferenceIsolate] model initialized');
     init.sendPort.send(const _WorkerReady());
   } catch (e) {
     debugPrint('[InferenceIsolate] init error: $e');

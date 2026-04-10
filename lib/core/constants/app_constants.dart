@@ -19,6 +19,9 @@ abstract final class AppConstants {
   /// Support email address.
   static const String supportEmail = 'ccb-birdnet@cornell.edu';
 
+  /// BirdNET website URL.
+  static const String birdnetUrl = 'https://birdnet.cornell.edu';
+
   /// Path to the model configuration JSON asset.
   ///
   /// The config file describes the ONNX model, its label format, tensor
@@ -38,7 +41,7 @@ abstract final class AppConstants {
   /// Default species count for display purposes.
   ///
   /// Overridden at runtime once the model config and labels are loaded.
-  static const int speciesCount = 11560;
+  static const int speciesCount = 5250;
 }
 
 /// SharedPreferences key constants.
@@ -58,6 +61,8 @@ abstract final class PrefKeys {
   static const String confidenceThreshold = 'confidence_threshold';
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
+  static const String sensitivity = 'sensitivity';
+  static const String scorePooling = 'score_pooling';
 
   // Spectrogram settings
   static const String fftSize = 'fft_size';
@@ -83,4 +88,8 @@ abstract final class PrefKeys {
   static const String geoThreshold = 'geo_threshold';
   static const String manualLatitude = 'manual_latitude';
   static const String manualLongitude = 'manual_longitude';
+  static const String mapTileConsent = 'map_tile_consent';
+
+  // Display settings
+  static const String showSciNames = 'show_sci_names';
 }

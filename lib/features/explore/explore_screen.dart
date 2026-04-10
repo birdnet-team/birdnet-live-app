@@ -16,7 +16,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/services/reverse_geocoding_service.dart';
 import 'explore_providers.dart';
 import 'widgets/species_card.dart';
 import 'widgets/species_info_overlay.dart';
@@ -85,6 +87,7 @@ class ExploreScreen extends ConsumerWidget {
                       scientificName: s.scientificName,
                       commonName: s.commonName,
                       geoScore: s.geoScore,
+                      weeklyScores: s.weeklyScores,
                       onTap: () => SpeciesInfoOverlay.show(
                         context,
                         ref,
@@ -107,7 +110,7 @@ class ExploreScreen extends ConsumerWidget {
 // Location header — shows coordinates and species count
 // ---------------------------------------------------------------------------
 
-class _LocationHeader extends StatelessWidget {
+class _LocationHeader extends StatefulWidget {
   const _LocationHeader({
     required this.ref,
     required this.speciesCount,
@@ -117,51 +120,167 @@ class _LocationHeader extends StatelessWidget {
   final int speciesCount;
 
   @override
+  State<_LocationHeader> createState() => _LocationHeaderState();
+}
+
+class _LocationHeaderState extends State<_LocationHeader> {
+  String? _locationName;
+  bool _geocoded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tryGeocode();
+  }
+
+  Future<void> _tryGeocode() async {
+    final loc = widget.ref.read(currentLocationProvider).valueOrNull;
+    if (loc == null || _geocoded) return;
+    _geocoded = true;
+    final name = await reverseGeocode(
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+    );
+    if (mounted && name != null) {
+      setState(() => _locationName = name);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final locationAsync = ref.watch(currentLocationProvider);
+    final locationAsync = widget.ref.watch(currentLocationProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.location_on,
-            size: 18,
-            color: theme.colorScheme.primary,
+          Row(
+            children: [
+              Icon(
+                Icons.location_on,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: locationAsync.when(
+                  data: (loc) {
+                    if (loc == null) {
+                      return Text(
+                        l10n.exploreNoLocation,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface.withAlpha(150),
+                        ),
+                      );
+                    }
+                    return Text(
+                      _locationName ?? l10n.exploreLocating,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withAlpha(150),
+                      ),
+                    );
+                  },
+                  loading: () => Text(
+                    l10n.exploreLocating,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(150),
+                    ),
+                  ),
+                  error: (_, __) => Text(
+                    l10n.exploreLocationError,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _showExploreHelp(context),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 22,
+                  color: theme.colorScheme.onSurface.withAlpha(120),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: locationAsync.when(
-              data: (loc) => Text(
-                loc != null
-                    ? '${loc.latitude.toStringAsFixed(3)}, ${loc.longitude.toStringAsFixed(3)}'
-                    : l10n.exploreNoLocation,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(150),
+          // Coordinates row
+          locationAsync.when(
+            data: (loc) {
+              if (loc == null) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(left: 24, top: 2),
+                child: Text(
+                  '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(100),
+                    fontSize: 11,
+                  ),
                 ),
-              ),
-              loading: () => Text(
-                l10n.exploreLocating,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withAlpha(150),
-                ),
-              ),
-              error: (_, __) => Text(
-                l10n.exploreLocationError,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
-              ),
-            ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
-          Text(
-            l10n.exploreSpeciesCount(speciesCount),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(150),
-              fontWeight: FontWeight.w600,
-            ),
+        ],
+      ),
+    );
+  }
+
+  void _showExploreHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.exploreHelpTitle),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.exploreHelpBody,
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final uri =
+                      Uri.parse('https://birdnet-team.github.io/geomodel/');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.open_in_new,
+                        size: 16, color: theme.colorScheme.primary),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        l10n.exploreHelpLearnMore,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),

@@ -65,20 +65,20 @@ void main() {
       expect(container.read(postBufferProvider), 5);
     });
 
-    test('exportFormat defaults to csv', () {
-      expect(container.read(exportFormatProvider), 'csv');
+    test('exportFormat defaults to raven', () {
+      expect(container.read(exportFormatProvider), 'raven');
     });
 
-    test('includeAudio defaults to false', () {
-      expect(container.read(includeAudioProvider), false);
+    test('includeAudio defaults to true', () {
+      expect(container.read(includeAudioProvider), true);
     });
 
-    test('spectrogramDuration defaults to 20', () {
-      expect(container.read(spectrogramDurationProvider), 20);
+    test('spectrogramDuration defaults to 15', () {
+      expect(container.read(spectrogramDurationProvider), 15);
     });
 
-    test('spectrogramMaxFreq defaults to 12000', () {
-      expect(container.read(spectrogramMaxFreqProvider), 12000);
+    test('spectrogramMaxFreq defaults to 16000', () {
+      expect(container.read(spectrogramMaxFreqProvider), 16000);
     });
 
     test('logAmplitude defaults to true', () {

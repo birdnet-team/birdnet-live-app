@@ -1,31 +1,41 @@
 # BirdNET Live
 
 <p align="center">
-  <img src="assets/images/logo-birdnet-circle.png" alt="BirdNET Live" width="250">
+  <img src="assets/images/app-icon.png" alt="BirdNET Live" width="250">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
-  <img src="https://img.shields.io/badge/platforms-iOS%20%7C%20Android-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.1.0--dev-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
+  <img src="https://img.shields.io/badge/version-0.1.27-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
-A Flutter app for on-device bird species identification using ONNX inference. Runs on Android and iOS.
+A Flutter app for on-device acoustic species identification using ONNX inference. Runs on Android, iOS, and Windows.
 
-<!-- TODO: Add screenshot -->
-<!-- ![App Screenshot](docs/assets/screenshots/live-mode.png) -->
+<p align="center">
+  <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
+  <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
+  <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
+  <img src="docs/assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
+</p>
+
+**NOTE: This is an early developer preview. The app is not yet feature-complete or fully polished. Expect bugs, crashes, and rough edges. Please report issues and contribute if you can!**
 
 ---
 
 ## Features
 
-- **Live Mode** — Scrolling spectrogram with species identification
+- **Live Mode** — Real-time scrolling spectrogram with species identification
+- **Explore** — Browse species expected at your location using the BirdNET geo-model
+- **Session Library** — Review, edit, and export past sessions with audio playback
+- **Export** — Raven Pro, CSV, JSON, and ZIP bundle formats
+- **On-device inference** — BirdNET+ model (5,250 species), no internet required
+- **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Survey Mode** — Background monitoring with GPS tracking *(planned)*
 - **Point Count Mode** — Timed surveys with recording *(planned)*
-- **File Analysis Mode** — Analyze existing audio files *(planned)*
-- **On-device inference** — BirdNET model, no internet required
-- **Configurable settings** — Audio, inference, spectrogram, recording, export
+- **File Analysis Mode** — Analyze existing audio files
 
 ## Quick Start
 
@@ -166,7 +176,7 @@ Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and 
 
 ## Funding
 
-Our work in the K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.
+Our work in the Cornell K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.
 
 The development of BirdNET is supported by the German Federal Ministry of Research, Technology and Space (FKZ 01|S22072), the German Federal Ministry for the Environment, Climate Action, Nature Conservation and Nuclear Safety (FKZ 67KI31040E), the German Federal Ministry of Economic Affairs and Energy (FKZ 16KN095550), the Deutsche Bundesstiftung Umwelt (project 39263/01) and the European Social Fund.
 

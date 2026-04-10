@@ -41,6 +41,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/services/memory_monitor.dart';
 import '../audio/ring_buffer.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
@@ -120,8 +121,18 @@ class LiveController {
   /// Whether an inference cycle is currently in progress.
   bool _inferring = false;
 
+  /// Inference cycle counter for periodic memory logging.
+  int _inferenceCycleCount = 0;
+
   /// Geo-model scores for species filtering (set at session start).
   Map<String, double>? _geoScores;
+
+  /// All scientific names in the geo-model's label file.
+  ///
+  /// When set, detections for species absent from the geo-model are always
+  /// removed regardless of the active [_filterMode].  This ensures the live
+  /// screen only shows species both models know about.
+  Set<String>? _geoModelSpeciesNames;
 
   /// Active species filter mode for the current session.
   SpeciesFilterMode _filterMode = SpeciesFilterMode.off;
@@ -131,6 +142,14 @@ class LiveController {
 
   /// Whether per-detection audio clips should be saved.
   bool _saveDetectionClips = false;
+
+  /// Species currently shown on the live screen (have visible cards).
+  ///
+  /// Maps scientific name → active [DetectionRecord] in [_sessionDetections].
+  /// A species is added when it first appears in inference results and
+  /// removed when it drops out.  Re-appearance after removal creates a
+  /// brand-new detection record for session review.
+  final Map<String, DetectionRecord> _activeCardSpecies = {};
 
   /// Maximum number of in-memory detections (older entries are still
   /// persisted in the [LiveSession] object).
@@ -195,13 +214,17 @@ class LiveController {
       final configJson = await rootBundle.loadString(
         AppConstants.modelConfigAssetPath,
       );
+      final fullConfig = json.decode(configJson) as Map<String, dynamic>;
       _config = ModelConfig.fromJson(
-        json.decode(configJson) as Map<String, dynamic>,
+        fullConfig['audioModel'] as Map<String, dynamic>,
       );
       debugPrint('[LiveController] config loaded: ${_config!.onnx.modelFile}');
 
       // Ensure model file exists on the filesystem.
-      final modelFilePath = await _ensureModelOnDisk(_config!.onnx.modelFile);
+      final modelFilePath = await _ensureModelOnDisk(
+        _config!.onnx.modelFile,
+        _config!.version,
+      );
       debugPrint('[LiveController] model on disk: $modelFilePath');
 
       // Load labels CSV.
@@ -230,9 +253,10 @@ class LiveController {
 
   /// Copy the model asset to the app's documents directory if it doesn't
   /// already exist on disk, and return the absolute file path.
-  Future<String> _ensureModelOnDisk(String fileName) async {
+  Future<String> _ensureModelOnDisk(String fileName, String version) async {
     final appDir = await getApplicationDocumentsDirectory();
-    final modelFile = File('${appDir.path}/$fileName');
+    final versionedName = '${fileName}_v$version';
+    final modelFile = File('${appDir.path}/$versionedName');
 
     if (!modelFile.existsSync()) {
       debugPrint('[LiveController] extracting model to ${modelFile.path} …');
@@ -264,6 +288,9 @@ class LiveController {
   /// [recordingFormat] — audio file format ('wav' or 'flac').
   /// [geoScores] — optional geo-model predictions for species filtering.
   /// [geoThreshold] — minimum geo score for the geoExclude filter.
+  /// [geoModelSpeciesNames] — all scientific names in the geo-model labels;
+  ///   when provided, detections for species absent from the geo-model are
+  ///   always removed regardless of the active filter mode.
   Future<void> startSession({
     required int windowDuration,
     required double inferenceRate,
@@ -273,6 +300,7 @@ class LiveController {
     String recordingFormat = 'flac',
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
+    Set<String>? geoModelSpeciesNames,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -292,11 +320,19 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
     _isolate.resetPooling();
+    _inferenceCycleCount = 0;
+    ringBuffer.clear();
+
+    // Start memory monitoring for this session.
+    MemoryMonitor.startPeriodic(intervalSeconds: 10);
+    MemoryMonitor.logOnce(tag: 'session-start');
 
     // Store geo-filter state for this session.
     _geoScores = geoScores;
     _geoThreshold = geoThreshold;
+    _geoModelSpeciesNames = geoModelSpeciesNames;
     _filterMode = switch (speciesFilterMode) {
       'geoExclude' => SpeciesFilterMode.geoExclude,
       'geoMerge' => SpeciesFilterMode.geoMerge,
@@ -401,6 +437,11 @@ class LiveController {
       _session!.recordingPath = recordingPath;
     }
 
+    // Stop memory monitoring and print summary.
+    MemoryMonitor.logOnce(tag: 'session-end');
+    MemoryMonitor.printSummary();
+    MemoryMonitor.stop();
+
     _session!.end();
     final completedSession = _session!;
 
@@ -409,6 +450,7 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
 
     _state = LiveState.ready;
     _notifyListeners();
@@ -460,6 +502,7 @@ class LiveController {
     }
 
     _inferring = true;
+    _inferenceCycleCount++;
 
     try {
       final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
@@ -467,8 +510,10 @@ class LiveController {
       final totalWritten = ringBuffer.totalWritten;
       final audioSamples = ringBuffer.readLast(windowSamples);
 
-      debugPrint('[LiveController] inference: totalWritten=$totalWritten, '
-          'windowSamples=$windowSamples, sampleRate=$sampleRate');
+      // Log memory every 10 cycles (~10s at 1Hz) to track growth.
+      if (_inferenceCycleCount % 10 == 0) {
+        MemoryMonitor.logOnce(tag: 'cycle-$_inferenceCycleCount');
+      }
 
       debugPrint('[LiveController] running inference …');
       final detections = await _isolate.infer(
@@ -484,7 +529,7 @@ class LiveController {
       _latestDetections = detections;
 
       // Apply species filter (geo-model or custom list).
-      final filteredDetections = SpeciesFilter.apply(
+      final speciesFiltered = SpeciesFilter.apply(
         detections: detections,
         mode: _filterMode,
         geoScores: _geoScores,
@@ -492,17 +537,48 @@ class LiveController {
         confidenceThreshold: confidenceThreshold / 100.0,
       );
 
+      // Restrict to the intersection of both models: only keep detections
+      // for species the geo-model also knows, regardless of filter mode.
+      final geoNames = _geoModelSpeciesNames;
+      final filteredDetections = geoNames == null
+          ? speciesFiltered
+          : speciesFiltered
+              .where((d) => geoNames.contains(d.species.scientificName))
+              .toList();
+
       // Update the live detection list (replaced each cycle, like the PWA).
       // Each species appears at most once with its current score.
       _currentLiveDetections = [
         for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
-      // Accumulate to session history (for session saving / stats).
-      if (_session != null && filteredDetections.isNotEmpty) {
-        // Save detection clip if user requested per-detection clips.
+      // ── Detection counting: card-visibility based ─────────────────
+      //
+      // A species counts as ONE detection for as long as its card is
+      // continuously visible on the live screen.  Only when the card
+      // disappears (species drops out of inference results) and later
+      // reappears does it become a SECOND detection for session review.
+      if (_session != null) {
+        // Determine which species are present this cycle.
+        final currentNames = <String>{
+          for (final d in filteredDetections) d.species.scientificName,
+        };
+
+        // Species that just appeared (not currently tracked) → new detection.
+        final appeared =
+            currentNames.difference(_activeCardSpecies.keys.toSet());
+
+        // Species that disappeared → remove from tracking.
+        final disappeared =
+            _activeCardSpecies.keys.toSet().difference(currentNames);
+        for (final name in disappeared) {
+          _activeCardSpecies.remove(name);
+        }
+
+        // Save detection clip if user requested per-detection clips
+        // and there are new species appearing.
         String? clipPath;
-        if (_saveDetectionClips) {
+        if (_saveDetectionClips && appeared.isNotEmpty) {
           final clipName = 'clip_${DateTime.now().millisecondsSinceEpoch}';
           clipPath = await recordingService.saveDetectionClip(
             clipName: clipName,
@@ -510,12 +586,35 @@ class LiveController {
         }
 
         for (final detection in filteredDetections) {
-          final record = DetectionRecord.fromDetection(
-            detection,
-            audioClipPath: clipPath,
-          );
-          _session!.addDetection(record);
-          _sessionDetections.insert(0, record); // newest first
+          final name = detection.species.scientificName;
+
+          if (appeared.contains(name)) {
+            // New detection — species just appeared on screen.
+            final record = DetectionRecord.fromDetection(
+              detection,
+              audioClipPath: clipPath,
+            );
+            _session!.addDetection(record);
+            _sessionDetections.insert(0, record);
+            _activeCardSpecies[name] = record;
+          } else if (_activeCardSpecies.containsKey(name)) {
+            // Ongoing — update confidence if higher (same detection).
+            final existing = _activeCardSpecies[name]!;
+            if (detection.confidence > existing.confidence) {
+              final updated = DetectionRecord(
+                scientificName: existing.scientificName,
+                commonName: existing.commonName,
+                confidence: detection.confidence,
+                timestamp: existing.timestamp,
+                audioClipPath: existing.audioClipPath ?? clipPath,
+              );
+              final sessionIdx = _sessionDetections.indexOf(existing);
+              if (sessionIdx != -1) _sessionDetections[sessionIdx] = updated;
+              final lsIdx = _session!.detections.indexOf(existing);
+              if (lsIdx != -1) _session!.detections[lsIdx] = updated;
+              _activeCardSpecies[name] = updated;
+            }
+          }
         }
 
         // Cap in-memory list to avoid unbounded growth.
