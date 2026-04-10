@@ -14,9 +14,9 @@
 A Flutter app for on-device bird species identification using ONNX inference. Runs on Android, iOS, and Windows.
 
 <p align="center">
-  <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="270">
-  <img src="docs/assets/screenshots/explore.png" alt="Explore" width="270">
-  <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="270">
+  <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
+  <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
+  <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
 </p>
 
 ---
