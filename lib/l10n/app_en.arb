@@ -982,7 +982,7 @@
   "@fileAnalysisLocationManual": {
     "description": "Choice: enter coordinates manually"
   },
-  "fileAnalysisLocationManualSubtitle": "Type latitude and longitude",
+  "fileAnalysisLocationManualSubtitle": "Type coordinates or pick on map",
   "@fileAnalysisLocationManualSubtitle": {
     "description": "Subtitle for manual entry choice"
   },
@@ -1010,20 +1010,28 @@
   "@fileAnalysisLongitude": {
     "description": "Label for longitude input field"
   },
+  "fileAnalysisPickOnMap": "Pick on map",
+  "@fileAnalysisPickOnMap": {
+    "description": "Button to open map picker for location"
+  },
+  "fileAnalysisMapConfirm": "Use this location",
+  "@fileAnalysisMapConfirm": {
+    "description": "Button to confirm map-picked location"
+  },
 
-  "fileAnalysisDateTitle": "Recording Date",
+  "fileAnalysisDateTitle": "Recording Date (optional)",
   "@fileAnalysisDateTitle": {
     "description": "Title for recording date section in file upload"
   },
-  "fileAnalysisDateSubtitle": "When was this recording made? Used for seasonal species filtering.",
+  "fileAnalysisDateSubtitle": "Optional. Used for seasonal species filtering if set.",
   "@fileAnalysisDateSubtitle": {
     "description": "Subtitle explaining why recording date matters"
   },
-  "fileAnalysisDateToday": "Today (default)",
-  "@fileAnalysisDateToday": {
+  "fileAnalysisDateNone": "Not set",
+  "@fileAnalysisDateNone": {
     "description": "Label shown when no recording date is selected"
   },
-  "fileAnalysisDateClear": "Reset to today",
+  "fileAnalysisDateClear": "Clear date",
   "@fileAnalysisDateClear": {
     "description": "Tooltip for clearing the selected recording date"
   },
