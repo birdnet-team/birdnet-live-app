@@ -11,13 +11,15 @@
   <img src="https://img.shields.io/badge/version-0.1.0--dev-orange.svg" alt="Version">
 </p>
 
-A Flutter app for on-device bird species identification using ONNX inference. Runs on Android, iOS, and Windows.
+A Flutter app for on-device acoustic species identification using ONNX inference. Runs on Android, iOS, and Windows.
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
   <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
   <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
 </p>
+
+**NOTE: This is an early developer preview. The app is not yet feature-complete or fully polished. Expect bugs, crashes, and rough edges. Please report issues and contribute if you can!**
 
 ---
 

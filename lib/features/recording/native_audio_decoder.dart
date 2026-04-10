@@ -1,13 +1,16 @@
 // =============================================================================
-// Native Audio Decoder — Platform channel wrapper for Android MediaCodec
+// Native Audio Decoder — Platform channel wrapper for native audio decoding
 // =============================================================================
 //
-// Provides [decodeFile] which calls into Android's MediaCodec pipeline to
-// decode compressed audio formats (MP3, OGG, AAC/M4A, OPUS, etc.) to raw
+// Provides [decodeFile] which calls into the platform's native audio pipeline
+// to decode compressed audio formats (MP3, OGG, AAC/M4A, OPUS, etc.) to raw
 // mono 16-bit PCM.
 //
-// Only available on Android.  Falls back formats not handled by the pure
-// Dart WAV/FLAC decoder in [AudioDecoder].
+//   • **Android**: MediaExtractor + MediaCodec (NativeAudioDecoder.kt)
+//   • **iOS**: AVAssetReader + AVAssetReaderTrackOutput (NativeAudioDecoder.swift)
+//
+// Falls back formats not handled by the pure Dart WAV/FLAC decoder in
+// [AudioDecoder].
 // =============================================================================
 
 import 'dart:typed_data';
@@ -16,9 +19,12 @@ import 'package:flutter/services.dart';
 
 import 'audio_decoder.dart';
 
-/// Decodes audio files via Android's native MediaCodec framework.
+/// Decodes audio files via the platform's native audio framework.
 ///
-/// Supports any format that Android's MediaExtractor can parse:
+/// Android: MediaExtractor + MediaCodec.
+/// iOS: AVAssetReader (AVFoundation).
+///
+/// Supports any format the platform can handle:
 /// MP3, OGG Vorbis, AAC (M4A), OPUS, AMR, WMA, FLAC, WAV, and more.
 class NativeAudioDecoder {
   NativeAudioDecoder._();
