@@ -258,6 +258,11 @@
   "fileAnalysisLatitude": "Breitengrad",
   "fileAnalysisLongitude": "Längengrad",
 
+  "fileAnalysisDateTitle": "Aufnahmedatum",
+  "fileAnalysisDateSubtitle": "Wann wurde diese Aufnahme gemacht? Wird für saisonale Artenfilterung verwendet.",
+  "fileAnalysisDateToday": "Heute (Standard)",
+  "fileAnalysisDateClear": "Auf heute zurücksetzen",
+
   "fileAnalysisParamsTitle": "Analyseeinstellungen",
   "fileAnalysisParamsSubtitle": "Konfigurieren Sie die Audioanalyse. Standardwerte kommen aus Ihren globalen Einstellungen.",
   "fileAnalysisOverlap": "Fensterüberlappung",

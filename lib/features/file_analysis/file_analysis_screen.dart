@@ -57,7 +57,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   AudioFileInfo? _fileInfo;
   bool _isInspecting = false;
 
-  // ── Step 2: Location ──────────────────────────────────────────────────
+  // ── Step 2: Location & Date ────────────────────────────────────────────
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
@@ -65,6 +65,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   bool _isFetchingLocation = false;
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
+  DateTime? _recordingDate;
 
   // ── Step 3: Parameters ────────────────────────────────────────────────
   late int _windowDuration;
@@ -238,7 +239,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       try {
         final geoModel = await ref.read(geoModelProvider.future);
         geoSpeciesNames = (await ref.read(geoModelSpeciesNamesProvider.future));
-        final week = _currentWeekNumber();
+        final refDate = _recordingDate ?? DateTime.now();
+        final week = _weekNumber(refDate);
         geoScores = geoModel.predict(
           latitude: _latitude!,
           longitude: _longitude!,
@@ -262,6 +264,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       latitude: _latitude,
       longitude: _longitude,
       locationName: _locationName,
+      recordingDate: _recordingDate,
     );
 
     if (session != null && mounted) {
@@ -283,10 +286,9 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     }
   }
 
-  int _currentWeekNumber() {
-    final now = DateTime.now();
-    final jan1 = DateTime(now.year, 1, 1);
-    final dayOfYear = now.difference(jan1).inDays + 1;
+  int _weekNumber(DateTime date) {
+    final jan1 = DateTime(date.year, 1, 1);
+    final dayOfYear = date.difference(jan1).inDays + 1;
     return ((dayOfYear / 7.0).ceil()).clamp(1, 48);
   }
 
@@ -346,11 +348,13 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                     isFetching: _isFetchingLocation,
                     latController: _latController,
                     lonController: _lonController,
+                    recordingDate: _recordingDate,
                     onChoiceChanged: (c) {
                       setState(() => _locationChoice = c);
                       if (c == _LocationChoice.gps) _fetchGpsLocation();
                     },
                     onFetchGps: _fetchGpsLocation,
+                    onDateChanged: (d) => setState(() => _recordingDate = d),
                   ),
                   _ParametersStep(
                     windowDuration: _windowDuration,
@@ -698,8 +702,10 @@ class _LocationStep extends StatelessWidget {
     required this.isFetching,
     required this.latController,
     required this.lonController,
+    required this.recordingDate,
     required this.onChoiceChanged,
     required this.onFetchGps,
+    required this.onDateChanged,
   });
 
   final _LocationChoice choice;
@@ -709,8 +715,10 @@ class _LocationStep extends StatelessWidget {
   final bool isFetching;
   final TextEditingController latController;
   final TextEditingController lonController;
+  final DateTime? recordingDate;
   final void Function(_LocationChoice) onChoiceChanged;
   final VoidCallback onFetchGps;
+  final ValueChanged<DateTime?> onDateChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -837,8 +845,78 @@ class _LocationStep extends StatelessWidget {
               ],
             ),
           ],
+
+          // ── Recording date ───────────────────────────────────
+          const SizedBox(height: 24),
+          Text(
+            l10n.fileAnalysisDateTitle,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.fileAnalysisDateSubtitle,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _DatePickerTile(
+            selectedDate: recordingDate,
+            onDateChanged: onDateChanged,
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _DatePickerTile extends StatelessWidget {
+  const _DatePickerTile({
+    required this.selectedDate,
+    required this.onDateChanged,
+  });
+
+  final DateTime? selectedDate;
+  final ValueChanged<DateTime?> onDateChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final now = DateTime.now();
+    final displayDate = selectedDate ?? now;
+    final label = selectedDate != null
+        ? '${displayDate.year}-${displayDate.month.toString().padLeft(2, '0')}-${displayDate.day.toString().padLeft(2, '0')}'
+        : l10n.fileAnalysisDateToday;
+
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: displayDate,
+                firstDate: DateTime(2000),
+                lastDate: now,
+              );
+              if (picked != null) onDateChanged(picked);
+            },
+            icon: const Icon(Icons.calendar_today, size: 18),
+            label: Text(label),
+          ),
+        ),
+        if (selectedDate != null) ...[
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: () => onDateChanged(null),
+            icon: const Icon(Icons.clear, size: 18),
+            tooltip: l10n.fileAnalysisDateClear,
+          ),
+        ],
+      ],
     );
   }
 }
@@ -1329,9 +1407,10 @@ class _NavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomPadding),
       child: Row(
         children: [
           if (currentStep > 0)

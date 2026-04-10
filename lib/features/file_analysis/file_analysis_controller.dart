@@ -310,6 +310,7 @@ class FileAnalysisController {
     double? latitude,
     double? longitude,
     String? locationName,
+    DateTime? recordingDate,
   }) async {
     if (_state != FileAnalysisState.ready) return null;
 
@@ -368,7 +369,7 @@ class FileAnalysisController {
 
       // 3. Create session.
       final sessionId = DateTime.now().toIso8601String().replaceAll(':', '-');
-      final fileStartTime = DateTime.now();
+      final fileStartTime = recordingDate ?? DateTime.now();
       final session = LiveSession(
         id: sessionId,
         startTime: fileStartTime,

@@ -80,6 +80,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 - **File headers**: Each Dart file has a `// ===...` block comment explaining purpose, usage, and design rationale.
 - **Tests**: Unit tests mirror the `lib/` structure under `test/`. Use `flutter test` to run.
 - **No hardcoded values**: Model parameters, API URLs, and thresholds come from config or constants.
+- **Version bumping**: Bump the patch version in `pubspec.yaml` (e.g. `0.1.24` → `0.1.25`) with each user-facing change set. The build number tracks the patch number (e.g. `0.1.25+25`).
 
 ## Commands
 
