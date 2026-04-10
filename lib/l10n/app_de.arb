@@ -224,5 +224,51 @@
   "settingsRecordingDescription": "Audio während Live-Sessions speichern. Vollmodus nimmt alles auf; Detektionsmodus speichert nur Clips um erkannte Arten.",
   "settingsLocationDescription": "GPS und geografische Artfilterung. Das Geo-Modell nutzt Ihre Koordinaten zur Vorhersage lokaler Arten und Filterung unwahrscheinlicher Detektionen.",
   "settingsExportDescription": "Dateiformat und Inhalt für Session-Exporte. Raven-Tabellen sind kompatibel mit Cornells Raven Pro Software.",
-  "settingsDangerZoneDescription": "Unumkehrbare Aktionen — App-Daten zurücksetzen oder löschen"
+  "settingsDangerZoneDescription": "Unumkehrbare Aktionen \u2014 App-Daten zur\u00fccksetzen oder l\u00f6schen",
+
+  "settingsWindowDuration": "Fensterdauer",
+  "settingsConfidenceThreshold": "Konfidenzschwelle",
+
+  "fileAnalysisStepFile": "Datei",
+  "fileAnalysisStepLocation": "Ort",
+  "fileAnalysisStepParams": "Parameter",
+  "fileAnalysisStepAnalyze": "Analyse",
+
+  "fileAnalysisPickTitle": "Audiodatei auswählen",
+  "fileAnalysisPickSubtitle": "Wählen Sie eine WAV- oder FLAC-Aufnahme zur Vogelartenerkennung.",
+  "fileAnalysisPickButton": "Datei wählen",
+  "fileAnalysisChangeFile": "Datei ändern",
+  "fileAnalysisReading": "Datei wird gelesen…",
+  "fileAnalysisFormat": "Format",
+  "fileAnalysisDuration": "Dauer",
+  "fileAnalysisSize": "Größe",
+  "fileAnalysisSampleRate": "Abtastrate",
+
+  "fileAnalysisLocationTitle": "Aufnahmeort",
+  "fileAnalysisLocationSubtitle": "Ein Standort ermöglicht geografische Artfilterung für genauere Ergebnisse.",
+  "fileAnalysisLocationGps": "Aktuellen Standort verwenden",
+  "fileAnalysisLocationGpsSubtitle": "GPS des Geräts verwenden",
+  "fileAnalysisLocationManual": "Manuell eingeben",
+  "fileAnalysisLocationManualSubtitle": "Breiten- und Längengrad eingeben",
+  "fileAnalysisLocationSkip": "Standort überspringen",
+  "fileAnalysisLocationSkipSubtitle": "Ohne geografische Filterung analysieren",
+  "fileAnalysisLocationRefresh": "Standort aktualisieren",
+  "fileAnalysisLocationFetch": "Standort abrufen",
+  "fileAnalysisLatitude": "Breitengrad",
+  "fileAnalysisLongitude": "Längengrad",
+
+  "fileAnalysisParamsTitle": "Analyseeinstellungen",
+  "fileAnalysisParamsSubtitle": "Konfigurieren Sie die Audioanalyse. Standardwerte kommen aus Ihren globalen Einstellungen.",
+  "fileAnalysisOverlap": "Fensterüberlappung",
+
+  "fileAnalysisAnalyzeTitle": "Analyse starten",
+  "fileAnalysisReadyMessage": "Alles bereit. Tippen Sie auf die Schaltfläche unten, um die Analyse zu starten.",
+  "fileAnalysisProgressWindows": "Fenster {current} von {total}",
+  "fileAnalysisDetections": "Erkennungen",
+  "fileAnalysisSpecies": "Arten",
+  "fileAnalysisError": "Analysefehler",
+
+  "fileAnalysisBack": "Zurück",
+  "fileAnalysisNext": "Weiter",
+  "fileAnalysisStart": "Analyse starten"
 }

@@ -901,5 +901,176 @@
   "settingsDangerZoneDescription": "Irreversible actions — reset or delete app data",
   "@settingsDangerZoneDescription": {
     "description": "Subtitle for Danger Zone settings section"
+  },
+
+  "settingsWindowDuration": "Window duration",
+  "@settingsWindowDuration": {
+    "description": "Label for analysis window duration setting"
+  },
+  "settingsConfidenceThreshold": "Confidence threshold",
+  "@settingsConfidenceThreshold": {
+    "description": "Label for confidence threshold setting"
+  },
+
+  "fileAnalysisStepFile": "File",
+  "@fileAnalysisStepFile": {
+    "description": "Step indicator label for file selection step"
+  },
+  "fileAnalysisStepLocation": "Location",
+  "@fileAnalysisStepLocation": {
+    "description": "Step indicator label for location step"
+  },
+  "fileAnalysisStepParams": "Settings",
+  "@fileAnalysisStepParams": {
+    "description": "Step indicator label for parameters step"
+  },
+  "fileAnalysisStepAnalyze": "Analyze",
+  "@fileAnalysisStepAnalyze": {
+    "description": "Step indicator label for analysis step"
+  },
+
+  "fileAnalysisPickTitle": "Select Audio File",
+  "@fileAnalysisPickTitle": {
+    "description": "Title for file selection step"
+  },
+  "fileAnalysisPickSubtitle": "Choose a WAV or FLAC recording to analyze for bird species.",
+  "@fileAnalysisPickSubtitle": {
+    "description": "Subtitle for file selection step"
+  },
+  "fileAnalysisPickButton": "Choose File",
+  "@fileAnalysisPickButton": {
+    "description": "Button label to open file picker"
+  },
+  "fileAnalysisChangeFile": "Change File",
+  "@fileAnalysisChangeFile": {
+    "description": "Button label to pick a different file"
+  },
+  "fileAnalysisReading": "Reading file…",
+  "@fileAnalysisReading": {
+    "description": "Shown while inspecting the selected audio file"
+  },
+  "fileAnalysisFormat": "Format",
+  "@fileAnalysisFormat": {
+    "description": "Label for audio format metadata"
+  },
+  "fileAnalysisDuration": "Duration",
+  "@fileAnalysisDuration": {
+    "description": "Label for audio duration metadata"
+  },
+  "fileAnalysisSize": "Size",
+  "@fileAnalysisSize": {
+    "description": "Label for file size metadata"
+  },
+  "fileAnalysisSampleRate": "Sample rate",
+  "@fileAnalysisSampleRate": {
+    "description": "Label for sample rate metadata"
+  },
+
+  "fileAnalysisLocationTitle": "Recording Location",
+  "@fileAnalysisLocationTitle": {
+    "description": "Title for location step"
+  },
+  "fileAnalysisLocationSubtitle": "Adding a location enables geographic species filtering for more accurate results.",
+  "@fileAnalysisLocationSubtitle": {
+    "description": "Subtitle for location step"
+  },
+  "fileAnalysisLocationGps": "Use current location",
+  "@fileAnalysisLocationGps": {
+    "description": "Choice: use GPS for location"
+  },
+  "fileAnalysisLocationGpsSubtitle": "Use your device's GPS",
+  "@fileAnalysisLocationGpsSubtitle": {
+    "description": "Subtitle for GPS choice"
+  },
+  "fileAnalysisLocationManual": "Enter manually",
+  "@fileAnalysisLocationManual": {
+    "description": "Choice: enter coordinates manually"
+  },
+  "fileAnalysisLocationManualSubtitle": "Type latitude and longitude",
+  "@fileAnalysisLocationManualSubtitle": {
+    "description": "Subtitle for manual entry choice"
+  },
+  "fileAnalysisLocationSkip": "Skip location",
+  "@fileAnalysisLocationSkip": {
+    "description": "Choice: skip providing location"
+  },
+  "fileAnalysisLocationSkipSubtitle": "Analyze without geographic filtering",
+  "@fileAnalysisLocationSkipSubtitle": {
+    "description": "Subtitle for skip choice"
+  },
+  "fileAnalysisLocationRefresh": "Refresh location",
+  "@fileAnalysisLocationRefresh": {
+    "description": "Button to re-fetch GPS location"
+  },
+  "fileAnalysisLocationFetch": "Get location",
+  "@fileAnalysisLocationFetch": {
+    "description": "Button to fetch GPS location"
+  },
+  "fileAnalysisLatitude": "Latitude",
+  "@fileAnalysisLatitude": {
+    "description": "Label for latitude input field"
+  },
+  "fileAnalysisLongitude": "Longitude",
+  "@fileAnalysisLongitude": {
+    "description": "Label for longitude input field"
+  },
+
+  "fileAnalysisParamsTitle": "Analysis Settings",
+  "@fileAnalysisParamsTitle": {
+    "description": "Title for parameters step"
+  },
+  "fileAnalysisParamsSubtitle": "Configure how the audio will be analyzed. Defaults come from your global settings.",
+  "@fileAnalysisParamsSubtitle": {
+    "description": "Subtitle for parameters step"
+  },
+  "fileAnalysisOverlap": "Window overlap",
+  "@fileAnalysisOverlap": {
+    "description": "Label for overlap parameter"
+  },
+
+  "fileAnalysisAnalyzeTitle": "Run Analysis",
+  "@fileAnalysisAnalyzeTitle": {
+    "description": "Title for analysis step"
+  },
+  "fileAnalysisReadyMessage": "Everything is set. Tap the button below to start analyzing your file.",
+  "@fileAnalysisReadyMessage": {
+    "description": "Message shown before starting analysis"
+  },
+  "fileAnalysisProgressWindows": "Window {current} of {total}",
+  "@fileAnalysisProgressWindows": {
+    "description": "Progress label showing current and total windows",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "fileAnalysisDetections": "Detections",
+  "@fileAnalysisDetections": {
+    "description": "Label for detections count"
+  },
+  "fileAnalysisSpecies": "Species",
+  "@fileAnalysisSpecies": {
+    "description": "Label for species count"
+  },
+  "fileAnalysisError": "Analysis Error",
+  "@fileAnalysisError": {
+    "description": "Error card title"
+  },
+
+  "fileAnalysisBack": "Back",
+  "@fileAnalysisBack": {
+    "description": "Back button in wizard navigation"
+  },
+  "fileAnalysisNext": "Next",
+  "@fileAnalysisNext": {
+    "description": "Next button in wizard navigation"
+  },
+  "fileAnalysisStart": "Start Analysis",
+  "@fileAnalysisStart": {
+    "description": "Button to begin file analysis"
   }
 }

@@ -6,6 +6,7 @@ import '../about/about_screen.dart';
 import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
+import '../file_analysis/file_analysis_screen.dart';
 import '../settings/settings_screen.dart';
 
 // =============================================================================
@@ -163,7 +164,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.fileAnalysisMode,
             description: l10n.fileAnalysisModeDescription,
             color: theme.colorScheme.secondary,
-            comingSoon: true,
+            onTap: () => _openFileAnalysis(context),
           ),
         ],
       ),
@@ -174,6 +175,14 @@ class _ModeGrid extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const LiveScreen(),
+      ),
+    );
+  }
+
+  void _openFileAnalysis(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const FileAnalysisScreen(),
       ),
     );
   }
