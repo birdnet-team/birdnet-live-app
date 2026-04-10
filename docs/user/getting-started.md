@@ -2,13 +2,14 @@
 
 ## Installation
 
-BirdNET Live is available for Android and iOS.
+BirdNET Live is available for Android, iOS, and Windows.
 
 ### Requirements
 
 - **Android**: 8.0 (API 26) or later
 - **iOS**: 15.0 or later
-- ~100 MB storage for app + model
+- **Windows**: 10 or later (experimental)
+- ~300 MB storage for app + models
 
 ### Download
 

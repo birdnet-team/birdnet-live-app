@@ -52,11 +52,14 @@ nav:
   - User Guide:
       - Getting Started: user/getting-started.md
       - Live Mode: user/live-mode.md
+      - Explore: user/explore.md
+      - Session Library: user/session-library.md
+      - Session Review: user/session-review.md
+      - Settings: user/settings.md
+      - Export & Sync: user/export-sync.md
       - Survey Mode: user/survey-mode.md
       - Point Count Mode: user/point-count-mode.md
       - File Analysis: user/file-analysis.md
-      - Settings: user/settings.md
-      - Export & Sync: user/export-sync.md
       - FAQ: user/faq.md
       - Troubleshooting: user/troubleshooting.md
   - Developer Guide:
@@ -71,7 +74,7 @@ nav:
       - Inference Engine: developer/inference-engine.md
       - Spectrogram: developer/spectrogram.md
       - Localization: developer/localization.md
-      - Database: developer/database.md
+      - Storage: developer/database.md
       - API Integration: developer/api-integration.md
       - Releasing: developer/releasing.md
   - API Reference:

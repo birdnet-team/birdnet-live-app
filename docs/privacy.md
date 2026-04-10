@@ -22,8 +22,8 @@ BirdNET Live does **not** collect, transmit, or share any personal data by defau
 | Data Type | Purpose | Storage |
 |-----------|---------|---------|
 | Audio recordings | Bird identification, playback | Local files |
-| Detection results | Species, confidence, timestamp | Local database |
-| GPS coordinates | Geotagging detections, geo-model predictions | Local database |
+| Detection results | Species, confidence, timestamp | JSON files |
+| GPS coordinates | Geotagging detections, geo-model predictions | JSON files |
 | App settings | User preferences | SharedPreferences |
 
 ## External Resources
@@ -41,10 +41,6 @@ Species images and descriptions are fetched from the BirdNET taxonomy API (`bird
 
 - **Export**: Settings > Export to download all your data (CSV, JSON, Raven selection tables)
 - **Delete**: Settings > Danger Zone > Clear All Data to permanently remove all stored data
-
-## Contact
-
-For privacy questions: [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)
 
 ## Contact
 

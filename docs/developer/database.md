@@ -18,7 +18,7 @@ The `SessionRepository` handles saving, loading, listing, and deleting sessions.
 
 ## Recording Storage
 
-Audio recordings are stored as WAV files:
+Audio recordings are stored as WAV or FLAC files:
 
 ```
 <documents>/recordings/<session-id>/full.wav

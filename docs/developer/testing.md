@@ -5,7 +5,7 @@ Testing strategy and running tests.
 ## Running Tests
 
 ```bash
-# Run all tests
+# Run all unit tests
 flutter test
 
 # Run a specific test file
@@ -14,6 +14,25 @@ flutter test test/features/inference/classifier_model_test.dart
 # Run with coverage
 flutter test --coverage
 ```
+
+## Test Coverage
+
+426 unit tests across 24 test files, plus 3 integration tests. All tests are pure Dart (no widget tests requiring `testWidgets`).
+
+## Integration Tests
+
+Integration tests require a connected device and test fixtures pushed to the device:
+
+```bash
+adb push assets/test_fixtures /data/local/tmp/test_fixtures
+flutter test integration_test/model_output_test.dart -d <device_id>
+```
+
+| Test | Purpose |
+|------|---------|
+| `model_output_test.dart` | Validates ONNX model output against reference detections |
+| `memory_stress_test.dart` | Long-running session memory profiling |
+| `geo_soundscape_test.dart` | Geo-model + explore screen end-to-end |
 
 ## Test Structure
 
