@@ -1,14 +1,15 @@
 # BirdNET Live
 
 <p align="center">
-  <img src="assets/images/logo-birdnet-circle.png" alt="BirdNET Live" width="250">
+  <img src="assets/images/app-icon.png" alt="BirdNET Live" width="250">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.1.0--dev-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.1.24-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
 A Flutter app for on-device acoustic species identification using ONNX inference. Runs on Android, iOS, and Windows.
@@ -174,7 +175,7 @@ Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and 
 
 ## Funding
 
-Our work in the K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.
+Our work in the Cornell K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.
 
 The development of BirdNET is supported by the German Federal Ministry of Research, Technology and Space (FKZ 01|S22072), the German Federal Ministry for the Environment, Climate Action, Nature Conservation and Nuclear Safety (FKZ 67KI31040E), the German Federal Ministry of Economic Affairs and Energy (FKZ 16KN095550), the Deutsche Bundesstiftung Umwelt (project 39263/01) and the European Social Fund.
 

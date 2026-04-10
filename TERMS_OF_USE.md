@@ -13,7 +13,7 @@ BirdNET builds on:
 - Kahl et al. (2021): BirdNET: A deep learning solution for avian diversity monitoring.
 - Lasseck (2018): Audio-based Bird Species Identification with Deep Convolutional Neural Networks.
 
-Development and support involve the K. Lisa Yang Center for Conservation Bioacoustics (Cornell University), Chemnitz University of Technology and Museum für Naturkunde Berlin.
+Development and support involve the Cornell K. Lisa Yang Center for Conservation Bioacoustics, Chemnitz University of Technology and Museum für Naturkunde Berlin.
 
 ## 2. License
 

@@ -1,9 +1,6 @@
 # Project specific
 dev/
 
-# Large model files (bundled locally but not committed)
-assets/models/*.onnx
-
 # IDE
 .idea/
 *.iml

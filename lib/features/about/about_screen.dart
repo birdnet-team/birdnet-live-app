@@ -34,7 +34,7 @@ class AboutScreen extends ConsumerWidget {
               children: [
                 ClipOval(
                   child: Image.asset(
-                    'assets/images/logo-birdnet-circle.png',
+                    'assets/images/app-icon.png',
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
@@ -179,7 +179,7 @@ class AboutScreen extends ConsumerWidget {
           ListTile(
             leading: ClipOval(
               child: Image.asset(
-                'assets/images/logo-birdnet-circle.png',
+                'assets/images/app-icon.png',
                 width: 24,
                 height: 24,
                 fit: BoxFit.cover,

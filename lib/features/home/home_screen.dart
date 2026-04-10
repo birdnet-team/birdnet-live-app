@@ -65,13 +65,14 @@ class HomeScreen extends ConsumerWidget {
 // Logo Header
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _LogoHeader extends StatelessWidget {
+class _LogoHeader extends ConsumerWidget {
   const _LogoHeader({required this.l10n, required this.theme});
   final AppLocalizations l10n;
   final ThemeData theme;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final packageInfo = ref.watch(packageInfoProvider);
     return Column(
       children: [
         // Circular logo with subtle glow.
@@ -90,7 +91,7 @@ class _LogoHeader extends StatelessWidget {
           ),
           child: ClipOval(
             child: Image.asset(
-              'assets/images/logo-birdnet-circle.png',
+              'assets/images/app-icon.png',
               width: 96,
               height: 96,
               fit: BoxFit.cover,
@@ -111,6 +112,17 @@ class _LogoHeader extends StatelessWidget {
           style: theme.textTheme.bodyMedium?.copyWith(
             color: theme.colorScheme.onSurface.withAlpha(153),
           ),
+        ),
+        const SizedBox(height: 4),
+        packageInfo.when(
+          data: (info) => Text(
+            'v${info.version}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withAlpha(100),
+            ),
+          ),
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const SizedBox.shrink(),
         ),
       ],
     );

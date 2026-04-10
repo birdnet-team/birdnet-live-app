@@ -66,7 +66,7 @@ class TermsGateScreen extends ConsumerWidget {
                           'configure API sync.\n\n'
                           '2. Species identifications are model predictions and should not be '
                           'used as the sole basis for conservation decisions.\n\n'
-                          '3. The BirdNET model is provided by the K. Lisa Yang Center for '
+                          '3. The BirdNET model is provided by the Cornell K. Lisa Yang Center for '
                           'Conservation Bioacoustics at the Cornell Lab of Ornithology and '
                           'Chemnitz University of Technology.\n\n'
                           '4. The app is distributed under the MIT License.',

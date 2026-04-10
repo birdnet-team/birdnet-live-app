@@ -1,16 +1,16 @@
 {
   "audioModel": {
-    "name": "BirdNET+ V3.0-preview3 Global 11K (FP16)",
+    "name": "BirdNET+ V3.0-preview3 Global 5K-pruned (FP16)",
     "version": "3.0-preview3-opset18",
-    "description": "Global species classifier covering 11,560 species across birds, amphibians, mammals, and insects.",
-    "modelFile": "BirdNET+_V3.0-preview3_Global_11K_FP16.onnx",
+    "description": "Global species classifier pruned to 5,250 species across birds, amphibians, mammals, and insects.",
+    "modelFile": "BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx",
     "speciesCount": 5250,
     "audio": {
       "sampleRate": 32000,
       "channels": 1
     },
     "onnx": {
-      "modelFile": "BirdNET+_V3.0-preview3_Global_11K_FP16.onnx",
+      "modelFile": "BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx",
       "inputName": "input",
       "outputNames": {
         "predictions": "predictions",
@@ -18,7 +18,7 @@
       }
     },
     "labels": {
-      "file": "BirdNET+_V3.0-preview3_Global_11K_Labels.csv",
+      "file": "BirdNET+_V3.0-preview3_Global_5K-pruned_Labels.csv",
       "delimiter": ";",
       "hasHeader": true,
       "columns": {
@@ -47,11 +47,11 @@
     }
   },
   "geoModel": {
-    "name": "BirdNET+ Geomodel V3.0.1 Global 12K (FP16)",
+    "name": "BirdNET+ Geomodel V3.0.1 Global 5K-pruned (FP16)",
     "version": "3.0.1",
-    "description": "Location-based species prediction model covering 11,827 species.",
-    "modelFile": "BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx",
-    "labelsFile": "BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt",
+    "description": "Location-based species prediction model pruned to 5,250 species.",
+    "modelFile": "BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_FP16.onnx",
+    "labelsFile": "BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_Labels.txt",
     "inputName": "input",
     "outputName": "probabilities",
     "speciesCount": 5250,

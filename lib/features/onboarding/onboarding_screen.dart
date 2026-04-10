@@ -27,7 +27,7 @@ class OnboardingScreen extends ConsumerWidget {
           image: Center(
             child: ClipOval(
               child: Image.asset(
-                'assets/images/logo-birdnet-circle.png',
+                'assets/images/app-icon.png',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,

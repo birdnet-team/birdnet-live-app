@@ -45,10 +45,10 @@ lib/
 
 | Asset | Purpose | Size |
 |-------|---------|------|
-| `BirdNET+_V3.0-preview3_Global_11K_FP16.onnx` | Audio classifier (5,250 species after pruning) | ~152 MB |
-| `BirdNET+_Geomodel_V3.0.1_Global_12K_FP16.onnx` | Location-based species prediction | ~6 MB |
+| `BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx` | Audio classifier (5,250 species, pruned) | ~152 MB |
+| `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_FP16.onnx` | Location-based species prediction | ~6 MB |
 | `labels.csv` | Audio classifier labels (semicolon-delimited, UTF-8 BOM) | |
-| `BirdNET+_Geomodel_V3.0.1_Global_12K_Labels.txt` | Geo-model labels (tab-delimited: `id\tsci_name\tcom_name`) | |
+| `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_Labels.txt` | Geo-model labels (tab-delimited: `id\tsci_name\tcom_name`) | |
 | `taxonomy.csv` | Rich species metadata (comma-delimited with header) | |
 | `model_config.json` | JSON config for both ONNX models | |
 

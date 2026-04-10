@@ -30,7 +30,7 @@ Audio recordings are stored as WAV or FLAC files:
 The ONNX model is extracted from Flutter assets to the documents directory on first launch:
 
 ```
-<documents>/BirdNET+_V3.0-preview3_Global_11K_FP16.onnx
+<documents>/BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx
 ```
 
 Subsequent launches load directly from disk.
