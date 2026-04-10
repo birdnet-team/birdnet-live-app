@@ -403,7 +403,7 @@ class _SessionTile extends StatelessWidget {
                     label: _formatDuration(duration),
                   ),
                   _StatBadge(
-                    icon: Icons.pets_outlined,
+                    icon: Icons.eco_outlined,
                     label: '$speciesCount spp.',
                   ),
                   _StatBadge(

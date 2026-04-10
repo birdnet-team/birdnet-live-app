@@ -108,7 +108,7 @@ class _SummaryHeader extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               _StatChip(
-                icon: Icons.flutter_dash,
+                icon: Icons.eco,
                 label: l10n.sessionSpeciesCount(species),
               ),
               const SizedBox(width: 16),

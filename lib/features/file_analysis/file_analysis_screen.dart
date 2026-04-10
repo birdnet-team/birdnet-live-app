@@ -1246,7 +1246,7 @@ class _AnalysisStep extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
-                    icon: Icons.pets,
+                    icon: Icons.eco,
                     label: l10n.fileAnalysisSpecies,
                     value: '${progress.speciesFound}',
                   ),
