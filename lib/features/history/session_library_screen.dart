@@ -404,7 +404,7 @@ class _SessionTile extends StatelessWidget {
                     label: _formatDuration(duration),
                   ),
                   _StatBadge(
-                    icon: MdiIcons.featherOutline,
+                    icon: MdiIcons.feather,
                     label: '$speciesCount spp.',
                   ),
                   _StatBadge(
