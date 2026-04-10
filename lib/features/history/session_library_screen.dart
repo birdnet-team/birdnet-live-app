@@ -10,6 +10,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -403,7 +404,7 @@ class _SessionTile extends StatelessWidget {
                     label: _formatDuration(duration),
                   ),
                   _StatBadge(
-                    icon: Icons.eco_outlined,
+                    icon: MdiIcons.featherOutline,
                     label: '$speciesCount spp.',
                   ),
                   _StatBadge(

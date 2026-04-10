@@ -28,6 +28,7 @@
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -1246,7 +1247,7 @@ class _AnalysisStep extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
-                    icon: Icons.eco,
+                    icon: MdiIcons.feather,
                     label: l10n.fileAnalysisSpecies,
                     value: '${progress.speciesFound}',
                   ),
