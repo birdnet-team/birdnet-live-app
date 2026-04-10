@@ -127,14 +127,6 @@ class SettingsScreen extends ConsumerWidget {
             _LanguageTile(l10n: l10n),
             _SpeciesLanguageTile(l10n: l10n),
             SwitchListTile(
-              secondary: ClipOval(
-                child: Image.asset(
-                  'assets/images/logo-birdnet-circle.png',
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.cover,
-                ),
-              ),
               title: Text(l10n.settingsShowSciNames),
               subtitle: Text(l10n.settingsShowSciNamesDescription),
               value: ref.watch(showSciNamesProvider),
@@ -404,7 +396,6 @@ class SettingsScreen extends ConsumerWidget {
           // --- About ---
           if (_showSection('about'))
             ListTile(
-              leading: const Icon(Icons.info_outline),
               title: Text(l10n.about),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
@@ -424,12 +415,10 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: l10n.settingsDangerZoneDescription,
             ),
             ListTile(
-              leading: const Icon(Icons.restart_alt),
               title: Text(l10n.settingsResetOnboarding),
               onTap: () => _showResetOnboardingDialog(context, ref, l10n),
             ),
             ListTile(
-              leading: const Icon(Icons.delete_forever, color: Colors.red),
               title: Text(
                 l10n.settingsClearData,
                 style: const TextStyle(color: Colors.red),
@@ -579,7 +568,6 @@ class _ThemeTile extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return ListTile(
-      leading: const Icon(Icons.brightness_6),
       title: Text(l10n.settingsTheme),
       trailing: SegmentedButton<ThemeMode>(
         segments: [
@@ -613,7 +601,6 @@ class _LanguageTile extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return ListTile(
-      leading: const Icon(Icons.language),
       title: Text(l10n.settingsAppLanguage),
       trailing: DropdownButton<String?>(
         value: locale?.languageCode,
@@ -677,7 +664,6 @@ class _SpeciesLanguageTile extends ConsumerWidget {
     final speciesLang = ref.watch(speciesLanguageProvider);
 
     return ListTile(
-      leading: const Icon(Icons.flutter_dash),
       title: Text(l10n.settingsSpeciesLanguage),
       trailing: DropdownButton<String>(
         value: speciesLang,
