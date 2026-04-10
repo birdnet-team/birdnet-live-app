@@ -112,6 +112,13 @@ class AboutScreen extends ConsumerWidget {
                   Text(l10n.aboutGeoModelName),
                   const SizedBox(height: 4),
                   Text(
+                    l10n.aboutSpeciesCount(AppConstants.speciesCount),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(153),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
                     l10n.aboutGeoModelDescription,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurface.withAlpha(153),
@@ -145,44 +152,19 @@ class AboutScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
-
-          // Funding
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.aboutFunding,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.aboutFundingDescription,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           const SizedBox(height: 24),
 
           // Links
           ListTile(
-            leading: ClipOval(
+            leading: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary,
+                BlendMode.srcIn,
+              ),
               child: Image.asset(
-                'assets/images/app-icon.png',
+                'assets/images/icon-birdnet.png',
                 width: 24,
                 height: 24,
-                fit: BoxFit.cover,
               ),
             ),
             title: Text(l10n.aboutWebsite),

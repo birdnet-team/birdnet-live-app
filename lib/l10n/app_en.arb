@@ -288,7 +288,7 @@
   "@aboutModelVersion": {
     "description": "Audio model section title in about screen"
   },
-  "aboutModelName": "BirdNET+ V3.0-preview3 Global 5K-pruned (FP16)",
+  "aboutModelName": "BirdNET+ V3.0-preview3 Global (pruned, FP16)",
   "@aboutModelName": {
     "description": "Audio model name shown in about screen"
   },
@@ -305,7 +305,7 @@
   "@aboutGeoModel": {
     "description": "Geo-model section title"
   },
-  "aboutGeoModelName": "BirdNET Geomodel V3.0.1 Global 5K-pruned (FP16)",
+  "aboutGeoModelName": "BirdNET Geomodel V3.0.1 Global (pruned, FP16)",
   "@aboutGeoModelName": {
     "description": "Geo-model name shown in about screen"
   },
@@ -321,19 +321,11 @@
   "@aboutCreditsDescription": {
     "description": "Credits description"
   },
-  "aboutFunding": "Funding",
-  "@aboutFunding": {
-    "description": "Funding section title"
-  },
-  "aboutFundingDescription": "Our work in the Cornell K. Lisa Yang Center for Conservation Bioacoustics is made possible by the generosity of K. Lisa Yang to advance innovative conservation technologies to inspire and inform the conservation of wildlife and habitats.\n\nThe development of BirdNET is supported by the German Federal Ministry of Research, Technology and Space (FKZ 01|S22072), the German Federal Ministry for the Environment, Climate Action, Nature Conservation and Nuclear Safety (FKZ 67KI31040E), the German Federal Ministry of Economic Affairs and Energy (FKZ 16KN095550), the Deutsche Bundesstiftung Umwelt (project 39263/01) and the European Social Fund.",
-  "@aboutFundingDescription": {
-    "description": "Funding acknowledgment text"
-  },
   "aboutWebsite": "BirdNET Website",
   "@aboutWebsite": {
     "description": "BirdNET website link label"
   },
-  "aboutGitHub": "GitHub",
+  "aboutGitHub": "This app on GitHub",
   "@aboutGitHub": {
     "description": "GitHub link label"
   },
