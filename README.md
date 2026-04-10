@@ -27,14 +27,14 @@ A Flutter app for on-device acoustic species identification using ONNX inference
 ## Features
 
 - **Live Mode** — Real-time scrolling spectrogram with species identification
-- **Explore** — Browse species expected at your location using the geo-model
+- **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
 - **Export** — Raven Pro, CSV, JSON, and ZIP bundle formats
 - **On-device inference** — BirdNET+ model (5,250 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Survey Mode** — Background monitoring with GPS tracking *(planned)*
 - **Point Count Mode** — Timed surveys with recording *(planned)*
-- **File Analysis Mode** — Analyze existing audio files *(planned)*
+- **File Analysis Mode** — Analyze existing audio files
 
 ## Quick Start
 

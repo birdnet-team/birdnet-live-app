@@ -334,16 +334,27 @@ class FileAnalysisController {
       debugPrint('[FileAnalysis] decoded: ${decoded.totalSamples} samples, '
           '${decoded.sampleRate} Hz, ${decoded.duration}');
 
+      // 1b. Resample to the model's expected sample rate if needed.
+      final modelSampleRate = _config!.audio.sampleRate;
+      final audio = decoded.sampleRate != modelSampleRate
+          ? decoded.resampleTo(modelSampleRate)
+          : decoded;
+      if (audio != decoded) {
+        debugPrint('[FileAnalysis] resampled '
+            '${decoded.sampleRate} Hz → $modelSampleRate Hz '
+            '(${audio.totalSamples} samples)');
+      }
+
       // 2. Calculate windows.
-      final sampleRate = decoded.sampleRate;
+      final sampleRate = audio.sampleRate;
       final windowSamples = windowDuration * sampleRate;
       final stepSamples = (windowSamples * (1.0 - overlap)).round();
-      final totalSamples = decoded.totalSamples;
+      final totalSamples = audio.totalSamples;
 
       if (totalSamples < windowSamples) {
         _state = FileAnalysisState.error;
         _errorMessage = 'Audio file is shorter than the analysis window '
-            '(${decoded.duration.inSeconds}s < ${windowDuration}s)';
+            '(${audio.duration.inSeconds}s < ${windowDuration}s)';
         _notifyListeners();
         return null;
       }
@@ -395,7 +406,7 @@ class FileAnalysisController {
         }
 
         final startSample = w * stepSamples;
-        final audioChunk = decoded.readFloat32(startSample, windowSamples);
+        final audioChunk = audio.readFloat32(startSample, windowSamples);
 
         // Timestamp relative to audio file start.
         final windowOffsetSec = startSample / sampleRate;
@@ -454,7 +465,7 @@ class FileAnalysisController {
       // 5. Finalize session.
       session.detections.addAll(allDetections);
       // Set end time based on audio duration.
-      session.endTime = fileStartTime.add(decoded.duration);
+      session.endTime = fileStartTime.add(audio.duration);
       // Store the source file path as recording path for review playback.
       session.recordingPath = filePath;
 

@@ -56,6 +56,7 @@ import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
@@ -334,13 +335,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     setState(() => _decoding = true);
     try {
       // Use pure-Dart decoder for WAV/FLAC, native for compressed formats.
-      final DecodedAudio audio;
+      DecodedAudio audio;
       if (await AudioDecoder.canDecodeDart(path)) {
         audio = await AudioDecoder.decodeFile(path);
       } else {
         audio = await NativeAudioDecoder.decodeFile(path);
       }
       if (!mounted) return;
+      // Resample to model sample rate so spectrogram matches inference.
+      audio = audio.resampleTo(AppConstants.sampleRate);
       await _buildSpectrogramImage(audio);
     } catch (_) {
       // Spectrogram unavailable — non-fatal.

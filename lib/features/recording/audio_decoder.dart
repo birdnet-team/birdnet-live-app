@@ -62,6 +62,33 @@ class DecodedAudio {
     }
     return result;
   }
+
+  /// Resample to [targetRate] Hz using linear interpolation.
+  ///
+  /// Returns `this` unchanged if [sampleRate] already equals [targetRate].
+  DecodedAudio resampleTo(int targetRate) {
+    if (sampleRate == targetRate) return this;
+
+    final ratio = sampleRate / targetRate;
+    final newLength = (samples.length / ratio).floor();
+    final resampled = Int16List(newLength);
+
+    for (var i = 0; i < newLength; i++) {
+      final srcPos = i * ratio;
+      final srcIndex = srcPos.toInt();
+      final frac = srcPos - srcIndex;
+
+      if (srcIndex + 1 < samples.length) {
+        resampled[i] =
+            (samples[srcIndex] * (1.0 - frac) + samples[srcIndex + 1] * frac)
+                .round();
+      } else {
+        resampled[i] = samples[srcIndex];
+      }
+    }
+
+    return DecodedAudio(samples: resampled, sampleRate: targetRate);
+  }
 }
 
 /// Decodes audio files to raw PCM samples.
