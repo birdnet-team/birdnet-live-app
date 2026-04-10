@@ -260,8 +260,8 @@
 
   "fileAnalysisDateTitle": "Aufnahmedatum (optional)",
   "fileAnalysisDateSubtitle": "Optional. Wird für saisonale Artenfilterung verwendet, wenn angegeben.",
-  "fileAnalysisDateNone": "Nicht angegeben",
-  "fileAnalysisDateClear": "Datum löschen",
+  "fileAnalysisDateToday": "Heute (Standard)",
+  "fileAnalysisDateClear": "Auf heute zurücksetzen",
 
   "fileAnalysisParamsTitle": "Analyseeinstellungen",
   "fileAnalysisParamsSubtitle": "Konfigurieren Sie die Audioanalyse. Standardwerte kommen aus Ihren globalen Einstellungen.",

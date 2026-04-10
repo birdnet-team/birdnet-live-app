@@ -921,7 +921,7 @@ class _DatePickerTile extends StatelessWidget {
     final now = DateTime.now();
     final label = selectedDate != null
         ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
-        : l10n.fileAnalysisDateNone;
+        : l10n.fileAnalysisDateToday;
 
     return Row(
       children: [

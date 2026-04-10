@@ -1027,11 +1027,11 @@
   "@fileAnalysisDateSubtitle": {
     "description": "Subtitle explaining why recording date matters"
   },
-  "fileAnalysisDateNone": "Not set",
-  "@fileAnalysisDateNone": {
+  "fileAnalysisDateToday": "Today (default)",
+  "@fileAnalysisDateToday": {
     "description": "Label shown when no recording date is selected"
   },
-  "fileAnalysisDateClear": "Clear date",
+  "fileAnalysisDateClear": "Reset to today",
   "@fileAnalysisDateClear": {
     "description": "Tooltip for clearing the selected recording date"
   },
