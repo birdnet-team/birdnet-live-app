@@ -24,6 +24,7 @@ lib/
   shared/        # Shared models, providers, services (not feature-specific)
   features/      # Feature modules (each with screen, providers, widgets)
     live/        # Live identification mode
+    point_count/ # Timed point-count survey mode
     explore/     # Species exploration by location
     inference/   # ONNX model wrappers (classifier, geo-model)
     audio/       # Audio capture, ring buffer, spectrogram
