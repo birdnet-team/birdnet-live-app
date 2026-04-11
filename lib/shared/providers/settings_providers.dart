@@ -241,6 +241,17 @@ final effectiveSpeciesLocaleProvider = Provider<String>((ref) {
   return PlatformDispatcher.instance.locale.languageCode;
 });
 
+// ---------------------------------------------------------------------------
+// Point Count
+// ---------------------------------------------------------------------------
+
+/// Point count duration in minutes (default: 5).
+final pointCountDurationProvider =
+    StateNotifierProvider<IntSettingNotifier, int>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return IntSettingNotifier(prefs, PrefKeys.pointCountDuration, 5);
+});
+
 // ===========================================================================
 // Generic setting notifiers
 // ===========================================================================

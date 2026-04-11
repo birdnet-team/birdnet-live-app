@@ -7,6 +7,7 @@ import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
 import '../live/live_screen.dart';
 import '../file_analysis/file_analysis_screen.dart';
+import '../point_count/point_count_setup_screen.dart';
 import '../settings/settings_screen.dart';
 
 // =============================================================================
@@ -162,7 +163,7 @@ class _ModeGrid extends StatelessWidget {
             label: l10n.pointCountMode,
             description: l10n.pointCountModeDescription,
             color: theme.colorScheme.secondary,
-            comingSoon: true,
+            onTap: () => _openPointCount(context),
           ),
           _ModeCard(
             icon: Icons.route_rounded,
@@ -187,6 +188,14 @@ class _ModeGrid extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const LiveScreen(),
+      ),
+    );
+  }
+
+  void _openPointCount(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const PointCountSetupScreen(),
       ),
     );
   }

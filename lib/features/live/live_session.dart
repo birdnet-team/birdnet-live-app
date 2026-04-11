@@ -249,7 +249,7 @@ class LiveSession {
   final String id;
 
   /// The type of session (live, file upload, point count, survey).
-  final SessionType type;
+  SessionType type;
 
   /// Sequential session number within this [type] (starting at 1).
   ///

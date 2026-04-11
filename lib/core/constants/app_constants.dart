@@ -92,4 +92,7 @@ abstract final class PrefKeys {
 
   // Display settings
   static const String showSciNames = 'show_sci_names';
+
+  // Point count settings
+  static const String pointCountDuration = 'point_count_duration';
 }

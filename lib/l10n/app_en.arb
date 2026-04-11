@@ -1081,5 +1081,160 @@
   "fileAnalysisStart": "Start Analysis",
   "@fileAnalysisStart": {
     "description": "Button to begin file analysis"
+  },
+
+  "pointCountSetupTitle": "Point Count Setup",
+  "@pointCountSetupTitle": {
+    "description": "Title for the point count setup wizard"
+  },
+  "pointCountDuration": "Duration",
+  "@pointCountDuration": {
+    "description": "Label for point count duration setting"
+  },
+  "pointCountDurationMinutes": "{minutes} min",
+  "@pointCountDurationMinutes": {
+    "description": "Duration in minutes",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "pointCountLocationDate": "Location & Date",
+  "@pointCountLocationDate": {
+    "description": "Section header for location and date info"
+  },
+  "pointCountLocationAcquiring": "Acquiring GPS…",
+  "@pointCountLocationAcquiring": {
+    "description": "Shown while waiting for GPS fix"
+  },
+  "pointCountLocationUnavailable": "Location unavailable",
+  "@pointCountLocationUnavailable": {
+    "description": "Shown when GPS is not available"
+  },
+  "pointCountFieldTips": "Field Tips",
+  "@pointCountFieldTips": {
+    "description": "Section header for field tips"
+  },
+  "pointCountTipStableSurface": "Place phone on a stable surface (tree stump, tripod, fence post).",
+  "@pointCountTipStableSurface": {
+    "description": "Tip about stable placement"
+  },
+  "pointCountTipWind": "Avoid windy conditions — wind noise masks bird calls.",
+  "@pointCountTipWind": {
+    "description": "Tip about wind avoidance"
+  },
+  "pointCountTipQuiet": "Stay quiet and minimize movement during the count.",
+  "@pointCountTipQuiet": {
+    "description": "Tip about staying quiet"
+  },
+  "pointCountTipMicrophone": "Keep the microphone unobstructed — don't cover it with your hand or a case.",
+  "@pointCountTipMicrophone": {
+    "description": "Tip about microphone placement"
+  },
+  "pointCountTipDisturbance": "Avoid starting near loud anthropogenic noise sources (roads, machinery).",
+  "@pointCountTipDisturbance": {
+    "description": "Tip about avoiding disturbance"
+  },
+  "pointCountTipConsistency": "Use the same duration and settings for all counts in a study.",
+  "@pointCountTipConsistency": {
+    "description": "Tip about methodological consistency"
+  },
+  "pointCountReady": "Ready to Start",
+  "@pointCountReady": {
+    "description": "Header shown on the ready-to-start step"
+  },
+  "pointCountReadyMessage": "The count will run for {minutes} minutes. Audio capture and species identification will begin immediately when you press Start.",
+  "@pointCountReadyMessage": {
+    "description": "Message shown before starting",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "pointCountStart": "Start Count",
+  "@pointCountStart": {
+    "description": "Button to begin the point count"
+  },
+  "pointCountBack": "Back",
+  "@pointCountBack": {
+    "description": "Back button in wizard navigation"
+  },
+  "pointCountNext": "Next",
+  "@pointCountNext": {
+    "description": "Next button in wizard navigation"
+  },
+  "pointCountTimeRemaining": "{minutes}:{seconds}",
+  "@pointCountTimeRemaining": {
+    "description": "Countdown timer display mm:ss",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "pointCountComplete": "Point count complete.",
+  "@pointCountComplete": {
+    "description": "Snackbar message when countdown finishes"
+  },
+  "pointCountStopEarly": "End Count Early",
+  "@pointCountStopEarly": {
+    "description": "Button to stop the count before time expires"
+  },
+  "pointCountStopEarlyTitle": "End Point Count?",
+  "@pointCountStopEarlyTitle": {
+    "description": "Dialog title for early stop confirmation"
+  },
+  "pointCountStopEarlyMessage": "The count has not reached the full duration. End now and save results?",
+  "@pointCountStopEarlyMessage": {
+    "description": "Dialog message for early stop confirmation"
+  },
+  "pointCountIdentifying": "Identifying species…",
+  "@pointCountIdentifying": {
+    "description": "Status text during active point count"
+  },
+  "pointCountLocationGps": "Current",
+  "@pointCountLocationGps": {
+    "description": "GPS location option in point count setup"
+  },
+  "pointCountLocationManual": "Manual",
+  "@pointCountLocationManual": {
+    "description": "Manual location entry option in point count setup"
+  },
+  "pointCountLocationSkip": "None",
+  "@pointCountLocationSkip": {
+    "description": "Skip location option in point count setup"
+  },
+  "pointCountLocationRefresh": "Refresh location",
+  "@pointCountLocationRefresh": {
+    "description": "Tooltip for GPS refresh button in point count setup"
+  },
+  "pointCountLatitude": "Latitude",
+  "@pointCountLatitude": {
+    "description": "Label for latitude text field in point count setup"
+  },
+  "pointCountLongitude": "Longitude",
+  "@pointCountLongitude": {
+    "description": "Label for longitude text field in point count setup"
+  },
+  "pointCountPickOnMap": "Pick on map",
+  "@pointCountPickOnMap": {
+    "description": "Button to open map picker in point count setup"
+  },
+  "pointCountLocationSkipHint": "No location will be saved with this point count.",
+  "@pointCountLocationSkipHint": {
+    "description": "Hint text when location is set to None/Skip"
+  },
+  "mapPickerTitle": "Pick on Map",
+  "@mapPickerTitle": {
+    "description": "Title for the shared map picker screen"
+  },
+  "mapPickerConfirm": "Use this location",
+  "@mapPickerConfirm": {
+    "description": "Button to confirm map-picked location"
   }
 }
