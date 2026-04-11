@@ -82,6 +82,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 - **Tests**: Unit tests mirror the `lib/` structure under `test/`. Use `flutter test` to run.
 - **No hardcoded values**: Model parameters, API URLs, and thresholds come from config or constants.
 - **Version bumping**: `pubspec.yaml` is the **single source of truth** for the app version. Bump the patch version there (e.g. `0.1.27+27` → `0.1.28+28`) with each user-facing change set, then run `dart dev/sync_version.dart` to propagate the version to the README badge and any other files. The build number tracks the patch number.
+- **Git commits**: Use one-line commit messages. Group related changes into logical commits (e.g., one commit per feature, one for refactors/extractions, one for version bumps + docs). Don't lump unrelated changes into a single commit.
 
 ## Commands
 
