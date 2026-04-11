@@ -1,7 +1,7 @@
 {
   "audioModel": {
     "name": "BirdNET+ V3.0-preview3 Global 5K-pruned (FP16)",
-    "version": "3.0-preview3-opset18",
+    "version": "3.0-preview3-opset17",
     "description": "Global species classifier pruned to 5,250 species across birds, amphibians, mammals, and insects.",
     "modelFile": "BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx",
     "speciesCount": 5250,
