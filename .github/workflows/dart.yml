@@ -21,7 +21,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.6.2'
+          flutter-version: '3.27'
       - run: flutter pub get
       - run: flutter gen-l10n
       - run: flutter --version
