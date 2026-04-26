@@ -22,6 +22,7 @@ jobs:
         with:
           flutter-version: '3.6.2'
       - run: flutter pub get
+      - run: flutter gen-l10n
       - run: flutter --version
       - run: flutter analyze
       - run: flutter test
