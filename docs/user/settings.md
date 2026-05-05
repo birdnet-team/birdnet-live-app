@@ -66,7 +66,7 @@ Controls how overlapping analysis windows are combined.
 ### Pooling window count
 
 Controls how many consecutive inference windows participate in score pooling.
-A larger value smooths each species' score over a longer time horizon, which
+A larger value smooths scores for each species over a longer time horizon, which
 suppresses spurious one-off detections — useful for steady, distant calls
 where you'd rather wait for a few corroborating windows before raising a
 detection. A smaller value reacts faster to brief vocalizations but lets

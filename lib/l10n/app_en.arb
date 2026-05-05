@@ -64,7 +64,7 @@
   "@onboardingTermsTitle": {
     "description": "Onboarding terms & privacy screen title"
   },
-  "onboardingTermsBody": "Detections are AI predictions, not confirmed observations — verify before reporting. Audio is processed on-device and never uploaded. The only network requests are optional map tiles and a single reverse-geocoding lookup per session to resolve coordinates into a place name; both require your one-time consent. Models (CC BY-SA 4.0) and the app may NOT be used for poaching or any military purpose. Tap below to read the full Terms of Use and Privacy Policy.",
+  "onboardingTermsBody": "Detections are AI predictions, not confirmed observations — verify them before reporting. Audio is processed on-device and is never uploaded. The only network requests are optional map tiles and a single reverse-geocoding lookup per session to resolve coordinates into a place name; both require your one-time consent. The models (CC BY-SA 4.0) and the app must not be used for poaching or any military purpose. Tap below to read the full Terms of Use and Privacy Policy.",
   "@onboardingTermsBody": {
     "description": "Onboarding terms & privacy screen body text"
   },
@@ -941,7 +941,7 @@
   "@exploreHelpTitle": {
     "description": "Title for explore screen help overlay"
   },
-  "exploreHelpBody": "Explore ranks species for the current location and season using the BirdNET geo-model. Use refresh to rebuild the list, and tap a species card to open the detail overlay. Treat it as a quick in-app reference, not as a replacement for your own site knowledge.",
+  "exploreHelpBody": "Explore ranks species for the current location and season using the BirdNET geo-model. Use Refresh to rebuild the list, and tap a species card to open the details overlay. Use it as a quick in-app reference, not a substitute for your own field knowledge.",
   "@exploreHelpBody": {
     "description": "Body text for explore screen help overlay"
   },
@@ -1270,13 +1270,13 @@
   "@settingsHelpTooltip": {
     "description": "Tooltip on the help (?) icon next to a setting"
   },
-  "settingsHelpShowSciNames": "When enabled, scientific names appear in grey under common names throughout the app. Useful when you want unambiguous identification or are working with field guides that use Latin names.",
+  "settingsHelpShowSciNames": "When enabled, scientific names appear in gray under common names throughout the app. Useful when you want unambiguous identification or are working with field guides that use Latin names.",
   "settingsHelpGain": "Multiplies the microphone signal in the app. Use values above 1.0 only for very quiet recordings — high gain amplifies noise too and can cause clipping. Most built-in mics work best at 1.0.",
   "settingsHelpHighPassFilter": "Removes low-frequency content (wind, traffic, handling noise) before inference. Most species vocalize above 1 kHz, so a 100–200 Hz cut-off is usually safe and improves detection in noisy conditions.",
   "settingsHelpWindowDuration": "How many seconds of audio BirdNET analyzes at once. Shorter windows react faster and give finer time resolution; longer windows average more context per pass for steadier scores at the cost of slower reaction time.",
-  "settingsHelpConfidenceThreshold": "Detections below this score are hidden. Lower values surface more uncertain detections (good for rare species or quiet recordings); higher values reduce false positives but may miss faint or distant calls.",
-  "settingsHelpSensitivity": "Logistic sigmoid steepness applied to model logits. Higher values push uncertain scores toward extremes (more high-confidence detections plus more false positives). Leave at 1.0 unless you know what you're doing.",
-  "settingsHelpInferenceRate": "How often BirdNET runs inference per second. Higher rates catch brief calls but use more battery and CPU; lower rates are gentler on the device but may miss short vocalizations.",
+  "settingsHelpConfidenceThreshold": "Detections with scores below this threshold are hidden. Lower values surface more uncertain detections, which can help with rare species or quiet recordings; higher values reduce false positives but may miss faint or distant calls.",
+  "settingsHelpSensitivity": "Controls how strongly BirdNET pushes uncertain scores toward higher or lower confidence values. Higher values create more high-confidence detections, but also more false positives. Leave this at 1.0 for standard use.",
+  "settingsHelpInferenceRate": "How often BirdNET runs inference each second. Higher rates detect brief calls but increase battery and CPU use; lower rates are gentler on the device but may miss short vocalizations.",
   "settingsHelpScorePooling": "How scores from overlapping analysis windows are combined. 'Max' is most reactive; 'average' smooths flickering; 'LME' (logit-mean-exp) is a soft maximum that balances both.",
   "settingsHelpScorePoolingWindows": "Number of consecutive inference windows that contribute to the pooled score. Larger values smooth detections over a longer time horizon — better for steady, distant calls but slower to react to brief vocalizations. Smaller values are more responsive but noisier.",
   "settingsHelpFftSize": "Resolution of the spectrogram. Larger sizes give finer frequency detail but coarser timing; smaller sizes show transient calls more sharply but blur frequencies. 1024–2048 works well for most species.",
@@ -1284,7 +1284,7 @@
   "settingsHelpSpectrogramDuration": "How many seconds of audio fit on screen at once. Shorter durations give more detail per call; longer durations show temporal patterns and let you compare detections.",
   "settingsHelpFrequencyRange": "Upper limit of the spectrogram's vertical axis. Reduce to focus on low-frequency vocalizations (owls, grouse) or increase to see ultrasonic calls and high-pitched insects.",
   "settingsHelpLogAmplitude": "Applies a logarithmic scale to spectrogram intensity. Makes quiet calls more visible at the cost of also showing more background noise. Helpful for distant or faint species.",
-  "settingsHelpSpectrogramQuality": "Controls the GPU filtering used to render the live spectrogram. 'High' looks smoothest and is recommended on modern phones. Drop to 'Medium' or 'Low' on older devices if you see frame drops or excessive battery drain.",
+  "settingsHelpSpectrogramQuality": "Controls the GPU filtering used to render the live spectrogram. 'High' looks smoothest and is recommended on modern phones. Reduce this to 'Medium' or 'Low' on older devices if you see frame drops or heavy battery drain.",
   "settingsHelpRecordingMode": "Whether and how audio is saved to disk. 'Full' keeps everything (large files); 'Detections only' saves short clips around each detection; 'Off' analyzes in real time without writing audio.",
   "settingsHelpRecordingFormat": "Container format for saved audio. WAV is uncompressed and universally supported; FLAC is lossless but ~50% smaller and supported by most analysis software.",
   "settingsHelpUseGps": "Use the device's GPS for live location. When off, the app uses the manual coordinates you set below — useful for stationary deployments or when GPS reception is poor indoors.",
@@ -1974,7 +1974,7 @@
   "@surveyTipWind": {
     "description": "Survey tip about wind"
   },
-  "surveyTipMic": "Keep the microphone unobstructed. Don\u2019t cover it with your hand or put the phone in a pocket.",
+  "surveyTipMic": "Keep the microphone unobstructed. Do not cover it with your hand or put the phone in a pocket.",
   "@surveyTipMic": {
     "description": "Survey tip about microphone placement"
   },
@@ -2039,7 +2039,7 @@
   "@surveyLiveHelpOverview": {
     "description": "General overview help text"
   },
-  "surveyLiveHelpSignal": "The signal bars next to the mic icon show audio quality: 3 green bars = good conditions for detection, 2 amber bars = marginal (too quiet or somewhat loud), 1 red bar = poor (silence, clipping, or heavy noise).",
+  "surveyLiveHelpSignal": "The signal bars next to the mic icon show audio quality: 3 green bars: good detection conditions; 2 amber bars: marginal conditions (too quiet or somewhat loud); 1 red bar: poor conditions (silence, clipping, or heavy noise).",
   "@surveyLiveHelpSignal": {
     "description": "Help text explaining the audio quality signal bars"
   },

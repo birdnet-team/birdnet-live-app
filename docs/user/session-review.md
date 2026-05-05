@@ -37,7 +37,7 @@ You can also restrict the detections by confidence level. The slider configures 
 
 Below the confidence slider is a **Limit to species** picker that lets you collapse the map to a single species — useful for asking "where exactly along the route did I hear the wood thrush?". An *All species* entry clears the species restriction. The filters combine: e.g. *With audio clip* + *Wood Thrush* + *> 80%* shows only the playable Wood Thrush markers that scored above 80%.
 
-When a filter is active, the app-bar title gains a match-count subtitle (e.g. *"7 detections"*) and the filter button shows a small dot. *Reset* in the sheet returns to the default.
+When a filter is active, the app bar title gains a match-count subtitle (e.g. *"7 detections"*) and the filter button shows a small dot. *Reset* in the sheet returns to the default.
 
 ## Toolbar Icons
 

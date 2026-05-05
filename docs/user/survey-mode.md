@@ -37,12 +37,12 @@ This step contains Survey-specific parameters such as:
 
 #### Detection sampling
 
-A long survey can produce thousands of detections, and saving an audio clip for every one of them quickly fills up storage. Detection sampling controls **which clips are kept on disk** — *the detection records themselves are always kept*, so your full session log stays intact regardless of mode. Records whose audio was dropped simply have no playable clip in Session Review.
+A long survey can produce thousands of detections, and saving an audio clip for every one of them quickly fills up storage. Detection sampling controls **which clips are kept on disk**. *The detection records themselves are always kept*, so your full session log stays intact regardless of mode. Records whose audio was dropped simply have no playable clip in Session Review.
 
 Three modes are available:
 
 | Mode | What it does |
-|---|---|
+| --- | --- |
 | **All** | Keep every clip. Most disk usage. Recommended for short surveys or when you want every detection's audio for later analysis. |
 | **Top N** | Keep only the **N highest-confidence clips per species**. Other clips are deleted as the survey runs. Default N is 10, configurable from 1 to 50. |
 | **Smart** | Same per-species cap of N as Top N, **plus** spatial distribution: if a new detection lands at the same "spot" as an already-kept clip (within ~500 m and ~2 min of each other), only the higher-confidence one keeps its clip. This prevents one stationary singer from monopolizing all N slots and biases the kept clips toward covering the full transect. |
@@ -58,7 +58,7 @@ Push-style notifications that fire mid-survey when something noteworthy is detec
 - **Off** — no alerts (default).
 - **First in session** — one alert the first time each species is heard during this survey.
 - **First ever** — alert only when the app encounters a species for the very first time across all your sessions (a "lifer" alert). Backed by a lifetime species history that is auto-populated from your existing sessions on first launch.
-- **Rare for this location** — alert when the geo-model probability for the current location is below a configurable threshold. A live readout under the slider explains exactly what the current value will trigger on (e.g. *"Alerts on species with under 5 % likelihood at this location."*).
+- **Rare for this location** — alert when the geo-model probability for the current location is below a configurable threshold. A live readout under the slider shows exactly which species the current value will alert on (e.g. *"Alerts on species with under 5% likelihood at this location."*).
 - **Watchlist** — alert only on species you've added to a saved custom list. The wizard step itself lets you create new watchlists, edit existing ones in a dedicated full-screen editor with searchable taxonomy and *Import from file* (any plain `.txt`/`.csv` of scientific names), and delete lists you no longer need.
 
 A *Minimum confidence* slider sits under the mode picker and is automatically floored to your session confidence threshold (alerts are never more sensitive than the detections themselves). An **Advanced** section exposes throttling controls — a startup grace window, a hard minimum interval between any two alerts, and a sliding per-minute cap with optional coalescing of over-cap alerts into a single summary notification — all with one-tap chip selectors. The first time you switch to a non-Off mode, the wizard requests Android notification permission for you.
