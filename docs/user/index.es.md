@@ -56,10 +56,10 @@ Respuestas rápidas sobre el uso sin conexión, el comportamiento de grabación,
 
 ## Orden de lectura
 
-1. Lea [Comenzando] (getting-started.md).
+1. Lea [Comenzando](getting-started.md).
 2. Hojee [Iconos y controles](icons-and-controls.md) para que los símbolos recurrentes tengan sentido.
 3. Abra la guía del modo que utiliza con más frecuencia.
-4. Utilice [Configuración] (settings.md) cuando necesite ajustar la aplicación para un flujo de trabajo diferente.
+4. Utilice [Configuración](settings.md) cuando necesite ajustar la aplicación para un flujo de trabajo diferente.
 
 ## Consejo móvil
 
@@ -67,6 +67,6 @@ En dispositivos móviles, la barra lateral de navegación está oculta detrás d
 
 ## Más documentación
 
-- La [Página de inicio] (../index.md) ofrece una descripción general de la versión y las funciones.
-- La [Guía para desarrolladores] (../developer/index.md) cubre arquitectura, herramientas y flujos de trabajo de compilación.
+- La [Página de inicio](../index.md) ofrece una descripción general de la versión y las funciones.
+- La [Guía para desarrolladores](../developer/index.md) cubre arquitectura, herramientas y flujos de trabajo de compilación.
 - La [Política de Privacidad](../privacy.md) y los [Términos de Uso](../terms.md) se encuentran en este mismo sitio.

@@ -154,6 +154,6 @@ Ouvre un flux de confirmation pour supprimer définitivement les données d'appl
 
 Certains paramètres sont configurés dans leurs propres écrans de configuration plutôt que dans l'écran Paramètres partagé.
 
-- [Point Count Mode] (point-count-mode.md) a sa propre configuration de durée et d'emplacement.
-- [Mode enquête] (survey-mode.md) possède son propre écran de paramètres d'enquête.
-- [File Analysis] (file-analysis.md) a sa propre étape de paramètres d'analyse.
+- [Point Count Mode](point-count-mode.md) a sa propre configuration de durée et d'emplacement.
+- [Mode enquête](survey-mode.md) possède son propre écran de paramètres d'enquête.
+- [File Analysis](file-analysis.md) a sa propre étape de paramètres d'analyse.

@@ -51,10 +51,10 @@ La línea de información compacta debajo del espectrograma resume la sesión ac
 
 ## Comportamiento de grabación
 
-La grabación se controla en [Configuración] (settings.md).
+La grabación se controla en [Configuración](settings.md).
 
 - **Completo** registra toda la sesión.
 - **Solo detecciones** graba clips alrededor de las detecciones.
 - **Apagado** desactiva la grabación.
 
-Cuando detiene el modo en vivo, BirdNET Live guarda la sesión y abre [Revisión de sesión] (session-review.md).
+Cuando detiene el modo en vivo, BirdNET Live guarda la sesión y abre [Revisión de sesión](session-review.md).

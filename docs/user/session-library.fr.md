@@ -39,4 +39,4 @@ Regroupe les sessions par espèce et s'étend aux sessions qui contiennent cette
 
 ## Que se passe-t-il ensuite
 
-Appuyez sur n'importe quelle session pour ouvrir [Révision de session] (session-review.md).
+Appuyez sur n'importe quelle session pour ouvrir [Révision de session](session-review.md).

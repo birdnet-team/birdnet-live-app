@@ -65,4 +65,4 @@ Na obrazovce průběhu se zobrazí:
 
 ## Výsledek
 
-Po dokončení analýzy BirdNET Live převede výstup na uloženou relaci a otevře [Session Review] (session-review.md).
+Po dokončení analýzy BirdNET Live převede výstup na uloženou relaci a otevře [Session Review](session-review.md).

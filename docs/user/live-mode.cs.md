@@ -51,10 +51,10 @@ Kompaktní informační čára pod spektrogramem shrnuje aktuální relaci, nap�
 
 ## Chování při nahrávání
 
-Nahrávání se ovládá v [Settings] (settings.md).
+Nahrávání se ovládá v [Nastavení](settings.md).
 
 - **Full** zaznamená celou relaci.
 - **Pouze detekce** zaznamenává klipy kolem detekcí.
 - **Vypnuto** zakáže nahrávání.
 
-Když zastavíte Živý režim, BirdNET Live relaci uloží a otevře [Přehled relace] (session-review.md).
+Když zastavíte Živý režim, BirdNET Live relaci uloží a otevře [Přehled relace](session-review.md).

@@ -154,6 +154,6 @@ Abre un flujo de confirmación para eliminar permanentemente los datos almacenad
 
 Algunos parámetros se configuran dentro de sus propias pantallas de configuración en lugar de en la pantalla de configuración compartida.
 
-- [Modo de recuento de puntos] (point-count-mode.md) tiene su propia duración y configuración de ubicación.
-- [Modo de encuesta] (survey-mode.md) tiene su propia pantalla de parámetros de encuesta.
+- [Modo de recuento de puntos](point-count-mode.md) tiene su propia duración y configuración de ubicación.
+- [Modo de encuesta](survey-mode.md) tiene su propia pantalla de parámetros de encuesta.
 - [Análisis de archivos](file-analysis.md) tiene su propio paso de parámetro de análisis.

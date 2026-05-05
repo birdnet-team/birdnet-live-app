@@ -46,4 +46,4 @@ La superposition peut afficher :
 
 Explore est une vue de référence géolocalisée dans l'application. Il vous aide à comparer le contexte de localisation actuel de l'application avec les espèces que vous prévoyez rencontrer.
 
-Il ne modifie **pas** les données de session enregistrées par lui-même. Le filtrage de détection est contrôlé séparément via [Paramètres] (settings.md).
+Il ne modifie **pas** les données de session enregistrées par lui-même. Le filtrage de détection est contrôlé séparément via [Paramètres](settings.md).

@@ -59,7 +59,7 @@ Schnelle Antworten zu Offline-Nutzung, Aufnahmeverhalten, Punktanzahl und Leistu
 1. Lesen Sie [Erste Schritte](getting-started.md).
 2. Überfliegen Sie [Icons & Controls](icons-and-controls.md), damit die wiederkehrenden Symbole Sinn ergeben.
 3. Öffnen Sie die Anleitung für den Modus, den Sie am häufigsten verwenden.
-4. Verwenden Sie [Einstellungen] (settings.md), wenn Sie die App für einen anderen Arbeitsablauf optimieren müssen.
+4. Verwenden Sie [Einstellungen](settings.md), wenn Sie die App für einen anderen Arbeitsablauf optimieren müssen.
 
 ## Mobiler Tipp
 

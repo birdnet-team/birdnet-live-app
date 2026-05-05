@@ -62,9 +62,9 @@ BirdNET Live automaticky ukládá dokončené relace a po zastavení zpracován�
 
 ## Doporučené další stránky
 
-- Přečtěte si [Ikony a ovládací prvky] (icons-and-controls.md), pokud chcete rychlé vysvětlení opakujících se symbolů uživatelského rozhraní.
-- Před změnou prahových hodnot, filtrů, chování při nahrávání nebo zobrazení spektrogramu si přečtěte [Settings](settings.md).
-- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Živý režim] (live-mode.md), [Režim počítání bodů] (režim počítání bodů.md), [Režim průzkumu] (survey-mode.md) nebo [Analýza souborů] (file-analysis.md).
+- Přečtěte si [Ikony a ovládací prvky](icons-and-controls.md), pokud chcete rychlé vysvětlení opakujících se symbolů uživatelského rozhraní.
+- Před změnou prahových hodnot, filtrů, chování při nahrávání nebo zobrazení spektrogramu si přečtěte [Nastavení](settings.md).
+- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Živý režim](live-mode.md), [Režim počítání bodů](point-count-mode.md), [Režim průzkumu](survey-mode.md) nebo [Analýza souborů](file-analysis.md).
 
 ## Oprávnění
 

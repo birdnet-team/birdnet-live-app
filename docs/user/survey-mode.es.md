@@ -105,4 +105,4 @@ Las alertas de especies (cuando están habilitadas) aparecen en un canal de noti
 
 ## Después de parar
 
-BirdNET Live guarda la encuesta terminada y abre [Revisión de sesión] (session-review.md).
+BirdNET Live guarda la encuesta terminada y abre [Revisión de sesión](session-review.md).

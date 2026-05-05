@@ -46,4 +46,4 @@ Překryvná vrstva může zobrazovat:
 
 Prozkoumat je referenční zobrazení s ohledem na umístění uvnitř aplikace. Pomůže vám porovnat aktuální kontext umístění aplikace s druhy, se kterými se očekáváte, že se setkáte.
 
-**nemění** uložená data relace sama o sobě. Filtrování detekce se ovládá samostatně pomocí [Settings] (settings.md).
+**nemění** uložená data relace sama o sobě. Filtrování detekce se ovládá samostatně pomocí [Nastavení](settings.md).

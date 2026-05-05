@@ -39,4 +39,4 @@ Gruppiert Sitzungen nach Arten und erweitert sie auf die Sitzungen, die diese Ar
 
 ## Was als nächstes passiert
 
-Tippen Sie auf eine beliebige Sitzung, um [Sitzungsüberprüfung] (session-review.md) zu öffnen.
+Tippen Sie auf eine beliebige Sitzung, um [Sitzungsüberprüfung](session-review.md) zu öffnen.

@@ -105,4 +105,4 @@ Upozornění na druhy (pokud je povoleno) se zobrazují na samostatném kanálu 
 
 ## Po zastavení
 
-BirdNET Live uloží hotový průzkum a otevře [Přehled relace] (session-review.md).
+BirdNET Live uloží hotový průzkum a otevře [Přehled relace](session-review.md).

@@ -154,6 +154,6 @@ Zeigt die Onboarding-Sequenz beim nächsten Start der App erneut an.
 
 Einige Parameter werden in ihren eigenen Setup-Bildschirmen konfiguriert und nicht im gemeinsamen Einstellungsbildschirm.
 
-- [Punktzählmodus] (point-count-mode.md) hat seine eigene Dauer und Standorteinstellung.
-- [Umfragemodus] (survey-mode.md) verfügt über einen eigenen Bildschirm mit Umfrageparametern.
+- [Punktzählmodus](point-count-mode.md) hat seine eigene Dauer und Standorteinstellung.
+- [Umfragemodus](survey-mode.md) verfügt über einen eigenen Bildschirm mit Umfrageparametern.
 - [Dateianalyse](file-analysis.md) verfügt über einen eigenen Analyseparameterschritt.

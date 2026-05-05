@@ -47,4 +47,4 @@ La pantalla de conteo de puntos en vivo se centra en un tablero cronometrado.
 
 ## Después del conteo
 
-Cuando finaliza el recuento de puntos, BirdNET Live guarda la sesión y abre [Revisión de sesión] (session-review.md).
+Cuando finaliza el recuento de puntos, BirdNET Live guarda la sesión y abre [Revisión de sesión](session-review.md).

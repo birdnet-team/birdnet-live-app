@@ -11,7 +11,7 @@ BirdNET Live öffnet die Sitzungsüberprüfung automatisch, nachdem Folgendes ab
 - eine Umfrage
 - ein Dateianalyselauf
 
-Sie können jede gespeicherte Sitzung auch über die [Sitzungsbibliothek] (session-library.md) erneut öffnen.
+Sie können jede gespeicherte Sitzung auch über die [Sitzungsbibliothek](session-library.md) erneut öffnen.
 
 ## Hauptbereiche
 
@@ -40,7 +40,7 @@ Wenn ein Filter aktiv ist, erhält der Titel der App-Leiste einen Untertitel mit
 
 ## Symbolleistensymbole
 
-Die Symbolleiste verwendet dieselben Symbolbedeutungen, die in [Symbole und Steuerelemente] (icons-and-controls.md) beschrieben sind:
+Die Symbolleiste verwendet dieselben Symbolbedeutungen, die in [Symbole und Steuerelemente](icons-and-controls.md) beschrieben sind:
 
 - :material-plus-circle-outline: — Inhalt hinzufügen
 - :material-undo-variant: / :material-redo-variant: – Schritt für Schritt durch die Bearbeitungen
@@ -61,4 +61,4 @@ Die Symbolleiste verwendet dieselben Symbolbedeutungen, die in [Symbole und Steu
 
 ## Exportieren
 
-Das Exportverhalten hängt von den in [Einstellungen] (settings.md) ausgewählten Optionen ab. Die App kann Erkennungen und optional Audio in das gewählte Exportformat packen. Jeder Export wird jetzt mit vollständigen Herkunftsmetadaten ausgeliefert – App-Version, Modellname und -version, Gebietsschema der Art, Exportzeitstempel und eine Momentaufnahme aller Einstellungen zum Zeitpunkt des Exports – geschrieben in eine „<prefix>.metadata.json“-Seitendatei (ZIP) oder einen „Meta“-Block der obersten Ebene (JSON), sodass Exporte selbstbeschreibend und reproduzierbar sind.
+Das Exportverhalten hängt von den in [Einstellungen](settings.md) ausgewählten Optionen ab. Die App kann Erkennungen und optional Audio in das gewählte Exportformat packen. Jeder Export wird jetzt mit vollständigen Herkunftsmetadaten ausgeliefert – App-Version, Modellname und -version, Gebietsschema der Art, Exportzeitstempel und eine Momentaufnahme aller Einstellungen zum Zeitpunkt des Exports – geschrieben in eine „<prefix>.metadata.json“-Seitendatei (ZIP) oder einen „Meta“-Block der obersten Ebene (JSON), sodass Exporte selbstbeschreibend und reproduzierbar sind.

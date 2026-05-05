@@ -47,4 +47,4 @@ Připravená obrazovka shrnuje vybranou dobu trvání a umožňuje vám začít 
 
 ## Po počtu
 
-Když počítání bodů skončí, BirdNET Live relaci uloží a otevře [Přehled relace] (session-review.md).
+Když počítání bodů skončí, BirdNET Live relaci uloží a otevře [Přehled relace](session-review.md).

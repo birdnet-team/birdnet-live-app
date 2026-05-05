@@ -46,4 +46,4 @@ La superposición puede mostrar:
 
 Explorar es una vista de referencia con reconocimiento de ubicación dentro de la aplicación. Le ayuda a comparar el contexto de ubicación actual de la aplicación con las especies que espera encontrar.
 
-**No** cambia los datos de la sesión guardada por sí solo. El filtrado de detección se controla por separado a través de [Configuración] (settings.md).
+**No** cambia los datos de la sesión guardada por sí solo. El filtrado de detección se controla por separado a través de [Configuración](settings.md).

@@ -62,9 +62,9 @@ BirdNET Live enregistre automatiquement les sessions terminées et les ouvre dan
 
 ## Pages suivantes recommandées
 
-- Lisez [Icônes et contrôles] (icons-and-controls.md) si vous souhaitez une explication rapide des symboles récurrents de l'interface utilisateur.
-- Lisez [Paramètres] (settings.md) avant de modifier les seuils, les filtres, le comportement d'enregistrement ou l'affichage du spectrogramme.
-- Ouvrez le guide du flux de travail que vous utilisez le plus souvent : [Mode direct] (live-mode.md), [Mode comptage de points] (point-count-mode.md), [Mode enquête] (survey-mode.md) ou [Analyse de fichiers] (file-analysis.md).
+- Lisez [Icônes et contrôles](icons-and-controls.md) si vous souhaitez une explication rapide des symboles récurrents de l'interface utilisateur.
+- Lisez [Paramètres](settings.md) avant de modifier les seuils, les filtres, le comportement d'enregistrement ou l'affichage du spectrogramme.
+- Ouvrez le guide du flux de travail que vous utilisez le plus souvent : [Mode direct](live-mode.md), [Mode comptage de points](point-count-mode.md), [Mode enquête](survey-mode.md) ou [Analyse de fichiers](file-analysis.md).
 
 ## Autorisations
 

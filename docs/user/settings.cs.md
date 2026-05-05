@@ -154,6 +154,6 @@ Otevře tok potvrzení pro trvalé odstranění uložených dat aplikace.
 
 Některé parametry se konfigurují na vlastních obrazovkách nastavení, nikoli na obrazovce sdílených nastavení.
 
-- [Point Count Mode] (point-count-mode.md) má své vlastní nastavení doby trvání a umístění.
-- [Survey Mode] (survey-mode.md) má vlastní obrazovku s parametry průzkumu.
-- [File Analysis] (file-analysis.md) má svůj vlastní krok analýzy parametrů.
+- [Point Count Mode](point-count-mode.md) má své vlastní nastavení doby trvání a umístění.
+- [Survey Mode](survey-mode.md) má vlastní obrazovku s parametry průzkumu.
+- [File Analysis](file-analysis.md) má svůj vlastní krok analýzy parametrů.

@@ -65,4 +65,4 @@ L'écran de progression affiche :
 
 ## Résultat
 
-Une fois l'analyse terminée, BirdNET Live convertit la sortie en une session enregistrée et ouvre [Session Review] (session-review.md).
+Une fois l'analyse terminée, BirdNET Live convertit la sortie en une session enregistrée et ouvre [Session Review](session-review.md).

@@ -56,8 +56,8 @@ Rychlé odpovědi o používání offline, chování při nahrávání, počtu b
 
 ## Pořadí čtení
 
-1. Přečtěte si [Getting Started] (getting-started.md).
-2. Projděte [Ikony a ovládací prvky] (ikony a ovládací prvky.md), aby opakující se symboly dávaly smysl.
+1. Přečtěte si [Getting Started](getting-started.md).
+2. Projděte [Ikony a ovládací prvky](icons-and-controls.md), aby opakující se symboly dávaly smysl.
 3. Otevřete průvodce pro režim, který používáte nejčastěji.
 4. Pokud potřebujete vyladit aplikaci pro jiný pracovní postup, použijte [Nastavení](settings.md).
 

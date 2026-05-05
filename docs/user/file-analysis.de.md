@@ -65,4 +65,4 @@ Der Fortschrittsbildschirm zeigt:
 
 ## Ergebnis
 
-Wenn die Analyse abgeschlossen ist, konvertiert BirdNET Live die Ausgabe in eine gespeicherte Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
+Wenn die Analyse abgeschlossen ist, konvertiert BirdNET Live die Ausgabe in eine gespeicherte Sitzung und öffnet [Sitzungsüberprüfung](session-review.md).

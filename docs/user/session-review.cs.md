@@ -11,7 +11,7 @@ BirdNET Live otevře Session Review automaticky po dokončení:
 - Průzkum
 - Spuštění analýzy souborů
 
-Můžete také znovu otevřít jakoukoli uloženou relaci z [Knihovna relací] (session-library.md).
+Můžete také znovu otevřít jakoukoli uloženou relaci z [Knihovny relací](session-library.md).
 
 ## Hlavní oblasti
 
@@ -40,7 +40,7 @@ Když je filtr aktivní, název lišty aplikace získá titulek s počtem shod (
 
 ## Ikony lišty nástrojů
 
-Panel nástrojů používá stejný význam ikon, jaký je popsán v [Ikony a ovládací prvky] (icons-and-controls.md):
+Panel nástrojů používá stejný význam ikon, jaký je popsán v [Ikony a ovládací prvky](icons-and-controls.md):
 
 - :material-plus-circle-outline: — přidat obsah
 - :material-undo-variant: / :material-redo-variant: — procházet úpravami
@@ -61,4 +61,4 @@ Panel nástrojů používá stejný význam ikon, jaký je popsán v [Ikony a ov
 
 ## Export
 
-Chování exportu závisí na možnostech vybraných v [Settings] (settings.md). Aplikace může zabalit detekce a volitelně i zvuk do zvoleného formátu exportu. Každý export se nyní dodává s úplnými metadaty provenience – verzí aplikace, názvem a verzí modelu, národním prostředím, časovým razítkem exportu a snímkem všech nastavení v době exportu – zapsanými do postranního souboru „<prefix>.metadata.json“ (ZIP) nebo do bloku „meta“ nejvyšší úrovně (JSON), takže exporty jsou samy popisovatelné a reprodukovatelné.
+Chování exportu závisí na možnostech vybraných v [Nastavení](settings.md). Aplikace může zabalit detekce a volitelně i zvuk do zvoleného formátu exportu. Každý export se nyní dodává s úplnými metadaty provenience – verzí aplikace, názvem a verzí modelu, národním prostředím, časovým razítkem exportu a snímkem všech nastavení v době exportu – zapsanými do postranního souboru „<prefix>.metadata.json“ (ZIP) nebo do bloku „meta“ nejvyšší úrovně (JSON), takže exporty jsou samy popisovatelné a reprodukovatelné.

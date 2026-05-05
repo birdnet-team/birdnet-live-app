@@ -39,4 +39,4 @@ Agrupa las sesiones por especie y se expande a las sesiones que contienen esa es
 
 ## ¿Qué pasa después?
 
-Toque cualquier sesión para abrir [Revisión de sesión] (session-review.md).
+Toque cualquier sesión para abrir [Revisión de sesión](session-review.md).

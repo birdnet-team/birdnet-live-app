@@ -63,7 +63,7 @@ BirdNET Live guarda automáticamente las sesiones completadas y las abre en Revi
 ## Páginas siguientes recomendadas
 
 - Lea [Iconos y controles](icons-and-controls.md) si desea una explicación rápida de los símbolos recurrentes de la interfaz de usuario.
-- Lea [Configuración] (settings.md) antes de cambiar umbrales, filtros, comportamiento de grabación o visualización del espectrograma.
+- Lea [Configuración](settings.md) antes de cambiar umbrales, filtros, comportamiento de grabación o visualización del espectrograma.
 - Abra la guía para el flujo de trabajo que utiliza con más frecuencia: [Modo en vivo](live-mode.md), [Modo de recuento de puntos](point-count-mode.md), [Modo de encuesta](survey-mode.md) o [Análisis de archivos](file-analysis.md).
 
 ## Permisos

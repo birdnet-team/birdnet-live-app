@@ -47,4 +47,4 @@ L'écran de comptage en direct se concentre sur un tableau de bord chronométré
 
 ## Après le décompte
 
-Lorsque le décompte des points se termine, BirdNET Live enregistre la session et ouvre [Session Review] (session-review.md).
+Lorsque le décompte des points se termine, BirdNET Live enregistre la session et ouvre [Session Review](session-review.md).

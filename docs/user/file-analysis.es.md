@@ -65,4 +65,4 @@ La pantalla de progreso muestra:
 
 ## Resultado
 
-Cuando finaliza el análisis, BirdNET Live convierte el resultado en una sesión guardada y abre [Revisión de sesión] (session-review.md).
+Cuando finaliza el análisis, BirdNET Live convierte el resultado en una sesión guardada y abre [Revisión de sesión](session-review.md).

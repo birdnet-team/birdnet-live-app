@@ -39,4 +39,4 @@ Seskupuje relace podle druhů a rozšiřuje se na relace, které daný druh obsa
 
 ## Co se stane dál
 
-Klepnutím na kteroukoli relaci otevřete [Přehled relace] (session-review.md).
+Klepnutím na kteroukoli relaci otevřete [Přehled relace](session-review.md).

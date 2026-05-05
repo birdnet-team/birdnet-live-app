@@ -63,7 +63,7 @@ BirdNET Live speichert abgeschlossene Sitzungen automatisch und öffnet sie in d
 ## Empfohlene nächste Seiten
 
 - Lesen Sie [Icons & Controls](icons-and-controls.md), wenn Sie eine kurze Erklärung der wiederkehrenden UI-Symbole wünschen.
-- Lesen Sie [Einstellungen] (settings.md), bevor Sie Schwellenwerte, Filter, Aufzeichnungsverhalten oder Spektrogrammanzeige ändern.
+- Lesen Sie [Einstellungen](settings.md), bevor Sie Schwellenwerte, Filter, Aufzeichnungsverhalten oder Spektrogrammanzeige ändern.
 - Öffnen Sie die Anleitung für den Workflow, den Sie am häufigsten verwenden: [Live-Modus](live-mode.md), [Punktzählmodus](point-count-mode.md), [Umfragemodus](survey-mode.md) oder [Dateianalyse](file-analysis.md).
 
 ## Berechtigungen

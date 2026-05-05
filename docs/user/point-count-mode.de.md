@@ -47,4 +47,4 @@ Der Live-Punktezähler-Bildschirm konzentriert sich auf ein zeitgesteuertes Dash
 
 ## Nach der Zählung
 
-Wenn die Punktezählung endet, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
+Wenn die Punktezählung endet, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung](session-review.md).

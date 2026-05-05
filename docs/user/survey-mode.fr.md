@@ -105,4 +105,4 @@ Les alertes d'espèces (lorsqu'elles sont activées) apparaissent sur un canal d
 
 ## Après l'arrêt
 
-BirdNET Live enregistre l'enquête terminée et ouvre [Session Review] (session-review.md).
+BirdNET Live enregistre l'enquête terminée et ouvre [Session Review](session-review.md).

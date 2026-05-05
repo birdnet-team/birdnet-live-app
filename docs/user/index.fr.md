@@ -57,9 +57,9 @@ Réponses rapides sur l'utilisation hors ligne, le comportement d'enregistrement
 ## Ordre de lecture
 
 1. Lisez [Mise en route](getting-started.md).
-2. Parcourez [Icônes et contrôles] (icons-and-controls.md) pour que les symboles récurrents aient un sens.
+2. Parcourez [Icônes et contrôles](icons-and-controls.md) pour que les symboles récurrents aient un sens.
 3. Ouvrez le guide du mode que vous utilisez le plus souvent.
-4. Utilisez [Paramètres] (settings.md) lorsque vous devez régler l'application pour un flux de travail différent.
+4. Utilisez [Paramètres](settings.md) lorsque vous devez régler l'application pour un flux de travail différent.
 
 ## Astuce mobile
 

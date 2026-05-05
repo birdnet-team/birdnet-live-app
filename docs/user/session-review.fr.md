@@ -11,7 +11,7 @@ BirdNET Live ouvre automatiquement la révision de session après avoir terminé
 - une enquête
 - une analyse de fichiers
 
-Vous pouvez également rouvrir n'importe quelle session enregistrée à partir de [Bibliothèque de sessions] (session-library.md).
+Vous pouvez également rouvrir n'importe quelle session enregistrée à partir de [Bibliothèque de sessions](session-library.md).
 
 ## Domaines principaux
 
@@ -40,7 +40,7 @@ Lorsqu'un filtre est actif, le titre de la barre d'application obtient un sous-t
 
 ## Icônes de la barre d'outils
 
-La barre d'outils utilise les mêmes significations d'icônes décrites dans [Icônes et contrôles] (icons-and-controls.md) :
+La barre d'outils utilise les mêmes significations d'icônes décrites dans [Icônes et contrôles](icons-and-controls.md) :
 
 - :material-plus-circle-outline : — ajouter du contenu
 - :material-undo-variant: / :material-redo-variant: — étape par étape dans les modifications
@@ -61,4 +61,4 @@ La barre d'outils utilise les mêmes significations d'icônes décrites dans [Ic
 
 ## Exporter
 
-Le comportement de l'exportation dépend des options sélectionnées dans [Paramètres] (settings.md). L'application peut regrouper les détections et, éventuellement, l'audio dans le format d'exportation choisi. Chaque exportation est désormais livrée avec des métadonnées complètes de provenance — la version de l'application, le nom et la version du modèle, les paramètres régionaux de l'espèce, l'horodatage de l'exportation et un instantané de tous les paramètres au moment de l'exportation — écrites dans un fichier latéral `<prefix>.metadata.json` (ZIP) ou un bloc `meta` de niveau supérieur (JSON) afin que les exportations soient auto-descriptives et reproductibles.
+Le comportement de l'exportation dépend des options sélectionnées dans [Paramètres](settings.md). L'application peut regrouper les détections et, éventuellement, l'audio dans le format d'exportation choisi. Chaque exportation est désormais livrée avec des métadonnées complètes de provenance — la version de l'application, le nom et la version du modèle, les paramètres régionaux de l'espèce, l'horodatage de l'exportation et un instantané de tous les paramètres au moment de l'exportation — écrites dans un fichier latéral `<prefix>.metadata.json` (ZIP) ou un bloc `meta` de niveau supérieur (JSON) afin que les exportations soient auto-descriptives et reproductibles.

@@ -51,10 +51,10 @@ Die kompakte Infozeile unter dem Spektrogramm fasst die aktuelle Sitzung zusamme
 
 ## Aufnahmeverhalten
 
-Die Aufnahme wird in den [Einstellungen] (settings.md) gesteuert.
+Die Aufnahme wird in den [Einstellungen](settings.md) gesteuert.
 
 - **Full** zeichnet die gesamte Sitzung auf.
 - **Nur Erkennungen** zeichnet Clips rund um Erkennungen auf.
 - **Aus** deaktiviert die Aufnahme.
 
-Wenn Sie den Live-Modus beenden, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
+Wenn Sie den Live-Modus beenden, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung](session-review.md).

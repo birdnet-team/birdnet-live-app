@@ -51,10 +51,10 @@ La ligne d'information compacte sous le spectrogramme résume la session en cour
 
 ## Comportement d'enregistrement
 
-L'enregistrement est contrôlé dans [Paramètres] (settings.md).
+L'enregistrement est contrôlé dans [Paramètres](settings.md).
 
 - **Full** enregistre toute la session.
 - **Détections uniquement** enregistre les clips autour des détections.
 - **Off** désactive l'enregistrement.
 
-Lorsque vous arrêtez le mode Live, BirdNET Live enregistre la session et ouvre [Session Review] (session-review.md).
+Lorsque vous arrêtez le mode Live, BirdNET Live enregistre la session et ouvre [Session Review](session-review.md).
