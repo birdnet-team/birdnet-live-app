@@ -20,7 +20,7 @@ Todas as configurações atualmente expostas no aplicativo são agrupadas da mes
 
 ## Guias de modo
 
-### [Modo ao vivo](live-mode.md)
+### [Ao vivo](live-mode.md)
 
 Escuta contínua com o microfone, detecções ao vivo, espectrograma e barra de informações da sessão.
 
@@ -36,15 +36,15 @@ Sessões salvas, pesquisa, classificação, modos de visualização e navegaçã
 
 Reprodução, edição, corte, anotações, exportação e barra de ferramentas de revisão.
 
-### [Modo de contagem de pontos](point-count-mode.md)
+### [Contagem por pontos](point-count-mode.md)
 
 O fluxo de trabalho de configuração da contagem de pontos, opções de localização e tela do cronômetro ao vivo.
 
-### [Modo de pesquisa](survey-mode.md)
+### [Pesquisa](survey-mode.md)
 
 Configuração da pesquisa, painel de pesquisa ao vivo e guias de mapa, espectrograma e resumo.
 
-### [Análise de arquivo](file-analysis.md)
+### [Análise de arquivos](file-analysis.md)
 
 O assistente de análise de arquivos em quatro etapas, opções de parâmetros e como os resultados são transferidos para a Revisão da Sessão.
 
@@ -56,8 +56,8 @@ Respostas rápidas sobre uso offline, comportamento de gravação, contagem de p
 
 ## Ordem de leitura
 
-1. Leia [Introdução](getting-started.md).
-2. Dê uma olhada em [Icons & Controls](icons-and-controls.md) para que os símbolos recorrentes façam sentido.
+1. Leia [Primeiros passos](getting-started.md).
+2. Dê uma olhada em [Ícones e controles](icons-and-controls.md) para que os símbolos recorrentes façam sentido.
 3. Abra o guia do modo que você usa com mais frequência.
 4. Use [Configurações](settings.md) quando precisar ajustar o aplicativo para um fluxo de trabalho diferente.
 

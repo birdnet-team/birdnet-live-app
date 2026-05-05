@@ -1,8 +1,8 @@
 # Uživatelská příručka
 
-Tato příručka vysvětluje BirdNET Live jako nástroj pracovního postupu v terénu: co dělá každá obrazovka, co znamenají opakující se ikony a jak nastavení mění chování aplikace.
+Tato příručka představuje BirdNET Live jako nástroj pro práci v terénu: vysvětluje, k čemu slouží jednotlivé obrazovky, co znamenají opakující se ikony a jak nastavení mění chování aplikace.
 
-Je napsána pro ekology a odborníky na průzkum ptactva, kteří již znají metody v terénu a chtějí jasnou mapu samotné aplikace.
+Je určena ekologům a lidem, kteří se věnují terénním průzkumům ptáků, už znají metodiku práce v terénu a chtějí mít jasno v tom, jak je aplikace uspořádaná.
 
 ## Začněte zde
 
@@ -12,11 +12,11 @@ Instalace, oprávnění, první spuštění a hlavní navigace na domovské obra
 
 ### [Ikony a ovládací prvky](icons-and-controls.md)
 
-Sdílené ikony, tlačítka, symboly a indikátory stavu, které se objevují na BirdNET Live.
+Sdílené ikony, tlačítka, symboly a stavové indikátory, které se v BirdNET Live opakují.
 
 ### [Nastavení](settings.md)
 
-Každé nastavení aktuálně zobrazené v aplikaci je seskupeno stejným způsobem jako obrazovka Nastavení v aplikaci.
+Všechna nastavení, která aplikace aktuálně nabízí, seskupená stejně jako na obrazovce Nastavení.
 
 ## Průvodci režimy
 
@@ -36,17 +36,17 @@ Uložené relace, vyhledávání, řazení, režimy zobrazení a procházení se
 
 Přehrávání, úpravy, ořezávání, anotace, export a panel nástrojů recenze.
 
-### [Point Count Mode](point-count-mode.md)
+### [Bodové sčítání](point-count-mode.md)
 
-Pracovní postup nastavení počtu bodů, možnosti umístění a obrazovka živého časovače.
+Postup nastavení bodového sčítání, volby polohy a obrazovka živého časovače.
 
-### [Režim průzkumu](survey-mode.md)
+### [Transekt](survey-mode.md)
 
-Nastavení průzkumu, ovládací panel živého průzkumu a karty mapy, spektrogramu a souhrnu.
+Nastavení transektu, živý ovládací panel a karty mapy, spektrogramu a souhrnu.
 
 ### [Analýza souborů](file-analysis.md)
 
-Průvodce analýzou souborů ve čtyřech krocích, volby parametrů a způsob přesunutí výsledků do relace.
+Průvodce analýzou souborů ve čtyřech krocích, volby parametrů a způsob, jak se výsledky přenesou do Session Review.
 
 ## Reference
 
@@ -56,7 +56,7 @@ Rychlé odpovědi o používání offline, chování při nahrávání, počtu b
 
 ## Pořadí čtení
 
-1. Přečtěte si [Getting Started](getting-started.md).
+1. Přečtěte si [Začínáme](getting-started.md).
 2. Projděte [Ikony a ovládací prvky](icons-and-controls.md), aby opakující se symboly dávaly smysl.
 3. Otevřete průvodce pro režim, který používáte nejčastěji.
 4. Pokud potřebujete vyladit aplikaci pro jiný pracovní postup, použijte [Nastavení](settings.md).
@@ -67,6 +67,6 @@ Na mobilních zařízeních je postranní navigační panel skrytý za tlačítk
 
 ## Další dokumentace
 
-- [Domovská stránka](../index.md) poskytuje verzi a přehled funkcí.
-- [Příručka pro vývojáře](../developer/index.md) pokrývá architekturu, nástroje a pracovní postupy sestavování.
-- [Zásady ochrany osobních údajů](../privacy.md) a [Podmínky použití](../terms.md) fungují na stejném webu.
+- [Domovská stránka](../index.md) shrnuje aktuální verzi a hlavní funkce.
+- [Příručka pro vývojáře](../developer/index.md) popisuje architekturu, nástroje a postup sestavení.
+- [Zásady ochrany osobních údajů](../privacy.md) a [Podmínky použití](../terms.md) jsou dostupné na stejném webu.

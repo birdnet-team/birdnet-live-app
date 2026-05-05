@@ -27,21 +27,21 @@ R: La precisione dipende dalla qualità della registrazione, dalla distanza, dal
 ## Registrazione
 
 **D: Dove vengono salvate le registrazioni?**
-R: Nella directory dei documenti dell'app in "recordings/<session-id>/". Le registrazioni complete vengono salvate come file WAV.
+R: Nella directory dei documenti dell'app in `recordings/session-id/`. Le registrazioni complete vengono salvate come file WAV.
 
 **D: Posso analizzare le registrazioni esistenti?**
 R: Sì. Apri Analisi file dalla schermata principale, seleziona un file audio, imposta posizione e parametri e tocca Analizza. I formati supportati includono WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA e AMR.
 
-## Conteggio punti
+## Conteggio a punto
 
-**D: Cos'è la modalità conteggio punti?**
-R: Una modalità di rilevamento a tempo per osservazioni formali di conteggio dei punti aviari. Imposti una durata fissa (3-20 minuti) e una posizione, quindi l'app funziona continuamente e si arresta automaticamente quando il timer raggiunge lo zero.
+**D: Cos'è la modalità conteggio a punto?**
+R: Una modalità di conteggio a punto a tempo per osservazioni formali di uccelli. Imposti una durata fissa (3-20 minuti) e una posizione, quindi l'app funziona continuamente e si arresta automaticamente quando il timer raggiunge lo zero.
 
-**D: Posso mettere in pausa il conteggio dei punti?**
+**D: Posso mettere in pausa il conteggio a punto?**
 R: No. La conformità al protocollo richiede una registrazione ininterrotta. Puoi terminare prima tramite il pulsante stop.
 
-**D: Dove vanno a finire i risultati del conteggio dei punti?**
-R: Vengono visualizzati nella Libreria sessioni come "Conteggio punti n. 1", "N. 2" ecc. Puoi rivederli, modificarli ed esportarli come qualsiasi altra sessione.
+**D: Dove vanno a finire i risultati del conteggio a punto?**
+R: Vengono visualizzati nella Libreria sessioni come sessioni numerate di conteggio a punto. Puoi rivederli, modificarli ed esportarli come qualsiasi altra sessione.
 
 ## Prestazione
 

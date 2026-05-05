@@ -20,7 +20,7 @@ Tous les paramètres actuellement exposés dans l'application, regroupés de la 
 
 ## Guides des modes
 
-### [Mode Live](live-mode.md)
+### [En direct](live-mode.md)
 
 Écoute continue au microphone, détections en direct, spectrogramme et barre d'informations de session.
 

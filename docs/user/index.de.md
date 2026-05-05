@@ -1,8 +1,8 @@
 # Benutzerhandbuch
 
-In diesem Handbuch wird BirdNET Live als Feld-Workflow-Tool erläutert: Was jeder Bildschirm bewirkt, was die wiederkehrenden Symbole bedeuten und wie die Einstellungen das Verhalten der App ändern.
+Dieses Handbuch stellt BirdNET Live als Werkzeug für den Feldeinsatz vor: Es erklärt die Funktion der einzelnen Bildschirme, die Bedeutung wiederkehrender Symbole und den Einfluss der Einstellungen auf das Verhalten der App.
 
-Es ist für Ökologen und Vogelvermessungspraktiker geschrieben, die die Feldmethoden bereits kennen und eine klare Karte der App selbst wünschen.
+Es richtet sich an Ökologen und andere Personen, die Vogelbestände im Gelände erfassen, die Feldmethoden bereits kennen und eine klare Orientierung in der App möchten.
 
 ## Hier beginnen
 
@@ -12,17 +12,17 @@ Installation, Berechtigungen, erster Start und die Hauptnavigation auf dem Start
 
 ### [Symbole und Steuerelemente](icons-and-controls.md)
 
-Die gemeinsamen Symbole, Schaltflächen, Symbole und Statusanzeigen, die in BirdNET Live angezeigt werden.
+Gemeinsame Symbole, Schaltflächen und Statusanzeigen, die in BirdNET Live immer wieder auftauchen.
 
 ### [Einstellungen](settings.md)
 
-Alle derzeit in der App angezeigten Einstellungen sind auf die gleiche Weise gruppiert wie der In-App-Einstellungsbildschirm.
+Alle Einstellungen, die derzeit in der App verfügbar sind, in derselben Gliederung wie auf dem Einstellungsbildschirm.
 
 ## Modus-Anleitungen
 
 ### [Live-Modus](live-mode.md)
 
-Kontinuierliches Zuhören mit dem Mikrofon, Live-Erkennungen, dem Spektrogramm und der Sitzungsinfoleiste.
+Kontinuierliches Zuhören über das Mikrofon, Live-Detektionen, Spektrogramm und Sitzungsinfoleiste.
 
 ### [Erkunden](explore.md)
 
@@ -34,19 +34,19 @@ Gespeicherte Sitzungen, Suche, Sortierung, Ansichtsmodi und Gruppierung nach Art
 
 ### [Sitzungsrückblick](session-review.md)
 
-Wiedergabe, Bearbeitung, Zuschneiden, Anmerkungen, Export und die Überprüfungssymbolleiste.
+Wiedergabe, Bearbeitung, Zuschneiden, Anmerkungen, Export und die Werkzeugleiste der Sitzungsüberprüfung.
 
-### [Punktzählmodus](point-count-mode.md)
+### [Punktzählung](point-count-mode.md)
 
-Der Arbeitsablauf zur Punktzählung, Standortoptionen und der Live-Timer-Bildschirm.
+Der Ablauf für die Punktzählung, Standortoptionen und der Live-Timer-Bildschirm.
 
-### [Umfragemodus](survey-mode.md)
+### [Transektmodus](survey-mode.md)
 
-Vermessungseinrichtung, das Live-Vermessungs-Dashboard sowie die Registerkarten „Karte“, „Spektrogramm“ und „Zusammenfassung“.
+Einrichtung des Transekts, das Live-Dashboard sowie die Registerkarten „Karte“, „Spektrogramm“ und „Zusammenfassung“.
 
 ### [Dateianalyse](file-analysis.md)
 
-Der vierstufige Dateianalyse-Assistent, Parameterauswahl und die Art und Weise, wie Ergebnisse in die Sitzungsüberprüfung übertragen werden.
+Der vierstufige Assistent für die Dateianalyse, die Auswahl der Parameter und die Übernahme der Ergebnisse in Session Review.
 
 ## Referenz
 
@@ -57,7 +57,7 @@ Schnelle Antworten zu Offline-Nutzung, Aufnahmeverhalten, Punktanzahl und Leistu
 ## Lesereihenfolge
 
 1. Lesen Sie [Erste Schritte](getting-started.md).
-2. Überfliegen Sie [Icons & Controls](icons-and-controls.md), damit die wiederkehrenden Symbole Sinn ergeben.
+2. Überfliegen Sie [Symbole und Steuerelemente](icons-and-controls.md), damit die wiederkehrenden Symbole leichter einzuordnen sind.
 3. Öffnen Sie die Anleitung für den Modus, den Sie am häufigsten verwenden.
 4. Verwenden Sie [Einstellungen](settings.md), wenn Sie die App für einen anderen Arbeitsablauf optimieren müssen.
 
@@ -67,6 +67,6 @@ Auf Mobilgeräten ist die Navigationsseitenleiste hinter der Menüschaltfläche 
 
 ## Weitere Dokumentation
 
-- Die [Homepage](../index.md) bietet eine Release- und Funktionsübersicht.
-– Das [Entwicklerhandbuch](../developer/index.md) behandelt Architektur, Tools und Build-Workflows.
+- Die [Startseite](../index.md) bietet einen Überblick über Version und Funktionen.
+- Das [Entwicklerhandbuch](../developer/index.md) behandelt Architektur, Werkzeuge und Build-Workflows.
 - Die [Datenschutzerklärung](../privacy.md) und die [Nutzungsbedingungen](../terms.md) finden Sie auf derselben Website.

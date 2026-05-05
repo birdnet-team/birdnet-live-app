@@ -22,7 +22,7 @@ Lors de la première ouverture de BirdNET Live, l'application vous guide à trav
 1. Lisez les écrans d'intégration.
 2. Acceptez les conditions d'utilisation et la politique de confidentialité.
 3. Accordez l'autorisation au microphone pour que BirdNET Live puisse traiter l'audio.
-4. Vous pouvez aussi autoriser la localisation pour le géoréférencement, Explore, le Point Count et le relevé.
+4. Vous pouvez aussi autoriser la localisation pour le géoréférencement, Explorer, le Point d'écoute et le relevé.
 5. Vous pouvez aussi autoriser les notifications pour les relevés de longue durée.
 
 ## Premier lancement
@@ -38,9 +38,9 @@ L'écran d'accueil est le point central de l'application.
 
 ### Cartes du mode principal
 
-- :material-microphone: **Mode Live**
-- :material-map-marker : **Mode de comptage de points**
-- :material-routes : **Mode relevé**
+- :material-microphone: **En direct**
+- :material-map-marker : **Point d'écoute**
+- :material-routes : **Relevé**
 - :material-file-music : **Analyse de fichiers**
 
 ### Boutons de pied de page
@@ -55,8 +55,8 @@ L'écran d'accueil est le point central de l'application.
 
 BirdNET Live enregistre automatiquement les sessions terminées et les ouvre dans Session Review à l'arrêt du traitement.
 
-- Les sessions Live enregistrent les détections et, selon vos réglages, les enregistrements ou les extraits audio.
-- Les sessions de Point Count sont enregistrées comme des sessions minutées de comptage de points.
+- Les sessions En direct enregistrent les détections et, selon vos réglages, les enregistrements ou les extraits audio.
+- Les sessions de point d'écoute sont enregistrées comme des sessions minutées de point d'écoute.
 - Les sessions de relevé enregistrent l'itinéraire, les détections et les métadonnées associées.
 - Les résultats de l'analyse de fichiers sont convertis en session révisable.
 
@@ -64,13 +64,13 @@ BirdNET Live enregistre automatiquement les sessions terminées et les ouvre dan
 
 - Lisez [Icônes et contrôles](icons-and-controls.md) si vous souhaitez une explication rapide des symboles récurrents de l'interface utilisateur.
 - Lisez [Paramètres](settings.md) avant de modifier les seuils, les filtres, le comportement d'enregistrement ou l'affichage du spectrogramme.
-- Ouvrez le guide du flux de travail que vous utilisez le plus souvent : [Mode direct](live-mode.md), [Mode comptage de points](point-count-mode.md), [Mode enquête](survey-mode.md) ou [Analyse de fichiers](file-analysis.md).
+- Ouvrez le guide du flux de travail que vous utilisez le plus souvent : [En direct](live-mode.md), [Point d'écoute](point-count-mode.md), [Relevé](survey-mode.md) ou [Analyse de fichiers](file-analysis.md).
 
 ## Autorisations
 
 | Autorisation | Requis pour | Facultatif? |
 | --- | --- | --- |
 | Micro | Tous les modes d'enregistrement | Obligatoire |
-| Localisation | Marquage GPS, relevé/compte de points | Facultatif pour Live |
+| Localisation | Marquage GPS, relevé/point d'écoute | Facultatif pour En direct |
 | Stockage | Sauvegarde des enregistrements, exportations | Nécessaire pour l'enregistrement |
-| Notifications | Alertes d'enquête de fond | Facultatif |
+| Notifications | Alertes de relevé en arrière-plan | Facultatif |

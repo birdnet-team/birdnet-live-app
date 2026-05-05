@@ -5,11 +5,11 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 ## Controles de navegación compartidos
 
 | Controlar | Donde lo ves | Qué hace |
-|---|---|---|
-| :material-tune: **Configuración** | Pie de página de inicio, en vivo, recuento de puntos, encuesta, análisis de archivos, revisión de sesión | Abre Configuración. En las pantallas de modo, abre las configuraciones más relevantes para ese flujo de trabajo. |
+| --- | --- | --- |
+| :material-tune: **Configuración** | Pie de página de inicio, Live, conteo por puntos, transecto, análisis de archivos, revisión de sesión | Abre Configuración. En las pantallas de modo, abre las configuraciones más relevantes para ese flujo de trabajo. |
 | :material-magnify: **Explorar** | Pie de página de inicio | Abre Explorar. |
 | :material-music-box-multiple-outline: **Biblioteca** | Pie de página de inicio | Abre la biblioteca de sesiones. |
-| :material-help-circle-outline: **Ayuda** | Pie de página de inicio, encabezado de exploración, panel de encuestas, barra de herramientas de revisión de sesión | Abre la Ayuda o una hoja de ayuda específica de la pantalla. |
+| :material-help-circle-outline: **Ayuda** | Pie de página de inicio, encabezado de exploración, panel del transecto, barra de herramientas de revisión de sesión | Abre la Ayuda o una hoja de ayuda específica de la pantalla. |
 | :material-information-outline: **Información / Acerca de** | Pie de página de inicio, barras de información, hojas de ayuda | Muestra información general o contexto resumido. |
 | :material-flecha-izquierda: **Volver** | Modo en vivo | Vuelve a la pantalla anterior. |
 | :material-open-in-new: **Abrir externo** | Acerca de la pantalla, enlaces de documentación | Abre una página externa como la Guía del usuario en línea. |
@@ -17,9 +17,9 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 ## Controles de inicio, parada y sesión
 
 | Controlar | Significado |
-|---|---|
+| --- | --- |
 | :material-micrófono: **Micrófono** | Empiece a escuchar en vivo. |
-| :material-parada: **Detener** | Detenga una grabación activa, un recuento de puntos o una encuesta. |
+| :material-parada: **Detener** | Detenga una grabación activa, un conteo por puntos o un transecto. |
 | :material-play: **Reproducir** | Inicie un flujo de configuración configurado o reanude desde un estado en pausa y listo. |
 | :material-close: **Cerrar / Cancelar** | Cancelar un análisis de archivo activo. |
 | :material-timer: **Temporizador** | Duración o tiempo restante. |
@@ -28,7 +28,7 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 ## Controles de ubicación y tiempo
 
 | Controlar | Significado |
-|---|---|
+| --- | --- |
 | :material-crosshairs-gps: **Ubicación actual** | Utilice la posición GPS actual del dispositivo. |
 | :material-map-marker-plus: **Coordenadas manuales** | Introduzca las coordenadas manualmente. |
 | :material-map-marker-off: **Sin ubicación** | Saltar ubicación o mostrar que la ubicación no está disponible. |
@@ -41,7 +41,7 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 ## Explorar y símbolos de especies
 
 | Controlar | Significado |
-|---|---|
+| --- | --- |
 | Miniatura de especies | Imagen incluida para la especie cuando esté disponible. |
 | Insignia de porcentaje de confianza o modelo geográfico | Un resumen numérico rápido de la salida del modelo. Los números más altos indican un apoyo más fuerte dentro del contexto de esa pantalla. |
 | Etiquetas mensuales (`enero`, `abril`, `julio`, `oct`, `dic`) | Puntos de referencia en el gráfico de frecuencia esperada semanal en la superposición de especies. |
@@ -51,14 +51,14 @@ Esta página explica los controles y símbolos recurrentes utilizados en BirdNET
 Estos controles se utilizan en la pantalla Revisión de sesión.
 
 | Controlar | Significado |
-|---|---|
+| --- | --- |
 | :material-plus-circle-outline: **Agregar** | Agregue contenido, como una especie o una anotación. |
 | :material-undo-variant: **Deshacer** / :material-redo-variant: **Rehacer** | Retroceda o avance a través de las ediciones de revisión. |
 | :material-content-cut: **Recortar** | Ingrese al modo de recorte o muestre que el modo de recorte está activo. |
 | :material-content-save: **Guardar** | Guardar cambios de revisión. |
 | :variante-compartir-material: **Compartir** | Exporta o comparte la sesión. |
 | :material-delete-outline: **Eliminar** | Descartar la sesión. |
-| :material-play: **Continuar** | Continúe una encuesta inconclusa de Revisión de sesión cuando esa acción esté disponible. |
+| :material-play: **Continuar** | Continúe un transecto inconcluso desde Revisión de sesión cuando esa acción esté disponible. |
 
 ## Barras de estado específicas de la pantalla
 
@@ -75,14 +75,14 @@ La barra de información de Live utiliza :material-information-outline: seguido 
 
 La barra del temporizador de recuento de puntos combina :material-stop: **Stop**, :material-timer: **Timer** y una barra de progreso para mostrar la sesión cronometrada restante.
 
-### Encuesta
+### Transecto
 
-El panel de la encuesta utiliza:
+El panel del transecto utiliza:
 
 - :material-map-outline: **Mapa** — pestaña de mapa en vivo
 - :material-equalizer: **Espectrograma** — pestaña espectrograma
 - :material-chart-bar: **Resumen** — pestaña de resumen
-- :material-chart-bar: etiquetas de estadísticas en la vista de resumen de la encuesta
+- :material-chart-bar: etiquetas de estadísticas en la vista de resumen del transecto
 
 ## En caso de duda
 

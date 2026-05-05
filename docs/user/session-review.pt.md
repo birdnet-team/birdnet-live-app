@@ -7,7 +7,7 @@ A revisão da sessão é onde o BirdNET Live transforma as detecções em um reg
 BirdNET Live abre a Revisão da Sessão automaticamente após concluir:
 
 - uma sessão ao vivo
-- uma contagem de pontos
+- uma contagem por pontos
 - uma pesquisa
 - uma execução de análise de arquivo
 

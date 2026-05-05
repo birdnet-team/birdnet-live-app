@@ -35,7 +35,7 @@ R: Sí. Abra Análisis de archivos desde la pantalla de inicio, elija un archivo
 ## Recuento de puntos
 
 **P: ¿Qué es el modo de conteo de puntos?**
-R: Un modo de encuesta cronometrada para observaciones formales de conteo de puntos de aves. Usted establece una duración fija (de 3 a 20 minutos) y una ubicación, luego la aplicación se ejecuta continuamente y se detiene automáticamente cuando el temporizador llega a cero.
+R: Un modo de conteo por puntos cronometrado para observaciones formales de aves. Usted establece una duración fija (de 3 a 20 minutos) y una ubicación, luego la aplicación se ejecuta continuamente y se detiene automáticamente cuando el temporizador llega a cero.
 
 **P: ¿Puedo pausar un conteo de puntos?**
 R: No. El cumplimiento del protocolo requiere una grabación ininterrumpida. Puede finalizar temprano mediante el botón de parada.

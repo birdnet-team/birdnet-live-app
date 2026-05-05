@@ -14,8 +14,8 @@ I tipi di sessione utilizzano le stesse icone della schermata Home:
 
 - :material-microphone: — Sessione dal vivo
 - :material-file-music: — Sessione di analisi dei file
-- :material-map-marker: - Sessione di conteggio punti
-- :material-route: — Sessione di indagine
+- :material-map-marker: - Sessione di conteggio a punto
+- :material-route: — Sessione di transetto
 
 ## Controlli della barra dell'app
 

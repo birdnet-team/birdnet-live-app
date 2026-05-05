@@ -1,8 +1,8 @@
 # Guida per l'utente
 
-Questa guida spiega BirdNET Live come strumento per il flusso di lavoro sul campo: cosa fa ciascuna schermata, cosa significano le icone ricorrenti e come le impostazioni modificano il comportamento dell'app.
+Questa guida presenta BirdNET Live come strumento per il lavoro sul campo: spiega a cosa serve ogni schermata, cosa significano le icone ricorrenti e in che modo le impostazioni modificano il comportamento dell'app.
 
-È stato scritto per ecologisti e professionisti del rilevamento degli uccelli che già conoscono i metodi sul campo e desiderano una mappa chiara dell'app stessa.
+È pensata per ecologi e professionisti del monitoraggio degli uccelli che conoscono già i metodi di campo e vogliono orientarsi con chiarezza all'interno dell'app.
 
 ## Inizia qui
 
@@ -12,23 +12,23 @@ Installazione, autorizzazioni, primo avvio e navigazione principale nella scherm
 
 ### [Icone e controlli](icons-and-controls.md)
 
-Le icone, i pulsanti, i simboli e gli indicatori di stato condivisi visualizzati su BirdNET Live.
+Le icone, i pulsanti, i simboli e gli indicatori di stato condivisi che ricorrono in BirdNET Live.
 
 ### [Impostazioni](settings.md)
 
-Tutte le impostazioni attualmente esposte nell'app, raggruppate allo stesso modo della schermata Impostazioni in-app.
+Tutte le impostazioni attualmente disponibili nell'app, raggruppate nello stesso modo della schermata Impostazioni.
 
 ## Guide alle modalità
 
-### [Modalità live](live-mode.md)
+### [Modalità Live](live-mode.md)
 
-Ascolto continuo con il microfono, rilevazioni in tempo reale, lo spettrogramma e la barra informativa della sessione.
+Ascolto continuo con il microfono, rilevazioni in tempo reale, spettrogramma e barra informativa della sessione.
 
 ### [Esplora](explore.md)
 
 Specie previste per la posizione e la stagione attuali, oltre alla sovrapposizione dei dettagli della specie.
 
-### [Libreria di sessione](session-library.md)
+### [Libreria delle sessioni](session-library.md)
 
 Sessioni salvate, ricerca, ordinamento, modalità di visualizzazione e navigazione raggruppata per specie.
 
@@ -36,17 +36,17 @@ Sessioni salvate, ricerca, ordinamento, modalità di visualizzazione e navigazio
 
 Riproduzione, modifica, ritaglio, annotazioni, esportazione e barra degli strumenti di revisione.
 
-### [Modalità conteggio punti](point-count-mode.md)
+### [Conteggio a punto](point-count-mode.md)
 
-Il flusso di lavoro di configurazione del conteggio dei punti, le opzioni di posizione e la schermata del timer live.
+Il flusso di lavoro per configurare il conteggio a punto, le opzioni di posizione e la schermata del timer live.
 
-### [Modalità sondaggio](survey-mode.md)
+### [Transetto](survey-mode.md)
 
-Configurazione del sondaggio, dashboard del sondaggio in tempo reale e schede mappa, spettrogramma e riepilogo.
+Configurazione del transetto, dashboard live e schede mappa, spettrogramma e riepilogo.
 
 ### [Analisi file](file-analysis.md)
 
-La procedura guidata di analisi dei file in quattro passaggi, le scelte dei parametri e il modo in cui i risultati vengono spostati nella revisione della sessione.
+La procedura guidata di analisi dei file in quattro passaggi, la scelta dei parametri e il modo in cui i risultati passano a Session Review.
 
 ## Riferimento
 
@@ -67,6 +67,6 @@ Sui dispositivi mobili, la barra laterale di navigazione è nascosta dietro il p
 
 ## Ulteriore documentazione
 
-- La [Home page](../index.md) fornisce una panoramica della versione e delle funzionalità.
-- La [Guida per gli sviluppatori](../developer/index.md) copre l'architettura, gli strumenti e i flussi di lavoro di creazione.
-- La [Informativa sulla privacy](../privacy.md) e i [Termini di utilizzo](../terms.md) si trovano su questo stesso sito.
+- La [Home page](../index.md) fornisce una panoramica della versione e delle funzionalità principali.
+- La [Guida per gli sviluppatori](../developer/index.md) copre l'architettura, gli strumenti e i flussi di build.
+- L'[Informativa sulla privacy](../privacy.md) e i [Termini di utilizzo](../terms.md) sono disponibili su questo stesso sito.

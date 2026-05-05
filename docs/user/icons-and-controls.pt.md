@@ -5,8 +5,8 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 ## Controles de navegação compartilhados
 
 | Controle | Onde você vê | O que faz |
-|---|---|---|
-| :material-tune: **Configurações** | Rodapé inicial, Ao vivo, Contagem de pontos, Pesquisa, Análise de arquivos, Revisão de sessão | Abre Configurações. Nas telas de modo, abre as configurações mais relevantes para aquele fluxo de trabalho. |
+| --- | --- | --- |
+| :material-tune: **Configurações** | Rodapé inicial, Ao vivo, Contagem por pontos, Pesquisa, Análise de arquivos, Revisão de sessão | Abre Configurações. Nas telas de modo, abre as configurações mais relevantes para aquele fluxo de trabalho. |
 | :material-magnify: **Explorar** | Rodapé inicial | Abre Explorar. |
 | :material-music-box-multiple-outline: **Biblioteca** | Rodapé inicial | Abre a Biblioteca de Sessões. |
 | :material-help-circle-outline: **Ajuda** | Rodapé inicial, cabeçalho Explorar, painel de pesquisa, barra de ferramentas de revisão da sessão | Abre a Ajuda ou uma planilha de ajuda específica da tela. |
@@ -17,9 +17,9 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 ## Iniciar, parar e controles de sessão
 
 | Controle | Significado |
-|---|---|
+| --- | --- |
 | :material-microfone: **Mic** | Comece a ouvir ao vivo. |
-| :parada de material: **Parar** | Interrompa uma gravação ativa, contagem de pontos ou pesquisa. |
+| :parada de material: **Parar** | Interrompa uma gravação ativa, contagem por pontos ou pesquisa. |
 | :material-play: **Play** | Inicie um fluxo de configuração configurado ou retome de um estado pronto para pausa. |
 | :material-close: **Fechar / Cancelar** | Cancele uma análise de arquivo ativa. |
 | :temporizador de material: **Temporizador** | Duração ou tempo restante. |
@@ -28,7 +28,7 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 ## Controles de localização e horário
 
 | Controle | Significado |
-|---|---|
+| --- | --- |
 | :material-crosshairs-gps: **Localização atual** | Use a posição GPS atual do dispositivo. |
 | :material-map-marker-plus: **Coordenadas manuais** | Insira as coordenadas manualmente. |
 | :material-map-marker-off: **Sem localização** | Ignore a localização ou mostre que a localização não está disponível. |
@@ -41,7 +41,7 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 ## Explorar e símbolos de espécies
 
 | Controle | Significado |
-|---|---|
+| --- | --- |
 | Miniatura da espécie | Imagem agrupada para a espécie, quando disponível. |
 | Selo de porcentagem de confiança ou geomodelo | Um rápido resumo numérico da saída do modelo. Números mais altos indicam um suporte mais forte no contexto dessa tela. |
 | Etiquetas mensais (`Jan`, `Abr`, `Jul`, `Out`, `Dec`) | Pontos de referência no gráfico semanal de frequência esperada na sobreposição de espécies. |
@@ -51,7 +51,7 @@ Esta página explica os controles e símbolos recorrentes usados ​​no BirdNE
 Esses controles são usados ​​na tela Revisão da Sessão.
 
 | Controle | Significado |
-|---|---|
+| --- | --- |
 | :material-mais-círculo-contorno: **Adicionar** | Adicione conteúdo, como espécie ou anotação. |
 | :material-undo-variant: **Desfazer** / :material-redo-variant: **Refazer** | Retroceda ou avance nas edições de revisão. |
 | :material-content-cut: **Cortar** | Entre no modo de corte ou mostre que o modo de corte está ativo. |
@@ -71,11 +71,11 @@ A barra de informações ao vivo usa :material-information-outline: seguido por 
 - `det` — total de detecções
 - duração e tamanho estimado da gravação quando a gravação está ativa
 
-### Contagem de pontos
+### Contagem por pontos
 
-A barra do cronômetro de contagem de pontos combina :material-stop: **Stop**, :material-timer: **Timer** e uma barra de progresso para mostrar a sessão cronometrada restante.
+A barra do cronômetro de contagem por pontos combina :material-stop: **Stop**, :material-timer: **Timer** e uma barra de progresso para mostrar a sessão cronometrada restante.
 
-### Enquete
+### Pesquisa
 
 O painel de pesquisa usa:
 

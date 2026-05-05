@@ -5,11 +5,11 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 ## Sdílené ovládací prvky navigace
 
 | Ovládání | Kde to vidíš | Co to dělá |
-|---|---|---|
-| :material-tune: **Nastavení** | Home footer, Live, Point Count, Survey, File Analysis, Session Review | Otevře Nastavení. Na obrazovkách režimu otevře nastavení, která jsou pro daný pracovní postup nejrelevantnější. |
+| --- | --- | --- |
+| :material-tune: **Nastavení** | Zápatí domů, Živě, Bodové sčítání, Transekt, Analýza souborů, Kontrola relace | Otevře Nastavení. Na obrazovkách režimu otevře nastavení, která jsou pro daný pracovní postup nejrelevantnější. |
 | :material-zvětšit: **Prozkoumat** | Zápatí domů | Otevře Prozkoumat. |
 | :material-music-box-multiple-outline: **Knihovna** | Zápatí domů | Otevře knihovnu relací. |
-| :material-help-circle-outline: **Nápověda** | Zápatí domovské stránky, záhlaví prozkoumat, panel průzkumu, panel nástrojů Kontrola relace | Otevře nápovědu nebo list nápovědy pro konkrétní obrazovku. |
+| :material-help-circle-outline: **Nápověda** | Zápatí domovské stránky, záhlaví Prozkoumat, panel transektu, panel nástrojů Kontrola relace | Otevře nápovědu nebo list nápovědy pro konkrétní obrazovku. |
 | :informace-materiálu: **Info / O** | Domovská zápatí, informační lišty, pomocné listy | Zobrazuje obecné informace nebo souhrnný kontext. |
 | :material-arrow-left: **Zpět** | Živý režim | Vrátí se na předchozí obrazovku. |
 | :material-open-in-new: **Otevřít externí** | O obrazovce, odkazy na dokumentaci | Otevře externí stránku, jako je online Uživatelská příručka. |
@@ -17,7 +17,7 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 ## Ovládací prvky pro spuštění, zastavení a relace
 
 | Ovládání | Význam |
-|---|---|
+| --- | --- |
 | :materiál-mikrofon: **Mikrofon** | Spusťte živý poslech. |
 | :material-stop: **Stop** | Zastavte aktivní nahrávání, počítání bodů nebo průzkum. |
 | :material-play: **Hrát** | Spusťte nakonfigurovaný tok nastavení nebo pokračujte ze stavu pozastaveno-připraven. |
@@ -28,7 +28,7 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 ## Ovládání polohy a času
 
 | Ovládání | Význam |
-|---|---|
+| --- | --- |
 | :material-crosshairs-gps: **Aktuální poloha** | Použijte aktuální polohu GPS zařízení. |
 | :material-map-marker-plus: **Manuální souřadnice** | Zadejte souřadnice ručně. |
 | :material-map-marker-off: **Žádné umístění** | Přeskočte polohu nebo ukažte, že poloha není k dispozici. |
@@ -41,7 +41,7 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 ## Prozkoumejte a druhy symbolů
 
 | Ovládání | Význam |
-|---|---|
+| --- | --- |
 | Miniatura druhu | Přiložený obrázek pro daný druh, pokud je k dispozici. |
 | Procentuální odznak spolehlivosti nebo geomodelu | Rychlé číselné shrnutí výstupu modelu. Vyšší čísla znamenají silnější podporu v kontextu dané obrazovky. |
 | Měsíční štítky (`led`, `duben`, `červenec`, `říjen`, ,prosinec`) | Referenční body na týdenním grafu očekávané frekvence v druhovém překrytí. |
@@ -51,7 +51,7 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 Tyto ovládací prvky se používají na obrazovce Session Review.
 
 | Ovládání | Význam |
-|---|---|
+| --- | --- |
 | :material-plus-circle-outline: **Přidat** | Přidejte obsah, jako je druh nebo anotace. |
 | :material-undo-variant: **Undo** / :material-redo-variant: **Redo** | Krok zpět nebo vpřed v úpravách recenzí. |
 | :material-content-cut: **Trim** | Vstupte do režimu trimování nebo ukažte, že režim trimování je aktivní. |

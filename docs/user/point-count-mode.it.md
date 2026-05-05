@@ -1,14 +1,14 @@
-# Modalità conteggio punti
+# Conteggio a punto
 
-La modalità conteggio punti è il flusso di lavoro stazionario temporizzato in BirdNET Live.
+Il conteggio a punto è il flusso di lavoro stazionario temporizzato in BirdNET Live.
 
 ## Come aprirlo
 
-Da Home, tocca la scheda **Modalità conteggio punti** con l'icona :material-map-marker:.
+Da Home, tocca la scheda **Conteggio a punto** con l'icona :material-map-marker:.
 
 ## Flusso di configurazione
 
-L'impostazione del conteggio dei punti utilizza tre passaggi.
+L'impostazione del conteggio a punto utilizza tre passaggi.
 
 ### 1. Durata e luogo
 
@@ -28,15 +28,15 @@ Questa schermata fornisce un breve elenco di controllo in-app prima di iniziare.
 
 La schermata di pronto riassume la durata selezionata e ti consente di iniziare con :material-play:.
 
-## Schermata di conteggio dei punti in tempo reale
+## Schermata live del conteggio a punto
 
-La schermata di conteggio dei punti in tempo reale si concentra su un dashboard temporizzato.
+La schermata live del conteggio a punto si concentra su un dashboard temporizzato.
 
 ### Barra superiore
 
-- :material-stop: — termina in anticipo il conteggio dei punti
+- :material-stop: — termina in anticipo il conteggio a punto
 - :material-timer: - mostra il tempo rimanente
-- :material-tune: - apre le impostazioni del conteggio dei punti
+- :material-tune: - apre le impostazioni del conteggio a punto
 
 ### Principali indicatori
 
@@ -47,4 +47,4 @@ La schermata di conteggio dei punti in tempo reale si concentra su un dashboard 
 
 ## Dopo il conteggio
 
-Al termine del conteggio dei punti, BirdNET Live salva la sessione e apre [Revisione sessione](session-review.md).
+Al termine del conteggio a punto, BirdNET Live salva la sessione e apre [Revisione sessione](session-review.md).

@@ -1,4 +1,4 @@
-#FAQ
+# FAQ
 
 Questions fréquemment posées.
 
@@ -34,14 +34,14 @@ R : Oui. Ouvrez File Analysis depuis l'écran d'accueil, choisissez un fichier a
 
 ## Nombre de points
 
-**Q : Qu'est-ce que le mode comptage de points ?**
-R : Un mode d'enquête chronométré pour les observations formelles de points d'écoute des oiseaux. Vous définissez une durée fixe (3 à 20 minutes) et un emplacement, puis l'application s'exécute en continu et s'arrête automatiquement lorsque la minuterie atteint zéro.
+**Q : Qu'est-ce que le mode point d'écoute ?**
+R : Un mode de point d'écoute chronométré pour les observations formelles d'oiseaux. Vous définissez une durée fixe (3 à 20 minutes) et un emplacement, puis l'application s'exécute en continu et s'arrête automatiquement lorsque la minuterie atteint zéro.
 
 **Q : Puis-je suspendre un décompte de points ?**
 R : Non. La conformité au protocole nécessite un enregistrement ininterrompu. Vous pouvez terminer plus tôt via le bouton d'arrêt.
 
 **Q : Où vont les résultats d'inventaire ?**
-R : Ils apparaissent dans la bibliothèque de sessions sous les noms "Point Count #1", "#2", etc. Vous pouvez les consulter, les modifier et les exporter comme n'importe quelle autre session.
+R : Ils apparaissent dans la bibliothèque de sessions comme des sessions de point d'écoute numérotées. Vous pouvez les consulter, les modifier et les exporter comme n'importe quelle autre session.
 
 ## Performance
 

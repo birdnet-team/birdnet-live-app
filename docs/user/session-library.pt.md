@@ -14,7 +14,7 @@ Os tipos de sessão usam os mesmos ícones da tela inicial:
 
 - :material-microphone: — Sessão ao vivo
 - :material-file-music: — Sessão de análise de arquivo
-- :material-map-marker: — Sessão de contagem de pontos
+- :material-map-marker: — Sessão de contagem por pontos
 - :material-routes: — Sessão de pesquisa
 
 ## Controles da barra de aplicativos

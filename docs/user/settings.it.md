@@ -5,7 +5,7 @@ BirdNET Live riutilizza una schermata Impostazioni su più flussi di lavoro. Il 
 ## Come funziona l'ambito delle impostazioni
 
 - L'apertura delle Impostazioni da Home mostra lo schermo intero.
-- L'apertura delle Impostazioni da Live, Sondaggio, Conteggio punti o Analisi file filtra la schermata nelle sezioni pertinenti.
+- L'apertura delle Impostazioni da Live, Transetto, Conteggio a punto o Analisi file filtra la schermata nelle sezioni pertinenti.
 
 ## Generale
 
@@ -25,7 +25,7 @@ Controlla la lingua utilizzata per i nomi delle specie. **Segui la lingua dell'a
 
 Mostra i nomi scientifici sotto i nomi comuni nell'app.
 
-##Audio
+## Audio
 
 Questi controlli vengono visualizzati nei flussi di lavoro live basati su audio.
 
@@ -154,6 +154,6 @@ Apre un flusso di conferma per la rimozione permanente dei dati dell'app archivi
 
 Alcuni parametri vengono configurati all'interno delle rispettive schermate di configurazione anziché nella schermata Impostazioni condivisa.
 
-- La [Modalità conteggio punti](point-count-mode.md) ha la propria durata e impostazione della posizione.
-- [Modalità sondaggio](survey-mode.md) dispone di una propria schermata dei parametri di sondaggio.
+- La [Conteggio a punto](point-count-mode.md) ha la propria durata e impostazione della posizione.
+- [Transetto](survey-mode.md) dispone di una propria schermata dei parametri di sondaggio.
 - [Analisi file](file-analysis.md) ha il proprio passaggio dei parametri di analisi.

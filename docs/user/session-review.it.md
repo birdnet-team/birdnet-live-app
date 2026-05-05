@@ -7,8 +7,8 @@ Session Review è il luogo in cui BirdNET Live trasforma i rilevamenti in un rec
 BirdNET Live apre automaticamente la revisione della sessione dopo aver completato:
 
 - una sessione dal vivo
-- un conteggio dei punti
-- un sondaggio
+- un conteggio a punto
+- un transetto
 - un'esecuzione di analisi dei file
 
 Puoi anche riaprire qualsiasi sessione salvata da [Libreria sessioni](session-library.md).
@@ -17,15 +17,15 @@ Puoi anche riaprire qualsiasi sessione salvata da [Libreria sessioni](session-li
 
 ### Riepilogo e riproduzione
 
-Session Review combina la riproduzione, la navigazione dello spettrogramma e un elenco di specie. Per le sessioni di sondaggio può anche mostrare il contesto mappato.
+Session Review combina la riproduzione, la navigazione dello spettrogramma e un elenco di specie. Per le sessioni di transetto può anche mostrare il contesto mappato.
 
 ### Elenco delle specie
 
 Le specie sono raggruppate in righe espandibili. Puoi esaminare i rilevamenti per specie e spostarti nella registrazione mentre li rivedi.
 
-### Mappa del percorso del sondaggio
+### Mappa del percorso del transetto
 
-Le sessioni di rilevamento mostrano una piccola mappa in linea della traccia GPS e dei marker di rilevamento. Toccalo per aprire una **mappa a schermo intero** con gli stessi dati.
+Le sessioni di transetto mostrano una piccola mappa in linea della traccia GPS e dei marker di rilevamento. Toccalo per aprire una **mappa a schermo intero** con gli stessi dati.
 
 La barra delle applicazioni della mappa a schermo intero ha un pulsante :material-filter-list-outlined: **filtro** che apre un foglio per limitare quali indicatori vengono mostrati. Filtri disponibili:
 
@@ -48,7 +48,7 @@ La barra degli strumenti utilizza gli stessi significati delle icone descritti i
 - :material-content-save: - salva le modifiche
 - :material-share-variant: — esportazione o condivisione
 - :material-delete-outline: - sessione di eliminazione
-- :material-play: — continua un sondaggio quando l'azione è disponibile
+- :material-play: — continua un transetto quando l'azione è disponibile
 - :material-help-circle-outline: - apre il foglio di aiuto per la revisione della sessione
 - :material-tune: - apri Impostazioni
 
@@ -61,4 +61,4 @@ La barra degli strumenti utilizza gli stessi significati delle icone descritti i
 
 ## Esporta
 
-Il comportamento dell'esportazione dipende dalle opzioni selezionate in [Impostazioni](settings.md). L'app può comprimere i rilevamenti e, facoltativamente, l'audio nel formato di esportazione scelto. Ogni esportazione ora viene fornita con metadati di provenienza completi (versione dell'app, nome e versione del modello, impostazioni locali della specie, timestamp di esportazione e un'istantanea di tutte le impostazioni al momento dell'esportazione) scritti in un file laterale "<prefix>.metadata.json" (ZIP) o in un blocco "meta" di livello superiore (JSON) in modo che le esportazioni siano autodescrittive e riproducibili.
+Il comportamento dell'esportazione dipende dalle opzioni selezionate in [Impostazioni](settings.md). L'app può comprimere i rilevamenti e, facoltativamente, l'audio nel formato di esportazione scelto. Ogni esportazione ora viene fornita con metadati di provenienza completi (versione dell'app, nome e versione del modello, impostazioni locali della specie, timestamp di esportazione e un'istantanea di tutte le impostazioni al momento dell'esportazione) scritti in un file laterale `prefix.metadata.json` (ZIP) o in un blocco "meta" di livello superiore (JSON) in modo che le esportazioni siano autodescrittive e riproducibili.

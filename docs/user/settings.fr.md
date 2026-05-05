@@ -5,7 +5,7 @@ BirdNET Live utilise le même écran Paramètres dans plusieurs flux de travail.
 ## Comment fonctionne le contexte des paramètres
 
 - Ouvrir les paramètres depuis l'accueil affiche l'ensemble de l'écran.
-- Ouvrir les paramètres depuis Live, Survey, Point Count ou File Analysis filtre l'écran sur les sections pertinentes.
+- Ouvrir les paramètres depuis En direct, Relevé, Point d'écoute ou Analyse de fichiers filtre l'écran sur les sections pertinentes.
 
 ## Général
 
@@ -154,6 +154,6 @@ Ouvre un flux de confirmation pour supprimer définitivement les données d'appl
 
 Certains paramètres se règlent dans leurs propres écrans de configuration plutôt que dans l'écran Paramètres partagé.
 
-- [Point Count Mode](point-count-mode.md) a sa propre configuration de durée et d'emplacement.
-- [Mode enquête](survey-mode.md) possède son propre écran de paramètres d'enquête.
-- [File Analysis](file-analysis.md) a sa propre étape de paramètres d'analyse.
+- [Point d'écoute](point-count-mode.md) a sa propre configuration de durée et d'emplacement.
+- [Relevé](survey-mode.md) possède son propre écran de paramètres d'enquête.
+- [Analyse de fichiers](file-analysis.md) a sa propre étape de paramètres d'analyse.

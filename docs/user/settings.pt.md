@@ -5,7 +5,7 @@ BirdNET Live reutiliza uma tela de configurações em vários fluxos de trabalho
 ## Como funciona o escopo das configurações
 
 - Abrir Configurações em casa mostra a tela inteira.
-- Abrir configurações de Live, Survey, Point Count ou File Analysis filtra a tela para as seções relevantes.
+- Abrir configurações de Ao vivo, Pesquisa, Contagem por pontos ou Análise de arquivos filtra a tela para as seções relevantes.
 
 ## Em geral
 
@@ -154,6 +154,6 @@ Abre um fluxo de confirmação para remover permanentemente os dados armazenados
 
 Alguns parâmetros são configurados em suas próprias telas de configuração, e não na tela compartilhada de Configurações.
 
-- [Modo de contagem de pontos](point-count-mode.md) tem sua própria duração e configuração de localização.
-- [Modo de pesquisa](survey-mode.md) possui sua própria tela de parâmetros de pesquisa.
-- [Análise de arquivo](file-analysis.md) tem sua própria etapa de parâmetro de análise.
+- [Contagem por pontos](point-count-mode.md) tem sua própria duração e configuração de localização.
+- [Pesquisa](survey-mode.md) possui sua própria tela de parâmetros de pesquisa.
+- [Análise de arquivos](file-analysis.md) tem sua própria etapa de parâmetro de análise.

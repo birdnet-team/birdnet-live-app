@@ -1,10 +1,10 @@
-# Modo de pesquisa
+# Pesquisa
 
-O Modo de Pesquisa é o fluxo de trabalho baseado em rota para pesquisas móveis de longa duração.
+A Pesquisa é o fluxo de trabalho baseado em rota para levantamentos móveis de longa duração.
 
 ## Como abri-lo
 
-Na página inicial, toque no cartão **Modo de pesquisa** com o ícone :material-routes:.
+Na tela inicial, toque no cartão **Pesquisa** com o ícone :material-routes:.
 
 ## Fluxo de configuração
 
@@ -42,7 +42,7 @@ Uma pesquisa longa pode produzir milhares de detecções, e salvar um clipe de �
 Três modos estão disponíveis:
 
 | Modo | O que faz |
-|---|---|
+| --- | --- |
 | **Todos** | Guarde cada clipe. A maior parte do uso do disco. Recomendado para pesquisas curtas ou quando você deseja o áudio de cada detecção para análise posterior. |
 | **Melhor negro** | Mantenha apenas os **N clipes de maior confiança por espécie**. Outros clipes são excluídos à medida que a pesquisa é executada. O N padrão é 10, configurável de 1 a 50. |
 | **Inteligente** | O mesmo limite por espécie de N que Top N, **mais** distribuição espacial: se uma nova detecção pousar no mesmo "ponto" de um clipe já mantido (dentro de ~ 500 m e ~ 2 min um do outro), apenas o de maior confiança mantém seu clipe. Isso evita que um cantor estacionário monopolize todos os N slots e desvie os clipes mantidos para cobrir todo o transecto. |
@@ -71,16 +71,16 @@ Uma breve lista de verificação pré-início dentro do fluxo de configuração.
 
 A tela pronta resume a configuração da pesquisa ativa antes de você começar com :material-play:.
 
-## Painel de pesquisa ao vivo
+## Painel da pesquisa ao vivo
 
-A tela de pesquisa ao vivo possui três guias principais, além de uma lista de detecções recentes.
+A tela da pesquisa ao vivo possui três guias principais, além de uma lista de detecções recentes.
 
 ### Barra superior
 
 - :material-stop: — encerrar a pesquisa
 - :material-timer: - tempo decorrido
-- :material-help-circle-outline: — abra a folha de ajuda da Pesquisa
-- :material-tune: — abra as configurações da pesquisa
+- :material-help-circle-outline: — abre a folha de ajuda da pesquisa
+- :material-tune: — abre as configurações da pesquisa
 
 ### Guias
 

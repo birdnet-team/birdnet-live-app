@@ -1,26 +1,26 @@
 # Guía del usuario
 
-Esta guía explica BirdNET Live como una herramienta de flujo de trabajo de campo: qué hace cada pantalla, qué significan los íconos recurrentes y cómo la configuración cambia el comportamiento de la aplicación.
+Esta guía presenta BirdNET Live como una herramienta para el trabajo de campo: explica qué hace cada pantalla, qué significan los iconos recurrentes y cómo la configuración cambia el comportamiento de la aplicación.
 
-Está escrito para ecologistas y profesionales de estudios de aves que ya conocen los métodos de campo y desean un mapa claro de la aplicación en sí.
+Está escrita para ecólogos y profesionales de los censos de aves que ya conocen los métodos de campo y quieren una visión clara de la propia aplicación.
 
 ## Comience aquí
 
-### [Comenzando](getting-started.md)
+### [Primeros pasos](getting-started.md)
 
 Instalación, permisos, primer inicio y navegación principal en la pantalla de inicio.
 
 ### [Iconos y controles](icons-and-controls.md)
 
-Los íconos, botones, símbolos e indicadores de estado compartidos que aparecen en BirdNET Live.
+Los iconos, botones, símbolos e indicadores de estado compartidos que aparecen en BirdNET Live.
 
 ### [Configuración](settings.md)
 
-Cada configuración expuesta actualmente en la aplicación, agrupada de la misma manera que la pantalla de Configuración de la aplicación.
+Todos los ajustes disponibles actualmente en la aplicación, agrupados de la misma manera que en la pantalla de Ajustes.
 
 ## Guías de modo
 
-### [Modo en vivo](live-mode.md)
+### [Live](live-mode.md)
 
 Escucha continua con el micrófono, detecciones en vivo, el espectrograma y la barra de información de la sesión.
 
@@ -36,17 +36,17 @@ Sesiones guardadas, búsqueda, clasificación, modos de visualización y navegac
 
 Reproducción, edición, recorte, anotaciones, exportación y barra de herramientas de revisión.
 
-### [Modo de recuento de puntos](point-count-mode.md)
+### [Conteo por puntos](point-count-mode.md)
 
-El flujo de trabajo de configuración del recuento de puntos, las opciones de ubicación y la pantalla del temporizador en vivo.
+El flujo de trabajo para configurar el conteo por puntos, las opciones de ubicación y la pantalla del temporizador en vivo.
 
-### [Modo de encuesta](survey-mode.md)
+### [Transecto](survey-mode.md)
 
-Configuración de la encuesta, el panel de la encuesta en vivo y las pestañas de mapa, espectrograma y resumen.
+Configuración del transecto, el panel en vivo y las pestañas de mapa, espectrograma y resumen.
 
 ### [Análisis de archivos](file-analysis.md)
 
-El asistente de análisis de archivos de cuatro pasos, las opciones de parámetros y cómo los resultados pasan a Session Review.
+El asistente de análisis de archivos en cuatro pasos, las opciones de parámetros y cómo los resultados pasan a Session Review.
 
 ## Referencia
 
@@ -56,7 +56,7 @@ Respuestas rápidas sobre el uso sin conexión, el comportamiento de grabación,
 
 ## Orden de lectura
 
-1. Lea [Comenzando](getting-started.md).
+1. Lea [Primeros pasos](getting-started.md).
 2. Hojee [Iconos y controles](icons-and-controls.md) para que los símbolos recurrentes tengan sentido.
 3. Abra la guía del modo que utiliza con más frecuencia.
 4. Utilice [Configuración](settings.md) cuando necesite ajustar la aplicación para un flujo de trabajo diferente.
@@ -67,6 +67,6 @@ En dispositivos móviles, la barra lateral de navegación está oculta detrás d
 
 ## Más documentación
 
-- La [Página de inicio](../index.md) ofrece una descripción general de la versión y las funciones.
-- La [Guía para desarrolladores](../developer/index.md) cubre arquitectura, herramientas y flujos de trabajo de compilación.
-- La [Política de Privacidad](../privacy.md) y los [Términos de Uso](../terms.md) se encuentran en este mismo sitio.
+- La [página de inicio](../index.md) ofrece una visión general de la versión y de las funciones principales.
+- La [guía para desarrolladores](../developer/index.md) cubre la arquitectura, las herramientas y los flujos de compilación.
+- La [Política de Privacidad](../privacy.md) y los [Términos de Uso](../terms.md) están disponibles en este mismo sitio.

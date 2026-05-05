@@ -1,14 +1,14 @@
-# Mode de comptage de points
+# Point d'écoute
 
-Le mode Point Count est le flux de travail stationnaire chronométré dans BirdNET Live.
+Le point d'écoute est le flux de travail stationnaire chronométré dans BirdNET Live.
 
 ## Comment l'ouvrir
 
-Depuis Accueil, appuyez sur la carte **Point Count Mode** avec l'icône :material-map-marker:.
+Depuis Accueil, appuyez sur la carte **Point d'écoute** avec l'icône :material-map-marker:.
 
 ## Flux de configuration
 
-La configuration du nombre de points utilise trois étapes.
+La configuration du point d'écoute utilise trois étapes.
 
 ### 1. Durée et lieu
 

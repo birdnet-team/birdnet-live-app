@@ -5,7 +5,7 @@ BirdNET Live opakovaně používá jednu obrazovku Nastavení pro více pracovn�
 ## Jak funguje rozsah nastavení
 
 - Otevřením Nastavení z plochy se zobrazí celá obrazovka.
-- Otevřením Nastavení z Live, Survey, Point Count nebo File Analysis filtruje obrazovku na příslušné sekce.
+- Otevřením Nastavení ze Živě, Transektu, Bodového sčítání nebo Analýzy souborů filtruje obrazovku na příslušné sekce.
 
 ## Generál
 
@@ -154,6 +154,6 @@ Otevře tok potvrzení pro trvalé odstranění uložených dat aplikace.
 
 Některé parametry se konfigurují na vlastních obrazovkách nastavení, nikoli na obrazovce sdílených nastavení.
 
-- [Point Count Mode](point-count-mode.md) má své vlastní nastavení doby trvání a umístění.
-- [Survey Mode](survey-mode.md) má vlastní obrazovku s parametry průzkumu.
-- [File Analysis](file-analysis.md) má svůj vlastní krok analýzy parametrů.
+- [Bodové sčítání](point-count-mode.md) má své vlastní nastavení doby trvání a umístění.
+- [Transekt](survey-mode.md) má vlastní obrazovku s parametry průzkumu.
+- [Analýza souborů](file-analysis.md) má svůj vlastní krok analýzy parametrů.

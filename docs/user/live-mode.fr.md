@@ -1,18 +1,18 @@
-# Mode en direct
+# En direct
 
-Le mode Live est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent.
+Le mode En direct est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent.
 
 ## Comment l'ouvrir
 
-Depuis l'écran d'accueil, appuyez sur la carte **Mode direct** avec l'icône :material-microphone:.
+Depuis l'écran d'accueil, appuyez sur la carte **En direct** avec l'icône :material-microphone:.
 
 ## Barre supérieure
 
 La barre supérieure contient trois éléments :
 
-- :material-arrow-left: — quitter le mode Live
+- :material-arrow-left: — quitter le mode En direct
 - Texte d'état central : « Initialisation », « Chargement du modèle », « Prêt », « Identification des espèces », « Pause » ou « Erreur »
-- :material-tune: — ouvre la vue Paramètres spécifiques à Live
+- :material-tune: — ouvre la vue Paramètres spécifiques à En direct
 
 ## Bouton d'action principal
 
@@ -57,4 +57,4 @@ L'enregistrement est contrôlé dans [Paramètres](settings.md).
 - **Détections uniquement** enregistre les clips autour des détections.
 - **Off** désactive l'enregistrement.
 
-Lorsque vous arrêtez le mode Live, BirdNET Live enregistre la session et ouvre [Session Review](session-review.md).
+Lorsque vous arrêtez le mode En direct, BirdNET Live enregistre la session et ouvre [Session Review](session-review.md).

@@ -15,7 +15,7 @@ Los tipos de sesión utilizan los mismos iconos que la pantalla de inicio:
 - :material-micrófono: — Sesión en vivo
 - :material-file-music: — Sesión de análisis de archivos
 - :material-map-marker: — Sesión de recuento de puntos
-- :material-routes: — Sesión de encuesta
+- :material-routes: — Sesión de transecto
 
 ## Controles de la barra de aplicaciones
 

@@ -1,14 +1,14 @@
-# Režim počítání bodů
+# Bodové sčítání
 
-Point Count Mode je časovaný stacionární pracovní postup v BirdNET Live.
+Bodové sčítání je časovaný stacionární pracovní postup v BirdNET Live.
 
 ## Jak to otevřít
 
-Na domovské stránce klepněte na kartu **Režim počítání bodů** s ikonou :material-map-marker:.
+Na domovské stránce klepněte na kartu **Bodové sčítání** s ikonou :material-map-marker:.
 
 ## Nastavení toku
 
-Nastavení počtu bodů se skládá ze tří kroků.
+Nastavení bodového sčítání se skládá ze tří kroků.
 
 ### 1. Doba trvání a umístění
 
