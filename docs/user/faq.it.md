@@ -27,7 +27,7 @@ R: La precisione dipende dalla qualità della registrazione, dalla distanza, dal
 ## Registrazione
 
 **D: Dove vengono salvate le registrazioni?**
-R: Nella directory dei documenti dell'app in `recordings/session-id/`. Le registrazioni complete vengono salvate come file WAV.
+R: Nella directory dei documenti dell'app in `recordings/<session-id>/`. Le registrazioni complete vengono salvate come file WAV.
 
 **D: Posso analizzare le registrazioni esistenti?**
 R: Sì. Apri Analisi file dalla schermata principale, seleziona un file audio, imposta posizione e parametri e tocca Analizza. I formati supportati includono WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA e AMR.
