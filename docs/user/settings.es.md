@@ -25,7 +25,7 @@ Controla el idioma utilizado para los nombres de especies. **Seguir idioma de la
 
 Muestra nombres científicos debajo de nombres comunes en toda la aplicación.
 
-##Audio
+## Audio
 
 Estos controles aparecen en flujos de trabajo en vivo basados ​​en audio.
 

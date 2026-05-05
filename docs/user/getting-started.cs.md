@@ -69,7 +69,7 @@ BirdNET Live automaticky ukládá dokončené relace a po zastavení zpracován�
 ## Oprávnění
 
 | Povolení | Požadováno pro | Volitelný? |
-|------------|-------------|-----------|
+| --- | --- | --- |
 | Mikrofon | Všechny režimy nahrávání | Povinné |
 | Umístění | GPS značení, průzkum/počet bodů | Volitelné pro Live |
 | Skladování | Ukládání nahrávek, exporty | Požadováno pro záznam |

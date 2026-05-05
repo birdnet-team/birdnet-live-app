@@ -1,10 +1,10 @@
-# Mode enquête
+# Mode relevé
 
-Le mode Enquête est le flux de travail basé sur les itinéraires pour les enquêtes mobiles de longue durée.
+Le mode Relevé est le flux de travail sur transect pour les relevés mobiles de longue durée.
 
 ## Comment l'ouvrir
 
-From Home, tap the **Survey Mode** card with the :material-routes: icon.
+Depuis l'écran d'accueil, appuyez sur la carte du mode relevé avec l'icône :material-routes:.
 
 ## Flux de configuration
 
@@ -23,7 +23,7 @@ Cette étape expose également le sélecteur de carte et le rappel d'autorisatio
 
 ### 2. Paramètres
 
-Cette étape contient des paramètres spécifiques à l'enquête tels que :
+Cette étape contient des paramètres propres au relevé, notamment :
 
 - sélection du microphone
 - taux d'inférence
@@ -42,9 +42,9 @@ Une longue enquête peut produire des milliers de détections, et l’enregistre
 Trois modes sont disponibles :
 
 | Mode | Ce qu'il fait |
-|---|---|
+| --- | --- |
 | **Tous** | Gardez chaque clip. Utilisation maximale du disque. Recommandé pour les enquêtes courtes ou lorsque vous souhaitez que l'audio de chaque détection soit analysé ultérieurement. |
-| **Haut N** | Conservez uniquement les **N clips ayant le niveau de confiance le plus élevé par espèce**. D'autres clips sont supprimés au fur et à mesure de l'exécution de l'enquête. N par défaut est 10, configurable de 1 à 50. |
+| **Haut N** | Conservez uniquement les **N clips ayant le niveau de confiance le plus élevé par espèce**. Les autres clips sont supprimés au fur et à mesure du relevé. La valeur par défaut de N est 10, configurable de 1 à 50. |
 | **Intelligent** | Même plafond de N par espèce que Top N, **plus** distribution spatiale : si une nouvelle détection atterrit au même « endroit » qu'un clip déjà conservé (à environ 500 m et ~ 2 min l'un de l'autre), seul celui avec le niveau de confiance le plus élevé conserve son clip. Cela empêche un chanteur stationnaire de monopoliser tous les N créneaux et oriente les clips conservés vers la couverture du transect complet. |
 
 La limite N est **par espèce, et non globale** — si vous enregistrez 10 merles et 10 pinsons, vous conservez 20 clips. Il n’y a pas de limite globale au nombre de clips qu’une enquête peut produire.
@@ -53,15 +53,15 @@ En mode Smart, si le GPS manque lors d'une détection, la vérification au même
 
 ### 3. Alertes sur les espèces
 
-Notifications de type push qui se déclenchent au milieu de l'enquête lorsque quelque chose d'intéressant est détecté. Choisissez-en un :
+Notifications qui se déclenchent en cours de relevé lorsqu'une détection mérite votre attention. Choisissez un mode :
 
 - **Désactivé** — aucune alerte (par défaut).
 - **Première session** — une alerte la première fois que chaque espèce est entendue au cours de cette enquête.
-- **Tout premier** : alertez uniquement lorsque l'application rencontre une espèce pour la toute première fois au cours de toutes vos sessions (une alerte "à perpétuité"). Soutenu par un historique des espèces à vie qui est automatiquement renseigné à partir de vos sessions existantes lors du premier lancement.
-- **Rare pour cet emplacement** — alerte lorsque la probabilité de géomodèle pour l'emplacement actuel est inférieure à un seuil configurable. Une lecture en direct sous le curseur explique exactement sur quoi la valeur actuelle se déclenchera (par exemple *"Alertes sur les espèces avec une probabilité inférieure à 5 % à cet endroit."*).
-- **Liste de surveillance** : alerte uniquement sur les espèces que vous avez ajoutées à une liste personnalisée enregistrée. L'étape de l'assistant elle-même vous permet de créer de nouvelles listes de surveillance, de modifier celles existantes dans un éditeur plein écran dédié avec une taxonomie consultable et *Importer à partir d'un fichier* (n'importe quel simple `.txt`/`.csv` de noms scientifiques) et de supprimer les listes dont vous n'avez plus besoin.
+- **Toute première** — alerte uniquement lorsque l'application rencontre une espèce pour la première fois sur l'ensemble de vos sessions. Cette option s'appuie sur un historique global des espèces, automatiquement constitué à partir de vos sessions existantes au premier lancement.
+- **Rare pour cet emplacement** — alerte lorsque la probabilité du géo-modèle pour la position actuelle passe sous un seuil configurable. Un texte d'aide affiché sous le curseur indique précisément ce que déclenchera la valeur choisie, par exemple *"Alerter pour les espèces dont la probabilité est inférieure à 5 % à cet endroit."*.
+- **Liste de suivi** — alerte uniquement pour les espèces ajoutées à une liste personnalisée enregistrée. Cette étape permet de créer de nouvelles listes, de modifier les listes existantes dans un éditeur plein écran avec taxonomie consultable et *Importer à partir d'un fichier* (tout fichier `.txt` ou `.csv` de noms scientifiques), puis de supprimer les listes devenues inutiles.
 
-Un curseur *Confiance minimale* se trouve sous le sélecteur de mode et est automatiquement réglé sur le seuil de confiance de votre session (les alertes ne sont jamais plus sensibles que les détections elles-mêmes). Une section **Avancé** expose les contrôles de limitation : une fenêtre de grâce au démarrage, un intervalle minimum strict entre deux alertes et un plafond glissant par minute avec une fusion facultative des alertes de dépassement de plafond en une seule notification récapitulative - le tout avec des sélecteurs de puces en un seul clic. La première fois que vous passez en mode non désactivé, l'assistant demande l'autorisation de notification Android pour vous.
+Un curseur *Confiance minimale* se trouve sous le sélecteur de mode et est automatiquement aligné sur le seuil de confiance de la session, car les alertes ne sont jamais plus sensibles que les détections elles-mêmes. La section **Avancé** donne accès aux contrôles de limitation : délai de grâce au démarrage, intervalle minimal strict entre deux alertes et plafond glissant par minute, avec possibilité de regrouper les alertes excédentaires dans une notification récapitulative unique. La première fois que vous passez à un mode autre que **Désactivé**, l'assistant vous demande l'autorisation d'envoyer des notifications Android.
 
 ### 4. Conseils sur le terrain
 
@@ -84,7 +84,7 @@ L'écran Enquête en direct comporte trois onglets principaux ainsi qu'une liste
 
 ### Onglets
 
-- :material-map-outline : — carte d'itinéraire et détections cartographiées
+- :material-map-outline: — carte d'itinéraire et détections cartographiées
 - :material-equalizer: — spectrogramme
 - icône de graphique - statistiques récapitulatives et répartition des espèces
 
@@ -97,7 +97,7 @@ Sous le contenu de l'onglet, le tableau de bord de l'enquête affiche une barre 
 Le mode Enquête maintient une notification persistante au premier plan visible pendant l'enregistrement afin qu'Android ne suspende pas le pipeline audio. La notification se développe pour afficher :
 
 - le temps écoulé, le nombre de détections, le nombre d'espèces et la distance parcourue, et
-- les **trois espèces uniques les plus récentes** avec leur niveau de confiance et un horodatage relatif (« tout à l'heure », « il y a 42 secondes », « il y a 5 mois », « il y a 2 heures »).
+- les **trois espèces uniques les plus récentes** avec leur niveau de confiance et un horodatage relatif (« à l'instant », « il y a 42 s », « il y a 5 min », « il y a 2 h »).
 
 La notification (titre, détections récentes et pied de page des statistiques) est entièrement traduite dans la langue sélectionnée de l'application et utilise les mêmes paramètres régionaux d'espèce et les mêmes préférences *Afficher les noms scientifiques* que les cartes intégrées à l'application.
 

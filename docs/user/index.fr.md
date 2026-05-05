@@ -1,8 +1,8 @@
 # Guide de l'utilisateur
 
-Ce guide explique BirdNET Live en tant qu'outil de flux de travail sur le terrain : ce que fait chaque écran, ce que signifient les icônes récurrentes et comment les paramètres modifient le comportement de l'application.
+Ce guide présente BirdNET Live comme un outil de travail de terrain : le rôle de chaque écran, la signification des icônes récurrentes et l'effet des paramètres sur le comportement de l'application.
 
-Il est écrit pour les écologistes et les praticiens de l'étude des oiseaux qui connaissent déjà les méthodes de terrain et souhaitent une carte claire de l'application elle-même.
+Il s'adresse aux écologues et aux praticiens des relevés ornithologiques qui connaissent déjà les méthodes de terrain et veulent une vue claire de l'application elle-même.
 
 ## Commencez ici
 
@@ -18,11 +18,11 @@ Les icônes, boutons, symboles et indicateurs d'état partagés qui apparaissent
 
 Tous les paramètres actuellement exposés dans l'application, regroupés de la même manière que l'écran Paramètres de l'application.
 
-## Guides des modes
+## Guides des modes
 
-### [Mode direct](live-mode.md)
+### [Mode Live](live-mode.md)
 
-Écoute continue avec le microphone, les détections en direct, le spectrogramme et la barre d'informations de session.
+Écoute continue au microphone, détections en direct, spectrogramme et barre d'informations de session.
 
 ### [Explorer](explore.md)
 
@@ -40,13 +40,13 @@ Lecture, édition, découpage, annotations, exportation et barre d'outils de ré
 
 Le flux de travail de configuration du point d'écoute, les options de localisation et l'écran de la minuterie en direct.
 
-### [Mode enquête](survey-mode.md)
+### [Mode relevé](survey-mode.md)
 
-Configuration de l'enquête, tableau de bord de l'enquête en direct et onglets carte, spectrogramme et résumé.
+Configuration du relevé, tableau de bord en direct et onglets carte, spectrogramme et résumé.
 
-### [Analyse de fichier](file-analysis.md)
+### [Analyse de fichiers](file-analysis.md)
 
-L'assistant d'analyse de fichiers en quatre étapes, les choix de paramètres et la façon dont les résultats sont transférés dans Session Review.
+Assistant d'analyse en quatre étapes, choix des paramètres et transfert des résultats vers Session Review.
 
 ## Référence
 
@@ -67,6 +67,6 @@ Sur mobile, la barre latérale de navigation est cachée derrière le bouton de 
 
 ## Plus de documentation
 
-- La [Page d'accueil](../index.md) donne un aperçu de la version et des fonctionnalités.
-- Le [Guide du développeur](../developer/index.md) couvre l'architecture, les outils et les workflows de construction.
-- La [Politique de confidentialité](../privacy.md) et les [Conditions d'utilisation](../terms.md) sont en direct sur ce même site.
+- La [page d'accueil](../index.md) présente les principales fonctionnalités ainsi que la version en cours.
+- Le [guide du développeur](../developer/index.md) couvre l'architecture, les outils et le processus de compilation.
+- La [politique de confidentialité](../privacy.md) et les [conditions d'utilisation](../terms.md) sont disponibles sur ce même site.

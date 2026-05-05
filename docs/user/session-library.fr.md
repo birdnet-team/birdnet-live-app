@@ -17,9 +17,9 @@ Les types de sessions utilisent les mêmes icônes que l'écran d'accueil :
 - :material-map-marker : – Séance de comptage de points
 - :material-routes: — Session d'enquête
 
-## Contrôles de la barre d'application
+## Contrôles de la barre d'application
 
-- :material-magnify : — recherche par date, type de session, nom de lieu, coordonnées, nom commun ou nom scientifique
+- :material-magnify: — recherche par date, type de session, nom de lieu, coordonnées, nom commun ou nom scientifique
 - Menu du mode d'affichage : basculez entre **Détaillé**, **Compact** et **Par espèces**
 - :material-swap-vertical: — change l'ordre de tri
 

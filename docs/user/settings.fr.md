@@ -1,11 +1,11 @@
 # Paramètres
 
-BirdNET Live réutilise un écran Paramètres sur plusieurs flux de travail. Le bouton :material-tune: ouvre les sections pertinentes pour l'écran d'où vous venez.
+BirdNET Live utilise le même écran Paramètres dans plusieurs flux de travail. Le bouton :material-tune: ouvre les sections pertinentes selon l'écran d'où vous venez.
 
-## Comment fonctionne la portée des paramètres
+## Comment fonctionne le contexte des paramètres
 
-- L'ouverture des paramètres depuis l'accueil affiche le plein écran.
-- L'ouverture des paramètres depuis Live, Survey, Point Count ou File Analysis filtre l'écran vers les sections pertinentes.
+- Ouvrir les paramètres depuis l'accueil affiche l'ensemble de l'écran.
+- Ouvrir les paramètres depuis Live, Survey, Point Count ou File Analysis filtre l'écran sur les sections pertinentes.
 
 ## Général
 
@@ -29,7 +29,7 @@ Affiche les noms scientifiques sous les noms communs dans l'application.
 
 Ces contrôles apparaissent dans les flux de travail en direct pilotés par l'audio.
 
-### Gagner
+### Gain
 
 Ajuste le gain d'entrée affiché dans l'application. Utilisez-le uniquement lorsque vous devez compenser des enregistrements ou des entrées très silencieux.
 
@@ -69,7 +69,7 @@ Contrôle la façon dont les fenêtres d’analyse qui se chevauchent sont combi
 
 Contrôle la résolution de fréquence dans le spectrogramme.
 
-### Carte des couleurs
+### Palette de couleurs
 
 Choisissez **Viridis**, **Magma** ou **Grayscale**.
 
@@ -77,7 +77,7 @@ Choisissez **Viridis**, **Magma** ou **Grayscale**.
 
 Contrôle la durée visible dans la fenêtre du spectrogramme.
 
-### Gamme de fréquences
+### Plage de fréquences
 
 Définit la fréquence d’affichage supérieure.
 
@@ -87,17 +87,17 @@ Applique une mise à l'échelle logarithmique au spectrogramme pour une lecture 
 
 ## Enregistrement
 
-###Mode
+### Mode
 
-- **Full** — sauvegardez tout l'enregistrement
-- **Détections uniquement** : enregistrez les clips autour des détections
+- **Complet** — enregistre toute la session
+- **Détections uniquement** — enregistre les clips autour des détections
 - **Désactivé** — pas d'enregistrement audio
 
 ### Contexte du clip
 
 Lorsque **Détections uniquement** est actif, l'application affiche un seul curseur **Contexte du clip** (0 à 5 s) qui définit la quantité d'audio préservée des **deux côtés** de chaque détection. Chaque clip a une longueur de « fenêtre d'analyse + 2 × contexte de clip », donc avec une fenêtre d'analyse de 3 s et le contexte par défaut de 1 s, le clip enregistré dure 5 s. Définir le contexte sur 2 s donne un clip de 7 s (2 s de pré-roll + 3 s d'audio analysé + 2 s de post-roll). Des valeurs plus élevées vous donnent plus de place pour une inspection visuelle ou des outils de révision externes au détriment de l'espace disque ; 0 enregistre uniquement la fenêtre analysée elle-même.
 
-###Format
+### Format
 
 Choisissez **WAV** ou **FLAC**.
 
@@ -123,11 +123,11 @@ Apparaît lorsqu'un mode de filtrage basé sur l'emplacement est actif.
 
 ## Exporter et synchroniser
 
-###Format
+### Format
 
 Choisissez une cible d'exportation :
 
-- Tableau de sélection du Corbeau
+- Raven Selection Table
 - CSV
 -JSON
 - GPX (trace + waypoints)
@@ -140,7 +140,7 @@ Incluez l'audio enregistré aux côtés des tables ou métadonnées exportées l
 
 La ligne **À propos** ouvre l'écran À propos de l'application.
 
-## Zone dangereuse
+## Actions irréversibles
 
 ### Réinitialiser l'intégration
 
@@ -150,9 +150,9 @@ Affiche à nouveau la séquence d'intégration au prochain lancement de l'applic
 
 Ouvre un flux de confirmation pour supprimer définitivement les données d'application stockées.
 
-## Paramètres spécifiques au workflow en dehors des paramètres
+## Paramètres spécifiques aux modes, hors écran Paramètres
 
-Certains paramètres sont configurés dans leurs propres écrans de configuration plutôt que dans l'écran Paramètres partagé.
+Certains paramètres se règlent dans leurs propres écrans de configuration plutôt que dans l'écran Paramètres partagé.
 
 - [Point Count Mode](point-count-mode.md) a sa propre configuration de durée et d'emplacement.
 - [Mode enquête](survey-mode.md) possède son propre écran de paramètres d'enquête.

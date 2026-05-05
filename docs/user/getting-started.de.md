@@ -69,7 +69,7 @@ BirdNET Live speichert abgeschlossene Sitzungen automatisch und öffnet sie in d
 ## Berechtigungen
 
 | Erlaubnis | Erforderlich für | Optional? |
-|------------|-------------|-----------|
+| --- | --- | --- |
 | Mikrofon | Alle Aufnahmemodi | Erforderlich |
 | Standort | GPS-Tagging, Vermessung/Punktzählung | Optional für Live |
 | Lagerung | Aufnahmen speichern, exportieren | Für die Aufnahme erforderlich |

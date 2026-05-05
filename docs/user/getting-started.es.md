@@ -69,7 +69,7 @@ BirdNET Live guarda automáticamente las sesiones completadas y las abre en Revi
 ## Permisos
 
 | Permiso | Requerido para | ¿Opcional? |
-|------------|-------------|-----------|
+| --- | --- | --- |
 | Micrófono | Todos los modos de grabación | Requerido |
 | Ubicación | Etiquetado GPS, levantamiento/recuento de puntos | Opcional para vivir |
 | Almacenamiento | Guardar grabaciones, exportaciones | Requerido para grabar |

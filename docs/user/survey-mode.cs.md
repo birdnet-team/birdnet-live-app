@@ -42,7 +42,7 @@ Dlouhý průzkum může produkovat tisíce detekcí a uložení zvukového klipu
 K dispozici jsou tři režimy:
 
 | Režim | Co to dělá |
-|---|---|
+| --- | --- |
 | **Vše** | Uschovejte každý klip. Nejvíce využití disku. Doporučeno pro krátké průzkumy nebo když chcete zvuk každé detekce pro pozdější analýzu. |
 | **Top N** | Uchovávejte pouze **N nejspolehlivějších klipů na druh**. Ostatní klipy se během průzkumu vymažou. Výchozí N je 10, konfigurovatelné od 1 do 50. |
 | **Chytrý** | Stejná čepice N podle druhu jako Top N, **plus** prostorová distribuce: pokud nová detekce přistane na stejném „místě“ jako již uchovávaný klip (v rozmezí ~500 m a ~2 min od sebe), pouze ten s vyšší spolehlivostí si svůj klip zachová. To zabraňuje jednomu stacionárnímu zpěvákovi v monopolizaci všech N slotů a předpojuje uchovávané klipy tak, aby pokrývaly celý transekt. |

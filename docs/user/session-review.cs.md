@@ -61,4 +61,4 @@ Panel nástrojů používá stejný význam ikon, jaký je popsán v [Ikony a ov
 
 ## Export
 
-Chování exportu závisí na možnostech vybraných v [Nastavení](settings.md). Aplikace může zabalit detekce a volitelně i zvuk do zvoleného formátu exportu. Každý export se nyní dodává s úplnými metadaty provenience – verzí aplikace, názvem a verzí modelu, národním prostředím, časovým razítkem exportu a snímkem všech nastavení v době exportu – zapsanými do postranního souboru „<prefix>.metadata.json“ (ZIP) nebo do bloku „meta“ nejvyšší úrovně (JSON), takže exporty jsou samy popisovatelné a reprodukovatelné.
+Chování exportu závisí na možnostech vybraných v [Nastavení](settings.md). Aplikace může zabalit detekce a volitelně i zvuk do zvoleného formátu exportu. Každý export se nyní dodává s úplnými metadaty provenience – verzí aplikace, názvem a verzí modelu, národním prostředím, časovým razítkem exportu a snímkem všech nastavení v době exportu – zapsanými do postranního souboru `"<prefix>.metadata.json"` (ZIP) nebo do bloku `"meta"` nejvyšší úrovně (JSON), takže exporty jsou samy popisovatelné a reprodukovatelné.

@@ -42,7 +42,7 @@ Una encuesta larga puede producir miles de detecciones y guardar un clip de audi
 Hay tres modos disponibles:
 
 | Modo | Qué hace |
-|---|---|
+| --- | --- |
 | **Todos** | Guarde cada clip. La mayor parte del uso del disco. Recomendado para encuestas cortas o cuando deseas el audio de cada detección para su posterior análisis. |
 | **N mejores** | Conserve solo los **N clips de mayor confianza por especie**. Otros clips se eliminan a medida que se ejecuta la encuesta. El N predeterminado es 10, configurable de 1 a 50. |
 | **Inteligente** | El mismo límite de N por especie que el N superior, **más** distribución espacial: si una nueva detección aterriza en el mismo "lugar" que un clip ya guardado (dentro de ~500 m y ~2 min de diferencia entre sí), solo el de mayor confianza mantiene su clip. Esto evita que un cantante estacionario monopolice todos los N espacios y desvía los clips conservados para cubrir todo el transecto. |
