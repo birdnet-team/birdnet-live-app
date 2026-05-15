@@ -64,6 +64,8 @@
   "settingsThemeDark": "Dunkel",
   "settingsThemeLight": "Hell",
   "settingsThemeSystem": "System",
+  "settingsDynamicColors": "Dynamische Farben",
+  "settingsDynamicColorsDescription": "Android-12+-Farben aus dem Hintergrundbild verwenden, wenn verfügbar. Andere Geräte behalten das Standarddesign.",
   "settingsResetOnboarding": "Onboarding zurücksetzen",
   "settingsClearData": "Alle Daten löschen",
   "settingsClearDataConfirmTitle": "Alle Daten löschen?",

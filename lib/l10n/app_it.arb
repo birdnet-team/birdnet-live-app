@@ -64,6 +64,8 @@
   "settingsThemeDark": "Scuro",
   "settingsThemeLight": "Chiaro",
   "settingsThemeSystem": "Sistema",
+  "settingsDynamicColors": "Colori dinamici",
+  "settingsDynamicColorsDescription": "Usa i colori dello sfondo su Android 12+ quando disponibili. Gli altri dispositivi mantengono il tema standard.",
   "settingsResetOnboarding": "Ripristina introduzione",
   "settingsClearData": "Elimina tutti i dati",
   "settingsClearDataConfirmTitle": "Eliminare tutti i dati?",

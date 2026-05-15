@@ -34,6 +34,34 @@ void main() {
     });
   });
 
+  group('DynamicColorsNotifier', () {
+    test('defaults to false', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = DynamicColorsNotifier(prefs);
+
+      expect(notifier.state, false);
+    });
+
+    test('persists dynamic colors preference', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = DynamicColorsNotifier(prefs);
+
+      await notifier.set(true);
+      expect(notifier.state, true);
+      expect(prefs.getBool('dynamic_colors'), true);
+    });
+
+    test('loads persisted dynamic colors preference', () async {
+      SharedPreferences.setMockInitialValues({'dynamic_colors': true});
+      final prefs = await SharedPreferences.getInstance();
+      final notifier = DynamicColorsNotifier(prefs);
+
+      expect(notifier.state, true);
+    });
+  });
+
   group('LocaleNotifier', () {
     test('defaults to null (system)', () async {
       SharedPreferences.setMockInitialValues({});
@@ -138,13 +166,12 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
 
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
       expect(container.read(themeModeProvider), ThemeMode.system);
+      expect(container.read(dynamicColorsProvider), false);
       expect(container.read(localeProvider), isNull);
       expect(container.read(onboardingCompleteProvider), false);
       expect(container.read(termsAcceptedProvider), false);

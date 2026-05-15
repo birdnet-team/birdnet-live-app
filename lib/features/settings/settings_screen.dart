@@ -131,6 +131,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsGeneralDescription,
               ),
               _ThemeTile(l10n: l10n),
+              _DynamicColorsTile(l10n: l10n),
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
               SwitchListTile(
@@ -918,6 +919,21 @@ class _ThemeTile extends ConsumerWidget {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
       ),
+    );
+  }
+}
+
+class _DynamicColorsTile extends ConsumerWidget {
+  const _DynamicColorsTile({required this.l10n});
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SwitchListTile(
+      title: Text(l10n.settingsDynamicColors),
+      subtitle: Text(l10n.settingsDynamicColorsDescription),
+      value: ref.watch(dynamicColorsProvider),
+      onChanged: (v) => ref.read(dynamicColorsProvider.notifier).set(v),
     );
   }
 }

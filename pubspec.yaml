@@ -30,6 +30,7 @@ dependencies:
   flutter_onnxruntime: ^1.7.0
 
   # UI & UX
+  dynamic_color: ^1.7.0
   url_launcher: ^6.3.1
   share_plus: ^10.1.4
   package_info_plus: ^8.1.3

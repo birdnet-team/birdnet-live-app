@@ -64,6 +64,8 @@
   "settingsThemeDark": "Sombre",
   "settingsThemeLight": "Clair",
   "settingsThemeSystem": "Système",
+  "settingsDynamicColors": "Couleurs dynamiques",
+  "settingsDynamicColorsDescription": "Utilise les couleurs du fond d'écran sur Android 12+ lorsqu'elles sont disponibles. Les autres appareils conservent le thème standard.",
   "settingsResetOnboarding": "Réinitialiser l'introduction",
   "settingsClearData": "Supprimer toutes les données",
   "settingsClearDataConfirmTitle": "Supprimer toutes les données ?",

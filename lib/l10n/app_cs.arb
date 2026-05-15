@@ -64,6 +64,8 @@
   "settingsThemeDark": "Tmavý",
   "settingsThemeLight": "Světlý",
   "settingsThemeSystem": "Systém",
+  "settingsDynamicColors": "Dynamické barvy",
+  "settingsDynamicColorsDescription": "Použít barvy tapety z Androidu 12+, když jsou dostupné. Ostatní zařízení zachovají standardní motiv.",
   "settingsResetOnboarding": "Obnovit úvod",
   "settingsClearData": "Smazat všechna data",
   "settingsClearDataConfirmTitle": "Smazat všechna data?",

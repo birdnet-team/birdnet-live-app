@@ -55,137 +55,45 @@ abstract final class AppTheme {
   /// Optimized for outdoor birding: high-contrast text on true-black,
   /// battery-efficient on OLED, and the blue brand color lightened just
   /// enough to remain legible.
-  static ThemeData dark() {
-    const colorScheme = ColorScheme.dark(
-      // ── Primary (blue) ──
-      primary: Color(0xFF5B9CFF), // Light tint of brand for dark bg
-      onPrimary: Color(0xFF002F6C), // Dark navy for text on primary
-      primaryContainer: Color(0xFF0043A8), // Deep blue container
-      onPrimaryContainer: Color(0xFFD6E4FF), // Very light blue text on cont.
-      // ── Secondary (sky-blue, desaturated) ──
-      secondary: Color(0xFF8AB4F8), // Soft sky-blue
-      onSecondary: Color(0xFF003062), // Dark blue on secondary
-      secondaryContainer: Color(0xFF1B3A5C), // Muted navy container
-      onSecondaryContainer: Color(0xFFD1E4FF), // Pale blue text
-      // ── Tertiary (amber — alerts, active indicators) ──
-      tertiary: Color(0xFFFFB74D), // Amber accent
-      onTertiary: Color(0xFF462A00),
-      tertiaryContainer: Color(0xFF633F00),
-      onTertiaryContainer: Color(0xFFFFDDB3),
-      // ── Error ──
-      error: Color(0xFFEF5350),
-      onError: Color(0xFF601410),
-      // ── Surfaces ──
-      surface: Color(0xFF121212), // True-black OLED
-      onSurface: Color(0xFFE0E0E0),
-      surfaceContainerHighest: Color(0xFF2C2C2C),
-      outline: Color(0xFF5C5C5C),
-    );
-
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
+  static ThemeData dark({ColorScheme? colorScheme}) {
+    return _build(
+      colorScheme: colorScheme ?? _darkColorScheme,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: colorScheme.surface,
-      extensions: const <ThemeExtension<dynamic>>[ScoreColors.dark],
-
-      // ── App Bar ──
-      appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
-        centerTitle: false,
-      ),
-
-      // ── Bottom Navigation ──
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xFF1E1E1E),
-        indicatorColor: colorScheme.primaryContainer,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        height: 64,
-      ),
-
-      // ── Cards ──
-      cardTheme: CardThemeData(
-        color: const Color(0xFF1E1E1E),
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-
-      // ── List Tiles ──
-      listTileTheme: _sharedListTileTheme(),
-
-      // ── Dialogs ──
-      dialogTheme: DialogThemeData(
-        backgroundColor: const Color(0xFF1E1E1E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-
-      // ── Switches ──
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return colorScheme.primary;
-          }
-          return colorScheme.outline;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return colorScheme.primaryContainer;
-          }
-          return colorScheme.surfaceContainerHighest;
-        }),
-      ),
-
-      // ── Sliders ──
-      sliderTheme: SliderThemeData(
-        activeTrackColor: colorScheme.primary,
-        inactiveTrackColor: colorScheme.surfaceContainerHighest,
-        thumbColor: colorScheme.primary,
-        overlayColor: colorScheme.primary.withAlpha(30),
-      ),
-
-      // ── Elevated Buttons (48 dp touch target) ──
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primaryContainer,
-          foregroundColor: colorScheme.onPrimaryContainer,
-          minimumSize: const Size(64, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-
-      // ── Text Buttons ──
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: colorScheme.primary,
-          minimumSize: const Size(48, 48),
-        ),
-      ),
-
-      // ── Dividers ──
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFF2C2C2C),
-        thickness: 1,
-      ),
-
-      // ── Snack Bars ──
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF2C2C2C),
-        contentTextStyle: const TextStyle(color: Color(0xFFE0E0E0)),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
+      scoreColors: ScoreColors.dark,
     );
   }
+
+  static const ColorScheme _darkColorScheme = ColorScheme.dark(
+    // ── Primary (blue) ──
+    primary: Color(0xFF5B9CFF), // Light tint of brand for dark bg
+    onPrimary: Color(0xFF002F6C), // Dark navy for text on primary
+    primaryContainer: Color(0xFF0043A8), // Deep blue container
+    onPrimaryContainer: Color(0xFFD6E4FF), // Very light blue text on cont.
+    // ── Secondary (sky-blue, desaturated) ──
+    secondary: Color(0xFF8AB4F8), // Soft sky-blue
+    onSecondary: Color(0xFF003062), // Dark blue on secondary
+    secondaryContainer: Color(0xFF1B3A5C), // Muted navy container
+    onSecondaryContainer: Color(0xFFD1E4FF), // Pale blue text
+    // ── Tertiary (amber — alerts, active indicators) ──
+    tertiary: Color(0xFFFFB74D), // Amber accent
+    onTertiary: Color(0xFF462A00),
+    tertiaryContainer: Color(0xFF633F00),
+    onTertiaryContainer: Color(0xFFFFDDB3),
+    // ── Error ──
+    error: Color(0xFFEF5350),
+    onError: Color(0xFF601410),
+    // ── Surfaces ──
+    surface: Color(0xFF121212), // True-black OLED
+    onSurface: Color(0xFFE0E0E0),
+    surfaceContainer: Color(0xFF1E1E1E),
+    surfaceContainerLow: Color(0xFF1E1E1E),
+    surfaceContainerHigh: Color(0xFF1E1E1E),
+    surfaceContainerHighest: Color(0xFF2C2C2C),
+    outline: Color(0xFF5C5C5C),
+    outlineVariant: Color(0xFF2C2C2C),
+    inverseSurface: Color(0xFF2C2C2C),
+    onInverseSurface: Color(0xFFE0E0E0),
+  );
 
   // ─── Light Theme ───────────────────────────────────────────────────────────
 
@@ -193,33 +101,57 @@ abstract final class AppTheme {
   ///
   /// Uses the exact brand blue (#0D6EFD) as [primary] for maximum
   /// recognition, with a pale-blue container tint and warm amber tertiary.
-  static ThemeData light() {
-    const colorScheme = ColorScheme.light(
-      // ── Primary (brand blue) ──
-      primary: Color(0xFF0D6EFD), // Brand #0D6EFD
-      onPrimary: Colors.white,
-      primaryContainer: Color(0xFFD6E4FF), // Very pale blue
-      onPrimaryContainer: Color(0xFF001B3D),
-      // ── Secondary (muted blue-grey) ──
-      secondary: Color(0xFF3D7BF7), // Slightly lighter variant
-      onSecondary: Colors.white,
-      secondaryContainer: Color(0xFFDBE7FF),
-      onSecondaryContainer: Color(0xFF001A40),
-      // ── Tertiary (warm amber) ──
-      tertiary: Color(0xFFF57C00), // Orange 800
-      // ── Surfaces ──
-      surface: Color(0xFFFAFAFA),
-      onSurface: Color(0xFF212121),
-      surfaceContainerHighest: Color(0xFFEEEEEE),
-      outline: Color(0xFFBDBDBD),
+  static ThemeData light({ColorScheme? colorScheme}) {
+    return _build(
+      colorScheme: colorScheme ?? _lightColorScheme,
+      brightness: Brightness.light,
+      scoreColors: ScoreColors.light,
     );
+  }
+
+  static const ColorScheme _lightColorScheme = ColorScheme.light(
+    // ── Primary (brand blue) ──
+    primary: Color(0xFF0D6EFD), // Brand #0D6EFD
+    onPrimary: Colors.white,
+    primaryContainer: Color(0xFFD6E4FF), // Very pale blue
+    onPrimaryContainer: Color(0xFF001B3D),
+    // ── Secondary (muted blue-grey) ──
+    secondary: Color(0xFF3D7BF7), // Slightly lighter variant
+    onSecondary: Colors.white,
+    secondaryContainer: Color(0xFFDBE7FF),
+    onSecondaryContainer: Color(0xFF001A40),
+    // ── Tertiary (warm amber) ──
+    tertiary: Color(0xFFF57C00), // Orange 800
+    // ── Surfaces ──
+    surface: Color(0xFFFAFAFA),
+    onSurface: Color(0xFF212121),
+    surfaceContainer: Colors.white,
+    surfaceContainerLow: Colors.white,
+    surfaceContainerHigh: Colors.white,
+    surfaceContainerHighest: Color(0xFFEEEEEE),
+    outline: Color(0xFFBDBDBD),
+    outlineVariant: Color(0xFFE0E0E0),
+    inverseSurface: Color(0xFF323232),
+    onInverseSurface: Colors.white,
+  );
+
+  // ---------------------------------------------------------------------------
+  // Shared theme builder
+  // ---------------------------------------------------------------------------
+
+  static ThemeData _build({
+    required ColorScheme colorScheme,
+    required Brightness brightness,
+    required ScoreColors scoreColors,
+  }) {
+    final isDark = brightness == Brightness.dark;
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      brightness: Brightness.light,
+      brightness: brightness,
       scaffoldBackgroundColor: colorScheme.surface,
-      extensions: const <ThemeExtension<dynamic>>[ScoreColors.light],
+      extensions: <ThemeExtension<dynamic>>[scoreColors],
 
       // ── App Bar ──
       appBarTheme: AppBarTheme(
@@ -231,7 +163,7 @@ abstract final class AppTheme {
 
       // ── Bottom Navigation ──
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surfaceContainer,
         indicatorColor: colorScheme.primaryContainer,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         height: 64,
@@ -239,24 +171,18 @@ abstract final class AppTheme {
 
       // ── Cards ──
       cardTheme: CardThemeData(
-        color: Colors.white,
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        color: colorScheme.surfaceContainerLow,
+        elevation: isDark ? 0 : 1,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       // ── List Tiles ──
-      // (Mirrors the dark theme so spacing/padding stay identical when
-      // toggling brightness.)
       listTileTheme: _sharedListTileTheme(),
 
       // ── Dialogs ──
       dialogTheme: DialogThemeData(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
 
       // ── Switches ──
@@ -286,8 +212,10 @@ abstract final class AppTheme {
       // ── Elevated Buttons ──
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
+          backgroundColor:
+              isDark ? colorScheme.primaryContainer : colorScheme.primary,
+          foregroundColor:
+              isDark ? colorScheme.onPrimaryContainer : colorScheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -304,19 +232,17 @@ abstract final class AppTheme {
       ),
 
       // ── Dividers ──
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFFE0E0E0),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
         thickness: 1,
       ),
 
       // ── Snack Bars ──
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF323232),
-        contentTextStyle: const TextStyle(color: Colors.white),
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
@@ -336,9 +262,7 @@ abstract final class AppTheme {
   static ListTileThemeData _sharedListTileTheme() {
     return ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       minVerticalPadding: 8,
     );
   }

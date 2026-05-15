@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 
 import 'core/theme/app_theme.dart';
 import 'shared/providers/app_providers.dart';
@@ -19,28 +20,36 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    final useDynamicColors = ref.watch(dynamicColorsProvider);
 
-    return MaterialApp(
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      debugShowCheckedModeBanner: false,
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        final lightScheme = useDynamicColors ? lightDynamic : null;
+        final darkScheme = useDynamicColors ? darkDynamic : null;
 
-      // Theme
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      themeMode: themeMode,
+        return MaterialApp(
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+          debugShowCheckedModeBanner: false,
 
-      // Localization
-      locale: locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
+          // Theme
+          theme: AppTheme.light(colorScheme: lightScheme),
+          darkTheme: AppTheme.dark(colorScheme: darkScheme),
+          themeMode: themeMode,
 
-      // Initial screen based on app state
-      home: const _AppGate(),
+          // Localization
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+
+          // Initial screen based on app state
+          home: const _AppGate(),
+        );
+      },
     );
   }
 }

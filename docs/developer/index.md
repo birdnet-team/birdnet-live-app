@@ -44,6 +44,7 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 
 ## Key Topics
 
+- [AI Implementation Guide](ai-implementation-guide.md) — Current implementation map for AI coding agents
 - [Architecture](architecture.md) — Feature-based architecture and patterns
 - [State Management](state-management.md) — Riverpod providers and notifiers
 - [Audio Pipeline](audio-pipeline.md) — Capture, ring buffer, and processing

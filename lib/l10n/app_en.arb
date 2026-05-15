@@ -256,6 +256,14 @@
   "@settingsThemeSystem": {
     "description": "System theme option"
   },
+  "settingsDynamicColors": "Dynamic Colors",
+  "@settingsDynamicColors": {
+    "description": "Toggle for Android 12+ Material You dynamic colors"
+  },
+  "settingsDynamicColorsDescription": "Use Android 12+ wallpaper colors when available. Other devices keep the standard theme.",
+  "@settingsDynamicColorsDescription": {
+    "description": "Subtitle for dynamic colors setting"
+  },
   "settingsResetOnboarding": "Reset Onboarding",
   "@settingsResetOnboarding": {
     "description": "Reset onboarding setting"

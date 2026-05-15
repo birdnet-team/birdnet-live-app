@@ -64,6 +64,8 @@
   "settingsThemeDark": "Escuro",
   "settingsThemeLight": "Claro",
   "settingsThemeSystem": "Sistema",
+  "settingsDynamicColors": "Cores dinâmicas",
+  "settingsDynamicColorsDescription": "Usa as cores do papel de parede no Android 12+ quando disponíveis. Outros dispositivos mantêm o tema padrão.",
   "settingsResetOnboarding": "Redefinir introdução",
   "settingsClearData": "Excluir todos os dados",
   "settingsClearDataConfirmTitle": "Excluir todos os dados?",
