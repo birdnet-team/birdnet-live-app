@@ -96,6 +96,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => AppHelpBottomSheet(
             title: l10n.fileAnalysisHelpTitle,

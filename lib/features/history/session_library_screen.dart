@@ -139,6 +139,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => AppHelpBottomSheet(
             title: l10n.sessionLibraryHelpTitle,
@@ -218,6 +219,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (sheetContext) {
         return SafeArea(
           child: StatefulBuilder(
@@ -616,6 +618,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final picked = await showModalBottomSheet<SessionType>(
       context: context,
       showDragHandle: true,
+      useSafeArea: true,
       builder: (sheetCtx) {
         return SafeArea(
           child: Column(

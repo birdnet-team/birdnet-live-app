@@ -108,6 +108,36 @@ Sets the upper display frequency.
 
 Applies logarithmic scaling to the spectrogram for easier visual reading.
 
+## Announcements
+
+This section controls whether BirdNET Live **reads detections aloud through your headphones or the phone speaker** while a session is recording. The whole feature is **off by default** because it changes the acoustic environment around the microphone — turning it on is a deliberate trade-off. There is no setup wizard: the verbosity × frequency pickers below *are* the entire setup, so you can tap a different preset at any time and immediately hear the difference. The intuition: in long surveys you can't keep glancing at the screen; a discreet voice in your ear means you can keep your eyes on the habitat and still know what was just heard.
+
+### Speak detections aloud (master toggle)
+
+Off by default. When on, the app speaks each accepted detection using your device's built-in text-to-speech. **Headphones are strongly recommended** — using the phone speaker risks the announcement being picked up by the microphone and re-detected, so the app briefly mutes the recorder around each utterance to prevent that loop (see *Mute mic while speaking* below). When you have a screen reader (TalkBack on Android, VoiceOver on iOS) active the *first* time you launch the app, this toggle is enabled automatically as an accessibility default — you can turn it back off here at any time.
+
+### Verbosity preset
+
+How much the app says about each detection. **Minimal** speaks just the species name (best for very long surveys where you only want the cue). **Balanced** is the default — short, varied phrases like *"Robin"*, *"Heard a Robin"*, *"Robin again"*. **Chatty** adds a touch more context and is closer to having someone narrate alongside you. **Custom** appears automatically if you tweak the Advanced numerics by hand. The intuition: the same throttling settings can feel either too quiet or too noisy depending on phrasing — verbosity lets you keep the cadence and just dial the wordiness.
+
+### Frequency preset
+
+How often the app is allowed to speak at all. Five steps from quietest to most talkative. **Rare** and **Sparse** wait a long time between announcements and cap the rate — well-suited to multi-hour surveys where you want a sense of activity without a running commentary. **Normal** is the default conversational cadence. **Frequent** shortens the gaps and lifts the cap; appropriate for short Live sessions or when you want closer-to-real-time feedback. **Constant** removes the startup delay entirely and lets the app speak on almost every detection cycle — useful for demos, accessibility, or whenever the gap before the first announcement on *Frequent* feels too long. **Custom** appears when you change the timing fields in Advanced. The intuition: this is the one knob that decides whether the app stays in the background or becomes a presence — tap a different preset and you'll hear the new cadence within the next detection cycle, no save button required.
+
+### Voice (speed and pitch)
+
+Two sliders that adjust the platform TTS voice. **Speed** ranges 0.5×–1.5×; the default 1.0× is the platform "normal" pace. **Pitch** ranges 0.7×–1.3×. The intuition: a small reduction in pitch and a slight slowdown can make announcements much easier to parse outdoors with wind or moving water in the background; the *Speak a sample* button below previews three common bird names with the current settings so you can iterate without leaving the screen.
+
+### Advanced
+
+A disclosure that exposes a handful of audio-routing toggles plus the trigger-mode picker. You generally do not need to open this — the verbosity and frequency presets above are the only knobs that matter day to day. The rate-limiting numerics (startup grace, minimum gap, max per minute, streak silence, recency reset) are bundled into the **Frequency** slider so there is one obvious place to dial cadence up or down.
+
+- **Allow phone speaker** — When off, announcements are silently skipped if no headphones or external speaker is connected. When on, the phone speaker is used as a fallback. Turn this on for casual listening at home; leave it off for fieldwork to guarantee no acoustic feedback into the microphone.
+- **Mute mic while speaking** — Replaces incoming audio with silence while the app speaks, so the speaker output cannot be picked up by the microphone and re-detected. Highly recommended (and the default). Only turn this off if your microphone is acoustically isolated from the phone speaker — for example a clip-on lapel mic on a different cable or a Bluetooth headset.
+- **Lower other audio** — Briefly reduces the volume of music or podcasts from other apps during the announcement and restores it afterwards. On by default. Off plays at full mix.
+- **Cue tone before speaking** — Plays a short, quiet tone before each utterance so your ear has a moment to switch from passive listening to attending to the voice. On by default. Particularly helpful when announcements are infrequent or when you have music playing in the background.
+- **What to announce** — Picks which detections are eligible for an announcement at all. *Every detection* (default) lets the throttling decide. *First time per session* announces a species only the first time it appears in the current session. *Watchlist only* limits announcements to species on your watchlist (useful for targeted survey work where you want to hear about your priority taxa and nothing else).
+
 ## Recording
 
 ### Mode
@@ -202,6 +232,12 @@ The **About** row opens the in-app About screen.
 ### Reset Onboarding
 
 Shows the onboarding sequence again the next time the app launches.
+
+### Reset All Settings
+
+Restores every preference on this screen to its default value. Sessions, recordings, voice memos, exports and downloaded map tiles are kept untouched — only the saved preferences (sliders, switches, picker choices) get wiped. The app closes after confirmation so the new defaults take effect on next launch.
+
+Useful when you are not sure which slider you nudged that broke something, or when handing the device to someone else and you want a clean configuration without losing the data you collected.
 
 ### Clear All Data
 

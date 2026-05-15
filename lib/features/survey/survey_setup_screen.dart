@@ -246,6 +246,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => AppHelpBottomSheet(
             title: l10n.surveySetupHelpTitle,
@@ -860,6 +861,7 @@ class _ParametersStep extends ConsumerWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      useSafeArea: true,
       builder:
           (ctx) => SafeArea(
             child: RadioGroup<String?>(
@@ -1206,6 +1208,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => AppHelpBottomSheet(
             title: l10n.surveyAlertsTitle,

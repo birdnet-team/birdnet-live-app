@@ -78,6 +78,7 @@ import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
+import '../recording/playback_normalizer.dart';
 import '../spectrogram/color_maps.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
@@ -351,7 +352,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
 
     try {
-      final dur = await _player.setFilePath(path);
+      final playbackPath = await PlaybackNormalizer.resolveSource(path);
+      if (!mounted) return;
+      final dur = await _player.setFilePath(playbackPath);
       if (!mounted) return;
       setState(() {
         _duration = dur ?? Duration.zero;
@@ -1165,6 +1168,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => _SessionHelpSheet(
             showContinueSurvey: widget.session.type == SessionType.survey,
@@ -1334,19 +1338,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (seekPos.isNegative) seekPos = Duration.zero;
       if (seekPos > _duration) seekPos = _duration;
 
-      // Compute the cluster's end position in clip coordinates so we
-      // can auto-pause once playback walks past the detection. Use the
-      // recorded continuous-detection end when available; otherwise
-      // fall back to a single inference window.
-      final windowSec = widget.session.settings.windowDuration;
-      final lastRecord = cluster.records.last;
-      final endTs =
-          lastRecord.endTimestamp ??
-          lastRecord.timestamp.add(Duration(seconds: windowSec));
-      var stopPos = endTs.difference(widget.session.startTime) - clipOffset;
-      if (stopPos > _duration) stopPos = _duration;
-      // Guard against degenerate ranges (end before start).
-      _autoStopPosition = stopPos > seekPos ? stopPos : null;
+      // Tapping a cluster used to auto-pause once playback walked past
+      // the cluster's last detection (a few seconds in). In practice
+      // this just made review feel like the player kept stopping for
+      // no reason — users almost always want to keep listening for the
+      // call to repeat or for context. Cancel any pending auto-stop and
+      // let playback continue until the user pauses or the recording
+      // ends.
+      _autoStopPosition = null;
 
       _player.seek(seekPos);
       if (!_isPlaying) _player.play();
@@ -1368,7 +1367,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             .firstOrNull;
     if (clip == null) return;
     await _clipPlayer.stop();
-    await _clipPlayer.setFilePath(clip.audioClipPath!);
+    final clipPath = clip.audioClipPath!;
+    final playbackPath = await PlaybackNormalizer.resolveSource(clipPath);
+    if (!mounted) return;
+    await _clipPlayer.setFilePath(playbackPath);
+    if (!mounted) return;
     setState(() => _activeClipCluster = cluster);
     _clipPlayerStateSubscription ??= _clipPlayer.playerStateStream.listen((
       state,
@@ -1410,6 +1413,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final value = await showModalBottomSheet<String>(
       context: context,
+      useSafeArea: true,
       builder:
           (ctx) => SafeArea(
             child: Column(

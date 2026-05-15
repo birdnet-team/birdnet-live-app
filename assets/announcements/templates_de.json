@@ -1,0 +1,237 @@
+{
+  "locale": "de",
+  "version": 3,
+  "_comment": [
+    "Phrasing-Vorlagen für die Announcements-Funktion. Siehe dev/announcements.md §3.",
+    "Pro Bucket eine `balanced`-Liste (immer vorhanden) und optional eine `chatty`-",
+    "Liste (längere, gesprächigere Varianten). Bei Verbosity = Minimal werden die",
+    "Vorlagen umgangen und nur `{name}.` gesprochen. Übersetzungen sind freie",
+    "Neuformulierungen, keine wörtlichen Übersetzungen.",
+    "",
+    "WICHTIG — Genus-Falle:",
+    "  Vogelnamen haben ein grammatisches Geschlecht (der Zaunkönig, die Amsel,",
+    "  das Rotkehlchen), das wir zur Laufzeit NICHT kennen. Daher dürfen vor",
+    "  {name}, {name1}, {name2}, {name3} NIEMALS gebeugte Artikel oder",
+    "  Indefinitpronomen stehen (kein 'ein', 'eine', 'einen', 'einem', 'der',",
+    "  'die', 'das', 'dem', 'den'). Sicher sind:",
+    "    - Doppelpunkt-/Gedankenstrich-Konstruktionen: 'Erkannt: {name}.'",
+    "    - {name} am Satzanfang: '{name}, eindeutig.'",
+    "    - Präpositionen ohne Artikel: 'Klingt nach {name}.'",
+    "  Tonfall: knapp und freundlich; Chatty darf einen kurzen Kommentar",
+    "  dazugeben, klingt aber nie kitschig.",
+    "  Die englischen Templates haben dieses Problem nicht; weitere Locales",
+    "  (fr/es/it/cs/pt) erben dieselbe Regel."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Da: {name}.",
+        "Erkannt: {name}.",
+        "Eindeutig {name}.",
+        "{name}, ganz klar.",
+        "Ich höre {name}.",
+        "Klar zu hören: {name}.",
+        "Soeben erkannt: {name}.",
+        "{name}, sauber identifiziert."
+      ],
+      "chatty": [
+        "Eindeutig {name} — schön sauberes Signal.",
+        "{name}, ganz klar erkannt.",
+        "Ich höre {name} — kein Zweifel.",
+        "Erkannt: {name}, deutlich und sauber.",
+        "{name} — wie aus dem Lehrbuch.",
+        "Da meldet sich {name} — top Signal.",
+        "Klar und deutlich: {name}.",
+        "{name} ruft — gut zu hören.",
+        "Sauber zu hören: {name}.",
+        "{name}, eindeutig erkannt."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "Wieder: {name}.",
+        "Noch einmal: {name}.",
+        "{name}, schon wieder.",
+        "Erneut {name}.",
+        "{name}, zum zweiten Mal."
+      ],
+      "chatty": [
+        "Wieder {name}, lässt nicht locker.",
+        "Schon wieder {name} — bleibt heute dran.",
+        "Noch einmal {name}, deutlich.",
+        "{name} meldet sich erneut — scheint zu bleiben.",
+        "Da ist {name} wieder — Stammgast offenbar."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} ruft weiter.",
+        "{name} bleibt dran.",
+        "Weiter: {name}.",
+        "{name}, immer noch.",
+        "{name} hält durch."
+      ],
+      "chatty": [
+        "{name} ruft munter weiter.",
+        "{name} ist heute ausdauernd.",
+        "Bleibt dran: {name}.",
+        "{name} ist heute besonders aktiv.",
+        "Anhaltend aktiv: {name}.",
+        "{name} ruft weiter — schöne Aktivität.",
+        "{name} hält das Tempo.",
+        "Weiter im Programm: {name}."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Vermutlich {name}.",
+        "Wahrscheinlich {name}.",
+        "Klingt nach {name}.",
+        "Tippe auf {name}.",
+        "Ziemlich sicher: {name}.",
+        "Plausibel: {name}.",
+        "{name}, recht wahrscheinlich."
+      ],
+      "chatty": [
+        "Klingt für mich nach {name}, ziemlich sicher.",
+        "Würde sagen {name}, ganz festlegen will ich mich nicht.",
+        "Recht sicher: {name}.",
+        "Tippe auf {name} — Signal ist ordentlich.",
+        "Geht stark in Richtung {name}.",
+        "Passt gut zu {name}, würde ich sagen."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Vielleicht wieder {name}.",
+        "Könnte erneut {name} sein.",
+        "Klingt nach {name}, noch einmal.",
+        "Möglicherweise wieder {name}.",
+        "{name}, vermutlich noch einmal."
+      ],
+      "chatty": [
+        "Klingt, als wäre {name} wieder dabei.",
+        "Vermutlich noch einmal {name}.",
+        "Könnte zurückkommen: {name}.",
+        "Tippe auf {name}, jetzt zum zweiten Mal.",
+        "Sieht nach {name} aus — schon wieder."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Möglicherweise {name}.",
+        "Könnte {name} sein.",
+        "Klingt etwas nach {name}.",
+        "Eventuell {name}.",
+        "{name}, vielleicht.",
+        "Schwacher Treffer: {name}.",
+        "Tippe vorsichtig auf {name}."
+      ],
+      "chatty": [
+        "Könnte gut {name} sein, Signal ist eher schwach.",
+        "Klingt etwas nach {name} — würde ich nochmal hinhören.",
+        "Möglicherweise {name} dabei — Ohren spitzen.",
+        "Tendenz {name}, aber kein klarer Fall.",
+        "Eventuell {name} — passt nicht perfekt, aber denkbar.",
+        "{name} wäre mein Tipp, ohne Garantie."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Vielleicht noch einmal {name}.",
+        "Könnte erneut {name} sein.",
+        "Eventuell wieder {name}.",
+        "Schwach, aber vielleicht {name}.",
+        "{name}, möglicherweise erneut."
+      ],
+      "chatty": [
+        "Vielleicht wieder {name}, das Signal ist schwach.",
+        "Könnte noch einmal {name} sein, schwer einzuordnen.",
+        "Tendenz wieder {name}, kein klarer Fall.",
+        "Eventuell zurück: {name} — würde ich nicht beschwören."
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "Zwei auf einmal: {name1} und {name2}.",
+        "Höre beide: {name1} und {name2}.",
+        "{name1} und {name2}, zusammen.",
+        "Zwei gleichzeitig: {name1} und {name2}.",
+        "Doppelt: {name1} und {name2}."
+      ],
+      "chatty": [
+        "Zwei Stimmen gerade — {name1} und {name2}.",
+        "{name1} und {name2} rufen zur gleichen Zeit.",
+        "Zwei zusammen: {name1} und {name2}.",
+        "{name1} und {name2}, beide gerade aktiv.",
+        "Zwei auf einmal — {name1} und {name2} mischen mit."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Mehrere auf einmal: {name1}, {name2}, {name3}.",
+        "Gleich drei: {name1}, {name2}, {name3}.",
+        "Erkannt: {name1}, {name2}, {name3}.",
+        "Drei zur gleichen Zeit: {name1}, {name2}, {name3}."
+      ],
+      "chatty": [
+        "Ganz schöner Chor — {name1}, {name2} und {name3} gleichzeitig.",
+        "Drei auf einmal: {name1}, {name2} und {name3}.",
+        "Hier ist was los — {name1}, {name2} und {name3} singen zusammen.",
+        "Schöne Mischung gerade: {name1}, {name2} und {name3}.",
+        "Trio im Wald: {name1}, {name2} und {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Viel los: {name1}, {name2}, {name3} und einige mehr.",
+        "Mehrere gleichzeitig: {name1}, {name2}, {name3} und weitere.",
+        "Aktive Stelle: {name1}, {name2}, {name3} und mehr."
+      ],
+      "chatty": [
+        "Hier ist gerade richtig was los — {name1}, {name2}, {name3} und einige mehr.",
+        "Geschäftiger Moment — {name1}, {name2}, {name3} und ein paar weitere.",
+        "Ganzer Chor unterwegs — {name1}, {name2}, {name3} und noch mehr.",
+        "Tolle Klangkulisse — {name1}, {name2}, {name3} und weitere mischen mit.",
+        "Viel Aktivität gerade — {name1}, {name2}, {name3} und mehr."
+      ]
+    }
+  },
+  "commonness": {
+    "abundant": [
+      "Eine sehr häufige Art in deiner Region.",
+      "Den hört man hier wirklich oft.",
+      "Sehr verbreitet bei euch um diese Jahreszeit.",
+      "Gehört hier zum festen Inventar.",
+      "Einer der Klassiker in deiner Gegend."
+    ],
+    "common": [
+      "Eine recht häufige Art hier.",
+      "Bei euch zu dieser Jahreszeit gut vertreten.",
+      "Regelmäßiger Gast in deiner Gegend.",
+      "Ziemlich typisch für deine Region.",
+      "In dieser Ecke gut vertreten."
+    ],
+    "uncommon": [
+      "Nicht besonders häufig in deiner Region.",
+      "Eher selten hier zu hören.",
+      "Bemerkenswert — den bekommt man hier nicht jeden Tag.",
+      "Hörst du nicht jeden Tag in dieser Gegend.",
+      "Eher die seltenere Sorte hier."
+    ],
+    "rare": [
+      "Eine ziemliche Rarität bei euch — gut gehört!",
+      "Eine ungewöhnliche Art für deine Region.",
+      "Sehr selten in deiner Gegend, der da.",
+      "Den merkt man sich — kommt hier kaum vor.",
+      "Klare Besonderheit für deine Region."
+    ],
+    "seasonalAddendum": [
+      "Allerdings normalerweise nicht um diese Jahreszeit.",
+      "Und etwas außerhalb der üblichen Saison.",
+      "Eigentlich etwas früh oder spät dafür.",
+      "Außerhalb der üblichen Zeit — umso interessanter.",
+      "Sonst eher zu anderer Jahreszeit zu hören."
+    ]
+  }
+}

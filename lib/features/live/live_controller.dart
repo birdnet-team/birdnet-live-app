@@ -42,6 +42,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
 import '../../core/services/memory_monitor.dart';
 import '../audio/ring_buffer.dart';
+import '../announcements/announcements_controller.dart'
+    show AnnouncementDetection;
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
@@ -196,6 +198,23 @@ class LiveController {
 
   /// Called whenever the controller state changes.
   void Function()? onStateChanged;
+
+  /// Called once per inference cycle with the current cycle's full set
+  /// of filtered detections (one record per species, with that cycle's
+  /// score). Used by the Announcements feature to feed the spoken-
+  /// detection pipeline. Submitting every cycle (rather than only
+  /// newly-appeared species) lets the controller pick the peak score
+  /// for each species; its per-species streak silence and global
+  /// min-interval gates prevent over-announcing. Errors thrown by the
+  /// callback are caught and ignored — TTS hiccups must never affect
+  /// inference.
+  void Function(List<AnnouncementDetection> batch)? onFreshDetections;
+
+  /// Called when a fresh session starts (at the bottom of
+  /// [startSession] after the session is wired up). Used by the
+  /// Announcements feature to reset its per-session bookkeeping
+  /// (startup grace, anti-repeat, etc.).
+  void Function()? onSessionStarted;
 
   // ── Model loading ─────────────────────────────────────────────────────
 
@@ -353,6 +372,7 @@ class LiveController {
     }
 
     _state = LiveState.active;
+    onSessionStarted?.call();
     _notifyListeners();
 
     debugPrint(
@@ -704,6 +724,33 @@ class LiveController {
             _maxInMemoryDetections,
             _sessionDetections.length,
           );
+        }
+
+        // Hand the current cycle's detections to the Announcements
+        // pipeline (no-op when the feature is disabled). We submit the
+        // full per-cycle list, not just newly-appeared species: the
+        // first sighting is often near the confidence floor, while the
+        // peak score arrives a few cycles later when the card is still
+        // on screen. The controller's per-species streak silence and
+        // global min-interval gates dedup re-submissions, and it picks
+        // the highest score per species inside the batch, so this
+        // surfaces the strongest call rather than the marginal one.
+        final cb = onFreshDetections;
+        if (cb != null && filteredDetections.isNotEmpty) {
+          final batch = <AnnouncementDetection>[
+            for (final d in filteredDetections)
+              AnnouncementDetection(
+                speciesId: d.species.scientificName,
+                displayName: d.species.commonName,
+                score: d.confidence,
+                at: d.timestamp ?? DateTime.now(),
+              ),
+          ];
+          try {
+            cb(batch);
+          } catch (_) {
+            /* Announcements errors must never escape. */
+          }
         }
       }
 

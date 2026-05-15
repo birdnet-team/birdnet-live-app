@@ -636,6 +636,7 @@ void _showPointCountLiveHelp(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     builder:
         (_) => AppHelpBottomSheet(
           title: l10n.pointCountLiveHelpTitle,

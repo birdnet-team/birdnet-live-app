@@ -22,6 +22,7 @@ import '../../../shared/services/taxonomy_service.dart';
 import '../../explore/explore_providers.dart';
 import '../../history/widgets/detection_actions.dart';
 import '../live_session.dart';
+import 'live_tips.dart';
 
 /// Displays a scrollable list of species detections.
 ///
@@ -343,28 +344,36 @@ class _EmptyState extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isActive ? Icons.hearing : Icons.list_alt,
-            size: 40,
-            color: theme.colorScheme.onSurface.withAlpha(77),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            isActive ? l10n.liveListening : l10n.liveDetections,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(128),
-            ),
-          ),
-          Text(
-            isActive ? l10n.liveSpeciesWillAppear : l10n.liveStartSession,
-            style: theme.textTheme.bodySmall?.copyWith(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? Icons.hearing : Icons.list_alt,
+              size: 40,
               color: theme.colorScheme.onSurface.withAlpha(77),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              isActive ? l10n.liveListening : l10n.liveDetections,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withAlpha(128),
+              ),
+            ),
+            Text(
+              isActive ? l10n.liveSpeciesWillAppear : l10n.liveStartSession,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withAlpha(77),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (isActive) ...[
+              const SizedBox(height: 44),
+              const LiveTipsCarousel(),
+            ],
+          ],
+        ),
       ),
     );
   }

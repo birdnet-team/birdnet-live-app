@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../about/about_screen.dart';
+import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
@@ -100,6 +102,11 @@ class SettingsScreen extends ConsumerWidget {
       SettingsContext.survey,
       SettingsContext.pointCount,
       SettingsContext.fileAnalysis,
+    },
+    'announcements': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
     },
     'about': {
       SettingsContext.live,
@@ -399,6 +406,22 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- Announcements ---
+            // Sits high up in the list (right after Spectrogram) because
+            // it is the only setting users typically need to revisit
+            // mid-session — the verbosity × frequency pickers are the
+            // entire setup, so making them easy to find matters more
+            // than category alphabetization.
+            if (_showSection('announcements'))
+              AnnouncementsSettingsSection(
+                sectionHeader:
+                    ({required String title, required String subtitle}) =>
+                        _SectionHeader(title: title, subtitle: subtitle),
+                titleWithHelp:
+                    ({required String title, String? helpBody}) =>
+                        _TitleWithHelp(title: title, helpBody: helpBody),
+              ),
+
             // --- Recording ---
             if (_showSection('recording')) ...[
               _SectionHeader(
@@ -631,6 +654,12 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- Announcements ---
+            // Section moved up: it now renders right after Spectrogram
+            // (see above). Kept the comment marker here as a redirect
+            // breadcrumb so future readers searching for it find the
+            // new location.
+
             // --- About ---
             if (_showSection('about'))
               ListTile(
@@ -655,6 +684,11 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: Text(l10n.settingsResetOnboarding),
                 onTap: () => _showResetOnboardingDialog(context, ref, l10n),
+              ),
+              ListTile(
+                title: Text(l10n.settingsResetAll),
+                subtitle: Text(l10n.settingsResetAllSubtitle),
+                onTap: () => _showResetAllSettingsDialog(context, l10n),
               ),
               ListTile(
                 title: Text(
@@ -695,6 +729,48 @@ class SettingsScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(l10n.settingsOnboardingReset)),
                   );
+                },
+                child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _showResetAllSettingsDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text(l10n.settingsResetAllConfirmTitle),
+            content: Text(l10n.settingsResetAllConfirmMessage),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  Navigator.of(dialogContext).pop();
+                  // Clear every persisted preference. Sessions, recordings,
+                  // voice memos and downloaded map tiles live outside of
+                  // SharedPreferences and are intentionally untouched.
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(l10n.settingsResetAllDone)),
+                  );
+                  // On Android we close the app so the next launch boots
+                  // with the freshly-reset defaults applied to every
+                  // provider. Other platforms leave the app running and
+                  // rely on the user to relaunch manually.
+                  await Future<void>.delayed(const Duration(milliseconds: 800));
+                  await SystemNavigator.pop();
                 },
                 child: Text(l10n.confirm),
               ),
@@ -860,6 +936,7 @@ Future<void> showSettingHelpSheet(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (ctx) {
       final theme = Theme.of(ctx);
       return SafeArea(
@@ -1246,6 +1323,7 @@ class _MicInputTile extends ConsumerWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
+      useSafeArea: true,
       builder: (context) {
         return SafeArea(
           child: RadioGroup<String?>(

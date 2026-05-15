@@ -221,4 +221,103 @@ abstract final class PrefKeys {
   /// has 50+ species, finding one by detection-time order becomes
   /// painful; alphabetical is the predictable fallback.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
+
+  // --- Announcements (spoken detections, post-v1.0) ---------------------
+  // See [dev/announcements.md] for the full design. The user-facing
+  // surface is two preset enums (`announcementsVerbosity`,
+  // `announcementsFrequency`); the numeric `*` keys below are the
+  // Advanced overrides that a preset change stamps into in one
+  // transaction. Manually editing an Advanced key sets the matching
+  // preset to `custom` so the UI never lies about which preset is in
+  // effect.
+
+  /// Master toggle. Default `false`; flipped by the setup wizard.
+  static const String announcementsEnabled = 'announcements_enabled';
+
+  /// `true` once the user finished the 5-step setup wizard at least
+  /// once. Prevents the wizard from auto-opening a second time.
+  static const String announcementsWizardCompleted =
+      'announcements_wizard_completed';
+
+  /// `true` once we have applied the screen-reader accessibility
+  /// default for `announcementsEnabled` (see decision §10.7). Prevents
+  /// the default from being re-applied — and therefore overriding the
+  /// user's later opt-out — every time TalkBack/VoiceOver is toggled.
+  static const String announcementsAccessibilityDefaultApplied =
+      'announcements_accessibility_default_applied';
+
+  /// One of `AnnouncementVerbosity.name`: `minimal` | `balanced`
+  /// (default) | `chatty` | `custom`.
+  static const String announcementsVerbosity = 'announcements_verbosity';
+
+  /// One of `AnnouncementFrequency.name`: `sparse` | `normal` (default)
+  /// | `frequent` | `custom`.
+  static const String announcementsFrequency = 'announcements_frequency';
+
+  /// BCP-47 voice locale (e.g. `en-US`, `de-DE`). Empty string ⇒ track
+  /// the active UI locale.
+  static const String announcementsVoiceLanguage =
+      'announcements_voice_language';
+
+  /// TTS rate multiplier (0.5–1.5, default 1.0).
+  static const String announcementsVoiceRate = 'announcements_voice_rate';
+
+  /// TTS pitch multiplier (0.7–1.3, default 1.0).
+  static const String announcementsVoicePitch = 'announcements_voice_pitch';
+
+  /// Set by the wizard's "Just the phone" confirmation step. When
+  /// `false`, the controller refuses to speak through the built-in
+  /// speaker even if no other output device is available.
+  static const String announcementsSpeakerOutputAllowed =
+      'announcements_speaker_output_allowed';
+
+  /// Mute the input ring buffer for the duration of an utterance plus
+  /// the routing-mode guard band (200 ms headphones, 400 ms speaker).
+  static const String announcementsMuteCaptureDuringSpeech =
+      'announcements_mute_capture_during_speech';
+
+  /// Request `transient_may_duck` audio focus so background media ducks
+  /// for ~1 s instead of stopping.
+  static const String announcementsDuckOtherAudio =
+      'announcements_duck_other_audio';
+
+  /// Play a short pre-roll cue tone (~150 ms) before each utterance.
+  static const String announcementsPrerollCue = 'announcements_preroll_cue';
+
+  /// Seconds at session start during which no announcement fires.
+  static const String announcementsStartupGraceSeconds =
+      'announcements_startup_grace_seconds';
+
+  /// Minimum gap between two consecutive announcements (any species).
+  static const String announcementsMinIntervalSeconds =
+      'announcements_min_interval_seconds';
+
+  /// Hard cap on announcements per rolling 60 s window.
+  static const String announcementsMaxPerMinute =
+      'announcements_max_per_minute';
+
+  /// Per-species cooldown — within this window, repeats of the same
+  /// species fall into the streak / "again" buckets instead of
+  /// triggering a fresh announcement (§3.4).
+  static const String announcementsStreakSilenceSeconds =
+      'announcements_streak_silence_seconds';
+
+  /// Per-species window after which the species is no longer "recent"
+  /// for bucket selection (§3.1).
+  static const String announcementsRecencyResetSeconds =
+      'announcements_recency_reset_seconds';
+
+  /// Window after which we forget any per-species bookkeeping for the
+  /// current session (§3.4).
+  static const String announcementsSessionResetSeconds =
+      'announcements_session_reset_seconds';
+
+  /// Detections arriving within this window of a pending utterance get
+  /// rolled into a Bucket-H multi-species line (§3.7).
+  static const String announcementsCoalesceWindowSeconds =
+      'announcements_coalesce_window_seconds';
+
+  /// Trigger mode — `all` | `firstInSession` | `watchlist`. Default
+  /// `all`; the wizard never asks, but Advanced exposes it.
+  static const String announcementsTriggerMode = 'announcements_trigger_mode';
 }

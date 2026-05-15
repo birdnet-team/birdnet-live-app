@@ -139,6 +139,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (sheetContext) {
         return SafeArea(
           child: StatefulBuilder(
@@ -229,6 +230,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => const _ExploreHelpSheet(),
     );
   }

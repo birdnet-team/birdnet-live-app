@@ -232,6 +232,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final l10n = AppLocalizations.of(context)!;
     final value = await showModalBottomSheet<String>(
       context: context,
+      useSafeArea: true,
       builder:
           (ctx) => SafeArea(
             child: Column(
@@ -1324,6 +1325,7 @@ void _showSurveyHelp(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     builder: (_) => const _SurveyLiveHelpSheet(),
   );
 }

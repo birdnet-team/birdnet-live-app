@@ -40,6 +40,8 @@ import 'survey_alert_coordinator.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
 import '../../core/services/memory_monitor.dart';
+import '../announcements/announcements_controller.dart'
+    show AnnouncementDetection;
 import '../audio/ring_buffer.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
@@ -210,6 +212,20 @@ class SurveyController {
 
   /// Called when auto-stop triggers (max duration or battery).
   void Function(String reason)? onAutoStop;
+
+  /// Called once per inference cycle with the current cycle's full set
+  /// of filtered detections (one record per species, with that cycle's
+  /// score). Used by the Announcements feature; submitting every cycle
+  /// lets the controller pick the peak score per species, while its
+  /// streak silence and min-interval gates throttle re-announcements.
+  /// Errors thrown by the callback are swallowed so TTS hiccups never
+  /// reach the inference loop.
+  void Function(List<AnnouncementDetection> batch)? onFreshDetections;
+
+  /// Called when a fresh survey starts (at the bottom of
+  /// [startSurvey]). Used by the Announcements feature to reset
+  /// per-session bookkeeping.
+  void Function()? onSessionStarted;
 
   /// Attach (or detach) the per-survey alert coordinator. Call before
   /// [startSurvey] / [resumeSurvey] so initial detections go through the
@@ -479,6 +495,7 @@ class SurveyController {
       );
 
       _state = SurveyState.active;
+      onSessionStarted?.call();
       _notifyListeners();
 
       debugPrint(
@@ -1082,6 +1099,33 @@ class SurveyController {
             _sessionDetections.length,
           );
           _refreshRecentForNotification();
+        }
+
+        // Hand the current cycle's detections to the Announcements
+        // pipeline (no-op when the feature is disabled). We submit the
+        // full per-cycle list, not just newly-appeared species: the
+        // first sighting is often near the confidence floor, while the
+        // peak score arrives a few cycles later when the card is still
+        // on screen. The controller's per-species streak silence and
+        // global min-interval gates dedup re-submissions, and it picks
+        // the highest score per species inside the batch, so this
+        // surfaces the strongest call rather than the marginal one.
+        final cb = onFreshDetections;
+        if (cb != null && filteredDetections.isNotEmpty) {
+          final batch = <AnnouncementDetection>[
+            for (final d in filteredDetections)
+              AnnouncementDetection(
+                speciesId: d.species.scientificName,
+                displayName: d.species.commonName,
+                score: d.confidence,
+                at: d.timestamp ?? DateTime.now(),
+              ),
+          ];
+          try {
+            cb(batch);
+          } catch (_) {
+            /* Announcements errors must never escape. */
+          }
         }
       }
 

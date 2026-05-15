@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 // =============================================================================
 // Ring Buffer — Lock-free circular audio sample store
@@ -66,6 +66,47 @@ class RingBuffer {
   int get writePosition => _writePos;
 
   // -----------------------------------------------------------------------
+  // Mute window (for spoken-detection announcements)
+  // -----------------------------------------------------------------------
+
+  /// Wall-clock instant after which incoming audio is no longer
+  /// substituted with silence. `null` means the buffer is not muted.
+  ///
+  /// Used by the Announcements feature to drop microphone samples while
+  /// the device is speaking, so the TTS output can't loop back into the
+  /// inference window. See `dev/announcements.md` §10.1 and §11.
+  DateTime? _mutedUntil;
+
+  /// Clock source — overridable so tests can advance virtual time
+  /// without `Future.delayed`.
+  DateTime Function() _now = DateTime.now;
+
+  /// Whether the buffer is currently dropping incoming samples.
+  bool get isMuted {
+    final until = _mutedUntil;
+    return until != null && _now().isBefore(until);
+  }
+
+  /// Inject a custom clock for tests. The default is `DateTime.now`.
+  @visibleForTesting
+  set clock(DateTime Function() clock) => _now = clock;
+
+  /// Drop incoming samples for [duration]. Stacks: a longer-pending
+  /// mute window is preserved when a shorter one arrives, and a
+  /// longer one extends the existing window.
+  void muteFor(Duration duration) {
+    final newUntil = _now().add(duration);
+    final current = _mutedUntil;
+    if (current == null || current.isBefore(newUntil)) {
+      _mutedUntil = newUntil;
+    }
+  }
+
+  /// Cancel an active mute window immediately. Subsequent writes pass
+  /// through unmodified.
+  void unmute() => _mutedUntil = null;
+
+  // -----------------------------------------------------------------------
   // Writing
   // -----------------------------------------------------------------------
 
@@ -73,7 +114,16 @@ class RingBuffer {
   ///
   /// If the data is larger than [capacity], only the last [capacity]
   /// samples are kept.
+  ///
+  /// While the buffer is muted (see [muteFor]) every incoming sample
+  /// is replaced with `0.0` before storage. The write count still
+  /// advances, so consumers see continuous time but get silence.
   void write(Float32List samples) {
+    if (isMuted) {
+      // Substitute silence without allocating a fresh muted buffer
+      // when the caller hands us a long chunk that wraps.
+      samples = Float32List(samples.length);
+    }
     final len = samples.length;
 
     if (len >= capacity) {
@@ -101,7 +151,7 @@ class RingBuffer {
 
   /// Write a single sample. Useful for format conversion loops.
   void writeSample(double sample) {
-    _buffer[_writePos] = sample;
+    _buffer[_writePos] = isMuted ? 0.0 : sample;
     _writePos = (_writePos + 1) % capacity;
     _totalWritten++;
   }

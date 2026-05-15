@@ -34,6 +34,7 @@ import '../../explore/widgets/species_info_overlay.dart';
 import '../../live/live_session.dart';
 import '../../recording/audio_decoder.dart';
 import '../../recording/native_audio_decoder.dart';
+import '../../recording/playback_normalizer.dart';
 import '../../spectrogram/color_maps.dart';
 import '../services/detection_sharing_service.dart';
 import 'voice_memo_overlay.dart';
@@ -80,6 +81,7 @@ Future<void> showClipPlayerSheet(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
+    useSafeArea: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     builder:
         (_) => _ClipPlayerSheet(
@@ -143,7 +145,16 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
 
   Future<void> _initPlayer() async {
     try {
-      final dur = await _player.setFilePath(widget.clipPath);
+      // Resolve the playback source: if the recording is unusually quiet
+      // we play a peak-normalized temp copy so users can actually hear
+      // distant birds at normal phone volume. The original file on disk
+      // (often FLAC) is never touched — keeping its bit-exact dynamics
+      // matters for analysis and means FLAC compression isn't defeated.
+      final playbackPath = await PlaybackNormalizer.resolveSource(
+        widget.clipPath,
+      );
+      if (!mounted) return;
+      final dur = await _player.setFilePath(playbackPath);
       if (!mounted) return;
       setState(() => _duration = dur ?? Duration.zero);
       _posSub = _player.positionStream.listen((p) {

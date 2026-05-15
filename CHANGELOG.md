@@ -5,6 +5,163 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] - 2026-05-15
+
+### Changed
+
+- **Live empty-state tips polish.** The "DID YOU KNOW?" carousel under the "Listening…" placeholder now: (a) uses the same faint gray as the rest of the empty-state copy so it reads as supporting text instead of competing with the headline, (b) cycles every 15 s instead of 10 s so there's enough time to actually read each tip, and (c) sits a bit further below "Listening…" for breathing room.
+- **"Listening…" stays put.** The tip card now has a fixed height, so the "Listening…" headline above it no longer jumps around as longer or shorter tips rotate in.
+
+### Added
+
+- **Five more live tips.** The carousel now includes guidance on using an external Bluetooth or wired microphone for surveys, the foreground-service notification that keeps surveys recording in the background, keeping study design consistent across sessions at a site, the fact that AI detections can be wrong (especially for rare species — review the spectrogram), and bringing a power bank for long surveys with GPS active.
+
+## [0.14.1] - 2026-05-15
+
+### Fixed
+
+- **Session review playback no longer stops every few seconds when you tap a cluster.** The cluster auto-pause was originally intended as a "preview" — start at the first detection, pause once playback walked past the cluster's last detection (typically 3–6 s in). In practice it just made the player feel broken: users almost always want to keep listening for the call to repeat or for context. Tapping a cluster now seeks to the cluster start and lets playback continue until you pause it or the recording ends.
+- **Quiet recordings are boosted on playback in session review too.** Both the full session recording (live / point-count / survey) and the per-cluster fallback clip player now run through `PlaybackNormalizer` before being handed to `just_audio`, matching the behavior of the clip-player sheet that is opened from the survey map. Distant or low-gain clips become audible without modifying anything on disk — original FLAC files keep their lossless compression and bit-exact dynamics.
+
+## [0.14.0] - 2026-05-15
+
+### Added
+
+- **Tips carousel on the live empty state.** When a session is recording but no detections have come in yet, the otherwise-empty detection panel now rotates through ten short, localized hints — *"Hear it called out"* (announcements), *"Mind the wind"* (mic placement), *"Filter by your location"* (geo filter), *"Watch the sound"* (spectrogram), *"Tune the threshold"*, *"Star your targets"* (watchlists), *"Got a recording?"* (file analysis) and others. A new tip appears every 10 s with a soft fade; tapping the card jumps to the next one. Tips are randomized per build so opening a fresh session does not always start at #1. Helps newcomers discover features they would otherwise miss while waiting for the first detection.
+
+## [0.13.14] - 2026-05-15
+
+### Added
+
+- **Wind speed shown next to temperature on weather chips.** Both the live site-context card and the per-session weather chip in session review now read e.g. *"☀ 18.4 °C · 3.2 m/s SW"* instead of just the temperature. With an icon as the prefix the line stays compact, and wind is the second most useful field for assessing how much wind noise to expect in the recording at a glance — the same value already appears in the long-form weather formatter and detail dialog.
+- **Reset all settings (Danger zone).** New tile in the Settings → Danger zone section restores every preference to its default. Sessions, recordings, voice memos and downloaded map tiles are kept untouched — only the SharedPreferences store is cleared. The app closes after confirmation so the new defaults take effect on next launch. Useful for recovering from an accidental misconfiguration without losing data.
+- **Quiet detection clips are boosted on playback.** When a clip's peak amplitude falls below ~0.5 (e.g. distant birds, low-gain mics, FLAC-compressed clips that preserved the original dynamics) the clip player writes a peak-normalized temporary copy under the OS temp folder and plays that instead. Original recordings on disk are never modified — keeping their bit-exact dynamics matters for analysis and means FLAC compression is not defeated. The cache is bounded (≤32 entries) and pruned LRU-style on each access; the OS reclaims it on uninstall or temp purge.
+
+### Fixed
+
+- **Modal sheets no longer render under the system navigation bar / gesture inset on edge-to-edge displays.** Help sheets, the new-session picker, the device picker, the settings preset sheet, the survey/library "add" menus and the clip player all gained `useSafeArea: true`, so their bottom controls land above the navigation bar on devices that still draw a 3-button bar. Sheets that already wrapped their bodies in a `SafeArea` continue to work; this just brings the rest in line.
+
+## [0.13.13] - 2026-05-14
+
+### Fixed
+
+- **Spoken species name now matches the name shown on the detection card.** The on-screen detection list resolves each species through the bundled taxonomy and the user's species-name language (so users see *Fox Sparrow*, *Mangrove Warbler* or *Amsel* depending on locale), but the announcement pipeline was forwarding the raw audio-classifier label instead. The two label sources sometimes disagree on English wording — for example the classifier emits *"Red Fox Sparrow"* while the taxonomy entry is *"Fox Sparrow"* — which is why TTS occasionally said something different from what the screen showed. The announcements sink now applies the same taxonomy + species-locale lookup the UI uses, so speech and screen always agree (and non-English UIs hear the localized common name instead of the English classifier label).
+
+## [0.13.12] - 2026-05-14
+
+### Changed
+
+- **Announcement chatty phrasing dialed back from comically over-the-top to just informal.** Lines like *"{name} is on a roll."*, *"{name} really doesn't want to stop."*, *"Quite the performance from {name}."*, *"Petit récital de {name}."*, *"Pequeño concierto de {name}."*, *"Beeindruckende Ausdauer von {name}."* and *"Hier singt halb der Wald …"* read as a stage announcer rather than a birding companion when they fired in real surveys. Replaced with shorter, neutral observations (*"{name} is keeping it up."*, *"Sustained calling from {name}."*, *"Activité soutenue de {name}."*, *"Atividade sustentada de {name}."*, *"Anhaltend aktiv: {name}."*) across all seven UI languages. Also dropped the very British *"That'll be a {name}, I reckon."* in favor of *"Looks like {name} from here."*.
+- **A bit more variety in chatty bucket A** (clean first detections, the most-heard bucket) and chatty bucket C (sustained calling), with two new neutral variants per locale so the same handful of phrases doesn't loop within a single session. Gender-neutral phrasing rules are preserved (no inflected articles in front of `{name}` placeholders for DE/FR/ES/IT/PT/CS).
+
+## [0.13.11] - 2026-05-14
+
+### Fixed
+
+- **Announcement voice now follows the species-name language, not just the UI locale.** When the app was set to English UI but German species names, the controller still loaded the English voice and English template bundle and tried to pronounce names like *Amsel* or *Rotkehlchen* through an English synthesizer — the result sounded garbled. The resolution order is now: explicit voice override → species-name language → UI locale → platform locale, so the spoken language matches the names being read out. Changing either the species language or the voice override at runtime reconfigures the TTS engine and reloads the matching template bundle on the next detection batch, without resetting throttling state.
+
+## [0.13.10] - 2026-05-14
+
+### Changed
+
+- **"Mute capture during speech" now defaults to off.** On Android, briefly muting the active `AudioRecord` stream while the phone speaks shows up as a visible flat band in the live spectrogram. TTS audio is quiet enough that bleed-back into the built-in mic doesn't trigger spurious detections in practice, so we no longer pay the visual cost by default. Users who notice false positives during long announcements can still opt in from Advanced.
+
+### Fixed
+
+- **Spectrogram no longer hiccups at the start of every announcement.** The routing service used to call `session.setActive(true)` immediately before each utterance, which on Android transiently re-routes the live capture stream and creates a visible gap or wobble. Removed the per-utterance focus toggle — the session is already configured at init time, and `flutter_tts` requests its own audio focus (with the `assistanceAccessibility` usage we set) when it actually speaks, so the OS still ducks other audio without us perturbing the recording.
+
+## [0.13.9] - 2026-05-14
+
+### Fixed
+
+- **Announcements no longer go silent (and the spectrogram no longer hiccups) when a Bluetooth earbud is paired but the internal mic is in use.** The pre-speech HFP-downgrade check was reading the *available* input device list and unconditionally treating any listed `bluetoothSco` mic as proof that the OS had forced HFP — but paired BT earbuds always advertise an SCO input alongside their A2DP sink, regardless of which mic is actually recording. Every announcement therefore aborted with a routing failure, and the audio session was left active (jolting the record stream). The check now only flags a true downgrade when *no* non-BT input is available (no built-in mic, no wired headset mic), and aborted-routing paths deactivate the session before returning.
+
+## [0.13.8] - 2026-05-14
+
+### Changed
+
+- **Startup grace is now a uniform 5 seconds across every frequency preset.** Previously *Rare* held back announcements for 2 minutes and *Sparse* for 1 minute — by the time the app finally spoke, users were unsure whether anything was working. Five seconds is enough for the audio session to settle while still giving immediate feedback on the first detection.
+- **Speaker output is allowed by default.** The setting used to ship off (it was a wizard-set flag, but no wizard exists in the current build), which meant the app silently skipped every announcement when nothing was plugged in. The toggle still lives in *Advanced* for headphones-only setups.
+
+### Fixed
+
+- **The four advanced announcement toggles now actually do something.** *Allow speaker output*, *Mute capture during speech*, *Lower other audio*, and *Cue tone before speaking* were UI-only — flipping them had no effect on runtime behavior. They are now threaded all the way through the controller, routing service, and TTS engine: speaker mode is gated, ring-buffer muting is conditional, audio focus is requested with or without ducking, and a short system alert tone plays before each utterance when the cue is enabled.
+
+### Removed
+
+- **"What to announce" trigger-mode picker.** The picker offered *Every detection / First time per session / Watchlist only* but the controller never consulted the value — it was dead UI. Removed to keep the settings surface honest; first-in-session and watchlist filtering will return when the underlying logic exists.
+
+## [0.13.7] - 2026-05-14
+
+### Fixed
+
+- **Two-bird announcements no longer drop the framing phrase.** A coalesced batch of exactly two species used to fall back to a bare comma list ("Robin, Wren.") because the existing multi-species templates hard-coded three name slots. Added a dedicated `H_two` template bucket with balanced and chatty variants in all seven languages (e.g. "Two at once: Robin and Wren.", "Nice duet — Robin and Wren both in the mix."), so the engine now has natural framing for two, three, and four-plus bird batches.
+
+## [0.13.6] - 2026-05-14
+
+### Changed
+
+- **Announcement settings consolidated.** Removed the five "Advanced" numeric sliders (startup grace, minimum gap, max per minute, streak silence, recency reset) — these are now bundled into the **Frequency** slider, which stamps the right values for each preset. The Advanced disclosure now only holds the four audio-routing switches and the trigger-mode picker, so there is a single, obvious place to adjust cadence. Defaults unchanged: *Lower other audio* and *Cue tone before speaking* are both on out of the box.
+
+## [0.13.5] - 2026-05-14
+
+### Changed
+
+- **Announcement phrasing is livelier and more varied across all seven languages.** Bumped each bucket from 3-5 phrases to 6-8, gave Chatty mode more personality (small asides, conversational comments), and dropped the apologetic "Hard to tell" / "I'm not at all sure" tone on low-confidence detections — the user already sees the score, so phrasing now leans on lighter hedges like *"Possibly a {bird}"*, *"Sounds a bit like a {bird}"*, *"My best guess on this one"*. Multi-bird Chatty announcements (three or more species at once) now feel like a real birding companion rather than a list dump (*"Quite a chorus — Robin, Wren, and Blackbird all at once"*). The commonness phrase pool also grew from 3 to 5 variants per bin.
+- **Settings: announcement frequency is now a slider** (Rare ↔ Constant) instead of a five-button segmented control. The five labels — *Rare, Sparse, Normal, Frequent, Constant* — used to wrap and sometimes broke across multiple lines on narrower screens (one report had *"frequent"* rendering as *"fre / qu / ent"*, one letter per row). The slider is always one row, with the active preset name shown above it.
+
+## [0.13.4] - 2026-05-14
+
+### Added
+
+- **Chatty announcements now mention how common a species is in your area, the first time it's heard each session.** Phrases like *"A common bird around here"*, *"Not super common in your area"*, or *"A bit of a rarity around here — nice catch!"* are appended to the first announcement of each new species. For migrants caught well outside their annual peak at your location, a short seasonal hint follows (*"Though they're not usually around this time of year."*). All driven by the existing on-device geo-model, so it works fully offline — no extra network call, no extra battery cost. Translated for all seven UI languages.
+
+## [0.13.3] - 2026-05-14
+
+### Changed
+
+- **Announcements now pick the peak-confidence call for each species, not the first marginal detection.** Live, Point Count, and Survey submit the full per-cycle detection list to the announcement controller, which dedups by species and keeps the highest score. Streak silence and the global min-interval gate continue to do all the throttling, so this only affects *which* call is voiced when a species fires, not *how often*.
+- **Frequency presets expanded from 3 to 5 levels.** Added **Rare** (very long gaps, ~1/min cap, for multi-hour surveys) and **Constant** (zero startup grace, ~20/min cap, for demos and accessibility). Constant directly addresses the field complaint that even *Frequent* could take a while to start talking after a session began.
+- **Removed the planned first-run announcements setup wizard.** The verbosity × frequency pickers are the entire setup — five frequency steps and three verbosity steps mean users can experiment with segments and find their sweet spot without leaving the screen.
+- **Announcements section moved up in Settings**, now directly after Spectrogram (was below Privacy). It is the only setting users typically revisit mid-session, so discoverability matters more than category alphabetization.
+
+### Fixed
+
+- **Two-species announcement no longer drops the third slot.** A batch of exactly two species used to render through a `{name1}, {name2}, and {name3}` template with `name3` silently empty (e.g. *"Robin, Jay, and ."*). The phrasing engine now early-returns a plain comma list (*"Robin, Jay."*) for two-name batches, locale-agnostic.
+
+## [0.13.2] - 2026-05-14
+
+### Added
+
+- **Spoken detections now fire from Live, Point Count, and Survey.** With the master toggle in **Settings → Announcements** on, the announcement pipeline (verbosity / frequency presets, throttling, anti-repeat, ring-buffer mute) is wired into all three live capture modes. Each mode emits an announcement batch only for species that just appeared in the on-screen detection list, and resets per-session throttling state when a new session starts. The alert sink is lazy: no TTS plugin or audio-session work happens at app start, only on the first batch while the feature is enabled, so users who never opt in pay zero startup cost.
+
+## [0.13.0] - 2026-05-14
+
+Internal scaffolding for spoken detection announcements (TTS) shipping
+later in this version. No user-visible changes yet — the master toggle
+defaults to off and the feature has no UI surface in this commit.
+
+### Added
+
+- **Foundations for spoken detection announcements.** Pure-Dart
+  phrasing engine (bucket router for confidence × recency × streak,
+  3-slot anti-repeat memory, locale fallback chain), JSON template
+  bundles for English and German under `assets/announcements/`,
+  preference keys, verbosity / frequency preset enums, and Riverpod
+  providers. Setting a frequency preset stamps the matching numeric
+  profile (startup grace, min interval, max-per-minute, streak
+  silence, recency reset, session reset, coalesce window) into the
+  Advanced prefs in one transaction so the engine and the UI can
+  never disagree.
+- **Gender-safe German phrasing rule.** Bird names in German (and
+  several other locales) are gendered (`der Zaunkönig`, `die Amsel`,
+  `das Rotkehlchen`) and we do not carry a gender field per species.
+  All German announcement templates have been authored without a
+  determiner directly in front of `{name}`; a unit test fails the
+  build if a regression slips one in. The rule and safe phrasing
+  patterns are documented in `dev/announcements.md` §3.8.1 for
+  future translators.
+
 ## [0.12.3] - 2026-05-22
 
 ### Changed

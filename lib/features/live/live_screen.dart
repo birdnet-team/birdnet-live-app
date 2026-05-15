@@ -682,6 +682,7 @@ void _showLiveHelp(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     builder:
         (_) => AppHelpBottomSheet(
           title: l10n.liveScreenHelpTitle,

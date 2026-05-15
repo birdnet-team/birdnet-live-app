@@ -351,6 +351,12 @@ class _WeatherRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final cond = weatherConditionFromCode(weather.weatherCode);
     final tempLabel = formatTemperature(weather.temperatureC);
+    final windLabel =
+        weather.windSpeedMs != null
+            ? formatWind(weather.windSpeedMs, weather.windDirectionDeg)
+            : null;
+    final inlineLabel =
+        windLabel == null ? tempLabel : '$tempLabel · $windLabel';
 
     return InkWell(
       onTap: () => _showDetails(context, l10n, cond),
@@ -367,7 +373,7 @@ class _WeatherRow extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              tempLabel,
+              inlineLabel,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withAlpha(200),
               ),

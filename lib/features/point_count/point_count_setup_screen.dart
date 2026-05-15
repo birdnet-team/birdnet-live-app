@@ -182,6 +182,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder:
           (_) => AppHelpBottomSheet(
             title: l10n.pointCountSetupHelpTitle,
