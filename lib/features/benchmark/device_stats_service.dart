@@ -52,6 +52,7 @@ class DeviceStatsDelta {
     this.avgVoltageMv,
     this.avgPowerMw,
     this.cpuUsagePercent,
+    this.thermalStatusBefore,
     this.thermalStatus,
     this.batteryLevel,
     this.socModel,
@@ -61,19 +62,46 @@ class DeviceStatsDelta {
   final int? avgVoltageMv;
   final double? avgPowerMw;
   final double? cpuUsagePercent;
+  /// Thermal status at the start of the measurement window.
+  final int? thermalStatusBefore;
+  /// Thermal status at the end of the measurement window.
   final int? thermalStatus;
   final int? batteryLevel;
   final String? socModel;
 
+  /// Shows start → end if thermal changed, otherwise just the end value.
+  String get thermalTrendLabel {
+    final before = thermalStatusBefore;
+    final after = thermalStatus;
+    final afterLabel = _statusLabel(after);
+    if (before != null && after != null && before != after) {
+      return '${_statusLabel(before)} → $afterLabel';
+    }
+    return afterLabel;
+  }
+
+  static String _statusLabel(int? s) => switch (s) {
+        -1 => 'N/A',
+        0  => 'Cool',
+        1  => 'Light',
+        2  => 'Moderate',
+        3  => 'Severe',
+        4  => 'Critical',
+        5  => 'Emergency',
+        6  => 'Shutdown',
+        _  => 'N/A',
+      };
+
   String get thermalLabel {
     switch (thermalStatus) {
-      case 0: return 'None';
-      case 1: return 'Light';
-      case 2: return 'Moderate';
-      case 3: return 'Severe';
-      case 4: return 'Critical';
-      case 5: return 'Emergency';
-      case 6: return 'Shutdown';
+      case -1: return 'N/A';
+      case 0:  return 'Cool';
+      case 1:  return 'Light';
+      case 2:  return 'Moderate';
+      case 3:  return 'Severe';
+      case 4:  return 'Critical';
+      case 5:  return 'Emergency';
+      case 6:  return 'Shutdown';
       default: return 'N/A';
     }
   }
@@ -161,6 +189,7 @@ class DeviceStatsService {
       avgVoltageMv: avgVoltage,
       avgPowerMw: avgPower,
       cpuUsagePercent: cpuPercent,
+      thermalStatusBefore: before.thermalStatus,
       thermalStatus: after.thermalStatus,
       batteryLevel: after.batteryLevel,
       socModel: after.socModel,

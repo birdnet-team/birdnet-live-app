@@ -536,7 +536,7 @@ class _RunCard extends StatelessWidget {
                     '${stats.avgPowerMw!.toStringAsFixed(0)} mW',
                     highlight: true, theme: theme, cs: cs),
               if (stats.thermalStatus != null && stats.thermalStatus! >= 0)
-                _Row('Thermal', stats.thermalLabel,
+                _Row('Thermal', stats.thermalTrendLabel,
                     theme: theme,
                     cs: cs,
                     valueColor: _thermalColor(cs, stats.thermalStatus!)),
