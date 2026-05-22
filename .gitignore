@@ -10,6 +10,20 @@ tools/.cache/
 tools/data/
 lib/l10n/*.dart
 
+# Benchmark output (generated — not source)
+/benchmarks/
+/benchmark_results_*
+docs/benchmark_results_*
+*.trace
+
+# Python tooling cache
+tools/__pycache__/
+tools/list_tables.py
+tools/check_energy_tables.py
+tools/check_pd_tpu.py
+tools/capture_npu_trace.py
+tools/powerstats_diff.py
+
 # IDE
 .idea/
 *.iml
