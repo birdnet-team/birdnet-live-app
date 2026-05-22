@@ -9,7 +9,7 @@ Release process and distribution.
 Version is set in `pubspec.yaml`:
 
 ```yaml
-version: 0.15.3+161
+version: 0.15.4+162
 ```
 
 ## Checklist
