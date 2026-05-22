@@ -49,7 +49,17 @@ class AppLaunchTargetService {
   Stream<AppLaunchTarget> watchTargets() {
     return _eventChannel
         .receiveBroadcastStream()
-        .handleError((Object _, StackTrace stackTrace) {})
+        .transform<dynamic>(
+          StreamTransformer<dynamic, dynamic>.fromHandlers(
+            handleData: (event, sink) => sink.add(event),
+            handleError: (Object error, StackTrace stackTrace, sink) {
+              if (error is MissingPluginException) {
+                return;
+              }
+              sink.addError(error, stackTrace);
+            },
+          ),
+        )
         .map((dynamic event) => parseAppLaunchTarget(event?.toString()))
         .transform<AppLaunchTarget>(
           StreamTransformer<AppLaunchTarget?, AppLaunchTarget>.fromHandlers(
