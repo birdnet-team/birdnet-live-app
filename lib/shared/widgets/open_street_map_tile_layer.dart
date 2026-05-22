@@ -99,6 +99,11 @@ Future<int> prefetchOsmTile(String url) async {
   return 0;
 }
 
+/// Clears all cached OpenStreetMap tiles from the app's dedicated tile cache.
+Future<void> clearOpenStreetMapTileCache() async {
+  await _OsmTileCacheManager().emptyCache();
+}
+
 // ---------------------------------------------------------------------------
 // _CachedNetworkTileProvider
 // ---------------------------------------------------------------------------

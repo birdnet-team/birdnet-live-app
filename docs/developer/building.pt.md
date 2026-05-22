@@ -18,6 +18,15 @@ flutter build appbundle --release
 ```
 
 The release APK is at `build/app/outputs/flutter-apk/app-release.apk`.
+It is self-contained for sideloading and includes the ONNX models in `flutter_assets`.
+
+For Play Store releases, use the app bundle. The `.onnx` files are moved into the install-time `models_pack` asset pack during AAB builds so the base module stays below Google Play's size limit while the installed app still works offline.
+
+The local release helper wraps the Play Store build and copies the AAB, mapping file, symbols, and release-note stubs into `release/<version>/`:
+
+```bash
+dart dev/build_release.dart
+```
 
 ## iOS
 
@@ -40,5 +49,6 @@ flutter build windows --release
 
 ## Notes
 
-- The ONNX model (~152 MB) is bundled as a Flutter asset. APK/IPA sizes will be large.
-- ONNX Runtime native libraries are platform-specific and handled by the `onnxruntime` package.
+- The two ONNX models are tracked with Git LFS. Run `git lfs pull` before building from a fresh clone.
+- APK builds keep the models in `flutter_assets`; AAB builds ship them via the install-time `models_pack` asset pack.
+- ONNX Runtime native libraries are platform-specific and handled by the `flutter_onnxruntime` package.

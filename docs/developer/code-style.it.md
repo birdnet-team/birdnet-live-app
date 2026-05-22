@@ -28,7 +28,7 @@ Each Dart file has a `// ===...` block comment explaining purpose, usage, and de
 
 ## Localization
 
-- All user-facing strings go in `lib/l10n/app_en.arb` (English) and `app_de.arb` (German).
+- All user-facing strings go in every UI locale ARB file: `app_en.arb`, `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, and `app_pt.arb`.
 - Use `l10n.keyName` in widgets.
 - Run `flutter gen-l10n` to regenerate (automatic on build).
 

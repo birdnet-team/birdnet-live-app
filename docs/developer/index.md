@@ -6,13 +6,14 @@ Guide for contributing to BirdNET Live development.
 
 | Component | Technology |
 |-----------|-----------|
-| **Framework** | Flutter 3.6.2+ / Dart ^3.6.2 |
-| **State Management** | flutter_riverpod 2.6.1 |
-| **Inference** | onnxruntime 1.4.1 (on-device ONNX) |
-| **Location** | geolocator 13.0.2 |
-| **Audio** | just_audio (playback), record (capture) |
-| **Persistence** | shared_preferences |
-| **Images** | cached_network_image 3.4.1 |
+| **Framework** | Flutter 3.27+ / Dart 3.7+ |
+| **State Management** | flutter_riverpod 3.3.1 |
+| **Inference** | flutter_onnxruntime 1.7.0 (on-device ONNX) |
+| **Location** | geolocator 14.0.2 |
+| **Audio** | record, just_audio, fftea, flutter_tts |
+| **Persistence** | shared_preferences, JSON session files |
+| **Maps & Context** | flutter_map, OpenStreetMap tiles, Nominatim, Open-Meteo |
+| **Images & Species Data** | bundled species images/data, http, flutter_cache_manager |
 
 ## Project Structure
 
@@ -35,7 +36,7 @@ lib/
     home/        # Home screen / main menu
     onboarding/  # Intro carousel + terms gate
     about/       # Credits, links, legal
-  l10n/          # ARB localization files (EN, DE)
+  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt)
 ```
 
 ## Getting Started

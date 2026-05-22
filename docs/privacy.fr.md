@@ -9,7 +9,7 @@ L'analyse audio et l'identification des espèces aviaires s'effectuent **intégr
 
 ## Collecte de Données
 L'application **ne** collecte **aucune** donnée personnelle, analyse ou télémétrie.
-- Fichiers audios, bases de données SQLite, GPS et préférences sont stockées en local.
+- Fichiers audio, métadonnées de session JSON, GPS et préférences sont stockés localement.
 - Données des espèces sont intégrées hors-ligne.
 - Quand **Autoriser la requête météo** est actif, chaque session enregistre localement un instantané de température, précipitations, vent, nuages et code météo aux coordonnées de la session.
 
@@ -27,10 +27,10 @@ Les requêtes de tuiles sont des HTTPS GET standard vers `tile.openstreetmap.org
 
 **Rétention :** aucun de ces services externes ne stocke vos données. Les valeurs renvoyées (nom de lieu, instantané météo) ne vivent que dans l'enregistrement local de la session et ne voyagent que dans les fichiers d'export que vous produisez explicitement.
 
-**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Réglages → Confidentialité**. Pour effacer aussi les noms de lieu et instantanés météo historiques, utilisez **Réglages → Zone dangereuse → Effacer toutes les données**.
+**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Réglages → Confidentialité**. Pour effacer aussi les noms de lieu et instantanés météo historiques, supprimez les sessions concernées dans Session Library ou utilisez **Réglages → Zone dangereuse → Effacer toutes les données**.
 
 ## Suppression et Exportation
-L'utilisateur peut effacer l'ensemble de ses données via **Paramètres > Zone de Danger**. Sous **Réglages → Exporter → Formats**, vous pouvez cocher n'importe quelle combinaison de formats (Raven Selection Table, CSV, JSON, GPX) ; ils sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML optionnel.
+Vous pouvez supprimer des sessions individuelles dans Session Library. Pour effacer depuis l'app les sessions locales, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences et caches de BirdNET Live, utilisez **Réglages → Zone dangereuse → Effacer toutes les données**. Vous pouvez aussi effacer le stockage de BirdNET Live dans les réglages du système ou désinstaller l'app. Sous **Réglages → Exporter → Formats**, vous pouvez cocher n'importe quelle combinaison de formats (Raven Selection Table, CSV, JSON, GPX) ; ils sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML optionnel.
 
 ## Contact
 [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)

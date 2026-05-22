@@ -22,7 +22,7 @@ Alle derzeit in der App angezeigten Einstellungen sind auf die gleiche Weise gru
 
 ### [Live-Modus](live-mode.md)
 
-Kontinuierliches Zuhören mit dem Mikrofon, Live-Erkennungen, dem Spektrogramm und der Sitzungsinfoleiste.
+Kontinuierliches Zuhören mit dem Mikrofon, Live-Detektionen, dem Spektrogramm und der Sitzungsinfoleiste.
 
 ### [Erkunden](explore.md)
 

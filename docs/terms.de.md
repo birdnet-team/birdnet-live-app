@@ -6,7 +6,7 @@ Dieses Dokument regelt die Nutzung der Anwendung BirdNET Live und der darin enth
 
 BirdNET Live ist eine mobile Anwendung zur Echtzeit-Bestimmung von Vogelarten mit Hilfe von On-Device-Deep-Learning. Es enthält die folgenden Modelle:
 
-- **BirdNET+ V3.0-preview3** — ein Audio-Klassifikator zur Erkennung von Vogelstimmen.
+- **BirdNET+ V3.0-preview3** — ein Audio-Klassifikator zur Detektion von Vogelstimmen.
 - **BirdNET Geomodel V3.0.1** — ein Modell zur Vorhersage des räumlich-zeitlichen Vorkommens von Arten.
 
 BirdNET basiert auf:

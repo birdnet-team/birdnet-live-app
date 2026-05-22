@@ -55,9 +55,9 @@ Der Startbildschirm ist der Hauptknotenpunkt.
 
 BirdNET Live speichert abgeschlossene Sitzungen automatisch und öffnet sie in der Sitzungsüberprüfung, nachdem die Verarbeitung gestoppt wurde.
 
-- Live-Sitzungen speichern Erkennungen und je nach Ihren Einstellungen Aufnahmen oder Clips.
+- Live-Sitzungen speichern Detektionen und je nach Ihren Einstellungen Aufnahmen oder Clips.
 - Punktezählsitzungen werden als zeitgesteuerte Punktezählsitzungen gespeichert.
-- Umfragesitzungen speichern die Route, Erkennungen und zugehörige Metadaten.
+- Umfragesitzungen speichern die Route, Detektionen und zugehörige Metadaten.
 - Die Ergebnisse der Dateianalyse werden in eine überprüfbare Sitzung umgewandelt.
 
 ## Empfohlene nächste Seiten

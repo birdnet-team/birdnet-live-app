@@ -10,11 +10,11 @@ artifacts that go into the `release/` folder.
 number doubles as the build number (`+`-suffix), so a typical bump looks like:
 
 ```yaml
-version: 0.11.1+111
+version: 0.15.3+161
 ```
 
-After editing, propagate the version to the README badge and any other
-generated references:
+After editing, propagate the version to the README badge, MkDocs home badges,
+and any other generated references:
 
 ```pwsh
 dart dev/sync_version.dart
@@ -25,9 +25,11 @@ dart dev/sync_version.dart
 1. Update `CHANGELOG.md` — every user-visible change goes under the new
    version heading, grouped into Added / Changed / Fixed.
 2. Bump `pubspec.yaml` and run `dart dev/sync_version.dart`.
-3. `flutter analyze` — must report **No issues found!**.
-4. `flutter test` — full suite must pass.
-5. Sanity-check the app on a physical Android device with `flutter run
+3. Confirm the Git LFS model files are present with `git lfs pull` on fresh
+  checkouts or release machines.
+4. `flutter analyze` — must report **No issues found!**.
+5. `flutter test` — full suite must pass.
+6. Sanity-check the app on a physical Android device with `flutter run
    --release` (the release build behaves differently from debug for ONNX
    Runtime memory mapping and ProGuard).
 
@@ -79,7 +81,7 @@ Copy everything for the release into a versioned folder under `release/`
 (also gitignored except for `.gitignore` itself):
 
 ```
-release/0.11.1/
+release/0.15.2/
   app-release.aab
   app-release.apk          # optional, for direct sideload
   mapping.txt
@@ -123,8 +125,8 @@ For first-time upload to a new track, expect a 1–2 hour review delay.
 After the release is live (or queued for review), tag the commit:
 
 ```pwsh
-git tag v0.11.1
-git push origin v0.11.1
+git tag v0.15.2
+git push origin v0.15.2
 ```
 
 Tags are the easiest way to map a Play Console version code back to the

@@ -36,6 +36,7 @@ class DetectionList extends StatelessWidget {
     required this.isActive,
     this.onDetectionTap,
     this.actionsBuilder,
+    this.showTips = false,
   });
 
   /// Detections to display (newest first).
@@ -46,6 +47,9 @@ class DetectionList extends StatelessWidget {
 
   /// Called when a detection tile is tapped.
   final void Function(DetectionRecord detection)? onDetectionTap;
+
+  /// Whether the empty detection panel may show rotating Live-mode tips.
+  final bool showTips;
 
   /// Optional per-detection action contract. When non-null and
   /// non-empty, each tile gets an inline confirm checkmark (if
@@ -58,7 +62,7 @@ class DetectionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (detections.isEmpty) {
-      return _EmptyState(isActive: isActive);
+      return _EmptyState(isActive: isActive, showTips: showTips);
     }
 
     return ListView.builder(
@@ -336,13 +340,14 @@ class DetectionTile extends ConsumerWidget {
 
 /// Empty state shown when no detections are available.
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.isActive});
+  const _EmptyState({required this.isActive, required this.showTips});
 
   final bool isActive;
+  final bool showTips;
 
   @override
   Widget build(BuildContext context) {
-    if (!isActive) {
+    if (showTips && !isActive) {
       return const Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(vertical: 16),

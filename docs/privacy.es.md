@@ -9,7 +9,7 @@ Todo el análisis de audio ocurre **completamente en su dispositivo** mediante e
 
 ## Recopilación de datos
 BirdNET Live **no** recopila, transmite ni comparte datos personales o telemetría.
-- Audio, metadatos, GPS y configuraciones se guardan **localmente**.
+- Audio, metadatos, GPS y configuraciones se guardan **localmente** en archivos y preferencias de la app.
 - Imágenes y datos taxonómicos de las especies están integrados de forma offline.
 - Cuando **Permitir consulta meteorológica** está activo, cada sesión guarda localmente una instantánea de temperatura, precipitación, viento, nubosidad y código del tiempo en sus coordenadas.
 
@@ -27,11 +27,11 @@ Las solicitudes de mosaicos son HTTPS GET estándar a `tile.openstreetmap.org`; 
 
 **Retención:** ninguno de estos servicios externos almacena datos del usuario. Los valores devueltos (nombre del lugar, instantánea meteorológica) viven sólo en el registro local de la sesión y sólo viajan a los archivos de exportación que usted produzca explícitamente.
 
-**Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Para borrar también los nombres de lugar e instantáneas meteorológicas históricos, use **Ajustes → Zona de Peligro → Borrar todos los datos**.
+**Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Para borrar nombres de lugar e instantáneas meteorológicas históricos, elimine esas sesiones en Session Library o use **Ajustes → Zona de peligro → Borrar todos los datos**.
 
 ## GPS y Exportación de Datos
 El GPS se usa para filtros y encuestas de especies. Bajo **Ajustes → Exportar → Formatos** puede marcar cualquier combinación de formatos (Raven Selection Table, CSV, JSON, GPX) y los exportados se agruparán en un único ZIP junto con los clips de audio y el informe HTML opcional. Los datos no se suben a la nube.
-Usted puede borrar todos sus datos permanentemente desde la sección **Configuración > Zona de Peligro**.
+Puede eliminar sesiones individuales desde Session Library. Para borrar dentro de la app sesiones locales, grabaciones, notas de voz, listas de especies personalizadas, preferencias y cachés de BirdNET Live, use **Ajustes → Zona de peligro → Borrar todos los datos**. También puede borrar el almacenamiento de BirdNET Live en los ajustes del sistema o desinstalar la app.
 
 ## Contacto
 [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu)

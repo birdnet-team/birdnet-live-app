@@ -27,16 +27,16 @@ Zeigt wissenschaftliche Namen unterhalb gebräuchlicher Namen in der App an.
 
 ### Zeitstempel-Anzeige
 
-Bestimmt, wie Zeitangaben einzelner Erkennungen in der Sitzungsübersicht erscheinen.
+Bestimmt, wie Zeitangaben einzelner Detektionen in der Sitzungsübersicht erscheinen.
 
 - **Relativ** zeigt den Versatz seit Aufnahmebeginn, z. B. `00:12:34`. Am besten zum Durchsehen einer einzelnen Sitzung und zur Synchronisierung mit dem Spektrogramm.
-- **Absolut** zeigt die lokale Uhrzeit der Erkennung, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder gleichzeitigen Aufnahmen.
+- **Absolut** zeigt die lokale Uhrzeit der Detektion, z. B. `08:42:17`. Am besten zum Abgleich mit Feldnotizen, Wetterprotokollen oder gleichzeitigen Aufnahmen.
 
-Liegt eine Erkennung an einem anderen Kalendertag als der Sitzungsbeginn (z. B. bei einer Nachtaufnahme), wird der absoluten Zeit ein `+1d`-Suffix angehängt, damit man die morgige Morgendämmerung nicht mit der heutigen verwechselt.
+Liegt eine Detektion an einem anderen Kalendertag als der Sitzungsbeginn (z. B. bei einer Nachtaufnahme), wird der absoluten Zeit ein `+1d`-Suffix angehängt, damit man die morgige Morgendämmerung nicht mit der heutigen verwechselt.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Erkennungslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
+Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
 
-Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Erkennungslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
+Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden in Zeitstempeln anzeigen**. Deaktiviere ihn, wenn du das kompaktere `08:42` dem `08:42:17` vorziehst — hilfreich beim Überfliegen langer Detektionslisten. Relative Versatzangaben zeigen immer Sekunden, weil zur Synchronisation mit dem Spektrogramm Sub-Minuten-Genauigkeit nötig ist.
 
 Speicherung und Export verwenden unabhängig von dieser Einstellung immer UTC, sodass die Auswahl niemals die Daten verändert — nur deren Darstellung.
 
@@ -64,7 +64,7 @@ Steuert die Länge des Analysefensters.
 
 ### Vertrauensschwelle
 
-Legt fest, wie konservativ Erkennungen sein sollen.
+Legt fest, wie konservativ Detektionen sein sollen.
 
 ### Empfindlichkeit
 
@@ -105,12 +105,12 @@ Wendet eine logarithmische Skalierung auf das Spektrogramm an, um das visuelle A
 ### Modus
 
 - **Vollständig** – Speichern Sie die gesamte Aufnahme
-- **Nur Erkennungen** – Clips rund um Erkennungen speichern
+- **Nur Detektionen** – Clips rund um Detektionen speichern
 - **Aus** – keine Audioaufnahme
 
 ### Clip-Kontext
 
-Wenn **Nur Erkennungen** aktiv ist, zeigt die App einen einzelnen **Clip-Kontext**-Schieberegler (0–5 s) an, der festlegt, wie viel Audio auf **beiden Seiten** jeder Erkennung erhalten bleibt. Jeder Clip ist „Analysefenster + 2 × Clip-Kontext“ lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 Sekunden und dem Standardkontext von 1 Sekunde 5 Sekunden lang ist. Wenn Sie den Kontext auf 2 s festlegen, erhalten Sie einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Platz für visuelle Inspektions- oder externe Überprüfungstools auf Kosten von Speicherplatz. 0 speichert nur das analysierte Fenster selbst.
+Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen **Clip-Kontext**-Schieberegler (0–5 s) an, der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Jeder Clip ist „Analysefenster + 2 × Clip-Kontext“ lang, sodass der gespeicherte Clip bei einem Analysefenster von 3 Sekunden und dem Standardkontext von 1 Sekunde 5 Sekunden lang ist. Wenn Sie den Kontext auf 2 s festlegen, erhalten Sie einen 7 s langen Clip (2 s Pre-Roll + 3 s analysiertes Audio + 2 s Post-Roll). Größere Werte geben Ihnen mehr Platz für visuelle Inspektions- oder externe Überprüfungstools auf Kosten von Speicherplatz. 0 speichert nur das analysierte Fenster selbst.
 
 ### Format
 
@@ -181,7 +181,9 @@ Zeigt die Onboarding-Sequenz beim nächsten Start der App erneut an.
 
 ### Alle Daten löschen
 
-Öffnet einen Bestätigungsablauf zum dauerhaften Entfernen gespeicherter App-Daten.
+Löscht dauerhaft Sessions, Detektionen, Aufnahmen, Sprachnotizen, eigene Artenlisten, gespeicherte Einstellungen sowie zwischengespeicherte Karten-, Orts-, Wetter-, Wiedergabe-, Review- und Teilen-Daten. Der Bestätigungsdialog verlangt die Eingabe von `DELETE` und schließt danach die App, damit der nächste Start aus einem sauberen lokalen Zustand erfolgt.
+
+Verwenden Sie dies, bevor Sie ein Gerät an eine andere beobachtende Person weitergeben, ein Feldtelefon außer Dienst nehmen oder ortsbezogene Historie aus der App entfernen. Exportieren Sie zuerst alles, was Sie behalten möchten; diese Aktion kann nicht rückgängig gemacht werden.
 
 ## Workflowspezifische Parameter außerhalb der Einstellungen
 

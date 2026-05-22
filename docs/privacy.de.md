@@ -22,10 +22,10 @@ BirdNET Live sammelt, überträgt oder teilt **keine** personenbezogenen Daten. 
 | Datentyp | Zweck | Speicherort |
 |-----------|---------|---------|
 | Audioaufnahmen | Vogelbestimmung, Wiedergabe, Export | Lokale Dateien |
-| Erkennungsergebnisse | Arten, Konfidenz, Zeitstempel | SQLite-Datenbank |
-| GPS-Koordinaten | Geotagging von Erkennungen, Survey-Tracks, Geo-Modell-Vorhersagen | SQLite-Datenbank |
-| Sitzungs-Metadaten | Sitzungsverlauf, Überprüfung, Export | SQLite-Datenbank |
-| Wetter-Snapshot (optional) | Einmalige Aufnahme von Temperatur, Niederschlag, Wind, Bewölkung und Wettercode pro Sitzung, wenn **Wetterabfrage erlauben** aktiv ist | SQLite-Datenbank |
+| Detektionsergebnisse | Arten, Konfidenz, Zeitstempel | Lokale JSON-Sitzungsdateien |
+| GPS-Koordinaten | Geotagging von Detektionen, Survey-Tracks, Geo-Modell-Vorhersagen | Lokale JSON-Sitzungsdateien |
+| Sitzungs-Metadaten | Sitzungsverlauf, Überprüfung, Export | Lokale JSON-Sitzungsdateien |
+| Wetter-Snapshot (optional) | Einmalige Aufnahme von Temperatur, Niederschlag, Wind, Bewölkung und Wettercode pro Sitzung, wenn **Wetterabfrage erlauben** aktiv ist | Lokale JSON-Sitzungsdateien |
 | App-Einstellungen | Benutzereinstellungen | SharedPreferences |
 
 ### Gebündelte Offline-Daten
@@ -50,7 +50,7 @@ Wetteranfragen senden Lat/Lon der Sitzung und den Endzeitstempel über HTTPS an 
 
 **Aufbewahrung:** Keiner der oben genannten Drittanbieterdienste wird kontaktiert, um Nutzerdaten *hochzuladen* oder zu *speichern*. Rückgabewerte (Ortsname, Wetter-Snapshot) liegen ausschließlich im lokalen Sitzungsdatensatz auf Ihrem Gerät und gelangen nur in Exportdateien, die Sie ausdrücklich erzeugen.
 
-**Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Möchten Sie auch diese historischen Daten entfernen, nutzen Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**.
+**Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Um diese historischen Daten zu entfernen, löschen Sie die betroffenen Sitzungen in der Session Library oder verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**.
 
 **Es werden keine weiteren Netzwerkanfragen gestellt.** Die App funktioniert vollständig offline.
 
@@ -59,7 +59,7 @@ Wetteranfragen senden Lat/Lon der Sitzung und den Endzeitstempel über HTTPS an 
 Die App verwendet den GPS-Standort für:
 
 - **Artenfilterung** — Vorhersage, welche Arten an Ihrem Standort wahrscheinlich sind.
-- **Survey-Modus** — Aufzeichnung von GPS-Tracks und Geotagging von Erkennungen entlang eines Transekts.
+- **Survey-Modus** — Aufzeichnung von GPS-Tracks und Geotagging von Detektionen entlang eines Transekts.
 - **Point-Count-Modus** — Markierung des Beobachtungsorts.
 
 GPS-Daten werden lokal gespeichert und nur dann in Exporte einbezogen, wenn Sie eine Sitzung ausdrücklich teilen oder exportieren. Der Standortzugriff erfordert Ihre Erlaubnis und kann jederzeit über die Systemeinstellungen widerrufen werden.
@@ -70,7 +70,7 @@ Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection
 
 ## Datenlöschung
 
-Alle App-Daten (Sitzungen, Aufnahmen, Einstellungen) können über **Einstellungen > Gefahrenzone > Alle Daten löschen** gelöscht werden. Die Deinstallation der App entfernt alle gespeicherten Daten.
+Einzelne Sitzungen und ihre Aufnahmen können in der Session Library gelöscht werden. Um lokale BirdNET-Live-Sessions, Aufnahmen, Sprachnotizen, eigene Artenlisten, Einstellungen und Caches direkt in der App zu löschen, verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**. Alternativ können Sie den BirdNET-Live-App-Speicher in den Systemeinstellungen löschen oder die App deinstallieren.
 
 ## Kontakt
 

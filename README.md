@@ -6,13 +6,13 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/flutter-%3E%3D3.0-blue.svg" alt="Flutter">
+   <img src="https://img.shields.io/badge/flutter-%3E%3D3.27-blue.svg" alt="Flutter >=3.27">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
   <img src="https://img.shields.io/badge/version-0.15.3-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
-The bioacoustics companion app for field researchers, conservationists, and birders. Identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
+**Professional bioacoustics in your pocket.** Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -48,7 +48,7 @@ The bioacoustics companion app for field researchers, conservationists, and bird
 - **On-device inference** — BirdNET+ model (5,250 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — Full English and German UI
+- **Localization** — UI translations for English, German, Czech, Spanish, French, Italian, and Portuguese
 
 ## Install on Android
 
@@ -60,7 +60,8 @@ BirdNET Live is available as a signed APK for sideloading. Download the latest r
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (>= 3.0)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+ with Dart 3.7+)
+- [Git LFS](https://git-lfs.com/) for the large ONNX model files
 - [Android Studio](https://developer.android.com/studio) (for Android SDK & emulator)
 - Xcode (macOS only, for iOS development)
 
@@ -69,9 +70,13 @@ BirdNET Live is available as a signed APK for sideloading. Download the latest r
 ```bash
 git clone https://github.com/birdnet-team/birdnet-live-app.git
 cd birdnet-live-app
+git lfs install
+git lfs pull
 flutter pub get
 flutter gen-l10n
 ```
+
+Do not skip the LFS step on a fresh clone. The two `.onnx` model files under `assets/models/` are stored with Git LFS; without the real files the app may build from pointer files but model loading will fail at runtime. You only need to run the Python model build pipeline in `dev/` when updating or rebuilding the models themselves.
 
 ### Verify
 
@@ -102,7 +107,7 @@ flutter analyze   # Check for issues
    ```bash
    flutter build apk --release
    ```
-   The APK will be at `build/app/outputs/flutter-apk/app-release.apk`. Transfer it to your phone and install.
+   The APK will be at `build/app/outputs/flutter-apk/app-release.apk`. It is self-contained for sideloading and includes the ONNX models. Transfer it to your phone and install.
 
 ### Android (Wireless — Windows)
 
@@ -164,14 +169,23 @@ lib/
   core/           # Constants, theme, utilities, extensions
   features/       # Feature modules (live, point_count, survey, file_analysis,
                   #   audio, inference, explore, history, settings, home, about)
-  l10n/           # Localization ARB files (en, de)
+   l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt)
   shared/         # Shared models, providers, services, widgets
                   #   (e.g. ContentWidthConstraint for tablet max-width)
 
 docs/             # MkDocs source for GitHub Pages documentation
-assets/           # App assets (models, species data, images, fonts)
+assets/           # App assets (LFS ONNX models, species data, images, fonts)
 test/             # Tests mirroring lib/ structure
 ```
+
+## Model Assets
+
+BirdNET Live runs fully on-device, so the model assets are part of the checkout/build rather than downloaded by the app at runtime. The large `.onnx` files in `assets/models/` are tracked with Git LFS:
+
+- `BirdNET+_V3.0-preview3_Global_5K-pruned_FP16.onnx` — audio classifier (~152 MB)
+- `BirdNET+_Geomodel_V3.0.1_Global_5K-pruned_FP16.onnx` — location-based species model (~6 MB)
+
+Release APKs for sideloading keep those models inside `flutter_assets`. Play Store App Bundles move the `.onnx` files into the install-time `models_pack` asset pack so the base module stays below Play's size limit while still working offline after installation.
 
 ## Development
 

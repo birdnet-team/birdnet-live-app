@@ -248,6 +248,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                   color: faint,
                                   fontWeight: FontWeight.w600,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -255,6 +257,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: fainter,
                                 ),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

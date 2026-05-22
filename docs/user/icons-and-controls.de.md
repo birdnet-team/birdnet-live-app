@@ -80,9 +80,9 @@ Diese Steuerelemente werden auf dem Bildschirm „Sitzungsüberprüfung“ verwe
 
 Die Live-Infoleiste verwendet :material-information-outline: gefolgt von kompakten Beschriftungen wie:
 
-- „Jetzt“ – Erkennungen, die derzeit in der Live-Liste sichtbar sind
+- „Jetzt“ – Detektionen, die derzeit in der Live-Liste sichtbar sind
 - „spp“ – einzigartige Artenzahl
-- „det“ – Gesamtzahl der Erkennungen
+- „det“ – Gesamtzahl der Detektionen
 - Dauer und geschätzte Aufnahmegröße, wenn die Aufnahme aktiv ist
 
 ### Punkteanzahl

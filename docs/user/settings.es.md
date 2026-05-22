@@ -181,7 +181,9 @@ Muestra la secuencia de incorporación nuevamente la próxima vez que se inicie 
 
 ### Borrar todos los datos
 
-Abre un flujo de confirmación para eliminar permanentemente los datos almacenados de la aplicación.
+Elimina permanentemente sesiones, detecciones, grabaciones, notas de voz, listas de especies personalizadas, preferencias guardadas y datos en caché de mapas, nombres de lugar, clima, reproducción, revisión y uso compartido. El diálogo de confirmación exige escribir `DELETE` y luego cierra la app para que el próximo inicio parta de un estado local limpio.
+
+Úselo antes de entregar un dispositivo a otra persona observadora, retirar un teléfono de campo o quitar del app historial vinculado a ubicaciones. Exporte primero todo lo que quiera conservar; esta acción no se puede deshacer.
 
 ## Parámetros específicos del flujo de trabajo fuera de la configuración
 

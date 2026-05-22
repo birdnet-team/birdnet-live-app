@@ -5,6 +5,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/services/app_data_clear_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -706,7 +707,7 @@ class SettingsScreen extends ConsumerWidget {
                   l10n.settingsClearData,
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
-                onTap: () => _showClearDataDialog(context, ref, l10n),
+                onTap: () => _showClearDataDialog(context, l10n),
               ),
             ],
 
@@ -795,15 +796,12 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearDataDialog(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-  ) {
+  void _showClearDataDialog(BuildContext context, AppLocalizations l10n) {
     showDialog<void>(
       context: context,
       builder: (context) {
         final controller = TextEditingController();
+        var isClearing = false;
         return StatefulBuilder(
           builder: (context, setState) {
             final theme = Theme.of(context);
@@ -819,6 +817,7 @@ class SettingsScreen extends ConsumerWidget {
                   TextField(
                     controller: controller,
                     onChanged: (_) => setState(() {}),
+                    enabled: !isClearing,
                     decoration: InputDecoration(
                       labelText: l10n.settingsClearDataTypeConfirm,
                       border: const OutlineInputBorder(),
@@ -828,25 +827,51 @@ class SettingsScreen extends ConsumerWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed:
+                      isClearing ? null : () => Navigator.of(context).pop(),
                   child: Text(l10n.cancel),
                 ),
                 FilledButton.tonal(
                   onPressed:
-                      typed
-                          ? () {
-                            // TODO: Clear session database and recordings
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.settingsDataCleared)),
-                            );
+                      typed && !isClearing
+                          ? () async {
+                            final navigator = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+                            setState(() => isClearing = true);
+                            try {
+                              await const AppDataClearService().clearAllData();
+                              navigator.pop();
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataCleared),
+                                ),
+                              );
+                              await Future<void>.delayed(
+                                const Duration(milliseconds: 800),
+                              );
+                              await SystemNavigator.pop();
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              setState(() => isClearing = false);
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.settingsDataClearFailed),
+                                ),
+                              );
+                            }
                           }
                           : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: theme.colorScheme.errorContainer,
                     foregroundColor: theme.colorScheme.onErrorContainer,
                   ),
-                  child: Text(l10n.confirm),
+                  child:
+                      isClearing
+                          ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : Text(l10n.confirm),
                 ),
               ],
             );

@@ -8,7 +8,7 @@ Verwenden Sie die Schaltfläche :material-music-box-multiple-outline: in der Fu�
 
 ## Was die Bibliothek zeigt
 
-Jeder Sitzungseintrag fasst einen gespeicherten Ergebnissatz zusammen, einschließlich Typ, Datum, Dauer, Artenanzahl und Erkennungsanzahl.
+Jeder Sitzungseintrag fasst einen gespeicherten Ergebnissatz zusammen, einschließlich Typ, Datum, Dauer, Artenanzahl und Detektionsanzahl.
 
 Sitzungstypen verwenden dieselben Symbole wie der Startbildschirm:
 

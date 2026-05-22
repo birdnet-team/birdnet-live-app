@@ -1,5 +1,5 @@
 /// Reads the version from pubspec.yaml and updates all files that contain
-/// a hardcoded version string (e.g. the README badge).
+/// a hardcoded version string (e.g. the README and docs badges).
 ///
 /// Usage:  dart dev/sync_version.dart
 ///
@@ -43,6 +43,34 @@ void main() {
   } else {
     stderr.writeln('README.md not found.');
     exit(1);
+  }
+
+  // MkDocs home pages — shields.io latest release badge.
+  final docsHomeFiles =
+      Directory('docs')
+          .listSync()
+          .whereType<File>()
+          .where(
+            (file) => RegExp(r'index(\.[a-z]{2})?\.md$').hasMatch(file.path),
+          )
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+
+  final docsBadgePattern = RegExp(r'badge/latest-v[^-]+-orange');
+  for (final file in docsHomeFiles) {
+    final original = file.readAsStringSync();
+    if (!docsBadgePattern.hasMatch(original)) {
+      continue;
+    }
+    final replaced = original.replaceAllMapped(
+      docsBadgePattern,
+      (_) => 'badge/latest-v$display-orange',
+    );
+    if (replaced != original) {
+      file.writeAsStringSync(replaced);
+      updated++;
+      stdout.writeln('  ${file.path} latest badge → v$display');
+    }
   }
 
   if (updated == 0) {

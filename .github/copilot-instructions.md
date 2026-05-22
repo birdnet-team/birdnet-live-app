@@ -6,11 +6,11 @@ BirdNET Live is a Flutter mobile app (Android/iOS/Windows) for real-time species
 
 ## Tech Stack
 
-- **Flutter 3.6.2+** / **Dart ^3.6.2**
-- **flutter_riverpod 2.6.1** — state management (providers, StateNotifier)
-- **onnxruntime 1.4.1** — on-device ONNX model inference (audio classifier + geo-model)
-- **geolocator 13.0.2** — GPS location
-- **cached_network_image 3.4.1** — species image caching
+- **Flutter 3.27+** / **Dart ^3.7.0**
+- **flutter_riverpod 3.3.1** — state management (providers, StateNotifier)
+- **flutter_onnxruntime 1.7.0** — on-device ONNX model inference (audio classifier + geo-model)
+- **geolocator 14.0.2** — GPS location
+- **flutter_cache_manager 3.4.1** — image and tile cache management
 - **just_audio** — audio playback
 - **shared_preferences** — settings persistence
 
@@ -34,7 +34,7 @@ lib/
     settings/    # Settings screen
     home/        # Home screen / main menu
     about/       # Credits, links, legal
-  l10n/          # ARB localization files (EN, DE)
+  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt)
 ```
 
 ### Key Patterns
@@ -58,15 +58,15 @@ lib/
 
 ### Model Build Pipeline
 
-The `.onnx` files in `assets/models/` are **not checked in** (gitignored). They are built from raw source models in `dev/models/` using a Python pipeline:
+The `.onnx` files in `assets/models/` are tracked with Git LFS. On a fresh clone, run `git lfs install` and `git lfs pull` before building or running the app; pointer files may let compilation start but model loading will fail at runtime. The Python pipeline in `dev/` is only needed when updating or rebuilding the model artifacts:
 
 ```bash
-python dev/build_models.py          # prune species + fix for ARM64 ORT 1.15
+python dev/build_models.py          # prune species + apply compatibility fixes
 ```
 
-This runs three steps: (1) prune to 5,250-species intersection, (2) fix audio model for ARM64 FP16 precision & ORT 1.15 opset compatibility, (3) decompose geo model LayerNorm. See **`dev/MODELS.md`** for full details on what each script does and why.
+This runs three steps: (1) prune to the 5,250-species intersection, (2) fix audio model precision/opset compatibility, (3) decompose geo-model LayerNorm. See **`dev/MODELS.md`** for full details on what each script does and why.
 
-**Key constraint**: Android ORT 1.15.1 (`flutter_onnxruntime 1.4.1`) uses native FP16 NEON on ARM64, causing precision loss in deep CNNs. The audio model stores weights as FP16 but runs all compute in FP32 via inserted Cast nodes.
+**Key constraint**: Mobile ONNX Runtime builds and ARM64 FP16 behavior can differ from desktop reference runs. The audio model stores weights as FP16 but runs sensitive compute in FP32 via inserted Cast nodes to keep mobile results stable.
 
 ### Taxonomy API
 
@@ -79,7 +79,7 @@ Species images and descriptions come from `https://birdnet.cornell.edu/taxonomy/
 ## Coding Conventions
 
 - **American English**: All code, comments, documentation, and user-facing strings must use American English spelling (e.g., "color" not "colour", "initialize" not "initialise", "behavior" not "behaviour", "analyze" not "analyse", "center" not "centre", "serialize" not "serialise").
-- **Localization**: All user-facing strings go in `lib/l10n/app_en.arb` (English) and `app_de.arb` (German). Use `l10n.keyName` in widgets. Technical terms (Point Count, Survey, Session, Live Mode) and format identifiers (WAV, FLAC, CSV, JSON, GPX) stay in English in all locales.
+- **Localization**: All user-facing strings go in all seven UI locale files: `app_en.arb`, `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, and `app_pt.arb`. Use `l10n.keyName` in widgets. Technical terms (Point Count, Survey, Session, Live Mode) and format identifiers (WAV, FLAC, CSV, JSON, GPX) stay in English in all locales.
 - **Responsive layouts**: Screens support portrait and landscape orientations. Tablet screens use `ContentWidthConstraint` (600 dp max-width) from `shared/widgets/`.
 - **Settings**: Add new settings via `PrefKeys` constant + provider in `settings_providers.dart` + UI in `settings_screen.dart` with `_sectionContexts` mapping. When adding or modifying settings, always update the user guide at `docs/user/settings.md` to explain the *intuition* behind the new setting so users understand *why* they might change it.
 - **Icons**: Use `AppIcons` (`lib/shared/utils/app_icons.dart`) in feature/shared UI code instead of direct `Symbols.*` or `Icons.*`. Prefer neutral/base icon names for single-style constants; keep `...Outlined`/`...Rounded` names only when style distinction is intentional and both variants are part of the API.
@@ -96,7 +96,7 @@ flutter pub get          # Install dependencies
 flutter analyze          # Static analysis
 flutter test             # Run unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
-dart dev/sync_version.dart    # Propagate pubspec version to README badge
+dart dev/sync_version.dart    # Propagate pubspec version to README and MkDocs badges
 flutter run              # Run on connected device
 flutter build apk --release   # Release APK (~253 MB)
 flutter build appbundle       # Android App Bundle (preferred for Play Store)
@@ -112,4 +112,4 @@ flutter build appbundle       # Android App Bundle (preferred for Play Store)
   adb push assets/test_fixtures /data/local/tmp/test_fixtures
   flutter test integration_test/geo_soundscape_test.dart -d <device_id>
   ```
-- **App Bundle**: Use `flutter build appbundle` for Play Store — delivers only the user's architecture, reducing download size further.
+- **App Bundle**: Use `flutter build appbundle` for Play Store — `.onnx` files are shipped through the install-time `models_pack` asset pack so the base module stays under Play's size limit while the installed app remains offline-capable.

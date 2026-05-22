@@ -16,13 +16,13 @@ A: Android (8.0+), iOS (15.0+) und Windows (experimentell).
 ## Genauigkeit
 
 **F: Warum zeigt mein Konfidenzschwellenwert niedrige Werte an?**
-A: Senken Sie den Konfidenzschwellenwert in den Einstellungen, um mehr Erkennungen zu sehen. Hintergrundgeräusche, Wind und Entfernung beeinflussen die Genauigkeit.
+A: Senken Sie den Konfidenzschwellenwert in den Einstellungen, um mehr Detektionen zu sehen. Hintergrundgeräusche, Wind und Entfernung beeinflussen die Genauigkeit.
 
 **F: Was macht der Artenfilter?**
 A: Das Geomodell sagt voraus, welche Arten an Ihrem GPS-Standort und zur Jahreszeit wahrscheinlich sind. Aktivieren Sie „Geo Exclude“, um unwahrscheinliche Arten auszublenden, oder „Geo Merge“, um die Ergebnisse nach geografischer Wahrscheinlichkeit zu gewichten.
 
 **F: Wie genau ist die Identifizierung?**
-A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hintergrundgeräusch und der Art ab. Erkennungen mit hoher Zuverlässigkeit (>70 %) sind im Allgemeinen zuverlässig. Überprüfen Sie seltene Arten immer visuell.
+A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hintergrundgeräusch und der Art ab. Detektionen mit hoher Zuverlässigkeit (>70 %) sind im Allgemeinen zuverlässig. Überprüfen Sie seltene Arten immer visuell.
 
 ## Aufnahme
 

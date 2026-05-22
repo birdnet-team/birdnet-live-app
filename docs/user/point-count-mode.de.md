@@ -43,7 +43,7 @@ Der Live-Punktezähler-Bildschirm konzentriert sich auf ein zeitgesteuertes Dash
 - Countdown-Fortschrittsbalken
 - Kompakte Infoleiste mit aktuellen Funden, einzigartiger Artenzahl und Gesamtfunden
 - Spektrogrammansicht
-- Erkennungsliste
+- Detektionsliste
 
 ## Nach der Zählung
 

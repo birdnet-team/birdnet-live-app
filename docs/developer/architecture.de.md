@@ -32,11 +32,11 @@ Shared utilities live under `lib/shared/` (models, providers, services) and `lib
 
 ### On-Device Inference
 
-All classification runs locally using ONNX Runtime. No audio data leaves the device. The model file (~152 MB) is extracted from the APK asset bundle to disk on first launch, and the inference isolate loads it by file path to avoid serializing large byte arrays.
+All classification runs locally using ONNX Runtime. No audio data leaves the device. The audio classifier (~152 MB) and geo-model (~6 MB) are resolved through `AssetPackService`: Play Store App Bundles read them from the install-time `models_pack` asset pack, while sideload APKs, iOS, Windows, and tests fall back to Flutter assets. The models are extracted to an on-device file path so ONNX Runtime can memory-map them.
 
-### Background Isolate for Inference
+### Native Background Queue for Inference
 
-ONNX inference runs in a dedicated Dart isolate (`InferenceIsolate`) to keep the UI responsive. Communication uses typed messages via `SendPort` / `ReceivePort`.
+`flutter_onnxruntime` runs native inference on a platform background queue. The historical `InferenceIsolate` class name is kept to avoid churn, but it now delegates to `InferenceService` on the root isolate and serializes calls into the native session.
 
 ### Ring Buffer Audio Pipeline
 

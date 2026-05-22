@@ -7,16 +7,16 @@ ONNX Runtime integration and model inference.
 ## Architecture
 
 ```
-InferenceIsolate (background Dart isolate)
+InferenceIsolate (compatibility wrapper; root Dart isolate)
   └─ InferenceService (high-level coordinator)
       └─ ClassifierModel (low-level ONNX session wrapper)
 ```
 
 ## ClassifierModel
 
-Direct ONNX Runtime FFI wrapper:
+Low-level `flutter_onnxruntime` session wrapper:
 
-- `loadModel(bytes)` / `loadModelFromFile(path)` — create `OrtSession`
+- `loadModelFromFile(path)` — create `OrtSession` from an on-device model file
 - `predict(audioSamples, windowSamples)` — run inference, return `ModelOutput`
 - Resolves output tensor indices by name (handles any graph ordering)
 
@@ -24,23 +24,23 @@ Direct ONNX Runtime FFI wrapper:
 
 High-level coordinator:
 
-- `initialize(modelBytes, labelsCsv, config)` — load model + parse labels
+- `initialize(modelFilePath, labelsCsv, config)` — load model + parse labels
 - `infer(audioSamples)` — model → temporal pooling → sensitivity → top-K
 - Log-Mean-Exp temporal smoothing across recent windows (α=5.0, max 5 windows)
 
 ## InferenceIsolate
 
-Runs `InferenceService` in a background Dart isolate:
+Keeps the historical public API while delegating to `InferenceService` on the root isolate:
 
-- `start(modelFilePath, labelsCsv, config)` — spawn isolate, load model
-- `infer(audioSamples)` — send request via `SendPort`, await response
-- `stop()` — kill isolate and clean up
+- `start(modelFilePath, labelsCsv, config)` — load model from a resolved file path
+- `infer(audioSamples)` — serialize the request and run it through the native session
+- `stop()` — release the service and close native resources
 
-The model file path (not bytes) is sent to the isolate to avoid serializing ~152 MB.
+`flutter_onnxruntime` runs native inference on a platform background queue, so there is no dedicated Dart inference isolate now. Inference calls are serialized before entering the native session.
 
 ## Geo-Model
 
-`GeoModel` runs a smaller ONNX model (~7 MB) on the main thread:
+`GeoModel` runs the smaller ONNX geo-model (~6 MB) through the same runtime:
 
 - Input: `[latitude, longitude, week]` (normalized)
 - Output: per-species probability scores

@@ -14,10 +14,15 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
 |----------|------|--------|
 | English | `lib/l10n/app_en.arb` | Complete |
 | German | `lib/l10n/app_de.arb` | Complete |
+| Czech | `lib/l10n/app_cs.arb` | Complete |
+| Spanish | `lib/l10n/app_es.arb` | Complete |
+| French | `lib/l10n/app_fr.arb` | Complete |
+| Italian | `lib/l10n/app_it.arb` | Complete |
+| Portuguese | `lib/l10n/app_pt.arb` | Complete |
 
 ## Translation Conventions
 
-- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terminology and are not translated in the German UI.
+- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terminology and stay in English in every locale.
 - **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX, Raven Selection Table.
 - **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
 - **Gain**: Kept as "Gain" in both languages (universal audio term).
@@ -35,7 +40,7 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
     }
     ```
 
-2. Add the translation to `app_de.arb`:
+2. Add translations to every other ARB file: `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, and `app_pt.arb`:
 
     ```json
     "myNewString": "Hallo Welt"

@@ -6,10 +6,9 @@ Set up your development environment.
 
 ## Prerequisites
 
-- **Flutter SDK** 3.6.2 or later
-- **Dart SDK** ^3.6.2 (bundled with Flutter)
+- **Flutter SDK** 3.27 or later, with **Dart 3.7** or later
+- **Git** and **Git LFS** for the large ONNX model files
 - **Android Studio** or **VS Code** with Flutter/Dart extensions
-- **Git**
 
 ### Platform-Specific
 
@@ -24,12 +23,19 @@ Set up your development environment.
 git clone https://github.com/birdnet-team/birdnet-live-app.git
 cd birdnet-live-app
 
-# Install dependencies
+# Pull the real ONNX model files tracked by Git LFS
+git lfs install
+git lfs pull
+
+# Install Flutter dependencies and generate localizations
 flutter pub get
+flutter gen-l10n
 
 # Verify setup
 flutter doctor
 ```
+
+Do not skip the LFS step on a fresh clone. The `.onnx` files in `assets/models/` are required at runtime; Git LFS pointer files can let a build start but model loading will fail when the app tries to initialize inference.
 
 ## Running
 
@@ -49,13 +55,15 @@ flutter run -d <device>  # Target specific device
 
 ```bash
 flutter pub get          # Install dependencies
-flutter analyze          # Static analysis (zero warnings policy)
+flutter analyze --no-pub # Static analysis after dependencies are installed
 flutter test             # Run all unit tests
 flutter gen-l10n         # Regenerate localization (auto on build)
-flutter build apk        # Build Android APK
+flutter build apk --debug # Build Android debug APK
 flutter build ios        # Build iOS (requires macOS)
 ```
 
 ## Model Assets
 
-The ONNX model (~152 MB) is bundled in `assets/models/`. On first launch, it is extracted from the APK to the app's documents directory for direct file access by the inference isolate.
+BirdNET Live ships two ONNX models in `assets/models/`: the BirdNET+ audio classifier (~152 MB) and the BirdNET geo-model (~6 MB). Both are tracked with Git LFS and are bundled with local builds after `git lfs pull`.
+
+You only need the Python model build pipeline in `dev/` when updating or rebuilding the models themselves. Normal app development uses the checked-in LFS model artifacts.

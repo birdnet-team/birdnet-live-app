@@ -46,4 +46,4 @@ Das Overlay kann Folgendes anzeigen:
 
 Explore ist eine standortbezogene Referenzansicht innerhalb der App. Es hilft Ihnen, den aktuellen Standortkontext der App mit den Arten zu vergleichen, denen Sie voraussichtlich begegnen werden.
 
-Gespeicherte Sitzungsdaten selbst werden dadurch **nicht** geändert. Die Erkennungsfilterung wird separat über [Einstellungen] (settings.md) gesteuert.
+Gespeicherte Sitzungsdaten selbst werden dadurch **nicht** geändert. Die Detektionsfilterung wird separat über [Einstellungen] (settings.md) gesteuert.

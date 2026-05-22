@@ -276,7 +276,7 @@
   "@settingsClearDataConfirmTitle": {
     "description": "Clear data confirmation dialog title"
   },
-  "settingsClearDataConfirmMessage": "This will permanently delete all detections, sessions, and recordings. This action cannot be undone.",
+  "settingsClearDataConfirmMessage": "This will permanently delete sessions, detections, recordings, voice memos, custom species lists, settings, and cached map, place, and weather data. The app will close when the wipe finishes. This action cannot be undone.",
   "@settingsClearDataConfirmMessage": {
     "description": "Clear data confirmation message"
   },
@@ -296,9 +296,13 @@
   "@settingsOnboardingReset": {
     "description": "Snackbar message after reset onboarding"
   },
-  "settingsDataCleared": "All data cleared",
+  "settingsDataCleared": "All data cleared — please reopen the app",
   "@settingsDataCleared": {
     "description": "Snackbar message after clearing all data"
+  },
+  "settingsDataClearFailed": "Some data could not be cleared. Please close BirdNET Live and try again.",
+  "@settingsDataClearFailed": {
+    "description": "Snackbar message when clearing all data fails"
   },
   "settingsResetAll": "Reset All Settings",
   "@settingsResetAll": {
@@ -405,7 +409,7 @@
   "@errorMicrophoneRequired": {
     "description": "Error message when microphone permission is denied"
   },
-  "homeSubtitle": "The bioacoustics companion app",
+  "homeSubtitle": "Professional bioacoustics in your pocket",
   "@homeSubtitle": {
     "description": "Subtitle shown on the main menu screen"
   },

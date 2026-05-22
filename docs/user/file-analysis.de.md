@@ -59,7 +59,7 @@ Der Assistent zeigt Folgendes an:
 Der Fortschrittsbildschirm zeigt:
 
 - Fenster verarbeitet
-- Entdeckungen gefunden
+- Detektionen gefunden
 - Arten gefunden
 - Abbrechen-Taste
 

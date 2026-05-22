@@ -2,9 +2,9 @@
 
 External API usage and integration.
 
-## Taxonomy API
+## Taxonomy Data
 
-Species images and descriptions come from the BirdNET taxonomy API:
+Species images, descriptions, localized names, and taxonomy metadata are bundled with the app. The local bundle tooling sources those assets from the BirdNET taxonomy API:
 
 ```
 https://birdnet.cornell.edu/taxonomy/api/
@@ -23,9 +23,10 @@ https://birdnet.cornell.edu/taxonomy/api/
 
 The app's default experience is offline-first: bundled species images,
 descriptions, and taxonomy metadata are generated ahead of time from the public
-taxonomy export. The live API remains useful for refreshing metadata exports and
-for any future opt-in online enrichments.
+taxonomy export. Runtime species lookups use local assets through
+`TaxonomyService`; the live API is only needed when refreshing metadata exports
+or building future opt-in online enrichments.
 
 ### Error Handling
 
-The API is optional — the app works fully offline. Network failures show placeholder images and a "No description available" message.
+The API is not required at runtime. If bundle tooling cannot reach the API, keep the existing bundled assets or retry the refresh rather than shipping a partial species bundle.

@@ -131,4 +131,4 @@ All user-facing strings use ARB keys prefixed with `session`:
 - `sessionHelpTitle`, `sessionHelpOverview`, `sessionHelpAddSpecies`, etc.
 - `sessionDurationWarningTitle`, `sessionDurationWarningMessage`, `sessionContinue`
 
-Both English (`app_en.arb`) and German (`app_de.arb`) translations are provided.
+Translations are provided in all UI locale ARB files: English, German, Czech, Spanish, French, Italian, and Portuguese.

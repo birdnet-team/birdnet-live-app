@@ -181,7 +181,9 @@ Mostra a sequência de integração novamente na próxima vez que o aplicativo f
 
 ### Limpar todos os dados
 
-Abre um fluxo de confirmação para remover permanentemente os dados armazenados do aplicativo.
+Exclui permanentemente sessões, detecções, gravações, notas de voz, listas de espécies personalizadas, preferências salvas e dados em cache de mapas, nomes de lugares, meteorologia, reprodução, revisão e compartilhamento. O diálogo de confirmação exige digitar `DELETE` e depois fecha o app para que a próxima abertura comece de um estado local limpo.
+
+Use antes de entregar um dispositivo a outra pessoa observadora, aposentar um telefone de campo ou remover do app histórico vinculado a localização. Exporte primeiro tudo o que deseja manter; esta ação não pode ser desfeita.
 
 ## Parâmetros específicos do fluxo de trabalho fora das configurações
 

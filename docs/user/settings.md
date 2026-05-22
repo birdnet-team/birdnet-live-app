@@ -243,7 +243,9 @@ Useful when you are not sure which slider you nudged that broke something, or wh
 
 ### Clear All Data
 
-Opens a confirmation flow for permanently removing stored app data.
+Permanently deletes sessions, detections, recordings, voice memos, custom species lists, saved preferences, and cached map, place-name, weather, playback, review, and share data. The confirmation dialog requires typing `DELETE`, then closes the app so the next launch starts from a clean local state.
+
+Use this before handing a device to another observer, retiring a field phone, or removing location-linked history from the app. Export anything you need first; this action cannot be undone.
 
 ## Workflow-Specific Parameters Outside Settings
 

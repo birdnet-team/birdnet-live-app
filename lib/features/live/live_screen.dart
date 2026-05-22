@@ -519,6 +519,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         child: DetectionList(
           detections: detections,
           isActive: isActive || isPaused,
+          showTips: true,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,
@@ -688,7 +689,10 @@ void _showLiveHelp(BuildContext context) {
         (_) => AppHelpBottomSheet(
           title: l10n.liveScreenHelpTitle,
           sections: [
-            AppHelpSection(icon: AppIcons.mic, body: l10n.liveScreenHelpOverview),
+            AppHelpSection(
+              icon: AppIcons.mic,
+              body: l10n.liveScreenHelpOverview,
+            ),
             AppHelpSection(
               icon: AppIcons.helpOutlineRounded,
               body: l10n.liveScreenHelpControls,

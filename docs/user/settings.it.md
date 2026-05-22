@@ -181,7 +181,9 @@ Mostra nuovamente la sequenza di onboarding al successivo avvio dell'app.
 
 ### Cancella tutti i dati
 
-Apre un flusso di conferma per la rimozione permanente dei dati dell'app archiviati.
+Elimina in modo permanente sessioni, rilevazioni, registrazioni, note vocali, liste specie personalizzate, preferenze salvate e dati cache di mappe, nomi di luoghi, meteo, riproduzione, revisione e condivisione. La finestra di conferma richiede di digitare `DELETE`, poi chiude l'app in modo che il prossimo avvio parta da uno stato locale pulito.
+
+Usalo prima di consegnare un dispositivo a un'altra persona osservatrice, dismettere un telefono da campo o rimuovere dall'app cronologia collegata alla posizione. Esporta prima tutto ciò che vuoi conservare; questa azione non può essere annullata.
 
 ## Parametri specifici del flusso di lavoro esterni alle impostazioni
 

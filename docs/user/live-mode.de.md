@@ -1,6 +1,6 @@
 # Live-Modus
 
-Der Live-Modus ist die schnellste Möglichkeit, über das Telefonmikrofon zuzuhören und Erkennungen sofort zu überprüfen.
+Der Live-Modus ist die schnellste Möglichkeit, über das Telefonmikrofon zuzuhören und Detektionen sofort zu überprüfen.
 
 ## So öffnen Sie es
 
@@ -28,9 +28,9 @@ Die große kreisförmige Schaltfläche unten in der Mitte ändert ihren Status:
 
 Das Spektrogramm scrollt kontinuierlich, während die Erfassung aktiv ist. Es zeigt den Frequenzinhalt im Zeitverlauf an und verwendet die Farbkarte, die FFT-Größe, den Frequenzbereich und die Dauer aus den Einstellungen.
 
-### Erkennungsliste
+### Detektionsliste
 
-Aktuelle Entdeckungen werden unterhalb des Spektrogramms angezeigt. Jede Zeile kann Folgendes anzeigen:
+Aktuelle Detektionen werden unterhalb des Spektrogramms angezeigt. Jede Zeile kann Folgendes anzeigen:
 
 - Artenbild
 - gebräuchlicher Name
@@ -43,9 +43,9 @@ Tippen Sie auf eine Artenzeile, um die Überlagerung mit den Artendetails zu öf
 
 Die kompakte Infozeile unter dem Spektrogramm fasst die aktuelle Sitzung zusammen, zum Beispiel:
 
-- Aktuelle Erkennungen werden jetzt angezeigt
+- Aktuelle Detektionen werden jetzt angezeigt
 - Anzahl einzigartiger Arten („spp“)
-- Gesamterkennungen („det“)
+- Gesamtdetektionen („det“)
 - verstrichene Dauer
 - geschätzte Aufnahmegröße, wenn die Aufnahme aktiviert ist
 
@@ -54,7 +54,7 @@ Die kompakte Infozeile unter dem Spektrogramm fasst die aktuelle Sitzung zusamme
 Die Aufnahme wird in den [Einstellungen] (settings.md) gesteuert.
 
 - **Full** zeichnet die gesamte Sitzung auf.
-- **Nur Erkennungen** zeichnet Clips rund um Erkennungen auf.
+- **Nur Detektionen** zeichnet Clips rund um Detektionen auf.
 - **Aus** deaktiviert die Aufnahme.
 
 Wenn Sie den Live-Modus beenden, speichert BirdNET Live die Sitzung und öffnet [Sitzungsüberprüfung] (session-review.md).
