@@ -43,6 +43,14 @@ The Home screen is the main hub.
 - :material-routes: **Survey Mode**
 - :material-file-music: **File Analysis**
 
+### Android home screen widget
+
+On Android, you can add the **BirdNET Live shortcut** widget to your home screen.
+
+- Tapping it opens the app straight into **Live Mode**.
+- If the app still needs onboarding or Terms acceptance, BirdNET Live finishes that flow first and then opens Live Mode.
+- The widget is Android-only; iOS and Windows do not share the same home screen widget system.
+
 ### Footer buttons
 
 - :material-tune: **Settings**

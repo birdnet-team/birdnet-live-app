@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="live_mode_widget_name">BirdNET Live shortcut</string>
+    <string name="live_mode_widget_text">Open Live mode</string>
+</resources>

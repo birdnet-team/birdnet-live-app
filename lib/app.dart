@@ -9,6 +9,7 @@ import 'shared/providers/app_providers.dart';
 import 'features/announcements/accessibility_default_applier.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
+import 'shared/widgets/app_launch_target_coordinator.dart';
 
 /// Root application widget.
 ///
@@ -58,8 +59,8 @@ class App extends ConsumerWidget {
           supportedLocales: AppLocalizations.supportedLocales,
 
           // Initial screen based on app state
-          home: const AnnouncementsAccessibilityDefaultApplier(
-            child: _AppGate(),
+          home: const AppLaunchTargetCoordinator(
+            child: AnnouncementsAccessibilityDefaultApplier(child: _AppGate()),
           ),
         );
       },

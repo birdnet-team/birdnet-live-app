@@ -33,7 +33,7 @@ import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_providers.dart';
-import '../live/live_screen.dart';
+import '../live/live_routes.dart';
 import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../survey/survey_setup_screen.dart';
@@ -572,9 +572,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   void _startNewSession(SessionType mode) {
     final navigator = Navigator.of(context);
     final route = switch (mode) {
-      SessionType.live => MaterialPageRoute<void>(
-        builder: (_) => const LiveScreen(),
-      ),
+      SessionType.live => buildLiveScreenRoute(),
       SessionType.pointCount => MaterialPageRoute<void>(
         builder: (_) => const PointCountSetupScreen(),
       ),

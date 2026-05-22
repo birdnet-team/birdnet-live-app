@@ -1,9 +1,12 @@
 package com.birdnet.birdnet_live
 
+import android.content.Intent
+import android.os.Bundle
 import android.view.WindowManager
 import com.google.android.play.core.assetpacks.AssetPackManagerFactory
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
 import java.io.File
@@ -14,9 +17,42 @@ class MainActivity: FlutterActivity() {
     private val AUDIO_DECODER_CHANNEL = "com.birdnet/audio_decoder"
     private val ASSET_PACK_CHANNEL = "com.birdnet/asset_pack"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var pendingLaunchTarget: String? = null
+    private var launchTargetEvents: EventChannel.EventSink? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pendingLaunchTarget = extractLaunchTarget(intent)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        EventChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            AppLaunchTargetContract.eventsChannel,
+        ).setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                launchTargetEvents = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                launchTargetEvents = null
+            }
+        })
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            AppLaunchTargetContract.channel,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "takeInitialTarget" -> {
+                    result.success(pendingLaunchTarget)
+                    pendingLaunchTarget = null
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         // Wakelock channel.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WAKELOCK_CHANNEL).setMethodCallHandler { call, result ->
@@ -186,6 +222,28 @@ class MainActivity: FlutterActivity() {
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        val target = extractLaunchTarget(intent) ?: return
+        pendingLaunchTarget = target
+        launchTargetEvents?.success(target)
+    }
+
+    private fun extractLaunchTarget(intent: Intent?): String? {
+        if (intent == null) return null
+
+        val fromExtra = intent.getStringExtra(AppLaunchTargetContract.extraTarget)
+        if (!fromExtra.isNullOrBlank()) return fromExtra
+
+        return when (intent.action) {
+            AppLaunchTargetContract.actionOpenLiveMode ->
+                AppLaunchTargetContract.targetLive
+            else -> null
         }
     }
 

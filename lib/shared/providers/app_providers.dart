@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../services/app_launch_target_service.dart';
 
 /// Provider for [SharedPreferences] instance.
 ///
@@ -151,3 +152,13 @@ class TermsNotifier extends StateNotifier<bool> {
     await _prefs.setBool(PrefKeys.termsAccepted, false);
   }
 }
+
+/// Platform bridge for widget / shortcut launch targets.
+final appLaunchTargetServiceProvider = Provider<AppLaunchTargetService>((ref) {
+  return const AppLaunchTargetService();
+});
+
+/// Pending external target waiting to be opened once the app is ready.
+final pendingLaunchTargetProvider = StateProvider<AppLaunchTarget?>((ref) {
+  return null;
+});

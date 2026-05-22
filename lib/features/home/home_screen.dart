@@ -6,7 +6,7 @@ import 'package:birdnet_live/shared/utils/app_icons.dart';
 import '../about/about_screen.dart';
 import '../explore/explore_screen.dart';
 import '../history/session_library_screen.dart';
-import '../live/live_screen.dart';
+import '../live/live_routes.dart';
 import '../file_analysis/file_analysis_screen.dart';
 import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
@@ -249,9 +249,7 @@ class _ModeGrid extends StatelessWidget {
   }
 
   void _openLive(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const LiveScreen()));
+    Navigator.of(context).push(buildLiveScreenRoute());
   }
 
   void _openPointCount(BuildContext context) {

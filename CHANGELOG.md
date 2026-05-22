@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.3] - 2026-05-22
+
+### Added
+
+- Added an Android home screen widget that opens BirdNET Live straight into Live mode.
+
+### Changed
+
+- Refactored Live mode entry points to reuse a shared route helper and a platform-neutral launch-target bridge, keeping the Android-specific logic limited to the widget and intent handoff.
+
 ## [0.15.2] - 2026-05-22
 
 ### Added
@@ -1115,4 +1125,3 @@ defaults to off and the feature has no UI surface in this commit.
 - LiveSession data model with settings snapshot and detection records
 - Audio playback for detection clips (just_audio integration)
 - Session info bar showing species and detection counts during active sessions
-
