@@ -29,7 +29,7 @@ dependencies:
   flutter_tts: ^4.2.0
   audio_session: ^0.2.3
   # Inference
-  flutter_onnxruntime: ^1.7.0
+  onnxruntime_v2: ^1.23.2
 
   # UI & UX
   url_launcher: ^6.3.1

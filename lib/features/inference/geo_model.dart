@@ -42,7 +42,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
+import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 
 /// A species entry from the geo-model's own labels file.
 class GeoSpecies {
@@ -120,7 +120,6 @@ class GeoModel {
   // State
   // ---------------------------------------------------------------------------
 
-  final OnnxRuntime _ort = OnnxRuntime();
   List<GeoSpecies> _labels = const [];
   OrtSession? _session;
 
@@ -168,6 +167,7 @@ class GeoModel {
     String modelPath, {
     String inputName = 'input',
     String outputName = 'output',
+    String executionProvider = 'cpu',
   }) async {
     _inputName = inputName;
     _outputName = outputName;
@@ -179,13 +179,30 @@ class GeoModel {
 
     final old = _session;
     _session = null;
-    if (old != null) {
-      await old.close();
+    old?.release();
+
+    final sessionOptions = OrtSessionOptions();
+    if (executionProvider == 'accelerated') {
+      if (Platform.isAndroid) {
+        sessionOptions.appendNnapiProvider(NnapiFlags.useNone);
+      } else if (Platform.isIOS) {
+        sessionOptions.appendCoreMLProvider(CoreMLFlags.useNone);
+      }
+    } else if (executionProvider == 'nnapi_npu_only') {
+      if (Platform.isAndroid) {
+        sessionOptions.appendNnapiProvider(NnapiFlags.cpuDisabled);
+      }
+    } else if (executionProvider == 'xnnpack') {
+      sessionOptions.appendXnnpackProvider();
+    }
+    if (executionProvider != 'nnapi_npu_only') {
+      sessionOptions.appendCPUProvider(CPUFlags.useArena);
     }
 
-    _session = await _ort.createSession(modelPath);
+    _session = OrtSession.fromFile(modelFile, sessionOptions);
+    sessionOptions.release();
 
-    debugPrint('[GeoModel] model loaded from $modelPath');
+    debugPrint('[GeoModel] loaded from $modelPath EP:$executionProvider');
     debugPrint('[GeoModel] input: $_inputName, output: $_outputName');
   }
 
@@ -194,9 +211,7 @@ class GeoModel {
     final s = _session;
     _session = null;
     _labels = const [];
-    if (s != null) {
-      await s.close();
-    }
+    s?.release();
   }
 
   // ---------------------------------------------------------------------------
@@ -229,23 +244,31 @@ class GeoModel {
       longitude,
       week.toDouble(),
     ]);
-    final inputTensor = await OrtValue.fromList(inputData, [1, 3]);
+    final inputTensor = OrtValueTensor.createTensorWithDataList(
+      inputData,
+      [1, 3],
+    );
 
-    Map<String, OrtValue>? outputs;
+    final runOptions = OrtRunOptions();
+    List<OrtValue?> outputs = [];
     try {
-      outputs = await session.run({_inputName: inputTensor});
+      outputs =
+          await session.runAsync(runOptions, {_inputName: inputTensor}) ?? [];
+
+      // Map output list back to names.
+      final outputMap = <String, OrtValue?>{};
+      for (var i = 0; i < session.outputNames.length; i++) {
+        outputMap[session.outputNames[i]] = outputs[i];
+      }
 
       // Prefer the configured output name; fall back to first output.
-      final outputTensor = outputs[_outputName] ?? outputs.values.firstOrNull;
-      if (outputTensor == null) {
+      final outputValue =
+          outputMap[_outputName] ?? outputMap.values.firstOrNull;
+      if (outputValue == null) {
         throw StateError('Geo-model returned no output');
       }
-      final raw = await outputTensor.asFlattenedList();
-      final probabilities = raw is List<double>
-          ? raw
-          : raw is Float32List
-              ? raw.toList()
-              : raw.map((e) => (e as num).toDouble()).toList(growable: false);
+      final raw = outputValue.value;
+      final probabilities = _toDoubleList(raw);
 
       // Build the result map.
       final scores = <String, double>{};
@@ -258,11 +281,10 @@ class GeoModel {
 
       return scores;
     } finally {
-      await inputTensor.dispose();
-      if (outputs != null) {
-        for (final t in outputs.values) {
-          await t.dispose();
-        }
+      inputTensor.release();
+      runOptions.release();
+      for (final t in outputs) {
+        t?.release();
       }
     }
   }
@@ -319,6 +341,29 @@ class GeoModel {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  static List<double> _toDoubleList(dynamic raw) {
+    if (raw is Float32List) return raw.toList();
+    if (raw is List<double>) return raw;
+    if (raw is List) return _flatten(raw);
+    throw StateError('Unexpected tensor value type: ${raw.runtimeType}');
+  }
+
+  static List<double> _flatten(List raw) {
+    final result = <double>[];
+    for (final e in raw) {
+      if (e is double) {
+        result.add(e);
+      } else if (e is num) {
+        result.add(e.toDouble());
+      } else if (e is Float32List) {
+        result.addAll(e.toList());
+      } else if (e is List) {
+        result.addAll(_flatten(e));
+      }
+    }
+    return result;
+  }
 
   /// Convert a [DateTime] to the 1–48 week number used by the geo-model.
   ///
