@@ -76,7 +76,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Deferred to post-frame so provider updates don't fire during build.
     if (controller.state == LiveState.idle) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) controller.loadModel();
+        if (mounted) {
+          controller.loadModel(
+            executionProvider: ref.read(inferenceExecutionProviderProvider),
+            intraOpThreads: ref.read(inferenceThreadsProvider),
+          );
+        }
       });
     } else {
       // Model was already loaded on a previous visit, so the controller is
@@ -145,7 +150,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
       // Ensure model is loaded.
       if (controller.state == LiveState.idle) {
-        await controller.loadModel();
+        await controller.loadModel(
+          executionProvider: ref.read(inferenceExecutionProviderProvider),
+          intraOpThreads: ref.read(inferenceThreadsProvider),
+        );
         _onControllerStateChanged();
       }
 
@@ -824,7 +832,10 @@ class _StatusBanner extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(liveControllerProvider).loadModel();
+              ref.read(liveControllerProvider).loadModel(
+                executionProvider: ref.read(inferenceExecutionProviderProvider),
+                intraOpThreads: ref.read(inferenceThreadsProvider),
+              );
             },
             child: Text(AppLocalizations.of(context)!.retry),
           ),

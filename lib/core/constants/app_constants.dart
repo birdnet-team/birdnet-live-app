@@ -69,6 +69,8 @@ abstract final class PrefKeys {
   static const String highPassFilter = 'high_pass_filter';
 
   // Inference settings
+  static const String inferenceExecutionProvider = 'inference_execution_provider';
+  static const String inferenceThreads = 'inference_threads';
   static const String windowDuration = 'window_duration';
   static const String confidenceThreshold = 'confidence_threshold';
   static const String inferenceRate = 'inference_rate';

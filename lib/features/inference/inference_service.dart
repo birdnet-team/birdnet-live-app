@@ -140,6 +140,8 @@ class InferenceService {
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
+    String executionProvider = 'cpu',
+    int intraOpThreads = 0,
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
@@ -148,6 +150,8 @@ class InferenceService {
       inputName: config.onnx.inputName,
       predictionsName: config.onnx.predictionsName,
       embeddingsName: config.onnx.embeddingsName,
+      executionProvider: executionProvider,
+      intraOpThreads: intraOpThreads,
     );
   }
 

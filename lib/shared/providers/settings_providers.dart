@@ -30,6 +30,28 @@ final highPassFilterProvider =
 // Inference Settings
 // ---------------------------------------------------------------------------
 
+/// Execution provider for ONNX inference.
+///
+/// - `'cpu'` — always-available baseline.
+/// - `'accelerated'` — NNAPI on Android, CoreML on iOS (falls back to CPU
+///   if the provider is unavailable on the device).
+final inferenceExecutionProviderProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.inferenceExecutionProvider,
+        'cpu',
+      );
+    });
+
+/// Intra-op thread count for ONNX Runtime (0 = auto / runtime default).
+final inferenceThreadsProvider =
+    StateNotifierProvider<IntSettingNotifier, int>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return IntSettingNotifier(prefs, PrefKeys.inferenceThreads, 0);
+    });
+
 /// Window duration in seconds (3, 5, or 10).
 final windowDurationProvider = StateNotifierProvider<IntSettingNotifier, int>((
   ref,

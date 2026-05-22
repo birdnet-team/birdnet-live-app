@@ -9,6 +9,7 @@ import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../about/about_screen.dart';
+import '../benchmark/benchmark_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
@@ -256,6 +257,45 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsInferenceDescription,
               ),
               _ChoiceTile<int>(
+                title: 'Inference Threads',
+                helpBody:
+                    'Number of CPU threads used per inference call.\n\n'
+                    '0 (Auto) lets ONNX Runtime decide — typically uses the '
+                    'performance cores only.\n\n'
+                    'Higher values may help or hurt depending on the device. '
+                    'Takes effect after the next model reload.',
+                value: ref.watch(inferenceThreadsProvider),
+                options: const {
+                  0: 'Auto',
+                  2: '2',
+                  4: '4',
+                  6: '6',
+                  8: '8',
+                },
+                onChanged:
+                    (v) =>
+                        ref.read(inferenceThreadsProvider.notifier).set(v),
+              ),
+              _ChoiceTile<String>(
+                title: 'Execution Provider',
+                helpBody:
+                    'Controls which hardware runs the AI model.\n\n'
+                    'CPU — always available, consistent performance.\n\n'
+                    'Accelerated — uses NNAPI (Android) or CoreML (iOS) for '
+                    'hardware acceleration. Falls back to CPU automatically if '
+                    'unavailable. Takes effect after the next model reload.',
+                value: ref.watch(inferenceExecutionProviderProvider),
+                options: const {
+                  'cpu': 'CPU',
+                  'xnnpack': 'XNNPACK (optimized CPU)',
+                  'accelerated': 'Accelerated (NNAPI / CoreML)',
+                },
+                onChanged:
+                    (v) => ref
+                        .read(inferenceExecutionProviderProvider.notifier)
+                        .set(v),
+              ),
+              _ChoiceTile<int>(
                 title: l10n.settingsWindowDuration,
                 helpBody: l10n.settingsHelpWindowDuration,
                 value: ref.watch(windowDurationProvider),
@@ -328,6 +368,19 @@ class SettingsScreen extends ConsumerWidget {
                     (v) => ref
                         .read(scorePoolingWindowsProvider.notifier)
                         .set(v.toInt()),
+              ),
+              ListTile(
+                leading: const Icon(Icons.speed),
+                title: const Text('Inference Benchmark'),
+                subtitle: const Text(
+                  'Measure latency and compare execution providers',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const BenchmarkScreen(),
+                  ),
+                ),
               ),
               const Divider(),
             ],

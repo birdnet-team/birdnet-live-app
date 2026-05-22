@@ -6,7 +6,7 @@
 // the UI thread, because the `onnxruntime` package used dart:ffi (which is
 // isolate-friendly).
 //
-// `flutter_onnxruntime` (the runtime we now ship) talks to the native ORT
+// `onnxruntime_v2` (the runtime we now ship) talks to the native ORT
 // session via platform channels and runs inference on a native background
 // thread queue, so the heavy work already happens off the UI thread.  The
 // remaining Dart-side post-processing (sigmoid, sort, top-K) takes
@@ -52,6 +52,8 @@ class InferenceIsolate {
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
+    String executionProvider = 'cpu',
+    int intraOpThreads = 0,
   }) async {
     if (isRunning) return;
 
@@ -65,6 +67,8 @@ class InferenceIsolate {
       modelFilePath: modelFilePath,
       labelsCsv: labelsCsv,
       config: config,
+      executionProvider: executionProvider,
+      intraOpThreads: intraOpThreads,
     );
     _service = svc;
     debugPrint('[InferenceIsolate] model ready');

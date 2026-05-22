@@ -182,6 +182,18 @@ class FileAnalysisController {
 
   final InferenceIsolate _isolate = InferenceIsolate();
   ModelConfig? _config;
+  String _executionProvider = 'cpu';
+  int _intraOpThreads = 0;
+
+  /// Set the execution provider before loading the model.
+  void setExecutionProvider(String provider) {
+    _executionProvider = provider;
+  }
+
+  /// Set the intra-op thread count before loading the model.
+  void setIntraOpThreads(int threads) {
+    _intraOpThreads = threads;
+  }
   FileAnalysisState _state = FileAnalysisState.idle;
   String? _errorMessage;
   AnalysisProgress _progress = AnalysisProgress.zero;
@@ -236,6 +248,8 @@ class FileAnalysisController {
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        executionProvider: _executionProvider,
+        intraOpThreads: _intraOpThreads,
       );
 
       _state = FileAnalysisState.ready;

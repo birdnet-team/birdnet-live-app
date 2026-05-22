@@ -500,6 +500,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     // crossing BuildContext async gaps.
     final l10n = AppLocalizations.of(context)!;
 
+    // Apply inference settings before model loads.
+    controller.setExecutionProvider(ref.read(inferenceExecutionProviderProvider));
+    controller.setIntraOpThreads(ref.read(inferenceThreadsProvider));
+
     // Apply user-tunable DSP (gain + high-pass) before capture starts.
     final captureService = ref.read(audioCaptureServiceProvider);
     captureService.setGain(ref.read(audioGainProvider));
