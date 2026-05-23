@@ -255,6 +255,10 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
     // Load model if needed.
     if (!_modelLoaded) {
+      controller.setExecutionProvider(
+        ref.read(inferenceExecutionProviderProvider),
+      );
+      controller.setIntraOpThreads(ref.read(inferenceThreadsProvider));
       await controller.loadModel();
       if (controller.state == FileAnalysisState.error) {
         if (mounted) {

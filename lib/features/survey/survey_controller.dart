@@ -98,6 +98,19 @@ class SurveyController {
   bool _inferring = false;
   int _inferenceCycleCount = 0;
 
+  String _executionProvider = 'cpu';
+  int _intraOpThreads = 0;
+
+  /// Set the execution provider before starting a survey.
+  void setExecutionProvider(String provider) {
+    _executionProvider = provider;
+  }
+
+  /// Set the intra-op thread count before starting a survey.
+  void setIntraOpThreads(int threads) {
+    _intraOpThreads = threads;
+  }
+
   // Species filtering state.
   Map<String, double>? _geoScores;
   Set<String>? _geoModelSpeciesNames;
@@ -290,7 +303,8 @@ class SurveyController {
   // ── Model loading ───────────────────────────────────────────────────────
 
   /// Load the ONNX model from assets.
-  Future<void> loadModel() async {
+  Future<void> loadModel({String executionProvider = 'cpu'}) async {
+    _executionProvider = executionProvider;
     if (_state == SurveyState.loading || _state == SurveyState.active) return;
 
     _state = SurveyState.loading;
@@ -321,6 +335,8 @@ class SurveyController {
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        executionProvider: _executionProvider,
+        intraOpThreads: _intraOpThreads,
       );
 
       _state = SurveyState.idle;
@@ -372,7 +388,7 @@ class SurveyController {
     try {
       // Load model if not already loaded.
       if (!_isolate.isRunning) {
-        await loadModel();
+        await loadModel(executionProvider: _executionProvider);
         if (_state == SurveyState.error) return;
       }
 
@@ -543,7 +559,7 @@ class SurveyController {
 
     try {
       if (!_isolate.isRunning) {
-        await loadModel();
+        await loadModel(executionProvider: _executionProvider);
         if (_state == SurveyState.error) return;
       }
 

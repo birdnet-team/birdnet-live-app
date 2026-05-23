@@ -140,7 +140,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
     // Load model if not ready.
     if (controller.state == LiveState.idle) {
-      await controller.loadModel();
+      await controller.loadModel(
+        executionProvider: ref.read(inferenceExecutionProviderProvider),
+        intraOpThreads: ref.read(inferenceThreadsProvider),
+      );
       _onControllerStateChanged();
     }
     if (controller.state == LiveState.error) return;

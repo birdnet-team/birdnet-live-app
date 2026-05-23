@@ -1,5 +1,8 @@
 package com.birdnet.birdnet_live
 
+import android.os.BatteryManager
+import android.os.Build
+import android.os.PowerManager
 import android.view.WindowManager
 import com.google.android.play.core.assetpacks.AssetPackManagerFactory
 import io.flutter.embedding.android.FlutterActivity
@@ -13,6 +16,7 @@ class MainActivity: FlutterActivity() {
     private val WAKELOCK_CHANNEL = "com.birdnet/wakelock"
     private val AUDIO_DECODER_CHANNEL = "com.birdnet/audio_decoder"
     private val ASSET_PACK_CHANNEL = "com.birdnet/asset_pack"
+    private val DEVICE_STATS_CHANNEL = "com.birdnet/device_stats"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -183,6 +187,49 @@ class MainActivity: FlutterActivity() {
                             }
                         }
                     }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // Device stats channel — power/thermal metrics for the benchmark screen.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_STATS_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getStats" -> {
+                    val bm = applicationContext.getSystemService(BATTERY_SERVICE) as BatteryManager
+                    val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+
+                    // Instantaneous current in µA (negative = discharging).
+                    val currentUa = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+                    // Voltage in mV — comes from the battery-changed broadcast, not BatteryManager.
+                    val batteryIntent = applicationContext.registerReceiver(
+                        null,
+                        android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)
+                    )
+                    val voltageMv = batteryIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+                    // Battery level 0–100.
+                    val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                    // Thermal status 0–6 (NONE/LIGHT/MODERATE/SEVERE/CRITICAL/EMERGENCY/SHUTDOWN).
+                    val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        pm.currentThermalStatus
+                    } else {
+                        -1
+                    }
+
+                    // Chip/SoC info.
+                    val socModel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Build.SOC_MODEL
+                    } else {
+                        Build.HARDWARE
+                    }
+
+                    result.success(mapOf(
+                        "currentUa" to currentUa,
+                        "voltageMv" to voltageMv,
+                        "batteryLevel" to level,
+                        "thermalStatus" to thermalStatus,
+                        "socModel" to socModel,
+                    ))
                 }
                 else -> result.notImplemented()
             }

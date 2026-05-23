@@ -2,6 +2,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:onnxruntime_v2/onnxruntime_v2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
@@ -10,6 +11,9 @@ import 'shared/providers/app_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize ONNX Runtime environment (singleton, must run before any session).
+  OrtEnv.instance.init();
 
   // Initialize foreground task communication for survey background service.
   FlutterForegroundTask.initCommunicationPort();

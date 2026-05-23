@@ -227,7 +227,10 @@ class LiveController {
   /// Only the file *path* is passed to the inference isolate — this avoids
   /// serializing ~259 MB through the isolate port, which would
   /// triple peak memory usage.
-  Future<void> loadModel() async {
+  Future<void> loadModel({
+    String executionProvider = 'cpu',
+    int intraOpThreads = 0,
+  }) async {
     if (_state == LiveState.loading || _state == LiveState.ready) return;
 
     _state = LiveState.loading;
@@ -265,6 +268,8 @@ class LiveController {
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        executionProvider: executionProvider,
+        intraOpThreads: intraOpThreads,
       );
 
       debugPrint('[LiveController] isolate ready');
