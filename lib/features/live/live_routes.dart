@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'live_screen.dart';
 
 /// Standard route used to enter Live mode.
-Route<void> buildLiveScreenRoute() {
-  return MaterialPageRoute<void>(builder: (_) => const LiveScreen());
+Route<void> buildLiveScreenRoute({bool autoStartOnReady = false}) {
+  return MaterialPageRoute<void>(
+    builder: (_) => LiveScreen(autoStartOnReady: autoStartOnReady),
+  );
 }

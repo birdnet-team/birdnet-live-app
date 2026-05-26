@@ -29,7 +29,7 @@ class AppLaunchTargetCoordinator extends ConsumerStatefulWidget {
 
 class _AppLaunchTargetCoordinatorState
     extends ConsumerState<AppLaunchTargetCoordinator> {
-  StreamSubscription<AppLaunchTarget>? _subscription;
+  StreamSubscription<AppLaunchRequest>? _subscription;
   bool _navigationScheduled = false;
 
   @override
@@ -49,8 +49,8 @@ class _AppLaunchTargetCoordinatorState
     _queueTarget(target);
   }
 
-  void _queueTarget(AppLaunchTarget target) {
-    ref.read(pendingLaunchTargetProvider.notifier).state = target;
+  void _queueTarget(AppLaunchRequest request) {
+    ref.read(pendingLaunchTargetProvider.notifier).state = request;
   }
 
   Future<void> _openPendingTarget() async {
@@ -68,10 +68,10 @@ class _AppLaunchTargetCoordinatorState
     ref.read(pendingLaunchTargetProvider.notifier).state = null;
 
     final navigator = Navigator.of(context, rootNavigator: true);
-    switch (pending) {
+    switch (pending.target) {
       case AppLaunchTarget.live:
         navigator.pushAndRemoveUntil(
-          buildLiveScreenRoute(),
+          buildLiveScreenRoute(autoStartOnReady: pending.autoStartLive),
           (route) => route.isFirst,
         );
     }

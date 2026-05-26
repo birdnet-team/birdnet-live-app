@@ -17,12 +17,12 @@ class MainActivity: FlutterActivity() {
     private val AUDIO_DECODER_CHANNEL = "com.birdnet/audio_decoder"
     private val ASSET_PACK_CHANNEL = "com.birdnet/asset_pack"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private var pendingLaunchTarget: String? = null
+    private var pendingLaunchRequest: Map<String, Any?>? = null
     private var launchTargetEvents: EventChannel.EventSink? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingLaunchTarget = extractLaunchTarget(intent)
+        pendingLaunchRequest = extractLaunchRequest(intent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -47,8 +47,8 @@ class MainActivity: FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "takeInitialTarget" -> {
-                    result.success(pendingLaunchTarget)
-                    pendingLaunchTarget = null
+                    result.success(pendingLaunchRequest)
+                    pendingLaunchRequest = null
                 }
                 else -> result.notImplemented()
             }
@@ -229,22 +229,29 @@ class MainActivity: FlutterActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
 
-        val target = extractLaunchTarget(intent) ?: return
-        pendingLaunchTarget = target
-        launchTargetEvents?.success(target)
+        val request = extractLaunchRequest(intent) ?: return
+        pendingLaunchRequest = request
+        launchTargetEvents?.success(request)
     }
 
-    private fun extractLaunchTarget(intent: Intent?): String? {
+    private fun extractLaunchRequest(intent: Intent?): Map<String, Any?>? {
         if (intent == null) return null
 
         val fromExtra = intent.getStringExtra(AppLaunchTargetContract.extraTarget)
-        if (!fromExtra.isNullOrBlank()) return fromExtra
-
-        return when (intent.action) {
-            AppLaunchTargetContract.actionOpenLiveMode ->
+        val target = when {
+            !fromExtra.isNullOrBlank() -> fromExtra
+            intent.action == AppLaunchTargetContract.actionOpenLiveMode ->
                 AppLaunchTargetContract.targetLive
             else -> null
         }
+
+        if (target == null) return null
+
+        return mapOf(
+            AppLaunchTargetContract.payloadTarget to target,
+            AppLaunchTargetContract.payloadLiveAutoStart to
+                intent.getBooleanExtra(AppLaunchTargetContract.extraLiveAutoStart, false),
+        )
     }
 
     override fun onDestroy() {

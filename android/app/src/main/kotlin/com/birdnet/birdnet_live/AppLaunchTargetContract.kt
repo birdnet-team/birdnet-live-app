@@ -6,5 +6,8 @@ object AppLaunchTargetContract {
     const val actionOpenLiveMode =
         "com.birdnet.birdnet_live.action.OPEN_LIVE_MODE"
     const val extraTarget = "launch_target"
+    const val extraLiveAutoStart = "launch_live_auto_start"
+    const val payloadTarget = "target"
+    const val payloadLiveAutoStart = "liveAutoStart"
     const val targetLive = "live"
 }

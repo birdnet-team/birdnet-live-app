@@ -159,6 +159,6 @@ final appLaunchTargetServiceProvider = Provider<AppLaunchTargetService>((ref) {
 });
 
 /// Pending external target waiting to be opened once the app is ready.
-final pendingLaunchTargetProvider = StateProvider<AppLaunchTarget?>((ref) {
+final pendingLaunchTargetProvider = StateProvider<AppLaunchRequest?>((ref) {
   return null;
 });

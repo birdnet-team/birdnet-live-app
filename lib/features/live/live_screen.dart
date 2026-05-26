@@ -47,7 +47,9 @@ import 'widgets/detection_list_widget.dart';
 
 /// Live mode screen — real-time species identification.
 class LiveScreen extends ConsumerStatefulWidget {
-  const LiveScreen({super.key});
+  const LiveScreen({this.autoStartOnReady = false, super.key});
+
+  final bool autoStartOnReady;
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
@@ -112,7 +114,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (!_autoStartAttempted &&
         !_isStarting &&
         controller.state == LiveState.ready &&
-        ref.read(liveAutoStartProvider)) {
+        (widget.autoStartOnReady || ref.read(liveAutoStartProvider))) {
       _autoStartAttempted = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) _toggleSession();

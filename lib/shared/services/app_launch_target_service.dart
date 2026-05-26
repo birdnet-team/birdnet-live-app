@@ -14,8 +14,38 @@ import 'package:flutter/services.dart';
 /// App destination requested by an external launcher surface.
 enum AppLaunchTarget { live }
 
-/// Parse a platform payload into a known [AppLaunchTarget].
-AppLaunchTarget? parseAppLaunchTarget(String? raw) {
+/// Complete launch request emitted by a widget or other external surface.
+class AppLaunchRequest {
+  const AppLaunchRequest({required this.target, this.autoStartLive = false});
+
+  final AppLaunchTarget target;
+  final bool autoStartLive;
+}
+
+/// Parse a platform payload into a known [AppLaunchRequest].
+AppLaunchRequest? parseAppLaunchRequest(dynamic raw) {
+  if (raw is String?) {
+    return _requestForTarget(_parseTarget(raw));
+  }
+
+  if (raw is Map<Object?, Object?>) {
+    final target = _parseTarget(raw['target']?.toString());
+    if (target == null) return null;
+    return AppLaunchRequest(
+      target: target,
+      autoStartLive: raw['liveAutoStart'] == true,
+    );
+  }
+
+  return null;
+}
+
+AppLaunchRequest? _requestForTarget(AppLaunchTarget? target) {
+  if (target == null) return null;
+  return AppLaunchRequest(target: target);
+}
+
+AppLaunchTarget? _parseTarget(String? raw) {
   return switch (raw) {
     'live' => AppLaunchTarget.live,
     _ => null,
@@ -34,10 +64,10 @@ class AppLaunchTargetService {
   const AppLaunchTargetService();
 
   /// Consume the initial target that launched the app, if any.
-  Future<AppLaunchTarget?> takeInitialTarget() async {
+  Future<AppLaunchRequest?> takeInitialTarget() async {
     try {
-      final raw = await _methodChannel.invokeMethod<String>('takeInitialTarget');
-      return parseAppLaunchTarget(raw);
+      final raw = await _methodChannel.invokeMethod<dynamic>('takeInitialTarget');
+      return parseAppLaunchRequest(raw);
     } on MissingPluginException {
       return null;
     } on PlatformException {
@@ -46,7 +76,7 @@ class AppLaunchTargetService {
   }
 
   /// Stream launch targets that arrive while the app is already running.
-  Stream<AppLaunchTarget> watchTargets() {
+  Stream<AppLaunchRequest> watchTargets() {
     return _eventChannel
         .receiveBroadcastStream()
         .transform<dynamic>(
@@ -60,11 +90,11 @@ class AppLaunchTargetService {
             },
           ),
         )
-        .map((dynamic event) => parseAppLaunchTarget(event?.toString()))
-        .transform<AppLaunchTarget>(
-          StreamTransformer<AppLaunchTarget?, AppLaunchTarget>.fromHandlers(
-            handleData: (target, sink) {
-              if (target != null) sink.add(target);
+        .map(parseAppLaunchRequest)
+        .transform<AppLaunchRequest>(
+          StreamTransformer<AppLaunchRequest?, AppLaunchRequest>.fromHandlers(
+            handleData: (request, sink) {
+              if (request != null) sink.add(request);
             },
           ),
         );
