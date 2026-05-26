@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="live_mode_widget_name">Raccourci BirdNET Live</string>
+    <string name="live_mode_widget_text">Live Mode</string>
+    <string name="live_mode_widget_cta">Démarrer l\'enregistrement</string>
+</resources>
