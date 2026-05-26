@@ -23,27 +23,19 @@ void main() {
     'name': 'Test Model',
     'version': '1.0.0',
     'description': 'A test classification model',
-    'audio': {
-      'sampleRate': 44100,
-      'channels': 1,
-    },
+    'audio': {'sampleRate': 44100, 'channels': 1},
     'onnx': {
       'modelFile': 'test_model.onnx',
       'inputName': 'audio_in',
-      'outputNames': {
-        'predictions': 'logits',
-        'embeddings': 'features',
-      },
+      'outputNames': {'predictions': 'logits', 'embeddings': 'features'},
     },
     'labels': {
       'file': 'species.csv',
       'delimiter': ',',
       'hasHeader': true,
-      'columns': {
-        'scientificName': 'species',
-        'commonName': 'common',
-      },
+      'columns': {'scientificName': 'species', 'commonName': 'common'},
     },
+    'scoreBlacklistFile': 'score_blacklist.json',
     'inference': {
       'supportedWindowSeconds': [3, 5],
       'defaultWindowSeconds': 5,
@@ -53,6 +45,11 @@ void main() {
       'temporalPooling': {
         'maxWindows': 3,
         'alpha': 4.0,
+        'peakRetention': 0.97,
+        'minSupportWindows': 2,
+        'supportThresholdFraction': 0.7,
+        'supportThresholdFloor': 0.3,
+        'veryHighImmediateThreshold': 0.96,
       },
     },
   };
@@ -64,6 +61,7 @@ void main() {
       expect(config.name, 'Test Model');
       expect(config.version, '1.0.0');
       expect(config.description, 'A test classification model');
+      expect(config.scoreBlacklistFile, 'score_blacklist.json');
     });
 
     test('toJson round-trips correctly', () {
@@ -84,6 +82,14 @@ void main() {
       expect(
         config2.inference.temporalPooling.alpha,
         config.inference.temporalPooling.alpha,
+      );
+      expect(
+        config2.inference.temporalPooling.peakRetention,
+        config.inference.temporalPooling.peakRetention,
+      );
+      expect(
+        config2.inference.temporalPooling.minSupportWindows,
+        config.inference.temporalPooling.minSupportWindows,
       );
     });
 
@@ -106,12 +112,18 @@ void main() {
       expect(config.onnx.embeddingsName, isNull);
       expect(config.labels.delimiter, ';');
       expect(config.labels.hasHeader, true);
+      expect(config.scoreBlacklistFile, isNull);
       expect(config.inference.defaultWindowSeconds, 3);
       expect(config.inference.defaultSensitivity, 1.0);
       expect(config.inference.defaultConfidenceThreshold, 0.15);
       expect(config.inference.defaultTopK, 10);
       expect(config.inference.temporalPooling.maxWindows, 5);
       expect(config.inference.temporalPooling.alpha, 5.0);
+      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.minSupportWindows, 2);
+      expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 
@@ -134,10 +146,7 @@ void main() {
       final config = OnnxConfig.fromJson({
         'modelFile': 'classifier.onnx',
         'inputName': 'waveform',
-        'outputNames': {
-          'predictions': 'output_0',
-          'embeddings': 'output_1',
-        },
+        'outputNames': {'predictions': 'output_0', 'embeddings': 'output_1'},
       });
 
       expect(config.modelFile, 'classifier.onnx');
@@ -171,9 +180,7 @@ void main() {
         'file': 'taxa.tsv',
         'delimiter': '\t',
         'hasHeader': false,
-        'columns': {
-          'scientificName': 'name',
-        },
+        'columns': {'scientificName': 'name'},
       });
 
       expect(config.file, 'taxa.tsv');
@@ -201,6 +208,11 @@ void main() {
         'temporalPooling': {
           'maxWindows': 10,
           'alpha': 3.0,
+          'peakRetention': 0.9,
+          'minSupportWindows': 3,
+          'supportThresholdFraction': 0.5,
+          'supportThresholdFloor': 0.2,
+          'veryHighImmediateThreshold': 0.98,
         },
       });
 
@@ -211,6 +223,11 @@ void main() {
       expect(config.defaultTopK, 3);
       expect(config.temporalPooling.maxWindows, 10);
       expect(config.temporalPooling.alpha, 3.0);
+      expect(config.temporalPooling.peakRetention, 0.9);
+      expect(config.temporalPooling.minSupportWindows, 3);
+      expect(config.temporalPooling.supportThresholdFraction, 0.5);
+      expect(config.temporalPooling.supportThresholdFloor, 0.2);
+      expect(config.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
 
     test('defaults all fields when JSON is empty', () {
@@ -223,16 +240,34 @@ void main() {
       expect(config.defaultTopK, 10);
       expect(config.temporalPooling.maxWindows, 5);
       expect(config.temporalPooling.alpha, 5.0);
+      expect(config.temporalPooling.peakRetention, 0.98);
+      expect(config.temporalPooling.minSupportWindows, 2);
+      expect(config.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 
   group('TemporalPoolingConfig', () {
-    test('parses maxWindows and alpha', () {
-      final config =
-          TemporalPoolingConfig.fromJson({'maxWindows': 8, 'alpha': 2.5});
+    test('parses all fields', () {
+      final config = TemporalPoolingConfig.fromJson({
+        'maxWindows': 8,
+        'alpha': 2.5,
+        'peakRetention': 0.85,
+        'minSupportWindows': 4,
+        'supportThresholdFraction': 0.4,
+        'supportThresholdFloor': 0.35,
+        'veryHighImmediateThreshold': 0.97,
+      });
 
       expect(config.maxWindows, 8);
       expect(config.alpha, 2.5);
+      expect(config.peakRetention, 0.85);
+      expect(config.minSupportWindows, 4);
+      expect(config.supportThresholdFraction, 0.4);
+      expect(config.supportThresholdFloor, 0.35);
+      expect(config.veryHighImmediateThreshold, 0.97);
+      expect(config.supportThresholdFor(0.5), 0.35);
     });
 
     test('defaults when empty', () {
@@ -240,6 +275,11 @@ void main() {
 
       expect(config.maxWindows, 5);
       expect(config.alpha, 5.0);
+      expect(config.peakRetention, 0.98);
+      expect(config.minSupportWindows, 2);
+      expect(config.supportThresholdFraction, 0.6);
+      expect(config.supportThresholdFloor, 0.25);
+      expect(config.veryHighImmediateThreshold, 0.98);
     });
   });
 
@@ -252,8 +292,9 @@ void main() {
 
       final content = file.readAsStringSync();
       final json = jsonDecode(content) as Map<String, dynamic>;
-      final config =
-          ModelConfig.fromJson(json['audioModel'] as Map<String, dynamic>);
+      final config = ModelConfig.fromJson(
+        json['audioModel'] as Map<String, dynamic>,
+      );
 
       expect(config.name, contains('BirdNET'));
       expect(config.audio.sampleRate, 32000);
@@ -262,9 +303,15 @@ void main() {
       expect(config.onnx.predictionsName, 'predictions');
       expect(config.onnx.embeddingsName, 'embeddings');
       expect(config.labels.file, contains('Labels.csv'));
+      expect(config.scoreBlacklistFile, contains('ScoreBlacklist.json'));
       expect(config.labels.delimiter, ';');
       expect(config.inference.supportedWindowSeconds, contains(3));
       expect(config.inference.defaultConfidenceThreshold, 0.15);
+      expect(config.inference.temporalPooling.minSupportWindows, 2);
+      expect(config.inference.temporalPooling.peakRetention, 0.98);
+      expect(config.inference.temporalPooling.supportThresholdFraction, 0.6);
+      expect(config.inference.temporalPooling.supportThresholdFloor, 0.25);
+      expect(config.inference.temporalPooling.veryHighImmediateThreshold, 0.98);
     });
   });
 }

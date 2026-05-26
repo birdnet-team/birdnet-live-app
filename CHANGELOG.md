@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.15.4] - 2026-05-22
+## [0.15.7] - 2026-05-26
 
 ### Added
 
@@ -14,6 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactored Live mode entry points to reuse a shared route helper and a platform-neutral launch-target bridge, keeping the Android-specific logic limited to the widget and intent handoff.
+
+## [0.15.4] - 2026-05-24
+
+- Tuned LME score pooling to require repeated raw-window support before a new species appears while keeping supported high-confidence calls close to their strongest recent raw score.
+- Made highest confidence the default species sort in Session Review so review starts with the strongest detections first.
+- In Session Review, the highest-confidence sort now also orders detections inside each species, preferring detections with playable audio clips before clipless detections.
+- Raised the default confidence threshold setting from 25% to 35%.
+
+### Fixed
+
+- Unsupported device languages now fall back to English instead of the first generated locale.
 
 ## [0.15.3] - 2026-05-22
 

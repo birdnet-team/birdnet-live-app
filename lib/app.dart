@@ -11,6 +11,29 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
 import 'shared/widgets/app_launch_target_coordinator.dart';
 
+/// Resolve the UI locale from the platform/app preference list.
+///
+/// Flutter's generated locale list is alphabetized, so relying on the default
+/// fallback can land unsupported languages on Czech because `cs` is first.
+/// Prefer an exact language match from the user's locale list, otherwise fall
+/// back to English explicitly.
+Locale resolveAppLocale(
+  List<Locale>? preferredLocales,
+  Iterable<Locale> supportedLocales,
+) {
+  final supported = supportedLocales.toList();
+  for (final preferred in preferredLocales ?? const <Locale>[]) {
+    for (final candidate in supported) {
+      if (candidate.languageCode == preferred.languageCode) return candidate;
+    }
+  }
+
+  return supported.firstWhere(
+    (locale) => locale.languageCode == 'en',
+    orElse: () => supported.first,
+  );
+}
+
 /// Root application widget.
 ///
 /// Configures theme, localization, and the initial route based on
@@ -57,6 +80,12 @@ class App extends ConsumerWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
+          localeListResolutionCallback: resolveAppLocale,
+          localeResolutionCallback:
+              (locale, supportedLocales) => resolveAppLocale(
+                locale == null ? null : <Locale>[locale],
+                supportedLocales,
+              ),
 
           // Initial screen based on app state
           home: const AppLaunchTargetCoordinator(

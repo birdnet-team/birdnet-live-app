@@ -38,11 +38,11 @@ final windowDurationProvider = StateNotifierProvider<IntSettingNotifier, int>((
   return IntSettingNotifier(prefs, PrefKeys.windowDuration, 3);
 });
 
-/// Confidence threshold (0 – 100, default 25).
+/// Confidence threshold (0 – 100, default 35).
 final confidenceThresholdProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 25);
+      return IntSettingNotifier(prefs, PrefKeys.confidenceThreshold, 35);
     });
 
 /// Inference rate in Hz (0.25, 0.5, 1.0, 2.0 — default 1.0).

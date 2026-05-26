@@ -136,7 +136,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     _windowDuration = 3;
     _overlap = 0.0;
     _sensitivity = 1.0;
-    _confidenceThreshold = 25;
+    _confidenceThreshold = 35;
     _speciesFilterMode = 'off';
   }
 

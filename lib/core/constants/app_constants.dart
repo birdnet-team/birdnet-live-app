@@ -228,9 +228,8 @@ abstract final class PrefKeys {
 
   /// Persisted sort order for the species list on the Session Review
   /// screen (one of `SpeciesSortMode.name`: alphabetical, count,
-  /// confidence, firstSeen). Default `alphabetical` — once a session
-  /// has 50+ species, finding one by detection-time order becomes
-  /// painful; alphabetical is the predictable fallback.
+  /// confidence, firstSeen). Default `confidence` so review starts with
+  /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
 
   // --- Announcements (spoken detections, post-v1.0) ---------------------

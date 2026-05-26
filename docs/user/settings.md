@@ -64,7 +64,7 @@ Controls the length of the analysis window.
 
 ### Confidence threshold
 
-Sets how conservative detections should be.
+Sets how conservative detections should be. The default is **35%**, which keeps the live list focused on stronger matches while still leaving room for distant or partially masked calls. Lower it if you are surveying rare or quiet species and plan to review more candidates later; raise it when background noise or common false positives are crowding the session.
 
 ### Sensitivity
 
@@ -76,7 +76,7 @@ Controls how frequently BirdNET runs inference.
 
 ### Score pooling
 
-Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree, which is usually what you want. Switching modes mid-session clears the rolling buffer so old logits don't leak into the new mode.
+Combines scores across recent inference windows so a single noisy window doesn't dominate the result. **Off** uses each window's raw probability — most reactive, noisiest. **Average** arithmetic-means the recent windows for the smoothest output. **Max** keeps the loudest peak per species, which is the most reactive smoothing mode and good for brief, sharp calls. **LME** (log-mean-exp, the default) is BirdNET's reference soft-maximum: it behaves like *max* when one window dominates and like *average* when several windows agree. In LME mode, a new species also needs repeated raw-window support before it first appears, while supported detections keep most of their strongest recent raw score and already-visible species continue until their pooled score falls below the confidence threshold. Switching modes mid-session clears the rolling buffer so old scores don't leak into the new mode.
 
 ### Pooling window count
 

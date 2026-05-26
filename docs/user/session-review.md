@@ -29,9 +29,9 @@ Species are grouped into expandable rows. You can inspect detections by species 
 
 A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :material-sort: button next to it changes the species order:
 
-- **A → Z** (default) — alphabetical by common name. Predictable, locale-aware, and the easiest to scan once a session has lots of species.
+- **Highest confidence** (default) — species with the highest single-detection confidence first. Good for triaging the most certain identifications. When you expand a species in this mode, detections with playable audio clips appear before clipless detections, then by confidence.
 - **Most detections** — species with the highest detection count first. Good for spotting the dominant choristers.
-- **Highest confidence** — species with the highest single-detection confidence first. Good for triaging the most certain identifications.
+- **A → Z** — alphabetical by common name. Predictable, locale-aware, and easy to scan once a session has lots of species.
 - **First detected** — chronological by first-detection time. The historical default; useful when reviewing alongside the spectrogram timeline.
 
 The chosen sort persists across sessions.

@@ -317,10 +317,19 @@ class SurveyController {
           '${AppConstants.modelAssetsDir}/${_config!.labels.file}';
       final labelsCsv = await rootBundle.loadString(labelsAssetPath);
 
+      final blacklistFile = _config!.scoreBlacklistFile;
+      final scoreBlacklistJson =
+          blacklistFile == null
+              ? null
+              : await rootBundle.loadString(
+                '${AppConstants.modelAssetsDir}/$blacklistFile',
+              );
+
       await _isolate.start(
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        scoreBlacklistJson: scoreBlacklistJson,
       );
 
       _state = SurveyState.idle;
