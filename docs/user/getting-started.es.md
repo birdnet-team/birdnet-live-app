@@ -43,6 +43,15 @@ La pantalla de inicio es el centro principal.
 - :material-routes: **Modo Encuesta**
 - :material-file-music: **Análisis de archivos**
 
+### Widgets de Android
+
+En Android, puede añadir el widget **BirdNET Live shortcut** a la pantalla de inicio. Algunos dispositivos y hosts de widgets también permiten colocar el mismo widget en la pantalla de bloqueo.
+
+- Al tocar el widget, la app se abre directamente en **Live Mode** y comienza a grabar automáticamente en cuanto el modelo está listo.
+- Si la app todavía necesita onboarding o aceptar los Terms, BirdNET Live completa primero ese flujo y luego abre Live Mode. La grabación comienza automáticamente en cuanto el modelo está listo.
+- La disponibilidad en la pantalla de bloqueo depende de la versión de Android, del fabricante del dispositivo y del host de widgets; muchos teléfonos siguen ofreciendo solo la colocación en la pantalla de inicio.
+- El widget es solo para Android; iOS y Windows no comparten el mismo sistema de widgets.
+
 ### Botones de pie de página
 
 - :material-tune: **Configuración**

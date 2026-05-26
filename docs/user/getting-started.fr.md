@@ -43,6 +43,15 @@ L'écran d'accueil est le hub principal.
 - :material-routes : **Mode enquête**
 - :material-file-music : **Analyse de fichiers**
 
+### Widgets Android
+
+Sur Android, vous pouvez ajouter le widget **BirdNET Live shortcut** à l'écran d'accueil. Certains appareils et certains hôtes de widgets permettent aussi de placer le même widget sur l'écran de verrouillage.
+
+- Un appui sur le widget ouvre l'appli directement en **Live Mode** et démarre l'enregistrement automatiquement dès que le modèle est prêt.
+- Si l'appli exige encore l'onboarding ou l'acceptation des Terms, BirdNET Live termine d'abord ce flux puis ouvre Live Mode. L'enregistrement démarre automatiquement dès que le modèle est prêt.
+- La disponibilité sur l'écran de verrouillage dépend de la version d'Android, du fabricant de l'appareil et de l'hôte de widgets ; beaucoup de téléphones ne proposent encore que le placement sur l'écran d'accueil.
+- Le widget est réservé à Android ; iOS et Windows n'utilisent pas le même système de widgets.
+
 ### Boutons de pied de page
 
 - :material-tune : **Paramètres**

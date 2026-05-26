@@ -14,6 +14,14 @@ import 'package:flutter/services.dart';
 /// App destination requested by an external launcher surface.
 enum AppLaunchTarget { live }
 
+/// Parse a raw target string into a known [AppLaunchTarget].
+AppLaunchTarget? parseAppLaunchTarget(String? raw) {
+  return switch (raw) {
+    'live' => AppLaunchTarget.live,
+    _ => null,
+  };
+}
+
 /// Complete launch request emitted by a widget or other external surface.
 class AppLaunchRequest {
   const AppLaunchRequest({required this.target, this.autoStartLive = false});
@@ -25,11 +33,11 @@ class AppLaunchRequest {
 /// Parse a platform payload into a known [AppLaunchRequest].
 AppLaunchRequest? parseAppLaunchRequest(dynamic raw) {
   if (raw is String?) {
-    return _requestForTarget(_parseTarget(raw));
+    return _requestForTarget(parseAppLaunchTarget(raw));
   }
 
   if (raw is Map<Object?, Object?>) {
-    final target = _parseTarget(raw['target']?.toString());
+    final target = parseAppLaunchTarget(raw['target']?.toString());
     if (target == null) return null;
     return AppLaunchRequest(
       target: target,
@@ -43,13 +51,6 @@ AppLaunchRequest? parseAppLaunchRequest(dynamic raw) {
 AppLaunchRequest? _requestForTarget(AppLaunchTarget? target) {
   if (target == null) return null;
   return AppLaunchRequest(target: target);
-}
-
-AppLaunchTarget? _parseTarget(String? raw) {
-  return switch (raw) {
-    'live' => AppLaunchTarget.live,
-    _ => null,
-  };
 }
 
 /// Platform-channel bridge for external launch targets.

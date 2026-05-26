@@ -43,6 +43,15 @@ Domovská obrazovka je hlavním centrem.
 - :material-routes: **Režim průzkumu**
 - :material-file-music: **Analýza souborů**
 
+### Widgety pro Android
+
+V systému Android si můžete na domovskou obrazovku přidat widget **BirdNET Live shortcut**. Některá zařízení a hostitelé widgetů umožňují umístit stejný widget i na zamykací obrazovku.
+
+- Klepnutí na widget otevře aplikaci přímo do **Live Mode** a automaticky spustí nahrávání, jakmile je model připraven.
+- Pokud aplikace ještě vyžaduje onboarding nebo přijetí Terms, BirdNET Live nejprve dokončí tento tok a potom otevře Live Mode. Nahrávání se spustí automaticky, jakmile je model připraven.
+- Dostupnost na zamykací obrazovce závisí na verzi Androidu, výrobci zařízení a hostiteli widgetů; mnoho telefonů stále nabízí pouze umístění na domovskou obrazovku.
+- Widget je pouze pro Android; iOS a Windows nepoužívají stejný systém widgetů.
+
 ### Tlačítka zápatí
 
 - :material-tune: **Nastavení**

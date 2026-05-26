@@ -142,6 +142,12 @@ Appare quando è attiva una modalità di filtro basata sulla posizione.
 
 Spunta qualsiasi combinazione di formati di esportazione: ogni salvataggio / condivisione raggrupperà tutti i formati selezionati in un unico ZIP. Se scegli un solo formato senza clip audio e senza report HTML, otterrai un file grezzo (es. `session.csv`) per retrocompatibilità:
 
+### Avvio automatico della registrazione (solo Live Mode)
+
+Quando è attivo, Live Mode inizia a registrare non appena la schermata si apre e il modello ha finito di caricarsi, senza bisogno di toccare il pulsante del microfono. È utile per installazioni tipo chiosco, uso a mani libere o qualsiasi flusso in cui aprire Live Mode significhi sempre “parti subito”. È disattivato per impostazione predefinita, così un tocco accidentale sulla scheda Live nella schermata Home non avvia silenziosamente una sessione. L'avvio automatico scatta solo una volta per ogni visita alla schermata, quindi fermare una sessione e riavviarla manualmente dal microfono continua a funzionare normalmente.
+
+Il widget Android è l'eccezione: aprire Live Mode dal widget avvia sempre automaticamente la registrazione non appena il modello è pronto, anche se questa impostazione è disattivata. In questo modo il widget si comporta come una vera scorciatoia di avvio rapido e non solo come un launcher passivo dell'app.
+
 - Tabella di selezione Raven — per Cornell Raven Pro.
 - CSV — si apre in qualsiasi foglio di calcolo.
 - JSON — ottimo per l'elaborazione programmatica; contiene i metadati completi della sessione.

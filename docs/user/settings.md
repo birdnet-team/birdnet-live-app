@@ -160,6 +160,8 @@ Choose **WAV** or **FLAC**.
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
+The Android widget is the exception: opening Live Mode from the widget always auto-starts recording once the model is ready, even if this setting is off. That makes the widget behave like a dedicated quick-start shortcut instead of a passive app launcher.
+
 ## Location
 
 ### Use GPS

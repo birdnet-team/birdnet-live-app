@@ -43,6 +43,15 @@ Der Startbildschirm ist der Hauptknotenpunkt.
 - :material-routes: **Umfragemodus**
 - :material-file-music: **Dateianalyse**
 
+### Android-Widgets
+
+Unter Android kannst du das Widget **BirdNET Live shortcut** auf dem Startbildschirm ablegen. Manche Geräte und Widget-Hosts erlauben zusätzlich dieselbe Platzierung auf dem Sperrbildschirm.
+
+- Ein Tippen auf das Widget öffnet die App direkt im **Live-Modus** und startet die Aufnahme automatisch, sobald das Modell bereit ist.
+- Falls die App noch Onboarding oder die Annahme der Terms benötigt, schließt BirdNET Live diesen Ablauf zuerst ab und öffnet danach den Live-Modus. Die Aufnahme startet automatisch, sobald das Modell bereit ist.
+- Ob die Platzierung auf dem Sperrbildschirm verfügbar ist, hängt von Android-Version, Gerätehersteller und Widget-Host ab; viele Smartphones bieten weiterhin nur den Startbildschirm an.
+- Das Widget ist nur unter Android verfügbar; iOS und Windows verwenden kein vergleichbares Widgets-System.
+
 ### Fußzeilenschaltflächen
 
 - :material-tune: **Einstellungen**

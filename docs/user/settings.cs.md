@@ -116,6 +116,12 @@ Když je aktivní **Pouze detekce**, aplikace zobrazí jeden posuvník **Kontext
 
 Vyberte **WAV** nebo **FLAC**.
 
+### Automatické spuštění nahrávání (pouze Live Mode)
+
+Když je tato volba zapnutá, Live Mode začne nahrávat hned po otevření obrazovky a dokončení načítání modelu — není nutné klepnout na tlačítko mikrofonu. Hodí se pro kiosková nasazení, hands-free použití nebo workflow, kde otevření Live Mode vždy znamená „začni hned“. Ve výchozím stavu je vypnutá, aby náhodné klepnutí na kartu Live nespustilo relaci bez upozornění. Automatické spuštění proběhne jen jednou při každé návštěvě obrazovky, takže po zastavení relace zůstává ruční restart přes mikrofon beze změny.
+
+Výjimkou je widget pro Android: otevření Live Mode z widgetu vždy automaticky spustí nahrávání, jakmile je model připraven, i když je toto nastavení vypnuté. Widget se tak chová jako vyhrazená zkratka pro rychlý start, ne jen jako pasivní spouštěč aplikace.
+
 ## Místo
 
 ### Použijte GPS

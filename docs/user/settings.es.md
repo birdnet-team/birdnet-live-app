@@ -116,6 +116,12 @@ Cuando **Solo detecciones** está activo, la aplicación muestra un único contr
 
 Elija **WAV** o **FLAC**.
 
+### Inicio automático de la grabación (solo Live Mode)
+
+Cuando está activado, Live Mode empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin necesidad de tocar el botón del micrófono. Es útil para despliegues tipo kiosco, uso manos libres o cualquier flujo en el que abrir Live Mode siempre signifique “empezar ya”. Está desactivado por defecto para que un toque accidental en la tarjeta Live de la pantalla de inicio no inicie una sesión en silencio. El inicio automático se dispara solo una vez por visita a la pantalla, así que detener una sesión y reiniciarla manualmente con el micrófono sigue funcionando igual.
+
+El widget de Android es la excepción: abrir Live Mode desde el widget siempre inicia la grabación automáticamente en cuanto el modelo está listo, aunque este ajuste esté desactivado. Así, el widget se comporta como un acceso directo de inicio rápido y no solo como un lanzador pasivo de la app.
+
 ## Ubicación
 
 ### Usar GPS

@@ -43,13 +43,14 @@ The Home screen is the main hub.
 - :material-routes: **Survey Mode**
 - :material-file-music: **File Analysis**
 
-### Android home screen widget
+### Android widgets
 
-On Android, you can add the **BirdNET Live shortcut** widget to your home screen.
+On Android, you can add the **BirdNET Live shortcut** widget to your home screen. Some devices and widget hosts also let you place the same widget on the lock screen.
 
-- Tapping it opens the app straight into **Live Mode**.
-- If the app still needs onboarding or Terms acceptance, BirdNET Live finishes that flow first and then opens Live Mode.
-- The widget is Android-only; iOS and Windows do not share the same home screen widget system.
+- Tapping the widget opens the app straight into **Live Mode** and starts recording automatically as soon as the model is ready.
+- If the app still needs onboarding or Terms acceptance, BirdNET Live finishes that flow first and then opens Live Mode. Recording starts automatically once the model is ready.
+- Lock screen availability depends on the Android version, device manufacturer, and widget host; many phones still expose only home screen placement.
+- The widget is Android-only; iOS and Windows do not share the same widget system.
 
 ### Footer buttons
 
