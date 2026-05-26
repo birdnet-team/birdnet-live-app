@@ -3,8 +3,9 @@
     android:minWidth="140dp"
     android:minHeight="64dp"
     android:initialLayout="@layout/live_mode_widget"
+    android:initialKeyguardLayout="@layout/live_mode_widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"
     android:targetCellHeight="1"
     android:updatePeriodMillis="0"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen|keyguard" />
