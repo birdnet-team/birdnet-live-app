@@ -14,16 +14,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Helper to build a list of dummy [Species] for testing.
 List<Species> _dummyLabels(int count) => List.generate(
-      count,
-      (i) => Species(
-        index: i,
-        id: i,
-        scientificName: 'Species $i',
-        commonName: 'Bird $i',
-        className: 'Aves',
-        order: 'Order',
-      ),
-    );
+  count,
+  (i) => Species(
+    index: i,
+    id: i,
+    scientificName: 'Species $i',
+    commonName: 'Bird $i',
+    className: 'Aves',
+    order: 'Order',
+  ),
+);
 
 void main() {
   // ─────────────────────────────────────────────────────────────────────────
@@ -47,15 +47,19 @@ void main() {
 
     test('sigmoid is monotonically increasing', () {
       for (var x = -10.0; x < 10.0; x += 0.5) {
-        expect(PostProcessor.sigmoid(x + 0.5),
-            greaterThanOrEqualTo(PostProcessor.sigmoid(x)));
+        expect(
+          PostProcessor.sigmoid(x + 0.5),
+          greaterThanOrEqualTo(PostProcessor.sigmoid(x)),
+        );
       }
     });
 
     test('sigmoid(-x) = 1 - sigmoid(x)', () {
       for (var x = -5.0; x <= 5.0; x += 0.5) {
-        expect(PostProcessor.sigmoid(-x),
-            closeTo(1.0 - PostProcessor.sigmoid(x), 1e-10));
+        expect(
+          PostProcessor.sigmoid(-x),
+          closeTo(1.0 - PostProcessor.sigmoid(x), 1e-10),
+        );
       }
     });
 
@@ -107,8 +111,10 @@ void main() {
       final adjusted = PostProcessor.applySensitivityAll(probs, 1.2);
       expect(adjusted.length, 3);
       for (var i = 0; i < probs.length; i++) {
-        expect(adjusted[i],
-            closeTo(PostProcessor.applySensitivity(probs[i], 1.2), 1e-10));
+        expect(
+          adjusted[i],
+          closeTo(PostProcessor.applySensitivity(probs[i], 1.2), 1e-10),
+        );
       }
     });
 
@@ -128,11 +134,7 @@ void main() {
       final labels = _dummyLabels(5);
       final scores = [0.1, 0.9, 0.3, 0.7, 0.5];
 
-      final results = PostProcessor.topK(
-        scores: scores,
-        labels: labels,
-        k: 3,
-      );
+      final results = PostProcessor.topK(scores: scores, labels: labels, k: 3);
 
       expect(results.length, 3);
       expect(results[0].species.index, 1); // 0.9
@@ -144,11 +146,7 @@ void main() {
       final labels = _dummyLabels(2);
       final scores = [0.8, 0.6];
 
-      final results = PostProcessor.topK(
-        scores: scores,
-        labels: labels,
-        k: 10,
-      );
+      final results = PostProcessor.topK(scores: scores, labels: labels, k: 10);
 
       expect(results.length, 2);
     });
@@ -202,11 +200,7 @@ void main() {
     });
 
     test('empty scores returns empty list', () {
-      final results = PostProcessor.topK(
-        scores: [],
-        labels: [],
-        k: 10,
-      );
+      final results = PostProcessor.topK(scores: [], labels: [], k: 10);
       expect(results, isEmpty);
     });
   });
@@ -235,19 +229,20 @@ void main() {
     });
 
     test(
-        'all near-zero probabilities produce no detections at default threshold',
-        () {
-      final labels = _dummyLabels(5);
-      final scores = [0.001, 0.001, 0.001, 0.001, 0.001];
+      'all near-zero probabilities produce no detections at default threshold',
+      () {
+        final labels = _dummyLabels(5);
+        final scores = [0.001, 0.001, 0.001, 0.001, 0.001];
 
-      final results = PostProcessor.process(
-        scores: scores,
-        labels: labels,
-        threshold: 0.15,
-      );
+        final results = PostProcessor.process(
+          scores: scores,
+          labels: labels,
+          threshold: 0.15,
+        );
 
-      expect(results, isEmpty);
-    });
+        expect(results, isEmpty);
+      },
+    );
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -311,6 +306,175 @@ void main() {
       // Higher alpha → result closer to 0.8 (the peak).
       expect(high[0], greaterThan(low[0]));
     });
+
+    test('peak retention keeps supported obvious calls near raw peak', () {
+      final windows = [
+        [0.95],
+        [0.90],
+        [0.85],
+        [0.05],
+        [0.05],
+      ];
+
+      final pooledWithoutRetention = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+      );
+      final pooledWithRetention = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
+
+      expect(pooledWithoutRetention.single, lessThan(0.9));
+      expect(pooledWithRetention.single, greaterThan(0.9));
+      expect(pooledWithRetention.single, closeTo(0.95 * 0.98, 1e-10));
+    });
+  });
+
+  group('PostProcessor.applyTemporalSupportGate', () {
+    test('suppresses a single high-scoring one-off false positive', () {
+      final windows = [
+        [0.05],
+        [0.05],
+        [0.90],
+        [0.05],
+        [0.05],
+      ];
+      final pooled = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
+
+      final gated = PostProcessor.applyTemporalSupportGate(
+        scores: pooled,
+        windowScores: windows,
+        confirmedIndexes: const {},
+        confidenceThreshold: 0.5,
+        supportThreshold: 0.3,
+        minSupportWindows: 2,
+        veryHighImmediateThreshold: 0.98,
+      );
+
+      expect(pooled.single, greaterThan(0.85));
+      expect(gated.single, lessThan(0.0));
+    });
+
+    test('keeps a high score from being drowned by arithmetic averaging', () {
+      final windows = [
+        [0.90],
+        [0.75],
+        [0.10],
+        [0.05],
+        [0.05],
+      ];
+      final average = PostProcessor.average(windows);
+      final pooled = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
+      final gated = PostProcessor.applyTemporalSupportGate(
+        scores: pooled,
+        windowScores: windows,
+        confirmedIndexes: const {},
+        confidenceThreshold: 0.5,
+        supportThreshold: 0.3,
+        minSupportWindows: 2,
+        veryHighImmediateThreshold: 0.98,
+      );
+
+      expect(average.single, lessThan(0.5));
+      expect(pooled.single, greaterThan(0.85));
+      expect(gated.single, pooled.single);
+    });
+
+    test('allows sustained moderate evidence with repeated support', () {
+      final windows = [
+        [0.45],
+        [0.52],
+        [0.55],
+        [0.48],
+        [0.50],
+      ];
+      final pooled = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
+
+      final gated = PostProcessor.applyTemporalSupportGate(
+        scores: pooled,
+        windowScores: windows,
+        confirmedIndexes: const {},
+        confidenceThreshold: 0.5,
+        supportThreshold: 0.3,
+        minSupportWindows: 2,
+        veryHighImmediateThreshold: 0.98,
+      );
+
+      expect(pooled.single, greaterThanOrEqualTo(0.5));
+      expect(gated.single, pooled.single);
+    });
+
+    test(
+      'lets already confirmed detections remain until they drop below threshold',
+      () {
+        final windows = [
+          [0.90],
+          [0.05],
+          [0.05],
+          [0.05],
+          [0.05],
+        ];
+        final pooled = PostProcessor.logMeanExp(
+          windows,
+          alpha: 5.0,
+          peakRetention: 0.98,
+        );
+
+        final gated = PostProcessor.applyTemporalSupportGate(
+          scores: pooled,
+          windowScores: windows,
+          confirmedIndexes: {0},
+          confidenceThreshold: 0.5,
+          supportThreshold: 0.3,
+          minSupportWindows: 2,
+          veryHighImmediateThreshold: 0.98,
+        );
+
+        expect(pooled.single, greaterThan(0.5));
+        expect(gated.single, pooled.single);
+      },
+    );
+
+    test('allows a very high current-window score immediately', () {
+      final windows = [
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.99],
+      ];
+      final pooled = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
+
+      final gated = PostProcessor.applyTemporalSupportGate(
+        scores: pooled,
+        windowScores: windows,
+        confirmedIndexes: const {},
+        confidenceThreshold: 0.5,
+        supportThreshold: 0.3,
+        minSupportWindows: 2,
+        veryHighImmediateThreshold: 0.98,
+      );
+
+      expect(gated.single, pooled.single);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -320,38 +484,25 @@ void main() {
   group('Detection', () {
     test('confidencePercent formats correctly', () {
       final labels = _dummyLabels(1);
-      final det = PostProcessor.topK(
-        scores: [0.873],
-        labels: labels,
-        k: 1,
-      ).first;
+      final det =
+          PostProcessor.topK(scores: [0.873], labels: labels, k: 1).first;
 
       expect(det.confidencePercent, '87.3 %');
     });
 
     test('toString contains species name', () {
       final labels = _dummyLabels(1);
-      final det = PostProcessor.topK(
-        scores: [0.5],
-        labels: labels,
-        k: 1,
-      ).first;
+      final det = PostProcessor.topK(scores: [0.5], labels: labels, k: 1).first;
 
       expect(det.toString(), contains('Bird 0'));
     });
 
     test('equality checks species and confidence', () {
       final labels = _dummyLabels(2);
-      final a = PostProcessor.topK(
-        scores: [0.8, 0.2],
-        labels: labels,
-        k: 1,
-      ).first;
-      final b = PostProcessor.topK(
-        scores: [0.8, 0.2],
-        labels: labels,
-        k: 1,
-      ).first;
+      final a =
+          PostProcessor.topK(scores: [0.8, 0.2], labels: labels, k: 1).first;
+      final b =
+          PostProcessor.topK(scores: [0.8, 0.2], labels: labels, k: 1).first;
 
       expect(a, equals(b));
     });

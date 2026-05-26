@@ -102,10 +102,31 @@ part 'widgets/session_review_widgets.dart';
 /// Sort modes for the species list on the Session Review screen.
 ///
 /// Persisted via [PrefKeys.sessionReviewSpeciesSort] (stored as
-/// `name`). [alphabetical] is the new default — first-detection order
-/// becomes hard to scan once a session has 50+ species. [firstSeen]
-/// stays available for users who want the historical behavior.
+/// `name`). [confidence] is the default so review starts with the most
+/// likely identifications. [firstSeen] stays available for users who want
+/// the historical behavior.
 enum SpeciesSortMode { alphabetical, count, confidence, firstSeen }
+
+/// Compare Session Review detections for confidence-focused review order.
+///
+/// Used for expanded detection clusters when [SpeciesSortMode.confidence] is
+/// active: clip-backed detections are most useful for review, then higher
+/// confidence, then earlier time for deterministic ties.
+int compareSessionReviewConfidenceSortEntries({
+  required bool aHasAudioClip,
+  required double aConfidence,
+  required DateTime aTimestamp,
+  required bool bHasAudioClip,
+  required double bConfidence,
+  required DateTime bTimestamp,
+}) {
+  if (aHasAudioClip != bHasAudioClip) return aHasAudioClip ? -1 : 1;
+
+  final confidence = bConfidence.compareTo(aConfidence);
+  if (confidence != 0) return confidence;
+
+  return aTimestamp.compareTo(bTimestamp);
+}
 
 class _ReviewWarningCard extends StatelessWidget {
   const _ReviewWarningCard({
@@ -637,9 +658,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       TextEditingController();
 
   /// Active sort mode for the species list. Loaded asynchronously in
-  /// [initState]; defaults to [SpeciesSortMode.alphabetical] which is
-  /// the predictable fallback once a session has lots of species.
-  SpeciesSortMode _speciesSort = SpeciesSortMode.alphabetical;
+  /// [initState]; defaults to [SpeciesSortMode.confidence] so review starts
+  /// with the most likely identifications.
+  SpeciesSortMode _speciesSort = SpeciesSortMode.confidence;
 
   _ReviewSnapshot _takeSnapshot() => _ReviewSnapshot(
     detections: List.of(_detections),
@@ -775,7 +796,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (stored == null || !mounted) return;
     final mode = SpeciesSortMode.values.firstWhere(
       (m) => m.name == stored,
-      orElse: () => SpeciesSortMode.alphabetical,
+      orElse: () => SpeciesSortMode.confidence,
     );
     if (mode != _speciesSort) {
       setState(() => _speciesSort = mode);
@@ -2978,9 +2999,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
           if (_audioAvailable)
             IconButton(
-              icon: Icon(
-                AppIcons.contentCut,
-              ),
+              icon: Icon(AppIcons.contentCut),
               tooltip: l10n.sessionTrimRecording,
               onPressed: _toggleTrimMode,
               color: _trimMode ? theme.colorScheme.primary : null,
@@ -3246,7 +3265,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       avatar: Icon(
         a.hasVoiceMemo
             ? AppIcons.mic
-            : (a.offsetInRecording != null ? AppIcons.schedule : AppIcons.shortText),
+            : (a.offsetInRecording != null
+                ? AppIcons.schedule
+                : AppIcons.shortText),
         size: 16,
       ),
       onPressed: () => _editAnnotation(i),
@@ -3319,6 +3340,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         break;
     }
 
+    _SpeciesGroup displayGroup(_SpeciesGroup group) {
+      if (_speciesSort != SpeciesSortMode.confidence) return group;
+      final clusters = List<_DetectionCluster>.of(group.clusters)..sort(
+        (a, b) => compareSessionReviewConfidenceSortEntries(
+          aHasAudioClip: a.hasAudioClip,
+          aConfidence: a.bestConfidence,
+          aTimestamp: a.firstTimestamp,
+          bHasAudioClip: b.hasAudioClip,
+          bConfidence: b.bestConfidence,
+          bTimestamp: b.firstTimestamp,
+        ),
+      );
+      return _SpeciesGroup(
+        scientificName: group.scientificName,
+        commonName: group.commonName,
+        clusters: clusters,
+      );
+    }
+
     final header = _buildSpeciesListHeader(theme, l10n);
     final hasAnyGroups = _filteredSpeciesGroups.isNotEmpty;
 
@@ -3354,7 +3394,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         padding: const EdgeInsets.only(bottom: 80),
         itemCount: sorted.length,
         itemBuilder: (context, index) {
-          final group = sorted[index];
+          final group = displayGroup(sorted[index]);
           final isExpanded = _expandedSpecies.contains(group.scientificName);
           final isActive =
               _isSpeciesActive(group) ||
@@ -3468,6 +3508,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             itemBuilder:
                 (context) => [
                   CheckedPopupMenuItem(
+                    value: SpeciesSortMode.confidence,
+                    checked: _speciesSort == SpeciesSortMode.confidence,
+                    child: Text(l10n.sessionSpeciesSortConfidence),
+                  ),
+                  CheckedPopupMenuItem(
                     value: SpeciesSortMode.alphabetical,
                     checked: _speciesSort == SpeciesSortMode.alphabetical,
                     child: Text(l10n.sessionSpeciesSortAlphabetical),
@@ -3476,11 +3521,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     value: SpeciesSortMode.count,
                     checked: _speciesSort == SpeciesSortMode.count,
                     child: Text(l10n.sessionSpeciesSortCount),
-                  ),
-                  CheckedPopupMenuItem(
-                    value: SpeciesSortMode.confidence,
-                    checked: _speciesSort == SpeciesSortMode.confidence,
-                    child: Text(l10n.sessionSpeciesSortConfidence),
                   ),
                   CheckedPopupMenuItem(
                     value: SpeciesSortMode.firstSeen,
@@ -4373,11 +4413,7 @@ class _MapFilterChip extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  AppIcons.filterList,
-                  size: 18,
-                  color: fg,
-                ),
+                Icon(AppIcons.filterList, size: 18, color: fg),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(

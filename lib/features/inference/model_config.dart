@@ -13,6 +13,7 @@
 // | `onnx`     | File name, input/output tensor names                    |
 // | `labels`   | File name, delimiter, column mapping for the labels CSV |
 // | `inference`| Window sizes, post-processing defaults                  |
+// | `scoreBlacklistFile` | Optional common-name score multiplier JSON     |
 //
 // ### Usage
 //
@@ -39,6 +40,7 @@ class ModelConfig {
     required this.onnx,
     required this.labels,
     required this.inference,
+    this.scoreBlacklistFile,
   });
 
   // ---------------------------------------------------------------------------
@@ -66,6 +68,13 @@ class ModelConfig {
   /// Inference pipeline defaults.
   final InferenceDefaults inference;
 
+  /// Optional JSON file with per-label score multipliers.
+  ///
+  /// The file lives next to the model assets and maps English common names
+  /// from the model labels to fractions in [0, 1], for example:
+  /// `{ "Red Fox": 0.5 }`.
+  final String? scoreBlacklistFile;
+
   // ---------------------------------------------------------------------------
   // JSON
   // ---------------------------------------------------------------------------
@@ -82,21 +91,24 @@ class ModelConfig {
       audio: AudioConfig.fromJson(json['audio'] as Map<String, dynamic>),
       onnx: OnnxConfig.fromJson(json['onnx'] as Map<String, dynamic>),
       labels: LabelsConfig.fromJson(json['labels'] as Map<String, dynamic>),
-      inference:
-          InferenceDefaults.fromJson(json['inference'] as Map<String, dynamic>),
+      inference: InferenceDefaults.fromJson(
+        json['inference'] as Map<String, dynamic>,
+      ),
+      scoreBlacklistFile: json['scoreBlacklistFile'] as String?,
     );
   }
 
   /// Serialize to a JSON-compatible map.
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'version': version,
-        'description': description,
-        'audio': audio.toJson(),
-        'onnx': onnx.toJson(),
-        'labels': labels.toJson(),
-        'inference': inference.toJson(),
-      };
+    'name': name,
+    'version': version,
+    'description': description,
+    'audio': audio.toJson(),
+    'onnx': onnx.toJson(),
+    'labels': labels.toJson(),
+    'inference': inference.toJson(),
+    if (scoreBlacklistFile != null) 'scoreBlacklistFile': scoreBlacklistFile,
+  };
 }
 
 // =============================================================================
@@ -105,10 +117,7 @@ class ModelConfig {
 
 /// Audio format expected by the model.
 class AudioConfig {
-  const AudioConfig({
-    required this.sampleRate,
-    this.channels = 1,
-  });
+  const AudioConfig({required this.sampleRate, this.channels = 1});
 
   /// Sample rate in Hz (e.g. 32 000, 44 100, 48 000).
   final int sampleRate;
@@ -124,9 +133,9 @@ class AudioConfig {
   }
 
   Map<String, dynamic> toJson() => {
-        'sampleRate': sampleRate,
-        'channels': channels,
-      };
+    'sampleRate': sampleRate,
+    'channels': channels,
+  };
 }
 
 // =============================================================================
@@ -164,9 +173,10 @@ class OnnxConfig {
 
   factory OnnxConfig.fromJson(Map<String, dynamic> json) {
     final rawOutputs = json['outputNames'];
-    final outputNames = rawOutputs is Map
-        ? rawOutputs.map((k, v) => MapEntry(k.toString(), v.toString()))
-        : const {'predictions': 'predictions'};
+    final outputNames =
+        rawOutputs is Map
+            ? rawOutputs.map((k, v) => MapEntry(k.toString(), v.toString()))
+            : const {'predictions': 'predictions'};
 
     return OnnxConfig(
       modelFile: json['modelFile'] as String,
@@ -176,10 +186,10 @@ class OnnxConfig {
   }
 
   Map<String, dynamic> toJson() => {
-        'modelFile': modelFile,
-        'inputName': inputName,
-        'outputNames': outputNames,
-      };
+    'modelFile': modelFile,
+    'inputName': inputName,
+    'outputNames': outputNames,
+  };
 }
 
 // =============================================================================
@@ -225,11 +235,10 @@ class LabelsConfig {
 
   factory LabelsConfig.fromJson(Map<String, dynamic> json) {
     final rawCols = json['columns'];
-    final columns = rawCols is Map
-        ? rawCols.map((k, v) => MapEntry(k.toString(), v.toString()))
-        : const <String, String>{
-            'scientificName': 'sci_name',
-          };
+    final columns =
+        rawCols is Map
+            ? rawCols.map((k, v) => MapEntry(k.toString(), v.toString()))
+            : const <String, String>{'scientificName': 'sci_name'};
 
     return LabelsConfig(
       file: json['file'] as String,
@@ -240,11 +249,11 @@ class LabelsConfig {
   }
 
   Map<String, dynamic> toJson() => {
-        'file': file,
-        'delimiter': delimiter,
-        'hasHeader': hasHeader,
-        'columns': columns,
-      };
+    'file': file,
+    'delimiter': delimiter,
+    'hasHeader': hasHeader,
+    'columns': columns,
+  };
 }
 
 // =============================================================================
@@ -284,14 +293,16 @@ class InferenceDefaults {
 
   factory InferenceDefaults.fromJson(Map<String, dynamic> json) {
     final rawWindows = json['supportedWindowSeconds'];
-    final windows = rawWindows is List
-        ? rawWindows.map((e) => (e as num).toInt()).toList()
-        : const [3];
+    final windows =
+        rawWindows is List
+            ? rawWindows.map((e) => (e as num).toInt()).toList()
+            : const [3];
 
     final rawPooling = json['temporalPooling'];
-    final pooling = rawPooling is Map<String, dynamic>
-        ? TemporalPoolingConfig.fromJson(rawPooling)
-        : const TemporalPoolingConfig();
+    final pooling =
+        rawPooling is Map<String, dynamic>
+            ? TemporalPoolingConfig.fromJson(rawPooling)
+            : const TemporalPoolingConfig();
 
     return InferenceDefaults(
       supportedWindowSeconds: windows,
@@ -307,13 +318,13 @@ class InferenceDefaults {
   }
 
   Map<String, dynamic> toJson() => {
-        'supportedWindowSeconds': supportedWindowSeconds,
-        'defaultWindowSeconds': defaultWindowSeconds,
-        'defaultSensitivity': defaultSensitivity,
-        'defaultConfidenceThreshold': defaultConfidenceThreshold,
-        'defaultTopK': defaultTopK,
-        'temporalPooling': temporalPooling.toJson(),
-      };
+    'supportedWindowSeconds': supportedWindowSeconds,
+    'defaultWindowSeconds': defaultWindowSeconds,
+    'defaultSensitivity': defaultSensitivity,
+    'defaultConfidenceThreshold': defaultConfidenceThreshold,
+    'defaultTopK': defaultTopK,
+    'temporalPooling': temporalPooling.toJson(),
+  };
 }
 
 // =============================================================================
@@ -325,6 +336,11 @@ class TemporalPoolingConfig {
   const TemporalPoolingConfig({
     this.maxWindows = 5,
     this.alpha = 5.0,
+    this.peakRetention = 0.98,
+    this.minSupportWindows = 2,
+    this.supportThresholdFraction = 0.6,
+    this.supportThresholdFloor = 0.25,
+    this.veryHighImmediateThreshold = 0.98,
   });
 
   /// Maximum number of recent inference windows to keep for pooling.
@@ -333,15 +349,51 @@ class TemporalPoolingConfig {
   /// LME alpha — higher values weight peaks more heavily.
   final double alpha;
 
+  /// Fraction of the strongest recent raw score retained in LME mode.
+  final double peakRetention;
+
+  /// Number of raw recent windows required before a new LME detection appears.
+  final int minSupportWindows;
+
+  /// Fraction of the active confidence threshold used for raw-window support.
+  final double supportThresholdFraction;
+
+  /// Lower bound for the raw-window support threshold.
+  final double supportThresholdFloor;
+
+  /// Raw current-window score high enough to bypass multi-window support.
+  final double veryHighImmediateThreshold;
+
+  /// Raw-window score needed to count toward temporal support.
+  double supportThresholdFor(double confidenceThreshold) {
+    final threshold = confidenceThreshold * supportThresholdFraction;
+    if (threshold < supportThresholdFloor) return supportThresholdFloor;
+    if (threshold > 1.0) return 1.0;
+    return threshold;
+  }
+
   factory TemporalPoolingConfig.fromJson(Map<String, dynamic> json) {
     return TemporalPoolingConfig(
       maxWindows: (json['maxWindows'] as num?)?.toInt() ?? 5,
       alpha: (json['alpha'] as num?)?.toDouble() ?? 5.0,
+      peakRetention: (json['peakRetention'] as num?)?.toDouble() ?? 0.98,
+      minSupportWindows: (json['minSupportWindows'] as num?)?.toInt() ?? 2,
+      supportThresholdFraction:
+          (json['supportThresholdFraction'] as num?)?.toDouble() ?? 0.6,
+      supportThresholdFloor:
+          (json['supportThresholdFloor'] as num?)?.toDouble() ?? 0.25,
+      veryHighImmediateThreshold:
+          (json['veryHighImmediateThreshold'] as num?)?.toDouble() ?? 0.98,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'maxWindows': maxWindows,
-        'alpha': alpha,
-      };
+    'maxWindows': maxWindows,
+    'alpha': alpha,
+    'peakRetention': peakRetention,
+    'minSupportWindows': minSupportWindows,
+    'supportThresholdFraction': supportThresholdFraction,
+    'supportThresholdFloor': supportThresholdFloor,
+    'veryHighImmediateThreshold': veryHighImmediateThreshold,
+  };
 }

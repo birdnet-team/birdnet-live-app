@@ -260,11 +260,20 @@ class LiveController {
       final labelsCsv = await rootBundle.loadString(labelsAssetPath);
       debugPrint('[LiveController] labels loaded (${labelsCsv.length} chars)');
 
+      final blacklistFile = _config!.scoreBlacklistFile;
+      final scoreBlacklistJson =
+          blacklistFile == null
+              ? null
+              : await rootBundle.loadString(
+                '${AppConstants.modelAssetsDir}/$blacklistFile',
+              );
+
       // Start isolate with file path (not bytes).
       await _isolate.start(
         modelFilePath: modelFilePath,
         labelsCsv: labelsCsv,
         config: _config!,
+        scoreBlacklistJson: scoreBlacklistJson,
       );
 
       debugPrint('[LiveController] isolate ready');

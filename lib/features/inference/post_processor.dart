@@ -179,25 +179,34 @@ abstract final class PostProcessor {
   /// ```
   ///
   /// [alpha] controls smoothing: higher values emphasise peaks (default 5.0,
-  /// matching the BirdNET PWA reference implementation).
+  /// matching the BirdNET PWA reference implementation). [peakRetention]
+  /// optionally keeps the pooled score close to the strongest recent raw score;
+  /// temporal support gating should be used with this so one-off spikes do not
+  /// become first detections.
   static List<double> logMeanExp(
     List<List<double>> windowScores, {
     double alpha = 5.0,
+    double peakRetention = 0.0,
   }) {
     if (windowScores.isEmpty) return [];
     if (windowScores.length == 1) return List.of(windowScores.first);
 
     final numClasses = windowScores.first.length;
     final pooled = List<double>.filled(numClasses, 0.0);
+    final retention = peakRetention.clamp(0.0, 1.0);
 
     for (var c = 0; c < numClasses; c++) {
       // Collect scores for this class across all windows.
       var sumExp = 0.0;
+      var peak = 0.0;
       for (final window in windowScores) {
-        sumExp += math.exp(alpha * window[c]);
+        final score = window[c];
+        sumExp += math.exp(alpha * score);
+        if (score > peak) peak = score;
       }
       final meanExp = sumExp / windowScores.length;
-      pooled[c] = math.log(meanExp) / alpha;
+      final lme = math.log(meanExp) / alpha;
+      pooled[c] = math.max(lme, peak * retention);
     }
 
     return pooled;
@@ -241,6 +250,69 @@ abstract final class PostProcessor {
       }
     }
     return pooled;
+  }
+
+  /// Whether class [index] has enough raw-window support to appear.
+  ///
+  /// This is separate from LME scoring: LME preserves high peaks, while this
+  /// gate prevents a single unsupported peak from becoming a first detection.
+  static bool hasTemporalSupport({
+    required List<List<double>> windowScores,
+    required int index,
+    required double supportThreshold,
+    required int minSupportWindows,
+    required double veryHighImmediateThreshold,
+  }) {
+    if (windowScores.isEmpty) return true;
+    if (minSupportWindows <= 1) return true;
+
+    final latest = windowScores.last[index];
+    if (latest >= veryHighImmediateThreshold) return true;
+
+    var supportingWindows = 0;
+    for (final window in windowScores) {
+      if (window[index] >= supportThreshold) {
+        supportingWindows++;
+        if (supportingWindows >= minSupportWindows) return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Suppress new pooled detections that lack raw-window support.
+  ///
+  /// [confirmedIndexes] are already visible detections from the previous
+  /// inference cycle. They keep using pooled scores until they fall below the
+  /// active confidence threshold, avoiding flicker after initial confirmation.
+  static List<double> applyTemporalSupportGate({
+    required List<double> scores,
+    required List<List<double>> windowScores,
+    required Set<int> confirmedIndexes,
+    required double confidenceThreshold,
+    required double supportThreshold,
+    required int minSupportWindows,
+    required double veryHighImmediateThreshold,
+  }) {
+    if (windowScores.isEmpty || minSupportWindows <= 1) return scores;
+
+    final gated = List<double>.of(scores);
+    for (var i = 0; i < scores.length; i++) {
+      if (scores[i] < confidenceThreshold || confirmedIndexes.contains(i)) {
+        continue;
+      }
+
+      final supported = hasTemporalSupport(
+        windowScores: windowScores,
+        index: i,
+        supportThreshold: supportThreshold,
+        minSupportWindows: minSupportWindows,
+        veryHighImmediateThreshold: veryHighImmediateThreshold,
+      );
+      if (!supported) gated[i] = -1.0;
+    }
+
+    return gated;
   }
 }
 

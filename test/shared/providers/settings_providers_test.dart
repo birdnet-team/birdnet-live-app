@@ -32,8 +32,8 @@ void main() {
       expect(container.read(windowDurationProvider), 3);
     });
 
-    test('confidenceThreshold defaults to 25', () {
-      expect(container.read(confidenceThresholdProvider), 25);
+    test('confidenceThreshold defaults to 35', () {
+      expect(container.read(confidenceThresholdProvider), 35);
     });
 
     test('inferenceRate defaults to 1.0', () {

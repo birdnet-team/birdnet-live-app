@@ -30,6 +30,7 @@
         "order": "order"
       }
     },
+    "scoreBlacklistFile": "BirdNET+_V3.0-preview3_Global_5K-pruned_ScoreBlacklist.json",
     "inference": {
       "supportedWindowSeconds": [
         3,
@@ -42,7 +43,12 @@
       "defaultTopK": 10,
       "temporalPooling": {
         "maxWindows": 5,
-        "alpha": 5.0
+        "alpha": 5.0,
+        "peakRetention": 0.98,
+        "minSupportWindows": 2,
+        "supportThresholdFraction": 0.6,
+        "supportThresholdFloor": 0.25,
+        "veryHighImmediateThreshold": 0.98
       }
     }
   },
