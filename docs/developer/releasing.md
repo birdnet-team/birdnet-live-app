@@ -10,7 +10,7 @@ artifacts that go into the `release/` folder.
 number doubles as the build number (`+`-suffix), so a typical bump looks like:
 
 ```yaml
-version: 0.15.7+165
+version: 0.15.5+165
 ```
 
 After editing, propagate the version to the README badge, MkDocs home badges,
