@@ -1,5 +1,5 @@
 site_name: BirdNET Live
-site_description: Real-time bird species identification using on-device ONNX 
+site_description: Real-time bird species identification using on-device ONNX
   inference
 site_url: https://birdnet-team.github.io/birdnet-live-app
 repo_url: https://github.com/birdnet-team/birdnet-live-app
@@ -60,6 +60,7 @@ plugins:
       name: Deutsch
       build: true
       nav_translations:
+        Android Widgets: Android-Widgets
         API Integration: API-Integration
         API Reference: API-Referenz
         Architecture: Architektur
@@ -96,6 +97,7 @@ plugins:
       name: Čeština
       build: true
       nav_translations:
+        Android Widgets: Widgety Android
         API Integration: Integrace API
         API Reference: Reference API
         Architecture: Architektura
@@ -132,6 +134,7 @@ plugins:
       name: Español
       build: true
       nav_translations:
+        Android Widgets: Widgets de Android
         API Integration: Integración API
         API Reference: Referencia de API
         Architecture: Arquitectura
@@ -168,6 +171,7 @@ plugins:
       name: Français
       build: true
       nav_translations:
+        Android Widgets: Widgets Android
         API Integration: Intégration d'API
         API Reference: Référence API
         Architecture: Architecture
@@ -204,6 +208,7 @@ plugins:
       name: Italiano
       build: true
       nav_translations:
+        Android Widgets: Widget Android
         API Integration: Integrazione API
         API Reference: Riferimento API
         Architecture: Architettura
@@ -241,6 +246,7 @@ plugins:
       build: true
 
       nav_translations:
+        Android Widgets: Widgets do Android
         API Integration: Integração de API
         API Reference: Referência de API
         Architecture: Arquitetura
@@ -278,6 +284,7 @@ nav:
 - User Guide:
   - Overview: user/index.md
   - Getting Started: user/getting-started.md
+  - Android Widgets: user/android-widgets.md
   - Icons & Controls: user/icons-and-controls.md
   - Live Mode: user/live-mode.md
   - Explore: user/explore.md

@@ -146,7 +146,7 @@ Marque qualquer combinação de formatos de exportação — cada salvar / compa
 
 Quando ativado, o Live Mode começa a gravar assim que a tela se abre e o modelo termina de carregar, sem precisar tocar no botão do microfone. Isso é útil para instalações em estilo quiosque, uso mãos livres ou qualquer fluxo em que abrir o Live Mode sempre signifique “começar agora”. Ele fica desativado por padrão para que um toque acidental no cartão Live na tela inicial não inicie uma sessão silenciosamente. O início automático dispara apenas uma vez por visita à tela, então parar uma sessão e reiniciá-la manualmente pelo microfone continua funcionando normalmente.
 
-O widget do Android é a exceção: abrir o Live Mode pelo widget sempre inicia a gravação automaticamente assim que o modelo estiver pronto, mesmo que esta configuração esteja desligada. Assim, o widget se comporta como um atalho real de início rápido, e não apenas como um lançador passivo do app.
+O widget do Android **BirdNET Live shortcut** é a exceção: abrir o Live Mode por esse widget sempre inicia a gravação automaticamente assim que o modelo estiver pronto, mesmo que esta configuração esteja desligada. Assim, esse atalho se comporta como um início rápido real, e não apenas como um lançador passivo do app.
 
 - Tabela de Seleção Raven — para Cornell Raven Pro.
 - CSV — abre em qualquer planilha.

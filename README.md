@@ -44,6 +44,7 @@
 - **File Analysis Mode** — Analyze existing audio files (WAV, FLAC, MP3, OGG, and more)
 - **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
+- **Android widgets** — Live quick-start shortcut and configurable detection statistics widgets (home/lock screen where supported)
 - **Export** — Raven Pro, CSV, JSON, GPX, and ZIP bundle formats
 - **On-device inference** — BirdNET+ model (5,250 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)

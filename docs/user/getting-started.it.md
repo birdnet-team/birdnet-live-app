@@ -45,12 +45,10 @@ La schermata Home è l'hub principale.
 
 ### Widget Android
 
-Su Android puoi aggiungere il widget **BirdNET Live shortcut** alla schermata Home. Alcuni dispositivi e host di widget consentono anche di posizionare lo stesso widget sulla schermata di blocco.
+BirdNET Live include due widget Android: **BirdNET Live shortcut** e **BirdNET Live statistics**.
 
-- Toccando il widget, l'app si apre direttamente in **Live Mode** e avvia automaticamente la registrazione non appena il modello è pronto.
-- Se l'app richiede ancora onboarding o l'accettazione dei Terms, BirdNET Live completa prima quel flusso e poi apre Live Mode. La registrazione parte automaticamente non appena il modello è pronto.
-- La disponibilità sulla schermata di blocco dipende dalla versione di Android, dal produttore del dispositivo e dall'host dei widget; molti telefoni continuano a offrire solo il posizionamento sulla schermata Home.
-- Il widget è disponibile solo su Android; iOS e Windows non usano lo stesso sistema di widget.
+- Solo Android. Il supporto alla schermata di blocco dipende dal dispositivo e dall'host dei widget.
+- Apri [Widget Android](android-widgets.md) per configurazione, comportamento e dettagli d'uso.
 
 ### Pulsanti del piè di pagina
 

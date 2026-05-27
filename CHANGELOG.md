@@ -10,10 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added an Android home screen widget that opens BirdNET Live straight into Live mode.
+- Added an Android detection statistics widget with configurable timeframe, transparency, and font size, plus compact and expanded layouts.
 
 ### Changed
 
 - Refactored Live mode entry points to reuse a shared route helper and a platform-neutral launch-target bridge, keeping the Android-specific logic limited to the widget and intent handoff.
+- Updated user-facing documentation to describe both Android widgets and clarify Live auto-start behavior from the shortcut widget.
 
 ## [0.15.4] - 2026-05-24
 

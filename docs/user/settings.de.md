@@ -120,7 +120,7 @@ Wählen Sie **WAV** oder **FLAC**.
 
 Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald sich der Bildschirm öffnet und das Modell fertig geladen ist — ohne zusätzlichen Tipp auf die Mikrofontaste. Das ist nützlich für kioskartige Setups, freihändige Nutzung oder jeden Workflow, bei dem „Live öffnen“ immer „jetzt starten“ bedeutet. Standardmäßig ist die Option deaktiviert, damit ein versehentliches Antippen der Live-Kachel auf dem Startbildschirm nicht lautlos eine Sitzung startet. Der Auto-Start löst pro Bildschirmbesuch nur einmal aus, sodass Stoppen und anschließendes manuelles Neustarten über das Mikrofon unverändert funktionieren.
 
-Die Android-Widgets sind die Ausnahme: Wenn du den Live-Modus über das Widget öffnest, startet die Aufnahme immer automatisch, sobald das Modell bereit ist — auch wenn diese Einstellung ausgeschaltet ist. Das Widget verhält sich damit wie eine echte Schnellstart-Verknüpfung und nicht bloß wie ein passiver App-Launcher.
+Das Android-Widget **BirdNET Live shortcut** ist die Ausnahme: Wenn du den Live-Modus über dieses Widget öffnest, startet die Aufnahme immer automatisch, sobald das Modell bereit ist — auch wenn diese Einstellung ausgeschaltet ist. Die Verknüpfung verhält sich damit wie ein echter Schnellstart und nicht bloß wie ein passiver App-Launcher.
 
 ## Standort
 

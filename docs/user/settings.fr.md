@@ -120,7 +120,7 @@ Choisissez **WAV** ou **FLAC**.
 
 Quand cette option est activée, Live Mode commence à enregistrer dès que l'écran s'ouvre et que le modèle a fini de charger — sans appui supplémentaire sur le bouton du micro. C'est utile pour des déploiements en mode borne, un usage mains libres ou tout workflow où ouvrir Live Mode signifie toujours « démarrer maintenant ». L'option est désactivée par défaut afin qu'un appui accidentel sur la tuile Live depuis l'écran d'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se déclenche qu'une seule fois par visite de l'écran, donc l'arrêt d'une session puis son redémarrage manuel via le micro continuent de fonctionner normalement.
 
-Le widget Android est l'exception : ouvrir Live Mode depuis le widget lance toujours l'enregistrement automatiquement dès que le modèle est prêt, même si ce réglage est désactivé. Le widget se comporte ainsi comme un véritable raccourci de démarrage rapide plutôt que comme un simple lanceur passif de l'appli.
+Le widget Android **BirdNET Live shortcut** est l'exception : ouvrir Live Mode depuis ce widget lance toujours l'enregistrement automatiquement dès que le modèle est prêt, même si ce réglage est désactivé. Ce raccourci se comporte ainsi comme un véritable démarrage rapide plutôt que comme un simple lanceur passif de l'appli.
 
 ## Emplacement
 

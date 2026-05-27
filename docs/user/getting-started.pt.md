@@ -45,12 +45,10 @@ A tela inicial é o hub principal.
 
 ### Widgets do Android
 
-No Android, você pode adicionar o widget **BirdNET Live shortcut** à tela inicial. Alguns dispositivos e hosts de widgets também permitem colocar o mesmo widget na tela de bloqueio.
+O BirdNET Live oferece dois widgets do Android: **BirdNET Live shortcut** e **BirdNET Live statistics**.
 
-- Ao tocar no widget, o app abre direto em **Live Mode** e inicia a gravação automaticamente assim que o modelo estiver pronto.
-- Se o app ainda exigir onboarding ou a aceitação dos Terms, o BirdNET Live conclui esse fluxo primeiro e depois abre o Live Mode. A gravação começa automaticamente assim que o modelo estiver pronto.
-- A disponibilidade na tela de bloqueio depende da versão do Android, do fabricante do dispositivo e do host de widgets; muitos telefones ainda oferecem apenas a colocação na tela inicial.
-- O widget é exclusivo do Android; iOS e Windows não usam o mesmo sistema de widgets.
+- Somente Android. O suporte à tela de bloqueio depende do dispositivo e do host de widgets.
+- Abra [Widgets do Android](android-widgets.md) para configuração, comportamento e detalhes de uso.
 
 ### Botões de rodapé
 
