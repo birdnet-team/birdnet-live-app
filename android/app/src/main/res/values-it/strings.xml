@@ -3,4 +3,39 @@
     <string name="live_mode_widget_name">Scorciatoia BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Avvia registrazione</string>
+
+    <string name="stats_widget_name">Statistiche BirdNET Live</string>
+    <string name="stats_widget_empty">Nessun rilevamento recente</string>
+    <string name="stats_widget_empty_hint">Avvia una sessione per popolare questo widget.</string>
+    <string name="stats_widget_latest_at">Ultimo alle %1$s</string>
+    <string name="stats_widget_top_three_title">Top 3 (%1$s)</string>
+    <string name="stats_widget_placeholder_row">-</string>
+    <string name="stats_widget_medium_row">%1$s  %2$d%%</string>
+    <string name="stats_widget_large_title">Panoramica rilevamenti (%1$s)</string>
+    <string name="stats_widget_latest_species">Specie più recenti</string>
+    <string name="stats_widget_no_recent_species">Nessuna specie ancora</string>
+    <string name="stats_widget_total_detections">Rilevamenti: %1$d</string>
+    <string name="stats_widget_total_species">Specie: %1$d</string>
+    <string name="stats_widget_open_settings">Apri impostazioni widget</string>
+
+    <string name="stats_widget_timeframe_24h">Ultime 24 ore</string>
+    <string name="stats_widget_timeframe_7d">Ultimi 7 giorni</string>
+    <string name="stats_widget_timeframe_30d">Ultimi 30 giorni</string>
+
+    <string name="stats_widget_config_title">Widget statistiche rilevamenti</string>
+    <string name="stats_widget_config_subtitle">Regola intervallo di tempo, trasparenza e dimensione del carattere. L\'anteprima si aggiorna in tempo reale.</string>
+    <string name="stats_widget_timeframe_label">Intervallo di tempo</string>
+    <string name="stats_widget_transparency_label">Trasparenza sfondo</string>
+    <string name="stats_widget_font_size_label">Dimensione carattere</string>
+    <string name="stats_widget_preview_size_label">Dimensione anteprima</string>
+    <string name="stats_widget_preview_label">Anteprima</string>
+    <string name="stats_widget_transparency_value">%1$d%% trasparente</string>
+    <string name="stats_widget_font_size_value">%1$d sp</string>
+    <string name="stats_widget_preview_small">Piccolo</string>
+    <string name="stats_widget_preview_medium">Medio</string>
+    <string name="stats_widget_preview_large">Grande</string>
+    <string name="stats_widget_preview_latest_only">Ultimo rilevamento con immagine</string>
+    <string name="stats_widget_preview_totals">Rilevamenti: %1$d   Specie: %2$d</string>
+    <string name="stats_widget_save">Salva</string>
+    <string name="stats_widget_cancel">Annulla</string>
 </resources>

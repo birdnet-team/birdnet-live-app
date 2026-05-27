@@ -3,4 +3,39 @@
     <string name="live_mode_widget_name">Zkratka BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Spustit nahrávání</string>
+
+    <string name="stats_widget_name">Statistiky BirdNET Live</string>
+    <string name="stats_widget_empty">Žádné nedávné detekce</string>
+    <string name="stats_widget_empty_hint">Spusťte relaci, aby se tento widget naplnil.</string>
+    <string name="stats_widget_latest_at">Naposledy v %1$s</string>
+    <string name="stats_widget_top_three_title">Top 3 (%1$s)</string>
+    <string name="stats_widget_placeholder_row">-</string>
+    <string name="stats_widget_medium_row">%1$s  %2$d%%</string>
+    <string name="stats_widget_large_title">Přehled detekcí (%1$s)</string>
+    <string name="stats_widget_latest_species">Nejnovější druhy</string>
+    <string name="stats_widget_no_recent_species">Zatím žádné druhy</string>
+    <string name="stats_widget_total_detections">Detekce: %1$d</string>
+    <string name="stats_widget_total_species">Druhy: %1$d</string>
+    <string name="stats_widget_open_settings">Otevřít nastavení widgetu</string>
+
+    <string name="stats_widget_timeframe_24h">Posledních 24 hodin</string>
+    <string name="stats_widget_timeframe_7d">Posledních 7 dní</string>
+    <string name="stats_widget_timeframe_30d">Posledních 30 dní</string>
+
+    <string name="stats_widget_config_title">Widget statistik detekcí</string>
+    <string name="stats_widget_config_subtitle">Upravte časové období, průhlednost a velikost písma. Náhled se aktualizuje živě.</string>
+    <string name="stats_widget_timeframe_label">Časové období</string>
+    <string name="stats_widget_transparency_label">Průhlednost pozadí</string>
+    <string name="stats_widget_font_size_label">Velikost písma</string>
+    <string name="stats_widget_preview_size_label">Velikost náhledu</string>
+    <string name="stats_widget_preview_label">Náhled</string>
+    <string name="stats_widget_transparency_value">%1$d%% průhlednost</string>
+    <string name="stats_widget_font_size_value">%1$d sp</string>
+    <string name="stats_widget_preview_small">Malý</string>
+    <string name="stats_widget_preview_medium">Střední</string>
+    <string name="stats_widget_preview_large">Velký</string>
+    <string name="stats_widget_preview_latest_only">Poslední detekce s obrázkem</string>
+    <string name="stats_widget_preview_totals">Detekce: %1$d   Druhy: %2$d</string>
+    <string name="stats_widget_save">Uložit</string>
+    <string name="stats_widget_cancel">Zrušit</string>
 </resources>

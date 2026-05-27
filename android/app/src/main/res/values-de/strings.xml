@@ -3,4 +3,39 @@
     <string name="live_mode_widget_name">BirdNET Live-Verknüpfung</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Aufnahme starten</string>
+
+    <string name="stats_widget_name">BirdNET Live-Statistik</string>
+    <string name="stats_widget_empty">Keine aktuellen Erkennungen</string>
+    <string name="stats_widget_empty_hint">Starten Sie eine Sitzung, um dieses Widget zu füllen.</string>
+    <string name="stats_widget_latest_at">Zuletzt um %1$s</string>
+    <string name="stats_widget_top_three_title">Top 3 (%1$s)</string>
+    <string name="stats_widget_placeholder_row">-</string>
+    <string name="stats_widget_medium_row">%1$s  %2$d%%</string>
+    <string name="stats_widget_large_title">Erkennungsübersicht (%1$s)</string>
+    <string name="stats_widget_latest_species">Neueste Arten</string>
+    <string name="stats_widget_no_recent_species">Noch keine Arten</string>
+    <string name="stats_widget_total_detections">Erkennungen: %1$d</string>
+    <string name="stats_widget_total_species">Arten: %1$d</string>
+    <string name="stats_widget_open_settings">Widget-Einstellungen öffnen</string>
+
+    <string name="stats_widget_timeframe_24h">Letzte 24 Stunden</string>
+    <string name="stats_widget_timeframe_7d">Letzte 7 Tage</string>
+    <string name="stats_widget_timeframe_30d">Letzte 30 Tage</string>
+
+    <string name="stats_widget_config_title">Widget für Erkennungsstatistik</string>
+    <string name="stats_widget_config_subtitle">Passen Sie Zeitraum, Transparenz und Schriftgröße an. Die Vorschau wird live aktualisiert.</string>
+    <string name="stats_widget_timeframe_label">Zeitraum</string>
+    <string name="stats_widget_transparency_label">Hintergrundtransparenz</string>
+    <string name="stats_widget_font_size_label">Schriftgröße</string>
+    <string name="stats_widget_preview_size_label">Vorschaugröße</string>
+    <string name="stats_widget_preview_label">Vorschau</string>
+    <string name="stats_widget_transparency_value">%1$d%% transparent</string>
+    <string name="stats_widget_font_size_value">%1$d sp</string>
+    <string name="stats_widget_preview_small">Klein</string>
+    <string name="stats_widget_preview_medium">Mittel</string>
+    <string name="stats_widget_preview_large">Groß</string>
+    <string name="stats_widget_preview_latest_only">Neueste Erkennung mit Bild</string>
+    <string name="stats_widget_preview_totals">Erkennungen: %1$d   Arten: %2$d</string>
+    <string name="stats_widget_save">Speichern</string>
+    <string name="stats_widget_cancel">Abbrechen</string>
 </resources>

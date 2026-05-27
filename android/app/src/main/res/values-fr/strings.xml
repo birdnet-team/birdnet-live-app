@@ -3,4 +3,39 @@
     <string name="live_mode_widget_name">Raccourci BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Démarrer l\'enregistrement</string>
+
+    <string name="stats_widget_name">Statistiques BirdNET Live</string>
+    <string name="stats_widget_empty">Aucune détection récente</string>
+    <string name="stats_widget_empty_hint">Démarrez une session pour alimenter ce widget.</string>
+    <string name="stats_widget_latest_at">Dernière à %1$s</string>
+    <string name="stats_widget_top_three_title">Top 3 (%1$s)</string>
+    <string name="stats_widget_placeholder_row">-</string>
+    <string name="stats_widget_medium_row">%1$s  %2$d%%</string>
+    <string name="stats_widget_large_title">Vue d\'ensemble des détections (%1$s)</string>
+    <string name="stats_widget_latest_species">Espèces récentes</string>
+    <string name="stats_widget_no_recent_species">Aucune espèce pour le moment</string>
+    <string name="stats_widget_total_detections">Détections : %1$d</string>
+    <string name="stats_widget_total_species">Espèces : %1$d</string>
+    <string name="stats_widget_open_settings">Ouvrir les paramètres du widget</string>
+
+    <string name="stats_widget_timeframe_24h">Dernières 24 heures</string>
+    <string name="stats_widget_timeframe_7d">Derniers 7 jours</string>
+    <string name="stats_widget_timeframe_30d">Derniers 30 jours</string>
+
+    <string name="stats_widget_config_title">Widget de statistiques des détections</string>
+    <string name="stats_widget_config_subtitle">Ajustez la période, la transparence et la taille de police. L\'aperçu se met à jour en direct.</string>
+    <string name="stats_widget_timeframe_label">Période</string>
+    <string name="stats_widget_transparency_label">Transparence de l\'arrière-plan</string>
+    <string name="stats_widget_font_size_label">Taille de police</string>
+    <string name="stats_widget_preview_size_label">Taille de l\'aperçu</string>
+    <string name="stats_widget_preview_label">Aperçu</string>
+    <string name="stats_widget_transparency_value">%1$d%% transparent</string>
+    <string name="stats_widget_font_size_value">%1$d sp</string>
+    <string name="stats_widget_preview_small">Petit</string>
+    <string name="stats_widget_preview_medium">Moyen</string>
+    <string name="stats_widget_preview_large">Grand</string>
+    <string name="stats_widget_preview_latest_only">Dernière détection avec image</string>
+    <string name="stats_widget_preview_totals">Détections : %1$d   Espèces : %2$d</string>
+    <string name="stats_widget_save">Enregistrer</string>
+    <string name="stats_widget_cancel">Annuler</string>
 </resources>
