@@ -3,6 +3,7 @@
     <string name="live_mode_widget_name">Acceso directo de BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Iniciar grabación</string>
+    <string name="live_mode_widget_cta_two_line">Iniciar\ngrabación</string>
 
     <string name="stats_widget_name">Estadísticas de BirdNET Live</string>
     <string name="stats_widget_empty">No hay detecciones recientes</string>

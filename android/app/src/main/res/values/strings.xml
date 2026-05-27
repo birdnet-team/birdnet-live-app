@@ -3,6 +3,7 @@
     <string name="live_mode_widget_name">BirdNET Live shortcut</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Start recording</string>
+    <string name="live_mode_widget_cta_two_line">Start\nrecording</string>
 
     <string name="stats_widget_name">BirdNET Live statistics</string>
     <string name="stats_widget_empty">No recent detections</string>

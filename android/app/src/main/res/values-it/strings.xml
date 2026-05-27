@@ -3,6 +3,7 @@
     <string name="live_mode_widget_name">Scorciatoia BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Avvia registrazione</string>
+    <string name="live_mode_widget_cta_two_line">Avvia\nregistrazione</string>
 
     <string name="stats_widget_name">Statistiche BirdNET Live</string>
     <string name="stats_widget_empty">Nessun rilevamento recente</string>

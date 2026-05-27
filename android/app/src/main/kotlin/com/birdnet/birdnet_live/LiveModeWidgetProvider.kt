@@ -16,13 +16,40 @@ class LiveModeWidgetProvider : AppWidgetProvider() {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
 
         for (widgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.live_mode_widget)
-            views.setOnClickPendingIntent(
-                R.id.widget_root,
-                buildLaunchPendingIntent(context, widgetId),
-            )
-            appWidgetManager.updateAppWidget(widgetId, views)
+            updateWidget(context, appWidgetManager, widgetId)
         }
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle,
+    ) {
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
+        updateWidget(context, appWidgetManager, appWidgetId)
+    }
+
+    private fun updateWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        widgetId: Int,
+    ) {
+        val options = appWidgetManager.getAppWidgetOptions(widgetId)
+        val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+
+        // 1x1 stays icon-only; once widened to ~2 cells show icon + 2-line label.
+        val expanded = minWidth >= 110
+        val layout = if (expanded) {
+            R.layout.live_mode_widget
+        } else {
+            R.layout.live_mode_widget_icon
+        }
+        val rootId = if (expanded) R.id.widget_root else R.id.widget_root_icon
+
+        val views = RemoteViews(context.packageName, layout)
+        views.setOnClickPendingIntent(rootId, buildLaunchPendingIntent(context, widgetId))
+        appWidgetManager.updateAppWidget(widgetId, views)
     }
 
     private fun buildLaunchPendingIntent(

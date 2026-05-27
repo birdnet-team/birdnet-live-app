@@ -3,6 +3,7 @@
     <string name="live_mode_widget_name">Raccourci BirdNET Live</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Démarrer l\'enregistrement</string>
+    <string name="live_mode_widget_cta_two_line">Démarrer\nl\'enregistrement</string>
 
     <string name="stats_widget_name">Statistiques BirdNET Live</string>
     <string name="stats_widget_empty">Aucune détection récente</string>

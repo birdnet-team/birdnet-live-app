@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root_icon"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/live_mode_widget_background"
+    android:foregroundGravity="center"
+    android:padding="8dp">
+
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:background="@drawable/live_mode_widget_icon_badge"
+        android:foregroundGravity="center">
+
+        <ImageView
+            android:id="@+id/widget_icon_only"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/live_mode_widget_name"
+            android:src="@mipmap/ic_launcher" />
+    </FrameLayout>
+
+</FrameLayout>
