@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="com.birdnet.birdnet_live.DetectionStatsWidgetConfigActivity"
-    android:initialLayout="@layout/detection_stats_widget_medium"
-    android:minWidth="160dp"
-    android:minHeight="90dp"
+    android:initialLayout="@layout/detection_stats_widget_small"
+    android:minWidth="64dp"
+    android:minHeight="64dp"
+    android:minResizeWidth="64dp"
+    android:minResizeHeight="64dp"
     android:resizeMode="horizontal|vertical"
-    android:targetCellWidth="4"
-    android:targetCellHeight="2"
+    android:targetCellWidth="1"
+    android:targetCellHeight="1"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen|keyguard" />

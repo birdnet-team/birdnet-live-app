@@ -93,23 +93,10 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
 
             val latest = detections.firstOrNull()
             if (latest == null) {
-                views.setTextViewText(R.id.stats_small_name, context.getString(R.string.stats_widget_empty))
-                views.setTextViewText(R.id.stats_small_meta, context.getString(R.string.stats_widget_empty_hint))
                 views.setImageViewResource(R.id.stats_small_image, R.mipmap.ic_launcher)
             } else {
-                views.setTextViewText(R.id.stats_small_name, latest.commonName)
-                views.setTextViewText(
-                    R.id.stats_small_meta,
-                    context.getString(
-                        R.string.stats_widget_latest_at,
-                        formatTimestamp(latest.timestampMs),
-                    ),
-                )
                 applyImage(views, R.id.stats_small_image, latest.imagePath)
             }
-
-            setFontSize(views, R.id.stats_small_name, settings.fontSizeSp + 1)
-            setFontSize(views, R.id.stats_small_meta, settings.fontSizeSp - 1)
             return views
         }
 
@@ -299,8 +286,8 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
 
         private fun classifySize(minWidthDp: Int, minHeightDp: Int): SizeClass {
             return when {
-                minWidthDp >= 250 && minHeightDp >= 150 -> SizeClass.LARGE
-                minWidthDp >= 180 && minHeightDp >= 90 -> SizeClass.MEDIUM
+                minWidthDp >= 230 && minHeightDp >= 130 -> SizeClass.LARGE
+                minWidthDp >= 130 || minHeightDp >= 100 -> SizeClass.MEDIUM
                 else -> SizeClass.SMALL
             }
         }
