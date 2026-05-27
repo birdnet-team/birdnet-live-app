@@ -2,6 +2,8 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="64dp"
     android:minHeight="64dp"
+    android:minResizeWidth="64dp"
+    android:maxResizeWidth="140dp"
     android:initialLayout="@layout/live_mode_widget_icon"
     android:initialKeyguardLayout="@layout/live_mode_widget_icon"
     android:resizeMode="horizontal"
