@@ -36,7 +36,9 @@ class LiveModeWidgetProvider : AppWidgetProvider() {
                 AppLaunchTargetContract.targetLive,
             )
             putExtra(AppLaunchTargetContract.extraLiveAutoStart, true)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            // Always relaunch through a clean task entry so repeated widget
+            // taps cannot revive a stale route stack from a previous app run.
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
 
         return PendingIntent.getActivity(

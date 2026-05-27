@@ -72,7 +72,7 @@ class _AppLaunchTargetCoordinatorState
       case AppLaunchTarget.live:
         navigator.pushAndRemoveUntil(
           buildLiveScreenRoute(autoStartOnReady: pending.autoStartLive),
-          (route) => route.isFirst,
+          (_) => false,
         );
     }
 
