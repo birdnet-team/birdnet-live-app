@@ -36,7 +36,7 @@ class DetectionStatsWidgetConfigActivity : Activity() {
         DetectionStatsWidgetContract.timeframe30d,
     )
 
-    private val previewSizeValues = listOf("small", "medium", "large")
+    private val previewSizeValues = listOf("small", "expanded")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,7 +119,7 @@ class DetectionStatsWidgetConfigActivity : Activity() {
         fontSeek.setOnSeekBarChangeListener(listener)
 
         timeframeSpinner.setSelection(0)
-        previewSizeSpinner.setSelection(2)
+        previewSizeSpinner.setSelection(1)
 
         timeframeSpinner.onItemSelectedListener = SimpleItemSelectedListener { renderPreview() }
         previewSizeSpinner.onItemSelectedListener = SimpleItemSelectedListener { renderPreview() }
@@ -144,7 +144,7 @@ class DetectionStatsWidgetConfigActivity : Activity() {
         val filtered = detections.filter { it.timestampMs >= cutoff }
             .sortedByDescending { it.timestampMs }
 
-        val previewSize = previewSizeValues.getOrElse(previewSizeSpinner.selectedItemPosition) { "large" }
+        val previewSize = previewSizeValues.getOrElse(previewSizeSpinner.selectedItemPosition) { "expanded" }
 
         val latest = filtered.firstOrNull()
         previewImage.setImageResource(R.mipmap.ic_launcher)
@@ -166,14 +166,6 @@ class DetectionStatsWidgetConfigActivity : Activity() {
                 previewLine1.text = latest?.commonName ?: getString(R.string.stats_widget_empty)
                 previewLine2.text = getString(R.string.stats_widget_preview_latest_only)
                 previewLine3.visibility = View.GONE
-                previewTotals.visibility = View.GONE
-            }
-            "medium" -> {
-                previewTitle.text = getString(R.string.stats_widget_preview_medium)
-                previewLine1.text = filtered.getOrNull(0)?.commonName ?: "-"
-                previewLine2.text = filtered.getOrNull(1)?.commonName ?: "-"
-                previewLine3.text = filtered.getOrNull(2)?.commonName ?: "-"
-                previewLine3.visibility = View.VISIBLE
                 previewTotals.visibility = View.GONE
             }
             else -> {

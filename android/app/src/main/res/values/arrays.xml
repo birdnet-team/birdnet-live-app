@@ -8,7 +8,6 @@
 
     <string-array name="stats_widget_preview_sizes">
         <item>@string/stats_widget_preview_small</item>
-        <item>@string/stats_widget_preview_medium</item>
         <item>@string/stats_widget_preview_large</item>
     </string-array>
 </resources>

@@ -9,9 +9,8 @@
         android:id="@+id/stats_small_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:adjustViewBounds="true"
         android:contentDescription="@string/stats_widget_name"
-        android:scaleType="centerInside"
+        android:scaleType="centerCrop"
         android:src="@mipmap/ic_launcher" />
 
 </FrameLayout>

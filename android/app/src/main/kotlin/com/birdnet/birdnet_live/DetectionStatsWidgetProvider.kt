@@ -74,8 +74,7 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
 
             val views = when (sizeClass) {
                 SizeClass.SMALL -> buildSmallViews(context, appWidgetId, settings, filtered)
-                SizeClass.MEDIUM -> buildMediumViews(context, appWidgetId, settings, filtered)
-                SizeClass.LARGE -> buildLargeViews(context, appWidgetId, settings, filtered)
+                SizeClass.EXPANDED -> buildExpandedViews(context, appWidgetId, settings, filtered)
             }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -100,47 +99,7 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
             return views
         }
 
-        private fun buildMediumViews(
-            context: Context,
-            appWidgetId: Int,
-            settings: DetectionStatsWidgetSettings,
-            detections: List<StatsDetection>,
-        ): RemoteViews {
-            val views = RemoteViews(context.packageName, R.layout.detection_stats_widget_medium)
-            styleCommon(views, R.id.stats_widget_root_medium, settings)
-            applyOpenAppIntent(context, views, R.id.stats_widget_root_medium, appWidgetId)
-
-            views.setTextViewText(
-                R.id.stats_medium_title,
-                context.getString(R.string.stats_widget_top_three_title, timeframeLabel(context, settings.timeframe)),
-            )
-
-            val top = detections.take(3)
-            val rowIds = listOf(
-                R.id.stats_medium_row_1,
-                R.id.stats_medium_row_2,
-                R.id.stats_medium_row_3,
-            )
-            for (index in rowIds.indices) {
-                val detection = top.getOrNull(index)
-                val text = if (detection == null) {
-                    context.getString(R.string.stats_widget_placeholder_row)
-                } else {
-                    val confidence = (detection.confidence * 100.0).toInt().coerceIn(0, 100)
-                    context.getString(
-                        R.string.stats_widget_medium_row,
-                        detection.commonName,
-                        confidence,
-                    )
-                }
-                views.setTextViewText(rowIds[index], text)
-                setFontSize(views, rowIds[index], settings.fontSizeSp)
-            }
-            setFontSize(views, R.id.stats_medium_title, settings.fontSizeSp + 1)
-            return views
-        }
-
-        private fun buildLargeViews(
+        private fun buildExpandedViews(
             context: Context,
             appWidgetId: Int,
             settings: DetectionStatsWidgetSettings,
@@ -286,8 +245,7 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
 
         private fun classifySize(minWidthDp: Int, minHeightDp: Int): SizeClass {
             return when {
-                minWidthDp >= 230 && minHeightDp >= 130 -> SizeClass.LARGE
-                minWidthDp >= 130 || minHeightDp >= 100 -> SizeClass.MEDIUM
+                minWidthDp >= 130 || minHeightDp >= 100 -> SizeClass.EXPANDED
                 else -> SizeClass.SMALL
             }
         }
@@ -296,6 +254,5 @@ class DetectionStatsWidgetProvider : AppWidgetProvider() {
 
 private enum class SizeClass {
     SMALL,
-    MEDIUM,
-    LARGE,
+    EXPANDED,
 }
