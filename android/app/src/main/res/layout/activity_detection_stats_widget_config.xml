@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stats_widget_config_title"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/stats_widget_config_subtitle"
+            android:textColor="#66000000" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/stats_widget_timeframe_label"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/stats_config_timeframe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/stats_widget_transparency_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/stats_config_transparency_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#66000000" />
+
+        <SeekBar
+            android:id="@+id/stats_config_transparency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/stats_widget_font_size_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/stats_config_font_size_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#66000000" />
+
+        <SeekBar
+            android:id="@+id/stats_config_font_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/stats_widget_preview_size_label"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/stats_config_preview_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/stats_widget_preview_label"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/stats_preview_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#16242E"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/stats_preview_image"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:contentDescription="@string/stats_widget_name"
+                android:scaleType="centerCrop"
+                android:src="@mipmap/ic_launcher" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/stats_preview_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFFFFFFF"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/stats_preview_line_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#FFFFFFFF" />
+
+                <TextView
+                    android:id="@+id/stats_preview_line_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#E0FFFFFF" />
+
+                <TextView
+                    android:id="@+id/stats_preview_line_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#E0FFFFFF" />
+
+                <TextView
+                    android:id="@+id/stats_preview_totals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#FFFFFFFF"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/stats_config_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/stats_widget_cancel" />
+
+            <Button
+                android:id="@+id/stats_config_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/stats_widget_save" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

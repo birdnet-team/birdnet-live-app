@@ -96,6 +96,7 @@ import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import 'services/detection_sharing_service.dart';
+import 'services/widget_stats_snapshot_service.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -1639,6 +1640,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final repo = ref.read(sessionRepositoryProvider);
     await repo.save(widget.session);
     ref.invalidate(sessionListProvider);
+    unawaited(WidgetStatsSnapshotService.sync(ref));
     setState(() {
       _isDirty = false;
       _undoStack.clear();
@@ -1668,6 +1670,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final repo = ref.read(sessionRepositoryProvider);
     await repo.delete(widget.session.id);
     ref.invalidate(sessionListProvider);
+    unawaited(WidgetStatsSnapshotService.sync(ref));
     if (mounted) Navigator.of(context).pop();
   }
 

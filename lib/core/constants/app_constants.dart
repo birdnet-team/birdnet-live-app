@@ -232,6 +232,12 @@ abstract final class PrefKeys {
   /// the most likely identifications.
   static const String sessionReviewSpeciesSort = 'session_review_species_sort';
 
+    /// JSON payload consumed by the Android detections statistics widget.
+    ///
+    /// Stored in SharedPreferences so the native widget process can render
+    /// without spinning up Flutter. See widget snapshot sync service.
+    static const String widgetStatsSnapshot = 'widget_stats_snapshot_v1';
+
   // --- Announcements (spoken detections, post-v1.0) ---------------------
   // See [dev/announcements.md] for the full design. The user-facing
   // surface is two preset enums (`announcementsVerbosity`,

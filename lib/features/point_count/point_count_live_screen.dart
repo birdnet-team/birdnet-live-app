@@ -43,6 +43,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../history/services/widget_stats_snapshot_service.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -292,6 +293,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
       await repo.save(session);
       ref.invalidate(sessionListProvider);
+      unawaited(WidgetStatsSnapshotService.sync(ref));
 
       if (mounted) {
         final navigator = Navigator.of(context);

@@ -3,4 +3,39 @@
     <string name="live_mode_widget_name">BirdNET Live shortcut</string>
     <string name="live_mode_widget_text">Live Mode</string>
     <string name="live_mode_widget_cta">Start recording</string>
+
+    <string name="stats_widget_name">BirdNET Live statistics</string>
+    <string name="stats_widget_empty">No recent detections</string>
+    <string name="stats_widget_empty_hint">Start a session to populate this widget.</string>
+    <string name="stats_widget_latest_at">Latest at %1$s</string>
+    <string name="stats_widget_top_three_title">Top 3 (%1$s)</string>
+    <string name="stats_widget_placeholder_row">-</string>
+    <string name="stats_widget_medium_row">%1$s  %2$d%%</string>
+    <string name="stats_widget_large_title">Detection overview (%1$s)</string>
+    <string name="stats_widget_latest_species">Latest species</string>
+    <string name="stats_widget_no_recent_species">No species yet</string>
+    <string name="stats_widget_total_detections">Detections: %1$d</string>
+    <string name="stats_widget_total_species">Species: %1$d</string>
+    <string name="stats_widget_open_settings">Open widget settings</string>
+
+    <string name="stats_widget_timeframe_24h">Last 24 hours</string>
+    <string name="stats_widget_timeframe_7d">Last 7 days</string>
+    <string name="stats_widget_timeframe_30d">Last 30 days</string>
+
+    <string name="stats_widget_config_title">Detection stats widget</string>
+    <string name="stats_widget_config_subtitle">Tune timeframe, transparency, and text size. Preview updates live.</string>
+    <string name="stats_widget_timeframe_label">Timeframe</string>
+    <string name="stats_widget_transparency_label">Background transparency</string>
+    <string name="stats_widget_font_size_label">Font size</string>
+    <string name="stats_widget_preview_size_label">Preview size</string>
+    <string name="stats_widget_preview_label">Preview</string>
+    <string name="stats_widget_transparency_value">%1$d%% transparent</string>
+    <string name="stats_widget_font_size_value">%1$d sp</string>
+    <string name="stats_widget_preview_small">Small</string>
+    <string name="stats_widget_preview_medium">Medium</string>
+    <string name="stats_widget_preview_large">Large</string>
+    <string name="stats_widget_preview_latest_only">Latest detection with picture</string>
+    <string name="stats_widget_preview_totals">Detections: %1$d   Species: %2$d</string>
+    <string name="stats_widget_save">Save</string>
+    <string name="stats_widget_cancel">Cancel</string>
 </resources>

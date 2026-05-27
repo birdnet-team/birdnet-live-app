@@ -16,6 +16,7 @@ class MainActivity: FlutterActivity() {
     private val WAKELOCK_CHANNEL = "com.birdnet/wakelock"
     private val AUDIO_DECODER_CHANNEL = "com.birdnet/audio_decoder"
     private val ASSET_PACK_CHANNEL = "com.birdnet/asset_pack"
+    private val WIDGET_STATS_CHANNEL = "com.birdnet/widget_stats"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var pendingLaunchRequest: Map<String, Any?>? = null
     private var launchTargetEvents: EventChannel.EventSink? = null
@@ -223,6 +224,17 @@ class MainActivity: FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WIDGET_STATS_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "refreshDetectionStatsWidget" -> {
+                        DetectionStatsWidgetProvider.refreshAll(applicationContext)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
     }
 
     override fun onNewIntent(intent: Intent) {

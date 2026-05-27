@@ -37,6 +37,7 @@ import '../live/live_routes.dart';
 import '../live/live_session.dart';
 import '../point_count/point_count_setup_screen.dart';
 import '../survey/survey_setup_screen.dart';
+import 'services/widget_stats_snapshot_service.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
@@ -678,6 +679,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     if (!confirmed) return;
     await ref.read(sessionRepositoryProvider).delete(session.id);
     ref.invalidate(sessionListProvider);
+    unawaited(WidgetStatsSnapshotService.sync(ref));
   }
 
   /// Opens the platform share sheet with the session exported using the

@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/history/services/widget_stats_snapshot_service.dart';
 import '../../features/live/live_routes.dart';
 import '../providers/app_providers.dart';
 import '../services/app_launch_target_service.dart';
@@ -36,6 +37,7 @@ class _AppLaunchTargetCoordinatorState
   void initState() {
     super.initState();
     _primeInitialTarget();
+    unawaited(WidgetStatsSnapshotService.sync(ref));
     _subscription = ref
         .read(appLaunchTargetServiceProvider)
         .watchTargets()

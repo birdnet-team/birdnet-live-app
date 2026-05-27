@@ -37,6 +37,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../history/services/widget_stats_snapshot_service.dart';
 import '../history/services/detection_sharing_service.dart';
 import '../history/widgets/clip_player_sheet.dart';
 import '../history/widgets/detection_actions.dart';
@@ -661,6 +662,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         }
         await repo.save(session);
         ref.invalidate(sessionListProvider);
+        unawaited(WidgetStatsSnapshotService.sync(ref));
 
         if (mounted) {
           final navigator = Navigator.of(context);

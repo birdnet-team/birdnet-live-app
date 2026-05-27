@@ -20,6 +20,7 @@ import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../history/services/widget_stats_snapshot_service.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
@@ -392,6 +393,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       // Persist completed session.
       await repo.save(session);
       ref.invalidate(sessionListProvider);
+      unawaited(WidgetStatsSnapshotService.sync(ref));
 
       // Replace the live screen with the session library (instantly,
       // no transition) and then push the review screen on top with the

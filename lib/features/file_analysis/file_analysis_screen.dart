@@ -48,6 +48,7 @@ import '../../shared/utils/app_icons.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../history/services/widget_stats_snapshot_service.dart';
 import '../live/live_providers.dart';
 import '../settings/settings_screen.dart';
 import 'file_analysis_controller.dart';
@@ -336,6 +337,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       }
       await repo.save(session);
       ref.invalidate(sessionListProvider);
+      unawaited(WidgetStatsSnapshotService.sync(ref));
 
       controller.reset();
 

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="stats_widget_timeframes">
+        <item>@string/stats_widget_timeframe_24h</item>
+        <item>@string/stats_widget_timeframe_7d</item>
+        <item>@string/stats_widget_timeframe_30d</item>
+    </string-array>
+
+    <string-array name="stats_widget_preview_sizes">
+        <item>@string/stats_widget_preview_small</item>
+        <item>@string/stats_widget_preview_medium</item>
+        <item>@string/stats_widget_preview_large</item>
+    </string-array>
+</resources>
