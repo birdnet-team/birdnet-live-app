@@ -1,4 +1,4 @@
-# BirdNET Live
+# BirdNET Live - Professional bioacoustics in your pocket
 
 <p align="center">
   <img src="assets/images/app-icon.png" alt="BirdNET Live" width="250">
@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/species-5%2C250-brightgreen.svg" alt="Species: 5,250">
 </p>
 
-**Professional bioacoustics in your pocket.** Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
+Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -35,6 +35,29 @@
 **NOTE: BirdNET Live is under active development. Some rough edges and limitations remain — please [report issues](https://github.com/birdnet-team/birdnet-live-app/issues) you run into and contribute if you can!**
 
 ---
+
+## Table of Contents
+
+- [Features](#features)
+- [Install on Android](#install-on-android)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+  - [Verify](#verify)
+- [Deploy to Phone](#deploy-to-phone)
+  - [Android (USB — Windows / macOS / Linux)](#android-usb--windows--macos--linux)
+  - [Android (Wireless — Windows)](#android-wireless--windows)
+  - [iOS (macOS only)](#ios-macos-only)
+  - [VS Code Tips](#vs-code-tips)
+- [Documentation](#documentation)
+- [Project Structure](#project-structure)
+- [Model Assets](#model-assets)
+- [Development](#development)
+- [License](#license)
+- [Terms of Use](#terms-of-use)
+- [Citation](#citation)
+- [Funding](#funding)
+- [Partners](#partners)
 
 ## Features
 
@@ -209,6 +232,19 @@ Please ensure you review and adhere to the specific license terms provided with 
 ## Terms of Use
 
 Please refer to the [TERMS OF USE](TERMS_OF_USE.md) file for detailed terms and conditions regarding the use of the BirdNET+ V3.0 preview models.
+
+## Citation
+
+If you use this app in your scientific work, please cite it using the following BibTeX entry:
+
+```bibtex
+@software{BirdNET_Live_2026,
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
+  url = {https://github.com/birdnet-team/birdnet-live-app},
+  year = {2026}
+}
+```
 
 ## Funding
 

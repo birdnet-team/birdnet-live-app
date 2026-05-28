@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: BirdNET Live app - Professional bioacoustics in your pocket
+message: >-
+  If you use this software in your scientific work, please cite it using these metadata.
+type: software
+authors:
+  - given-names: Stefan
+    family-names: Kahl
+    affiliation: 'Cornell K. Lisa Yang Center for Conservation Bioacoustics & Chemnitz University of Technology'
+  - given-names: Andy
+    family-names: Börner
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Max
+    family-names: Mauermann
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Raja Charlotte
+    family-names: Seifert
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Thomas
+    family-names: Wilhelm-Stein
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Connor M.
+    family-names: Wood
+    affiliation: 'Cornell K. Lisa Yang Center for Conservation Bioacoustics'
+  - given-names: Maximilian
+    family-names: Eibl
+    affiliation: 'Chemnitz University of Technology'
+  - given-names: Holger
+    family-names: Klinck
+    affiliation: 'Cornell K. Lisa Yang Center for Conservation Bioacoustics'
+repository-code: 'https://github.com/birdnet-team/birdnet-live-app'
