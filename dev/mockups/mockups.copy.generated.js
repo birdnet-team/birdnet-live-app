@@ -1,0 +1,216 @@
+// Generated from mockups.copy.md by sync-copy.js. Do not edit.
+window.BIRDNET_MOCKUP_COPY = {
+  "languages": {
+    "en": {
+      "slides": {
+        "menu": {
+          "title": "Four modes for every field workflow",
+          "subtitle": "Move from real-time listening to timed counts, transect surveys, and file analysis without changing tools."
+        },
+        "live": {
+          "title": "Identify calls in real time",
+          "subtitle": "Offline BirdNET+ inference turns microphone audio into live species detections, with confidence scores and a scrolling spectrogram."
+        },
+        "review": {
+          "title": "Review sessions and validate detections",
+          "subtitle": "Sort by confidence, inspect clips and spectrograms, add notes, and export results for reports or field records."
+        },
+        "species": {
+          "title": "Learn about what you detected",
+          "subtitle": "Open species details with photos, descriptions, taxonomy, and reference links while reviewing your observations."
+        },
+        "explore": {
+          "title": "Explore likely species nearby",
+          "subtitle": "Use location-aware species lists, photos, descriptions, and range context before or after a recording session."
+        },
+        "files": {
+          "title": "Analyze recordings offline",
+          "subtitle": "Import audio files, review detections over time, and process recordings locally without sending sound to the cloud."
+        }
+      }
+    },
+    "de": {
+      "slides": {
+        "menu": {
+          "title": "Vier Modi für jede Feldarbeit",
+          "subtitle": "Wechseln Sie zwischen Live-Erkennung, Punktzählung, Transect Surveys und Dateianalyse, ohne das Werkzeug zu wechseln."
+        },
+        "live": {
+          "title": "Rufe in Echtzeit erkennen",
+          "subtitle": "BirdNET+ läuft offline auf dem Gerät und macht aus Mikrofon-Audio Live-Erkennungen mit Konfidenz und Spektrogramm."
+        },
+        "review": {
+          "title": "Sessions prüfen und Detektionen validieren",
+          "subtitle": "Nach Konfidenz sortieren, Clips und Spektrogramme prüfen, Notizen ergänzen und Ergebnisse exportieren."
+        },
+        "species": {
+          "title": "Mehr über erkannte Arten lernen",
+          "subtitle": "Öffnen Sie Artendetails mit Fotos, Beschreibungen, Taxonomie und Referenzlinks direkt aus der Beobachtung."
+        },
+        "explore": {
+          "title": "Arten in der Nähe erkunden",
+          "subtitle": "Standortbasierte Artenlisten, Fotos, Beschreibungen und Kontext helfen vor und nach jeder Aufnahme."
+        },
+        "files": {
+          "title": "Aufnahmen offline analysieren",
+          "subtitle": "Audio importieren, Erkennungen über die Zeit prüfen und alles lokal verarbeiten, ohne Ton in die Cloud zu senden."
+        }
+      }
+    },
+    "cs": {
+      "slides": {
+        "menu": {
+          "title": "Čtyři režimy pro práci v terénu",
+          "subtitle": "Přecházejte mezi živým poslechem, Point Count, Survey a File Analysis bez změny nástroje."
+        },
+        "live": {
+          "title": "Rozpoznávejte hlasy živě",
+          "subtitle": "BirdNET+ běží offline přímo v zařízení a převádí zvuk z mikrofonu na detekce s jistotou a spektrogramem."
+        },
+        "review": {
+          "title": "Kontrolujte relace a ověřujte detekce",
+          "subtitle": "Řaďte podle jistoty, prohlížejte klipy a spektrogramy, přidávejte poznámky a exportujte výsledky."
+        },
+        "species": {
+          "title": "Zjistěte více o detekovaných druzích",
+          "subtitle": "Otevřete detaily druhu s fotografiemi, popisem, taxonomií a referenčními odkazy přímo z pozorování."
+        },
+        "explore": {
+          "title": "Prozkoumejte druhy poblíž",
+          "subtitle": "Seznamy podle polohy, fotografie, popisy a kontext pomáhají před každou relací i po ní."
+        },
+        "files": {
+          "title": "Analyzujte nahrávky offline",
+          "subtitle": "Importujte audio, kontrolujte detekce v čase a zpracujte vše lokálně bez odesílání zvuku do cloudu."
+        }
+      }
+    },
+    "es": {
+      "slides": {
+        "menu": {
+          "title": "Cuatro modos para cada trabajo de campo",
+          "subtitle": "Pasa de escucha en directo a Point Count, Survey y File Analysis sin cambiar de herramienta."
+        },
+        "live": {
+          "title": "Identifica cantos en directo",
+          "subtitle": "BirdNET+ funciona sin conexión en el dispositivo y convierte el micrófono en detecciones con confianza y espectrograma."
+        },
+        "review": {
+          "title": "Revisa sesiones y valida detecciones",
+          "subtitle": "Ordena por confianza, inspecciona clips y espectrogramas, añade notas y exporta resultados."
+        },
+        "species": {
+          "title": "Aprende sobre las especies detectadas",
+          "subtitle": "Abre detalles con fotos, descripciones, taxonomía y enlaces de referencia mientras revisas tus observaciones."
+        },
+        "explore": {
+          "title": "Explora especies cercanas",
+          "subtitle": "Listas por ubicación, fotos, descripciones y contexto ayudan antes o después de cada sesión."
+        },
+        "files": {
+          "title": "Analiza grabaciones sin conexión",
+          "subtitle": "Importa audio, revisa detecciones en el tiempo y procesa todo localmente, sin enviar sonido a la nube."
+        }
+      }
+    },
+    "fr": {
+      "slides": {
+        "menu": {
+          "title": "Quatre modes pour le terrain",
+          "subtitle": "Passez de l'écoute en direct au Point Count, Survey et File Analysis sans changer d'outil."
+        },
+        "live": {
+          "title": "Identifiez les chants en direct",
+          "subtitle": "BirdNET+ fonctionne hors ligne sur l'appareil et transforme le micro en détections avec confiance et spectrogramme."
+        },
+        "review": {
+          "title": "Révisez les sessions et validez les détections",
+          "subtitle": "Triez par confiance, inspectez clips et spectrogrammes, ajoutez des notes et exportez les résultats."
+        },
+        "species": {
+          "title": "Découvrez les espèces détectées",
+          "subtitle": "Ouvrez les détails avec photos, descriptions, taxonomie et liens de référence pendant la révision."
+        },
+        "explore": {
+          "title": "Explorez les espèces proches",
+          "subtitle": "Listes par lieu, photos, descriptions et contexte aident avant ou après chaque session."
+        },
+        "files": {
+          "title": "Analysez vos enregistrements hors ligne",
+          "subtitle": "Importez l'audio, révisez les détections dans le temps et traitez tout localement, sans cloud."
+        }
+      }
+    },
+    "it": {
+      "slides": {
+        "menu": {
+          "title": "Quattro modalità per il campo",
+          "subtitle": "Passa dall'ascolto dal vivo a Point Count, Survey e File Analysis senza cambiare strumento."
+        },
+        "live": {
+          "title": "Identifica i richiami dal vivo",
+          "subtitle": "BirdNET+ funziona offline sul dispositivo e trasforma l'audio del microfono in rilevazioni con confidenza e spettrogramma."
+        },
+        "review": {
+          "title": "Rivedi le sessioni e valida le rilevazioni",
+          "subtitle": "Ordina per confidenza, ispeziona clip e spettrogrammi, aggiungi note ed esporta i risultati."
+        },
+        "species": {
+          "title": "Scopri le specie rilevate",
+          "subtitle": "Apri dettagli con foto, descrizioni, tassonomia e link di riferimento mentre rivedi le osservazioni."
+        },
+        "explore": {
+          "title": "Esplora le specie vicine",
+          "subtitle": "Liste basate sulla posizione, foto, descrizioni e contesto aiutano prima e dopo ogni sessione."
+        },
+        "files": {
+          "title": "Analizza registrazioni offline",
+          "subtitle": "Importa audio, rivedi le rilevazioni nel tempo ed elabora tutto in locale, senza inviare suoni al cloud."
+        }
+      }
+    },
+    "pt": {
+      "slides": {
+        "menu": {
+          "title": "Quatro modos para o trabalho de campo",
+          "subtitle": "Passe da escuta em direto para Point Count, Survey e File Analysis sem mudar de ferramenta."
+        },
+        "live": {
+          "title": "Identifique sons em direto",
+          "subtitle": "BirdNET+ corre offline no dispositivo e transforma o microfone em deteções com confiança e espetrograma."
+        },
+        "review": {
+          "title": "Reveja sessões e valide deteções",
+          "subtitle": "Ordene por confiança, inspecione clipes e espetrogramas, adicione notas e exporte resultados."
+        },
+        "species": {
+          "title": "Saiba mais sobre as espécies detetadas",
+          "subtitle": "Abra detalhes com fotos, descrições, taxonomia e ligações de referência ao rever observações."
+        },
+        "explore": {
+          "title": "Explore espécies próximas",
+          "subtitle": "Listas por localização, fotos, descrições e contexto ajudam antes ou depois da sessão."
+        },
+        "files": {
+          "title": "Analise gravações offline",
+          "subtitle": "Importe áudio, reveja deteções ao longo do tempo e processe tudo localmente, sem enviar som para a cloud."
+        }
+      }
+    }
+  }
+};
+(function applyMockupCopy() {
+  const config = window.BIRDNET_MOCKUPS;
+  const copy = window.BIRDNET_MOCKUP_COPY;
+  if (!config || !copy) return;
+  for (const [languageCode, languageCopy] of Object.entries(copy.languages || {})) {
+    const languageConfig = config.languages[languageCode];
+    if (!languageConfig) continue;
+    for (const [slideId, slideCopy] of Object.entries(languageCopy.slides || {})) {
+      languageConfig.slides[slideId] = {
+        ...(languageConfig.slides[slideId] || {}),
+        ...slideCopy,
+      };
+    }
+  }
+})();

@@ -2,6 +2,9 @@
 .claude/
 /dev/*
 !/dev/sync_version.dart
+!/dev/mockups/
+!/dev/mockups/**
+/dev/mockups/output/
 assets/species_images/*
 !assets/species_images/dummy.webp
 assets/species_data/*

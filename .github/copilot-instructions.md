@@ -107,6 +107,7 @@ flutter build appbundle       # Android App Bundle (preferred for Play Store)
 - **Release APK is ~253 MB** (App Bundle ~221 MB). The audio ONNX model (~152 MB, stored uncompressed for memory-mapping) plus bundled species images (~60 MB, 5,241 photos at 360×240 WebP, 3:2) and description data (~3 MB) account for most of the size.
 - **ABI filter**: Only `arm64-v8a` is included (`android/app/build.gradle`). No 32-bit ARM or x86 native libs are shipped.
 - **R8 shrink + minify** is enabled for release builds. ProGuard rules in `android/app/proguard-rules.pro` keep ONNX Runtime JNI bindings.
+- **Play release notes**: Keep `release/V<version>/release_notes.txt` short, high-level, and user-facing. Cover the delta since the last Play Store release with clear bullets, avoid implementation details or changelog-style prose, and keep each locale block under Play's 500-character limit.
 - **Test fixtures** (`assets/test_fixtures/`) are **not bundled** in the APK. For integration tests, push them to the device first:
   ```bash
   adb push assets/test_fixtures /data/local/tmp/test_fixtures

@@ -16,9 +16,9 @@
 
 <p align="center">
   <img src="docs/assets/screenshots/live-mode.png" alt="Live Mode" width="150">
-  <img src="docs/assets/screenshots/survey.png" alt="Survey Mode" width="150">
   <img src="docs/assets/screenshots/session-review.png" alt="Session Review" width="150">
   <img src="docs/assets/screenshots/explore.png" alt="Explore" width="150">
+  <img src="docs/assets/screenshots/species.png" alt="Species Overlay" width="150">
   <img src="docs/assets/screenshots/file-analysis.png" alt="File Analysis" width="150">
 </p>
 

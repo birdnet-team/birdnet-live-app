@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BirdNET Live Store Mockups</title>
+  <link rel="stylesheet" href="mockups.css">
+</head>
+<body>
+  <main class="studio-shell">
+    <header class="toolbar" aria-label="Mockup controls">
+      <div>
+        <h1 class="toolbar-title">BirdNET Live Store Mockups</h1>
+        <p class="toolbar-subtitle">Preview all store screenshots in the browser. Edit copy in <strong>mockups.copy.md</strong> and screenshots in <strong>mockups.config.js</strong>.</p>
+      </div>
+      <div class="toolbar-controls">
+        <label>
+          <span class="sr-only">Language</span>
+          <select id="languageSelect" aria-label="Language"></select>
+        </label>
+        <button id="renderButton" class="button-link action-button" type="button">Render</button>
+        <button id="renderAllButton" class="button-link action-button secondary" type="button">Render all</button>
+        <button id="renderDevicesButton" class="button-link action-button secondary" type="button">Render devices</button>
+        <div id="languageLinks" class="language-links" aria-label="Language shortcuts"></div>
+      </div>
+      <p id="renderStatus" class="render-status" aria-live="polite"></p>
+    </header>
+    <section id="previewGrid" class="preview-grid" aria-label="Generated mockups"></section>
+  </main>
+
+  <template id="mockupTemplate">
+    <article class="preview-card">
+      <div class="preview-viewport">
+        <section class="mockup">
+          <div class="mockup-content">
+            <div class="copy">
+              <h2 class="title" data-field="title"></h2>
+              <p class="subtitle" data-field="subtitle"></p>
+            </div>
+          </div>
+          <div class="phone-stage">
+            <div class="phone-inner">
+              <div class="phone-screen">
+                <img data-field="screenshot" alt="">
+              </div>
+              <img class="phone-frame" src="empty_phone_frame.png" alt="">
+            </div>
+          </div>
+        </section>
+      </div>
+    </article>
+  </template>
+
+  <script src="mockups.config.js"></script>
+  <script src="mockups.copy.generated.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const config = window.BIRDNET_MOCKUPS;
+    const languageSelect = document.getElementById('languageSelect');
+    const languageLinks = document.getElementById('languageLinks');
+    const renderButton = document.getElementById('renderButton');
+    const renderAllButton = document.getElementById('renderAllButton');
+    const renderDevicesButton = document.getElementById('renderDevicesButton');
+    const renderStatus = document.getElementById('renderStatus');
+    const grid = document.getElementById('previewGrid');
+    const template = document.getElementById('mockupTemplate');
+    const requestedLang = params.get('lang') || localStorage.getItem('mockupLang') || 'en';
+    const exportMode = params.get('export') === '1';
+    const deviceExportMode = params.get('device') === '1';
+    const exportSlide = params.get('slide');
+    const lang = config.languages[requestedLang] ? requestedLang : 'en';
+
+    document.documentElement.lang = lang;
+    if (exportMode) document.body.classList.add('export');
+    if (deviceExportMode) {
+      document.documentElement.classList.add('device-export-root');
+      document.body.classList.add('device-export');
+    }
+
+    function fillLanguageSelect() {
+      for (const [code, entry] of Object.entries(config.languages)) {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = entry.name;
+        option.selected = code === lang;
+        languageSelect.appendChild(option);
+
+        const link = document.createElement('a');
+        link.className = 'button-link';
+        link.href = `preview.html?lang=${encodeURIComponent(code)}`;
+        link.textContent = entry.name;
+        if (code === lang) link.setAttribute('aria-current', 'page');
+        languageLinks.appendChild(link);
+      }
+      languageSelect.addEventListener('change', () => {
+        localStorage.setItem('mockupLang', languageSelect.value);
+        window.location.href = `preview.html?lang=${encodeURIComponent(languageSelect.value)}`;
+      });
+    }
+
+    function setupRenderButtons() {
+      renderButton.addEventListener('click', () => renderFromPreview(false));
+      renderAllButton.addEventListener('click', () => renderFromPreview(true));
+      renderDevicesButton.addEventListener('click', () => renderFromPreview(true, true));
+
+      if (window.location.protocol === 'file:') {
+        renderStatus.textContent = 'Render button needs the local server: node server.js';
+      }
+    }
+
+    async function renderFromPreview(allLanguages, deviceScreenshots = false) {
+      if (window.location.protocol === 'file:') {
+        const command = deviceScreenshots
+          ? 'node render-mockups.js --device-screenshots'
+          : allLanguages
+          ? 'node render-mockups.js --all-languages'
+          : `node render-mockups.js --lang ${lang}`;
+        await navigator.clipboard?.writeText(command).catch(() => {});
+        renderStatus.textContent = `Open this folder in a terminal and run: ${command}`;
+        return;
+      }
+
+      const button = deviceScreenshots ? renderDevicesButton : allLanguages ? renderAllButton : renderButton;
+      button.disabled = true;
+      renderStatus.textContent = deviceScreenshots
+        ? 'Rendering clean device screenshots...'
+        : allLanguages
+        ? 'Rendering all locales...'
+        : `Rendering ${lang}...`;
+      try {
+        const url = deviceScreenshots
+          ? '/render?devices=1'
+          : allLanguages
+          ? '/render?all=1'
+          : `/render?lang=${encodeURIComponent(lang)}`;
+        const response = await fetch(url, { cache: 'no-store' });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.stderr || result.stdout || `Render failed with ${response.status}`);
+        }
+        renderStatus.textContent = deviceScreenshots
+          ? 'Rendered clean device screenshots to output/screenshots/.'
+          : allLanguages
+          ? 'Rendered all locales to output/.'
+          : `Rendered ${lang} to output/${lang}/.`;
+      } catch (error) {
+        renderStatus.textContent = error.message;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function copyFor(slide) {
+      const language = config.languages[lang] || config.languages.en;
+      const fallback = config.languages.en;
+      return {
+        ...(fallback.slides[slide.id] || {}),
+        ...(language.slides[slide.id] || {}),
+      };
+    }
+
+    function render() {
+      const slides = exportSlide
+        ? config.slides.filter((slide) => slide.id === exportSlide)
+        : config.slides;
+
+      if (exportSlide && slides.length === 0) {
+        throw new Error(`Unknown slide: ${exportSlide}`);
+      }
+
+      slides.forEach((slide, index) => {
+        const copy = copyFor(slide);
+        const node = template.content.firstElementChild.cloneNode(true);
+        const mockup = node.querySelector('.mockup');
+        mockup.classList.add(`slide-${slide.id}`);
+        mockup.style.setProperty('--accent', slide.accent);
+        mockup.style.setProperty('--accent2', slide.accent2);
+        node.dataset.slide = slide.id;
+        node.querySelector('[data-field="title"]').textContent = copy.title;
+        node.querySelector('[data-field="subtitle"]').textContent = copy.subtitle;
+        const screenshot = node.querySelector('[data-field="screenshot"]');
+        screenshot.src = slide.screenshot;
+        screenshot.alt = copy.title;
+        if (exportMode) node.classList.add('export-target');
+        grid.appendChild(node);
+      });
+    }
+
+    function notifyReady() {
+      const imagePromises = Array.from(document.images).map((image) => {
+        if (image.complete && image.naturalWidth > 0) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          image.addEventListener('load', resolve, { once: true });
+          image.addEventListener('error', () => reject(new Error(`Image failed: ${image.src}`)), { once: true });
+        });
+      });
+
+      Promise.all(imagePromises)
+        .then(() => document.body.setAttribute('data-ready', 'true'))
+        .catch((error) => {
+          document.body.setAttribute('data-ready', 'error');
+          document.body.dataset.error = error.message;
+        });
+    }
+
+    fillLanguageSelect();
+    setupRenderButtons();
+    render();
+    notifyReady();
+  </script>
+</body>
+</html>
