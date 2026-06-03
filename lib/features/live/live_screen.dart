@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/wakelock_service.dart';
 
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -214,6 +213,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
       }
 
+      double? startLat;
+      double? startLon;
+      try {
+        final loc = ref.read(currentLocationProvider).value;
+        if (loc != null) {
+          startLat = loc.latitude;
+          startLon = loc.longitude;
+        }
+      } catch (_) {}
+
       // Start inference session.
       await controller.startSession(
         windowDuration: windowDuration,
@@ -230,6 +239,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         sensitivity: sensitivity,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
+        latitude: startLat,
+        longitude: startLon,
       );
 
       _isStarting = false;
@@ -366,28 +377,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       final repo = ref.read(sessionRepositoryProvider);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
 
-      // Capture recording location (best effort — null if unavailable).
-      try {
-        final location = await ref.read(currentLocationProvider.future);
-        if (location != null) {
-          session.latitude = location.latitude;
-          session.longitude = location.longitude;
-        }
-      } catch (_) {
-        // Location unavailable — leave fields null.
-      }
-
-      // Best-effort weather snapshot (gated by privacy toggle, 8 s
-      // timeout, never blocks save on failure).
-      if (session.latitude != null && session.longitude != null) {
+      // Capture recording location (best effort — null if unavailable) if not already set.
+      if (session.latitude == null || session.longitude == null) {
         try {
-          final svc = ref.read(weatherServiceProvider);
-          session.weather = await svc.fetch(
-            latitude: session.latitude!,
-            longitude: session.longitude!,
-            observedAt: session.endTime ?? DateTime.now(),
-          );
-        } catch (_) {}
+          final location = await ref.read(currentLocationProvider.future);
+          if (location != null) {
+            session.latitude = location.latitude;
+            session.longitude = location.longitude;
+          }
+        } catch (_) {
+          // Location unavailable — leave fields null.
+        }
       }
 
       // Persist completed session.

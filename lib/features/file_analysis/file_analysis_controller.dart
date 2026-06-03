@@ -325,6 +325,8 @@ class FileAnalysisController {
     double sensitivity = 1.0,
     required int confidenceThreshold,
     required String speciesFilterMode,
+    String poolingMode = 'lme',
+    int maxPoolWindows = 5,
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
     Set<String>? geoModelSpeciesNames,
@@ -473,7 +475,9 @@ class FileAnalysisController {
         _ => SpeciesFilterMode.off,
       };
 
-      // Reset temporal pooling for a fresh analysis.
+      // Configure and reset temporal pooling for a fresh analysis.
+      _isolate.setPoolingMode(poolingMode);
+      _isolate.setMaxPoolWindows(maxPoolWindows);
       _isolate.resetPooling();
 
       final allDetections = <DetectionRecord>[];
@@ -504,7 +508,8 @@ class FileAnalysisController {
           windowSeconds: windowDuration,
           sensitivity: sensitivity,
           confidenceThreshold: confidenceThreshold / 100.0,
-          useTemporalPooling: false,
+          useTemporalPooling: poolingMode != 'off',
+          timestamp: windowTimestamp,
         );
 
         // Apply species filter.

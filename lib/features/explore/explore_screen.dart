@@ -75,7 +75,10 @@ enum _DetectionFilter { all, detected, undetected }
 /// The Explore screen — browse species expected in your area, with optional
 /// search across the full species list.
 class ExploreScreen extends ConsumerStatefulWidget {
-  const ExploreScreen({super.key});
+  const ExploreScreen({super.key, this.isEmbedded = false});
+
+  /// Whether the screen is locked inside another view (e.g., active Survey).
+  final bool isEmbedded;
 
   @override
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
@@ -241,6 +244,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     ref.invalidate(exploreSpeciesProvider);
   }
 
+  Widget _buildFilterButton(ThemeData theme, AppLocalizations l10n) {
+    return IconButton(
+      icon: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(AppIcons.filterList),
+          if (_filterActive)
+            Positioned(
+              right: -2,
+              top: -2,
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
+      ),
+      tooltip: l10n.exploreFilterTooltip,
+      onPressed: _showFilterSheet,
+    );
+  }
+
+  Widget _buildSearchButton(AppLocalizations l10n) {
+    return IconButton(
+      icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
+      tooltip:
+          _searchVisible ? l10n.tooltipClearSearch : l10n.exploreSearchTooltip,
+      onPressed: _toggleSearch,
+    );
+  }
+
+  Widget _buildHelpButton(AppLocalizations l10n) {
+    return IconButton(
+      icon: const Icon(AppIcons.helpOutlineRounded),
+      tooltip: l10n.exploreHelpTitle,
+      onPressed: _showHelp,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -248,141 +294,133 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final locationAsync = ref.watch(currentLocationProvider);
     final theme = Theme.of(context);
 
+    final content = ContentWidthConstraint(
+      child: speciesAsync.when(
+        loading: () => const LoadingView(),
+        error:
+            (error, _) => ErrorView(
+              title: l10n.statusError,
+              message: error.toString(),
+              onRetry: _refresh,
+              retryLabel: l10n.retry,
+            ),
+        data: (localSpecies) {
+          return Column(
+            children: [
+              if (widget.isEmbedded)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.exploreTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildFilterButton(theme, l10n),
+                          _buildSearchButton(l10n),
+                          _buildHelpButton(l10n),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              // ── Collapsible search field ────────────────
+              AnimatedSize(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child:
+                    _searchVisible
+                        ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            onChanged: _onQueryChanged,
+                            textInputAction: TextInputAction.search,
+                            decoration: InputDecoration(
+                              hintText: l10n.exploreSearchHint,
+                              prefixIcon: const Icon(AppIcons.search, size: 20),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              suffixIcon:
+                                  _query.isNotEmpty
+                                      ? IconButton(
+                                        icon: const Icon(
+                                          AppIcons.clear,
+                                          size: 20,
+                                        ),
+                                        tooltip: l10n.tooltipClearSearch,
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          _onQueryChanged('');
+                                        },
+                                      )
+                                      : null,
+                            ),
+                          ),
+                        )
+                        : const SizedBox(width: double.infinity, height: 0),
+              ),
+
+              // ── Body: either geo list or search results ──
+              Expanded(
+                child:
+                    _query.isEmpty
+                        ? _GeoList(
+                          species: localSpecies,
+                          groups: _groups,
+                          sortMode: _sortMode,
+                          detectionFilter: _detectionFilter,
+                          locationAvailable: locationAsync.value != null,
+                          onRefresh: _refresh,
+                          isEmbedded: widget.isEmbedded,
+                        )
+                        : _SearchResults(
+                          query: _query,
+                          groups: _groups,
+                          sortMode: _sortMode,
+                          detectionFilter: _detectionFilter,
+                          localSpecies: localSpecies,
+                          onRefresh: _refresh,
+                          isEmbedded: widget.isEmbedded,
+                        ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.exploreTitle),
         actions: [
-          // Filter / sort overlay (badge dot when any non-default option is
-          // active).
-          IconButton(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(AppIcons.filterList),
-                if (_filterActive)
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            tooltip: l10n.exploreFilterTooltip,
-            onPressed: _showFilterSheet,
-          ),
-          // Search toggle.
-          IconButton(
-            icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
-            tooltip:
-                _searchVisible
-                    ? l10n.tooltipClearSearch
-                    : l10n.exploreSearchTooltip,
-            onPressed: _toggleSearch,
-          ),
-          // Help (swapped with refresh — refresh now lives in the
-          // location header next to the location indicator since that's
-          // what it actually re-queries).
-          IconButton(
-            icon: const Icon(AppIcons.helpOutlineRounded),
-            tooltip: l10n.exploreHelpTitle,
-            onPressed: _showHelp,
-          ),
+          _buildFilterButton(theme, l10n),
+          _buildSearchButton(l10n),
+          _buildHelpButton(l10n),
         ],
       ),
-      body: ContentWidthConstraint(
-        child: speciesAsync.when(
-          loading: () => const LoadingView(),
-          error:
-              (error, _) => ErrorView(
-                title: l10n.statusError,
-                message: error.toString(),
-                onRetry: _refresh,
-                retryLabel: l10n.retry,
-              ),
-          data: (localSpecies) {
-            return Column(
-              children: [
-                // ── Collapsible search field ────────────────
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeInOut,
-                  alignment: Alignment.topCenter,
-                  child:
-                      _searchVisible
-                          ? Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            child: TextField(
-                              controller: _searchController,
-                              focusNode: _searchFocusNode,
-                              onChanged: _onQueryChanged,
-                              textInputAction: TextInputAction.search,
-                              decoration: InputDecoration(
-                                hintText: l10n.exploreSearchHint,
-                                prefixIcon: const Icon(AppIcons.search, size: 20),
-                                isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                suffixIcon:
-                                    _query.isNotEmpty
-                                        ? IconButton(
-                                          icon: const Icon(
-                                            AppIcons.clear,
-                                            size: 20,
-                                          ),
-                                          tooltip: l10n.tooltipClearSearch,
-                                          onPressed: () {
-                                            _searchController.clear();
-                                            _onQueryChanged('');
-                                          },
-                                        )
-                                        : null,
-                              ),
-                            ),
-                          )
-                          : const SizedBox(width: double.infinity, height: 0),
-                ),
-
-                // ── Body: either geo list or search results ──
-                Expanded(
-                  child:
-                      _query.isEmpty
-                          ? _GeoList(
-                            species: localSpecies,
-                            groups: _groups,
-                            sortMode: _sortMode,
-                            detectionFilter: _detectionFilter,
-                            locationAvailable: locationAsync.value != null,
-                            onRefresh: _refresh,
-                          )
-                          : _SearchResults(
-                            query: _query,
-                            groups: _groups,
-                            sortMode: _sortMode,
-                            detectionFilter: _detectionFilter,
-                            localSpecies: localSpecies,
-                            onRefresh: _refresh,
-                          ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
+      body: content,
     );
   }
 }
@@ -493,6 +531,7 @@ class _GeoList extends ConsumerWidget {
     required this.detectionFilter,
     required this.locationAvailable,
     required this.onRefresh,
+    this.isEmbedded = false,
   });
 
   final List<ExploreSpecies> species;
@@ -501,6 +540,7 @@ class _GeoList extends ConsumerWidget {
   final _DetectionFilter detectionFilter;
   final bool locationAvailable;
   final VoidCallback onRefresh;
+  final bool isEmbedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -558,8 +598,10 @@ class _GeoList extends ConsumerWidget {
     const gap = 6.0;
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
-        const SliverToBoxAdapter(child: Divider(height: 1)),
+        if (!isEmbedded) ...[
+          SliverToBoxAdapter(child: _LocationHeader(onRefresh: onRefresh)),
+          const SliverToBoxAdapter(child: Divider(height: 1)),
+        ],
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           sliver: SliverFixedExtentList(
@@ -611,6 +653,7 @@ class _SearchResults extends ConsumerWidget {
     required this.detectionFilter,
     required this.localSpecies,
     required this.onRefresh,
+    this.isEmbedded = false,
   });
 
   final String query;
@@ -619,6 +662,7 @@ class _SearchResults extends ConsumerWidget {
   final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
   final VoidCallback onRefresh;
+  final bool isEmbedded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -738,24 +782,26 @@ class _SearchResults extends ConsumerWidget {
 
     return ListView.separated(
       padding: EdgeInsets.zero,
-      itemCount: items.length + 2,
+      itemCount: items.length + (isEmbedded ? 0 : 2),
       addAutomaticKeepAlives: false,
       addSemanticIndexes: false,
       separatorBuilder:
-          (context, index) => switch (index) {
+          (context, index) => switch (isEmbedded ? index + 2 : index) {
             0 => const SizedBox.shrink(),
             1 => const SizedBox(height: 8),
             _ => const SizedBox(height: 6),
           },
       itemBuilder: (context, index) {
-        if (index == 0) {
-          return _LocationHeader(onRefresh: onRefresh);
-        }
-        if (index == 1) {
-          return const Divider(height: 1);
+        if (!isEmbedded) {
+          if (index == 0) {
+            return _LocationHeader(onRefresh: onRefresh);
+          }
+          if (index == 1) {
+            return const Divider(height: 1);
+          }
         }
 
-        final itemIndex = index - 2;
+        final itemIndex = isEmbedded ? index : index - 2;
         final entry = items[itemIndex];
         Widget child;
         if (entry.isHeader) {
@@ -978,7 +1024,10 @@ class _ExploreHelpSheet extends StatelessWidget {
           icon: AppIcons.helpOutlineRounded,
           body: l10n.exploreHelpLocation,
         ),
-        AppHelpSection(icon: AppIcons.searchRounded, body: l10n.exploreHelpCards),
+        AppHelpSection(
+          icon: AppIcons.searchRounded,
+          body: l10n.exploreHelpCards,
+        ),
       ],
       footer: _ExploreHelpLink(label: l10n.exploreHelpLearnMore),
     );

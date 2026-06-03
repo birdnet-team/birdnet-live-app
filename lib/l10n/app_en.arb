@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "en",
   "appTitle": "BirdNET Live",
   "@appTitle": {
@@ -802,6 +802,41 @@
   "sessionLibraryRowDelete": "Delete",
   "@sessionLibraryRowDelete": {
     "description": "Per-row menu entry to delete the session"
+  },
+  "sessionLibrarySelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@sessionLibrarySelectedCount": {
+    "description": "Selected session count in selection mode",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "sessionLibrarySelectAll": "Select all",
+  "@sessionLibrarySelectAll": {
+    "description": "Button to select all sessions in the list"
+  },
+  "sessionLibraryDeselectAll": "Deselect all",
+  "@sessionLibraryDeselectAll": {
+    "description": "Button to clear the selection"
+  },
+  "sessionLibraryDeleteSelectedTitle": "Delete selected sessions?",
+  "@sessionLibraryDeleteSelectedTitle": {
+    "description": "Title for bulk delete confirmation dialog"
+  },
+  "sessionLibraryDeleteSelectedMessage": "Permanently delete {count} selected sessions and their recordings?",
+  "@sessionLibraryDeleteSelectedMessage": {
+    "description": "Message for bulk delete confirmation dialog",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "sessionLibraryPreparingExport": "Preparing export…",
+  "@sessionLibraryPreparingExport": {
+    "description": "Progress indicator message shown while packaging multiple sessions for bulk export"
   },
   "sessionDeleteDetectionTitle": "Remove Detection?",
   "@sessionDeleteDetectionTitle": {
@@ -2840,6 +2875,10 @@
   "siteContextOfflineNote": "Offline — you can add place name and weather later from the session review.",
   "@siteContextOfflineNote": {
     "description": "Note shown on the site-context card when reverse-geocoding or weather lookup failed (typically no internet). Tells the user the data can be filled in later from the session review screen, which retries both services on open."
+  },
+  "sessionWeatherTapToLoad": "Tap to load",
+  "@sessionWeatherTapToLoad": {
+    "description": "Brief label next to the cloud-off icon suggesting the user tap to authorize and fetch weather data"
   },
   "settingsMicrophone": "Microphone",
   "@settingsMicrophone": {

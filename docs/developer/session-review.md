@@ -62,13 +62,24 @@ Detection accumulation during live sessions uses **card-visibility-based countin
 
 ## Spectrogram
 
-The review spectrogram is pre-computed as a full-session `ui.Image`:
+The review spectrogram is computed dynamically to balance RAM usage and CPU performance, especially for long sessions:
 
-1. Audio file decoded via `AudioDecoder.decodeFile()` (supports FLAC, WAV).
-2. FFT computed with `fftea` (1024-point FFT, 512 hop, Hann window).
-3. Pixel buffer painted with viridis colormap, decoded into `ui.Image`.
-4. `_ReviewSpectrogramPainter` blits a 10-second viewport centered on the playback position.
-5. Frame-accurate animation via `Ticker` + interpolated position.
+- **Standard Rendering (Sessions < 128 MB Decoded PCM)**:
+  1. The entire audio file is decoded and resampled to the model's sample rate (32 kHz).
+  2. The spectrogram is pre-computed as a single full-session `ui.Image` using a 2048-point FFT (yielding ~12 Hz/bin frequency resolution, showing formants and harmonics clearly) with a 1024-point hop.
+  3. `_ReviewSpectrogramPainter` blits a 10-second viewport centered on the playback position, with a `Ticker` animating playhead movements at up to 60 fps.
+
+- **Lazy Chunk Loading (Sessions ≥ 128 MB Decoded PCM)**:
+  To prevent massive RAM allocations and out-of-memory crashes on hour-long sessions, the app uses a lazy-loading tile pipeline:
+  1. The session is divided into 30-second chunks. Only chunks visible in (or immediately adjacent to) the current viewport are loaded.
+  2. Up to 12 chunks are cached in memory; older/farthest chunks are evicted dynamically.
+  3. The decode and FFT calculations run inside a background isolate (`Isolate.run` / `_runSpectrogramChunkIsolate`) to prevent the UI thread from dropping frames during scroll or pinch-to-zoom actions.
+
+- **FLAC-to-WAV Transcoding Optimization**:
+  FLAC files do not have a constant-bitrate layout or a seek table, meaning range-decoding requires sequentially decoding the file from the beginning—leading to O(N²) time complexity for lazy chunk loading on long sessions. To avoid this:
+  1. If a session is large (≥ 128 MB PCM) and recorded in FLAC format, the app runs a one-time sequential transcode to a temporary WAV file in a background isolate (`_runFlacTranscodeIsolate`).
+  2. The lazy spectrogram pipeline then uses the temporary WAV file, enabling fast O(1) random-access seek-and-read operations for individual chunks.
+  3. The temporary WAV file is session-scoped and deleted when the review screen is disposed.
 
 ## Trim System
 

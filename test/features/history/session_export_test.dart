@@ -1004,4 +1004,88 @@ void main() {
       },
     );
   });
+
+  group('buildMultiSessionExport', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('bulk_export_test_');
+    });
+
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    test('returns null for empty sessions', () async {
+      final result = await buildMultiSessionExport(
+        [],
+        formats: const {'json'},
+        includeAudio: false,
+      );
+      expect(result, isNull);
+    });
+
+    test('creates a bulk zip containing multiple session exports', () async {
+      final start1 = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session1 = _makeSession(
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.95,
+            const Duration(seconds: 10),
+            start1,
+          ),
+        ],
+      );
+
+      final start2 = DateTime.utc(2025, 6, 16, 9, 30, 0);
+      final session2 = LiveSession(
+        id: '2025-06-16T09-30-00',
+        startTime: start2,
+        endTime: start2.add(const Duration(minutes: 5)),
+        type: SessionType.live,
+        detections: [
+          _det(
+            'Parus major',
+            'Great Tit',
+            0.85,
+            const Duration(seconds: 5),
+            start2,
+          ),
+        ],
+        settings: SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1.0,
+          speciesFilterMode: 'off',
+        ),
+      );
+
+      final bulkZipPath = await buildMultiSessionExport(
+        [session1, session2],
+        formats: const {'json'},
+        includeAudio: false,
+      );
+
+      expect(bulkZipPath, isNotNull);
+      final file = File(bulkZipPath!);
+      expect(file.existsSync(), isTrue);
+      expect(p.basename(file.path), startsWith('BirdNET_Live_Bulk_Export_'));
+
+      final zipBytes = file.readAsBytesSync();
+      final archive = ZipDecoder().decodeBytes(zipBytes);
+      final names = archive.map((f) => f.name).toList();
+
+      expect(names.length, 2);
+      expect(
+        names.any((n) => n.contains('2025-06-15') && n.endsWith('.json')),
+        isTrue,
+      );
+      expect(
+        names.any((n) => n.contains('2025-06-16') && n.endsWith('.json')),
+        isTrue,
+      );
+    });
+  });
 }

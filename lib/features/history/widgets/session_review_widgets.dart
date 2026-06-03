@@ -69,21 +69,23 @@ class _SpeciesGroup {
 // Summary Header
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _SummaryHeader extends StatelessWidget {
+class _SummaryHeader extends ConsumerWidget {
   const _SummaryHeader({
     required this.session,
     required this.detectionCount,
     this.locationName,
     this.onShowMap,
+    this.onFetchWeather,
   });
 
   final LiveSession session;
   final int detectionCount;
   final String? locationName;
   final VoidCallback? onShowMap;
+  final Future<void> Function()? onFetchWeather;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final duration = session.duration;
@@ -116,6 +118,39 @@ class _SummaryHeader extends StatelessWidget {
               if (session.weather != null) ...[
                 const SizedBox(width: 8),
                 _WeatherRow(weather: session.weather!),
+              ] else if (session.latitude != null &&
+                  session.longitude != null &&
+                  !ref.watch(privacyAllowWeatherProvider)) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () async {
+                    await ref.read(privacyAllowWeatherProvider.notifier).set(true);
+                    onFetchWeather?.call();
+                  },
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          AppIcons.cloudOff,
+                          size: 18,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          l10n.sessionWeatherTapToLoad,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                            decorationColor: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
@@ -995,6 +1030,7 @@ class _PlayPauseButton extends StatelessWidget {
 
 class _SpeciesTile extends ConsumerWidget {
   const _SpeciesTile({
+    super.key,
     required this.group,
     required this.sessionStart,
     required this.isExpanded,
@@ -1082,6 +1118,7 @@ class _SpeciesTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final showSciNames = ref.watch(showSciNamesProvider);
@@ -1138,8 +1175,7 @@ class _SpeciesTile extends ConsumerWidget {
             ),
             onDismissed: (_) => onDeleteSpecies(),
             child: InkWell(
-              onTap: onToggleExpand,
-              onLongPress: onSpeciesInfo,
+              onTap: onSpeciesInfo,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1210,29 +1246,25 @@ class _SpeciesTile extends ConsumerWidget {
                       ),
                     const SizedBox(width: 8),
 
-                    // Species thumbnail. Tappable shortcut to the species
-                    // info overlay; uses the bundled image's 3:2 ratio so
-                    // BoxFit.cover never has to crop the photo.
-                    InkWell(
-                      onTap: onSpeciesInfo,
-                      borderRadius: BorderRadius.circular(6),
-                      child: SizedBox(
-                        width: 48,
-                        height: 32,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.asset(
-                            taxonomyAsync.value?.assetImagePath(
-                                  group.scientificName,
-                                ) ??
+                    // Species thumbnail. Uses the bundled image's 3:2 ratio
+                    // so BoxFit.cover never has to crop the photo. Shortcut
+                    // is now handled by tapping the entire row.
+                    SizedBox(
+                      width: 48,
+                      height: 32,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          taxonomyAsync.value?.assetImagePath(
+                                group.scientificName,
+                              ) ??
+                              'assets/images/dummy_species.png',
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (a, b, c) => Image.asset(
                                 'assets/images/dummy_species.png',
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (a, b, c) => Image.asset(
-                                  'assets/images/dummy_species.png',
-                                  fit: BoxFit.cover,
-                                ),
-                          ),
+                                fit: BoxFit.cover,
+                              ),
                         ),
                       ),
                     ),
@@ -1341,14 +1373,32 @@ class _SpeciesTile extends ConsumerWidget {
                       ),
                     ),
 
-                    // Expand chevron.
-                    AnimatedRotation(
-                      turns: isExpanded ? 0.5 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        AppIcons.expandMore,
-                        size: 24,
-                        color: theme.colorScheme.onSurface.withAlpha(120),
+                    // Expand chevron interactive area. Covering the entire
+                    // right portion of the card with a generous tap target.
+                    Tooltip(
+                      message:
+                          isExpanded
+                              ? l10n.sessionLibraryCollapse
+                              : l10n.sessionLibraryExpand,
+                      child: InkWell(
+                        onTap: onToggleExpand,
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          constraints: const BoxConstraints(
+                            minWidth: 56,
+                            minHeight: 48,
+                          ),
+                          alignment: Alignment.center,
+                          child: AnimatedRotation(
+                            turns: isExpanded ? 0.5 : 0.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Icon(
+                              AppIcons.expandMore,
+                              size: 24,
+                              color: theme.colorScheme.onSurface.withAlpha(120),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],

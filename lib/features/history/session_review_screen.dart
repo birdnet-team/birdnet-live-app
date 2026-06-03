@@ -2225,18 +2225,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _showUndoSnackBar(l10n.sessionSpeciesRemoved);
   }
 
-  /// Shows an undo SnackBar using Flutter's built-in accessibility behavior.
-  ///
-  /// When `MediaQuery.accessibleNavigation` is true and an action is
-  /// present, Flutter keeps the SnackBar visible instead of auto-dismissing
-  /// it. That gives assistive-technology users enough time to discover and
-  /// activate the undo action.
+  /// Shows an undo SnackBar using Flutter's built-in accessibility behavior,
+  /// but with an explicit safety timeout to prevent snackbars from staying
+  /// open indefinitely on devices with active accessibility services (such as
+  /// Android password managers or custom gestures on Pixel devices).
   void _showUndoSnackBar(String text) {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
-    const lifetime = Duration(seconds: 6);
-    messenger.showSnackBar(
+    const lifetime = Duration(seconds: 5);
+    final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(text),
         duration: lifetime,
@@ -2248,6 +2246,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         ),
       ),
     );
+    Future.delayed(lifetime, () {
+      try {
+        controller.close();
+      } catch (_) {}
+    });
   }
 
   void _seekToCluster(_DetectionCluster cluster) {
@@ -2389,6 +2392,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
 
+    await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
+
     String? memoPath;
     if (isEdit) {
       memoPath = existing!.voiceMemoPath;
@@ -2477,6 +2483,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                             icon: const Icon(AppIcons.mic, size: 18),
                             label: Text(l10n.detectionReplaceVoiceMemo),
                             onPressed: () async {
+                              await _pausePlayersForVoiceMemo();
+                              if (!ctx.mounted) return;
                               final result = await showVoiceMemoDialog(
                                 context: ctx,
                                 sessionId: widget.session.id,
@@ -2723,6 +2731,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<void> _editClusterVoiceMemo(_DetectionCluster cluster) async {
     final l10n = AppLocalizations.of(context)!;
     final target = cluster.records.first;
+    await _pausePlayersForVoiceMemo();
+    if (!mounted) return;
     final result = await showVoiceMemoDialog(
       context: context,
       sessionId: widget.session.id,
@@ -2751,6 +2761,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
+    }
+  }
+
+  Future<void> _pausePlayersForVoiceMemo() async {
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+    } catch (_) {
+      // Best-effort: keep memo flow moving even if pause throws.
+    }
+    try {
+      if (_clipPlayer.playing) {
+        await _clipPlayer.pause();
+      }
+    } catch (_) {
+      // Best-effort.
+    }
+    if (mounted && _isPlaying) {
+      setState(() => _isPlaying = false);
     }
   }
 
@@ -3067,6 +3097,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   ),
                 )
                 : null,
+        onFetchWeather: _resolveWeather,
       ),
       if (widget.session.type == SessionType.survey &&
           (widget.session.gpsTrack.isNotEmpty ||
@@ -3404,6 +3435,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               (_activeClipCluster != null &&
                   group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
+            key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
             sessionStart: widget.session.startTime,
             isExpanded: isExpanded,

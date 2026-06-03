@@ -160,26 +160,14 @@ class AboutScreen extends ConsumerWidget {
 
             // Links
             ListTile(
-              leading: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  theme.colorScheme.onSurfaceVariant,
-                  BlendMode.srcIn,
-                ),
-                child: Image.asset(
-                  'assets/images/icon-birdnet.png',
-                  width: 24,
-                  height: 24,
-                ),
-              ),
-              title: Text(l10n.aboutWebsite),
+              leading: const Icon(AppIcons.menuBook),
+              title: Text(l10n.aboutUserGuide),
               trailing: const Icon(AppIcons.openInNew),
-              onTap: () => openExternalUrl(context, AppConstants.birdnetUrl),
-            ),
-            ListTile(
-              leading: const Icon(AppIcons.code),
-              title: Text(l10n.aboutGitHub),
-              trailing: const Icon(AppIcons.openInNew),
-              onTap: () => openExternalUrl(context, AppConstants.githubUrl),
+              onTap:
+                  () => openExternalUrl(
+                    context,
+                    '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/user/',
+                  ),
             ),
             ListTile(
               leading: const Icon(AppIcons.privacyTip),
@@ -202,14 +190,26 @@ class AboutScreen extends ConsumerWidget {
                   ),
             ),
             ListTile(
-              leading: const Icon(AppIcons.menuBook),
-              title: Text(l10n.aboutUserGuide),
+              leading: const Icon(AppIcons.code),
+              title: Text(l10n.aboutGitHub),
               trailing: const Icon(AppIcons.openInNew),
-              onTap:
-                  () => openExternalUrl(
-                    context,
-                    '${AppConstants.docsUrl}${Localizations.localeOf(context).languageCode == 'en' ? '' : '/${Localizations.localeOf(context).languageCode}'}/user/',
-                  ),
+              onTap: () => openExternalUrl(context, AppConstants.githubUrl),
+            ),
+            ListTile(
+              leading: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  theme.colorScheme.onSurfaceVariant,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(
+                  'assets/images/icon-birdnet.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              title: Text(l10n.aboutWebsite),
+              trailing: const Icon(AppIcons.openInNew),
+              onTap: () => openExternalUrl(context, AppConstants.birdnetUrl),
             ),
             ListTile(
               leading: const Icon(AppIcons.volunteerActivism),

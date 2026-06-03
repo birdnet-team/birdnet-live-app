@@ -140,13 +140,38 @@ exact source commit.
   and upload it via Play Console (or use `retrace` locally) to symbolicate
   the stack trace.
 
-## iOS (placeholder)
+## iOS
 
-iOS releases are not yet wired up. When that lands:
+iOS builds and App Store/TestFlight releases require a macOS environment with Xcode installed.
 
-1. `flutter build ios --release`
-2. Open `ios/Runner.xcworkspace` in Xcode → Product → Archive.
-3. Distribute via App Store Connect.
+### 1. Prerequisites and Signing
+- **Apple Developer Account**: Signing certificates and provisioning profiles are configured via the team Apple Developer portal.
+- **Xcode Integration**: Open `ios/Runner.xcworkspace` in Xcode and under the **Runner** target → **Signing & Capabilities**, make sure the correct **Development Team** is selected and the Bundle Identifier (`com.birdnet.birdnetLive` or your custom identifier) is registered.
 
-The signing story (provisioning profiles, certificates) lives in the Apple
-Developer account, not in this repo.
+### 2. Build the iOS Archive
+To compile the project and generate the release xcarchive with symbols:
+
+```bash
+# Pull model assets if needed
+git lfs pull
+
+# Build the release archive and export symbols
+flutter build ipa --release --obfuscate --split-debug-info=build/symbols/V0.16.0-ios
+```
+
+This generates:
+- An xcarchive folder at `build/ios/archive/Runner.xcarchive`.
+- A signed `.ipa` package under `build/ios/ipa/` (if provisioning is configured).
+- Obfuscation symbols under `build/symbols/V0.16.0-ios`.
+
+### 3. Archive and Distribute via Xcode
+If direct command-line exporting is not configured:
+1. Open `ios/Runner.xcworkspace` in Xcode.
+2. Select **Any iOS Device (arm64)** as the build destination.
+3. Choose **Product → Archive** from the menu.
+4. Once the archive is complete, the Xcode Organizer window will open. Click **Distribute App** and follow the prompts to upload the build to App Store Connect / TestFlight.
+
+### 4. Upload Native Symbols (dSYMs)
+Native crash reports (including ONNX Runtime native issues) require dSYM files for symbolication:
+- During standard App Store submission from Xcode or Organizer, check the **"Upload your app's symbols to receive sentry/crash reports"** box.
+- Alternatively, retrieve the dSYMs from the `.xcarchive` bundles (under `dSYMs/`) and upload them to your crash reporting system.

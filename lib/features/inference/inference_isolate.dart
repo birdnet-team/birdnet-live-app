@@ -102,6 +102,7 @@ class InferenceIsolate {
     double? confidenceThreshold,
     int? topK,
     bool useTemporalPooling = true,
+    DateTime? timestamp,
   }) async {
     final svc = _service;
     if (svc == null) {
@@ -125,6 +126,7 @@ class InferenceIsolate {
         confidenceThreshold: confidenceThreshold,
         topK: topK,
         useTemporalPooling: useTemporalPooling,
+        timestamp: timestamp,
       );
     } finally {
       completer.complete();

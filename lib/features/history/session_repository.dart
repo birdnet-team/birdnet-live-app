@@ -145,16 +145,60 @@ class SessionRepository {
     return count;
   }
 
+  /// Parse only the header (first 1024 bytes) of a session JSON file to extract
+  /// the session type and number. This avoids decoding potentially massive
+  /// JSON files with large detection arrays, which blocks the UI thread.
+  Future<Map<String, dynamic>?> _parseSessionHeader(File file) async {
+    RandomAccessFile? raf;
+    try {
+      raf = await file.open(mode: FileMode.read);
+      final length = await file.length();
+      final bytesToRead = length < 1024 ? length : 1024;
+      final buffer = await raf.read(bytesToRead);
+      final text = utf8.decode(buffer, allowMalformed: true);
+
+      // JSON properties are written at the top of the map.
+      // E.g., "type": "pointCount" (or omitted if it's "live", the default)
+      final typeMatch = RegExp(r'"type"\s*:\s*"([^"]+)"').firstMatch(text);
+      final typeStr = typeMatch?.group(1) ?? 'live';
+
+      // E.g., "sessionNumber": 42
+      final numMatch = RegExp(r'"sessionNumber"\s*:\s*(\d+)').firstMatch(text);
+      final sessionNum = numMatch != null ? int.tryParse(numMatch.group(1)!) : null;
+
+      return {
+        'type': typeStr,
+        'sessionNumber': sessionNum,
+      };
+    } catch (_) {
+      return null;
+    } finally {
+      try {
+        await raf?.close();
+      } catch (_) {}
+    }
+  }
+
   /// Return the next sequential session number for [type].
   ///
   /// Scans all saved sessions of the same type and returns
   /// `max(sessionNumber) + 1`, or `1` if none exist yet.
   Future<int> nextSessionNumber(SessionType type) async {
-    final sessions = await listAll();
+    final basePath = await _getBasePath();
+    final dir = Directory(basePath);
+    if (!await dir.exists()) return 1;
+
     var maxNum = 0;
-    for (final s in sessions) {
-      if (s.type == type && s.sessionNumber != null) {
-        if (s.sessionNumber! > maxNum) maxNum = s.sessionNumber!;
+    await for (final entity in dir.list()) {
+      if (entity is File && entity.path.endsWith('.json')) {
+        final header = await _parseSessionHeader(entity);
+        if (header != null) {
+          final hTypeStr = header['type'] as String;
+          final hSessionNumber = header['sessionNumber'] as int?;
+          if (hTypeStr == type.name && hSessionNumber != null) {
+            if (hSessionNumber > maxNum) maxNum = hSessionNumber;
+          }
+        }
       }
     }
     return maxNum + 1;

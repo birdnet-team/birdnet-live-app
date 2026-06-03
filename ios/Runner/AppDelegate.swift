@@ -9,8 +9,26 @@ import UIKit
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
 
-    // Audio decoder channel — decode compressed audio to PCM via AVFoundation.
     let controller = window?.rootViewController as! FlutterViewController
+
+    let wakelockChannel = FlutterMethodChannel(
+      name: "com.birdnet/wakelock",
+      binaryMessenger: controller.binaryMessenger
+    )
+    wakelockChannel.setMethodCallHandler { (call, result) in
+      switch call.method {
+      case "enable":
+        UIApplication.shared.isIdleTimerDisabled = true
+        result(nil)
+      case "disable":
+        UIApplication.shared.isIdleTimerDisabled = false
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+
+    // Audio decoder channel — decode compressed audio to PCM via AVFoundation.
     let audioChannel = FlutterMethodChannel(
       name: "com.birdnet/audio_decoder",
       binaryMessenger: controller.binaryMessenger

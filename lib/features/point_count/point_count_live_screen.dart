@@ -34,7 +34,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
-import '../../shared/services/weather_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -172,6 +171,18 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
 
+    double? startLat = widget.latitude;
+    double? startLon = widget.longitude;
+    if (startLat == null || startLon == null) {
+      try {
+        final loc = ref.read(currentLocationProvider).value;
+        if (loc != null) {
+          startLat = loc.latitude;
+          startLon = loc.longitude;
+        }
+      } catch (_) {}
+    }
+
     await controller.startSession(
       windowDuration: windowDuration,
       inferenceRate: inferenceRate,
@@ -185,6 +196,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMode: ref.read(scorePoolingProvider),
       sensitivity: ref.read(sensitivityProvider),
+      latitude: startLat,
+      longitude: startLon,
     );
 
     _started = true;
@@ -264,31 +277,22 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       final repo = ref.read(sessionRepositoryProvider);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
 
-      // Capture location from setup (GPS, manual, or map-picked).
-      if (widget.latitude != null && widget.longitude != null) {
-        session.latitude = widget.latitude;
-        session.longitude = widget.longitude;
-      } else {
-        try {
-          final location = await ref.read(currentLocationProvider.future);
-          if (location != null) {
-            session.latitude = location.latitude;
-            session.longitude = location.longitude;
+      // Capture location from setup (GPS, manual, or map-picked) only if not already set.
+      if (session.latitude == null || session.longitude == null) {
+        if (widget.latitude != null && widget.longitude != null) {
+          session.latitude = widget.latitude;
+          session.longitude = widget.longitude;
+        } else {
+          try {
+            final location = await ref.read(currentLocationProvider.future);
+            if (location != null) {
+              session.latitude = location.latitude;
+              session.longitude = location.longitude;
+            }
+          } catch (_) {
+            // Location unavailable.
           }
-        } catch (_) {
-          // Location unavailable.
         }
-      }
-
-      if (session.latitude != null && session.longitude != null) {
-        try {
-          final svc = ref.read(weatherServiceProvider);
-          session.weather = await svc.fetch(
-            latitude: session.latitude!,
-            longitude: session.longitude!,
-            observedAt: session.endTime ?? DateTime.now(),
-          );
-        } catch (_) {}
       }
 
       await repo.save(session);

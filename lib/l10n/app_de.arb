@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "de",
   "appTitle": "BirdNET Live",
   "liveMode": "Live",
@@ -192,6 +192,12 @@
   "sessionLibraryRowOpen": "Öffnen",
   "sessionLibraryRowShare": "Teilen",
   "sessionLibraryRowDelete": "Löschen",
+  "sessionLibrarySelectedCount": "{count, plural, =1{1 ausgewählt} other{{count} ausgewählt}}",
+  "sessionLibrarySelectAll": "Alle auswählen",
+  "sessionLibraryDeselectAll": "Auswahl aufheben",
+  "sessionLibraryDeleteSelectedTitle": "Ausgewählte Sessions löschen?",
+  "sessionLibraryDeleteSelectedMessage": "{count} ausgewählte Sessions und deren Aufnahmen dauerhaft löschen?",
+  "sessionLibraryPreparingExport": "Export wird vorbereitet…",
   "sessionDeleteDetectionTitle": "Detektion entfernen?",
   "sessionDeleteDetectionMessage": "Diese Detektion aus der Session entfernen? Speichern zum Übernehmen.",
   "sessionRemove": "Entfernen",
@@ -748,6 +754,7 @@
   "announcementsSampleSpecies2": "Eichelhäher",
   "announcementsSampleSpecies3": "Kohlmeise",
   "siteContextOfflineNote": "Offline — Ortsname und Wetter kannst du später in der Aufnahmeansicht ergänzen.",
+  "sessionWeatherTapToLoad": "Laden",
   "settingsOfflineMapDownload": "Offline-Karten herunterladen",
   "settingsOfflineMapDownloadSubtitle": "Kartenkacheln rund um den aktuellen Standort vorab speichern",
   "settingsOfflineMapRadiusLabel": "Radius um den aktuellen Standort",

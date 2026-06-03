@@ -11,6 +11,7 @@ assets/species_data/*
 !assets/species_data/dummy.webp
 tools/.cache/
 tools/data/
+tools/.venv/
 lib/l10n/*.dart
 
 # IDE

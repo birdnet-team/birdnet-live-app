@@ -1,77 +1,136 @@
-# Recenze relace
+<!-- TRANSLATION TODO (cs) -->
 
-Session Review je místo, kde BirdNET Live promění detekce na upravitelný záznam.
+# Session Review
 
-## Jak toho dosáhnete
+Session Review is where BirdNET Live turns detections into an editable record.
 
-BirdNET Live otevře Session Review automaticky po dokončení:
+## How You Reach It
 
-- Živá relace
-- počet bodů
-- Průzkum
-- Spuštění analýzy souborů
+BirdNET Live opens Session Review automatically after completing:
 
-Můžete také znovu otevřít jakoukoli uloženou relaci z [Knihovna relací] (session-library.md).
+- a Live session
+- a Point Count
+- a Survey
+- a File Analysis run
 
-## Hlavní oblasti
+You can also reopen any saved session from [Session Library](session-library.md).
 
-### Shrnutí a přehrávání
+## Main Areas
 
-Session Review kombinuje přehrávání, navigaci spektrogramem a seznam druhů. U průzkumných relací může také zobrazit mapovaný kontext.
+### Summary and playback
 
-Hlavička souhrnu nahoře nese datum, štítek polohy (lat/lon plus volitelně vyřešený název místa, když je **Nastavení → Soukromí → Povolit vyhledávání názvu místa** zapnuto) a — pokud bylo při záznamu zapnuto **Nastavení → Soukromí → Povolit vyhledávání počasí** — **řádek počasí** pod polohou s podmínkami zachycenými ke konci relace: jednoradák typu *„20,1 °C · Slabý déšť · 3,2 m/s SZ“* s ikonou počasí na začátku. Klepnutím na řádek se rozbalí malý panel s teplotou, větrem, srážkami a oblačností včetně atribuce Open-Meteo. Týž snapshot se objevuje v JSON exportu, bloku metadat a HTML reportu.
+Session Review combines playback, spectrogram navigation, and a species list. For survey sessions it can also show mapped context.
 
-### Seznam druhů
+The summary header at the top of the screen carries the date, location chip (lat/lon plus an optional resolved place name when **Settings → Privacy → Allow place name lookup** is on), and — when **Settings → Privacy → Allow weather lookup** was on at the time of recording — a **weather row** below the location showing the conditions captured at the end of the session: a one-liner like *"20.1 °C · Light rain · 3.2 m/s SW"* prefaced by a weather icon. Tap the row to expand a small sheet listing temperature, wind, precipitation, and cloud cover with the Open-Meteo attribution. The same snapshot is mirrored into the JSON export, the per-session metadata block, and the HTML report.
 
-Druhy jsou seskupeny do rozbalitelných řad. Detekce můžete prohlížet podle druhů a procházet záznamem při jejich prohlížení.
+The spectrogram strip above the player is interactive: tap to seek, drag with one finger to scrub the timeline, and **pinch with two fingers to zoom in** on a narrow time window — useful when you want to inspect the timing of overlapping calls or pick apart a fast trill. Spread back out to return to the default 10-second overview. The play button on a species header always picks the first cluster that actually has a recorded clip, so the button is available whenever any of that species' detections are playable.
 
-### Mapa trasy průzkumu
+### Species list
 
-Průzkumné relace zobrazují malou inline mapu trasy GPS a detekční značky. Klepnutím na značku v inline mapě zaměříte detekci – mapa se na ni vycentruje. Klepnutím na tlačítko :material-fullscreen: **rozbalit** (vpravo nahoře v inline mapě) otevřete **mapu na celou obrazovku**; pokud byla detekce zaměřena, otevře se mapa vycentrovaná a přiblížená přímo na ni, takže neztratíte své místo.
+Species are grouped into expandable rows. You can inspect detections by species and move through the recording while reviewing them. Cluster rows under an expanded species are indented so the parent species card stays visually distinct from its children.
 
-#### Kódování značek
+A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :material-sort: button next to it changes the species order:
 
-- **Spolehlivost je barevně kódována** s paletou bezpečnou pro barvoslepost (CVD): nízká až vysoká spolehlivost přechází z fialovo-modré přes tyrkysovou/žlutou až k červené. Jas palety se mění monotónně, aby zůstala čitelná i v jednobarevném zobrazení a pro uživatele s poruchou rozlišování červené a zelené.
-- **Detekce se zvukem** mají kolem fotografie druhu barevný kruh a v rohu odznak přehrávání – klepnutím na ně přehrajete nahraný klip v listu.
-- **Tiché detekce** (bez klipu na disku) se vykreslují menší, vybledlé a s neutrálně šedým kruhem, takže detekce se zvukem vždy vyniknou jako primární obsah.
-- **Překrývající se značky na stejném místě** jsou vrstveny podle důležitosti: zvýrazněná > se zvukem > vyšší spolehlivost, takže tichá značka s nízkou spolehlivostí nikdy nemůže zakrýt silnou zvukovou detekci.
-- **Pod úrovní zoomu 14,5** se siluety degradují na barevné body s velikostí podle spolehlivosti a husté shluky se sbalují do bubliny s počtem (clustering se vypíná na zoomu 15).
+- **Highest confidence** (default) — species with the highest single-detection confidence first. Good for triaging the most certain identifications. When you expand a species in this mode, detections with playable audio clips appear before clipless detections, then by confidence.
+- **Most detections** — species with the highest detection count first. Good for spotting the dominant choristers.
+- **A → Z** — alphabetical by common name. Predictable, locale-aware, and easy to scan once a session has lots of species.
+- **First detected** — chronological by first-detection time. The historical default; useful when reviewing alongside the spectrogram timeline.
 
-#### Filtrování
+The chosen sort persists across sessions.
 
-Mapa na celou obrazovku má trvalý **filtrovací čip** ukotvený vpravo nahoře. Klepnutím na něj otevřete filtrovací list; popisek čipu vždy ukazuje, co je aktuálně aktivní (*„Všechny druhy“*, *„Se zvukem“*, *„≥ 80 %“* nebo název jednoho druhu). Dostupné filtry:
+### Per-detection actions
 
-- **Všechny detekce** (výchozí).
-- **Se zvukovým klipem** – pouze detekce, jejichž klip je stále na disku a lze jej přehrát.
-- **Ruční přidání** – pouze detekce, které jste přidali v relace Review (kromě automaticky zjištěných).
+Every place a detection appears — the species list, the clip player sheet, the live survey list, and the survey map markers — uses the same set of actions:
 
-Detekce můžete také omezit podle úrovně spolehlivosti. Posuvník nastavuje minimální spolehlivost (začíná na 10 %).
+- :material-check: **Confirm** — a one-tap inline checkmark that flags a detection as visually or acoustically verified. Confirmed clusters and map markers gain a small green check so they stand out at a glance, and the flag travels with every export format.
+- :material-dots-vertical: **More** — opens an overflow menu with:
+    - :material-share-variant: **Share detection** — see *Sharing* below.
+    - :material-swap-horizontal: **Replace species** — pick a different species for this detection.
+    - :material-delete-outline: **Delete detection** — removes the row immediately. An undo SnackBar appears for a few seconds so misfires are reversible. No confirmation dialog.
+    - :material-delete-sweep-outline: **Delete species** — removes every detection of that species from the session in one shot, with the same SnackBar undo. Useful for sweeping out a misidentified noise source without expanding the species and deleting clusters one by one.
 
-Pod posuvníkem spolehlivosti je výběr **Limit to species**, který vám umožní sbalit mapu na jeden druh – užitečné při otázce „kde přesně na trase jsem slyšel drozda lesního?“. Položka *Všechny druhy* ruší omezení druhu. Filtry se kombinují: např. *Se zvukovým klipem* + *Wood Thrush* + *> 80 %* zobrazuje pouze hratelné značky drozda lesního, které dosáhly více než 80 %.
+#### Swipe shortcuts on review rows
 
-Když je filtr aktivní, název lišty aplikace získá titulek s počtem shod (např. *„7 detekcí“*). *Reset* v listu se vrátí na výchozí.
+In the species list you can also act on a detection by swiping the row horizontally:
 
-## Ikony lišty nástrojů
+- swipe **right** → delete (with undo)
+- swipe **left** → open the replace-species overlay
 
-Panel nástrojů používá stejný význam ikon, jaký je popsán v [Ikony a ovládací prvky] (icons-and-controls.md):
+The two backgrounds are color-coded (error red vs primary blue) so the gesture's effect is obvious before you commit.
 
-- :material-plus-circle-outline: — přidat obsah
-- :material-undo-variant: / :material-redo-variant: — procházet úpravami
-- :material-content-cut: — režim trimování
-- :material-content-save: — uložit úpravy
-- :material-share-variant: — export nebo podíl
-- :material-delete-outline: — vyřazení relace
-- :material-play: — pokračovat v průzkumu, když je tato akce k dispozici
-- :material-help-circle-outline: — otevřete list nápovědy Session Review
-- :material-tune: — otevřete Nastavení
+Swiping a **species header** row (left or right) deletes every detection of that species at once, with the same undo SnackBar. Useful when triaging a session full of misidentified noise.
 
-## Typické kontrolní úkoly
+### Sharing a single detection
 
-- kontrola detekcí proti přehrávání a kontextu spektrogramu
-- přidat druh nebo anotaci
-- ořízněte záznam na užitečný interval
-- exportovat zkontrolovanou sadu výsledků
+The :material-share-variant: **Share detection** entry opens the platform share sheet with a terse, field-tool-friendly payload — common + scientific name, confidence, ISO 8601 UTC timestamp, and a `geo:` URI when the detection has GPS — and attaches the audio clip whenever one is available. The shared file is named `BirdNET_Live_<timestamp>_<species>.<ext>` to match the ZIP export scheme.
+
+The audio attachment is resolved in this order:
+
+1. The detection's own per-detection clip on disk.
+2. **For sessions recording one continuous file**: the relevant audio window is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
+3. If neither is available, the share is text-only — location and timestamp still land in the payload.
+
+### Hlasové poznámky
+
+K jednotlivým záznamům detekce můžete připojit krátké, mluvené hlasové komentáře:
+
+- **Nahrát**: Klepnutím na tlačítko :material-dots-vertical: u skupiny detekcí a výběrem možnosti **Nahrát hlasovou poznámku** otevřete dialogové okno hlasové poznámky. Klepnutím na velké tlačítko mikrofonu spustíte nahrávání. Živý průběh zvuku zobrazuje váš hlas v reálném čase. Po dokončení klepněte na tlačítko Zastavit.
+- **Zkontrolovat**: Po nahrání si můžete poznámku poslechnout pomocí integrovaného přehrávače. Chcete-li poznámku nahradit, klepněte na tlačítko **Nahrát znovu**. Chcete-li ji uložit, klepněte na tlačítko **Uložit**.
+- **Smazat**: Pokud již detekce obsahuje hlasovou poznámku, můžete ji smazat buď z nabídky možností, nebo z dialogového okna hlasové poznámky.
+- **Formáty pro konkrétní platformy**: Na Androidu a dalších platformách se hlasové poznámky nahrávají ve vysoce komprimovaném formátu AAC (`.m4a`) na frekvenci 16 kHz. Na iOS automaticky používají formát WAV/PCM16 (`.wav`), aby se zabránilo problémům s kompatibilitou CoreAudio s aktivními zvukovými relacemi aplikace. Oba formáty jsou plně podporovány při exportu do balíčku ZIP.
+- **Exportování**: Při exportu relace jako ZIP jsou hlasové poznámky zabaleny do adresáře `memos/` a jejich relativní cesty jsou zaznamenány v metadatech JSON a CSV.
+
+### Survey track map
+
+Survey sessions show a small inline map of the GPS track and detection markers. Tap a marker on the inline map to focus a detection — the inline map centers on it. Tap the :material-fullscreen: **expand** button (top-right of the inline map) to open the **fullscreen map**; if a detection was focused, the fullscreen map opens centered and zoomed in on that detection so you keep your place.
+
+#### Marker encoding
+
+- **Confidence is color-coded** with a CVD-safe ramp: low → high confidence runs from purple-blue through teal/yellow to red. The ramp's lightness changes monotonically so it stays readable in monochrome and for users with red-green color vision deficiency.
+- **Audio-bearing detections** show a colored ring around the species photo plus a corner play badge — tap them to open the same clip player sheet used elsewhere, with confirm, share, replace, and delete all available.
+- **Silent detections** (no clip on disk) render smaller, faded, and with a neutral-grey ring so audio detections always read as the primary content.
+- **Overlapping markers at the same spot** are z-ordered by importance: highlighted > audio > higher confidence, so a low-confidence silent marker can never obscure a strong audio detection.
+- **Below zoom 14.5** silhouettes degrade to colored dots sized by confidence, and dense clusters collapse to a count bubble (clustering disables at zoom 15).
+
+#### Filtering
+
+The fullscreen map has a persistent **filter chip** anchored top-right of the map. Tap it to open the filter sheet; the chip's label always shows what's currently in effect (*"All species"*, *"With audio"*, *"≥ 80%"*, or a single species name). Available filters:
+
+- **All detections** (default).
+- **With audio clip** — only detections whose clip is still on disk and playable.
+- **Manual additions** — only detections you added in Session Review (excludes auto-detected ones).
+
+You can also restrict the detections by confidence level. The slider configures the confidence floor (starts at 10%).
+
+Below the confidence slider is a **Limit to species** picker that lets you collapse the map to a single species — useful for asking "where exactly along the route did I hear the wood thrush?". An *All species* entry clears the species restriction. The filters combine: e.g. *With audio clip* + *Wood Thrush* + *> 80%* shows only the playable Wood Thrush markers that scored above 80%.
+
+When a filter is active, the app-bar title gains a match-count subtitle (e.g. *"7 detections"*). *Reset* in the sheet returns to the default.
+
+## Toolbar Icons
+
+The toolbar uses the same icon meanings described in [Icons & Controls](icons-and-controls.md):
+
+- :material-plus-circle-outline: — add content
+- :material-undo-variant: / :material-redo-variant: — step through edits
+- :material-content-cut: — trim mode
+- :material-content-save: — save edits
+- :material-share-variant: — export or share
+- :material-delete-outline: — discard session
+- :material-play: — continue a survey when that action is available
+- :material-help-circle-outline: — open the Session Review help sheet
+- :material-tune: — open Settings
+
+## Typical Review Tasks
+
+- check detections against playback and spectrogram context
+- add a species or annotation
+- trim the recording to the useful interval
+- export the reviewed result set
 
 ## Export
 
-Chování exportu závisí na možnostech vybraných v [Settings] (settings.md). Aplikace může zabalit detekce a volitelně i zvuk do zvoleného formátu exportu. Každý export se nyní dodává s úplnými metadaty provenience – verzí aplikace, názvem a verzí modelu, národním prostředím, časovým razítkem exportu a snímkem všech nastavení v době exportu – zapsanými do postranního souboru „<prefix>.metadata.json“ (ZIP) nebo do bloku „meta“ nejvyšší úrovně (JSON), takže exporty jsou samy popisovatelné a reprodukovatelné.
+Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format. Every export now ships with full provenance metadata — the app version, model name and version, species locale, export timestamp, and a snapshot of all settings at export time — written to a `<prefix>.metadata.json` side-file (ZIP) or a top-level `meta` block (JSON) so that exports are self-describing and reproducible.
+
+The JSON export's `settings` block records the values that were *actually applied to this session* — sensitivity, score-pooling mode and window count, microphone gain, and the high-pass cutoff — not whatever happens to be set in Settings now. This means you can reproduce a result months later, or compare two surveys, without remembering which sliders were where when you ran them.
+
+All timestamps in exported filenames (`BirdNET_Live_<date>_<time>_…`) and inside CSV / JSON payloads are formatted in your phone's *current* local time. Underlying records are stored in UTC and converted on the way out.

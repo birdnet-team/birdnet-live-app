@@ -68,6 +68,16 @@ The audio attachment is resolved in this order:
 2. **For sessions recording one continuous file**: the relevant audio window is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
 3. If neither is available, the share is text-only — location and timestamp still land in the payload.
 
+### Voice memos
+
+You can attach short, spoken voice commentary to individual detection records:
+
+- **Record**: Tap the :material-dots-vertical: button on a detection cluster and select **Record voice memo** to open the voice memo dialog. Tap the large microphone button to start recording. A live waveform reflects your voice in real time. Tap the stop button when finished.
+- **Review**: Once recorded, you can listen to the memo using the inline player. To replace the memo, tap the **Re-record** button. To save it, tap the **Save** button.
+- **Delete**: If a detection already has an attached voice memo, you can delete it from either the overflow menu or the voice memo dialog.
+- **Platform-Specific Formats**: On Android and other platforms, voice memos are recorded in highly-compressed AAC (`.m4a`) format at 16 kHz. On iOS, they automatically use WAV/PCM16 format (`.wav`) to prevent CoreAudio compatibility issues with the app's active audio sessions. Both formats are fully supported by the export ZIP packaging.
+- **Exporting**: When exporting the session as a ZIP, voice memos are bundled inside the `memos/` directory and their relative paths are recorded in JSON and CSV metadata.
+
 ### Survey track map
 
 Survey sessions show a small inline map of the GPS track and detection markers. Tap a marker on the inline map to focus a detection — the inline map centers on it. Tap the :material-fullscreen: **expand** button (top-right of the inline map) to open the **fullscreen map**; if a detection was focused, the fullscreen map opens centered and zoomed in on that detection so you keep your place.

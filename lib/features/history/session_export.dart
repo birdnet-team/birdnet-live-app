@@ -1033,3 +1033,63 @@ String _xmlEscape(String input) {
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&apos;');
 }
+
+/// Builds a bulk export bundle containing multiple sessions.
+///
+/// If [sessions] is empty, returns null.
+/// Under selection mode, we export all selected sessions using the user's
+/// chosen export configuration (formats, includeAudio, taxonomy, speciesLocale,
+/// metadata, etc.), collect all generated single files / zip bundles, and zip
+/// them up into a single file named:
+/// `BirdNET_Live_Bulk_Export_YYYY-MM-DD_HH-mm-ss.zip`
+Future<String?> buildMultiSessionExport(
+  List<LiveSession> sessions, {
+  required Set<String> formats,
+  required bool includeAudio,
+  TaxonomyService? taxonomy,
+  String speciesLocale = 'en',
+  int? clipContextSecondsOverride,
+  Future<Map<String, dynamic>?> Function(LiveSession)? metadataProvider,
+  bool useAbsoluteSurveyTime = false,
+  bool includeHtmlReport = false,
+}) async {
+  if (sessions.isEmpty) return null;
+
+  final archive = Archive();
+  final timestamp = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+  final bulkPrefix = 'BirdNET_Live_Bulk_Export_$timestamp';
+
+  for (final session in sessions) {
+    Map<String, dynamic>? metadata;
+    if (metadataProvider != null) {
+      metadata = await metadataProvider(session);
+    }
+    final path = await buildSessionExport(
+      session,
+      formats: formats,
+      includeAudio: includeAudio,
+      taxonomy: taxonomy,
+      speciesLocale: speciesLocale,
+      clipContextSecondsOverride: clipContextSecondsOverride,
+      metadata: metadata,
+      useAbsoluteSurveyTime: useAbsoluteSurveyTime,
+      includeHtmlReport: includeHtmlReport,
+    );
+    if (path == null) continue;
+
+    final file = File(path);
+    if (file.existsSync()) {
+      final bytes = await file.readAsBytes();
+      final filename = p.basename(path);
+      archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+    }
+  }
+
+  if (archive.isEmpty) return null;
+
+  final zipBytes = ZipEncoder().encode(archive);
+  final tempDir = Directory.systemTemp.path;
+  final zipPath = p.join(tempDir, '$bulkPrefix.zip');
+  await File(zipPath).writeAsBytes(zipBytes);
+  return zipPath;
+}

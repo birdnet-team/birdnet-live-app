@@ -102,8 +102,23 @@ class SpeciesAlertNotifier {
       // Required by Android — launcher icon would render as a white square.
       'ic_notification',
     );
-    const initSettings = InitializationSettings(android: initSettingsAndroid);
-    await _plugin.initialize(settings: initSettings);
+    const initSettingsDarwin = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    const initSettings = InitializationSettings(
+      android: initSettingsAndroid,
+      iOS: initSettingsDarwin,
+      macOS: initSettingsDarwin,
+    );
+    try {
+      await _plugin.initialize(settings: initSettings);
+    } catch (e) {
+      debugPrint('[SpeciesAlertNotifier] init failed: $e');
+      _initialized = false;
+      return;
+    }
 
     if (Platform.isAndroid) {
       final android = _plugin.resolvePlatformSpecificImplementation<
@@ -146,9 +161,23 @@ class SpeciesAlertNotifier {
       const initSettingsAndroid = AndroidInitializationSettings(
         'ic_notification',
       );
-      await _plugin.initialize(
-        settings: const InitializationSettings(android: initSettingsAndroid),
+      const initSettingsDarwin = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
       );
+      try {
+        await _plugin.initialize(
+          settings: const InitializationSettings(
+            android: initSettingsAndroid,
+            iOS: initSettingsDarwin,
+            macOS: initSettingsDarwin,
+          ),
+        );
+      } catch (e) {
+        debugPrint('[SpeciesAlertNotifier] lazy init failed: $e');
+        return false;
+      }
     }
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
@@ -230,7 +259,16 @@ class SpeciesAlertNotifier {
       styleInformation: BigTextStyleInformation(body),
       ticker: title,
     );
-    final details = NotificationDetails(android: androidDetails);
+    final darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: false,
+      presentSound: _sound,
+    );
+    final details = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+    );
     try {
       await _plugin.show(
         id: _nextId++,

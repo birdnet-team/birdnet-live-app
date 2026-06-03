@@ -258,6 +258,35 @@ void main() {
     });
   });
 
+  // ── nextSessionNumber ────────────────────────────────────────────────
+
+  group('nextSessionNumber', () {
+    test('returns 1 when no sessions exist', () async {
+      expect(await repo.nextSessionNumber(SessionType.live), 1);
+    });
+
+    test('returns correct sequential number for type', () async {
+      final s1 = makeSession(id: 's1');
+      s1.type = SessionType.live;
+      s1.sessionNumber = 5;
+      await repo.save(s1);
+
+      final s2 = makeSession(id: 's2');
+      s2.type = SessionType.live;
+      s2.sessionNumber = 2;
+      await repo.save(s2);
+
+      // A session of a different type should not affect it.
+      final s3 = makeSession(id: 's3');
+      s3.type = SessionType.pointCount;
+      s3.sessionNumber = 10;
+      await repo.save(s3);
+
+      expect(await repo.nextSessionNumber(SessionType.live), 6);
+      expect(await repo.nextSessionNumber(SessionType.pointCount), 11);
+    });
+  });
+
   // ── ID sanitisation ──────────────────────────────────────────────────
 
   group('ID sanitisation', () {

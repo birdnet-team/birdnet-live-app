@@ -28,5 +28,7 @@ Microphone (Oboe / AVAudioEngine)
 
 `RecordingService` supports two modes:
 
-- **Full**: Continuously flush the ring buffer to a WAV file (1-second intervals)
-- **Detections Only**: Save audio clips centered on detection timestamps (pre + post buffer)
+- **Full**: Continuously flush the ring buffer to an audio file (WAV or FLAC depending on user settings) at 1-second intervals via `AudioFileWriter` (implemented by `WavWriter` and `FlacEncoder`).
+- **Detections Only**: Save audio clips centered on detection timestamps (pre-context + inference window + post-context) in the chosen format (WAV or FLAC).
+
+On iOS, voice memos automatically fall back to `.wav` (PCM16) format to prevent Apple CoreAudio AAC compression collisions while maintaining full file-sharing and packaging compatibility.

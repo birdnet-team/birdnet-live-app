@@ -157,6 +157,8 @@ abstract final class AppIcons {
   static const IconData searchRounded = Symbols.search_rounded;
   static const IconData securityRounded = Symbols.security_rounded;
   static const IconData send = Symbols.send;
+  static const IconData selectAll = Symbols.select_all;
+  static const IconData deselect = Symbols.deselect;
   static const IconData share = Symbols.share;
   static const IconData shortText = Symbols.short_text;
   static const IconData skipNextRounded = Symbols.skip_next_rounded;

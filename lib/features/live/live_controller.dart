@@ -319,6 +319,8 @@ class LiveController {
     double sensitivity = 1.0,
     double? gainLinear,
     double? highPassHz,
+    double? latitude,
+    double? longitude,
   }) async {
     if (_state != LiveState.ready) return;
 
@@ -327,6 +329,8 @@ class LiveController {
     _session = LiveSession(
       id: sessionId,
       startTime: DateTime.now(),
+      latitude: latitude,
+      longitude: longitude,
       settings: SessionSettings(
         windowDuration: windowDuration,
         confidenceThreshold: confidenceThreshold,
