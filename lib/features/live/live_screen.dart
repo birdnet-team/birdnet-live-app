@@ -77,8 +77,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Eagerly load the model on first mount.
     // Deferred to post-frame so provider updates don't fire during build.
     if (controller.state == LiveState.idle) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) controller.loadModel();
+      SchedulerBinding.instance.addPostFrameCallback((_) async {
+        if (mounted) {
+          controller.clearSessionState();
+          ref.read(sessionDetectionsProvider.notifier).state = const [];
+          ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+          ref.read(currentSessionProvider.notifier).state = null;
+
+          await controller.loadModel();
+        }
       });
     } else {
       // Model was already loaded on a previous visit, so the controller is
@@ -88,7 +95,16 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       // auto-start path for the second/third/Nth Live screen visit. Defer
       // to post-frame so provider updates don't fire during build.
       SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _onControllerStateChanged();
+        if (mounted) {
+          if (controller.state != LiveState.active &&
+              controller.state != LiveState.paused) {
+            controller.clearSessionState();
+            ref.read(sessionDetectionsProvider.notifier).state = const [];
+            ref.read(latestLiveDetectionsProvider.notifier).state = const [];
+            ref.read(currentSessionProvider.notifier).state = null;
+          }
+          _onControllerStateChanged();
+        }
       });
     }
   }
@@ -427,7 +443,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
-    final detections = ref.watch(sessionDetectionsProvider);
+    final detections =
+        (isActive || isPaused)
+            ? ref.watch(sessionDetectionsProvider)
+            : const <DetectionRecord>[];
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -1035,6 +1054,7 @@ class _LiveSpectrogram extends ConsumerWidget {
         maxDisplayFrequency: maxFreq,
         logAmplitude: logAmplitude,
         filterQuality: spectrogramFilterQualityFromString(quality),
+        quality: quality,
       ),
     );
   }

@@ -93,7 +93,8 @@ class StatChip extends StatelessWidget {
   }
 
   Widget _inline(ThemeData theme, {required bool bold}) {
-    final textStyle = style ??
+    final textStyle =
+        style ??
         theme.textTheme.bodyMedium?.copyWith(
           color: theme.colorScheme.onSurface,
           fontWeight: bold ? FontWeight.w600 : FontWeight.w400,

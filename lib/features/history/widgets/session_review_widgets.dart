@@ -124,12 +124,17 @@ class _SummaryHeader extends ConsumerWidget {
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () async {
-                    await ref.read(privacyAllowWeatherProvider.notifier).set(true);
+                    await ref
+                        .read(privacyAllowWeatherProvider.notifier)
+                        .set(true);
                     onFetchWeather?.call();
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -497,12 +502,13 @@ class _WeatherRow extends StatelessWidget {
 ///
 /// The painter derives pixels-per-second from image width / player duration,
 /// ensuring perfect alignment regardless of sample rate discrepancies.
-class _SpectrogramStrip extends StatefulWidget {
+class _SpectrogramStrip extends ConsumerStatefulWidget {
   const _SpectrogramStrip({
+    required this.session,
     required this.spectrogramImage,
     required this.spectrogramChunks,
     required this.decoding,
-    required this.position,
+    required this.positionNotifier,
     required this.duration,
     required this.timelineOffsetSec,
     required this.onViewportChanged,
@@ -510,7 +516,10 @@ class _SpectrogramStrip extends StatefulWidget {
     required this.onPause,
     required this.isPlaying,
     required this.userDefaultViewSeconds,
+    this.quality = 'medium',
   });
+
+  final LiveSession session;
 
   /// Initial / preferred view width for short clips, sourced from the
   /// user's live-spectrogram duration setting. Long files override this
@@ -521,7 +530,7 @@ class _SpectrogramStrip extends StatefulWidget {
   final ui.Image? spectrogramImage;
   final List<_SpectrogramChunk> spectrogramChunks;
   final bool decoding;
-  final Duration position;
+  final ValueNotifier<Duration> positionNotifier;
   final Duration duration;
   final double timelineOffsetSec;
   final void Function(double absoluteCenterSec, double viewSeconds)?
@@ -529,12 +538,13 @@ class _SpectrogramStrip extends StatefulWidget {
   final ValueChanged<Duration> onSeek;
   final VoidCallback onPause;
   final bool isPlaying;
+  final String quality;
 
   @override
-  State<_SpectrogramStrip> createState() => _SpectrogramStripState();
+  ConsumerState<_SpectrogramStrip> createState() => _SpectrogramStripState();
 }
 
-class _SpectrogramStripState extends State<_SpectrogramStrip>
+class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
     with SingleTickerProviderStateMixin {
   /// When non-null the view is pinned to this center (user panned).
   /// When null the view follows the playback position.
@@ -566,7 +576,7 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 
   static const double _defaultViewSeconds = 10.0;
   static const double _minViewSeconds = 1.0;
-  static const double _maxInitialViewSeconds = 180.0;
+  static const double _maxInitialViewSeconds = 60.0;
 
   /// Pick an initial view width that scales with clip length: short
   /// recordings (≤ 5 min) open at the user's preferred live-spectrogram
@@ -591,7 +601,9 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   @override
   void initState() {
     super.initState();
-    _interpolatedPositionSec = widget.position.inMicroseconds / 1000000.0;
+    _interpolatedPositionSec =
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    widget.positionNotifier.addListener(_onPositionChanged);
     if (widget.duration > Duration.zero) {
       _viewSeconds = _initialViewSecondsFor(widget.duration);
       _appliedDurationAwareDefault = true;
@@ -619,6 +631,12 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
   void didUpdateWidget(_SpectrogramStrip oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    if (widget.positionNotifier != oldWidget.positionNotifier) {
+      oldWidget.positionNotifier.removeListener(_onPositionChanged);
+      widget.positionNotifier.addListener(_onPositionChanged);
+      _onPositionChanged();
+    }
+
     // First time we learn the true clip length, snap the view to a
     // duration-aware default. Skipped if the user has already pinched
     // or panned, so we never fight a deliberate zoom level. We also
@@ -634,16 +652,6 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) _requestVisibleSpectrogram(force: true);
       });
-    }
-
-    // Sync interpolated position with the source of truth whenever it updates
-    if (widget.position != oldWidget.position) {
-      final actualSec = widget.position.inMicroseconds / 1000000.0;
-      // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
-      if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
-        _interpolatedPositionSec = actualSec;
-      }
-      _requestVisibleSpectrogram();
     }
 
     if (widget.isPlaying && !oldWidget.isPlaying) {
@@ -665,12 +673,28 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
         widget.duration != oldWidget.duration) {
       _requestVisibleSpectrogram(force: true);
     }
+
+    if (widget.quality != oldWidget.quality) {
+      _requestVisibleSpectrogram(force: true);
+    }
   }
 
   @override
   void dispose() {
+    widget.positionNotifier.removeListener(_onPositionChanged);
     _ticker.dispose();
     super.dispose();
+  }
+
+  void _onPositionChanged() {
+    final actualSec = widget.positionNotifier.value.inMicroseconds / 1000000.0;
+    // If we've drifted significantly (more than 100ms), snap it to fix desyncs.
+    if ((_interpolatedPositionSec - actualSec).abs() > 0.1) {
+      setState(() {
+        _interpolatedPositionSec = actualSec;
+      });
+      _requestVisibleSpectrogram();
+    }
   }
 
   @override
@@ -714,6 +738,14 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
                 timelineOffsetSec: widget.timelineOffsetSec,
                 viewSeconds: _viewSeconds,
                 colorScheme: theme.colorScheme,
+                filterQuality: spectrogramFilterQualityFromString(
+                  widget.quality,
+                ),
+                quality: widget.quality,
+                session: widget.session,
+                tsMode: TimestampDisplayMode.fromString(
+                  ref.watch(timestampDisplayModeProvider),
+                ),
               ),
               size: const Size(double.infinity, 150),
             ),
@@ -761,7 +793,8 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
     }
     _scaleStartViewSeconds = _viewSeconds;
     _scaleStartCenterSec =
-        _pannedCenterSec ?? widget.position.inMicroseconds / 1000000.0;
+        _pannedCenterSec ??
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
   }
 
   void _handleScaleUpdate(ScaleUpdateDetails details) {
@@ -772,7 +805,8 @@ class _SpectrogramStripState extends State<_SpectrogramStrip>
 
     final startView = _scaleStartViewSeconds ?? _viewSeconds;
     final startCenter =
-        _scaleStartCenterSec ?? widget.position.inMicroseconds / 1000000.0;
+        _scaleStartCenterSec ??
+        widget.positionNotifier.value.inMicroseconds / 1000000.0;
 
     // `details.scale` is *cumulative from gesture start*, not per-frame —
     // so we apply it against the captured `startView` and must NOT reset
@@ -853,6 +887,10 @@ class _ReviewSpectrogramPainter extends CustomPainter {
     required this.timelineOffsetSec,
     required this.viewSeconds,
     required this.colorScheme,
+    required this.filterQuality,
+    required this.quality,
+    required this.session,
+    required this.tsMode,
   });
 
   final ui.Image? spectrogramImage;
@@ -860,12 +898,12 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   final double centerSec;
   final double durationSec;
   final double timelineOffsetSec;
-
-  /// How many seconds of audio the widget viewport currently shows.
-  /// Lives on the painter (instead of being a const) so pinch-zoom can
-  /// drive it from the parent state.
   final double viewSeconds;
   final ColorScheme colorScheme;
+  final FilterQuality filterQuality;
+  final String quality;
+  final LiveSession? session;
+  final TimestampDisplayMode tsMode;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -900,33 +938,40 @@ class _ReviewSpectrogramPainter extends CustomPainter {
           img,
           Rect.fromLTRB(srcX1, 0, srcX2, imgH),
           Rect.fromLTRB(dstX1, 0, dstX2, size.height),
-          Paint()..filterQuality = FilterQuality.high,
+          Paint()..filterQuality = filterQuality,
         );
       }
     }
 
+    const targetSampleRate = 32000;
+
     for (final chunk in spectrogramChunks) {
+      final chunkW = chunk.image.width.toDouble();
+      final chunkH = chunk.image.height.toDouble();
+
       final overlapStart = math.max(absoluteStartSec, chunk.startSec);
       final overlapEnd = math.min(absoluteEndSec, chunk.endSec);
       if (overlapEnd <= overlapStart) continue;
 
-      final chunkDuration = chunk.endSec - chunk.startSec;
-      if (chunkDuration <= 0) continue;
-      final chunkW = chunk.image.width.toDouble();
-      final chunkH = chunk.image.height.toDouble();
-      final srcX1 = ((overlapStart - chunk.startSec) / chunkDuration * chunkW)
+      final srcX1 = ((overlapStart - chunk.startSec) *
+              targetSampleRate /
+              chunk.hop)
           .clamp(0.0, chunkW);
-      final srcX2 = ((overlapEnd - chunk.startSec) / chunkDuration * chunkW)
+      final srcX2 = ((overlapEnd - chunk.startSec) *
+              targetSampleRate /
+              chunk.hop)
           .clamp(0.0, chunkW);
+
       final dstX1 =
           (overlapStart - absoluteStartSec) / viewSeconds * size.width;
       final dstX2 = (overlapEnd - absoluteStartSec) / viewSeconds * size.width;
       if (srcX2 <= srcX1 || dstX2 <= dstX1) continue;
+
       canvas.drawImageRect(
         chunk.image,
         Rect.fromLTRB(srcX1, 0, srcX2, chunkH),
         Rect.fromLTRB(dstX1, 0, dstX2, size.height),
-        Paint()..filterQuality = FilterQuality.high,
+        Paint()..filterQuality = filterQuality,
       );
     }
 
@@ -966,6 +1011,13 @@ class _ReviewSpectrogramPainter extends CustomPainter {
   }
 
   String _fmtSec(double sec) {
+    if (tsMode == TimestampDisplayMode.absolute && session != null) {
+      final absoluteTime = session!.relativeToAbsolute(timelineOffsetSec + sec);
+      final h = absoluteTime.toLocal().hour.toString().padLeft(2, '0');
+      final m = absoluteTime.toLocal().minute.toString().padLeft(2, '0');
+      final s = absoluteTime.toLocal().second.toString().padLeft(2, '0');
+      return '$h:$m:$s';
+    }
     final m = sec ~/ 60;
     final s = (sec % 60).toInt();
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
@@ -987,7 +1039,10 @@ class _ReviewSpectrogramPainter extends CustomPainter {
         old.durationSec != durationSec ||
         old.timelineOffsetSec != timelineOffsetSec ||
         old.viewSeconds != viewSeconds ||
+        old.quality != quality ||
+        old.tsMode != tsMode ||
         !identical(old.spectrogramImage, spectrogramImage) ||
+        !identical(old.spectrogramChunks, spectrogramChunks) ||
         old.spectrogramChunks.length != spectrogramChunks.length;
   }
 }
@@ -1028,13 +1083,14 @@ class _PlayPauseButton extends StatelessWidget {
 // Species Tile — Expandable row for one species
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _SpeciesTile extends ConsumerWidget {
+class _SpeciesTile extends ConsumerStatefulWidget {
   const _SpeciesTile({
     super.key,
     required this.group,
-    required this.sessionStart,
+    required this.session,
     required this.isExpanded,
-    required this.isActive,
+    required this.positionNotifier,
+    required this.isPlaying,
     required this.onToggleExpand,
     required this.onSpeciesInfo,
     required this.onSeekCluster,
@@ -1046,7 +1102,6 @@ class _SpeciesTile extends ConsumerWidget {
     required this.onEditNoteCluster,
     required this.onEditVoiceMemoCluster,
     required this.onDeleteVoiceMemoCluster,
-    this.activePositionSec,
     this.activeCluster,
     this.onPause,
     this.clipOffsetSec = 0.0,
@@ -1057,14 +1112,10 @@ class _SpeciesTile extends ConsumerWidget {
   });
 
   final _SpeciesGroup group;
-  final DateTime sessionStart;
+  final LiveSession session;
   final bool isExpanded;
-  final bool isActive;
-
-  /// Current playback position in seconds within the loaded clip, or
-  /// `null` when no audio is available / not playing. Used to highlight
-  /// the cluster currently being heard.
-  final double? activePositionSec;
+  final ValueNotifier<Duration> positionNotifier;
+  final bool isPlaying;
 
   /// Cluster currently being played via a per-detection clip player
   /// (used in survey review where there is no full recording). Matched
@@ -1116,7 +1167,134 @@ class _SpeciesTile extends ConsumerWidget {
   final VoidCallback? onPause;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SpeciesTile> createState() => _SpeciesTileState();
+}
+
+class _SpeciesActiveState {
+  final bool isActive;
+  final int activeClusterIndex;
+
+  const _SpeciesActiveState({
+    required this.isActive,
+    required this.activeClusterIndex,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SpeciesActiveState &&
+          runtimeType == other.runtimeType &&
+          isActive == other.isActive &&
+          activeClusterIndex == other.activeClusterIndex;
+
+  @override
+  int get hashCode => isActive.hashCode ^ activeClusterIndex.hashCode;
+}
+
+class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
+  late _SpeciesActiveState _activeState;
+
+  @override
+  void initState() {
+    super.initState();
+    _activeState = _checkActiveState(widget.positionNotifier.value);
+    widget.positionNotifier.addListener(_onPositionChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.positionNotifier.removeListener(_onPositionChanged);
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_SpeciesTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.positionNotifier != oldWidget.positionNotifier ||
+        widget.group != oldWidget.group ||
+        widget.isPlaying != oldWidget.isPlaying ||
+        widget.activeCluster != oldWidget.activeCluster) {
+      oldWidget.positionNotifier.removeListener(_onPositionChanged);
+      widget.positionNotifier.addListener(_onPositionChanged);
+      _activeState = _checkActiveState(widget.positionNotifier.value);
+    }
+  }
+
+  void _onPositionChanged() {
+    if (!mounted) return;
+    final newState = _checkActiveState(widget.positionNotifier.value);
+    if (newState != _activeState) {
+      setState(() {
+        _activeState = newState;
+      });
+    }
+  }
+
+  _SpeciesActiveState _checkActiveState(Duration position) {
+    // 1. Is species active?
+    bool speciesActive = false;
+    if (widget.isPlaying) {
+      final clipOffset = Duration(
+        microseconds: (widget.clipOffsetSec * 1e6).round(),
+      );
+      for (final r in widget.group.allRecords) {
+        final relSec = widget.session.absoluteToRelative(r.timestamp);
+        final rel = Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
+        final detEnd =
+            r.endTimestamp != null
+                ? Duration(
+                      microseconds:
+                          (widget.session.absoluteToRelative(r.endTimestamp!) *
+                                  1e6)
+                              .round(),
+                    ) -
+                    clipOffset
+                : rel + Duration(seconds: widget.windowSec);
+        if (position >= rel && position <= detEnd) {
+          speciesActive = true;
+          break;
+        }
+      }
+    }
+
+    // 2. Active cluster index
+    int activeClusterIndex = -1;
+    if (widget.activeCluster != null) {
+      activeClusterIndex = widget.group.clusters.indexOf(widget.activeCluster!);
+    } else if (widget.isPlaying) {
+      for (int i = 0; i < widget.group.clusters.length; i++) {
+        final cluster = widget.group.clusters[i];
+        bool clusterActive = false;
+        for (final r in cluster.records) {
+          final startSec =
+              widget.session.absoluteToRelative(r.timestamp) -
+              widget.clipOffsetSec;
+          final endSec =
+              r.endTimestamp != null
+                  ? widget.session.absoluteToRelative(r.endTimestamp!) -
+                      widget.clipOffsetSec
+                  : startSec + widget.windowSec;
+          final posSec = position.inMicroseconds / 1e6;
+          if (posSec >= startSec && posSec <= endSec) {
+            clusterActive = true;
+            break;
+          }
+        }
+        if (clusterActive) {
+          activeClusterIndex = i;
+          break;
+        }
+      }
+    }
+
+    return _SpeciesActiveState(
+      isActive: speciesActive,
+      activeClusterIndex: activeClusterIndex,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
@@ -1129,20 +1307,23 @@ class _SpeciesTile extends ConsumerWidget {
 
     final displayName =
         taxonomyAsync.value
-            ?.lookup(group.scientificName)
+            ?.lookup(widget.group.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
-        group.commonName;
+        widget.group.commonName;
 
     // Render the per-cluster time using the user's selected mode.
     // Relative mode subtracts the current clip offset so that the
     // displayed offset stays aligned with the spectrogram playhead
     // after the audio has been cropped; absolute mode is unaffected
     // since wall-clock time is independent of the trim.
-    final clipOffsetDur = Duration(microseconds: (clipOffsetSec * 1e6).round());
+    final clipOffsetDur = Duration(
+      microseconds: (widget.clipOffsetSec * 1e6).round(),
+    );
     final offsetStr = formatDetectionTime(
-      group.firstTimestamp,
-      sessionStart,
+      widget.group.firstTimestamp,
+      widget.session.startTime,
       tsMode,
+      absoluteToRelative: widget.session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
@@ -1152,11 +1333,11 @@ class _SpeciesTile extends ConsumerWidget {
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color:
-            isActive
+            _activeState.isActive
                 ? theme.colorScheme.primaryContainer.withAlpha(90)
                 : Colors.transparent,
         border:
-            isActive
+            _activeState.isActive
                 ? Border(
                   left: BorderSide(color: theme.colorScheme.primary, width: 3),
                 )
@@ -1166,16 +1347,16 @@ class _SpeciesTile extends ConsumerWidget {
         children: [
           // ── Main species row ───────────────────────────────
           Dismissible(
-            key: ValueKey('species-${group.scientificName}'),
+            key: ValueKey('species-${widget.group.scientificName}'),
             direction: DismissDirection.horizontal,
             background: _swipeSpeciesBackground(theme, alignLeft: true),
             secondaryBackground: _swipeSpeciesBackground(
               theme,
               alignLeft: false,
             ),
-            onDismissed: (_) => onDeleteSpecies(),
+            onDismissed: (_) => widget.onDeleteSpecies(),
             child: InkWell(
-              onTap: onSpeciesInfo,
+              onTap: widget.onSpeciesInfo,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1192,17 +1373,18 @@ class _SpeciesTile extends ConsumerWidget {
                     // When the species tile is currently being played and a
                     // pause callback is wired up, the same button doubles as a
                     // pause control so users can cancel playback.
-                    if (audioAvailable ||
-                        group.clusters.any((c) => c.hasAudioClip))
+                    if (widget.audioAvailable ||
+                        widget.group.clusters.any((c) => c.hasAudioClip))
                       InkWell(
                         onTap:
                             () =>
-                                isActive && onPause != null
-                                    ? onPause!()
-                                    : onSeekCluster(
-                                      group.clusters.firstWhere(
+                                _activeState.isActive && widget.onPause != null
+                                    ? widget.onPause!()
+                                    : widget.onSeekCluster(
+                                      widget.group.clusters.firstWhere(
                                         (c) => c.hasAudioClip,
-                                        orElse: () => group.clusters.first,
+                                        orElse:
+                                            () => widget.group.clusters.first,
                                       ),
                                     ),
                         borderRadius: BorderRadius.circular(16),
@@ -1214,7 +1396,7 @@ class _SpeciesTile extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                isActive && onPause != null
+                                _activeState.isActive && widget.onPause != null
                                     ? AppIcons.pauseRounded
                                     : AppIcons.playArrowRounded,
                                 size: 24,
@@ -1256,7 +1438,7 @@ class _SpeciesTile extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(6),
                         child: Image.asset(
                           taxonomyAsync.value?.assetImagePath(
-                                group.scientificName,
+                                widget.group.scientificName,
                               ) ??
                               'assets/images/dummy_species.png',
                           fit: BoxFit.cover,
@@ -1287,7 +1469,9 @@ class _SpeciesTile extends ConsumerWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              if (group.allRecords.any((r) => r.isConfirmed))
+                              if (widget.group.allRecords.any(
+                                (r) => r.isConfirmed,
+                              ))
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Icon(
@@ -1297,7 +1481,7 @@ class _SpeciesTile extends ConsumerWidget {
                                         AppSemanticColors.of(context).success,
                                   ),
                                 ),
-                              if (group.allRecords.any(
+                              if (widget.group.allRecords.any(
                                 (r) =>
                                     r.source == DetectionSource.manual ||
                                     r.source == DetectionSource.manualGlobal ||
@@ -1317,7 +1501,7 @@ class _SpeciesTile extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                              if (group.totalCount > 1)
+                              if (widget.group.totalCount > 1)
                                 Container(
                                   margin: const EdgeInsets.only(left: 6),
                                   padding: const EdgeInsets.symmetric(
@@ -1329,7 +1513,7 @@ class _SpeciesTile extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    '×${group.totalCount}',
+                                    '×${widget.group.totalCount}',
                                     style: theme.textTheme.labelSmall?.copyWith(
                                       color:
                                           theme.colorScheme.onPrimaryContainer,
@@ -1345,7 +1529,7 @@ class _SpeciesTile extends ConsumerWidget {
                               if (showSciNames)
                                 Expanded(
                                   child: Text(
-                                    group.scientificName,
+                                    widget.group.scientificName,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       fontStyle: FontStyle.italic,
                                       color: theme.colorScheme.onSurface
@@ -1358,11 +1542,11 @@ class _SpeciesTile extends ConsumerWidget {
                               if (!showSciNames) const Spacer(),
                               const SizedBox(width: 8),
                               Text(
-                                group.bestConfidencePercent,
+                                widget.group.bestConfidencePercent,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: _confidenceColor(
-                                    group.bestConfidence,
+                                    widget.group.bestConfidence,
                                     theme,
                                   ),
                                 ),
@@ -1377,11 +1561,11 @@ class _SpeciesTile extends ConsumerWidget {
                     // right portion of the card with a generous tap target.
                     Tooltip(
                       message:
-                          isExpanded
+                          widget.isExpanded
                               ? l10n.sessionLibraryCollapse
                               : l10n.sessionLibraryExpand,
                       child: InkWell(
-                        onTap: onToggleExpand,
+                        onTap: widget.onToggleExpand,
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
                           constraints: const BoxConstraints(
@@ -1390,7 +1574,7 @@ class _SpeciesTile extends ConsumerWidget {
                           ),
                           alignment: Alignment.center,
                           child: AnimatedRotation(
-                            turns: isExpanded ? 0.5 : 0.0,
+                            turns: widget.isExpanded ? 0.5 : 0.0,
                             duration: const Duration(milliseconds: 200),
                             child: Icon(
                               AppIcons.expandMore,
@@ -1418,36 +1602,55 @@ class _SpeciesTile extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 16, bottom: 4),
               child: Column(
                 children: [
-                  for (final cluster in group.clusters)
+                  for (var i = 0; i < widget.group.clusters.length; i++)
                     _ClusterRow(
-                      cluster: cluster,
-                      sessionStart: sessionStart,
-                      clipOffsetSec: clipOffsetSec,
-                      windowSec: windowSec,
-                      isActive: _isClusterActive(cluster),
-                      onSeek: () => onSeekCluster(cluster),
-                      onPause: onPause,
-                      onDelete: () => onDeleteCluster(cluster),
-                      onDeleteSpecies: onDeleteSpecies,
-                      onReplace: () => onReplaceCluster(cluster),
-                      onToggleConfirm: () => onToggleConfirmCluster(cluster),
-                      onShare: () => onShareCluster(cluster),
-                      onEditNote: () => onEditNoteCluster(cluster),
-                      onEditVoiceMemo: () => onEditVoiceMemoCluster(cluster),
+                      cluster: widget.group.clusters[i],
+                      session: widget.session,
+                      clipOffsetSec: widget.clipOffsetSec,
+                      windowSec: widget.windowSec,
+                      isActive: _activeState.activeClusterIndex == i,
+                      onSeek:
+                          () => widget.onSeekCluster(widget.group.clusters[i]),
+                      onPause: widget.onPause,
+                      onDelete:
+                          () =>
+                              widget.onDeleteCluster(widget.group.clusters[i]),
+                      onDeleteSpecies: widget.onDeleteSpecies,
+                      onReplace:
+                          () =>
+                              widget.onReplaceCluster(widget.group.clusters[i]),
+                      onToggleConfirm:
+                          () => widget.onToggleConfirmCluster(
+                            widget.group.clusters[i],
+                          ),
+                      onShare:
+                          () => widget.onShareCluster(widget.group.clusters[i]),
+                      onEditNote:
+                          () => widget.onEditNoteCluster(
+                            widget.group.clusters[i],
+                          ),
+                      onEditVoiceMemo:
+                          () => widget.onEditVoiceMemoCluster(
+                            widget.group.clusters[i],
+                          ),
                       onDeleteVoiceMemo:
-                          () => onDeleteVoiceMemoCluster(cluster),
-                      isSurvey: isSurvey,
-                      audioAvailable: audioAvailable,
+                          () => widget.onDeleteVoiceMemoCluster(
+                            widget.group.clusters[i],
+                          ),
+                      isSurvey: widget.isSurvey,
+                      audioAvailable: widget.audioAvailable,
                       onShowOnMap:
-                          onShowOnMap != null
-                              ? () => onShowOnMap!(cluster.records.first)
+                          widget.onShowOnMap != null
+                              ? () => widget.onShowOnMap!(
+                                widget.group.clusters[i].records.first,
+                              )
                               : null,
                     ),
                 ],
               ),
             ),
             crossFadeState:
-                isExpanded
+                widget.isExpanded
                     ? CrossFadeState.showSecond
                     : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
@@ -1457,31 +1660,6 @@ class _SpeciesTile extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  /// Whether [cluster] contains any record whose analysis window spans
-  /// the current playback position (mapped into clip-relative time).
-  ///
-  /// Returns `false` when there is no active position — the cluster row
-  /// stays in its idle styling.
-  bool _isClusterActive(_DetectionCluster cluster) {
-    if (identical(activeCluster, cluster)) return true;
-    final pos = activePositionSec;
-    if (pos == null) return false;
-    for (final r in cluster.records) {
-      final startSec =
-          r.timestamp.difference(sessionStart).inMicroseconds / 1e6 -
-          clipOffsetSec;
-      // Use the recorded end of continuous detection when available;
-      // otherwise fall back to a single inference window.
-      final endSec =
-          r.endTimestamp != null
-              ? r.endTimestamp!.difference(sessionStart).inMicroseconds / 1e6 -
-                  clipOffsetSec
-              : startSec + windowSec;
-      if (pos >= startSec && pos <= endSec) return true;
-    }
-    return false;
   }
 
   Color _confidenceColor(double confidence, ThemeData theme) {
@@ -1511,7 +1689,7 @@ class _SpeciesTile extends ConsumerWidget {
 class _ClusterRow extends ConsumerWidget {
   const _ClusterRow({
     required this.cluster,
-    required this.sessionStart,
+    required this.session,
     required this.onSeek,
     required this.onDelete,
     required this.onDeleteSpecies,
@@ -1531,7 +1709,7 @@ class _ClusterRow extends ConsumerWidget {
   });
 
   final _DetectionCluster cluster;
-  final DateTime sessionStart;
+  final LiveSession session;
   final VoidCallback onSeek;
   final VoidCallback onDelete;
   final VoidCallback onDeleteSpecies;
@@ -1587,15 +1765,17 @@ class _ClusterRow extends ConsumerWidget {
     // back to a single timestamp to keep the row compact.
     final startStr = formatDetectionTime(
       cluster.firstTimestamp,
-      sessionStart,
+      session.startTime,
       tsMode,
+      absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
     final endStr = formatDetectionTime(
       lastEnd,
-      sessionStart,
+      session.startTime,
       tsMode,
+      absoluteToRelative: session.absoluteToRelative,
       clipOffset: clipOffsetDur,
       showSeconds: tsShowSeconds,
     );
@@ -2931,6 +3111,7 @@ class _TrimSpectrogramView extends StatefulWidget {
     required this.initialStartSec,
     required this.initialEndSec,
     required this.onChanged,
+    this.quality = 'medium',
   });
 
   final ui.Image spectrogramImage;
@@ -2938,6 +3119,7 @@ class _TrimSpectrogramView extends StatefulWidget {
   final double initialStartSec;
   final double initialEndSec;
   final void Function(double startSec, double endSec) onChanged;
+  final String quality;
 
   @override
   State<_TrimSpectrogramView> createState() => _TrimSpectrogramViewState();
@@ -3054,6 +3236,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
             trimStartSec: _startSec,
             trimEndSec: _endSec,
             accentColor: theme.colorScheme.primary,
+            filterQuality: spectrogramFilterQualityFromString(widget.quality),
           ),
           size: const Size(double.infinity, 150),
         ),
@@ -3071,6 +3254,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
     required this.trimStartSec,
     required this.trimEndSec,
     required this.accentColor,
+    required this.filterQuality,
   });
 
   final ui.Image spectrogramImage;
@@ -3080,6 +3264,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
   final double trimStartSec;
   final double trimEndSec;
   final Color accentColor;
+  final FilterQuality filterQuality;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3096,7 +3281,7 @@ class _TrimSpectrogramPainter extends CustomPainter {
         spectrogramImage,
         Rect.fromLTRB(srcX1, 0, srcX2, imgH),
         Rect.fromLTRB(0, 0, size.width, size.height),
-        Paint()..filterQuality = FilterQuality.high,
+        Paint()..filterQuality = filterQuality,
       );
     }
 

@@ -71,11 +71,7 @@ Future<ShareResult> shareDetection(
   if (clipPath != null && File(clipPath).existsSync()) {
     final staged = await _stageClipForShare(File(clipPath), detection);
     return SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(staged.path)],
-        text: body,
-        subject: subject,
-      ),
+      ShareParams(files: [XFile(staged.path)], text: body, subject: subject),
     );
   }
 

@@ -102,9 +102,10 @@ class TaxonomySpecies {
   ///
   /// Falls back to the placeholder image if [birdnetId] is null
   /// (9 species with no taxonomy entry).
-  String get assetImagePath => birdnetId != null
-      ? 'assets/species_images/$birdnetId.webp'
-      : 'assets/images/dummy_species.png';
+  String get assetImagePath =>
+      birdnetId != null
+          ? 'assets/species_images/$birdnetId.webp'
+          : 'assets/images/dummy_species.png';
 
   /// eBird species page URL (if eBird code is available).
   String? get ebirdUrl =>
@@ -146,9 +147,7 @@ class TaxonomySpecies {
   /// inat_id,ebird_code,...,image_url,image_author,image_license,
   /// image_source,common_name_en,common_name_de,...
   /// ```
-  factory TaxonomySpecies.fromCsvRow(
-    Map<String, String> row,
-  ) {
+  factory TaxonomySpecies.fromCsvRow(Map<String, String> row) {
     // Extract localized common names from common_name_* columns and
     // Wikipedia URLs from wikipedia_url_* columns.
     final commonNames = <String, String>{};

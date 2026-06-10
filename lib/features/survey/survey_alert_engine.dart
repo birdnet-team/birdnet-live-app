@@ -131,10 +131,7 @@ class SurveyAlertEngine {
   /// the species has appeared in the *current* survey. The caller is
   /// responsible for the bookkeeping (typically a `Set<String>` updated
   /// alongside the existing `_activeCardSpecies` map in `SurveyController`).
-  AlertCandidate? evaluate(
-    DetectionRecord d, {
-    required bool firstInSession,
-  }) {
+  AlertCandidate? evaluate(DetectionRecord d, {required bool firstInSession}) {
     if (mode == AlertMode.off) return null;
     if (d.confidence < minConfidence) return null;
     if (!firstInSession) return null;

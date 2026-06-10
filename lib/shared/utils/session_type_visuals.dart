@@ -50,6 +50,10 @@ IconData sessionTypeIcon(SessionType type) {
       return AppIcons.routeRounded;
     case SessionType.fileUpload:
       return AppIcons.audioFileRounded;
+    case SessionType.batchAnalysis:
+      return AppIcons.sdStorage;
+    case SessionType.aru:
+      return AppIcons.timerRounded;
   }
 }
 
@@ -97,6 +101,10 @@ Color _accentForType(AppSemanticColors colors, SessionType type) {
       return colors.sessionSurvey;
     case SessionType.fileUpload:
       return colors.sessionFileAnalysis;
+    case SessionType.batchAnalysis:
+      return colors.sessionBatchAnalysis;
+    case SessionType.aru:
+      return colors.sessionAru;
   }
 }
 

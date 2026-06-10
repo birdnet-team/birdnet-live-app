@@ -307,9 +307,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           det.timestamp == widget.highlightedDetection!.timestamp;
       final hasAudio = _hasPlayableClip(det);
       final displayName =
-          taxonomy?.lookup(det.scientificName)?.commonNameForLocale(
-            speciesLocale,
-          ) ??
+          taxonomy
+              ?.lookup(det.scientificName)
+              ?.commonNameForLocale(speciesLocale) ??
           det.commonName;
       speciesMarkers.add(
         Marker(
@@ -327,7 +327,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             isConfirmed: det.isConfirmed,
             isHighlighted: isHighlighted,
             onTap:
-                widget.onMarkerTap != null ? () => widget.onMarkerTap!(det) : null,
+                widget.onMarkerTap != null
+                    ? () => widget.onMarkerTap!(det)
+                    : null,
             child: _SpeciesMarker(
               scientificName: det.scientificName,
               confidence: det.confidence,

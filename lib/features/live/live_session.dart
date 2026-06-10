@@ -184,6 +184,12 @@ enum SessionType {
 
   /// Background survey session with GPS tracking.
   survey,
+
+  /// Bulk processing of audio files.
+  batchAnalysis,
+
+  /// Autonomous Recording Unit mode.
+  aru,
 }
 
 /// Why a session ended.
@@ -494,9 +500,11 @@ class LiveSession {
     this.stopReasonValue,
     this.weather,
     int? recordedDurationSeconds,
+    List<SessionSegment>? segments,
   }) : detections = detections ?? [],
        annotations = annotations ?? [],
        gpsTrack = gpsTrack ?? [],
+       segments = segments ?? [],
        _recordedDurationSeconds = recordedDurationSeconds;
 
   /// Unique session identifier (ISO 8601 timestamp-based).
@@ -591,6 +599,9 @@ class LiveSession {
   /// sessions saved before this field existed; in that case [duration] is
   /// used as an approximation. Accumulated by the controller via
   /// [accumulateRecordedSeconds] each time a recording segment ends.
+  /// List of active recording segments during this session.
+  final List<SessionSegment> segments;
+
   int? _recordedDurationSeconds;
 
   /// Total recorded seconds, or `null` if not yet tracked.
@@ -629,7 +640,20 @@ class LiveSession {
   /// accumulated.
   Duration get duration {
     final recorded = _recordedDurationSeconds;
-    if (recorded != null) return Duration(seconds: recorded);
+    if (recorded != null) {
+      // Include the currently active segment (if any). Without this,
+      // resumed sessions show a static elapsed time until the next pause/stop
+      // persists another closed segment.
+      Duration activeSegment = Duration.zero;
+      if (segments.isNotEmpty) {
+        final last = segments.last;
+        if (last.endTime == null) {
+          activeSegment = DateTime.now().difference(last.startTime);
+          if (activeSegment.isNegative) activeSegment = Duration.zero;
+        }
+      }
+      return Duration(seconds: recorded) + activeSegment;
+    }
     return (endTime ?? DateTime.now()).difference(startTime);
   }
 
@@ -741,6 +765,11 @@ class LiveSession {
       stopReasonValue: json['stopReasonValue'] as num?,
       recordedDurationSeconds:
           (json['recordedDurationSeconds'] as num?)?.toInt(),
+      segments:
+          (json['segments'] as List<dynamic>?)
+              ?.map((s) => SessionSegment.fromJson(s as Map<String, dynamic>))
+              .toList() ??
+          [],
     )..weather = WeatherSnapshot.fromJson(json['weather']);
   }
 
@@ -772,10 +801,118 @@ class LiveSession {
     if (weather != null) 'weather': weather!.toJson(),
     if (_recordedDurationSeconds != null)
       'recordedDurationSeconds': _recordedDurationSeconds,
+    if (segments.isNotEmpty)
+      'segments': segments.map((s) => s.toJson()).toList(),
   };
 
   @override
   String toString() =>
       'LiveSession($id, ${detections.length} detections, '
       '$uniqueSpeciesCount species)';
+
+  /// Starts a new active recording segment.
+  void startSegment() {
+    final now = DateTime.now();
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      final lastEnd = last.endTime;
+      if (lastEnd != null && now.difference(lastEnd).inSeconds <= 2) {
+        // Resume/extend the last segment instead of starting a new one,
+        // because it was closed just for a periodic persist tick or a very brief pause.
+        last.endTime = null;
+        return;
+      }
+    }
+    segments.add(SessionSegment(startTime: now));
+  }
+
+  /// Closes the currently active recording segment.
+  void closeSegment() {
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      last.endTime ??= DateTime.now();
+    }
+  }
+
+  /// Maps an absolute timestamp to a relative offset in seconds within the recorded audio.
+  /// Returns 0.0 if the timestamp is before the session started or in a gap.
+  double absoluteToRelative(DateTime timestamp) {
+    if (segments.isEmpty) {
+      final diff = timestamp.difference(startTime).inMicroseconds / 1e6;
+      return diff < 0 ? 0.0 : diff;
+    }
+
+    double offsetMicros = 0;
+    for (final seg in segments) {
+      final start = seg.startTime;
+      final end = seg.endTime ?? DateTime.now();
+
+      if (timestamp.isBefore(start)) {
+        break;
+      }
+
+      if (timestamp.isBefore(end) || timestamp == end) {
+        offsetMicros += timestamp.difference(start).inMicroseconds;
+        break;
+      }
+
+      offsetMicros += end.difference(start).inMicroseconds;
+    }
+    return offsetMicros / 1e6;
+  }
+
+  /// Maps a relative offset in seconds within the recorded audio back to an absolute timestamp.
+  DateTime relativeToAbsolute(double relativeSec) {
+    if (segments.isEmpty) {
+      return startTime.add(Duration(microseconds: (relativeSec * 1e6).round()));
+    }
+
+    double targetMicros = relativeSec * 1e6;
+    double accumulatedMicros = 0;
+
+    for (final seg in segments) {
+      final start = seg.startTime;
+      final end = seg.endTime ?? DateTime.now();
+      final segDurationMicros = end.difference(start).inMicroseconds;
+
+      if (accumulatedMicros + segDurationMicros >= targetMicros) {
+        final remainingMicros = targetMicros - accumulatedMicros;
+        return start.add(Duration(microseconds: remainingMicros.round()));
+      }
+
+      accumulatedMicros += segDurationMicros;
+    }
+
+    if (segments.isNotEmpty) {
+      final last = segments.last;
+      final end = last.endTime ?? DateTime.now();
+      final remainingMicros = targetMicros - accumulatedMicros;
+      return end.add(Duration(microseconds: remainingMicros.round()));
+    }
+
+    return startTime.add(Duration(microseconds: (relativeSec * 1e6).round()));
+  }
+}
+
+/// Represents an active recording segment during a live session.
+class SessionSegment {
+  final DateTime startTime;
+  DateTime? endTime;
+
+  SessionSegment({required this.startTime, this.endTime});
+
+  factory SessionSegment.fromJson(Map<String, dynamic> json) {
+    return SessionSegment(
+      startTime: DateTime.parse(json['startTime'] as String),
+      endTime:
+          json['endTime'] != null
+              ? DateTime.parse(json['endTime'] as String)
+              : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'startTime': startTime.toUtc().toIso8601String(),
+    if (endTime != null) 'endTime': endTime!.toUtc().toIso8601String(),
+  };
 }

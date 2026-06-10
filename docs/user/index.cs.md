@@ -48,6 +48,14 @@ Nastavení průzkumu, ovládací panel živého průzkumu a karty mapy, spektrog
 
 Průvodce analýzou souborů ve čtyřech krocích, volby parametrů a způsob přesunutí výsledků do relace.
 
+### [Dávková analýza](batch-analysis.md)
+
+Zpracovat a analyzovat více zvukových souborů hromadně. (Již brzy)
+
+### [Režim ARU](aru-mode.md)
+
+Proměňte své zařízení v autonomní nahrávací jednotku. (Již brzy)
+
 ## Reference
 
 ### [FAQ](faq.md)

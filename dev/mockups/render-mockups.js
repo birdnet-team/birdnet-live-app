@@ -54,10 +54,10 @@ const screenshotOutputDir = path.join(outputRoot, 'screenshots');
 if (args.deviceScreenshots) {
   fs.mkdirSync(screenshotOutputDir, { recursive: true });
   if (!args.slide) {
-    cleanGeneratedFiles(screenshotOutputDir);
+    cleanGeneratedFiles(screenshotOutputDir, null, args.ipad);
   } else {
     for (const entry of slides) {
-      cleanGeneratedSlideFiles(screenshotOutputDir, entry);
+      cleanGeneratedSlideFiles(screenshotOutputDir, entry, args.ipad);
     }
   }
 }
@@ -74,18 +74,20 @@ for (const lang of languages) {
   fs.mkdirSync(langDir, { recursive: true });
 
   if (!args.deviceScreenshots && !args.slide) {
-    cleanGeneratedFiles(langDir);
+    cleanGeneratedFiles(langDir, null, args.ipad);
   }
 
   for (const { slide, index } of slides) {
     const number = String(index + 1).padStart(2, '0');
+    const prefix = args.ipad ? 'ipad_' : '';
     const fileName = args.deviceScreenshots
-      ? `${number}-${slide.id}.png`
-      : `${lang}-${number}-${slide.id}.png`;
+      ? `${prefix}${number}-${slide.id}.png`
+      : `${prefix}${lang}-${number}-${slide.id}.png`;
     const outputPath = path.join(langDir, fileName);
     const url = fileUrl(previewPath, {
       export: '1',
       device: args.deviceScreenshots ? '1' : '0',
+      ipad: args.ipad ? '1' : '0',
       lang,
       slide: slide.id,
     });
@@ -94,21 +96,28 @@ for (const lang of languages) {
   }
 }
 
-function isGeneratedPng(file) {
-  return /^(?:[a-z]{2,3}-)?\d{2}-[a-z0-9-]+\.png$/i.test(file);
+function isGeneratedPng(file, ipad) {
+  const isIpadFile = file.toLowerCase().startsWith('ipad_');
+  if (ipad !== isIpadFile) return false;
+  const checkName = isIpadFile ? file.slice(5) : file;
+  return /^(?:[a-z]{2,3}-)?\d{2}-[a-z0-9-]+\.png$/i.test(checkName);
 }
 
-function cleanGeneratedFiles(dir, lang) {
+function cleanGeneratedFiles(dir, lang, ipad) {
   for (const file of fs.readdirSync(dir)) {
-    if (!isGeneratedPng(file)) continue;
-    if (lang && !file.startsWith(`${lang}-`)) continue;
+    if (!isGeneratedPng(file, ipad)) continue;
+    if (lang) {
+      const rest = ipad ? file.slice(5) : file;
+      if (!rest.startsWith(`${lang}-`)) continue;
+    }
     fs.unlinkSync(path.join(dir, file));
   }
 }
 
-function cleanGeneratedSlideFiles(dir, { slide, index }) {
+function cleanGeneratedSlideFiles(dir, { slide, index }, ipad) {
   const number = String(index + 1).padStart(2, '0');
-  const slidePattern = new RegExp(`^(?:[a-z]{2,3}-)?${number}-${escapeRegExp(slide.id)}\\.png$`, 'i');
+  const prefix = ipad ? 'ipad_' : '';
+  const slidePattern = new RegExp(`^${prefix}(?:[a-z]{2,3}-)?${number}-${escapeRegExp(slide.id)}\\.png$`, 'i');
   for (const file of fs.readdirSync(dir)) {
     if (slidePattern.test(file)) fs.unlinkSync(path.join(dir, file));
   }
@@ -131,6 +140,7 @@ function parseArgs(argv) {
     slide: null,
     allLanguages: false,
     deviceScreenshots: false,
+    ipad: false,
     browser: process.env.BROWSER || process.env.CHROME_PATH || process.env.EDGE_PATH || null,
   };
 
@@ -140,6 +150,8 @@ function parseArgs(argv) {
       parsed.allLanguages = true;
     } else if (arg === '--device-screenshots') {
       parsed.deviceScreenshots = true;
+    } else if (arg === '--ipad') {
+      parsed.ipad = true;
     } else if (arg === '--lang') {
       parsed.lang = argv[++i];
     } else if (arg.startsWith('--lang=')) {
@@ -174,6 +186,7 @@ Options:
   --all-languages      Render every language in mockups.config.js
   --slide <id>         Render one slide only
   --device-screenshots Render clean device screenshots once to output/screenshots
+  --ipad               Render iPad portrait mockups instead of iPhone
   --browser <path>     Path to Chrome, Edge, or Chromium
   --help               Show this help
 `);
@@ -219,7 +232,11 @@ function findBrowser(explicitPath) {
 }
 
 function render(url, outputPath) {
-  const canvas = args.deviceScreenshots ? config.deviceScreenshot : config.canvas;
+  const canvas = args.deviceScreenshots
+    ? config.deviceScreenshot
+    : args.ipad
+    ? config.ipadCanvas
+    : config.canvas;
   const browserArgs = [
     '--headless=new',
     '--disable-gpu',

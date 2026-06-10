@@ -57,8 +57,6 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -71,6 +69,7 @@ import '../../shared/models/weather_snapshot.dart';
 import '../../shared/services/weather_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
+import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
@@ -85,6 +84,7 @@ import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/playback_normalizer.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_map_screen.dart';
@@ -134,11 +134,13 @@ class _ReviewWarningCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.body,
+    this.onDismiss,
   });
 
   final IconData icon;
   final String title;
   final String body;
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -149,9 +151,12 @@ class _ReviewWarningCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: theme.colorScheme.onErrorContainer),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, color: theme.colorScheme.onErrorContainer),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -176,6 +181,16 @@ class _ReviewWarningCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (onDismiss != null) ...[
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(AppIcons.close, size: 20),
+                color: theme.colorScheme.onErrorContainer,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: onDismiss,
+              ),
+            ],
           ],
         ),
       ),
@@ -188,11 +203,13 @@ class _SpectrogramChunk {
     required this.startSec,
     required this.endSec,
     required this.image,
+    required this.hop,
   });
 
   final double startSec;
   final double endSec;
   final ui.Image image;
+  final int hop;
 
   void dispose() => image.dispose();
 }
@@ -211,6 +228,8 @@ class _SpectrogramChunk {
 class _SpectrogramChunkRequest {
   const _SpectrogramChunkRequest({
     required this.path,
+    required this.sourceSampleRate,
+    required this.rawPcm16,
     required this.startSample,
     required this.count,
     required this.targetSampleRate,
@@ -220,6 +239,8 @@ class _SpectrogramChunkRequest {
   });
 
   final String path;
+  final int sourceSampleRate;
+  final bool rawPcm16;
   final int startSample;
   final int count;
   final int targetSampleRate;
@@ -252,18 +273,67 @@ class _SpectrogramChunkPixels {
 Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
   _SpectrogramChunkRequest req,
 ) async {
-  var audio = await AudioDecoder.decodeRange(
-    req.path,
-    startSample: req.startSample,
-    count: req.count,
-  );
-  audio = audio.resampleTo(req.targetSampleRate);
+  final DecodedAudio audio;
+  if (req.rawPcm16) {
+    audio = await _decodePcm16Range(
+      req.path,
+      sampleRate: req.sourceSampleRate,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else if (await AudioDecoder.canDecodeDart(req.path)) {
+    audio = await AudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  } else {
+    audio = await NativeAudioDecoder.decodeRange(
+      req.path,
+      startSample: req.startSample,
+      count: req.count,
+    );
+  }
+  final resampled = audio.resampleTo(req.targetSampleRate);
   return _renderSpectrogramChunkPixels(
-    audio,
+    resampled,
     fftSize: req.fftSize,
     hop: req.hop,
     maxDisplayBins: req.maxDisplayBins,
   );
+}
+
+Future<DecodedAudio> _decodePcm16Range(
+  String path, {
+  required int sampleRate,
+  required int startSample,
+  required int count,
+}) async {
+  final file = File(path);
+  final fileLength = await file.length();
+  final totalSamples = fileLength ~/ 2;
+  final safeStart = startSample.clamp(0, totalSamples);
+  final safeEnd = (startSample + count).clamp(0, totalSamples);
+  final bytesToRead = math.max(0, safeEnd - safeStart) * 2;
+  final output = Int16List(count);
+  if (bytesToRead <= 0) {
+    return DecodedAudio(samples: output, sampleRate: sampleRate);
+  }
+
+  final raf = await file.open();
+  try {
+    await raf.setPosition(safeStart * 2);
+    final bytes = await raf.read(bytesToRead);
+    final byteData = ByteData.sublistView(bytes);
+    final sampleOffset = safeStart - startSample;
+    for (var i = 0; i < bytes.length ~/ 2; i++) {
+      output[sampleOffset + i] = byteData.getInt16(i * 2, Endian.little);
+    }
+  } finally {
+    await raf.close();
+  }
+
+  return DecodedAudio(samples: output, sampleRate: sampleRate);
 }
 
 _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
@@ -354,169 +424,21 @@ _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
 /// `BehaviorSubject` is not sendable, so the spawn fails with
 /// "object is unsendable". By keeping this wrapper top-level, the
 /// closure only captures the two `String` parameters.
-Future<String?> _runFlacTranscodeIsolate(String flacPath, String wavPath) {
-  return Isolate.run(
-    () => _transcodeFlacToWav(flacPath: flacPath, wavPath: wavPath),
-  );
-}
-
 /// Run the spectrogram chunk decode+render in a fresh background isolate.
 ///
-/// Top-level for the same reason as [_runFlacTranscodeIsolate]: closures
-/// constructed inside a `State` method capture `this`, which pulls in
-/// just_audio's [AudioPlayer] → rxdart `BehaviorSubject` (unsendable)
-/// and aborts the spawn with "object is unsendable".
+/// Top-level closures constructed inside a `State` method capture `this`,
+/// which pulls in just_audio's [AudioPlayer] → rxdart `BehaviorSubject`
+/// (unsendable) and aborts the spawn with "object is unsendable".
 Future<_SpectrogramChunkPixels?> _runSpectrogramChunkIsolate(
   _SpectrogramChunkRequest request,
 ) {
-  return Isolate.run(() => _decodeAndRenderSpectrogramChunk(request));
-}
-
-/// Transcode a FLAC source to a 16-bit PCM WAV at [wavPath] in a single
-/// sequential pass. Designed to run inside `Isolate.run` so the heavy
-/// per-frame FLAC decode never touches the UI thread.
-///
-/// This buys us cheap random access for the on-demand spectrogram
-/// loader: FLAC has no built-in seek table so per-chunk range decodes
-/// scale as O(N²) (every chunk re-reads the full file and re-walks all
-/// preceding frames). After this one-pass transcode, chunk loads use
-/// the WAV range path, which is a true file seek.
-///
-/// Returns the absolute WAV path on success, or `null` if the source
-/// can't be decoded.
-Future<String?> _transcodeFlacToWav({
-  required String flacPath,
-  required String wavPath,
-}) async {
-  RandomAccessFile? raf;
-  try {
-    // Probe header for sample rate / total samples without decoding.
-    final meta = await AudioDecoder.inspectFile(flacPath);
-    final sampleRate = meta.sampleRate;
-    final totalSamples = meta.totalSamples;
-    if (sampleRate <= 0) {
-      // ignore: avoid_print
-      print('[spec-transcode] bad sample rate for $flacPath');
-      return null;
+  final token = RootIsolateToken.instance;
+  return Isolate.run(() {
+    if (token != null) {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     }
-
-    final file = File(wavPath);
-    await file.parent.create(recursive: true);
-    raf = await file.open(mode: FileMode.write);
-
-    // Write a placeholder 44-byte header; sizes are patched at the end.
-    final header = ByteData(44);
-    header
-      ..setUint8(0, 0x52) // R
-      ..setUint8(1, 0x49) // I
-      ..setUint8(2, 0x46) // F
-      ..setUint8(3, 0x46) // F
-      ..setUint32(4, 0, Endian.little) // riff size (patched)
-      ..setUint8(8, 0x57) // W
-      ..setUint8(9, 0x41) // A
-      ..setUint8(10, 0x56) // V
-      ..setUint8(11, 0x45) // E
-      ..setUint8(12, 0x66) // f
-      ..setUint8(13, 0x6D) // m
-      ..setUint8(14, 0x74) // t
-      ..setUint8(15, 0x20) // (space)
-      ..setUint32(16, 16, Endian.little) // fmt size
-      ..setUint16(20, 1, Endian.little) // PCM
-      ..setUint16(22, 1, Endian.little) // mono
-      ..setUint32(24, sampleRate, Endian.little)
-      ..setUint32(28, sampleRate * 2, Endian.little) // byte rate
-      ..setUint16(32, 2, Endian.little) // block align
-      ..setUint16(34, 16, Endian.little) // bits per sample
-      ..setUint8(36, 0x64) // d
-      ..setUint8(37, 0x61) // a
-      ..setUint8(38, 0x74) // t
-      ..setUint8(39, 0x61) // a
-      ..setUint32(40, 0, Endian.little); // data size (patched)
-    await raf.writeFrom(header.buffer.asUint8List());
-
-    // Stream 5-second non-overlapping windows straight to disk so we
-    // never hold the full decoded buffer in RAM (a 1 h FLAC would be
-    // ~330 MB of Int16 otherwise).
-    const windowSec = 5;
-    final windowSamples = sampleRate * windowSec;
-    final totalSec =
-        totalSamples > 0
-            ? (totalSamples / sampleRate).ceil()
-            : 60 * 60 * 24; // unknown → cap at 24 h
-    final maxWindows = (totalSec / windowSec).ceil() + 1;
-
-    var bytesWritten = 0;
-    final swatch = Stopwatch()..start();
-    await AudioDecoder.decodeFlacWindows(
-      flacPath,
-      windowSamples: windowSamples,
-      stepSamples: windowSamples,
-      maxWindows: maxWindows,
-      onWindow: (windowIndex, startSample, window) async {
-        final samples = window.samples;
-        if (samples.isEmpty) return true;
-        // Trim trailing zero-padding on the final window if we know the
-        // total sample count.
-        var writeCount = samples.length;
-        if (totalSamples > 0) {
-          final remaining = totalSamples - startSample;
-          if (remaining < writeCount) writeCount = remaining;
-        }
-        if (writeCount <= 0) return false;
-        await raf!.writeFrom(
-          samples.buffer.asUint8List(samples.offsetInBytes, writeCount * 2),
-        );
-        bytesWritten += writeCount * 2;
-        // Progress log every ~60 s of decoded audio so a long decode
-        // doesn't look frozen.
-        if (windowIndex % 12 == 0) {
-          // ignore: avoid_print
-          print(
-            '[spec-transcode] window $windowIndex / $maxWindows '
-            '(${(startSample / sampleRate).round()}s decoded, '
-            '${swatch.elapsedMilliseconds}ms elapsed)',
-          );
-        }
-        return true;
-      },
-    );
-
-    // Patch RIFF size + data size now that we know how much we wrote.
-    await raf.setPosition(4);
-    final riffSize = ByteData(4)
-      ..setUint32(0, 36 + bytesWritten, Endian.little);
-    await raf.writeFrom(riffSize.buffer.asUint8List());
-    await raf.setPosition(40);
-    final dataSize = ByteData(4)..setUint32(0, bytesWritten, Endian.little);
-    await raf.writeFrom(dataSize.buffer.asUint8List());
-    await raf.close();
-    raf = null;
-
-    if (bytesWritten <= 0) {
-      // ignore: avoid_print
-      print('[spec-transcode] no samples decoded from $flacPath');
-      try {
-        await File(wavPath).delete();
-      } catch (_) {}
-      return null;
-    }
-    // ignore: avoid_print
-    print(
-      '[spec-transcode] wrote ${bytesWritten ~/ 1024} KiB to $wavPath '
-      '(sr=$sampleRate, totalSamples=$totalSamples)',
-    );
-    return wavPath;
-  } catch (e, st) {
-    // ignore: avoid_print
-    print('[spec-transcode] failed for $flacPath: $e\n$st');
-    try {
-      await raf?.close();
-    } catch (_) {}
-    try {
-      await File(wavPath).delete();
-    } catch (_) {}
-    return null;
-  }
+    return _decodeAndRenderSpectrogramChunk(request);
+  });
 }
 
 class _SpectrogramImageResult {
@@ -550,7 +472,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlayerState>? _clipPlayerStateSubscription;
-  Duration _position = Duration.zero;
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(
+    Duration.zero,
+  );
+  Duration get _position => _positionNotifier.value;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
@@ -609,6 +534,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// True when the audio file ends materially before the session/detections.
   bool _audioTruncatedWarning = false;
 
+  /// True if the user dismissed the audio truncated warning.
+  bool _audioTruncatedWarningDismissed = false;
+
   /// True when long-session spectrogram detail is decoded on demand.
   bool _spectrogramLazy = false;
 
@@ -624,18 +552,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Source path/metadata for range-decoded spectrogram chunks.
   String? _spectrogramAudioPath;
   AudioMetadata? _spectrogramAudioMetadata;
-
-  /// Temporary WAV transcoded from a long FLAC source so chunk loads
-  /// can use [_decodeWavRange]'s real file-seek path instead of
-  /// re-reading and re-decoding the entire FLAC for every chunk
-  /// (which made the spectrogram never appear on 1 h recordings).
-  /// Deleted in [dispose].
-  String? _tempSpectrogramWavPath;
+  String? _spectrogramTempPcmPath;
+  bool _spectrogramAudioIsRawPcm16 = false;
 
   /// Detailed spectrogram chunks keyed by absolute recording seconds.
   final List<_SpectrogramChunk> _spectrogramChunks = [];
   final Set<int> _loadingSpectrogramChunkIndexes = {};
   int _spectrogramGeneration = 0;
+  int? _lastLoadedTargetHop;
+  double? _lastLoadedChunkSeconds;
 
   bool get _canUndo => _undoStack.isNotEmpty;
   bool get _canRedo => _redoStack.isNotEmpty;
@@ -731,8 +656,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = snapshotClipOffset;
           _duration = clippedDur ?? (endDur - startDur);
-          _position = Duration.zero;
         });
+        _positionNotifier.value = Duration.zero;
         _invalidateLazySpectrogramPipeline();
       }
     } else {
@@ -743,13 +668,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         setState(() {
           _clipOffsetSec = 0.0;
           _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-          _position = Duration.zero;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
             _spectrogramImage!.dispose();
           }
           _spectrogramImage = _fullSpectrogramImage;
         });
+        _positionNotifier.value = Duration.zero;
         // The strip's own didUpdateWidget will fire a viewport request
         // for the actual visible window once the duration/clip changes
         // propagate; just make sure any stale lazy state (pending chunk
@@ -789,6 +714,29 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     _resolveLocation();
     _resolveWeather();
     _loadSpeciesSort();
+    _loadDismissedWarningState();
+  }
+
+  Future<void> _loadDismissedWarningState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'dismissed_audio_warning_${widget.session.id}';
+    if (prefs.getBool(key) == true) {
+      if (mounted) {
+        setState(() {
+          _audioTruncatedWarningDismissed = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _dismissAudioWarning() async {
+    setState(() {
+      _audioTruncatedWarningDismissed = true;
+    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('dismissed_audio_warning_${widget.session.id}', true);
+    } catch (_) {}
   }
 
   Future<void> _loadSpeciesSort() async {
@@ -840,8 +788,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // Snap to the exact stop position so the playhead doesn't
           // visually overshoot the end of the cluster.
           _player.seek(stopAt);
+          _positionNotifier.value = stopAt;
+          return;
         }
-        setState(() => _position = pos);
+
+        _positionNotifier.value = pos;
       });
       _playerStateSubscription = _player.playerStateStream.listen((state) {
         if (mounted) {
@@ -875,19 +826,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               );
       final audioSec = metadata.duration.inMicroseconds / 1e6;
       var expectedSec = 0.0;
-      final end = widget.session.endTime;
-      if (end != null) {
-        expectedSec = math.max(
-          expectedSec,
-          end.difference(widget.session.startTime).inMicroseconds / 1e6,
-        );
-      }
-      for (final detection in widget.session.detections) {
-        final eventEnd = detection.endTimestamp ?? detection.timestamp;
-        expectedSec = math.max(
-          expectedSec,
-          eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
-        );
+      final recordedSec = widget.session.recordedDurationSeconds?.toDouble();
+      if (recordedSec != null && recordedSec > 0) {
+        expectedSec = recordedSec;
+      } else {
+        final end = widget.session.endTime;
+        if (end != null) {
+          expectedSec = math.max(
+            expectedSec,
+            end.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
+        for (final detection in widget.session.detections) {
+          final eventEnd = detection.endTimestamp ?? detection.timestamp;
+          expectedSec = math.max(
+            expectedSec,
+            eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
+          );
+        }
       }
       final isTruncated = expectedSec > 0 && audioSec + 5 < expectedSec;
       if (mounted && isTruncated != _audioTruncatedWarning) {
@@ -932,8 +888,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
     }
   }
 
@@ -1013,52 +969,44 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 path,
                 _formatLabelForPath(path),
               );
+      // Native-decoded formats (MP3, OGG, AAC, etc.) always lazy-load the
+      // spectrogram, but first stream the compressed file to a temporary PCM
+      // cache. Per-tile compressed seeks are not sample-exact enough for MP3
+      // and can create visible gaps; PCM ranges behave like the FLAC path.
+      // Dart-decodable formats (WAV/FLAC) keep the 128 MB threshold since
+      // their range-decode is essentially free (direct byte reads).
       final shouldLazyLoad =
-          canDart && metadata.decodedPcmBytes >= 128 * 1024 * 1024;
-
-      // For long FLAC sources, transcode once to a temp WAV so chunk
-      // loads can use real file-seek range reads instead of re-reading
-      // and re-decoding the entire FLAC for every chunk (O(N²)).
-      // The transcode itself is one sequential pass and runs in an
-      // isolate so the UI never blocks.
+          !canDart || metadata.decodedPcmBytes >= 128 * 1024 * 1024;
       var sourcePath = path;
       var sourceMetadata = metadata;
-      if (shouldLazyLoad && metadata.format == 'FLAC') {
-        final wavPath = await _temporaryWavPathFor(path);
-        final existing = File(wavPath);
-        String? transcoded;
-        if (await existing.exists() && (await existing.length()) > 44) {
-          // Cached transcode from a previous open of this exact file.
-          // ignore: avoid_print
-          print('[spec-transcode] reusing cached WAV $wavPath');
-          transcoded = wavPath;
-        } else {
-          // ignore: avoid_print
-          print('[spec-transcode] starting FLAC→WAV transcode for $path');
-          transcoded = await _runFlacTranscodeIsolate(path, wavPath);
-          if (!mounted || generation != _spectrogramGeneration) return;
-        }
-        if (transcoded != null) {
-          // Remember the temp file so dispose() can delete it, and
-          // delete any previous one (session-scoped, not shared).
-          await _disposeTempSpectrogramWav();
-          _tempSpectrogramWavPath = transcoded;
-          sourcePath = transcoded;
-          // Re-inspect so totalSamples / sampleRate reflect the WAV
-          // (they should match the FLAC, but be defensive).
+      var sourceIsRawPcm16 = false;
+
+      if (shouldLazyLoad && !canDart) {
+        final decoded = await NativeAudioDecoder.decodeToTempPcmFile(path);
+        if (!mounted) {
           try {
-            sourceMetadata = await AudioDecoder.inspectFile(transcoded);
-          } catch (_) {
-            // Keep FLAC metadata as a fallback.
-          }
+            final file = File(decoded.pcmPath);
+            if (file.existsSync()) file.deleteSync();
+          } catch (_) {}
+          return;
         }
+        sourcePath = decoded.pcmPath;
+        sourceMetadata = AudioMetadata(
+          sampleRate: decoded.sampleRate,
+          totalSamples: decoded.totalSamples,
+          format: '${metadata.format} PCM',
+        );
+        sourceIsRawPcm16 = true;
       }
 
       if (mounted) {
         setState(() {
           _clearSpectrogramChunks();
+          _deleteSpectrogramTempPcm();
           _spectrogramAudioPath = sourcePath;
           _spectrogramAudioMetadata = sourceMetadata;
+          _spectrogramAudioIsRawPcm16 = sourceIsRawPcm16;
+          _spectrogramTempPcmPath = sourceIsRawPcm16 ? sourcePath : null;
           _spectrogramLazy = shouldLazyLoad;
           if (_spectrogramImage != null &&
               !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -1071,14 +1019,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       if (shouldLazyLoad) {
-        // Match the strip's own _initialViewSecondsFor() logic so the
-        // initial chunk batch covers the same range the user will
-        // actually see on first paint. The strip *also* fires a
-        // viewport request via addPostFrameCallback, but that callback
-        // runs before `_spectrogramLazy` flips on (transcode is still
-        // running), so it no-ops. Without a generous bootstrap view
-        // here the user lands on a wide overview with only the first
-        // 30 s chunk filled.
         final totalSec = sourceMetadata.duration.inMicroseconds / 1000000.0;
         final userPref = ref.read(spectrogramDurationProvider).toDouble();
         final bootstrapView =
@@ -1086,18 +1026,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 ? userPref
                 : totalSec <= 300.0
                 ? math.min(userPref, totalSec)
-                : (totalSec * 0.1).clamp(userPref, 180.0).toDouble();
+                : (totalSec * 0.1).clamp(userPref, 60.0).toDouble();
         await _ensureSpectrogramForViewport(
           absoluteCenterSec: bootstrapView / 2,
           viewSeconds: bootstrapView,
           generation: generation,
         );
-        return;
-      }
-
-      if (!canDart && metadata.decodedPcmBytes >= 128 * 1024 * 1024) {
-        // Native range decoding is not available yet. Keep playback usable
-        // instead of risking a full decoded PCM allocation for the review image.
         return;
       }
 
@@ -1139,14 +1073,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     DecodedAudio audio, {
     int maxColumns = 6000,
   }) async {
-    // Larger FFT (2048) gives ~12 Hz/bin resolution which renders
-    // formants and harmonic structure much more clearly than the
-    // previous 1024-point FFT (~23 Hz/bin). The hop is increased to
-    // 1024 so the per-second column count stays similar — keeping the
-    // total spectrogram-image memory comparable for long sessions while
-    // doubling the vertical (frequency) resolution.
+    final String quality = ref.read(spectrogramQualityProvider);
+    int maxDisplayBins;
+    int hop;
+
+    switch (quality.toLowerCase()) {
+      case 'low':
+        maxDisplayBins = 128;
+        hop = 2048;
+        break;
+      case 'medium':
+        maxDisplayBins = 256;
+        hop = 1024;
+        break;
+      case 'high':
+      default:
+        maxDisplayBins = 512;
+        hop = 512;
+        break;
+    }
+
     const fftSize = 2048;
-    const hop = 1024;
     const maxFreqHz = 16000;
     const dbFloor = -80.0;
     const dbCeiling = 0.0;
@@ -1161,10 +1108,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final nyquist = audio.sampleRate / 2;
     final binCount = fftSize ~/ 2 + 1;
-    final displayBins = (maxFreqHz / nyquist * binCount).round().clamp(
+    final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
       1,
       binCount,
     );
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(
+      1,
+      visibleBins,
+    );
+    final displayBins = (visibleBins / binStride).ceil();
 
     final lut = SpectrogramColorMap.lut('viridis');
     final pixels = Uint8List(numCols * displayBins * 4);
@@ -1191,14 +1143,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
       final spectrum = fft.realFft(input);
 
-      for (var bin = 0; bin < displayBins; bin++) {
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        final power = re * re + im * im;
+      for (var row = 0; row < displayBins; row++) {
+        final binStart = row * binStride;
+        final binEnd = (binStart + binStride).clamp(0, visibleBins);
+        var power = 0.0;
+        for (var bin = binStart; bin < binEnd; bin++) {
+          final re = spectrum[bin].x;
+          final im = spectrum[bin].y;
+          power += re * re + im * im;
+        }
+        power /= (binEnd - binStart);
         final db = 10 * math.log(power + 1e-10) / math.ln10;
         final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
 
-        final y = displayBins - 1 - bin;
+        final y = displayBins - 1 - row;
         final pxOffset = (y * numCols + c) * 4;
         final lutIdx = (norm * 255).round().clamp(0, 255);
         final color = lut[lutIdx];
@@ -1221,15 +1179,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     return _SpectrogramImageResult(image: image, stride: stride);
   }
 
-  static const double _lazySpectrogramChunkSeconds = 30.0;
-  static const int _maxCachedSpectrogramChunks = 12;
-
   void _clearSpectrogramChunks() {
     for (final chunk in _spectrogramChunks) {
       chunk.dispose();
     }
     _spectrogramChunks.clear();
     _loadingSpectrogramChunkIndexes.clear();
+  }
+
+  void _deleteSpectrogramTempPcm() {
+    final path = _spectrogramTempPcmPath;
+    _spectrogramTempPcmPath = null;
+    _spectrogramAudioIsRawPcm16 = false;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) file.deleteSync();
+    } catch (_) {
+      // Best-effort cleanup of a temporary spectrogram cache.
+    }
   }
 
   void _requestSpectrogramViewport(
@@ -1270,14 +1238,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (!_spectrogramLazy || metadata == null || durationSec <= 0) return;
 
     final totalSec = durationSec / 1000000.0;
-    // Keep the padding bounded so a heavy zoom-out doesn't try to load
-    // dozens of off-screen chunks at once; the painter happily stretches
-    // whatever tiles we already have for the overview, so a small look-
-    // ahead is enough to feel responsive.
-    final padding = math.min(
-      math.max(5.0, viewSeconds * 0.25),
-      _lazySpectrogramChunkSeconds,
-    );
+    // Define zoom levels, dynamic chunk seconds, hop multipliers, and cache sizes.
+    final double chunkSeconds;
+    final int hopMultiplier;
+    final int maxCachedChunks;
+    if (viewSeconds <= 20.0) {
+      chunkSeconds = 30.0;
+      hopMultiplier = 1;
+      maxCachedChunks = 16;
+    } else if (viewSeconds <= 60.0) {
+      chunkSeconds = 120.0;
+      hopMultiplier = 4;
+      maxCachedChunks = 16;
+    } else {
+      chunkSeconds = 480.0;
+      hopMultiplier = 16;
+      maxCachedChunks = 16;
+    }
+
+    final padding = math.min(math.max(5.0, viewSeconds * 0.25), chunkSeconds);
     final startSec = (absoluteCenterSec - viewSeconds / 2 - padding).clamp(
       0.0,
       totalSec,
@@ -1286,23 +1265,58 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       0.0,
       totalSec,
     );
-    final firstIndex = (startSec / _lazySpectrogramChunkSeconds).floor();
-    final lastIndex = (endSec / _lazySpectrogramChunkSeconds).floor();
+    final firstIndex = (startSec / chunkSeconds).floor();
+    final lastIndex = math.max(
+      firstIndex,
+      ((endSec - 0.000001) / chunkSeconds).floor(),
+    );
 
-    // Collect every candidate index in the viewport, then keep the ones
-    // closest to the center first. This prevents zoom-out from queuing
-    // more chunks than the cache can hold (older ones would be evicted
-    // before they ever rendered, leaving the spinner stuck forever).
-    final centerIndex =
-        (absoluteCenterSec / _lazySpectrogramChunkSeconds).floor();
+    // Determine the base hop to compute target hop
+    final String quality = ref.read(spectrogramQualityProvider);
+    final long = totalSec > 600.0;
+    int baseHop;
+    switch (quality.toLowerCase()) {
+      case 'low':
+        baseHop = long ? 3072 : 2048;
+        break;
+      case 'medium':
+        baseHop = long ? 2048 : 1024;
+        break;
+      case 'high':
+      default:
+        baseHop = long ? 1024 : 512;
+        break;
+    }
+    final targetHop = baseHop * hopMultiplier;
+
+    // Clear pending load indexes when transition between zoom levels occurs.
+    var activeGeneration = generation;
+    if (_lastLoadedTargetHop != targetHop ||
+        _lastLoadedChunkSeconds != chunkSeconds) {
+      _lastLoadedTargetHop = targetHop;
+      _lastLoadedChunkSeconds = chunkSeconds;
+      _spectrogramGeneration++;
+      activeGeneration = _spectrogramGeneration;
+      _loadingSpectrogramChunkIndexes.clear();
+      _clearSpectrogramChunks();
+    }
+
+    // Collect candidate indexes that don't have a chunk with the targetHop covering the required range.
+    final centerIndex = (absoluteCenterSec / chunkSeconds).floor();
     final candidates = <int>[];
     for (var index = firstIndex; index <= lastIndex; index++) {
-      if (_spectrogramChunks.any(
-        (chunk) =>
-            (chunk.startSec / _lazySpectrogramChunkSeconds).floor() == index,
-      )) {
-        continue;
+      final reqStart = index * chunkSeconds;
+      final reqEnd = math.min(reqStart + chunkSeconds, totalSec);
+      bool covered = false;
+      for (final chunk in _spectrogramChunks) {
+        if (chunk.startSec <= reqStart + 0.001 &&
+            chunk.endSec >= reqEnd - 0.001 &&
+            chunk.hop <= targetHop) {
+          covered = true;
+          break;
+        }
       }
+      if (covered) continue;
       if (_loadingSpectrogramChunkIndexes.contains(index)) continue;
       candidates.add(index);
     }
@@ -1310,7 +1324,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       (a, b) => (a - centerIndex).abs().compareTo((b - centerIndex).abs()),
     );
     final inFlight = _loadingSpectrogramChunkIndexes.length;
-    final budget = math.max(0, _maxCachedSpectrogramChunks - inFlight);
+    final budget = math.max(0, maxCachedChunks - inFlight);
     final scheduled = candidates.take(budget).toList();
 
     if (scheduled.isEmpty) {
@@ -1326,13 +1340,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Hold a snapshot of what we reserved so the finally block can
     // guarantee cleanup even if `_loadSpectrogramChunk` throws (e.g.
     // a range-read failure near a freshly applied clip boundary).
-    // Without this, an exception leaves stale indexes in
-    // `_loadingSpectrogramChunkIndexes`, pinning `_decoding = true`
-    // forever — the symptom users see after trim → undo.
     final reserved = scheduled.toSet();
     try {
       for (final index in scheduled) {
-        if (!mounted || generation != _spectrogramGeneration) {
+        if (!mounted || activeGeneration != _spectrogramGeneration) {
           // Drop pending reservations so a follow-up request can retry.
           _loadingSpectrogramChunkIndexes.removeAll(reserved);
           if (mounted) {
@@ -1347,8 +1358,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         try {
           await _loadSpectrogramChunk(
             index,
-            generation,
+            activeGeneration,
             cacheCenterSec: absoluteCenterSec,
+            maxCachedChunks: maxCachedChunks,
+            hop: targetHop,
+            chunkSeconds: chunkSeconds,
           );
         } catch (e, st) {
           // ignore: avoid_print
@@ -1371,6 +1385,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     int index,
     int generation, {
     required double cacheCenterSec,
+    required int maxCachedChunks,
+    required int hop,
+    required double chunkSeconds,
   }) async {
     try {
       final path = _spectrogramAudioPath;
@@ -1378,31 +1395,57 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (path == null || metadata == null) return;
 
       final totalSec = metadata.duration.inMicroseconds / 1000000.0;
-      final chunkStartSec = index * _lazySpectrogramChunkSeconds;
-      final chunkEndSec = math.min(
-        totalSec,
-        chunkStartSec + _lazySpectrogramChunkSeconds,
-      );
+      final chunkStartSec = index * chunkSeconds;
+      final chunkEndSec = math.min(totalSec, chunkStartSec + chunkSeconds);
       if (chunkEndSec <= chunkStartSec) return;
 
       final startSample = (chunkStartSec * metadata.sampleRate).floor();
       final count =
           ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
 
-      // Pick lower-detail STFT params for long recordings so each chunk
-      // costs less CPU. The spectrogram strip is only ~150 logical px
-      // tall, so frequency bins above that count are squashed into
-      // sub-pixel rows anyway — `maxDisplayBins` caps that waste.
-      final long = totalSec > 600.0;
+      final String quality = ref.read(spectrogramQualityProvider);
       final fftSize = 2048;
-      final hop = long ? 2048 : 1024;
-      const maxDisplayBins = 256;
+
+      int baseMaxDisplayBins;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          baseMaxDisplayBins = 128;
+          break;
+        case 'medium':
+          baseMaxDisplayBins = 256;
+          break;
+        case 'high':
+        default:
+          baseMaxDisplayBins = 512;
+          break;
+      }
+
+      final long = totalSec > 600.0;
+      int baseHop;
+      switch (quality.toLowerCase()) {
+        case 'low':
+          baseHop = long ? 3072 : 2048;
+          break;
+        case 'medium':
+          baseHop = long ? 2048 : 1024;
+          break;
+        case 'high':
+        default:
+          baseHop = long ? 1024 : 512;
+          break;
+      }
+      final hopMultiplier = math.max(1, hop ~/ baseHop);
+      final int binDivisor =
+          hopMultiplier == 1 ? 1 : (hopMultiplier <= 4 ? 2 : 4);
+      final maxDisplayBins = math.max(32, baseMaxDisplayBins ~/ binDivisor);
 
       // Decode + STFT in a background isolate so pinch-zoom never stalls
       // the UI thread. Only the cheap GPU upload happens on main.
       final pixelData = await _runSpectrogramChunkIsolate(
         _SpectrogramChunkRequest(
           path: path,
+          sourceSampleRate: metadata.sampleRate,
+          rawPcm16: _spectrogramAudioIsRawPcm16,
           startSample: startSample,
           count: count,
           targetSampleRate: AppConstants.sampleRate,
@@ -1431,15 +1474,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       setState(() {
+        for (var i = _spectrogramChunks.length - 1; i >= 0; i--) {
+          final chunk = _spectrogramChunks[i];
+          if (chunk.startSec >= chunkStartSec - 0.001 &&
+              chunk.endSec <= chunkEndSec + 0.001 &&
+              chunk.hop >= hop) {
+            _spectrogramChunks.removeAt(i).dispose();
+          }
+        }
+
         _spectrogramChunks.add(
           _SpectrogramChunk(
             startSec: chunkStartSec,
             endSec: chunkEndSec,
             image: image,
+            hop: hop,
           ),
         );
         _spectrogramChunks.sort((a, b) => a.startSec.compareTo(b.startSec));
-        while (_spectrogramChunks.length > _maxCachedSpectrogramChunks) {
+        while (_spectrogramChunks.length > maxCachedChunks) {
           var farthestIndex = 0;
           var farthestDistance = -1.0;
           for (var i = 0; i < _spectrogramChunks.length; i++) {
@@ -1507,6 +1560,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   @override
   void dispose() {
+    _positionNotifier.dispose();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _clipPlayerStateSubscription?.cancel();
@@ -1515,45 +1569,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     _fullSpectrogramImage?.dispose();
     _clearSpectrogramChunks();
-    // Fire-and-forget temp-WAV cleanup; we can't await in dispose.
-    final tempPath = _tempSpectrogramWavPath;
-    if (tempPath != null) {
-      unawaited(File(tempPath).delete().catchError((_) => File(tempPath)));
-    }
-    _tempSpectrogramWavPath = null;
+    _deleteSpectrogramTempPcm();
     _player.dispose();
     _clipPlayer.dispose();
     _speciesSearchController.dispose();
     super.dispose();
-  }
-
-  /// Build a stable temp-WAV destination for [flacPath]. Reusing the
-  /// same name across re-opens lets a previous transcode be reused if
-  /// it still exists, but we still treat it as session-scoped and
-  /// delete it on dispose to keep temp clean.
-  Future<String> _temporaryWavPathFor(String flacPath) async {
-    final temp = await getTemporaryDirectory();
-    final dir = Directory(p.join(temp.path, 'birdnet_spec_wav'));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    final stat = await File(flacPath).stat();
-    final keyInput =
-        '${flacPath}_${stat.size}_${stat.modified.millisecondsSinceEpoch}';
-    final key = keyInput.hashCode.toUnsigned(32).toRadixString(16);
-    return p.join(dir.path, 'spec_$key.wav');
-  }
-
-  Future<void> _disposeTempSpectrogramWav() async {
-    final tempPath = _tempSpectrogramWavPath;
-    if (tempPath == null) return;
-    try {
-      final f = File(tempPath);
-      if (await f.exists()) await f.delete();
-    } catch (_) {
-      // Best-effort.
-    }
-    _tempSpectrogramWavPath = null;
   }
 
   // ── Actions ─────────────────────────────────────────────────────────
@@ -2060,8 +2080,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       setState(() {
         _clipOffsetSec = start;
         _duration = clippedDur ?? (endDur - startDur);
-        _position = Duration.zero;
       });
+      _positionNotifier.value = Duration.zero;
       // Drop any in-flight lazy chunk loads from the pre-trim viewport
       // so the strip's follow-up viewport request for the new clip
       // range can schedule freshly instead of getting stuck behind a
@@ -2082,7 +2102,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _trimEndSec = null;
       _clipOffsetSec = 0.0;
       _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-      _position = Duration.zero;
       // Restore the full-recording spectrogram.
       if (_spectrogramImage != null &&
           !identical(_spectrogramImage, _fullSpectrogramImage)) {
@@ -2092,6 +2111,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _isDirty = true;
       _trimMode = false;
     });
+    _positionNotifier.value = Duration.zero;
     if (_spectrogramLazy) {
       _requestSpectrogramViewport(0, 10);
     }
@@ -2257,9 +2277,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // Full recording available — seek the main player.
     if (_audioAvailable && _duration != Duration.zero) {
       final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-      final offset = cluster.firstTimestamp.difference(
-        widget.session.startTime,
+      final relativeSec = widget.session.absoluteToRelative(
+        cluster.firstTimestamp,
       );
+      final offset = Duration(microseconds: (relativeSec * 1e6).round());
       var seekPos = offset - clipOffset;
       // Clamp into the playable range [0, duration] so detections that
       // landed slightly before the recorder fully spun up (negative
@@ -2278,6 +2299,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _autoStopPosition = null;
 
       _player.seek(seekPos);
+      _positionNotifier.value = seekPos;
       if (!_isPlaying) _player.play();
       return;
     }
@@ -2325,6 +2347,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // over the timeline.
     _autoStopPosition = null;
     _player.seek(position);
+    _positionNotifier.value = position;
     if (!_isPlaying) _player.play();
   }
 
@@ -3149,11 +3172,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             ),
           ],
         ),
-      if (_audioTruncatedWarning)
+      if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
         _ReviewWarningCard(
           icon: AppIcons.warningAmberRounded,
           title: l10n.sessionReviewAudioShortTitle,
           body: l10n.sessionReviewAudioShortBody,
+          onDismiss: _dismissAudioWarning,
         ),
       if (_audioAvailable) ...[
         if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
@@ -3170,15 +3194,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     ? _fullDurationSec
                     : _duration.inMicroseconds / 1000000.0),
             onChanged: _onTrimChanged,
+            quality: ref.watch(spectrogramQualityProvider),
           )
         else
           Stack(
             children: [
               _SpectrogramStrip(
+                session: widget.session,
                 spectrogramImage: _spectrogramImage,
                 spectrogramChunks: List.unmodifiable(_spectrogramChunks),
                 decoding: _decoding,
-                position: _position,
+                positionNotifier: _positionNotifier,
                 duration: _duration,
                 timelineOffsetSec: _clipOffsetSec,
                 onViewportChanged: _requestSpectrogramViewport,
@@ -3187,6 +3213,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 isPlaying: _isPlaying,
                 userDefaultViewSeconds:
                     ref.watch(spectrogramDurationProvider).toDouble(),
+                quality: ref.watch(spectrogramQualityProvider),
               ),
               // Lazy trim editor: no full-file spectrogram thumbnail is
               // available, so we overlay trim handles directly on the
@@ -3430,18 +3457,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         itemBuilder: (context, index) {
           final group = displayGroup(sorted[index]);
           final isExpanded = _expandedSpecies.contains(group.scientificName);
-          final isActive =
-              _isSpeciesActive(group) ||
-              (_activeClipCluster != null &&
-                  group.clusters.contains(_activeClipCluster));
           return _SpeciesTile(
             key: ValueKey('species-tile-${group.scientificName}'),
             group: group,
-            sessionStart: widget.session.startTime,
+            session: widget.session,
             isExpanded: isExpanded,
-            isActive: isActive,
-            activePositionSec:
-                _isPlaying ? _position.inMicroseconds / 1e6 : null,
+            positionNotifier: _positionNotifier,
+            isPlaying: _isPlaying,
             activeCluster: _activeClipCluster,
             clipOffsetSec: _clipOffsetSec,
             windowSec: widget.session.settings.windowDuration,
@@ -3569,31 +3591,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
   }
 
-  /// Whether any detection in [group] spans the current playback position.
-  bool _isSpeciesActive(_SpeciesGroup group) {
-    // Only highlight while audio is actually playing — a paused player
-    // (whether by the user or by the cluster auto-stop) should leave the
-    // species list in its idle styling.
-    if (!_isPlaying) return false;
-    final windowSec = widget.session.settings.windowDuration;
-    final clipOffset = Duration(microseconds: (_clipOffsetSec * 1e6).round());
-    for (final r in group.allRecords) {
-      final offset = r.timestamp.difference(widget.session.startTime);
-      // Map the absolute offset into clip-relative coordinates.
-      final rel = offset - clipOffset;
-      // Honour the recorded continuous-detection duration when present;
-      // otherwise fall back to a single inference window starting at the
-      // detection timestamp.
-      final detEnd =
-          r.endTimestamp != null
-              ? r.endTimestamp!.difference(widget.session.startTime) -
-                  clipOffset
-              : rel + Duration(seconds: windowSec);
-      if (_position >= rel && _position <= detEnd) return true;
-    }
-    return false;
-  }
-
   // ── Grouping Logic ──────────────────────────────────────────────────
 
   /// Build species-grouped, cluster-merged detection summaries.
@@ -3663,6 +3660,10 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
+    case SessionType.batchAnalysis:
+      return l10n.sessionTypeBatchAnalysis;
+    case SessionType.aru:
+      return l10n.sessionTypeAru;
   }
 }
 
@@ -3685,6 +3686,10 @@ String _sessionReviewTitle(AppLocalizations l10n, LiveSession session) {
       return l10n.sessionTitlePointCountNum(n);
     case SessionType.survey:
       return l10n.sessionTitleSurveyNum(n);
+    case SessionType.batchAnalysis:
+      return l10n.sessionTitleBatchAnalysisNum(n);
+    case SessionType.aru:
+      return l10n.sessionTitleAruNum(n);
   }
 }
 
@@ -3979,6 +3984,25 @@ class _FullscreenSurveyMapScreenState
               ),
           ],
         ),
+        actions: [
+          if (Platform.isIOS)
+            IconButton(
+              icon: const Icon(AppIcons.openInNew),
+              tooltip: l10n.openInAppleMaps,
+              onPressed: () {
+                final lat = widget.session.latitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.latitude : null);
+                final lng = widget.session.longitude ??
+                    (widget.gpsTrack.isNotEmpty ? widget.gpsTrack.first.longitude : null);
+                if (lat != null && lng != null) {
+                  openExternalUrl(
+                    context,
+                    'https://maps.apple.com/?q=$lat,$lng',
+                  );
+                }
+              },
+            ),
+        ],
       ),
       body: Stack(
         children: [

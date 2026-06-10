@@ -100,6 +100,10 @@ Définit la fréquence d’affichage supérieure.
 
 Applique une mise à l'échelle logarithmique au spectrogramme pour une lecture visuelle plus facile.
 
+### Qualité
+
+Contrôle la fluidité avec laquelle l'image du spectrogramme est mise à l'échelle. **Moyenne** est le compromis par défaut. Choisissez **Faible** sur les téléphones plus anciens si le défilement saccade ou si l'appareil chauffe ; choisissez **Élevée** si vous préférez un rendu plus lisse et que votre appareil dispose d'une marge GPU suffisante. L'intuition : cela modifie uniquement le coût de rendu, pas l'analyse audio ni les résultats de détection.
+
 ## Enregistrement
 
 ###Mode

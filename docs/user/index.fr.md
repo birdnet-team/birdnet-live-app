@@ -48,6 +48,14 @@ Configuration de l'enquête, tableau de bord de l'enquête en direct et onglets 
 
 L'assistant d'analyse de fichiers en quatre étapes, les choix de paramètres et la façon dont les résultats sont transférés dans Session Review.
 
+### [Analyse par lots](batch-analysis.md)
+
+Traiter et analyser plusieurs fichiers audio par lots. (Prochainement)
+
+### [Mode ARU](aru-mode.md)
+
+Transformez votre appareil en unité d'enregistrement autonome. (Prochainement)
+
 ## Référence
 
 ### [FAQ](faq.md)

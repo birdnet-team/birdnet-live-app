@@ -70,9 +70,11 @@ plugins:
         Developer Guide: Entwicklerhandbuch
         Explore: Erkunden
         FAQ: FAQ
+        Batch Analysis: Batch-Analyse
+        ARU Mode: ARU-Modus
         File Analysis: Dateianalyse
         Getting Started: Erste Schritte
-        Home: Heim
+        Home: Start
         Icons & Controls: Symbole und Steuerelemente
         Inference Engine: Inferenz-Engine
         Live Mode: Live-Modus
@@ -107,6 +109,8 @@ plugins:
         Developer Guide: Příručka pro vývojáře
         Explore: Prozkoumat
         FAQ: FAQ
+        Batch Analysis: Dávková analýza
+        ARU Mode: Režim ARU
         File Analysis: Analýza souborů
         Getting Started: Začínáme
         Home: Domov
@@ -144,6 +148,8 @@ plugins:
         Developer Guide: Guía para desarrolladores
         Explore: Explorar
         FAQ: Preguntas frecuentes
+        Batch Analysis: Análisis por lotes
+        ARU Mode: Modo ARU
         File Analysis: Análisis de archivos
         Getting Started: Empezando
         Home: Hogar
@@ -181,6 +187,8 @@ plugins:
         Developer Guide: Guide du développeur
         Explore: Explorer
         FAQ: FAQ
+        Batch Analysis: Analyse par lots
+        ARU Mode: Mode ARU
         File Analysis: Analyse de fichiers
         Getting Started: Commencer
         Home: Maison
@@ -218,6 +226,8 @@ plugins:
         Developer Guide: Guida per gli sviluppatori
         Explore: Esplorare
         FAQ: Domande frequenti
+        Batch Analysis: Analisi in batch
+        ARU Mode: Modalità ARU
         File Analysis: Analisi dei file
         Getting Started: Iniziare
         Home: Casa
@@ -256,6 +266,8 @@ plugins:
         Developer Guide: Guia do desenvolvedor
         Explore: Explorar
         FAQ: Perguntas frequentes
+        Batch Analysis: Análise em lote
+        ARU Mode: Modo ARU
         File Analysis: Análise de arquivo
         Getting Started: Começando
         Home: Lar
@@ -293,6 +305,8 @@ nav:
   - Point Count Mode: user/point-count-mode.md
   - Survey Mode: user/survey-mode.md
   - File Analysis: user/file-analysis.md
+  - Batch Analysis: user/batch-analysis.md
+  - ARU Mode: user/aru-mode.md
   - Settings: user/settings.md
   - FAQ: user/faq.md
 - Developer Guide:

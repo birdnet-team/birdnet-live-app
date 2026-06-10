@@ -25,10 +25,7 @@ import '../../shared/models/gps_point.dart';
 
 /// Tracks GPS position during a survey and maintains the track + distance.
 class SurveyGpsTracker {
-  SurveyGpsTracker({
-    this.intervalSeconds = 10,
-    this.distanceFilterMeters = 5,
-  });
+  SurveyGpsTracker({this.intervalSeconds = 10, this.distanceFilterMeters = 5});
 
   /// Minimum interval between position updates (seconds).
   final int intervalSeconds;
@@ -68,19 +65,37 @@ class SurveyGpsTracker {
         LatLng(track[i].latitude, track[i].longitude),
       );
     }
-    debugPrint('[SurveyGpsTracker] seeded ${track.length} points, '
-        '${distanceMeters.toStringAsFixed(0)} m');
+    debugPrint(
+      '[SurveyGpsTracker] seeded ${track.length} points, '
+      '${distanceMeters.toStringAsFixed(0)} m',
+    );
   }
 
   /// Start continuous GPS tracking.
   Future<void> startTracking() async {
     if (_positionSub != null) return;
 
-    final locationSettings = AndroidSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: distanceFilterMeters,
-      intervalDuration: Duration(seconds: intervalSeconds),
-    );
+    late final LocationSettings locationSettings;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      locationSettings = AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: distanceFilterMeters,
+        intervalDuration: Duration(seconds: intervalSeconds),
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      locationSettings = AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: distanceFilterMeters,
+        allowBackgroundLocationUpdates: true,
+        showBackgroundLocationIndicator: true,
+      );
+    } else {
+      locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: distanceFilterMeters,
+      );
+    }
 
     _positionSub = Geolocator.getPositionStream(
       locationSettings: locationSettings,
@@ -97,8 +112,10 @@ class SurveyGpsTracker {
       cancelOnError: true,
     );
 
-    debugPrint('[SurveyGpsTracker] tracking started '
-        '(interval=${intervalSeconds}s, filter=${distanceFilterMeters}m)');
+    debugPrint(
+      '[SurveyGpsTracker] tracking started '
+      '(interval=${intervalSeconds}s, filter=${distanceFilterMeters}m)',
+    );
   }
 
   /// Record a single GPS fix (for manual GPS mode).
@@ -123,8 +140,10 @@ class SurveyGpsTracker {
   Future<void> stopTracking() async {
     await _positionSub?.cancel();
     _positionSub = null;
-    debugPrint('[SurveyGpsTracker] tracking stopped '
-        '(${track.length} points, ${distanceMeters.toStringAsFixed(0)} m)');
+    debugPrint(
+      '[SurveyGpsTracker] tracking stopped '
+      '(${track.length} points, ${distanceMeters.toStringAsFixed(0)} m)',
+    );
   }
 
   /// Simplify the track using Douglas-Peucker algorithm.
@@ -137,8 +156,10 @@ class SurveyGpsTracker {
     track
       ..clear()
       ..addAll(simplified);
-    debugPrint('[SurveyGpsTracker] track simplified: '
-        '${simplified.length} points');
+    debugPrint(
+      '[SurveyGpsTracker] track simplified: '
+      '${simplified.length} points',
+    );
   }
 
   /// Interpolate detection locations between measured GPS points.
@@ -174,10 +195,11 @@ class SurveyGpsTracker {
         if (totalMs > 0) {
           final fraction =
               det.timestamp.difference(before.timestamp).inMilliseconds /
-                  totalMs;
+              totalMs;
           final lat =
               before.latitude + (after.latitude - before.latitude) * fraction;
-          final lon = before.longitude +
+          final lon =
+              before.longitude +
               (after.longitude - before.longitude) * fraction;
           onInterpolated(i, lat, lon);
         }
@@ -197,8 +219,10 @@ class SurveyGpsTracker {
     // Reject fixes with very poor horizontal accuracy — these are typically
     // indoor or heavily obstructed readings that introduce large jitter.
     if (position.accuracy > _maxAccuracyMeters) {
-      debugPrint('[SurveyGpsTracker] skipping low-accuracy fix '
-          '(${position.accuracy.toStringAsFixed(0)} m)');
+      debugPrint(
+        '[SurveyGpsTracker] skipping low-accuracy fix '
+        '(${position.accuracy.toStringAsFixed(0)} m)',
+      );
       return;
     }
     final point = _positionToGpsPoint(position, measured: true);
@@ -232,9 +256,11 @@ class SurveyGpsTracker {
       final dtSeconds =
           point.timestamp.difference(prev.timestamp).inMilliseconds / 1000.0;
       if (dtSeconds > 0 && d / dtSeconds > _maxSpeedMps) {
-        debugPrint('[SurveyGpsTracker] skipping speed outlier '
-            '(${(d / dtSeconds).toStringAsFixed(1)} m/s over '
-            '${d.toStringAsFixed(0)} m)');
+        debugPrint(
+          '[SurveyGpsTracker] skipping speed outlier '
+          '(${(d / dtSeconds).toStringAsFixed(1)} m/s over '
+          '${d.toStringAsFixed(0)} m)',
+        );
         return;
       }
 
@@ -277,8 +303,10 @@ class SurveyGpsTracker {
     }
 
     if (maxDist > toleranceMeters) {
-      final left =
-          _douglasPeucker(points.sublist(0, maxIndex + 1), toleranceMeters);
+      final left = _douglasPeucker(
+        points.sublist(0, maxIndex + 1),
+        toleranceMeters,
+      );
       final right = _douglasPeucker(points.sublist(maxIndex), toleranceMeters);
       return [...left.sublist(0, left.length - 1), ...right];
     } else {

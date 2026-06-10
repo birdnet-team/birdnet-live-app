@@ -46,21 +46,23 @@ void main() {
         ..sort((a, b) => a.path.compareTo(b.path));
 
   final docsBadgePattern = RegExp(r'badge/latest-v[^-]+-orange');
-  final docsAltPattern = RegExp(r'alt="Latest release: v[^"]+"');
+  final docsBadgeAltPattern = RegExp(r'Latest release: v\d+\.\d+\.\d+');
   for (final file in docsHomeFiles) {
-    final changed = _replaceOptional(
-      file,
-      (original) => original
-          .replaceAllMapped(
-            docsBadgePattern,
-            (_) => 'badge/latest-v$display-orange',
-          )
-          .replaceAllMapped(
-            docsAltPattern,
-            (_) => 'alt="Latest release: v$display"',
-          ),
-    );
-    if (changed) {
+    final original = file.readAsStringSync();
+    if (!docsBadgePattern.hasMatch(original)) {
+      continue;
+    }
+    final replaced = original
+        .replaceAllMapped(
+          docsBadgePattern,
+          (_) => 'badge/latest-v$display-orange',
+        )
+        .replaceAllMapped(
+          docsBadgeAltPattern,
+          (_) => 'Latest release: v$display',
+        );
+    if (replaced != original) {
+      file.writeAsStringSync(replaced);
       updated++;
       stdout.writeln('  ${file.path} latest badge → v$display');
     }

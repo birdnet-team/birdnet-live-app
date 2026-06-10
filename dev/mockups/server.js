@@ -67,6 +67,9 @@ function renderMockups(searchParams, response) {
   if (searchParams.get('devices') === '1') {
     args.push('--device-screenshots');
   }
+  if (searchParams.get('ipad') === '1') {
+    args.push('--ipad');
+  }
 
   const child = spawn(process.execPath, args, {
     cwd: root,

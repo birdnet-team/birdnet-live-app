@@ -69,7 +69,9 @@ class GlobalSpeciesHistory extends ChangeNotifier {
         _seen = decoded.whereType<String>().toSet();
         return;
       }
-    } catch (_) {/* fall through to empty */}
+    } catch (_) {
+      /* fall through to empty */
+    }
     _seen = <String>{};
   }
 
@@ -117,10 +119,7 @@ class GlobalSpeciesHistory extends ChangeNotifier {
     // Sort for stable on-disk diffs (helps when inspecting the JSON file
     // for debugging) and to keep the encoded string deterministic.
     final list = _seen.toList()..sort();
-    await _prefs.setString(
-      PrefKeys.globalSpeciesHistory,
-      json.encode(list),
-    );
+    await _prefs.setString(PrefKeys.globalSpeciesHistory, json.encode(list));
   }
 }
 
@@ -158,30 +157,32 @@ Future<void> seedGlobalSpeciesHistory({
 /// "detected" checkmarks would only appear after a manual refresh.
 final globalSpeciesHistoryProvider =
     ChangeNotifierProvider<GlobalSpeciesHistory>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  final history = GlobalSpeciesHistory(prefs)..load();
+      final prefs = ref.watch(sharedPreferencesProvider);
+      final history = GlobalSpeciesHistory(prefs)..load();
 
-  // Fire-and-forget backfill. The repo provider is independent of prefs so
-  // this does not introduce a circular dependency. We resolve the future
-  // off the synchronous path; alerts that fire before seeding completes
-  // will see an empty history (false positives biased toward MORE alerts,
-  // which is the safe direction for a one-time migration).
-  if (!(prefs.getBool(PrefKeys.globalSpeciesHistorySeeded) ?? false)) {
-    final repo = ref.read(sessionRepositoryProvider);
-    Future(() async {
-      try {
-        final sessions = await repo.listAll();
-        await seedGlobalSpeciesHistory(
-          history: history,
-          prefs: prefs,
-          sessions: sessions,
-        );
-      } catch (_) {/* non-fatal */}
+      // Fire-and-forget backfill. The repo provider is independent of prefs so
+      // this does not introduce a circular dependency. We resolve the future
+      // off the synchronous path; alerts that fire before seeding completes
+      // will see an empty history (false positives biased toward MORE alerts,
+      // which is the safe direction for a one-time migration).
+      if (!(prefs.getBool(PrefKeys.globalSpeciesHistorySeeded) ?? false)) {
+        final repo = ref.read(sessionRepositoryProvider);
+        Future(() async {
+          try {
+            final sessions = await repo.listAll();
+            await seedGlobalSpeciesHistory(
+              history: history,
+              prefs: prefs,
+              sessions: sessions,
+            );
+          } catch (_) {
+            /* non-fatal */
+          }
+        });
+      }
+
+      return history;
     });
-  }
-
-  return history;
-});
 
 /// Set of every scientific name found in any saved session, derived live
 /// from [sessionListProvider].

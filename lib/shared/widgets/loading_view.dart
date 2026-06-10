@@ -26,12 +26,7 @@ import 'package:flutter/material.dart';
 /// LoadingView(label: l10n.loadingSpecies)
 /// ```
 class LoadingView extends StatelessWidget {
-  const LoadingView({
-    super.key,
-    this.label,
-    this.compact = false,
-    this.color,
-  });
+  const LoadingView({super.key, this.label, this.compact = false, this.color});
 
   /// Localized label shown beneath the spinner. Pass `null` to render only
   /// the spinner — only do that when the spinner appears inline next to

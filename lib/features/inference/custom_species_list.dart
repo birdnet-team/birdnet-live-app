@@ -98,9 +98,10 @@ abstract final class CustomSpeciesList {
         .whereType<File>()
         .where((f) => f.path.endsWith('.txt'))
         .map((f) {
-      final name = f.uri.pathSegments.last;
-      return name.substring(0, name.length - 4); // strip .txt
-    }).toList()
+          final name = f.uri.pathSegments.last;
+          return name.substring(0, name.length - 4); // strip .txt
+        })
+        .toList()
       ..sort();
   }
 

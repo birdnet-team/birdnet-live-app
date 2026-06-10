@@ -840,6 +840,10 @@ String _modeLabel(SessionType type) {
       return 'Survey';
     case SessionType.fileUpload:
       return 'File analysis';
+    case SessionType.batchAnalysis:
+      return 'Batch analysis';
+    case SessionType.aru:
+      return 'ARU session';
   }
 }
 

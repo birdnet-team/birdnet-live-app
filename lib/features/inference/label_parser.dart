@@ -53,19 +53,17 @@ abstract final class LabelParser {
   ///
   /// Throws [FormatException] if a required column is missing or a data line
   /// cannot be parsed.
-  static List<Species> parse(
-    String content, {
-    LabelsConfig? config,
-  }) {
+  static List<Species> parse(String content, {LabelsConfig? config}) {
     final delimiter = config?.delimiter ?? ';';
     final hasHeader = config?.hasHeader ?? true;
     final columns = config?.columns ?? _defaultColumns;
 
-    final lines = content
-        .split('\n')
-        .map((l) => l.trim())
-        .where((l) => l.isNotEmpty)
-        .toList();
+    final lines =
+        content
+            .split('\n')
+            .map((l) => l.trim())
+            .where((l) => l.isNotEmpty)
+            .toList();
 
     if (lines.isEmpty) {
       throw const FormatException('Labels file is empty');
@@ -118,14 +116,16 @@ abstract final class LabelParser {
         );
       }
 
-      species.add(Species(
-        index: indexVal,
-        id: idVal,
-        scientificName: sciName,
-        commonName: comName,
-        className: clsName,
-        order: ord,
-      ));
+      species.add(
+        Species(
+          index: indexVal,
+          id: idVal,
+          scientificName: sciName,
+          commonName: comName,
+          className: clsName,
+          order: ord,
+        ),
+      );
     }
 
     // Sort by index to guarantee alignment with model output tensor.

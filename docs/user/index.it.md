@@ -48,6 +48,14 @@ Configurazione del sondaggio, dashboard del sondaggio in tempo reale e schede ma
 
 La procedura guidata di analisi dei file in quattro passaggi, le scelte dei parametri e il modo in cui i risultati vengono spostati nella revisione della sessione.
 
+### [Analisi in batch](batch-analysis.md)
+
+Elaborare e analizzare più file audio in batch. (Prossimamente)
+
+### [Modalità ARU](aru-mode.md)
+
+Trasforma il tuo dispositivo in un'unità di registrazione autonoma. (Prossimamente)
+
 ## Riferimento
 
 ### [FAQ](faq.md)

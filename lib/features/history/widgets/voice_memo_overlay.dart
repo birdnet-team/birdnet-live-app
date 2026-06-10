@@ -322,9 +322,10 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
     }
     if (!mounted) return;
 
-    final resolvedPath = (stoppedPath != null && stoppedPath.isNotEmpty)
-        ? stoppedPath
-        : _pendingPath;
+    final resolvedPath =
+        (stoppedPath != null && stoppedPath.isNotEmpty)
+            ? stoppedPath
+            : _pendingPath;
     if (resolvedPath == null) {
       setState(() {
         _isRecording = false;

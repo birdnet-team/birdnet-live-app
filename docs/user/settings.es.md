@@ -100,6 +100,10 @@ Establece la frecuencia de visualización superior.
 
 Aplica una escala logarítmica al espectrograma para facilitar la lectura visual.
 
+### Calidad
+
+Controla con qué suavidad se escala la imagen del espectrograma. **Media** es el equilibrio predeterminado. Elija **Baja** en teléfonos antiguos si el desplazamiento se entrecorta o el dispositivo se calienta; elija **Alta** si prefiere una imagen más suave y su dispositivo tiene suficiente margen de GPU. La intuición: esto solo cambia el coste de renderizado, no el análisis de audio ni los resultados de detección.
+
 ## Grabación
 
 ### Modo

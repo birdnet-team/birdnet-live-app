@@ -133,11 +133,12 @@ class TaxonomyService {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
 
-    final tokens = trimmed
-        .toLowerCase()
-        .split(RegExp(r'\s+'))
-        .where((t) => t.isNotEmpty)
-        .toList();
+    final tokens =
+        trimmed
+            .toLowerCase()
+            .split(RegExp(r'\s+'))
+            .where((t) => t.isNotEmpty)
+            .toList();
     if (tokens.isEmpty) return const [];
 
     // Score: 0 = full string starts with query, 1 = any word starts with a

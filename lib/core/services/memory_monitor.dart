@@ -55,7 +55,8 @@ class MemorySnapshot {
   double get vmSizeMb => vmSizeKb / 1024.0;
 
   @override
-  String toString() => 'RSS=${vmRssMb.toStringAsFixed(1)}MB '
+  String toString() =>
+      'RSS=${vmRssMb.toStringAsFixed(1)}MB '
       'VmSize=${vmSizeMb.toStringAsFixed(1)}MB '
       'VmData=${(vmDataKb / 1024.0).toStringAsFixed(1)}MB';
 }
@@ -96,10 +97,7 @@ class MemoryMonitor {
     // Immediate first reading.
     _tick();
 
-    _timer = Timer.periodic(
-      Duration(seconds: intervalSeconds),
-      (_) => _tick(),
-    );
+    _timer = Timer.periodic(Duration(seconds: intervalSeconds), (_) => _tick());
   }
 
   /// Stop periodic monitoring.
@@ -125,12 +123,15 @@ class MemoryMonitor {
     debugPrint('[MemoryMonitor] ═══ SUMMARY ═══');
     debugPrint('[MemoryMonitor] Duration: ${durationSec.toStringAsFixed(1)}s');
     debugPrint(
-        '[MemoryMonitor] RSS start: ${first.vmRssMb.toStringAsFixed(1)}MB');
+      '[MemoryMonitor] RSS start: ${first.vmRssMb.toStringAsFixed(1)}MB',
+    );
     debugPrint(
-        '[MemoryMonitor] RSS end:   ${last.vmRssMb.toStringAsFixed(1)}MB');
+      '[MemoryMonitor] RSS end:   ${last.vmRssMb.toStringAsFixed(1)}MB',
+    );
     debugPrint(
-        '[MemoryMonitor] RSS growth: ${rssGrowthMb.toStringAsFixed(1)}MB '
-        '(${ratePerMin.toStringAsFixed(1)}MB/min)');
+      '[MemoryMonitor] RSS growth: ${rssGrowthMb.toStringAsFixed(1)}MB '
+      '(${ratePerMin.toStringAsFixed(1)}MB/min)',
+    );
     debugPrint('[MemoryMonitor] Snapshots: ${_history.length}');
 
     // Find peak.
@@ -139,7 +140,8 @@ class MemoryMonitor {
       if (s.vmRssKb > peakRss) peakRss = s.vmRssKb;
     }
     debugPrint(
-        '[MemoryMonitor] RSS peak:  ${(peakRss / 1024.0).toStringAsFixed(1)}MB');
+      '[MemoryMonitor] RSS peak:  ${(peakRss / 1024.0).toStringAsFixed(1)}MB',
+    );
     debugPrint('[MemoryMonitor] ═══════════════');
   }
 

@@ -434,3 +434,153 @@ select option {
     justify-content: flex-start;
   }
 }
+
+/* ── iPad Mode (2048 x 2732) ─────────────────────────────────────────────── */
+
+body.export.ipad-mode {
+  width: 2048px;
+  height: 2732px;
+}
+
+.ipad-mode .mockup {
+  width: 2048px;
+  height: 2732px;
+}
+
+.ipad-mode .mockup::before {
+  width: 1600px;
+  height: 1600px;
+  left: -400px;
+  bottom: -500px;
+}
+
+.ipad-mode .mockup-content {
+  padding: 160px 100px 96px;
+  align-items: center;
+  text-align: center;
+}
+
+.ipad-mode .copy {
+  max-width: 1700px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ipad-mode .title {
+  font-size: 130px;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.ipad-mode .subtitle {
+  margin: 40px 0 0;
+  max-width: 1550px;
+  font-size: 54px;
+  line-height: 1.35;
+  font-weight: 460;
+  text-align: center;
+}
+
+.ipad-mode .phone-stage {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%) rotate(-2.4deg);
+  transform-origin: 50% 50%;
+  width: 1550px;
+  height: 2110px;
+  bottom: -220px;
+}
+
+.ipad-mode .phone-screen {
+  left: 6.115%;
+  top: 4.493%;
+  width: 87.77%;
+  height: 90.75%;
+  border-radius: 40px;
+  background-color: #fafafa;
+}
+
+.ipad-mode .phone-screen img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ipad-mode .slide-species .phone-screen {
+  background-color: #737373;
+}
+
+.preview-card.ipad-card {
+  --preview-scale: 0.18;
+}
+
+.preview-card.ipad-card .preview-viewport {
+  width: calc(2048px * var(--preview-scale));
+  height: calc(2732px * var(--preview-scale));
+}
+
+.export.ipad-mode .studio-shell {
+  width: 2048px;
+  height: 2732px;
+}
+
+.export.ipad-mode .preview-grid {
+  width: 2048px;
+  height: 2732px;
+}
+
+.export.ipad-mode .preview-card {
+  width: 2048px;
+  height: 2732px;
+}
+
+.export.ipad-mode .preview-viewport {
+  width: 2048px;
+  height: 2732px;
+}
+
+.export.ipad-mode .preview-card .mockup {
+  width: 2048px;
+  height: 2732px;
+}
+
+/* Device export mode for iPad */
+.device-export.ipad-mode .studio-shell,
+.device-export.ipad-mode .preview-grid,
+.device-export.ipad-mode .preview-card,
+.device-export.ipad-mode .preview-viewport,
+.device-export.ipad-mode .preview-card .mockup {
+  width: 2048px;
+  height: 2732px;
+}
+
+.device-export.ipad-mode .phone-stage {
+  left: 0;
+  right: auto;
+  top: 0;
+  bottom: auto;
+  width: 2048px;
+  height: 2732px;
+  filter: none;
+  transform: none;
+}
+
+.device-export.ipad-mode .phone-screen {
+  left: 6.115%;
+  top: 4.493%;
+  width: 87.77%;
+  height: 90.75%;
+  border-radius: 56px;
+  background-color: #fafafa;
+}
+
+.device-export.ipad-mode .phone-screen img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.device-export.ipad-mode .slide-species .phone-screen {
+  background-color: #737373;
+}

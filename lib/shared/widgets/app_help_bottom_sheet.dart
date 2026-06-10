@@ -10,10 +10,7 @@
 import 'package:flutter/material.dart';
 
 class AppHelpSection {
-  const AppHelpSection({
-    required this.icon,
-    required this.body,
-  });
+  const AppHelpSection({required this.icon, required this.body});
 
   final IconData icon;
   final String body;
@@ -97,10 +94,7 @@ class AppHelpBottomSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-              if (footer != null) ...[
-                const SizedBox(height: 4),
-                footer!,
-              ],
+              if (footer != null) ...[const SizedBox(height: 4), footer!],
             ],
           ),
         );

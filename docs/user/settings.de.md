@@ -100,6 +100,10 @@ Legt die obere Anzeigefrequenz fest.
 
 Wendet eine logarithmische Skalierung auf das Spektrogramm an, um das visuelle Ablesen zu erleichtern.
 
+### Qualität
+
+Steuert, wie glatt das Spektrogrammbild skaliert wird. **Mittel** ist die ausgewogene Standardeinstellung. Wählen Sie **Niedrig** auf älteren Geräten, wenn das Scrollen ruckelt oder das Gerät warm wird; wählen Sie **Hoch**, wenn Sie eine weichere Darstellung bevorzugen und Ihr Gerät genug GPU-Reserve hat. Die Intuition: Diese Einstellung verändert nur die Darstellungskosten, nicht die Audioanalyse oder die Detektionsergebnisse.
+
 ## Aufnahme
 
 ### Modus

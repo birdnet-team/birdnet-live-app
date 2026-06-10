@@ -162,6 +162,11 @@ abstract final class AppTheme {
             : AppSemanticColors.harmonized(colorScheme),
       ],
 
+      // ── Bottom Sheets ──
+      bottomSheetTheme: const BottomSheetThemeData(
+        constraints: BoxConstraints(maxWidth: 640),
+      ),
+
       // ── App Bar ──
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,

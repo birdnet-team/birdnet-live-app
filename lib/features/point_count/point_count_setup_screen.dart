@@ -84,6 +84,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   late int _windowDuration;
   late double _inferenceRate;
   late int _confidenceThreshold;
+  late double _sensitivity;
   late String _speciesFilterMode;
 
   @override
@@ -96,6 +97,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     _windowDuration = ref.read(windowDurationProvider);
     _inferenceRate = ref.read(inferenceRateProvider);
     _confidenceThreshold = ref.read(confidenceThresholdProvider);
+    _sensitivity = ref.read(sensitivityProvider);
     _speciesFilterMode = ref.read(speciesFilterModeProvider);
     // Start fetching GPS location immediately. Reuse a recent fix if one
     // is still warm — closing and reopening the wizard within a couple of
@@ -182,7 +184,8 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   }
 
   void _scheduleGpsRetryOrStop() {
-    if (!mounted || _locationChoice != _LocationChoice.gps ||
+    if (!mounted ||
+        _locationChoice != _LocationChoice.gps ||
         _gpsAttempts >= _maxGpsAttempts) {
       if (mounted) setState(() => _gpsFetching = false);
       return;
@@ -247,6 +250,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
               inferenceRateOverride: _inferenceRate,
               confidenceThresholdOverride: _confidenceThreshold,
               speciesFilterModeOverride: _speciesFilterMode,
+              sensitivityOverride: _sensitivity,
             ),
       ),
     );
@@ -347,14 +351,14 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
           ),
           1 => _ParametersStep(
             key: const ValueKey(1),
-            windowDuration: _windowDuration,
             inferenceRate: _inferenceRate,
             confidenceThreshold: _confidenceThreshold,
+            sensitivity: _sensitivity,
             speciesFilterMode: _speciesFilterMode,
-            onWindowDurationChanged: (v) => setState(() => _windowDuration = v),
             onInferenceRateChanged: (v) => setState(() => _inferenceRate = v),
             onConfidenceChanged:
                 (v) => setState(() => _confidenceThreshold = v),
+            onSensitivityChanged: (v) => setState(() => _sensitivity = v),
             onFilterModeChanged: (v) => setState(() => _speciesFilterMode = v),
           ),
           2 => _TipsStep(key: const ValueKey(2)),
@@ -696,23 +700,23 @@ class _DurationStep extends ConsumerWidget {
 class _ParametersStep extends StatelessWidget {
   const _ParametersStep({
     super.key,
-    required this.windowDuration,
     required this.inferenceRate,
     required this.confidenceThreshold,
+    required this.sensitivity,
     required this.speciesFilterMode,
-    required this.onWindowDurationChanged,
     required this.onInferenceRateChanged,
     required this.onConfidenceChanged,
+    required this.onSensitivityChanged,
     required this.onFilterModeChanged,
   });
 
-  final int windowDuration;
   final double inferenceRate;
   final int confidenceThreshold;
+  final double sensitivity;
   final String speciesFilterMode;
-  final ValueChanged<int> onWindowDurationChanged;
   final ValueChanged<double> onInferenceRateChanged;
   final ValueChanged<int> onConfidenceChanged;
+  final ValueChanged<double> onSensitivityChanged;
   final ValueChanged<String> onFilterModeChanged;
 
   @override
@@ -738,25 +742,6 @@ class _ParametersStep extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // ── Window duration ──────────────────────────────────
-          _ParamTile(
-            title: l10n.settingsWindowDuration,
-            value: '${windowDuration}s',
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 3, label: Text('3s')),
-                ButtonSegment(value: 5, label: Text('5s')),
-                ButtonSegment(value: 10, label: Text('10s')),
-              ],
-              selected: {windowDuration},
-              onSelectionChanged: (s) {
-                HapticFeedback.selectionClick();
-                onWindowDurationChanged(s.first);
-              },
-              showSelectedIcon: false,
-            ),
-          ),
-
           // ── Inference rate ───────────────────────────────────
           _ParamTile(
             title: l10n.settingsInferenceRate,
@@ -780,6 +765,19 @@ class _ParametersStep extends StatelessWidget {
               max: 99,
               divisions: 98,
               onChanged: (v) => onConfidenceChanged(v.round()),
+            ),
+          ),
+
+          // ── Sensitivity ──────────────────────────────────────
+          _ParamTile(
+            title: l10n.settingsSensitivity,
+            value: sensitivity.toStringAsFixed(1),
+            child: Slider(
+              value: sensitivity,
+              min: 0.5,
+              max: 1.5,
+              divisions: 10,
+              onChanged: onSensitivityChanged,
             ),
           ),
 
@@ -934,7 +932,11 @@ class _ReadyStep extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(AppIcons.timerRounded, size: 64, color: theme.colorScheme.primary),
+          Icon(
+            AppIcons.timerRounded,
+            size: 64,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.pointCountReady,

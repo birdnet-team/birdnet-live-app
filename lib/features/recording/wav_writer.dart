@@ -219,10 +219,7 @@ class WavWriter implements AudioFileWriter {
   // ---------------------------------------------------------------------------
 
   /// Write a 44-byte WAV header to [file] with the given [dataSize].
-  static Future<void> _writeHeader(
-    RandomAccessFile file,
-    int dataSize,
-  ) async {
+  static Future<void> _writeHeader(RandomAccessFile file, int dataSize) async {
     final header = Uint8List(44);
     final view = ByteData.view(header.buffer);
     const sampleRate = 32000;

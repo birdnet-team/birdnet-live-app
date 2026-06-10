@@ -110,6 +110,10 @@ Sets the upper display frequency.
 
 Applies logarithmic scaling to the spectrogram for easier visual reading.
 
+### Quality
+
+Controls how smoothly the spectrogram image is scaled. **Medium** is the default balance. Choose **Low** on older phones when scrolling stutters or the device gets hot; choose **High** when you prefer smoother visuals and your device has enough GPU headroom. The intuition: this changes rendering cost only, not the audio analysis or detection results.
+
 ## Announcements
 
 This section controls whether BirdNET Live **reads detections aloud through your headphones or the phone speaker** while a session is recording. The whole feature is **off by default** because it changes the acoustic environment around the microphone — turning it on is a deliberate trade-off. There is no setup wizard: the verbosity × frequency pickers below *are* the entire setup, so you can tap a different preset at any time and immediately hear the difference. The intuition: in long surveys you can't keep glancing at the screen; a discreet voice in your ear means you can keep your eyes on the habitat and still know what was just heard.
@@ -154,7 +158,9 @@ When **Detections only** is active, the app shows a single **Clip context** slid
 
 ### Format
 
-Choose **WAV** or **FLAC**.
+Choose **WAV** or **FLAC**. WAV is larger but widely compatible and quick to inspect. FLAC keeps the same lossless audio quality while using less storage, which is usually better for long sessions.
+
+This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps an app-managed copy of the imported file in its original format, so MP3, AAC, WAV, and FLAC uploads stay reviewable without an extra conversion step.
 
 ### Auto-start recording (Live mode only)
 

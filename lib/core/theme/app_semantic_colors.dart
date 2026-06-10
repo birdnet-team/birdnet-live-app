@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 // =============================================================================
 //
 // Holds semantic tokens that are not part of Flutter's built-in ColorScheme,
-// such as success-state greens and the four distinct session-mode accent
+// such as success-state greens and distinct session-mode accent
 // colors. The default BirdNET theme uses the app's existing brand hues,
 // while dynamic-color mode harmonizes the same roles against the active
 // Android palette so widgets can stay theme-driven.
@@ -23,6 +23,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     required this.sessionPointCount,
     required this.sessionSurvey,
     required this.sessionFileAnalysis,
+    required this.sessionBatchAnalysis,
+    required this.sessionAru,
   });
 
   final Color success;
@@ -33,6 +35,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color sessionPointCount;
   final Color sessionSurvey;
   final Color sessionFileAnalysis;
+  final Color sessionBatchAnalysis;
+  final Color sessionAru;
 
   static const Color _successBase = Color(0xFF43A047);
   static const Color _successContainerLight = Color(0xFFD7F0DA);
@@ -41,6 +45,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const Color _pointCountBase = Color(0xFF1E88E5);
   static const Color _surveyBase = Color(0xFF43A047);
   static const Color _fileAnalysisBase = Color(0xFFFB8C00);
+  static const Color _batchAnalysisBase = Color(0xFFD4AF37);
+  static const Color _aruBase = Color(0xFF8E24AA);
 
   static const AppSemanticColors light = AppSemanticColors(
     success: _successBase,
@@ -51,6 +57,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     sessionPointCount: _pointCountBase,
     sessionSurvey: _surveyBase,
     sessionFileAnalysis: _fileAnalysisBase,
+    sessionBatchAnalysis: _batchAnalysisBase,
+    sessionAru: _aruBase,
   );
 
   static AppSemanticColors dark(ColorScheme colorScheme) {
@@ -66,6 +74,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       sessionPointCount: _pointCountBase,
       sessionSurvey: _surveyBase,
       sessionFileAnalysis: _fileAnalysisBase,
+      sessionBatchAnalysis: _batchAnalysisBase,
+      sessionAru: _aruBase,
     );
   }
 
@@ -97,6 +107,10 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       sessionPointCount: _pointCountBase.harmonizeWith(colorScheme.primary),
       sessionSurvey: _surveyBase.harmonizeWith(colorScheme.primary),
       sessionFileAnalysis: _fileAnalysisBase.harmonizeWith(colorScheme.primary),
+      sessionBatchAnalysis: _batchAnalysisBase.harmonizeWith(
+        colorScheme.primary,
+      ),
+      sessionAru: _aruBase.harmonizeWith(colorScheme.primary),
     );
   }
 
@@ -131,6 +145,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     Color? sessionPointCount,
     Color? sessionSurvey,
     Color? sessionFileAnalysis,
+    Color? sessionBatchAnalysis,
+    Color? sessionAru,
   }) {
     return AppSemanticColors(
       success: success ?? this.success,
@@ -141,6 +157,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       sessionPointCount: sessionPointCount ?? this.sessionPointCount,
       sessionSurvey: sessionSurvey ?? this.sessionSurvey,
       sessionFileAnalysis: sessionFileAnalysis ?? this.sessionFileAnalysis,
+      sessionBatchAnalysis: sessionBatchAnalysis ?? this.sessionBatchAnalysis,
+      sessionAru: sessionAru ?? this.sessionAru,
     );
   }
 
@@ -165,6 +183,10 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       sessionFileAnalysis:
           Color.lerp(sessionFileAnalysis, other.sessionFileAnalysis, t) ??
           sessionFileAnalysis,
+      sessionBatchAnalysis:
+          Color.lerp(sessionBatchAnalysis, other.sessionBatchAnalysis, t) ??
+          sessionBatchAnalysis,
+      sessionAru: Color.lerp(sessionAru, other.sessionAru, t) ?? sessionAru,
     );
   }
 }

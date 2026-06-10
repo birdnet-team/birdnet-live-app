@@ -417,17 +417,33 @@
   "@liveModeDescription": {
     "description": "Description for Live mode on the main menu"
   },
-  "surveyModeDescription": "Walk a transect and map species along the way",
+  "surveyModeDescription": "Walk and record in the background",
   "@surveyModeDescription": {
     "description": "Description for Survey mode on the main menu"
   },
-  "pointCountModeDescription": "Record species at a fixed point for a set duration",
+  "pointCountModeDescription": "Record at a fixed point for a set duration",
   "@pointCountModeDescription": {
     "description": "Description for Point Count mode on the main menu"
   },
   "fileAnalysisModeDescription": "Analyze pre-recorded audio files offline",
   "@fileAnalysisModeDescription": {
     "description": "Description for File Analysis mode on the main menu"
+  },
+  "batchAnalysisMode": "Batch Analysis",
+  "@batchAnalysisMode": {
+    "description": "Label for Batch Analysis mode on the main menu"
+  },
+  "batchAnalysisModeDescription": "Analyze multiple files in bulk",
+  "@batchAnalysisModeDescription": {
+    "description": "Description for Batch Analysis mode on the main menu"
+  },
+  "aruMode": "ARU Mode",
+  "@aruMode": {
+    "description": "Label for ARU mode on the main menu"
+  },
+  "aruModeDescription": "Turn your device into a recording unit",
+  "@aruModeDescription": {
+    "description": "Description for ARU mode on the main menu"
   },
   "comingSoon": "Coming Soon",
   "@comingSoon": {
@@ -1148,6 +1164,14 @@
   "@sessionTypeSurvey": {
     "description": "Title for a background survey session"
   },
+  "sessionTypeBatchAnalysis": "Batch Analysis",
+  "@sessionTypeBatchAnalysis": {
+    "description": "Title for a batch analysis session"
+  },
+  "sessionTypeAru": "ARU Session",
+  "@sessionTypeAru": {
+    "description": "Title for an autonomous recording unit session"
+  },
   "sessionUndo": "Undo",
   "@sessionUndo": {
     "description": "Tooltip for the undo button in session review"
@@ -1176,6 +1200,16 @@
     "description": "AppBar title for a numbered survey session review",
     "placeholders": { "number": { "type": "int" } }
   },
+  "sessionTitleBatchAnalysisNum": "Batch Analysis #{number}",
+  "@sessionTitleBatchAnalysisNum": {
+    "description": "AppBar title for a numbered batch analysis session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionTitleAruNum": "ARU Session #{number}",
+  "@sessionTitleAruNum": {
+    "description": "AppBar title for a numbered ARU session review",
+    "placeholders": { "number": { "type": "int" } }
+  },
   "sessionCardLiveNum": "Live Session #{number}",
   "@sessionCardLiveNum": {
     "description": "Card title for a numbered live session",
@@ -1194,6 +1228,16 @@
   "sessionCardSurveyNum": "Survey #{number}",
   "@sessionCardSurveyNum": {
     "description": "Card title for a numbered survey session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardBatchAnalysisNum": "Batch Analysis #{number}",
+  "@sessionCardBatchAnalysisNum": {
+    "description": "Card title for a numbered batch analysis session",
+    "placeholders": { "number": { "type": "int" } }
+  },
+  "sessionCardAruNum": "ARU Session #{number}",
+  "@sessionCardAruNum": {
+    "description": "Card title for a numbered ARU session",
     "placeholders": { "number": { "type": "int" } }
   },
   "mapTileConsentTitle": "Map Tiles",
@@ -2513,6 +2557,22 @@
   "@helpFileAnalysisBody": {
     "description": "Help body text for File Analysis mode"
   },
+  "helpBatchAnalysisTitle": "Batch Analysis",
+  "@helpBatchAnalysisTitle": {
+    "description": "Section title for Batch Analysis help"
+  },
+  "helpBatchAnalysisBody": "Batch Analysis is designed for many files at once. Select multiple recordings, confirm shared parameters, and run one queue that processes each file and stores results for later review.",
+  "@helpBatchAnalysisBody": {
+    "description": "Help body text for Batch Analysis mode"
+  },
+  "helpAruTitle": "ARU Mode",
+  "@helpAruTitle": {
+    "description": "Section title for ARU help"
+  },
+  "helpAruBody": "ARU Mode turns your device into a passive recording unit. Configure deployment details, start recording, and let BirdNET Live capture audio in the background for later analysis and review.",
+  "@helpAruBody": {
+    "description": "Help body text for ARU mode"
+  },
   "helpExploreTitle": "Explore",
   "@helpExploreTitle": {
     "description": "Section title for Explore help"
@@ -3410,5 +3470,13 @@
   "linkOpenFailedCopied": "Couldn't open link. URL copied to clipboard.",
   "@linkOpenFailedCopied": {
     "description": "Snackbar shown when launching an external https/mailto URL fails (e.g. no browser installed). The URL is copied to the clipboard so the user can paste it elsewhere."
+  },
+  "permissionRequestIOS": "Continue",
+  "@permissionRequestIOS": {
+    "description": "Request permission button for iOS compliant with Guideline 5.1.1(iv)"
+  },
+  "openInAppleMaps": "Open in Apple Maps",
+  "@openInAppleMaps": {
+    "description": "Action to open the location in the external Apple Maps app"
   }
 }

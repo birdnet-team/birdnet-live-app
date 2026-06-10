@@ -85,10 +85,7 @@ class ErrorView extends StatelessWidget {
             ],
             if (hasRetry) ...[
               const SizedBox(height: 24),
-              FilledButton.tonal(
-                onPressed: onRetry,
-                child: Text(retryLabel!),
-              ),
+              FilledButton.tonal(onPressed: onRetry, child: Text(retryLabel!)),
             ],
           ],
         ),
@@ -96,4 +93,3 @@ class ErrorView extends StatelessWidget {
     );
   }
 }
-

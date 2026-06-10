@@ -681,6 +681,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       SessionType.fileUpload => MaterialPageRoute<void>(
         builder: (_) => const FileAnalysisScreen(),
       ),
+      SessionType.batchAnalysis ||
+      SessionType.aru => throw UnsupportedError('Coming soon'),
     };
     navigator.pushReplacement(route);
   }
@@ -1686,6 +1688,10 @@ String _sessionTypeLabel(AppLocalizations l10n, SessionType type) {
       return l10n.sessionTypePointCount;
     case SessionType.survey:
       return l10n.sessionTypeSurvey;
+    case SessionType.batchAnalysis:
+      return l10n.sessionTypeBatchAnalysis;
+    case SessionType.aru:
+      return l10n.sessionTypeAru;
   }
 }
 
@@ -1722,6 +1728,10 @@ String _sessionCardTitle(AppLocalizations l10n, LiveSession session) {
       return l10n.sessionCardPointCountNum(n);
     case SessionType.survey:
       return l10n.sessionCardSurveyNum(n);
+    case SessionType.batchAnalysis:
+      return l10n.sessionCardBatchAnalysisNum(n);
+    case SessionType.aru:
+      return l10n.sessionCardAruNum(n);
   }
 }
 

@@ -135,9 +135,10 @@ class RecordingService {
     if (mode == RecordingMode.full) {
       final ext = format == 'flac' ? 'flac' : 'wav';
       final filePath = '$_sessionDir/full.$ext';
-      _writer = format == 'flac'
-          ? FlacEncoder(filePath: filePath, sampleRate: sampleRate)
-          : WavWriter(filePath: filePath, sampleRate: sampleRate);
+      _writer =
+          format == 'flac'
+              ? FlacEncoder(filePath: filePath, sampleRate: sampleRate)
+              : WavWriter(filePath: filePath, sampleRate: sampleRate);
       await _writer!.open();
       _lastFlushPosition = ringBuffer.totalWritten;
 
@@ -161,9 +162,7 @@ class RecordingService {
   /// is a clip of `[pre-context | analyzed window | post-context]`.
   ///
   /// Returns the file path of the saved clip, or `null` if not recording.
-  Future<String?> saveDetectionClip({
-    required String clipName,
-  }) async {
+  Future<String?> saveDetectionClip({required String clipName}) async {
     if (!_isRecording || _sessionDir == null) return null;
 
     if (clipContextSeconds > 0) {

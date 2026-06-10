@@ -54,9 +54,9 @@ class SessionRepository {
   Future<void> save(LiveSession session) async {
     final basePath = await _getBasePath();
     final file = File('$basePath/${_sanitiseId(session.id)}.json');
-    final jsonString = const JsonEncoder.withIndent('  ').convert(
-      session.toJson(),
-    );
+    final jsonString = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(session.toJson());
     await file.writeAsString(jsonString, flush: true);
   }
 
@@ -112,9 +112,7 @@ class SessionRepository {
     // Derive recordings dir as a sibling of the sessions dir.
     final sessionsDir = Directory(basePath);
     final parentDir = sessionsDir.parent.path;
-    final recordingsDir = Directory(
-      '$parentDir/recordings/${_sanitiseId(id)}',
-    );
+    final recordingsDir = Directory('$parentDir/recordings/${_sanitiseId(id)}');
     if (await recordingsDir.exists()) {
       await recordingsDir.delete(recursive: true);
     }
@@ -164,12 +162,10 @@ class SessionRepository {
 
       // E.g., "sessionNumber": 42
       final numMatch = RegExp(r'"sessionNumber"\s*:\s*(\d+)').firstMatch(text);
-      final sessionNum = numMatch != null ? int.tryParse(numMatch.group(1)!) : null;
+      final sessionNum =
+          numMatch != null ? int.tryParse(numMatch.group(1)!) : null;
 
-      return {
-        'type': typeStr,
-        'sessionNumber': sessionNum,
-      };
+      return {'type': typeStr, 'sessionNumber': sessionNum};
     } catch (_) {
       return null;
     } finally {

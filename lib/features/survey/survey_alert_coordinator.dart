@@ -27,8 +27,8 @@ import 'survey_alert_engine.dart';
 
 /// Surfaced to the UI when an alert is delivered (so the live screen can
 /// also show an in-app toast). `null` for queued / suppressed alerts.
-typedef AlertDeliveredCallback = void Function(
-    AlertCandidate? one, SummaryAlert? summary);
+typedef AlertDeliveredCallback =
+    void Function(AlertCandidate? one, SummaryAlert? summary);
 
 class SurveyAlertCoordinator {
   SurveyAlertCoordinator({
@@ -165,11 +165,12 @@ class SurveyAlertCoordinator {
   }
 
   Future<void> _deliverSummary(SummaryAlert summary) async {
-    final localized = nameLocalizer == null
-        ? summary
-        : SummaryAlert(
-            alerts: summary.alerts.map(_localize).toList(growable: false),
-          );
+    final localized =
+        nameLocalizer == null
+            ? summary
+            : SummaryAlert(
+              alerts: summary.alerts.map(_localize).toList(growable: false),
+            );
     try {
       await notifier.notifySummary(localized, strings: notifierStrings);
     } catch (e) {

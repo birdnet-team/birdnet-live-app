@@ -145,6 +145,22 @@ class AudioDecoder {
     }
   }
 
+  /// Check whether the file is a WAV file based on RIFF magic bytes.
+  static Future<bool> isWav(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final header = await raf.read(4);
+      if (header.length < 4) return false;
+      return header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46;
+    } finally {
+      await raf.close();
+    }
+  }
+
   /// Auto-detect format (WAV or FLAC) and decode.
   ///
   /// For compressed formats (MP3, OGG, AAC, etc.) this will throw a

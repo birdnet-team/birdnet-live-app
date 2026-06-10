@@ -15,7 +15,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -1651,18 +1650,11 @@ class _CreateWatchlistScreenState
       final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: const ['txt', 'csv'],
-        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
       final file = result.files.single;
-      String content;
-      if (file.bytes != null) {
-        content = utf8.decode(file.bytes!, allowMalformed: true);
-      } else if (file.path != null) {
-        content = await File(file.path!).readAsString();
-      } else {
-        return;
-      }
+      final bytes = await file.readAsBytes();
+      final content = utf8.decode(bytes, allowMalformed: true);
       final names = CustomSpeciesList.parse(content);
       if (names.isEmpty) {
         setState(() => _error = l10n.surveyAlertCreateListImportError);

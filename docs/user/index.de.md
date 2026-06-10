@@ -48,6 +48,14 @@ Vermessungseinrichtung, das Live-Vermessungs-Dashboard sowie die Registerkarten 
 
 Der vierstufige Dateianalyse-Assistent, Parameterauswahl und die Art und Weise, wie Ergebnisse in die Sitzungsüberprüfung übertragen werden.
 
+### [Batch-Analyse](batch-analysis.md)
+
+Mehrere Audiodateien im Batch-Modus analysieren. (Demnächst)
+
+### [ARU-Modus](aru-mode.md)
+
+Nutzen Sie Ihr Gerät als autonome Aufzeichnungseinheit. (Demnächst)
+
 ## Referenz
 
 ### [FAQ](faq.md)

@@ -34,7 +34,12 @@ import UIKit
       binaryMessenger: controller.binaryMessenger
     )
     audioChannel.setMethodCallHandler { (call, result) in
-      guard call.method == "decode" || call.method == "inspect" else {
+      if call.method == "cancelDecode" {
+        NativeAudioDecoder.isCancelled = true
+        result(nil)
+        return
+      }
+      guard call.method == "decode" || call.method == "inspect" || call.method == "decodeRange" else {
         result(FlutterMethodNotImplemented)
         return
       }
@@ -45,9 +50,27 @@ import UIKit
       }
       DispatchQueue.global(qos: .userInitiated).async {
         do {
-          let decoded = call.method == "inspect"
-            ? try NativeAudioDecoder.inspect(path: path)
-            : try NativeAudioDecoder.decode(path: path)
+          let decoded: [String: Any]
+          if call.method == "inspect" {
+            decoded = try NativeAudioDecoder.inspect(path: path)
+          } else if call.method == "decodeRange" {
+            guard let startSample = args["startSample"] as? Int,
+                  let count = args["count"] as? Int else {
+              DispatchQueue.main.async {
+                result(FlutterError(code: "INVALID_ARG", message: "Missing 'startSample' or 'count' argument", details: nil))
+              }
+              return
+            }
+            decoded = try NativeAudioDecoder.decodeRange(path: path, startSample: startSample, count: count)
+          } else {
+            guard let tempPcmPath = args["tempPcmPath"] as? String else {
+              DispatchQueue.main.async {
+                result(FlutterError(code: "INVALID_ARG", message: "Missing 'tempPcmPath' argument", details: nil))
+              }
+              return
+            }
+            decoded = try NativeAudioDecoder.decode(path: path, tempPcmPath: tempPcmPath)
+          }
           DispatchQueue.main.async {
             result(decoded)
           }

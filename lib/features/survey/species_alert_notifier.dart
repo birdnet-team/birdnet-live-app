@@ -71,9 +71,8 @@ class SpeciesAlertStrings {
 /// itself is a process-wide singleton so calling [init] multiple times is
 /// safe and only the latest channel/sound configuration takes effect.
 class SpeciesAlertNotifier {
-  SpeciesAlertNotifier({
-    FlutterLocalNotificationsPlugin? plugin,
-  }) : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  SpeciesAlertNotifier({FlutterLocalNotificationsPlugin? plugin})
+    : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
   static const String _channelId = 'birdnet_species_alert';
@@ -121,8 +120,11 @@ class SpeciesAlertNotifier {
     }
 
     if (Platform.isAndroid) {
-      final android = _plugin.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android =
+          _plugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >();
       if (android != null) {
         // Importance HIGH gives heads-up presentation. The system enforces
         // user overrides — if they've muted the channel manually we can't
@@ -150,9 +152,7 @@ class SpeciesAlertNotifier {
   /// notification permission for the app, `false` when denied or when the
   /// platform does not require a runtime prompt. Safe to call before
   /// [init] — initializes the plugin lazily.
-  Future<bool> requestPermission({
-    SpeciesAlertStrings? strings,
-  }) async {
+  Future<bool> requestPermission({SpeciesAlertStrings? strings}) async {
     if (!Platform.isAndroid) return true;
     if (!_initialized && strings != null) {
       await init(strings: strings, sound: _sound, vibrate: _vibrate);
@@ -179,8 +179,11 @@ class SpeciesAlertNotifier {
         return false;
       }
     }
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android =
+        _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
     if (android == null) return false;
     try {
       final granted = await android.requestNotificationsPermission();
@@ -199,10 +202,7 @@ class SpeciesAlertNotifier {
   }) async {
     if (!_initialized) return;
     final body = _bodyFor(alert, strings);
-    await _show(
-      title: title ?? alert.commonName,
-      body: body,
-    );
+    await _show(title: title ?? alert.commonName, body: body);
   }
 
   /// Fire a summary alert covering multiple coalesced species.
@@ -212,8 +212,10 @@ class SpeciesAlertNotifier {
   }) async {
     if (!_initialized) return;
     final names = summary.alerts.map((a) => a.commonName).join(', ');
-    final title =
-        strings.summaryTitle.replaceAll('{count}', summary.count.toString());
+    final title = strings.summaryTitle.replaceAll(
+      '{count}',
+      summary.count.toString(),
+    );
     final body = strings.summaryBody
         .replaceAll('{count}', summary.count.toString())
         .replaceAll('{names}', names);

@@ -13,9 +13,11 @@
 // is drawn locally.
 // =============================================================================
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
+import '../../shared/services/link_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -96,6 +98,17 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.locationName ?? l10n.recordingLocation),
+        actions: [
+          if (Platform.isIOS)
+            IconButton(
+              icon: const Icon(AppIcons.openInNew),
+              tooltip: l10n.openInAppleMaps,
+              onPressed: () => openExternalUrl(
+                context,
+                'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
+              ),
+            ),
+        ],
       ),
       body:
           _hasConsent == true

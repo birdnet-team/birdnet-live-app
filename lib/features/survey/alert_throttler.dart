@@ -188,7 +188,8 @@ class AlertThrottler {
     if (_queue.isEmpty) return null;
 
     final t = now();
-    final shouldFlush = force ||
+    final shouldFlush =
+        force ||
         _queue.length >= maxQueueSize ||
         (_oldestQueuedAt != null &&
             t.difference(_oldestQueuedAt!) >= maxQueueAge) ||
@@ -215,7 +216,8 @@ class AlertThrottler {
   }
 
   bool _canDeliverNow(DateTime t) {
-    final intervalOk = _lastDeliveredAt == null ||
+    final intervalOk =
+        _lastDeliveredAt == null ||
         t.difference(_lastDeliveredAt!) >= minInterval;
     _evictOldDeliveries(t);
     final rateOk =

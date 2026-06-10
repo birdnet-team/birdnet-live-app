@@ -100,6 +100,10 @@ Imposta la frequenza di visualizzazione superiore.
 
 Applica la scala logaritmica allo spettrogramma per facilitare la lettura visiva.
 
+### Qualità
+
+Controlla quanto uniformemente viene scalata l'immagine dello spettrogramma. **Media** è il bilanciamento predefinito. Scegli **Bassa** sui telefoni più vecchi se lo scorrimento va a scatti o il dispositivo si scalda; scegli **Alta** se preferisci una resa più fluida e il dispositivo ha sufficiente margine GPU. L'intuizione: cambia solo il costo di rendering, non l'analisi audio né i risultati delle rilevazioni.
+
 ## Registrazione
 
 ### Modalità

@@ -104,6 +104,9 @@ class LiveController {
   LiveState _state = LiveState.idle;
   String? _errorMessage;
 
+  /// When the current recording segment started.
+  DateTime? _segmentStart;
+
   /// All detections from the current session (newest first for history).
   final List<DetectionRecord> _sessionDetections = [];
 
@@ -118,6 +121,10 @@ class LiveController {
 
   /// Whether an inference cycle is currently in progress.
   bool _inferring = false;
+
+  /// Monotonic generation used to discard stale inference results after
+  /// session lifecycle transitions.
+  int _sessionGeneration = 0;
 
   /// Inference cycle counter for periodic memory logging.
   int _inferenceCycleCount = 0;
@@ -348,6 +355,7 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _sessionGeneration++;
     _confidenceThreshold = confidenceThreshold;
     _sensitivity = sensitivity;
     _isolate.setMaxPoolWindows(poolingWindows);
@@ -355,6 +363,8 @@ class LiveController {
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
     ringBuffer.clear();
+
+    _notifyListeners();
 
     // Start memory monitoring for this session (debug builds only).
     if (kDebugMode) {
@@ -388,6 +398,9 @@ class LiveController {
     onSessionStarted?.call();
     _notifyListeners();
 
+    _session!.startSegment();
+    _segmentStart = DateTime.now();
+
     debugPrint(
       '[LiveController] session started '
       '(window=${windowDuration}s, rate=${inferenceRate}Hz, '
@@ -415,6 +428,9 @@ class LiveController {
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
 
+    _sessionGeneration++;
+    _closeRecordingSegment();
+
     _state = LiveState.paused;
     _notifyListeners();
 
@@ -430,8 +446,12 @@ class LiveController {
 
     final settings = _session!.settings;
 
+    _sessionGeneration++;
     _state = LiveState.active;
     _notifyListeners();
+
+    _session?.startSegment();
+    _segmentStart = DateTime.now();
 
     debugPrint('[LiveController] session resumed');
 
@@ -453,6 +473,9 @@ class LiveController {
     // If still active, stop timer first.
     _inferenceTimer?.cancel();
     _inferenceTimer = null;
+
+    _sessionGeneration++;
+    _closeRecordingSegment();
 
     // Stop recording.
     final recordingPath = await recordingService.stopRecording();
@@ -584,6 +607,7 @@ class LiveController {
 
     _inferring = true;
     _inferenceCycleCount++;
+    final generation = _sessionGeneration;
 
     // Snapshot the live-tunable threshold for this cycle so a mid-cycle
     // setter call can't half-apply.
@@ -607,6 +631,10 @@ class LiveController {
         sensitivity: sensitivity,
         confidenceThreshold: confidenceThreshold / 100.0,
       );
+
+      if (generation != _sessionGeneration) {
+        return;
+      }
 
       debugPrint(
         '[LiveController] inference done — '
@@ -777,6 +805,29 @@ class LiveController {
     } finally {
       _inferring = false;
     }
+  }
+
+  void _closeRecordingSegment() {
+    final start = _segmentStart;
+    final session = _session;
+    if (start == null || session == null) return;
+    final secs = DateTime.now().difference(start).inSeconds;
+    if (secs > 0) session.accumulateRecordedSeconds(secs);
+    session.closeSegment();
+    _segmentStart = null;
+  }
+
+  /// Clear the session state to prepare for a fresh run.
+  void clearSessionState() {
+    _sessionGeneration++;
+    _session = null;
+    _segmentStart = null;
+    _errorMessage = null;
+    _sessionDetections.clear();
+    _latestDetections = const [];
+    _currentLiveDetections = const [];
+    _activeCardSpecies.clear();
+    _notifyListeners();
   }
 
   /// Notify the provider layer of state changes.

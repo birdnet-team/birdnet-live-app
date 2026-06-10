@@ -100,6 +100,10 @@ Nastavuje horní frekvenci zobrazení.
 
 Aplikuje logaritmické škálování na spektrogram pro snadnější vizuální čtení.
 
+### Kvalita
+
+Určuje, jak plynule se obraz spektrogramu škáluje. **Střední** je výchozí vyvážená volba. Na starších telefonech zvolte **Nízká**, pokud se posouvání zasekává nebo se zařízení zahřívá; zvolte **Vysoká**, pokud chcete hladší zobrazení a zařízení má dostatečnou rezervu GPU. Intuice: mění se pouze náročnost vykreslování, nikoli analýza zvuku ani výsledky detekce.
+
 ## Nahrávání
 
 ### Režim

@@ -176,28 +176,38 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   Future<void> _pickFile() async {
     final l10n = AppLocalizations.of(context)!;
-    final result = await FilePicker.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: [
-        'wav', 'wave', 'flac', // Lossless (pure-Dart decoder)
-        'mp3', 'ogg', 'oga', 'opus', // Compressed (native decoder)
-        'm4a', 'aac', 'mp4', // AAC containers
-        'wma', 'amr', // Other
-      ],
-      allowMultiple: false,
-    );
-
-    if (result == null || result.files.isEmpty) return;
-    final path = result.files.first.path;
-    if (path == null) return;
-
     setState(() {
-      _filePath = path;
+      _filePath = null;
       _fileInfo = null;
       _isInspecting = true;
     });
 
     try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          'wav', 'wave', 'flac', // Lossless (pure-Dart decoder)
+          'mp3', 'ogg', 'oga', 'opus', // Compressed (native decoder)
+          'm4a', 'aac', 'mp4', // AAC containers
+          'wma', 'amr', // Other
+        ],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        setState(() => _isInspecting = false);
+        return;
+      }
+      final path = result.files.first.path;
+      if (path == null) {
+        setState(() => _isInspecting = false);
+        return;
+      }
+
+      setState(() {
+        _filePath = path;
+        _fileInfo = null;
+      });
+
       final controller = ref.read(fileAnalysisControllerProvider);
       final info = await controller.inspectFile(path);
       if (mounted) {
@@ -349,6 +359,11 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
             builder: (_) => SessionReviewScreen(session: session),
           ),
         );
+      }
+    } else {
+      if (mounted && controller.state == FileAnalysisState.ready) {
+        // Canceled! Go back to Step 3 (Parameters).
+        _goToStep(2);
       }
     }
   }
@@ -1317,7 +1332,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
-                value: progress.fraction,
+                value: progress.totalWindows > 0 ? progress.fraction : null,
                 minHeight: 12,
               ),
             ),
@@ -1326,10 +1341,12 @@ class _AnalysisStepState extends State<_AnalysisStep> {
             // ── Progress text ─────────────────────────────────
             Center(
               child: Text(
-                l10n.fileAnalysisProgressWindows(
-                  progress.currentWindow,
-                  progress.totalWindows,
-                ),
+                progress.totalWindows > 0
+                    ? l10n.fileAnalysisProgressWindows(
+                      progress.currentWindow,
+                      progress.totalWindows,
+                    )
+                    : l10n.fileAnalysisReading,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),

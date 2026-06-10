@@ -72,7 +72,8 @@ class SpectrogramWidget extends StatefulWidget {
     this.showTimeAxis = true,
     this.maxDisplayFrequency = 0,
     this.logAmplitude = true,
-    this.filterQuality = FilterQuality.high,
+    this.filterQuality,
+    this.quality = 'medium',
   });
 
   /// The audio ring buffer to read samples from.
@@ -101,7 +102,7 @@ class SpectrogramWidget extends StatefulWidget {
 
   /// Number of new samples between successive FFT frames.
   ///
-  /// Defaults to `fftSize ~/ 2` (50 % overlap) when `null`.
+  /// Defaults dynamically based on [quality] when `null`.
   final int? hopSize;
 
   /// Whether to draw frequency axis labels on the left edge.
@@ -122,9 +123,11 @@ class SpectrogramWidget extends StatefulWidget {
   final bool logAmplitude;
 
   /// GPU [FilterQuality] used to upscale the internal spectrogram image
-  /// to the display rect.  Default [FilterQuality.high].  Older / low-end
-  /// devices can drop to [FilterQuality.low] to reduce GPU load.
-  final FilterQuality filterQuality;
+  /// to the display rect. If null, mapped dynamically from [quality].
+  final FilterQuality? filterQuality;
+
+  /// Spectrogram rendering quality: 'low' | 'medium' | 'high'.
+  final String quality;
 
   @override
   State<SpectrogramWidget> createState() => _SpectrogramWidgetState();
@@ -133,7 +136,7 @@ class SpectrogramWidget extends StatefulWidget {
 /// Maps the string value of `spectrogramQualityProvider` to a [FilterQuality].
 ///
 /// Accepts `'low'`, `'medium'`, `'high'` (case-insensitive); any other
-/// value falls back to [FilterQuality.high].
+/// value falls back to [FilterQuality.medium].
 FilterQuality spectrogramFilterQualityFromString(String value) {
   switch (value.toLowerCase()) {
     case 'low':
@@ -141,8 +144,9 @@ FilterQuality spectrogramFilterQualityFromString(String value) {
     case 'medium':
       return FilterQuality.medium;
     case 'high':
-    default:
       return FilterQuality.high;
+    default:
+      return FilterQuality.medium;
   }
 }
 
@@ -185,8 +189,35 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   /// Recreated lazily when [fftSize] changes.
   late Float32List _readBuffer = Float32List(widget.fftSize);
 
-  /// Effective hop size (user-supplied or default 50 % overlap).
-  int get _hopSize => widget.hopSize ?? (widget.fftSize ~/ 2);
+  /// Effective hop size based on quality preset or user-supplied override.
+  int get _hopSize {
+    if (widget.hopSize != null) return widget.hopSize!;
+    switch (widget.quality.toLowerCase()) {
+      case 'low':
+        // 0% overlap, 2x fewer FFTs/columns, roughly 50% CPU savings.
+        return widget.fftSize;
+      case 'medium':
+        // 50% overlap, standard behavior.
+        return widget.fftSize ~/ 2;
+      case 'high':
+        // 75% overlap, smoother scrolling, more CPU.
+        return widget.fftSize ~/ 4;
+      default:
+        return widget.fftSize ~/ 2;
+    }
+  }
+
+  /// Adjust the column count so that the horizontal duration on screen
+  /// matches the user's duration settings, compensating for varying hopSize.
+  int get _effectiveMaxColumns {
+    final standardHop = widget.fftSize ~/ 2;
+    return (widget.maxColumns * standardHop) ~/ _hopSize;
+  }
+
+  /// Resolves the GPU scaling quality filter.
+  FilterQuality get _effectiveFilterQuality =>
+      widget.filterQuality ??
+      spectrogramFilterQualityFromString(widget.quality);
 
   /// Duration each column represents — used for time axis labels.
   Duration get _hopDuration =>
@@ -216,7 +247,8 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
         oldWidget.maxColumns != widget.maxColumns ||
         oldWidget.maxDisplayFrequency != widget.maxDisplayFrequency ||
         oldWidget.logAmplitude != widget.logAmplitude ||
-        oldWidget.filterQuality != widget.filterQuality) {
+        oldWidget.filterQuality != widget.filterQuality ||
+        oldWidget.quality != widget.quality) {
       _initProcessor();
     }
 
@@ -256,7 +288,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     );
 
     _painter = SpectrogramPainter(
-      maxColumns: widget.maxColumns,
+      maxColumns: _effectiveMaxColumns,
       binCount: _fft.binCount,
       colorMapName: widget.colorMapName,
       sampleRate: AppConstants.sampleRate,
@@ -265,8 +297,9 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
       showTimeAxis: widget.showTimeAxis,
       maxDisplayFrequency: widget.maxDisplayFrequency,
       hopDuration: _hopDuration,
-      filterQuality: widget.filterQuality,
+      filterQuality: _effectiveFilterQuality,
       repaint: _repaintNotifier,
+      quality: widget.quality,
     );
 
     _columnsEmitted = 0;
@@ -349,10 +382,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: CustomPaint(
-        painter: _painter,
-        size: Size.infinite,
-      ),
+      child: CustomPaint(painter: _painter, size: Size.infinite),
     );
   }
 }

@@ -7,13 +7,34 @@ on:
 permissions:
   contents: write
 jobs:
-  build_android:
-    name: Test And Build Android APK
+  prepare_source:
+    name: Prepare Source Snapshot
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Ensure Git LFS files are materialized
+        run: git lfs pull
+
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-source
+          path: .
+          include-hidden-files: true
+
+  build_android:
+    name: Test And Build Android APK
+    runs-on: ubuntu-latest
+    needs: prepare_source
+    steps:
+      - name: Download source snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: repo-source
+          path: .
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -118,3 +139,181 @@ jobs:
         shell: bash
         run: |
           rm -f android/key.properties android/app/upload-keystore.jks
+
+  build_windows:
+    name: Build Windows Release Artifacts
+    runs-on: windows-latest
+    needs: prepare_source
+    steps:
+      - name: Download source snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: repo-source
+          path: .
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          channel: stable
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Install Dart and Flutter packages
+        run: flutter pub get
+
+      - name: Generate localization files
+        run: flutter gen-l10n
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install species-bundle dependencies
+        run: python -m pip install -r tools/requirements-species-bundle.txt
+
+      - name: Download BirdNET taxonomy export
+        run: python tools/download_taxonomy_json.py
+
+      - name: Build species bundle assets
+        run: python tools/build_species_bundle.py
+
+      - name: Resolve app version metadata
+        shell: pwsh
+        run: |
+          $pubspecVersion = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $appVersion = $pubspecVersion.Split('+')[0]
+          "APP_VERSION=$appVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build Windows release and Inno Setup installer
+        shell: pwsh
+        run: |
+          .\dev\build_inno_installer.ps1
+
+      - name: Zip Windows release folder
+        shell: pwsh
+        run: |
+          $releaseDir = 'build/windows/x64/runner/Release'
+          $zipPath = "build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip"
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
+          }
+          Compress-Archive -Path $releaseDir -DestinationPath $zipPath
+
+      - name: Attach Windows artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
+            build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe
+
+  prepare_winget:
+    name: Prepare Winget Manifests
+    runs-on: windows-latest
+    needs:
+      - build_windows
+    steps:
+      - name: Download source snapshot
+        uses: actions/download-artifact@v4
+        with:
+          name: repo-source
+          path: .
+
+      - name: Resolve app version metadata
+        shell: pwsh
+        run: |
+          $pubspecVersion = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $appVersion = $pubspecVersion.Split('+')[0]
+          "APP_VERSION=$appVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Generate Winget manifests
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $installerUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe"
+          $releaseNotesUrl = "https://github.com/$env:REPOSITORY/releases/tag/$env:RELEASE_TAG"
+
+          .\tools\generate_winget_manifests.ps1 `
+            -PackageIdentifier 'BirdNET-Team.BirdNETLive' `
+            -PackageVersion "${{ env.APP_VERSION }}" `
+            -InstallerUrl $installerUrl `
+            -Publisher 'BirdNET' `
+            -PackageName 'BirdNET Live' `
+            -Moniker 'birdnet-live' `
+            -License 'MIT' `
+            -ShortDescription 'Real-time bird species identification using on-device BirdNET+ inference.' `
+            -PublisherUrl 'https://github.com/birdnet-team' `
+            -PackageUrl 'https://github.com/birdnet-team/birdnet-live-app' `
+            -PublisherSupportUrl 'https://github.com/birdnet-team/birdnet-live-app/issues' `
+            -ReleaseNotesUrl $releaseNotesUrl `
+            -OutputRoot 'release/winget'
+
+      - name: Upload Winget manifests artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifests-v${{ env.APP_VERSION }}
+          path: release/winget/manifests
+          if-no-files-found: error
+
+      - name: Create Winget manifests zip
+        shell: pwsh
+        run: |
+          $zipPath = "release/winget/winget-manifests-v${{ env.APP_VERSION }}.zip"
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
+          }
+          Compress-Archive -Path release/winget/manifests -DestinationPath $zipPath
+
+      - name: Attach Winget manifests to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/winget/winget-manifests-v${{ env.APP_VERSION }}.zip
+
+      - name: Install wingetcreate (optional auto-submit)
+        if: ${{ vars.WINGET_AUTO_SUBMIT == 'true' }}
+        shell: pwsh
+        env:
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not set; skipping wingetcreate installation.'
+            exit 0
+          }
+          winget install wingetcreate --accept-package-agreements --accept-source-agreements --silent
+
+      - name: Submit Winget PR automatically (optional)
+        if: ${{ vars.WINGET_AUTO_SUBMIT == 'true' }}
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          REPOSITORY: ${{ github.repository }}
+          WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_CREATE_GITHUB_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_CREATE_GITHUB_TOKEN)) {
+            Write-Host 'WINGET_CREATE_GITHUB_TOKEN is not set; skipping automatic Winget submission.'
+            exit 0
+          }
+
+          $installerUrl = "https://github.com/$env:REPOSITORY/releases/download/$env:RELEASE_TAG/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe"
+          $mode = '${{ vars.WINGET_SUBMIT_MODE }}'
+          if ([string]::IsNullOrWhiteSpace($mode)) {
+            $mode = 'update'
+          }
+
+          if ($mode -eq 'new') {
+            wingetcreate new BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+          }
+          elseif ($mode -eq 'update') {
+            wingetcreate update BirdNET-Team.BirdNETLive --version "${{ env.APP_VERSION }}" --urls $installerUrl --token $env:WINGET_CREATE_GITHUB_TOKEN --submit
+          }
+          else {
+            throw "Unsupported WINGET_SUBMIT_MODE '$mode'. Use 'new' or 'update'."
+          }

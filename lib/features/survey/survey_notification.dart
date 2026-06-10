@@ -148,10 +148,7 @@ class SurveyNotificationService {
   }
 
   /// Start the foreground service with an initial notification.
-  Future<void> start({
-    required String title,
-    required String text,
-  }) async {
+  Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
 
     // Best-effort permission check — don't bail if denied; Android will
@@ -159,8 +156,10 @@ class SurveyNotificationService {
     // on some OEMs).
     final granted = await ensurePermission();
     if (!granted) {
-      debugPrint('[SurveyNotification] permission not granted — '
-          'attempting startService anyway');
+      debugPrint(
+        '[SurveyNotification] permission not granted — '
+        'attempting startService anyway',
+      );
     }
 
     final result = await FlutterForegroundTask.startService(
@@ -186,10 +185,7 @@ class SurveyNotificationService {
   }
 
   /// Update the notification text with current survey stats.
-  Future<void> update({
-    required String title,
-    required String text,
-  }) async {
+  Future<void> update({required String title, required String text}) async {
     if (!_running) return;
     await FlutterForegroundTask.updateService(
       notificationTitle: title,

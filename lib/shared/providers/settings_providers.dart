@@ -152,12 +152,16 @@ final logAmplitudeProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
 /// Spectrogram rendering quality — controls the GPU upscale [FilterQuality]
 /// used to draw the live spectrogram image.
 ///
-/// Values: `'low'` | `'medium'` | `'high'`.  Default `'high'`.
+/// Values: `'low'` | `'medium'` | `'high'`.  Default `'medium'`.
 /// Older / low-end devices can drop to `'low'` to reduce GPU load.
 final spectrogramQualityProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
-      return StringSettingNotifier(prefs, PrefKeys.spectrogramQuality, 'high');
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.spectrogramQuality,
+        'medium',
+      );
     });
 
 // ---------------------------------------------------------------------------

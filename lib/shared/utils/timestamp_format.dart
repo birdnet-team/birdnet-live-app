@@ -48,6 +48,9 @@ enum TimestampDisplayMode {
 /// be in any timezone (UTC or local); the render is always done in the
 /// device's current local timezone for absolute mode.
 ///
+/// [absoluteToRelative] can map an absolute timestamp to session-relative
+/// seconds when recording has pause/resume gaps.
+///
 /// [clipOffset] shifts the relative zero forward when the underlying audio
 /// has been trimmed (so the rendered offset stays aligned with the
 /// spectrogram playhead).  It does NOT affect absolute mode — wall-clock
@@ -62,12 +65,19 @@ String formatDetectionTime(
   DateTime timestamp,
   DateTime sessionStart,
   TimestampDisplayMode mode, {
+  double Function(DateTime timestamp)? absoluteToRelative,
   Duration clipOffset = Duration.zero,
   bool showSeconds = true,
 }) {
   switch (mode) {
     case TimestampDisplayMode.relative:
-      return _formatRelative(timestamp.difference(sessionStart) - clipOffset);
+      final double relativeSec =
+          absoluteToRelative != null
+              ? absoluteToRelative(timestamp)
+              : timestamp.difference(sessionStart).inMicroseconds / 1e6;
+      return _formatRelative(
+        Duration(microseconds: (relativeSec * 1e6).round()) - clipOffset,
+      );
     case TimestampDisplayMode.absolute:
       return _formatAbsolute(
         timestamp.toLocal(),

@@ -15,6 +15,10 @@ window.BIRDNET_MOCKUPS = {
     width: 1592,
     height: 3546,
   },
+  ipadCanvas: {
+    width: 2048,
+    height: 2732,
+  },
   languages: {
     en: {
       name: 'English',

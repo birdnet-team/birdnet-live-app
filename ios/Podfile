@@ -27,10 +27,22 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+def enforce_flutter_ios_deployment_target(version)
+  flutter_podspec_path = File.expand_path(File.join('Flutter', 'Flutter.podspec'), __dir__)
+  return unless File.exist?(flutter_podspec_path)
+
+  podspec = File.read(flutter_podspec_path)
+  updated = podspec.gsub(/s\.ios\.deployment_target = '\d+\.\d+'/, "s.ios.deployment_target = '#{version}'")
+  return if updated == podspec
+
+  File.write(flutter_podspec_path, updated)
+end
+
 target 'Runner' do
   use_frameworks! :linkage => :static
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  enforce_flutter_ios_deployment_target('16.0')
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -39,5 +51,13 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    target.build_configurations.each do |config|
+      # Keep generated pod targets aligned with the app minimum iOS version.
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      # Xcode 16 module verification trips over onnxruntime-objc's public
+      # quoted includes even though the pod itself builds fine otherwise.
+      config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+    end
   end
 end

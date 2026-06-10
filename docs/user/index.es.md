@@ -48,6 +48,14 @@ Configuración de la encuesta, el panel de la encuesta en vivo y las pestañas d
 
 El asistente de análisis de archivos de cuatro pasos, las opciones de parámetros y cómo los resultados pasan a Session Review.
 
+### [Análisis por lotes](batch-analysis.md)
+
+Procesar y analizar varios archivos de audio en lote. (Próximamente)
+
+### [Modo ARU](aru-mode.md)
+
+Convierta su dispositivo en una unidad de grabación autónoma. (Próximamente)
+
 ## Referencia
 
 ### [Preguntas frecuentes](faq.md)

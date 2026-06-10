@@ -25,6 +25,7 @@ class MainActivity: FlutterActivity() {
         super.onCreate(savedInstanceState)
         pendingLaunchRequest = extractLaunchRequest(intent)
     }
+    private var activeDecodeJob: Job? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -85,31 +86,72 @@ class MainActivity: FlutterActivity() {
                             withContext(Dispatchers.Main) {
                                 result.success(metadata)
                             }
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             withContext(Dispatchers.Main) {
-                                result.error("INSPECT_ERROR", e.message, null)
+                                result.error("INSPECT_ERROR", e.message ?: "Unknown error", null)
                             }
                         }
                     }
                 }
                 "decode" -> {
                     val path = call.argument<String>("path")
-                    if (path == null) {
-                        result.error("INVALID_ARG", "Missing 'path' argument", null)
+                    val tempPcmPath = call.argument<String>("tempPcmPath")
+                    if (path == null || tempPcmPath == null) {
+                        result.error("INVALID_ARG", "Missing 'path' or 'tempPcmPath' argument", null)
                         return@setMethodCallHandler
                     }
-                    scope.launch {
+                    activeDecodeJob?.cancel()
+                    activeDecodeJob = scope.launch {
                         try {
-                            val decoded = NativeAudioDecoder.decode(path)
+                            val decoded = NativeAudioDecoder.decode(path, tempPcmPath) {
+                                !coroutineContext.isActive
+                            }
                             withContext(Dispatchers.Main) {
                                 result.success(decoded)
                             }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                result.error("DECODE_ERROR", e.message, null)
+                        } catch (e: CancellationException) {
+                            withContext(NonCancellable + Dispatchers.Main) {
+                                result.error("DECODE_CANCELLED", "Decoding cancelled", null)
+                            }
+                        } catch (e: Throwable) {
+                            withContext(NonCancellable + Dispatchers.Main) {
+                                result.error("DECODE_ERROR", e.message ?: "Unknown error", null)
                             }
                         }
                     }
+                }
+                "decodeRange" -> {
+                    val path = call.argument<String>("path")
+                    val startSample = call.argument<Number>("startSample")?.toLong()
+                    val count = call.argument<Number>("count")?.toInt()
+                    if (path == null || startSample == null || count == null) {
+                        result.error("INVALID_ARG", "Missing 'path', 'startSample', or 'count' argument", null)
+                        return@setMethodCallHandler
+                    }
+                    activeDecodeJob?.cancel()
+                    activeDecodeJob = scope.launch {
+                        try {
+                            val decoded = NativeAudioDecoder.decodeRange(path, startSample, count) {
+                                !coroutineContext.isActive
+                            }
+                            withContext(Dispatchers.Main) {
+                                result.success(decoded)
+                            }
+                        } catch (e: CancellationException) {
+                            withContext(NonCancellable + Dispatchers.Main) {
+                                result.error("DECODE_CANCELLED", "Decoding cancelled", null)
+                            }
+                        } catch (e: Throwable) {
+                            withContext(NonCancellable + Dispatchers.Main) {
+                                result.error("DECODE_ERROR", e.message ?: "Unknown error", null)
+                            }
+                        }
+                    }
+                }
+                "cancelDecode" -> {
+                    activeDecodeJob?.cancel()
+                    activeDecodeJob = null
+                    result.success(null)
                 }
                 else -> result.notImplemented()
             }

@@ -148,12 +148,14 @@ class GeoModel {
     for (final line in lines) {
       final parts = line.split('\t');
       if (parts.length >= 2) {
-        parsed.add(GeoSpecies(
-          index: idx,
-          id: int.tryParse(parts[0].trim()) ?? 0,
-          scientificName: parts[1].trim(),
-          commonName: parts.length >= 3 ? parts[2].trim() : parts[1].trim(),
-        ));
+        parsed.add(
+          GeoSpecies(
+            index: idx,
+            id: int.tryParse(parts[0].trim()) ?? 0,
+            scientificName: parts[1].trim(),
+            commonName: parts.length >= 3 ? parts[2].trim() : parts[1].trim(),
+          ),
+        );
         idx++;
       }
     }
@@ -241,17 +243,19 @@ class GeoModel {
         throw StateError('Geo-model returned no output');
       }
       final raw = await outputTensor.asFlattenedList();
-      final probabilities = raw is List<double>
-          ? raw
-          : raw is Float32List
+      final probabilities =
+          raw is List<double>
+              ? raw
+              : raw is Float32List
               ? raw.toList()
               : raw.map((e) => (e as num).toDouble()).toList(growable: false);
 
       // Build the result map.
       final scores = <String, double>{};
-      final count = probabilities.length < _labels.length
-          ? probabilities.length
-          : _labels.length;
+      final count =
+          probabilities.length < _labels.length
+              ? probabilities.length
+              : _labels.length;
       for (var i = 0; i < count; i++) {
         scores[_labels[i].scientificName] = probabilities[i];
       }
@@ -288,18 +292,21 @@ class GeoModel {
       if (entry.value >= threshold) {
         final label = _labels.firstWhere(
           (l) => l.scientificName == entry.key,
-          orElse: () => GeoSpecies(
-            index: -1,
-            id: 0,
+          orElse:
+              () => GeoSpecies(
+                index: -1,
+                id: 0,
+                scientificName: entry.key,
+                commonName: entry.key,
+              ),
+        );
+        results.add(
+          GeoSpeciesScore(
             scientificName: entry.key,
-            commonName: entry.key,
+            commonName: label.commonName,
+            score: entry.value,
           ),
         );
-        results.add(GeoSpeciesScore(
-          scientificName: entry.key,
-          commonName: label.commonName,
-          score: entry.value,
-        ));
       }
     }
 

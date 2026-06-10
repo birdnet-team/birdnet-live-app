@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ splash screen (dark mode): show the full bird-with-circle
+         logo instead of the default adaptive-icon foreground. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">#0D1F35</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>

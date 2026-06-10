@@ -113,8 +113,10 @@ class ClassifierModel {
 
     _session = await _ort.createSession(modelPath);
 
-    debugPrint('[ClassifierModel] loaded — inputs: ${_session!.inputNames} '
-        'outputs: ${_session!.outputNames}');
+    debugPrint(
+      '[ClassifierModel] loaded — inputs: ${_session!.inputNames} '
+      'outputs: ${_session!.outputNames}',
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -138,14 +140,7 @@ class ClassifierModel {
     }
 
     // Prepare input: pad or truncate to exactly [windowSamples].
-    final input = Float32List(windowSamples);
-    final copyLen = audioSamples.length < windowSamples
-        ? audioSamples.length
-        : windowSamples;
-    for (var i = 0; i < copyLen; i++) {
-      input[i] = audioSamples[i].clamp(-1.0, 1.0);
-    }
-    // Remaining elements are already 0.0 (zero-padding).
+    final input = _prepareInput(audioSamples, windowSamples);
 
     // Create input tensor: shape [1, windowSamples].
     final inputTensor = await OrtValue.fromList(input, [1, windowSamples]);
@@ -172,10 +167,7 @@ class ClassifierModel {
         embeddings = await _toDoubleList(outputs[embName]!);
       }
 
-      return ModelOutput(
-        predictions: predictions,
-        embeddings: embeddings,
-      );
+      return ModelOutput(predictions: predictions, embeddings: embeddings);
     } finally {
       // Release native resources.
       await inputTensor.dispose();
@@ -210,8 +202,27 @@ class ClassifierModel {
   static Future<List<double>> _toDoubleList(OrtValue tensor) async {
     final raw = await tensor.asFlattenedList();
     if (raw is List<double>) return raw;
-    if (raw is Float32List) return raw.toList();
+    if (raw is Float32List) return raw;
     return raw.map((e) => (e as num).toDouble()).toList(growable: false);
+  }
+
+  static Float32List _prepareInput(
+    Float32List audioSamples,
+    int windowSamples,
+  ) {
+    if (audioSamples.length == windowSamples) {
+      return audioSamples;
+    }
+
+    final input = Float32List(windowSamples);
+    final copyLen =
+        audioSamples.length < windowSamples
+            ? audioSamples.length
+            : windowSamples;
+    for (var i = 0; i < copyLen; i++) {
+      input[i] = audioSamples[i].clamp(-1.0, 1.0);
+    }
+    return input;
   }
 }
 
@@ -225,10 +236,7 @@ class ClassifierModel {
 /// embeddings.
 class ModelOutput {
   /// Creates a model output container.
-  const ModelOutput({
-    required this.predictions,
-    this.embeddings,
-  });
+  const ModelOutput({required this.predictions, this.embeddings});
 
   /// Model scores for each species class.
   ///

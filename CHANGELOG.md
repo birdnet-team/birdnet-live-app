@@ -5,6 +5,149 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.11] - 2026-06-10
+
+### Added
+
+- Added dedicated in-app Help entries for Batch Analysis and ARU Mode across all supported locales.
+- Added AGENTS.md with concise repository guidance for coding agents, including localization, documentation, style, and safety rules.
+
+### Changed
+
+- Restored the iOS app icon style to the bird-in-circle on a white background while keeping Android icon behavior unchanged.
+- Updated Batch Analysis accent color from copper to a darker yellow tone for better visual alignment with File Analysis.
+- Updated mode subtitles: Point Count now reads "Record at a fixed point for a set duration" and Survey now emphasizes background recording with shorter wording.
+
+## [0.16.10] - 2026-06-09
+
+### Added
+
+- Added iOS-only Open in Apple Maps actions in Session Map and full-screen Survey Review map flows while keeping the in-app survey map overlays.
+- Added localized iOS permission CTA and Apple Maps action labels across all supported app locales.
+
+### Changed
+
+- Updated onboarding permission CTA wording on iOS from Grant to Continue to align with App Review guidance, while keeping Android wording unchanged.
+- Updated survey GPS tracking to use platform-aware geolocator settings and enable iOS background location updates with indicator support.
+- Minimum OS version for iOS updated to 16.0
+
+### Fixed
+
+- Fixed iOS App Review compliance gaps for permission pre-prompt wording and native map handoff availability.
+- Fixed survey session screen updates on iOS by reliably watching live detections
+
+## [0.16.9] - 2026-06-09
+
+### Added
+
+- Added placeholder entry points for Batch Analysis and ARU Mode on the home screen with localized Coming Soon behavior.
+- Added localized documentation pages for Batch Analysis and ARU Mode across all supported docs locales, including site navigation links.
+- Added new session type labels and numbered session title/card strings for Batch Analysis and ARU sessions across all app locales.
+
+### Changed
+
+- Reworked the Home mode selector from a single static grid to a paged carousel with indicator dots, keeping active modes on page one and upcoming modes on page two.
+- Refined shared session-type icon/color mappings so upcoming modes use consistent visual semantics in navigation and session metadata surfaces.
+- Updated upcoming mode accent colors to distinct hues: Batch Analysis now uses copper and ARU Mode now uses violet.
+
+### Fixed
+
+- Fixed Live session elapsed-time and recording-size progression after app background pause and resume, so resumed sessions continue updating instead of showing a static elapsed value.
+
+## [0.16.8] - 2026-06-08
+
+### Added
+
+- Added a sensitivity control to Point Count setup and active Point Count screens so species detection tuning matches Live Mode.
+
+### Fixed
+
+- Fixed Session Review timestamp formatting, seek alignment, and spectrogram time labels for sessions with pause and resume gaps, keeping review playback aligned with the actual recorded audio timeline.
+- Fixed Live and Point Count screens to clear stale session state and old detections when reopening a fresh run, preventing previous-session cards from flashing on load.
+
+### Changed
+
+- Updated and unified app icon for consistent visuals across platforms
+
+## [0.16.7] - 2026-06-04
+
+### Fixed
+
+- Fixed Session Review spectrogram loading and playback alignment for long MP3 and other compressed File Analysis recordings.
+- Fixed lazy spectrogram gaps near chunk boundaries and long recording tails.
+
+## [0.16.6] - 2026-06-04
+
+### Fixed
+
+- Updated session library title translations for Czech, Spanish, Italian, and Portuguese.
+- Updated footer button icon and text sizes for better visibility on tablet and mobile.
+
+### Optimized
+
+- Updated audio decoding logic to improve performance for native formats.
+
+## [0.16.5] - 2026-06-04
+
+### Added
+
+- Added support for compiling experimental Windows builds.
+- Added Windows support for app launcher icons.
+- Implemented Windows Inno Setup installer and Windows MSIX signing support.
+- Configured CI workflows to automatically generate Windows MSIX packages, Inno Setup installers, and Winget manifests.
+
+## [0.16.4] - 2026-06-04
+
+### Fixed
+
+- Made File Analysis keep an app-managed copy of the uploaded audio in its original format, avoiding unnecessary MP3/AAC-to-WAV/FLAC conversion before Session Review.
+- Enabled Session Review spectrograms for copied compressed uploads by loading long review audio through native range decoding instead of hiding the spectrogram when full PCM would be too large.
+
+### Optimized
+
+- Reworked compressed File Analysis inputs such as long MP3, AAC, and OGG recordings to inspect metadata without full decode, analyze bounded native decode chunks, and cancel active native decoding promptly instead of expanding the whole file into memory.
+- Reduced the initial lazy spectrogram bootstrap window for long recordings to keep first review paint responsive while additional chunks load on demand.
+
+## [0.16.3] - 2026-06-03
+
+### Fixed
+
+- Corrected localized documentation homepage screenshot paths and renamed the German documentation navigation entry from "Heim" to "Start".
+
+### Optimized
+
+- Decoupled real-time audio playback position tracking from parent state updates in the Session Review screen by introducing a `ValueNotifier<Duration>` listener interface for spectrogram scrolling and local active status updates on `_SpeciesTile` widgets, completely eliminating full-screen and map component redraw stutters.
+- Localized Point Count countdown updates and active Survey elapsed-time/stat updates into small listenable widgets, preventing full dashboard rebuilds once per second during recording.
+
+## [0.16.2] - 2026-06-03
+
+### Added
+
+- Wired the spectrogram quality setting ('low', 'medium', 'high') to all screens displaying spectrograms, including Live Mode, Point Count Mode, Survey Mode, and Session Review components (Timeline player and Trim editor).
+
+### Changed
+
+- Reverted all non-spectrogram overrides, restoring original UI/UX behaviors (such as inline maps, map markers, and unmounted map overlays) and default/user configured background settings.
+
+### Optimized
+
+- Pre-allocated the Hann window scratch buffer inside `FftProcessor` to prevent repetitive 16KB array heap allocations on every single FFT window calculation, drastically reducing garbage collection overhead and stuttering on budget devices (such as the Samsung A17).
+- Optimized input preparation and output array parsing in `ClassifierModel` by reusing the time-domain sample buffer directly when lengths match (bypassing a redundant 96,000-iteration clamp copy loop and 384KB list allocation) and returning native `Float32List` instances directly without copying to a new list, preventing UI thread stutters when inference runs.
+
+## [0.16.1] - 2026-06-03
+
+### Added
+
+- Integrated dynamic privacy consent toggles (Map, Reverse Geocoding, Weather) directly into the interactive Permissions onboarding page to let users opt into capabilities upfront.
+- Embedded mandatory photo library and camera description purpose strings into iOS `Info.plist` to satisfy Apple App Store submission conditions (`ITMS-90683`).
+- Added native iPad screenshot layout support (`2048 x 2732px`) to the automated mockup workspace in `dev/mockups/` using `empty_ipad_frame.png` as a container backdrop.
+
+### Changed
+
+- Enhanced onboarding screens with responsive maximum-width boundaries (`ContentWidthConstraint`) to prevent horizontal layout stretching, significantly improving native tablet/iPad readability.
+- Enhanced the on-device HTML/CSS mockup canvas scaling rules to render tablet screens using proportional, undistorted top-alignment instead of stretching them.
+- Updated the export filename configuration to prefix all iPad mockups and screenshots with `ipad_` (e.g., `ipad_en-01-menu.png`) and generated them across all localizations.
+
 ## [0.16.0] - 2026-06-02
 
 ### Added

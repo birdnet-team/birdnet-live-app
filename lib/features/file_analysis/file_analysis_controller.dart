@@ -34,6 +34,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
@@ -167,16 +168,10 @@ class AudioFileInfo {
 class FileAnalysisController {
   FileAnalysisController();
 
-  /// Native compressed formats still decode through a full platform PCM
-  /// buffer before analysis. Keep that path bounded until native range/
-  /// streaming decode exists; WAV/FLAC use the Dart range/window paths
-  /// below and can handle much larger decoded footprints safely.
-  static const int _maxNativeDecodeBytes = 256 * 1024 * 1024;
-
-  /// If a native compressed file's duration is unknown, decoded PCM size
-  /// cannot be estimated. In that case, treat large source files as unsafe
-  /// for the current full-decode path.
-  static const int _maxNativeUnknownDurationBytes = 64 * 1024 * 1024;
+  /// Number of seconds decoded at once for native compressed analysis.
+  /// A chunk also includes one extra analysis window so all windows that
+  /// start inside the chunk can be served without re-decoding.
+  static const int _nativeAnalysisChunkSeconds = 120;
 
   // ── Internal state ────────────────────────────────────────────────────
 
@@ -306,7 +301,7 @@ class FileAnalysisController {
 
   /// Analyze an audio file and return a completed session.
   ///
-  /// [filePath] — path to the audio file (WAV or FLAC).
+  /// [filePath] — path to the audio file.
   /// [windowDuration] — analysis window in seconds.
   /// [overlap] — window overlap as a fraction (0.0 = no overlap, 0.5 = 50%).
   /// [sensitivity] — sensitivity scaling factor.
@@ -346,11 +341,10 @@ class FileAnalysisController {
     try {
       // 1. Inspect/decode the audio source.
       final canDart = await AudioDecoder.canDecodeDart(filePath);
-      DecodedAudio? fullAudio;
       late int sourceSampleRate;
       late int sourceTotalSamples;
       late Duration sourceDuration;
-      String? sourceFormat;
+      late String sourceFormat;
       if (canDart) {
         final metadata = await AudioDecoder.inspectFile(filePath);
         sourceFormat = metadata.format;
@@ -362,61 +356,30 @@ class FileAnalysisController {
           '$sourceSampleRate Hz, $sourceDuration',
         );
       } else {
-        // Native compressed formats still need a full decode today, but the
-        // file picker metadata path above no longer pays this cost twice.
+        // Native compressed formats: inspect to get metadata
         final metadata = await NativeAudioDecoder.inspectFile(
           filePath,
           filePath.split('.').last.toUpperCase(),
         );
-        final fileSize = await File(filePath).length();
-        if (metadata.sampleRate <= 0 || metadata.totalSamples < 0) {
+        if (metadata.sampleRate <= 0 || metadata.totalSamples <= 0) {
           _state = FileAnalysisState.error;
           _errorMessage =
               'This audio file could not be inspected safely. Try converting it to WAV or FLAC before analysis.';
           _notifyListeners();
           return null;
         }
-        if (metadata.decodedPcmBytes >= _maxNativeDecodeBytes ||
-            (metadata.totalSamples == 0 &&
-                fileSize >= _maxNativeUnknownDurationBytes)) {
-          _state = FileAnalysisState.error;
-          final estimate =
-              metadata.totalSamples > 0
-                  ? ' Its decoded audio would use about '
-                      '${_formatBytes(metadata.decodedPcmBytes)} of memory.'
-                  : ' The platform could not report its decoded duration, and the source file is ${_formatBytes(fileSize)}.';
-          _errorMessage =
-              'This compressed file is too large to analyze safely on this device.$estimate '
-              'Use WAV or FLAC for long recordings so BirdNET Live can analyze the file in chunks.';
-          _notifyListeners();
-          return null;
-        }
-        debugPrint('[FileAnalysis] decoding $filePath ...');
-        final decoded = await NativeAudioDecoder.decodeFile(filePath);
-        final modelSampleRate = _config!.audio.sampleRate;
-        fullAudio =
-            decoded.sampleRate != modelSampleRate
-                ? decoded.resampleTo(modelSampleRate)
-                : decoded;
-        sourceSampleRate = fullAudio.sampleRate;
-        sourceTotalSamples = fullAudio.totalSamples;
-        sourceDuration = fullAudio.duration;
-        if (fullAudio != decoded) {
-          debugPrint(
-            '[FileAnalysis] resampled '
-            '${decoded.sampleRate} Hz → $modelSampleRate Hz '
-            '(${fullAudio.totalSamples} samples)',
-          );
-        }
+        sourceFormat = metadata.format;
+        sourceSampleRate = metadata.sampleRate;
+        sourceTotalSamples = metadata.totalSamples;
+        sourceDuration = metadata.duration;
       }
       debugPrint(
         '[FileAnalysis] source ready: $sourceTotalSamples samples, '
         '$sourceSampleRate Hz, $sourceDuration',
       );
 
-      // 1b. Window sizing. WAV/FLAC windows are read at source rate and
-      // resampled per-window if needed; native compressed files are already
-      // fully decoded/resampled above.
+      // 1b. Window sizing. All source formats are read in bounded windows or
+      // chunks at source rate and resampled only for each inference window.
       final modelSampleRate = _config!.audio.sampleRate;
       final sourceWindowSamples = windowDuration * sourceSampleRate;
       final modelWindowSamples = windowDuration * modelSampleRate;
@@ -612,7 +575,7 @@ class FileAnalysisController {
             return !_cancelRequested;
           },
         );
-      } else {
+      } else if (canDart) {
         for (var w = 0; w < totalWindows; w++) {
           if (_cancelRequested) {
             debugPrint('[FileAnalysis] canceled at window $w/$totalWindows');
@@ -620,24 +583,79 @@ class FileAnalysisController {
           }
 
           final startSample = w * stepSamples;
-          final Float32List audioChunk;
-          if (canDart) {
-            final sourceChunk = await AudioDecoder.decodeRange(
-              filePath,
-              startSample: startSample,
-              count: sourceWindowSamples,
-            );
-            final modelChunk =
-                sourceChunk.sampleRate != modelSampleRate
-                    ? sourceChunk.resampleTo(modelSampleRate)
-                    : sourceChunk;
-            audioChunk = modelChunk.readFloat32(0, modelWindowSamples);
-          } else {
-            audioChunk = fullAudio!.readFloat32(
-              startSample,
-              sourceWindowSamples,
-            );
+          final sourceChunk = await AudioDecoder.decodeRange(
+            filePath,
+            startSample: startSample,
+            count: sourceWindowSamples,
+          );
+          final modelChunk =
+              sourceChunk.sampleRate != modelSampleRate
+                  ? sourceChunk.resampleTo(modelSampleRate)
+                  : sourceChunk;
+          final audioChunk = modelChunk.readFloat32(0, modelWindowSamples);
+          await processWindow(w, startSample, audioChunk);
+        }
+      } else {
+        // Native compressed formats: decode bounded chunks instead of
+        // expanding the whole file into memory. Each chunk includes one
+        // extra analysis window so windows starting near the chunk end have
+        // enough post-roll samples available.
+        final chunkSamples = _nativeAnalysisChunkSeconds * sourceSampleRate;
+
+        int currentChunkStart = -1;
+        DecodedAudio? currentChunkAudio;
+        int decodedChunkSamples = 0;
+
+        for (var w = 0; w < totalWindows; w++) {
+          if (_cancelRequested) {
+            debugPrint('[FileAnalysis] canceled at window $w/$totalWindows');
+            break;
           }
+
+          final startSample = w * stepSamples;
+
+          // Check if we need to load a new chunk.
+          if (currentChunkAudio == null ||
+              startSample < currentChunkStart ||
+              (startSample + sourceWindowSamples) >
+                  (currentChunkStart + decodedChunkSamples)) {
+            currentChunkStart = startSample;
+            final countToDecode = math.min(
+              chunkSamples + sourceWindowSamples,
+              sourceTotalSamples - currentChunkStart,
+            );
+
+            debugPrint(
+              '[FileAnalysis] loading native chunk starting at $currentChunkStart, count $countToDecode',
+            );
+
+            final decodedChunk = await NativeAudioDecoder.decodeRange(
+              filePath,
+              startSample: currentChunkStart,
+              count: countToDecode,
+            );
+
+            decodedChunkSamples = decodedChunk.totalSamples;
+            if (decodedChunkSamples == 0) {
+              break;
+            }
+
+            currentChunkAudio =
+                decodedChunk.sampleRate != modelSampleRate
+                    ? decodedChunk.resampleTo(modelSampleRate)
+                    : decodedChunk;
+          }
+
+          // Read the sub-segment from the current chunk.
+          final offsetInChunk = startSample - currentChunkStart;
+          final mappedOffset =
+              (offsetInChunk * modelSampleRate / sourceSampleRate).round();
+
+          final audioChunk = currentChunkAudio.readFloat32(
+            mappedOffset,
+            modelWindowSamples,
+          );
+
           await processWindow(w, startSample, audioChunk);
         }
       }
@@ -646,14 +664,23 @@ class FileAnalysisController {
       session.detections.addAll(allDetections);
       // Set end time based on audio duration.
       session.endTime = fileStartTime.add(sourceDuration);
-      // Store the source file path as recording path for review playback.
-      session.recordingPath = filePath;
 
       if (_cancelRequested) {
         _state = FileAnalysisState.ready;
         _notifyListeners();
         return null;
       }
+
+      _progress = AnalysisProgress.zero;
+      _notifyListeners();
+
+      // Store a durable app-managed copy of the analyzed audio using the
+      // user's selected recording format. Imported MP3/AAC/etc. sources are
+      // transcoded in chunks to avoid full-file PCM memory spikes.
+      session.recordingPath = await _persistAnalyzedAudio(
+        sourcePath: filePath,
+        sessionId: sessionId,
+      );
 
       _state = FileAnalysisState.complete;
       _notifyListeners();
@@ -664,6 +691,14 @@ class FileAnalysisController {
       );
       return session;
     } catch (e, st) {
+      if (_cancelRequested) {
+        debugPrint(
+          '[FileAnalysis] analysis canceled (caught expected cancellation error: $e)',
+        );
+        _state = FileAnalysisState.ready;
+        _notifyListeners();
+        return null;
+      }
       debugPrint('[FileAnalysis] error: $e\n$st');
       _state = FileAnalysisState.error;
       _errorMessage = e.toString();
@@ -675,6 +710,7 @@ class FileAnalysisController {
   /// Request cancellation of the current analysis.
   void cancel() {
     _cancelRequested = true;
+    NativeAudioDecoder.cancelDecode();
   }
 
   /// Reset to ready state (after completion or error).
@@ -699,10 +735,24 @@ class FileAnalysisController {
     onStateChanged?.call();
   }
 
-  static String _formatBytes(int bytes) {
-    if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  Future<String?> _persistAnalyzedAudio({
+    required String sourcePath,
+    required String sessionId,
+  }) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final sessionDir = Directory('${appDir.path}/recordings/$sessionId');
+    await sessionDir.create(recursive: true);
+
+    final ext = sourcePath.split('.').last.toLowerCase();
+    final outputPath = '${sessionDir.path}/full.$ext';
+
+    try {
+      await File(sourcePath).copy(outputPath);
+      return outputPath;
+    } catch (e, st) {
+      debugPrint('[FileAnalysis] audio persistence failed: $e\n$st');
+      if (_cancelRequested) return null;
+      rethrow;
     }
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }

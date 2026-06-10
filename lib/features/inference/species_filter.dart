@@ -76,11 +76,7 @@ abstract final class SpeciesFilter {
 
       case SpeciesFilterMode.geoMerge:
         if (geoScores == null) return detections;
-        return _mergeWithGeo(
-          detections,
-          geoScores,
-          confidenceThreshold,
-        );
+        return _mergeWithGeo(detections, geoScores, confidenceThreshold);
 
       case SpeciesFilterMode.customList:
         if (customSpecies == null || customSpecies.isEmpty) return detections;
@@ -119,11 +115,13 @@ abstract final class SpeciesFilter {
       final mergedConfidence = d.confidence * geoScore;
 
       if (mergedConfidence >= confidenceThreshold) {
-        merged.add(Detection(
-          species: d.species,
-          confidence: mergedConfidence,
-          timestamp: d.timestamp,
-        ));
+        merged.add(
+          Detection(
+            species: d.species,
+            confidence: mergedConfidence,
+            timestamp: d.timestamp,
+          ),
+        );
       }
     }
 

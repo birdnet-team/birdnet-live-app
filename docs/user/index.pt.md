@@ -48,6 +48,14 @@ Configuração da pesquisa, painel de pesquisa ao vivo e guias de mapa, espectro
 
 O assistente de análise de arquivos em quatro etapas, opções de parâmetros e como os resultados são transferidos para a Revisão da Sessão.
 
+### [Análise em lote](batch-analysis.md)
+
+Processar e analisar múltiplos arquivos de áudio em lote. (Em breve)
+
+### [Modo ARU](aru-mode.md)
+
+Transforme seu dispositivo em uma unidade de gravação autónoma. (Em breve)
+
 ## Referência
 
 ### [FAQ](faq.md)

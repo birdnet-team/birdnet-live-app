@@ -48,6 +48,14 @@ Survey setup, the live survey dashboard, and the map, spectrogram, and summary t
 
 The four-step file-analysis wizard, parameter choices, and how results move into Session Review.
 
+### [Batch Analysis](batch-analysis.md)
+
+Process and analyze multiple audio files in bulk. (Coming Soon)
+
+### [ARU Mode](aru-mode.md)
+
+Turn your device into an autonomous recording unit. (Coming Soon)
+
 ## Reference
 
 ### [FAQ](faq.md)

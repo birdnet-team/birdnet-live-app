@@ -92,7 +92,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   bool _started = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
-  Timer? _uiUpdateTimer;
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
@@ -630,11 +629,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     _started = true;
     _onControllerStateChanged();
-
-    // Update UI periodically (elapsed time, stats).
-    _uiUpdateTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
   }
 
   void _showStartError(String message) {
@@ -642,10 +636,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 4),
-        ),
+        SnackBar(content: Text(message), duration: const Duration(seconds: 4)),
       );
   }
 
@@ -675,7 +666,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   Future<void> _finalizeAndReview() async {
     if (_finalizing) return;
     _finalizing = true;
-    _uiUpdateTimer?.cancel();
 
     try {
       final controller = ref.read(surveyControllerProvider);
@@ -723,11 +713,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       }
     } finally {
       _finalizing = false;
-      if (mounted) {
-        _uiUpdateTimer ??= Timer.periodic(const Duration(seconds: 1), (_) {
-          if (mounted) setState(() {});
-        });
-      }
     }
   }
 
@@ -750,7 +735,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _micContestedSub?.cancel();
-    _uiUpdateTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -758,6 +742,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   Widget build(BuildContext context) {
     final surveyState = ref.watch(surveyStateProvider);
+    // The active survey session is mutated in place, so watching the
+    // per-cycle live detections provides a reliable rebuild signal for the
+    // map/list shell even when the session object identity stays unchanged.
+    final _ = ref.watch(surveyDetectionsProvider);
     final session = ref.watch(surveySessionProvider);
     final controller = ref.read(surveyControllerProvider);
     final ringBuffer = ref.read(ringBufferProvider);
@@ -840,7 +828,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     final statusBar = _SurveyStatusBar(
-      elapsed: controller.elapsed,
       isActive: isActive,
       alertMode: AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider)),
       onStop: _confirmStop,
@@ -897,13 +884,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         const ExploreScreen(isEmbedded: true),
       ],
     );
-    final statsBar = SurveyStatsBar(
-      distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
-      detectionCount: session?.detections.length ?? 0,
-      speciesCount: session?.uniqueSpeciesCount ?? 0,
-      audioLevel: ringBuffer.rmsLevel(),
-      peakLevel: ringBuffer.peakLevel(),
-    );
+    final statsBar = _LiveSurveyStatsBar(isActive: isActive);
     final detectionList = Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
       child: ClipRRect(
@@ -991,27 +972,73 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 // Survey App Bar
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _SurveyStatusBar extends StatelessWidget {
+class _SurveyStatusBar extends ConsumerStatefulWidget {
   const _SurveyStatusBar({
-    required this.elapsed,
     required this.isActive,
     required this.alertMode,
     required this.onStop,
   });
 
-  final Duration elapsed;
   final bool isActive;
   final AlertMode alertMode;
   final VoidCallback onStop;
+
+  @override
+  ConsumerState<_SurveyStatusBar> createState() => _SurveyStatusBarState();
+}
+
+class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
+  Timer? _timer;
+  Duration _elapsed = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _elapsed = ref.read(surveyControllerProvider).elapsed;
+    if (widget.isActive) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _SurveyStatusBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && _timer == null) {
+      _startTimer();
+    } else if (!widget.isActive && _timer != null) {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {
+          _elapsed = ref.read(surveyControllerProvider).elapsed;
+        });
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    final hours = elapsed.inHours.toString().padLeft(2, '0');
-    final minutes = (elapsed.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
+    final hours = _elapsed.inHours.toString().padLeft(2, '0');
+    final minutes = (_elapsed.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (_elapsed.inSeconds % 60).toString().padLeft(2, '0');
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
@@ -1022,9 +1049,12 @@ class _SurveyStatusBar extends StatelessWidget {
             icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
+            onPressed:
+                widget.isActive
+                    ? widget.onStop
+                    : () => Navigator.of(context).pop(),
             tooltip: l10n.surveyStop,
-            color: isActive ? theme.colorScheme.error : null,
+            color: widget.isActive ? theme.colorScheme.error : null,
           ),
 
           // Elapsed timer (center).
@@ -1066,7 +1096,7 @@ class _SurveyStatusBar extends StatelessWidget {
           ),
 
           // Alert mode indicator.
-          if (alertMode != AlertMode.off)
+          if (widget.alertMode != AlertMode.off)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Tooltip(
@@ -1102,6 +1132,74 @@ class _SurveyStatusBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Survey Live Stats Bar Wrapper
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LiveSurveyStatsBar extends ConsumerStatefulWidget {
+  const _LiveSurveyStatsBar({required this.isActive});
+
+  final bool isActive;
+
+  @override
+  ConsumerState<_LiveSurveyStatsBar> createState() =>
+      _LiveSurveyStatsBarState();
+}
+
+class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isActive) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiveSurveyStatsBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && _timer == null) {
+      _startTimer();
+    } else if (!widget.isActive && _timer != null) {
+      _stopTimer();
+    }
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopTimer();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = ref.read(surveyControllerProvider);
+    final session = ref.watch(surveySessionProvider);
+    final ringBuffer = ref.read(ringBufferProvider);
+
+    return SurveyStatsBar(
+      distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
+      detectionCount: session?.detections.length ?? 0,
+      speciesCount: session?.uniqueSpeciesCount ?? 0,
+      audioLevel: ringBuffer.rmsLevel(),
+      peakLevel: ringBuffer.peakLevel(),
     );
   }
 }
@@ -1144,6 +1242,7 @@ class _SurveySpectrogram extends ConsumerWidget {
       maxDisplayFrequency: maxFreq,
       logAmplitude: logAmplitude,
       filterQuality: spectrogramFilterQualityFromString(quality),
+      quality: quality,
     );
   }
 }

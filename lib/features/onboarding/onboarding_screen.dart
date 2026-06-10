@@ -20,7 +20,10 @@
 //     there is no follow-up gate screen.
 // =====================================================================
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
@@ -31,6 +34,7 @@ import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 
@@ -65,8 +69,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool _termsAgreed = false;
   bool _micGranted = false;
   bool _locGranted = false;
+  bool _locUnavailable = false;
   bool _requestingMic = false;
   bool _requestingLoc = false;
+  int _locationRequestSerial = 0;
+
+  bool get _isDesktopPlatform =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.windows ||
+          defaultTargetPlatform == TargetPlatform.macOS ||
+          defaultTargetPlatform == TargetPlatform.linux);
 
   static const int _totalPages = 5;
   static const int _termsPageIndex = 4;
@@ -84,16 +96,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _refreshPermissionStatus() async {
-    try {
-      final loc = await Geolocator.checkPermission();
+    if (_isDesktopPlatform) {
       if (!mounted) return;
       setState(() {
+        _locUnavailable = true;
+        _locGranted = false;
+      });
+      return;
+    }
+
+    final serial = ++_locationRequestSerial;
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final loc = await Geolocator.checkPermission();
+      if (!mounted || serial != _locationRequestSerial) return;
+      setState(() {
+        _locUnavailable = !serviceEnabled;
         _locGranted =
             loc == LocationPermission.whileInUse ||
             loc == LocationPermission.always;
       });
     } catch (_) {
-      // ignore
+      // Preserve previous state on plugin/OS errors to avoid UI flicker.
     }
   }
 
@@ -114,21 +138,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _requestLocation() async {
     if (_requestingLoc) return;
+
+    if (_isDesktopPlatform) {
+      if (!mounted) return;
+      setState(() {
+        _locUnavailable = true;
+        _locGranted = false;
+      });
+      return;
+    }
+
     setState(() => _requestingLoc = true);
+    final serial = ++_locationRequestSerial;
     try {
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) {
         perm = await Geolocator.requestPermission();
       }
-      if (!mounted) return;
+      if (!mounted || serial != _locationRequestSerial) return;
       setState(() {
+        _locUnavailable = false;
         _locGranted =
             perm == LocationPermission.whileInUse ||
             perm == LocationPermission.always;
       });
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _locGranted = false);
+      // Preserve previous state on plugin/OS errors to avoid UI flicker.
     } finally {
       if (mounted) setState(() => _requestingLoc = false);
     }
@@ -213,6 +248,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     theme: theme,
                     micGranted: _micGranted,
                     locGranted: _locGranted,
+                    locUnavailable: _locUnavailable,
                     requestingMic: _requestingMic,
                     requestingLoc: _requestingLoc,
                     onRequestMic: _requestMic,
@@ -472,12 +508,13 @@ class _InfoPage extends StatelessWidget {
 // Page: Permissions (interactive)
 // ---------------------------------------------------------------------------
 
-class _PermissionsPage extends StatelessWidget {
+class _PermissionsPage extends ConsumerWidget {
   const _PermissionsPage({
     required this.l10n,
     required this.theme,
     required this.micGranted,
     required this.locGranted,
+    required this.locUnavailable,
     required this.requestingMic,
     required this.requestingLoc,
     required this.onRequestMic,
@@ -488,13 +525,14 @@ class _PermissionsPage extends StatelessWidget {
   final ThemeData theme;
   final bool micGranted;
   final bool locGranted;
+  final bool locUnavailable;
   final bool requestingMic;
   final bool requestingLoc;
   final Future<void> Function() onRequestMic;
   final Future<void> Function() onRequestLocation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ContentWidthConstraint(
       maxWidth: _kOnboardingMaxWidth,
       child: Padding(
@@ -546,6 +584,7 @@ class _PermissionsPage extends StatelessWidget {
                     title: l10n.permissionMicrophoneTitle,
                     description: l10n.permissionMicrophoneDescription,
                     granted: micGranted,
+                    unavailable: false,
                     busy: requestingMic,
                     onGrant: onRequestMic,
                     theme: theme,
@@ -557,10 +596,47 @@ class _PermissionsPage extends StatelessWidget {
                     title: l10n.permissionLocationTitle,
                     description: l10n.permissionLocationDescription,
                     granted: locGranted,
+                    unavailable: locUnavailable,
                     busy: requestingLoc,
                     onGrant: onRequestLocation,
                     theme: theme,
                     l10n: l10n,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.mapSheet,
+                    title: l10n.settingsPrivacyAllowMap,
+                    description: l10n.settingsPrivacyAllowMapSubtitle,
+                    value: ref.watch(privacyAllowMapProvider),
+                    onChanged:
+                        (val) =>
+                            ref.read(privacyAllowMapProvider.notifier).set(val),
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.public,
+                    title: l10n.settingsPrivacyAllowReverseGeocoding,
+                    description:
+                        l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
+                    value: ref.watch(privacyAllowReverseGeocodingProvider),
+                    onChanged:
+                        (val) => ref
+                            .read(privacyAllowReverseGeocodingProvider.notifier)
+                            .set(val),
+                    theme: theme,
+                  ),
+                  const SizedBox(height: 14),
+                  _ConsentTile(
+                    icon: AppIcons.cloud,
+                    title: l10n.settingsPrivacyAllowWeather,
+                    description: l10n.settingsPrivacyAllowWeatherSubtitle,
+                    value: ref.watch(privacyAllowWeatherProvider),
+                    onChanged:
+                        (val) => ref
+                            .read(privacyAllowWeatherProvider.notifier)
+                            .set(val),
+                    theme: theme,
                   ),
                 ],
               ),
@@ -578,6 +654,7 @@ class _PermissionTile extends StatelessWidget {
     required this.title,
     required this.description,
     required this.granted,
+    required this.unavailable,
     required this.busy,
     required this.onGrant,
     required this.theme,
@@ -588,6 +665,7 @@ class _PermissionTile extends StatelessWidget {
   final String title;
   final String description;
   final bool granted;
+  final bool unavailable;
   final bool busy;
   final Future<void> Function() onGrant;
   final ThemeData theme;
@@ -640,7 +718,26 @@ class _PermissionTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          if (granted)
+          if (unavailable)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  AppIcons.locationOffRounded,
+                  color: theme.colorScheme.outline,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  l10n.surveyLocationUnavailable,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            )
+          else if (granted)
             Icon(
               AppIcons.checkCircleRounded,
               color: AppSemanticColors.of(context).success,
@@ -661,9 +758,84 @@ class _PermissionTile extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                        : Text(l10n.permissionRequest),
+                        : Text(
+                            Platform.isIOS
+                                ? l10n.permissionRequestIOS
+                                : l10n.permissionRequest,
+                          ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsentTile extends StatelessWidget {
+  const _ConsentTile({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+    required this.theme,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(120),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.colorScheme.outlineVariant, width: 1),
+      ),
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 22,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(170),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Switch(value: value, onChanged: onChanged),
         ],
       ),
     );

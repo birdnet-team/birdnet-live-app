@@ -2,6 +2,7 @@
 .claude/
 /dev/*
 !/dev/sync_version.dart
+!/dev/build_inno_installer.ps1
 !/dev/mockups/
 !/dev/mockups/**
 /dev/mockups/output/

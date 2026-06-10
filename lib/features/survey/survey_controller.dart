@@ -472,6 +472,7 @@ class SurveyController {
       _autoStopBattery = autoStopBattery;
 
       // Open the first recording segment so [elapsed] starts ticking.
+      _session!.startSegment();
       _segmentStart = DateTime.now();
 
       // Start inference timer.
@@ -616,6 +617,7 @@ class SurveyController {
 
       // Open a new recording segment. Any previously accumulated time on
       // the session is preserved via [LiveSession.recordedDurationSeconds].
+      _session?.startSegment();
       _segmentStart = DateTime.now();
 
       final intervalMs = (1000.0 / inferenceRate).round();
@@ -1157,6 +1159,7 @@ class SurveyController {
     if (start == null || session == null) return;
     final secs = DateTime.now().difference(start).inSeconds;
     if (secs > 0) session.accumulateRecordedSeconds(secs);
+    session.closeSegment();
     _segmentStart = null;
   }
 
@@ -1167,6 +1170,7 @@ class SurveyController {
       // reflects time recorded since the last persist tick. We immediately
       // open a new segment so [elapsed] keeps ticking smoothly.
       _closeRecordingSegment();
+      _session!.startSegment();
       _segmentStart = DateTime.now();
 
       final appDir = await getApplicationDocumentsDirectory();

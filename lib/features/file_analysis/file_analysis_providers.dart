@@ -13,7 +13,6 @@
 // ```
 // =============================================================================
 
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -38,9 +37,11 @@ final fileAnalysisControllerProvider = Provider<FileAnalysisController>((ref) {
 // ---------------------------------------------------------------------------
 
 /// Reactive [FileAnalysisState] — tracks the pipeline lifecycle.
-final fileAnalysisStateProvider =
-    StateProvider<FileAnalysisState>((ref) => FileAnalysisState.idle);
+final fileAnalysisStateProvider = StateProvider<FileAnalysisState>(
+  (ref) => FileAnalysisState.idle,
+);
 
 /// Reactive analysis progress.
-final fileAnalysisProgressProvider =
-    StateProvider<AnalysisProgress>((ref) => AnalysisProgress.zero);
+final fileAnalysisProgressProvider = StateProvider<AnalysisProgress>(
+  (ref) => AnalysisProgress.zero,
+);

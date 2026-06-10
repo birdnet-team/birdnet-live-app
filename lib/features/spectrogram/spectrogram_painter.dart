@@ -60,6 +60,7 @@ class SpectrogramPainter extends CustomPainter {
     this.maxDisplayFrequency = 0,
     this.hopDuration = const Duration(milliseconds: 50),
     this.filterQuality = FilterQuality.high,
+    this.quality = 'medium',
     super.repaint,
   }) : _lut = SpectrogramColorMap.lut(colorMapName);
 
@@ -101,6 +102,9 @@ class SpectrogramPainter extends CustomPainter {
   /// more GPU per frame; older devices may want [FilterQuality.low].
   final FilterQuality filterQuality;
 
+  /// The quality preset ('low' | 'medium' | 'high').
+  final String quality;
+
   // ---------------------------------------------------------------------------
   // Internal state
   // ---------------------------------------------------------------------------
@@ -132,8 +136,10 @@ class SpectrogramPainter extends CustomPainter {
   /// [column] must have [binCount] elements, each in [0.0, 1.0].
   /// Call `markNeedsPaint()` on the owning [RenderObject] after this.
   void addColumn(Float64List column) {
-    assert(column.length == binCount,
-        'Column length ${column.length} != binCount $binCount');
+    assert(
+      column.length == binCount,
+      'Column length ${column.length} != binCount $binCount',
+    );
     _columns.add(column);
     if (_columns.length > maxColumns) {
       _columns.removeAt(0);
@@ -234,11 +240,32 @@ class SpectrogramPainter extends CustomPainter {
   // per call, causing OOM after ~3 min of continuous spectrogram updates).
   // ---------------------------------------------------------------------------
 
+  /// Hard cap on rendered frequency bins based on quality preset.
+  int get maxDisplayBins {
+    switch (quality.toLowerCase()) {
+      case 'low':
+        return 128;
+      case 'medium':
+        return 256;
+      case 'high':
+      default:
+        return 512;
+    }
+  }
+
   /// Number of frequency bins to display (constant per painter lifetime).
   int get displayBins {
     final effectiveMaxFreq =
         maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
-    return (effectiveMaxFreq * fftSize / sampleRate).round().clamp(1, binCount);
+    final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(
+      1,
+      binCount,
+    );
+    final binStride = (visibleBins / maxDisplayBins).ceil().clamp(
+      1,
+      visibleBins,
+    );
+    return (visibleBins / binStride).ceil();
   }
 
   /// Asynchronously rebuild the spectrogram image if new columns have
@@ -313,9 +340,16 @@ class SpectrogramPainter extends CustomPainter {
 
   /// Draw [newCols] new columns at 1:1 pixel resolution.
   ///
-  /// Each column is exactly 1 pixel wide and [binCount] pixels tall.
+  /// Each column is exactly 1 pixel wide and [displayBins] pixels tall.
   void _drawNewColumnsPixel(Canvas canvas, int imgW, int imgH, int newCols) {
     final numCols = _columns.length;
+    final effectiveMaxFreq =
+        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(
+      1,
+      binCount,
+    );
+    final binStride = (visibleBins / imgH).ceil().clamp(1, visibleBins);
 
     for (var i = 0; i < newCols; i++) {
       final colIdx = numCols - newCols + i;
@@ -326,8 +360,23 @@ class SpectrogramPainter extends CustomPainter {
 
       for (var y = 0; y < imgH; y++) {
         // Flip vertically — low frequencies at the bottom.
-        final srcBin = imgH - 1 - y;
-        final value = srcBin < column.length ? column[srcBin] : 0.0;
+        final displayRow = imgH - 1 - y;
+
+        final binStart = displayRow * binStride;
+        final binEnd = (binStart + binStride).clamp(0, column.length);
+
+        var value = 0.0;
+        if (binStart < column.length) {
+          var sum = 0.0;
+          var count = 0;
+          for (var b = binStart; b < binEnd; b++) {
+            sum += column[b];
+            count++;
+          }
+          if (count > 0) {
+            value = sum / count;
+          }
+        }
 
         // If the value maps to the 0th index, it's already the background color.
         final lutIndex = (value * 255).round().clamp(0, 255);
@@ -349,9 +398,14 @@ class SpectrogramPainter extends CustomPainter {
   /// fall within the Nyquist frequency.
   void _paintFrequencyAxis(Canvas canvas, Size size, Rect spectrogramRect) {
     final nyquist = sampleRate / 2;
-    final labelFreqs = <double>[1000, 2000, 4000, 8000, 10000]
-        .where((f) => f < nyquist)
-        .toList();
+    final labelFreqs =
+        <double>[
+          1000,
+          2000,
+          4000,
+          8000,
+          10000,
+        ].where((f) => f < nyquist).toList();
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -363,9 +417,10 @@ class SpectrogramPainter extends CustomPainter {
       fontSize: 10,
     );
 
-    final linePaint = Paint()
-      ..color = Colors.white.withAlpha(51)
-      ..strokeWidth = 0.5;
+    final linePaint =
+        Paint()
+          ..color = Colors.white.withAlpha(51)
+          ..strokeWidth = 0.5;
 
     for (final freq in labelFreqs) {
       // Normalize frequency to vertical position (0 = bottom = 0 Hz).
@@ -382,15 +437,18 @@ class SpectrogramPainter extends CustomPainter {
       );
 
       // Label text.
-      final label = freq >= 1000
-          ? '${(freq / 1000).toStringAsFixed(0)}k'
-          : '${freq.toInt()}';
+      final label =
+          freq >= 1000
+              ? '${(freq / 1000).toStringAsFixed(0)}k'
+              : '${freq.toInt()}';
       textPainter.text = TextSpan(text: label, style: labelStyle);
       textPainter.layout(maxWidth: 44);
       textPainter.paint(
         canvas,
-        Offset(spectrogramRect.left - textPainter.width - 4,
-            y - textPainter.height / 2),
+        Offset(
+          spectrogramRect.left - textPainter.width - 4,
+          y - textPainter.height / 2,
+        ),
       );
     }
   }
@@ -425,9 +483,10 @@ class SpectrogramPainter extends CustomPainter {
       if (x < spectrogramRect.left || x > spectrogramRect.right) continue;
 
       final secsAgo = totalSeconds - t;
-      final label = secsAgo < 0.05
-          ? '0s'
-          : '-${secsAgo.toStringAsFixed(secsAgo < 10 ? 1 : 0)}s';
+      final label =
+          secsAgo < 0.05
+              ? '0s'
+              : '-${secsAgo.toStringAsFixed(secsAgo < 10 ? 1 : 0)}s';
 
       textPainter.text = TextSpan(text: label, style: labelStyle);
       textPainter.layout();
@@ -451,7 +510,10 @@ class SpectrogramPainter extends CustomPainter {
   /// Draw frequency labels as a semi-transparent overlay inside the
   /// spectrogram area every 2 kHz.
   void _paintFrequencyOverlay(
-      Canvas canvas, Rect spectrogramRect, int effectiveMaxFreq) {
+    Canvas canvas,
+    Rect spectrogramRect,
+    int effectiveMaxFreq,
+  ) {
     // Generate labels every 2 kHz up to (but not including) the max.
     final labelFreqs = <double>[
       for (var f = 2000.0; f < effectiveMaxFreq; f += 2000) f,
@@ -473,9 +535,10 @@ class SpectrogramPainter extends CustomPainter {
       ],
     );
 
-    final linePaint = Paint()
-      ..color = Colors.white.withAlpha(38)
-      ..strokeWidth = 0.5;
+    final linePaint =
+        Paint()
+          ..color = Colors.white.withAlpha(38)
+          ..strokeWidth = 0.5;
 
     for (final freq in labelFreqs) {
       final normY = freq / effectiveMaxFreq;

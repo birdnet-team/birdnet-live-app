@@ -15,6 +15,13 @@
       </div>
       <div class="toolbar-controls">
         <label>
+          <span class="sr-only">Device Type</span>
+          <select id="deviceTypeSelect" aria-label="Device Type">
+            <option value="phone">iPhone (1290 × 2796)</option>
+            <option value="ipad">iPad (2048 × 2732)</option>
+          </select>
+        </label>
+        <label>
           <span class="sr-only">Language</span>
           <select id="languageSelect" aria-label="Language"></select>
         </label>
@@ -56,6 +63,7 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const config = window.BIRDNET_MOCKUPS;
+    const deviceTypeSelect = document.getElementById('deviceTypeSelect');
     const languageSelect = document.getElementById('languageSelect');
     const languageLinks = document.getElementById('languageLinks');
     const renderButton = document.getElementById('renderButton');
@@ -65,6 +73,8 @@
     const grid = document.getElementById('previewGrid');
     const template = document.getElementById('mockupTemplate');
     const requestedLang = params.get('lang') || localStorage.getItem('mockupLang') || 'en';
+    const requestedDevice = params.get('device_type') || localStorage.getItem('mockupDeviceType') || 'phone';
+    const isIpad = params.get('ipad') === '1' || requestedDevice === 'ipad';
     const exportMode = params.get('export') === '1';
     const deviceExportMode = params.get('device') === '1';
     const exportSlide = params.get('slide');
@@ -72,12 +82,26 @@
 
     document.documentElement.lang = lang;
     if (exportMode) document.body.classList.add('export');
+    if (isIpad) {
+      document.body.classList.add('ipad-mode');
+      document.documentElement.classList.add('ipad-mode-root');
+    }
     if (deviceExportMode) {
       document.documentElement.classList.add('device-export-root');
       document.body.classList.add('device-export');
     }
 
     function fillLanguageSelect() {
+      if (deviceTypeSelect) {
+        deviceTypeSelect.value = isIpad ? 'ipad' : 'phone';
+        deviceTypeSelect.addEventListener('change', () => {
+          localStorage.setItem('mockupDeviceType', deviceTypeSelect.value);
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('device_type', deviceTypeSelect.value);
+          window.location.search = urlParams.toString();
+        });
+      }
+
       for (const [code, entry] of Object.entries(config.languages)) {
         const option = document.createElement('option');
         option.value = code;
@@ -87,14 +111,16 @@
 
         const link = document.createElement('a');
         link.className = 'button-link';
-        link.href = `preview.html?lang=${encodeURIComponent(code)}`;
+        link.href = `preview.html?lang=${encodeURIComponent(code)}${isIpad ? '&device_type=ipad' : ''}`;
         link.textContent = entry.name;
         if (code === lang) link.setAttribute('aria-current', 'page');
         languageLinks.appendChild(link);
       }
       languageSelect.addEventListener('change', () => {
         localStorage.setItem('mockupLang', languageSelect.value);
-        window.location.href = `preview.html?lang=${encodeURIComponent(languageSelect.value)}`;
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('lang', languageSelect.value);
+        window.location.search = urlParams.toString();
       });
     }
 
@@ -109,12 +135,13 @@
     }
 
     async function renderFromPreview(allLanguages, deviceScreenshots = false) {
+      const ipadFlag = isIpad ? ' --ipad' : '';
       if (window.location.protocol === 'file:') {
         const command = deviceScreenshots
           ? 'node render-mockups.js --device-screenshots'
           : allLanguages
-          ? 'node render-mockups.js --all-languages'
-          : `node render-mockups.js --lang ${lang}`;
+          ? `node render-mockups.js --all-languages${ipadFlag}`
+          : `node render-mockups.js --lang ${lang}${ipadFlag}`;
         await navigator.clipboard?.writeText(command).catch(() => {});
         renderStatus.textContent = `Open this folder in a terminal and run: ${command}`;
         return;
@@ -125,14 +152,14 @@
       renderStatus.textContent = deviceScreenshots
         ? 'Rendering clean device screenshots...'
         : allLanguages
-        ? 'Rendering all locales...'
-        : `Rendering ${lang}...`;
+        ? `Rendering all locales (${isIpad ? 'iPad' : 'iPhone'})...`
+        : `Rendering ${lang} (${isIpad ? 'iPad' : 'iPhone'})...`;
       try {
         const url = deviceScreenshots
           ? '/render?devices=1'
           : allLanguages
-          ? '/render?all=1'
-          : `/render?lang=${encodeURIComponent(lang)}`;
+          ? `/render?all=1${isIpad ? '&ipad=1' : ''}`
+          : `/render?lang=${encodeURIComponent(lang)}${isIpad ? '&ipad=1' : ''}`;
         const response = await fetch(url, { cache: 'no-store' });
         const result = await response.json();
         if (!response.ok || !result.success) {
@@ -141,8 +168,8 @@
         renderStatus.textContent = deviceScreenshots
           ? 'Rendered clean device screenshots to output/screenshots/.'
           : allLanguages
-          ? 'Rendered all locales to output/.'
-          : `Rendered ${lang} to output/${lang}/.`;
+          ? `Rendered all locales (${isIpad ? 'iPad' : 'iPhone'}) to output/.`
+          : `Rendered ${lang} (${isIpad ? 'iPad' : 'iPhone'}) to output/${lang}/.`;
       } catch (error) {
         renderStatus.textContent = error.message;
       } finally {
@@ -179,9 +206,23 @@
         node.querySelector('[data-field="title"]').textContent = copy.title;
         node.querySelector('[data-field="subtitle"]').textContent = copy.subtitle;
         const screenshot = node.querySelector('[data-field="screenshot"]');
-        screenshot.src = slide.screenshot;
+        const phoneFrame = node.querySelector('.phone-frame');
+        if (isIpad) {
+          screenshot.src = slide.screenshot.replace('screenshot_', 'ipad_screenshot_').replace('.png', '.jpg');
+          if (phoneFrame) {
+            phoneFrame.src = 'empty_ipad_frame.png';
+          }
+        } else {
+          screenshot.src = slide.screenshot;
+          if (phoneFrame) {
+            phoneFrame.src = 'empty_phone_frame.png';
+          }
+        }
         screenshot.alt = copy.title;
         if (exportMode) node.classList.add('export-target');
+        if (isIpad) {
+          node.classList.add('ipad-card');
+        }
         grid.appendChild(node);
       });
     }

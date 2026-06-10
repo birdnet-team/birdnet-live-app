@@ -1,4 +1,4 @@
-﻿// =============================================================================
+// =============================================================================
 // Detection Sampler — Controls which survey detection clips are kept on disk
 // =============================================================================
 //
@@ -220,7 +220,8 @@ class DetectionSampler {
     const earthRadius = 6371000.0; // meters
     final dLat = _radians(lat2 - lat1);
     final dLon = _radians(lon2 - lon1);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_radians(lat1)) *
             math.cos(_radians(lat2)) *
             math.sin(dLon / 2) *

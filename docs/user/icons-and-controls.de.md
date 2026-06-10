@@ -6,11 +6,11 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 
 | Kontrolle | Wo Sie es sehen | Was es tut |
 |---|---|---|
-| :material-tune: **Einstellungen** | Home-Fußzeile, Live, Punktezählung, Umfrage, Dateianalyse, Sitzungsrückblick | Öffnet Einstellungen. In den Modusbildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
-| :material-magnify: **Erkunden** | Home-Fußzeile | Öffnet „Erkunden“. |
-| :material-music-box-multiple-outline: **Bibliothek** | Home-Fußzeile | Öffnet die Sitzungsbibliothek. |
-| :material-help-circle-outline: **Hilfe** | Startseite-Fußzeile, Kopfzeile „Erkunden“, Umfrage-Dashboard, Symbolleiste „Sitzungsüberprüfung“ | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
-| :material-information-outline: **Info / Über** | Home-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
+| :material-tune: **Einstellungen** | Start-Fußzeile, Live, Punktezählung, Umfrage, Dateianalyse, Sitzungsrückblick | Öffnet Einstellungen. In den Modusbildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
+| :material-magnify: **Erkunden** | Start-Fußzeile | Öffnet „Erkunden“. |
+| :material-music-box-multiple-outline: **Bibliothek** | Start-Fußzeile | Öffnet die Sitzungsbibliothek. |
+| :material-help-circle-outline: **Hilfe** | Start-Fußzeile, Kopfzeile „Erkunden“, Umfrage-Dashboard, Symbolleiste „Sitzungsüberprüfung“ | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
+| :material-information-outline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder einen zusammenfassenden Kontext an. |
 | :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
 | :material-open-in-new: **Extern öffnen** | Über Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, beispielsweise das Online-Benutzerhandbuch. |
 | :material-volunteer-activism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |

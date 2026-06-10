@@ -113,6 +113,34 @@ class HelpScreen extends StatelessWidget {
               title: l10n.helpFileAnalysisTitle,
               body: l10n.helpFileAnalysisBody,
             ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.batchAnalysis),
+              color: sessionTypeAccentColor(theme, SessionType.batchAnalysis),
+              containerColor:
+                  isBrandTheme
+                      ? sessionTypeAccentColor(
+                        theme,
+                        SessionType.batchAnalysis,
+                      ).withAlpha(30)
+                      : sessionTypeContainerColor(
+                        theme,
+                        SessionType.batchAnalysis,
+                      ),
+              title: l10n.helpBatchAnalysisTitle,
+              body: l10n.helpBatchAnalysisBody,
+            ),
+            _HelpSection(
+              icon: sessionTypeIcon(SessionType.aru),
+              color: sessionTypeAccentColor(theme, SessionType.aru),
+              containerColor:
+                  isBrandTheme
+                      ? sessionTypeAccentColor(theme, SessionType.aru).withAlpha(
+                        30,
+                      )
+                      : sessionTypeContainerColor(theme, SessionType.aru),
+              title: l10n.helpAruTitle,
+              body: l10n.helpAruBody,
+            ),
             const SizedBox(height: 20),
 
             // ── 3. Discover & revisit (Explore + Session Library) ──

@@ -49,10 +49,7 @@ class SpeciesDescriptionService {
   ///
   /// Falls back to English if the description is not available in the
   /// requested locale.  Returns null if no description exists at all.
-  Future<String?> getDescription(
-    String scientificName,
-    String locale,
-  ) async {
+  Future<String?> getDescription(String scientificName, String locale) async {
     // Ensure the requested locale is loaded.
     if (!_cache.containsKey(locale)) {
       await _loadLocale(locale);
@@ -79,9 +76,7 @@ class SpeciesDescriptionService {
         '${_cache[locale]!.length} descriptions',
       );
     } catch (e) {
-      debugPrint(
-        '[SpeciesDescriptionService] failed to load $locale: $e',
-      );
+      debugPrint('[SpeciesDescriptionService] failed to load $locale: $e');
       _cache[locale] = {};
     }
   }
