@@ -25,8 +25,8 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
 
 ## Translation Conventions
 
-- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode — these are established field terminology and stay in English in every locale.
-- **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX, Raven Selection Table.
+- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode, Raven Selection Table, Smart, Gain — these are established field terms and stay in English in every locale.
+- **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX.
 - **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
 - **Gain**: Kept as "Gain" in every locale (universal audio term).
 - **Settings labels**: All setting titles, mode names, color map names, and status messages are localized.
@@ -64,7 +64,7 @@ BirdNET Live uses Flutter's built-in localization system with ARB (Application R
 
 ## Configuration
 
-Localization is configured in `l10n.yaml` at the project root. Generated files go to `lib/l10n/gen/`.
+Localization is configured in `l10n.yaml` at the project root. Generated files go to `lib/l10n/`.
 
 ## Language Settings
 

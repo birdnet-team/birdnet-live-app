@@ -61,6 +61,51 @@ lib/features/{name}/
   widgets/                   # Feature-specific widgets
 ```
 
+## Translation Contributions
+
+BirdNET Live uses ARB files in `lib/l10n/` and requires complete coverage for all supported locales.
+
+### Supported Locales
+
+- `en`
+- `de`
+- `cs`
+- `es`
+- `fr`
+- `it`
+- `pt`
+- `nl`
+- `pl`
+- `ru`
+
+### Translation Rules
+
+- Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart, Gain.
+- Keep placeholders and message syntax intact (`{count}`, `{name}`, ICU `plural`/`select` blocks).
+- Add or update the `@key` metadata `description` for new or ambiguous strings so translators have context.
+- Do not split one sentence into multiple keys just to compose it in code.
+- Do not hardcode UI strings in Dart widgets; always use `l10n.keyName`.
+- For wording changes that alter meaning, prefer a new key name instead of silently reusing an old one.
+- If you use machine translation, always do a human review before opening a PR.
+
+### Translation Workflow
+
+1. Add or update the source string in `lib/l10n/app_en.arb`.
+2. Add matching translations in every other locale ARB file.
+3. Run `flutter gen-l10n`.
+4. Run `flutter analyze`.
+5. Run focused tests when the string change affects behavior (for example plural/select logic).
+6. Manually check the changed screens in at least one non-English locale and look for overflow/truncation in both portrait and landscape.
+
+### Pull Request Checklist for Translation Changes
+
+- Include only translation-related edits in a translation PR (ARB files and generated localization output).
+- Mention which locales were updated.
+- Call out any intentionally untranslated terms.
+- Add screenshots when the change affects layout-sensitive UI text.
+
+For deeper localization conventions, see `docs/developer/localization.md`.
+
 ## Pull Request Guidelines
 
 1. **Branch naming**: `feature/description`, `fix/description`, `docs/description`
