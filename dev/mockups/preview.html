@@ -66,6 +66,7 @@
           <img class="feature-background" data-field="feature-background" alt="">
           <div class="feature-shade" aria-hidden="true"></div>
           <div class="feature-copy">
+            <img class="feature-logo" data-field="feature-logo" alt="">
             <h2 class="feature-title" data-field="feature-title"></h2>
             <p class="feature-tagline" data-field="feature-tagline"></p>
           </div>
@@ -289,6 +290,9 @@
       const background = node.querySelector('[data-field="feature-background"]');
       background.src = featureGraphic.background;
       background.alt = `${featureGraphic.title} feature graphic`;
+      const logo = node.querySelector('[data-field="feature-logo"]');
+      logo.src = featureGraphic.logo;
+      logo.alt = `${featureGraphic.title} logo`;
       node.querySelector('[data-field="feature-title"]').textContent = featureGraphic.title;
       node.querySelector('[data-field="feature-tagline"]').textContent =
         config.featureGraphicHomeSubtitles?.[lang] ||
