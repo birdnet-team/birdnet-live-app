@@ -81,6 +81,8 @@ BirdNET Live uses ARB files in `lib/l10n/` and requires complete coverage for al
 ### Translation Rules
 
 - Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart, Gain.
+- Prefer gender-neutral wording where it is natural and idiomatic in the target language.
+- Keep register consistent within each locale: use either formal or informal phrasing, but do not mix both in the same locale.
 - Keep placeholders and message syntax intact (`{count}`, `{name}`, ICU `plural`/`select` blocks).
 - Add or update the `@key` metadata `description` for new or ambiguous strings so translators have context.
 - Do not split one sentence into multiple keys just to compose it in code.
@@ -92,10 +94,11 @@ BirdNET Live uses ARB files in `lib/l10n/` and requires complete coverage for al
 
 1. Add or update the source string in `lib/l10n/app_en.arb`.
 2. Add matching translations in every other locale ARB file.
-3. Run `flutter gen-l10n`.
-4. Run `flutter analyze`.
-5. Run focused tests when the string change affects behavior (for example plural/select logic).
-6. Manually check the changed screens in at least one non-English locale and look for overflow/truncation in both portrait and landscape.
+3. If you add a new language, make sure it is included in the app language selector and supported locale configuration.
+4. Run `flutter gen-l10n`.
+5. Run `flutter analyze`.
+6. Run focused tests when the string change affects behavior (for example plural/select logic).
+7. Manually check the changed screens in at least one non-English locale and look for overflow/truncation in both portrait and landscape.
 
 ### Pull Request Checklist for Translation Changes
 
