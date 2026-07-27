@@ -46,7 +46,7 @@ dependencies:
   just_audio_windows: ^0.2.3
 
   # Background service
-  flutter_foreground_task: ^9.2.2
+  flutter_foreground_task: ^10.0.0
   battery_plus: ^7.0.0
 
   # Notifications (heads-up species alerts during surveys)
