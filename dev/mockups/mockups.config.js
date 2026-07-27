@@ -21,6 +21,7 @@ window.BIRDNET_MOCKUPS = {
   },
   featureGraphic: {
     background: 'blue_jay_1.jpg',
+    logo: '../../assets/images/app-icon.png',
     title: 'BirdNET Live',
     taglines: {
       en: 'Professional bioacoustics in your pocket',
