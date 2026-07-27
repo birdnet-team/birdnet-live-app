@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-07-27
+
+### Fixed
+
+- Fixed a serious problem where another app taking the microphone during a survey (for example, opening the camera to shoot a video) could leave the phone unable to record audio in any app until it was rebooted. The app no longer keeps re-grabbing a microphone it can't have while running in the background, which was what wedged the device audio system. Losing the microphone is now handled gracefully: the survey signal meter shows a crossed-out mic, the ongoing notification explains that another app is using the microphone, and audio recording resumes automatically as soon as you return to the app.
+
 ## [0.18.9] - 2026-07-11
 
 ### Added
