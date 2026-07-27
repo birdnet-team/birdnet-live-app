@@ -1231,6 +1231,9 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
     final controller = ref.read(surveyControllerProvider);
     final session = ref.watch(surveySessionProvider);
     final ringBuffer = ref.read(ringBufferProvider);
+    // Polled on the 1 s stats-bar timer — no stream subscription needed here;
+    // the audio service flips this the moment the mic is lost or regained.
+    final micLost = ref.read(audioCaptureServiceProvider).isMicContested;
 
     return SurveyStatsBar(
       distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
@@ -1238,6 +1241,7 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
       speciesCount: session?.uniqueSpeciesCount ?? 0,
       audioLevel: ringBuffer.rmsLevel(),
       peakLevel: ringBuffer.peakLevel(),
+      micLost: micLost,
     );
   }
 }
