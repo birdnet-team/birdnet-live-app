@@ -644,9 +644,15 @@ class SurveyController {
       _maxEndTime = DateTime.now().add(Duration(hours: maxDurationHours));
       _autoStopBattery = autoStopBattery;
 
-      // Open a new recording segment. Any previously accumulated time on
-      // the session is preserved via [LiveSession.recordedDurationSeconds].
-      _session?.startSegment();
+      await _notificationService.start(
+        title: _notificationTitle,
+        text: _buildNotificationText(),
+      );
+
+      // Reactivate only after all fallible async setup has completed so the
+      // original session stays untouched if setup fails. LiveSession.resume
+      // always opens a distinct segment and seeds legacy duration tracking.
+      _session!.resume();
       _segmentStart = DateTime.now();
 
       final intervalMs = (1000.0 / inferenceRate).round();
@@ -654,7 +660,6 @@ class SurveyController {
         Duration(milliseconds: intervalMs),
         (_) => _runInference(windowDuration: windowDuration),
       );
-
       _persistTimer = Timer.periodic(
         const Duration(seconds: _persistIntervalSeconds),
         (_) {
@@ -662,15 +667,9 @@ class SurveyController {
           _checkBatteryAutoStop();
         },
       );
-
       _notificationTimer = Timer.periodic(
         const Duration(seconds: _notificationIntervalSeconds),
         (_) => _updateNotification(),
-      );
-
-      await _notificationService.start(
-        title: _notificationTitle,
-        text: _buildNotificationText(),
       );
 
       _state = SurveyState.active;

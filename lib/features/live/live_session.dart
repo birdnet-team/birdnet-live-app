@@ -989,6 +989,37 @@ class LiveSession {
     return (endTime ?? DateTime.now()).difference(startTime);
   }
 
+  /// Expected length of the concatenated recorded audio in seconds, with
+  /// pause/resume gaps removed.
+  ///
+  /// Used to detect a truncated recording (an audio file that ends before the
+  /// session's latest event) without falsely flagging resumed sessions, whose
+  /// wall-clock span includes the stopped gap. Shared by the export and
+  /// Session Review integrity checks so both agree.
+  double get expectedRecordedAudioSeconds {
+    if (segments.isNotEmpty) {
+      // Segment timestamps retain sub-second precision and collapse resume
+      // gaps, so they are the closest model of the concatenated audio.
+      return absoluteToRelative(endTime ?? DateTime.now());
+    }
+    // No segments: fall back to the accumulated recorded seconds, else the
+    // wall-clock span, then extend to cover any detection that ends later.
+    final recorded = _recordedDurationSeconds?.toDouble();
+    final end = endTime;
+    var expected =
+        recorded != null && recorded > 0
+            ? recorded
+            : end == null
+            ? 0.0
+            : end.difference(startTime).inMicroseconds / 1e6;
+    for (final detection in detections) {
+      final eventEnd = detection.endTimestamp ?? detection.timestamp;
+      final rel = absoluteToRelative(eventEnd);
+      if (rel > expected) expected = rel;
+    }
+    return expected;
+  }
+
   /// Number of unique species detected.
   int get uniqueSpeciesCount =>
       detections.map((d) => d.scientificName).toSet().length;
@@ -1165,12 +1196,202 @@ class LiveSession {
     segments.add(SessionSegment(startTime: now));
   }
 
+  /// Reactivates an ended session and opens a distinct recording segment.
+  ///
+  /// A resume must never use [startSegment]'s short-gap merge behavior:
+  /// [recordedDurationSeconds] already includes the closed segment, so
+  /// reopening it would count that time twice. Legacy sessions without
+  /// segment or accumulated-duration data are seeded from their original
+  /// wall-clock span before the new segment starts.
+  void resume() {
+    final previousEnd = endTime;
+    if (previousEnd == null) return;
+
+    if (segments.isEmpty) {
+      segments.add(SessionSegment(startTime: startTime, endTime: previousEnd));
+    }
+    _recordedDurationSeconds ??= segments.fold<int>(0, (total, segment) {
+      final segmentEnd = segment.endTime ?? previousEnd;
+      final seconds = segmentEnd.difference(segment.startTime).inSeconds;
+      return total + (seconds > 0 ? seconds : 0);
+    });
+
+    endTime = null;
+    segments.add(SessionSegment(startTime: DateTime.now()));
+  }
+
   /// Closes the currently active recording segment.
   void closeSegment() {
     if (segments.isNotEmpty) {
       final last = segments.last;
       last.endTime ??= endTime ?? DateTime.now();
     }
+  }
+
+  /// Rebase this session's audio timeline after its recording file was
+  /// physically cut down to `[startSec, endSec)` of the audio it used to
+  /// hold.
+  ///
+  /// Detection timestamps are wall-clock instants and stay untouched — a bird
+  /// sang when it sang, whatever we later did to the file. What changes is the
+  /// *mapping* from those instants to offsets in the recording, and that lives
+  /// entirely in [segments]: they are rewritten to describe only the stretches
+  /// still on disk, so [absoluteToRelative] keeps returning the right offset
+  /// without every caller having to learn about the trim.
+  ///
+  /// [startTime] is deliberately left alone. The session began when it began;
+  /// it simply no longer keeps audio for all of it. That also keeps
+  /// [displayName] and the library's ordering stable across a trim.
+  ///
+  /// Detections whose audio is entirely gone are dropped. Session Review
+  /// already does this when the trim is applied, but a trim can also reach
+  /// here straight from storage (saved by a build that only kept it as
+  /// metadata), and a detection with no audio left would otherwise pile up
+  /// at offset zero.
+  ///
+  /// Clears [trimStartSec] / [trimEndSec] — with the cut applied to the bytes,
+  /// there is no pending trim left to describe.
+  void applyDestructiveTrim({
+    required double startSec,
+    required double endSec,
+  }) {
+    final start = startSec < 0 ? 0.0 : startSec;
+    final end = endSec < start ? start : endSec;
+
+    // A session with no segments has the trivial timeline `ts - startTime`;
+    // model it as one synthetic segment so both shapes share the walk below.
+    final source =
+        segments.isNotEmpty
+            ? List<SessionSegment>.of(segments)
+            : [SessionSegment(startTime: startTime, endTime: endTime)];
+
+    // The recorder can flush a small tail beyond the session clock. The
+    // caller passes the end of the audio that was actually written, so extend
+    // the final timeline segment to cover that tail. Otherwise a valid cut
+    // wholly inside those final samples would leave [retained] empty and the
+    // already-shortened file would keep its old trim metadata.
+    var sourceSeconds = 0.0;
+    for (final segment in source) {
+      final length =
+          _effectiveSegmentEnd(
+            segment,
+          ).difference(segment.startTime).inMicroseconds /
+          1e6;
+      if (length > 0) sourceSeconds += length;
+    }
+    const maxRecorderClockTailSeconds = 5.0;
+    final clockTailSeconds = end - sourceSeconds;
+    if (source.isNotEmpty &&
+        clockTailSeconds > 0 &&
+        clockTailSeconds <= maxRecorderClockTailSeconds) {
+      final lastIndex = source.length - 1;
+      final last = source[lastIndex];
+      final extendedEnd = _effectiveSegmentEnd(
+        last,
+      ).add(Duration(microseconds: (clockTailSeconds * 1e6).round()));
+      source[lastIndex] = SessionSegment(
+        startTime: last.startTime,
+        endTime: extendedEnd,
+      );
+    }
+
+    double sourceRelative(DateTime timestamp) {
+      var offsetMicros = 0;
+      for (final segment in source) {
+        final segmentStart = segment.startTime;
+        final segmentEnd = _effectiveSegmentEnd(segment);
+        if (timestamp.isBefore(segmentStart)) break;
+        if (!timestamp.isAfter(segmentEnd)) {
+          offsetMicros += timestamp.difference(segmentStart).inMicroseconds;
+          break;
+        }
+        offsetMicros += segmentEnd.difference(segmentStart).inMicroseconds;
+      }
+      return offsetMicros / 1e6;
+    }
+
+    final retained = <SessionSegment>[];
+    var retainedSeconds = 0.0;
+    var consumed = 0.0;
+    for (final segment in source) {
+      final segmentStart = segment.startTime;
+      final segmentEnd = _effectiveSegmentEnd(segment);
+      final length = segmentEnd.difference(segmentStart).inMicroseconds / 1e6;
+      if (length <= 0) continue;
+
+      final segmentFrom = consumed;
+      final segmentTo = consumed + length;
+      consumed = segmentTo;
+
+      final from = segmentFrom > start ? segmentFrom : start;
+      final to = segmentTo < end ? segmentTo : end;
+      if (to <= from) continue;
+
+      retainedSeconds += to - from;
+      retained.add(
+        SessionSegment(
+          startTime: segmentStart.add(
+            Duration(microseconds: ((from - segmentFrom) * 1e6).round()),
+          ),
+          endTime: segmentStart.add(
+            Duration(microseconds: ((to - segmentFrom) * 1e6).round()),
+          ),
+        ),
+      );
+    }
+
+    // Nothing survived the cut — leave the session alone rather than
+    // publishing a timeline that maps every detection to zero.
+    if (retained.isEmpty) return;
+
+    // Resolve which detections keep audio *before* the segments are rewritten:
+    // the overlap test reads offsets off the old timeline.
+    final windowSec = settings.windowDuration.toDouble();
+    final survivors = [
+      for (final detection in detections)
+        if (() {
+          final detectionStart = sourceRelative(detection.timestamp);
+          final detectionEnd =
+              detection.endTimestamp == null
+                  ? detectionStart + windowSec
+                  : sourceRelative(detection.endTimestamp!);
+          return detectionEnd > start && detectionStart < end;
+        }())
+          detection,
+    ];
+
+    segments
+      ..clear()
+      ..addAll(retained);
+    if (survivors.length != detections.length) {
+      detections
+        ..clear()
+        ..addAll(survivors);
+    }
+    for (var i = 0; i < annotations.length; i++) {
+      final annotation = annotations[i];
+      final offset = annotation.offsetInRecording;
+      if (offset == null) continue;
+
+      // Timed annotations index the recording rather than wall-clock time.
+      // Keep retained markers aligned with the shorter file. Markers whose
+      // audio was removed become session-global so their note or voice memo
+      // is preserved without pointing at an unrelated sample.
+      final rebasedOffset =
+          offset >= start && offset < end ? offset - start : null;
+      annotations[i] = SessionAnnotation(
+        text: annotation.text,
+        createdAt: annotation.createdAt,
+        title: annotation.title,
+        offsetInRecording: rebasedOffset,
+        voiceMemoPath: annotation.voiceMemoPath,
+      );
+    }
+    // Measure what the segments actually kept, not what the caller asked
+    // for: a trim whose end runs past the recorded timeline retains less.
+    _recordedDurationSeconds = retainedSeconds.round();
+    trimStartSec = null;
+    trimEndSec = null;
   }
 
   DateTime _effectiveSegmentEnd(SessionSegment segment) {

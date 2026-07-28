@@ -99,6 +99,7 @@ import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import 'services/detection_sharing_service.dart';
+import 'services/session_audio_trim.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -316,6 +317,12 @@ class _SpectrogramChunk {
 
   void dispose() => image.dispose();
 }
+
+/// Shortest clip the trim editor will produce. Anything below this is treated
+/// as an accidental pinch of the handles and leaves the recording untrimmed,
+/// which keeps us from writing a zero-length export or a `setClip` range the
+/// platform players reject.
+const double _kMinTrimSeconds = 0.25;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Background spectrogram-chunk rendering
@@ -630,6 +637,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     Duration.zero,
   );
   Duration get _position => _positionNotifier.value;
+  double get _currentSourcePositionSec =>
+      _clipOffsetSec + _position.inMicroseconds / 1000000.0;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   bool _audioAvailable = false;
@@ -661,22 +670,66 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   bool get _hasUnsavedWork => _isDirty || _isUnsaved;
 
   bool _trimMode = false;
+
+  /// The *applied* trim, in original-recording seconds. These are the values
+  /// that drive the player clip, the spectrogram crop and what [_save]
+  /// persists. Null means the whole recording.
   double? _trimStartSec;
   double? _trimEndSec;
 
-  /// Pre-trim-mode values of [_trimStartSec]/[_trimEndSec], saved when
-  /// entering trim mode so the undo snapshot captures the real pre-trim state
-  /// instead of the transient handle positions set by [_onTrimChanged].
-  double? _preTrimStartSec;
-  double? _preTrimEndSec;
+  /// Set once [commitSessionTrim] reports the recording's container cannot
+  /// be cut. The trim stays valid as a playback/export range, but saving is
+  /// no longer destructive — so stop warning about deleted audio and stop
+  /// retrying the cut on every save. Reopening the session tries again.
+  bool _trimCommitUnsupported = false;
+
+  /// Live handle positions while the trim editor is open.
+  ///
+  /// Kept separate from [_trimStartSec]/[_trimEndSec] so dragging a handle
+  /// can never leak into a save, an undo snapshot or an export: the pending
+  /// values are only promoted by [_applyTrim] and are discarded when the
+  /// user leaves trim mode without confirming.
+  double? _pendingTrimStartSec;
+  double? _pendingTrimEndSec;
 
   // ── Clip state (after trim is applied) ─────────────────────────────
 
   /// Offset in original-recording seconds of the clip start (0 = no clip).
   double _clipOffsetSec = 0.0;
 
+  /// True while the player is clipped to a trim range.
+  ///
+  /// Set *before* every `setClip` call and cleared *before* every clip
+  /// removal, because just_audio pushes the new (clipped) length through
+  /// `durationStream` while `setClip` is still awaiting. Without this flag
+  /// that event would overwrite [_fullDurationSec] with the clip length —
+  /// which silently breaks the spectrogram crop, the trim editor and the
+  /// undo path, since every one of them maps absolute recording seconds
+  /// through the full duration.
+  bool _clipActive = false;
+
+  /// The clip range currently installed on the player, in original-recording
+  /// seconds. Null when the player is playing the whole recording. Used to
+  /// make [_syncPlayerClip] idempotent so undo/redo don't reload the source
+  /// (and reset playback) when the clip didn't actually change.
+  ({double start, double end})? _appliedClipRange;
+
   /// Full recording duration before any clip was applied.
   double _fullDurationSec = 0.0;
+
+  /// Length of the untrimmed recording in seconds.
+  ///
+  /// Prefers the player's reported duration and falls back to the decoded
+  /// audio metadata — `just_audio_windows` can report a null duration from
+  /// `setFilePath()` and only publish it later via `durationStream`.
+  double get _sourceDurationSec {
+    if (_fullDurationSec > 0) return _fullDurationSec;
+    final metadata = _spectrogramAudioMetadata;
+    if (metadata != null) {
+      return metadata.duration.inMicroseconds / 1e6;
+    }
+    return 0.0;
+  }
 
   /// Full-recording spectrogram (never cropped).  Kept for undo / trim view.
   ui.Image? _fullSpectrogramImage;
@@ -763,7 +816,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     annotations: List.of(_annotations),
     trimStartSec: _trimStartSec,
     trimEndSec: _trimEndSec,
-    clipOffsetSec: _clipOffsetSec,
   );
 
   void _pushUndo() {
@@ -786,7 +838,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
       _isDirty = _undoStack.isNotEmpty;
     });
-    _syncPlayerClip(snap.clipOffsetSec);
+    unawaited(_syncPlayerClip());
   }
 
   void _redo() {
@@ -804,57 +856,107 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
       _isDirty = true;
     });
-    _syncPlayerClip(snap.clipOffsetSec);
+    unawaited(_syncPlayerClip());
   }
 
-  /// Re-synchronize the player clip and spectrogram after restoring a
-  /// snapshot (undo/redo).  [snapshotClipOffset] is the clip offset that
-  /// was active when the snapshot was taken.
-  Future<void> _syncPlayerClip(double snapshotClipOffset) async {
-    if (snapshotClipOffset == _clipOffsetSec) return; // No clip change.
+  /// Normalizes a pair of trim handles into a usable clip range.
+  ///
+  /// Returns null when the pair doesn't describe a clip worth applying:
+  /// no trim set, an unknown recording length, or a range that collapsed
+  /// to (near) nothing after clamping. Callers treat null as "play the
+  /// whole recording".
+  ({double start, double end})? _resolveTrimRange(
+    double? startSec,
+    double? endSec,
+  ) {
+    if (startSec == null && endSec == null) return null;
+    final total = _sourceDurationSec;
+    if (total <= 0) return null;
+    final start = (startSec ?? 0.0).clamp(0.0, total).toDouble();
+    final end = (endSec ?? total).clamp(0.0, total).toDouble();
+    if (end - start < _kMinTrimSeconds) return null;
+    // A range covering the whole recording is not a trim.
+    if (start <= 0 && end >= total) return null;
+    return (start: start, end: end);
+  }
 
-    if (snapshotClipOffset > 0) {
-      // Re-apply clip matching the snapshot's trim range.
-      final start = _trimStartSec ?? 0.0;
-      final end = _trimEndSec ?? _fullDurationSec;
-      final startDur = Duration(microseconds: (start * 1e6).round());
-      final endDur = Duration(microseconds: (end * 1e6).round());
-      final clippedDur = await _player.setClip(start: startDur, end: endDur);
-      await _player.seek(Duration.zero);
-      _resetMemoAutoPlayback();
-      await _cropSpectrogramForClip(start, end);
-      if (mounted) {
-        setState(() {
-          _clipOffsetSec = snapshotClipOffset;
-          _duration = clippedDur ?? (endDur - startDur);
-        });
-        _positionNotifier.value = Duration.zero;
-        _invalidateLazySpectrogramPipeline();
-      }
-    } else {
-      // Remove clip — restore full recording.
+  /// Re-synchronizes the player clip and the spectrogram with the current
+  /// [_trimStartSec] / [_trimEndSec] values.
+  ///
+  /// This is the single place that talks to `setClip`, so applying a trim,
+  /// resetting it, reopening a trimmed session and undo/redo all converge
+  /// on the same state. It is a no-op when the resulting range already
+  /// matches what the player is playing.
+  Future<void> _syncPlayerClip() async {
+    final hasTrim = _trimStartSec != null || _trimEndSec != null;
+    // The recording length isn't known yet (just_audio_windows publishes it
+    // asynchronously). Leave the player alone rather than clipping against
+    // a zero duration — the trim values survive and are applied once the
+    // duration arrives.
+    if (hasTrim && _sourceDurationSec <= 0) return;
+
+    final range = _resolveTrimRange(_trimStartSec, _trimEndSec);
+    if (range == null) {
+      if (_appliedClipRange == null) return; // Already unclipped.
+      _appliedClipRange = null;
+      _clipActive = false;
       await _player.setClip();
       await _player.seek(Duration.zero);
       _resetMemoAutoPlayback();
-      if (mounted) {
-        setState(() {
-          _clipOffsetSec = 0.0;
-          _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-          if (_spectrogramImage != null &&
-              !identical(_spectrogramImage, _fullSpectrogramImage)) {
-            _spectrogramImage!.dispose();
-          }
-          _spectrogramImage = _fullSpectrogramImage;
-        });
-        _positionNotifier.value = Duration.zero;
-        // The strip's own didUpdateWidget will fire a viewport request
-        // for the actual visible window once the duration/clip changes
-        // propagate; just make sure any stale lazy state (pending chunk
-        // reservations or a stuck `_decoding=true`) is reset so that
-        // follow-up request can succeed instead of being short-circuited.
-        _invalidateLazySpectrogramPipeline();
-      }
+      if (!mounted) return;
+      setState(() {
+        _clipOffsetSec = 0.0;
+        _duration = Duration(microseconds: (_sourceDurationSec * 1e6).round());
+        if (_spectrogramImage != null &&
+            !identical(_spectrogramImage, _fullSpectrogramImage)) {
+          _spectrogramImage!.dispose();
+        }
+        _spectrogramImage = _fullSpectrogramImage;
+      });
+      _positionNotifier.value = Duration.zero;
+      // The strip's own didUpdateWidget will fire a viewport request
+      // for the actual visible window once the duration/clip changes
+      // propagate; just make sure any stale lazy state (pending chunk
+      // reservations or a stuck `_decoding=true`) is reset so that
+      // follow-up request can succeed instead of being short-circuited.
+      _invalidateLazySpectrogramPipeline();
+      return;
     }
+
+    final applied = _appliedClipRange;
+    if (applied != null &&
+        (applied.start - range.start).abs() < 0.001 &&
+        (applied.end - range.end).abs() < 0.001) {
+      // Already clipped to this exact range — but the spectrogram may have
+      // been rebuilt underneath us (a color-map or quality change re-decodes
+      // it and hands back the *uncropped* image), so re-crop in that case.
+      if (_spectrogramImage == null ||
+          identical(_spectrogramImage, _fullSpectrogramImage)) {
+        await _cropSpectrogramForClip(range.start, range.end);
+      }
+      return;
+    }
+
+    // Mark the clip active *before* awaiting setClip: just_audio pushes the
+    // clipped length through durationStream while this call is in flight.
+    _appliedClipRange = range;
+    _clipActive = true;
+    final startDur = Duration(microseconds: (range.start * 1e6).round());
+    final endDur = Duration(microseconds: (range.end * 1e6).round());
+    final clippedDur = await _player.setClip(start: startDur, end: endDur);
+    await _player.seek(Duration.zero);
+    _resetMemoAutoPlayback();
+    await _cropSpectrogramForClip(range.start, range.end);
+    if (!mounted) return;
+    setState(() {
+      _clipOffsetSec = range.start;
+      _duration = clippedDur ?? (endDur - startDur);
+    });
+    _positionNotifier.value = Duration.zero;
+    // Drop any in-flight lazy chunk loads from the previous viewport so the
+    // strip's follow-up request for the new clip range can schedule freshly
+    // instead of getting stuck behind a stale `_decoding = true` flag.
+    _invalidateLazySpectrogramPipeline();
   }
 
   /// Reset transient lazy-spectrogram bookkeeping after a clip change
@@ -954,6 +1056,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _initAudio() async {
+    // Re-entrant: a destructive trim reloads the recording in place, and the
+    // stream listeners below are re-registered each time, so drop the previous
+    // ones instead of stacking a second set on the same player.
+    await _positionSubscription?.cancel();
+    _positionSubscription = null;
+    await _durationSubscription?.cancel();
+    _durationSubscription = null;
+    await _playerStateSubscription?.cancel();
+    _playerStateSubscription = null;
+
     final path = widget.session.recordingPath;
     if (path == null || !File(path).existsSync()) {
       if (mounted) setState(() => _initializing = false);
@@ -986,8 +1098,21 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         if (newDuration == _duration) return;
         setState(() {
           _duration = newDuration;
-          _fullDurationSec = _duration.inMicroseconds / 1e6;
+          // While a trim clip is active the reported duration is the
+          // *clip* length, not the recording length — see [_clipActive].
+          if (!_clipActive) {
+            _fullDurationSec = _duration.inMicroseconds / 1e6;
+          }
         });
+        // A saved trim that arrived before the recording length did was
+        // deferred by [_syncPlayerClip]; now that we know the length, apply
+        // it — otherwise reopening a trimmed session on Windows would play
+        // back untrimmed.
+        if (!_clipActive &&
+            _appliedClipRange == null &&
+            (_trimStartSec != null || _trimEndSec != null)) {
+          unawaited(_syncPlayerClip());
+        }
       });
 
       await _inspectAudioIntegrity(path);
@@ -1078,26 +1203,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 _formatLabelForPath(path),
               );
       final audioSec = metadata.duration.inMicroseconds / 1e6;
-      var expectedSec = 0.0;
-      final recordedSec = widget.session.recordedDurationSeconds?.toDouble();
-      if (recordedSec != null && recordedSec > 0) {
-        expectedSec = recordedSec;
-      } else {
-        final end = widget.session.endTime;
-        if (end != null) {
-          expectedSec = math.max(
-            expectedSec,
-            end.difference(widget.session.startTime).inMicroseconds / 1e6,
-          );
-        }
-        for (final detection in widget.session.detections) {
-          final eventEnd = detection.endTimestamp ?? detection.timestamp;
-          expectedSec = math.max(
-            expectedSec,
-            eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
-          );
-        }
-      }
+      final expectedSec = widget.session.expectedRecordedAudioSeconds;
       final isTruncated = expectedSec > 0 && audioSec + 5 < expectedSec;
       if (mounted && isTruncated != _audioTruncatedWarning) {
         setState(() => _audioTruncatedWarning = isTruncated);
@@ -1122,29 +1228,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// Re-apply a previously saved trim after audio and spectrogram are loaded.
   ///
   /// When a session with trim values is reopened, [_initAudio] loads the full
-  /// recording.  This method clips the player and crops the spectrogram to
-  /// match the persisted trim range so the user sees the trimmed state.
+  /// recording.  This clips the player and crops the spectrogram to match the
+  /// persisted trim range so the user sees the trimmed state.
   Future<void> _restoreSavedTrim() async {
     if (_trimStartSec == null && _trimEndSec == null) return;
-
-    final start = _trimStartSec ?? 0.0;
-    final end = _trimEndSec ?? _fullDurationSec;
-
-    final startDur = Duration(microseconds: (start * 1e6).round());
-    final endDur = Duration(microseconds: (end * 1e6).round());
-    final clippedDur = await _player.setClip(start: startDur, end: endDur);
-    await _player.seek(Duration.zero);
-    _resetMemoAutoPlayback();
-
-    await _cropSpectrogramForClip(start, end);
-
-    if (mounted) {
-      setState(() {
-        _clipOffsetSec = start;
-        _duration = clippedDur ?? (endDur - startDur);
-      });
-      _positionNotifier.value = Duration.zero;
-    }
+    await _syncPlayerClip();
   }
 
   /// Attempt to reverse-geocode the session location.
@@ -1781,10 +1869,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// [_spectrogramImage].  Must be called whenever the clip changes.
   Future<void> _cropSpectrogramForClip(double startSec, double endSec) async {
     final src = _fullSpectrogramImage;
-    if (src == null || _fullDurationSec <= 0) return;
+    final totalSec = _sourceDurationSec;
+    if (src == null || totalSec <= 0) return;
 
-    final startFrac = (startSec / _fullDurationSec).clamp(0.0, 1.0);
-    final endFrac = (endSec / _fullDurationSec).clamp(0.0, 1.0);
+    final startFrac = (startSec / totalSec).clamp(0.0, 1.0);
+    final endFrac = (endSec / totalSec).clamp(0.0, 1.0);
     final srcStartX = (startFrac * src.width).round();
     final srcEndX = (endFrac * src.width).round();
     final cropWidth = srcEndX - srcStartX;
@@ -1844,6 +1933,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── Actions ─────────────────────────────────────────────────────────
 
   Future<bool> _onWillPop() async {
+    if (_trimMode) {
+      _toggleTrimMode();
+      return false;
+    }
     if (!_hasUnsavedWork) return true;
     final l10n = AppLocalizations.of(context)!;
     final result = await showDialog<String>(
@@ -1874,8 +1967,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
     );
     if (result == 'save') {
-      await _save();
-      return true;
+      // A declined trim confirmation cancels the save, and with it the exit —
+      // otherwise leaving would silently drop the edits the user asked to keep.
+      return _save();
     }
     if (result == 'discard') {
       // For a never-saved session there is no persisted copy to revert to, so
@@ -1928,32 +2022,143 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     });
   }
 
-  Future<void> _save() async {
+  /// Persists the session, cutting a pending trim into the recording first.
+  ///
+  /// Returns false when the user backed out of the trim confirmation, in
+  /// which case nothing was written and the session stays dirty.
+  Future<bool> _save() async {
+    final l10n = AppLocalizations.of(context)!;
+    // Resolve everything that needs `ref` or `context` up front. The cut
+    // below is destructive, and the save that records it must not depend on
+    // this widget still being alive by the time it runs.
+    final repo = ref.read(sessionRepositoryProvider);
+
+    final trimRange = _resolveTrimRange(_trimStartSec, _trimEndSec);
+    // `_resolveTrimRange` also returns null when the recording length is
+    // unknown (missing file, or a duration just_audio hasn't published yet).
+    // That is not the user clearing the trim, so leave the stored range be
+    // instead of quietly dropping it on an unrelated save.
+    final trimUnresolved =
+        trimRange == null &&
+        (_trimStartSec != null || _trimEndSec != null) &&
+        _sourceDurationSec <= 0;
+
+    // Saving is what makes a trim permanent: the audio outside the range is
+    // cut from the recording and the space it used is reclaimed. Undo, redo
+    // and Reset all still work up to this point, so this is the last chance
+    // to back out — ask before deleting audio. A trim we already know can't
+    // be cut deletes nothing, so it neither warns nor retries.
+    final willCutAudio = trimRange != null && !_trimCommitUnsupported;
+    if (willCutAudio) {
+      final confirmed = await confirmDestructive(
+        context,
+        title: l10n.sessionTrimCommitTitle,
+        body: l10n.sessionTrimCommitMessage,
+        confirmLabel: l10n.sessionTrimCommitConfirm,
+        cancelLabel: l10n.cancel,
+      );
+      if (!confirmed || !mounted) return false;
+    }
+
+    // Do not mutate the shared session object before the destructive prompt:
+    // cancelling Save must leave provider and persisted state untouched.
     widget.session.detections
       ..clear()
       ..addAll(_detections);
     widget.session.annotations
       ..clear()
       ..addAll(_annotations);
-    widget.session.trimStartSec = _trimStartSec;
-    widget.session.trimEndSec = _trimEndSec;
-    final repo = ref.read(sessionRepositoryProvider);
+    if (!trimUnresolved) {
+      widget.session.trimStartSec = trimRange?.start;
+      widget.session.trimEndSec = trimRange?.end;
+    }
+
+    SessionTrimCommit? outcome;
+    if (willCutAudio) {
+      outcome = await _cutTrimIntoRecording();
+    }
+
+    // Persist before anything slow or lifecycle-dependent runs. Past this
+    // point the audio is already gone from disk, and a stored trim that
+    // outlives the cut it describes would be applied a second time — to the
+    // already-shortened recording — the next time the session is opened.
     await repo.save(widget.session);
+    if (!mounted) return true;
     ref.invalidate(sessionListProvider);
+
+    // Reload playback from what is now on disk: the shorter file after a
+    // successful cut, or the untouched recording re-clipped to the trim
+    // range when the cut didn't happen.
+    if (outcome != null) await _reloadRecordingAfterCommit();
+    if (!mounted) return true;
+
     setState(() {
       _isDirty = false;
       _isUnsaved = false;
       _undoStack.clear();
       _redoStack.clear();
     });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.sessionSaved),
-          duration: const Duration(seconds: 2),
+    final trimCommitFailed =
+        outcome != null && outcome != SessionTrimCommit.applied;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        // A trim that couldn't be cut is not a failed save — the session was
+        // written and the range still shapes playback and exports — but the
+        // user asked for the audio to go, so say that it didn't.
+        content: Text(
+          trimCommitFailed ? l10n.sessionTrimCommitFailed : l10n.sessionSaved,
         ),
-      );
+        duration: Duration(seconds: trimCommitFailed ? 5 : 2),
+      ),
+    );
+    return true;
+  }
+
+  /// Cuts the pending trim into the recording on disk.
+  ///
+  /// The player is stopped first: on Windows an open handle makes the file
+  /// swap fail outright, and elsewhere it would go on reading the file we are
+  /// about to replace. Deliberately does *not* reload the audio — the caller
+  /// persists the rebased session first, so the window in which the bytes and
+  /// the stored session disagree stays as short as possible.
+  Future<SessionTrimCommit> _cutTrimIntoRecording() async {
+    await _player.stop();
+    _clipActive = false;
+    _appliedClipRange = null;
+
+    final outcome = await commitSessionTrim(widget.session);
+    if (outcome == SessionTrimCommit.unsupported) {
+      _trimCommitUnsupported = true;
     }
+    if (!mounted) return outcome;
+
+    if (outcome == SessionTrimCommit.applied) {
+      // The recording *is* the trim now — there is no range left to apply.
+      setState(() {
+        _detections = List.of(widget.session.detections);
+        _annotations = List.of(widget.session.annotations);
+        _speciesGroups = _buildSpeciesGroups(
+          _detections,
+          widget.session.settings.windowDuration,
+        );
+        _trimStartSec = null;
+        _trimEndSec = null;
+        _pendingTrimStartSec = null;
+        _pendingTrimEndSec = null;
+        _clipOffsetSec = 0.0;
+        _fullDurationSec = 0.0;
+        _duration = Duration.zero;
+      });
+      _positionNotifier.value = Duration.zero;
+    }
+    return outcome;
+  }
+
+  /// Reloads the recording from disk after a trim commit attempt.
+  Future<void> _reloadRecordingAfterCommit() async {
+    if (!mounted) return;
+    setState(() => _initializing = true);
+    await _initAudio();
   }
 
   Future<void> _discard() async {
@@ -1971,6 +2176,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     await repo.delete(widget.session.id);
     ref.invalidate(sessionListProvider);
     if (mounted) Navigator.of(context).pop();
+  }
+
+  /// Whether this session may be resumed ("Continue survey").
+  ///
+  /// Only survey sessions qualify, and only when they were NOT recorded in
+  /// full-audio mode. Full-audio recordings are a single continuous file that
+  /// cannot be safely concatenated across a stop/resume (the FLAC stream is
+  /// already finalized), so resuming them would desync the audio timeline
+  /// from the detections. Clip-subsampling and no-recording sessions have no
+  /// such continuous file and resume cleanly.
+  bool get _canContinueSurvey {
+    if (widget.session.type != SessionType.survey) return false;
+    return switch (widget.session.settings.recordingMode) {
+      'detections' || 'detectionsOnly' || 'off' => true,
+      // A legacy session without a recording-mode snapshot is safe to resume
+      // only when it has no associated audio. An existing path may point to a
+      // finalized full recording, which must not be overwritten.
+      null => widget.session.recordingPath == null,
+      _ => false,
+    };
   }
 
   /// Resume an unfinished survey session (after user confirmation).
@@ -2012,9 +2237,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   }
 
   Future<void> _share() async {
+    final l10n = AppLocalizations.of(context)!;
     // Save pending changes before sharing so the export is up to date. This
     // also persists a not-yet-saved session — exporting implies keeping it.
-    if (_hasUnsavedWork) await _save();
+    // Backing out of the trim confirmation cancels the share too: the export
+    // would otherwise disagree with what is on screen.
+    if (_hasUnsavedWork && !await _save()) return;
 
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
@@ -2055,7 +2283,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       includeAppMetadata: includeAppMetadata,
     );
 
-    if (exportPath == null) return;
+    if (exportPath == null) {
+      if (mounted && includeAudio && widget.session.hasAudioTrim) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.sessionTrimExportFailed)));
+      }
+      return;
+    }
     await SharePlus.instance.share(shareParamsForFile(exportPath));
   }
 
@@ -2105,9 +2340,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           break;
 
         case AddSpeciesInsertMode.atTimestamp:
-          final ts = widget.session.startTime.add(
-            Duration(microseconds: (centerSec * 1e6).round()),
-          );
+          // centerSec is an offset into the recorded audio, which is not
+          // `startTime + centerSec` once the session has segments — a resumed
+          // survey collapses its stopped gap, and a destructive trim leaves
+          // the audio starting later than the session did.
+          final ts = widget.session.relativeToAbsolute(centerSec);
           _detections.add(
             DetectionRecord(
               scientificName: result.scientificName,
@@ -2256,189 +2493,182 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   // ── Trim ──────────────────────────────────────────────────────────
 
   void _toggleTrimMode() {
-    if (!_trimMode) {
-      // Entering trim mode — remember the applied trim state so _applyTrim
-      // can build an accurate undo snapshot.
-      _preTrimStartSec = _trimStartSec;
-      _preTrimEndSec = _trimEndSec;
-
-      // For long (lazy-loaded) recordings we don't have a full-file
-      // spectrogram thumbnail to scrub against, so the trim editor
-      // operates on whatever portion of the strip the user is currently
-      // looking at. Default the handles to the visible window edges so
-      // the user just zooms/scrolls to the region of interest first,
-      // then drags the handles inward to refine. Any prior persisted
-      // trim that falls inside the visible window is preserved.
-      if (_spectrogramLazy &&
-          _lastViewportCenterSec != null &&
-          _lastViewportViewSec != null) {
-        final totalSec =
-            _spectrogramAudioMetadata?.duration.inMicroseconds != null
-                ? _spectrogramAudioMetadata!.duration.inMicroseconds / 1000000.0
-                : _fullDurationSec;
-        final visibleStart = (_lastViewportCenterSec! -
-                _lastViewportViewSec! / 2)
-            .clamp(0.0, totalSec);
-        final visibleEnd = (_lastViewportCenterSec! + _lastViewportViewSec! / 2)
-            .clamp(0.0, totalSec);
-        final existingStart = _trimStartSec;
-        final existingEnd = _trimEndSec;
-        _trimStartSec =
-            (existingStart != null &&
-                    existingStart >= visibleStart &&
-                    existingStart < visibleEnd)
-                ? existingStart
-                : visibleStart;
-        _trimEndSec =
-            (existingEnd != null &&
-                    existingEnd > visibleStart &&
-                    existingEnd <= visibleEnd)
-                ? existingEnd
-                : visibleEnd;
-      }
+    if (_trimMode) {
+      // Leaving trim mode without applying — throw the pending handle
+      // positions away so they can never be saved as a trim the user
+      // never confirmed.
+      setState(() {
+        _trimMode = false;
+        _pendingTrimStartSec = null;
+        _pendingTrimEndSec = null;
+      });
+      return;
     }
-    setState(() => _trimMode = !_trimMode);
+
+    // Entering trim mode — seed the handles from the applied trim.
+    var pendingStart = _trimStartSec;
+    var pendingEnd = _trimEndSec;
+
+    // For long (lazy-loaded) recordings we don't have a full-file
+    // spectrogram thumbnail to scrub against, so the trim editor
+    // operates on whatever portion of the strip the user is currently
+    // looking at. Default the handles to the visible window edges so
+    // the user just zooms/scrolls to the region of interest first,
+    // then drags the handles inward to refine. Any prior applied
+    // trim that falls inside the visible window is preserved.
+    if (_spectrogramLazy &&
+        _lastViewportCenterSec != null &&
+        _lastViewportViewSec != null) {
+      final totalSec = _sourceDurationSec;
+      final visibleStart = (_lastViewportCenterSec! - _lastViewportViewSec! / 2)
+          .clamp(0.0, totalSec);
+      final visibleEnd = (_lastViewportCenterSec! + _lastViewportViewSec! / 2)
+          .clamp(0.0, totalSec);
+      final existingStart = pendingStart;
+      final existingEnd = pendingEnd;
+      pendingStart =
+          (existingStart != null &&
+                  existingStart >= visibleStart &&
+                  existingStart < visibleEnd)
+              ? existingStart
+              : visibleStart;
+      pendingEnd =
+          (existingEnd != null &&
+                  existingEnd > visibleStart &&
+                  existingEnd <= visibleEnd)
+              ? existingEnd
+              : visibleEnd;
+    }
+
+    setState(() {
+      _trimMode = true;
+      _pendingTrimStartSec = pendingStart;
+      _pendingTrimEndSec = pendingEnd;
+    });
   }
 
   void _onTrimChanged(double startSec, double endSec) {
-    _trimStartSec = startSec;
-    _trimEndSec = endSec;
+    _pendingTrimStartSec = startSec;
+    _pendingTrimEndSec = endSec;
   }
 
   Future<void> _applyTrim() async {
-    if (_trimStartSec == null && _trimEndSec == null) return;
-    final start = _trimStartSec ?? 0.0;
-    final end = _trimEndSec ?? _fullDurationSec;
-
-    // Build undo snapshot with the state *before* trim mode was entered.
-    // _trimStartSec/_trimEndSec now hold transient handle positions from
-    // _onTrimChanged; the pre-trim values were saved by _toggleTrimMode.
-    _undoStack.add(
-      _ReviewSnapshot(
-        detections: List.of(_detections),
-        annotations: List.of(_annotations),
-        trimStartSec: _preTrimStartSec,
-        trimEndSec: _preTrimEndSec,
-        clipOffsetSec: _clipOffsetSec,
-      ),
-    );
-    _redoStack.clear();
-
-    // Walk the detection list and either drop, keep, or clamp each
-    // record. A detection survives the trim as long as any part of its
-    // [timestamp, endTimestamp] interval overlaps [start, end] — that
-    // way a long-running call that began before the trim window or
-    // continued past it remains visible, with its visible extent
-    // clamped to the new clip boundaries.
-    final sessionStart = widget.session.startTime;
-    final windowSec = widget.session.settings.windowDuration;
-    final trimStartWall = sessionStart.add(
-      Duration(microseconds: (start * 1e6).round()),
-    );
-    final trimEndWall = sessionStart.add(
-      Duration(microseconds: (end * 1e6).round()),
-    );
-    final clamped = <DetectionRecord>[];
-    for (final d in _detections) {
-      final detStart = d.timestamp;
-      // Treat a missing endTimestamp (legacy records, manual annotations)
-      // as a single inference window starting at the detection time.
-      final detEnd =
-          d.endTimestamp ?? detStart.add(Duration(seconds: windowSec));
-      // No overlap → drop.
-      if (detEnd.isBefore(trimStartWall) || detStart.isAfter(trimEndWall)) {
-        continue;
+    // Handles default to the full recording, so a range that resolves to
+    // "no clip" means the user confirmed without narrowing anything —
+    // fall through to the reset path rather than persisting a no-op trim.
+    final range = _resolveTrimRange(_pendingTrimStartSec, _pendingTrimEndSec);
+    if (range == null) {
+      if (_trimStartSec == null && _trimEndSec == null) {
+        setState(() {
+          _trimMode = false;
+          _pendingTrimStartSec = null;
+          _pendingTrimEndSec = null;
+        });
+        return;
       }
-      // Fully inside → keep as-is to preserve the original endTimestamp
-      // (including its null-ness for legacy / manual records).
-      if (!detStart.isBefore(trimStartWall) && !detEnd.isAfter(trimEndWall)) {
-        clamped.add(d);
-        continue;
-      }
-      // Partial overlap → rebuild with clamped timestamps so the
-      // detection's visible extent matches the new clip.
-      final newStart =
-          detStart.isBefore(trimStartWall) ? trimStartWall : detStart;
-      final newEnd = detEnd.isAfter(trimEndWall) ? trimEndWall : detEnd;
-      clamped.add(
-        DetectionRecord(
-          scientificName: d.scientificName,
-          commonName: d.commonName,
-          confidence: d.confidence,
-          timestamp: newStart,
-          endTimestamp: newEnd,
-          audioClipPath: d.audioClipPath,
-          source: d.source,
-          latitude: d.latitude,
-          longitude: d.longitude,
-          confirmedAt: d.confirmedAt,
-          note: d.note,
-          voiceMemoPath: d.voiceMemoPath,
-        ),
-      );
+      await _resetTrim();
+      return;
     }
+    final start = range.start;
+    final end = range.end;
+
+    // Snapshot the state *before* the trim: _trimStartSec/_trimEndSec still
+    // hold the applied values because the editor writes to the pending
+    // fields, so this is simply the current state.
+    _pushUndo();
+
+    // A detection survives the trim as long as its recorded-audio interval
+    // overlaps [start, end). Keep its capture timestamps unchanged; playback
+    // and exports clamp the derived audio offsets to the retained clip.
+    //
+    // Comparison happens in *recorded-audio* seconds, not wall clock: a
+    // resumed session's audio is the gap-removed concatenation of its
+    // segments, so `startTime + trimStart` would land somewhere entirely
+    // different from the audio position the user dragged the handle to.
+    final session = widget.session;
+    final retained = detectionsOverlappingTrim(
+      session: session,
+      detections: _detections,
+      startSec: start,
+      endSec: end,
+    );
     setState(() {
       _detections
         ..clear()
-        ..addAll(clamped);
+        ..addAll(retained);
       _speciesGroups = _buildSpeciesGroups(
         _detections,
         widget.session.settings.windowDuration,
       );
+      // Promote the pending handles to the applied trim. Storing the
+      // resolved (clamped) range keeps what we persist identical to what
+      // the player and the export are given.
+      _trimStartSec = start;
+      _trimEndSec = end;
+      _pendingTrimStartSec = null;
+      _pendingTrimEndSec = null;
       _isDirty = true;
       _trimMode = false;
     });
 
-    // Clip the player to the trimmed range.
-    final startDur = Duration(microseconds: (start * 1e6).round());
-    final endDur = Duration(microseconds: (end * 1e6).round());
-    final clippedDur = await _player.setClip(start: startDur, end: endDur);
-    await _player.seek(Duration.zero);
-    _resetMemoAutoPlayback();
-
-    // Crop the spectrogram to the trimmed portion.
-    await _cropSpectrogramForClip(start, end);
-
-    if (mounted) {
-      setState(() {
-        _clipOffsetSec = start;
-        _duration = clippedDur ?? (endDur - startDur);
-      });
-      _positionNotifier.value = Duration.zero;
-      // Drop any in-flight lazy chunk loads from the pre-trim viewport
-      // so the strip's follow-up viewport request for the new clip
-      // range can schedule freshly instead of getting stuck behind a
-      // stale `_decoding=true` flag.
-      _invalidateLazySpectrogramPipeline();
-    }
+    await _syncPlayerClip();
   }
 
   Future<void> _resetTrim() async {
-    _pushUndo();
-
-    // Remove the player clip and restore the full recording.
-    await _player.setClip();
-    await _player.seek(Duration.zero);
-    _resetMemoAutoPlayback();
+    final hadTrim = _trimStartSec != null || _trimEndSec != null;
+    List<DetectionRecord>? restoredDetections;
+    final range = _resolveTrimRange(_trimStartSec, _trimEndSec);
+    if (range != null) {
+      // Applying a trim hides detections outside the retained audio. Restore
+      // only those automatically removed records when resetting, while
+      // preserving edits or deletions the user made to visible detections.
+      _ReviewSnapshot? untrimmedSnapshot;
+      // Use the nearest untrimmed state. An older snapshot may predate
+      // detections added or edited between two separate trim/reset cycles.
+      for (final snapshot in _undoStack.reversed) {
+        if (snapshot.trimStartSec == null && snapshot.trimEndSec == null) {
+          untrimmedSnapshot = snapshot;
+          break;
+        }
+      }
+      if (untrimmedSnapshot != null) {
+        final retainedByTrim =
+            detectionsOverlappingTrim(
+              session: widget.session,
+              detections: untrimmedSnapshot.detections,
+              startSec: range.start,
+              endSec: range.end,
+            ).toSet();
+        restoredDetections = [
+          ..._detections,
+          for (final detection in untrimmedSnapshot.detections)
+            if (!retainedByTrim.contains(detection) &&
+                !_detections.contains(detection))
+              detection,
+        ]..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      }
+    }
+    if (hadTrim) _pushUndo();
 
     setState(() {
+      if (restoredDetections != null) {
+        _detections
+          ..clear()
+          ..addAll(restoredDetections);
+        _speciesGroups = _buildSpeciesGroups(
+          _detections,
+          widget.session.settings.windowDuration,
+        );
+      }
       _trimStartSec = null;
       _trimEndSec = null;
-      _clipOffsetSec = 0.0;
-      _duration = Duration(microseconds: (_fullDurationSec * 1e6).round());
-      // Restore the full-recording spectrogram.
-      if (_spectrogramImage != null &&
-          !identical(_spectrogramImage, _fullSpectrogramImage)) {
-        _spectrogramImage!.dispose();
-      }
-      _spectrogramImage = _fullSpectrogramImage;
-      _isDirty = true;
+      _pendingTrimStartSec = null;
+      _pendingTrimEndSec = null;
+      if (hadTrim) _isDirty = true;
       _trimMode = false;
     });
-    _positionNotifier.value = Duration.zero;
-    if (_spectrogramLazy) {
-      _requestSpectrogramViewport(0, 10);
-    }
+
+    await _syncPlayerClip();
   }
 
   // ── Help ──────────────────────────────────────────────────────────
@@ -2448,10 +2678,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => _SessionHelpSheet(
-            showContinueSurvey: widget.session.type == SessionType.survey,
-          ),
+      builder: (_) => _SessionHelpSheet(showContinueSurvey: _canContinueSurvey),
     );
   }
 
@@ -2808,18 +3035,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Iterable<_VoiceMemoPlaybackEvent> _voiceMemoPlaybackEvents() sync* {
     final durationSec = _duration.inMicroseconds / 1e6;
 
-    // Timed annotations store the active player position when created, so
-    // keep them clip-relative for playback. Global memos intentionally do not
-    // auto-play.
+    // Timed annotations use original-recording offsets. Rebase them onto the
+    // active clip for playback. Global memos intentionally do not auto-play.
     for (final annotation in _annotations) {
       final path = annotation.voiceMemoPath;
       final offsetSec = annotation.offsetInRecording;
       if (path == null || offsetSec == null) continue;
-      if (offsetSec < 0 || offsetSec > durationSec) continue;
+      final triggerSec = offsetSec - _clipOffsetSec;
+      if (triggerSec < 0 || triggerSec > durationSec) continue;
       yield _VoiceMemoPlaybackEvent(
         key: 'annotation:${annotation.createdAt.toIso8601String()}:$path',
         path: path,
-        triggerSec: offsetSec,
+        triggerSec: triggerSec,
       );
     }
 
@@ -2959,7 +3186,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isEdit = editingIndex != null;
     final existing = isEdit ? _annotations[editingIndex] : null;
-    final positionSec = _position.inMicroseconds / 1000000.0;
+    final positionSec = _currentSourcePositionSec;
 
     await _pausePlayersForVoiceMemo();
     if (!mounted) return;
@@ -3227,8 +3454,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                         final positionSec =
                             isEdit
                                 ? (existing!.offsetInRecording ??
-                                    _position.inMicroseconds / 1000000.0)
-                                : _position.inMicroseconds / 1000000.0;
+                                    _currentSourcePositionSec)
+                                : _currentSourcePositionSec;
                         final annotation = SessionAnnotation(
                           text: text,
                           title: title,
@@ -3619,19 +3846,23 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             icon: Icon(
               AppIcons.undo,
               color:
-                  _canUndo ? null : theme.colorScheme.onSurface.withAlpha(80),
+                  !_trimMode && _canUndo
+                      ? null
+                      : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionUndo,
-            onPressed: _canUndo ? _undo : null,
+            onPressed: !_trimMode && _canUndo ? _undo : null,
           ),
           IconButton(
             icon: Icon(
               AppIcons.redo,
               color:
-                  _canRedo ? null : theme.colorScheme.onSurface.withAlpha(80),
+                  !_trimMode && _canRedo
+                      ? null
+                      : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionRedo,
-            onPressed: _canRedo ? _redo : null,
+            onPressed: !_trimMode && _canRedo ? _redo : null,
           ),
           if (_audioAvailable)
             IconButton(
@@ -3649,19 +3880,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionSave,
-            onPressed: _hasUnsavedWork ? _save : null,
+            onPressed: !_trimMode && _hasUnsavedWork ? _save : null,
           ),
           IconButton(
             icon: const Icon(AppIcons.share),
             tooltip: l10n.sessionShare,
-            onPressed: _share,
+            onPressed: _trimMode ? null : _share,
           ),
           IconButton(
             icon: const Icon(AppIcons.deleteOutline),
             tooltip: l10n.sessionDiscard,
             onPressed: _discard,
           ),
-          if (widget.session.type == SessionType.survey)
+          if (_canContinueSurvey)
             IconButton(
               icon: Icon(
                 AppIcons.playArrowRounded,
@@ -3677,11 +3908,21 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   /// Builds the media widgets: summary header, map, spectrogram, trim bar,
   /// and annotations. Used by both portrait and landscape layouts.
+  ///
+  /// A survey recorded with full audio is the only session that has both a
+  /// GPS track and a continuous recording to show. Stacking the two panels
+  /// leaves each of them too short to be useful, so that one case puts them
+  /// behind tabs instead ([_MediaTabPanel]); every other session still shows
+  /// whichever single panel it has.
   List<Widget> _buildMediaWidgets(
     BuildContext context,
     ThemeData theme,
     AppLocalizations l10n,
   ) {
+    final mapPanel = _buildSurveyMapPanel(context);
+    final audioPanel = _buildAudioPanel();
+    final useTabs = mapPanel != null && audioPanel != null;
+
     return [
       _SummaryHeader(
         session: widget.session,
@@ -3702,56 +3943,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 : null,
         onFetchWeather: _resolveWeather,
       ),
-      if (widget.session.type == SessionType.survey &&
-          (widget.session.gpsTrack.isNotEmpty ||
-              (widget.session.latitude != null &&
-                  widget.session.longitude != null)))
-        Stack(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.18,
-              child: ClipRRect(
-                child: SurveyMapWidget(
-                  gpsTrack: widget.session.gpsTrack,
-                  detections: _detections,
-                  autoFollow: false,
-                  fitAllPoints: widget.session.gpsTrack.length >= 2,
-                  highlightedDetection: _highlightedDetection,
-                  initialCenter:
-                      widget.session.latitude != null &&
-                              widget.session.longitude != null
-                          ? LatLng(
-                            widget.session.latitude!,
-                            widget.session.longitude!,
-                          )
-                          : null,
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Material(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.8),
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => _openFullscreenSurveyMap(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      AppIcons.fullscreen,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
         _ReviewWarningCard(
           icon: AppIcons.warningAmberRounded,
@@ -3759,111 +3950,63 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           body: l10n.sessionReviewAudioShortBody,
           onDismiss: _dismissAudioWarning,
         ),
-      if (_audioAvailable) ...[
-        if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
-          _TrimSpectrogramView(
-            spectrogramImage: (_fullSpectrogramImage ?? _spectrogramImage)!,
-            durationSec:
-                _fullDurationSec > 0
-                    ? _fullDurationSec
-                    : _duration.inMicroseconds / 1000000.0,
-            initialStartSec: _trimStartSec ?? 0.0,
-            initialEndSec:
-                _trimEndSec ??
-                (_fullDurationSec > 0
-                    ? _fullDurationSec
-                    : _duration.inMicroseconds / 1000000.0),
-            onChanged: _onTrimChanged,
-            quality: ref.watch(spectrogramQualityProvider),
-          )
-        else
-          Stack(
-            children: [
-              _SpectrogramStrip(
-                session: widget.session,
-                spectrogramImage: _spectrogramImage,
-                spectrogramChunks: List.unmodifiable(_spectrogramChunks),
-                decoding: _decoding,
-                positionNotifier: _positionNotifier,
-                duration: _duration,
-                timelineOffsetSec: _clipOffsetSec,
-                onViewportChanged: _requestSpectrogramViewport,
-                onSeek: _seekToPosition,
-                onPause: _pausePlayer,
-                isPlaying: _isPlaying,
-                userDefaultViewSeconds:
-                    ref.watch(spectrogramDurationProvider).toDouble(),
-                quality: ref.watch(spectrogramQualityProvider),
-              ),
-              // Lazy trim editor: no full-file spectrogram thumbnail is
-              // available, so we overlay trim handles directly on the
-              // live (chunk-painted) strip and operate on whatever
-              // window is currently visible. The user pre-zooms to the
-              // region of interest, then drags handles inward.
-              if (_trimMode &&
-                  _spectrogramLazy &&
-                  _lastViewportCenterSec != null &&
-                  _lastViewportViewSec != null)
-                Positioned.fill(
-                  child: Builder(
-                    builder: (context) {
-                      final totalSec =
-                          _spectrogramAudioMetadata?.duration.inMicroseconds !=
-                                  null
-                              ? _spectrogramAudioMetadata!
-                                      .duration
-                                      .inMicroseconds /
-                                  1000000.0
-                              : _fullDurationSec;
-                      final visibleStart = (_lastViewportCenterSec! -
-                              _lastViewportViewSec! / 2)
-                          .clamp(0.0, totalSec);
-                      final visibleEnd = (_lastViewportCenterSec! +
-                              _lastViewportViewSec! / 2)
-                          .clamp(0.0, totalSec);
-                      return _TrimOverlay.windowed(
-                        visibleStartSec: visibleStart,
-                        visibleEndSec: visibleEnd,
-                        initialStartSec: _trimStartSec ?? visibleStart,
-                        initialEndSec: _trimEndSec ?? visibleEnd,
-                        onChanged: _onTrimChanged,
-                      );
-                    },
-                  ),
-                ),
-              Positioned(
-                left: 8,
-                bottom: 8,
-                child: _PlayPauseButton(
-                  isPlaying: _isPlaying,
-                  onToggle: () {
-                    // Manual play/pause cancels any pending auto-stop.
-                    _autoStopPosition = null;
-                    if (_isPlaying) {
-                      _player.pause();
-                    } else {
-                      _player.play();
-                    }
-                  },
-                ),
-              ),
-            ],
+      if (useTabs)
+        _MediaTabPanel(
+          map: mapPanel,
+          spectrogram: audioPanel,
+          trimming: _trimMode,
+        )
+      else ...[
+        if (mapPanel != null)
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.18,
+            child: mapPanel,
           ),
+        if (audioPanel != null) audioPanel,
       ],
       if (_trimMode)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextButton(
-                onPressed: _resetTrim,
-                child: Text(l10n.sessionTrimReset),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    AppIcons.warningAmberRounded,
+                    size: 18,
+                    color: theme.colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n.sessionTrimWarning,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              FilledButton(
-                onPressed: _applyTrim,
-                child: Text(l10n.sessionTrimApply),
+              const SizedBox(height: 4),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                children: [
+                  TextButton(
+                    onPressed: _toggleTrimMode,
+                    child: Text(l10n.cancel),
+                  ),
+                  TextButton(
+                    onPressed: _resetTrim,
+                    child: Text(l10n.sessionTrimReset),
+                  ),
+                  FilledButton(
+                    onPressed: _applyTrim,
+                    child: Text(l10n.sessionTrimApply),
+                  ),
+                ],
               ),
             ],
           ),
@@ -3881,6 +4024,150 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
         ),
     ];
+  }
+
+  /// The survey track map, or null when this session has no location to show.
+  ///
+  /// Returned unsized so the caller can decide the height — standalone it
+  /// gets a share of the screen, inside [_MediaTabPanel] it matches the
+  /// spectrogram strip.
+  Widget? _buildSurveyMapPanel(BuildContext context) {
+    final hasLocation =
+        widget.session.gpsTrack.isNotEmpty ||
+        (widget.session.latitude != null && widget.session.longitude != null);
+    if (widget.session.type != SessionType.survey || !hasLocation) return null;
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: ClipRRect(
+            child: SurveyMapWidget(
+              gpsTrack: widget.session.gpsTrack,
+              detections: _detections,
+              autoFollow: false,
+              fitAllPoints: widget.session.gpsTrack.length >= 2,
+              highlightedDetection: _highlightedDetection,
+              initialCenter:
+                  widget.session.latitude != null &&
+                          widget.session.longitude != null
+                      ? LatLng(
+                        widget.session.latitude!,
+                        widget.session.longitude!,
+                      )
+                      : null,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => _openFullscreenSurveyMap(context),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  AppIcons.fullscreen,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The spectrogram strip (or the trim editor while trimming), or null when
+  /// this session has no continuous recording.
+  Widget? _buildAudioPanel() {
+    if (!_audioAvailable) return null;
+
+    // The zoomable trim editor paints the *full-recording* spectrogram, so it
+    // is only usable while that image exists. A clip-cropped image would make
+    // the handles address the wrong seconds; fall through to the overlay
+    // editor in that case.
+    if (_trimMode && _fullSpectrogramImage != null && _sourceDurationSec > 0) {
+      final totalSec = _sourceDurationSec;
+      return _TrimSpectrogramView(
+        spectrogramImage: _fullSpectrogramImage!,
+        durationSec: totalSec,
+        initialStartSec: (_pendingTrimStartSec ?? 0.0).clamp(0.0, totalSec),
+        initialEndSec: (_pendingTrimEndSec ?? totalSec).clamp(0.0, totalSec),
+        onChanged: _onTrimChanged,
+        quality: ref.watch(spectrogramQualityProvider),
+      );
+    }
+
+    return Stack(
+      children: [
+        _SpectrogramStrip(
+          session: widget.session,
+          spectrogramImage: _spectrogramImage,
+          spectrogramChunks: List.unmodifiable(_spectrogramChunks),
+          decoding: _decoding,
+          positionNotifier: _positionNotifier,
+          duration: _duration,
+          timelineOffsetSec: _clipOffsetSec,
+          onViewportChanged: _requestSpectrogramViewport,
+          onSeek: _seekToPosition,
+          onPause: _pausePlayer,
+          isPlaying: _isPlaying,
+          userDefaultViewSeconds:
+              ref.watch(spectrogramDurationProvider).toDouble(),
+          quality: ref.watch(spectrogramQualityProvider),
+        ),
+        // Lazy trim editor: no full-file spectrogram thumbnail is
+        // available, so we overlay trim handles directly on the
+        // live (chunk-painted) strip and operate on whatever
+        // window is currently visible. The user pre-zooms to the
+        // region of interest, then drags handles inward.
+        if (_trimMode &&
+            _spectrogramLazy &&
+            _lastViewportCenterSec != null &&
+            _lastViewportViewSec != null)
+          Positioned.fill(
+            child: Builder(
+              builder: (context) {
+                final totalSec = _sourceDurationSec;
+                final visibleStart = (_lastViewportCenterSec! -
+                        _lastViewportViewSec! / 2)
+                    .clamp(0.0, totalSec);
+                final visibleEnd = (_lastViewportCenterSec! +
+                        _lastViewportViewSec! / 2)
+                    .clamp(0.0, totalSec);
+                return _TrimOverlay.windowed(
+                  visibleStartSec: visibleStart,
+                  visibleEndSec: visibleEnd,
+                  initialStartSec: _pendingTrimStartSec ?? visibleStart,
+                  initialEndSec: _pendingTrimEndSec ?? visibleEnd,
+                  onChanged: _onTrimChanged,
+                );
+              },
+            ),
+          ),
+        Positioned(
+          left: 8,
+          bottom: 8,
+          child: _PlayPauseButton(
+            isPlaying: _isPlaying,
+            onToggle: () {
+              // Manual play/pause cancels any pending auto-stop.
+              _autoStopPosition = null;
+              if (_isPlaying) {
+                _player.pause();
+              } else {
+                _player.play();
+              }
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   /// Compact chip for a single annotation. Tapping reopens the editor
@@ -3904,9 +4191,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final isTimed = a.offsetInRecording != null && _audioAvailable;
 
-    void seekToOffset() => _seekToPosition(
-      Duration(microseconds: (a.offsetInRecording! * 1e6).round()),
-    );
+    void seekToOffset() {
+      final clipRelativeSec = a.offsetInRecording! - _clipOffsetSec;
+      _seekToPosition(Duration(microseconds: (clipRelativeSec * 1e6).round()));
+    }
 
     // Timed entries always show the clock icon so global vs timed is
     // immediately visible regardless of whether it's a voice memo or text.

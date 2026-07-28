@@ -108,7 +108,26 @@ class WavWriter implements AudioFileWriter {
     if (_file == null || _closed) {
       throw StateError('WavWriter is not open. Call open() first.');
     }
-    final pcm = _float32ToPcm16(samples);
+    await _writePcmBytes(_float32ToPcm16(samples));
+  }
+
+  /// Append already-quantized 16-bit PCM samples.
+  ///
+  /// Unlike [writeSamples] this skips the float round-trip, so copying PCM
+  /// between files (trimming a recording, slicing a clip) is bit-exact.
+  Future<void> writeSamplesPcm16(Int16List samples) async {
+    if (_file == null || _closed) {
+      throw StateError('WavWriter is not open. Call open() first.');
+    }
+    final bytes = Uint8List(samples.length * 2);
+    final view = ByteData.sublistView(bytes);
+    for (var i = 0; i < samples.length; i++) {
+      view.setInt16(i * 2, samples[i], Endian.little);
+    }
+    await _writePcmBytes(bytes);
+  }
+
+  Future<void> _writePcmBytes(Uint8List pcm) async {
     await _file!.writeFrom(pcm);
     await _file!
         .flush(); // Prevent OS file caching from causing OOM on long recordings

@@ -7,11 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.2] - 2026-07-28
+
+### Changed
+
+- Trimming a recording in Session Review is now permanent once you save. **Apply Trim** still only stages the cut — undo, redo and **Reset Trim** all work as before — but saving the session removes the audio outside the trimmed range from the recording and reclaims the storage, after a confirmation prompt. The session's own start time and its detection timestamps are unchanged; only the audio and the offsets into it move. Sessions whose recording is in a format the app can't cut keep the trim as an editable range, and their exports still honour it.
+
+### Fixed
+
+- Exporting a trimmed session now actually ships the trimmed audio, with every time column (Raven, CSV, JSON, HTML report) measured from the start of that audio rather than the original recording. Previously the full untrimmed file was exported, so the audio didn't match what was reviewed and the detection offsets pointed at the wrong place. When the recording's format can't be cut, the export now fails visibly — from Session Review and the session library alike — instead of quietly shipping a mismatch.
+- Saving a trim can no longer damage a recording. The cut is written to the session the moment the audio changes, so an interrupted save can't leave a session that trims its already-shortened recording a second time when reopened; an interrupted cut restores the original; formats the built-in decoder can't safely handle (anything but mono 16-bit FLAC, which File Analysis can import) are refused rather than replaced by a corrupt decode of themselves; and a session whose recording is missing or still loading keeps its stored trim instead of silently losing it.
+- Trimming a resumed survey now keeps the right detections. Trim boundaries are compared against the recorded audio timeline with the stopped gaps removed, so they match the position the handles were dragged to instead of drifting by the length of the pause. Detections that cross a cut boundary keep their real capture times, and those whose audio was removed are dropped rather than collapsing onto the start of the recording.
+- Applying a trim no longer leaves the spectrogram and the player out of sync with each other. The screen was mistaking the trimmed clip's length for the length of the whole recording, which broke the spectrogram crop, the trim editor when reopened, and the range restored by undo, redo or **Reset**.
+- Timed annotations and voice memos now stay aligned when reviewing, saving, or exporting a trimmed recording. Notes whose referenced audio is removed become session-global instead of pointing at unrelated audio.
+- The trim editor is now harder to trigger by accident. Leaving trim mode discards handle positions that were never confirmed with **Apply**, the handles stay inside the recording and at least half a second apart, and Save, Share, Undo and Redo are disabled until the selection is applied or cancelled. Trim mode also gained a **Cancel** action and a warning that detections outside the range will be removed.
+
+## [0.19.1] - 2026-07-28
+
+### Changed
+
+- Survey setup no longer asks about clip subsampling when the recording mode is **Full audio** or **Off**. Detection sampling (and the clip padding slider) only decides which per-detection clips are kept, so it had no effect in those modes; the controls and the setup summary row now appear only for **Detections**, matching the ARU setup screen.
+- Session Review now shows the survey map and the spectrogram as tabs rather than stacking them, for surveys recorded with full audio — the only sessions that have both. Each view gets the full panel height instead of half, and switching tabs keeps the map position and the spectrogram's zoom. Starting a trim selects the spectrogram tab, since that is where trimming happens. Sessions with only a map or only a spectrogram are unchanged.
+
 ## [0.19.0] - 2026-07-27
 
 ### Fixed
 
 - Fixed a serious problem where another app taking the microphone during a survey (for example, opening the camera to shoot a video) could leave the phone unable to record audio in any app until it was rebooted. The app no longer keeps re-grabbing a microphone it can't have while running in the background, which was what wedged the device audio system. Losing the microphone is now handled gracefully: the survey signal meter shows a crossed-out mic, the ongoing notification explains that another app is using the microphone, and audio recording resumes automatically as soon as you return to the app.
+- Resuming a survey from Session Review now keeps the elapsed timer running correctly. Previously the counter froze shortly after resuming and the saved duration came out too short; the timer now continues from where it left off and counts only time the survey is actively recording, excluding the gap while it was stopped. The live detections-per-minute rate is likewise now based on active recording time rather than wall-clock time since the survey first started.
+- Detection timestamps in exports (Raven selection tables, CSV, and JSON) now line up with the audio for resumed survey sessions. Offsets are measured against the actual recorded audio with the stopped gap removed, matching in-app playback, instead of counting the pause as if it were recorded.
+- The "recording shorter than session" warning in Session Review and exports now measures the expected audio length the same way (gap-removed), so resumed sessions are no longer falsely flagged as truncated.
+
+### Changed
+
+- The **Continue Survey** button in Session Review is now hidden for sessions that recorded full audio, because a continuous audio file can't be safely extended across a stop-and-resume. Surveys recorded with clip subsampling (or no audio) can still be resumed as before, and a resumed survey now keeps its original recording mode.
 
 ## [0.18.9] - 2026-07-11
 

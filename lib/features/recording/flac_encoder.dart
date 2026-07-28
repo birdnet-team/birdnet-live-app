@@ -643,16 +643,25 @@ class FlacEncoder implements AudioFileWriter {
   }
 
   @override
-  Future<void> writeSamples(Float32List samples) async {
+  Future<void> writeSamples(Float32List samples) =>
+      writeSamplesPcm16(_float32ToInt16(samples));
+
+  /// Append already-quantized 16-bit PCM samples.
+  ///
+  /// Unlike [writeSamples] this skips the float round-trip, so re-encoding
+  /// PCM that was decoded from another lossless file (trimming a recording,
+  /// slicing a clip) preserves every sample value exactly.
+  Future<void> writeSamplesPcm16(Int16List newSamples) async {
     if (_file == null || _closed) {
       throw StateError('FlacEncoder is not open. Call open() first.');
     }
 
-    final newSamples = _float32ToInt16(samples);
-
-    // Append to pending buffer.
+    // Append to pending buffer. Copy rather than alias: callers hand us
+    // views onto their own decode buffers (trimming re-encodes an
+    // `Int16List.sublistView` of a source frame), and `_pending` outlives
+    // this call whenever the tail doesn't fill a whole block.
     if (_pending.isEmpty) {
-      _pending = newSamples;
+      _pending = Int16List.fromList(newSamples);
     } else {
       final merged = Int16List(_pending.length + newSamples.length);
       merged.setAll(0, _pending);

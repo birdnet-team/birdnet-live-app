@@ -844,7 +844,10 @@ class _ParametersStep extends ConsumerWidget {
           ),
         ),
 
-        // Clip context (visible only when recording mode = detections)
+        // Clip context and detection sampling only exist for per-detection
+        // clips. Full-audio keeps one continuous file and Off keeps nothing,
+        // so in both cases there is nothing for the sampler to thin out —
+        // asking would imply a choice that has no effect.
         if (recordingMode == 'detections') ...[
           ListTile(
             leading: const Icon(AppIcons.timerOutlined),
@@ -865,53 +868,53 @@ class _ParametersStep extends ConsumerWidget {
                       .set(v.round()),
             ),
           ),
-        ],
 
-        // Detection sampling
-        ListTile(
-          leading: const Icon(AppIcons.filterAltRounded),
-          title: Text(l10n.surveyDetectionSampling),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'all', label: Text(l10n.surveySamplingAll)),
-              ButtonSegment(
-                value: 'topN',
-                label: Text(l10n.surveySamplingTopN),
-              ),
-              ButtonSegment(
-                value: 'smart',
-                label: Text(l10n.surveySamplingSmart),
-              ),
-            ],
-            selected: {sampling},
-            onSelectionChanged: (s) {
-              HapticFeedback.selectionClick();
-              ref.read(surveyDetectionSamplingProvider.notifier).set(s.first);
-            },
-          ),
-        ),
-
-        // Top N (visible only when sampling = topN or smart)
-        if (sampling != 'all') ...[
+          // Detection sampling
           ListTile(
-            leading: const Icon(AppIcons.formatListNumberedRounded),
-            title: Text(l10n.surveyTopNPerSpecies),
-            subtitle: Text('$topN'),
+            leading: const Icon(AppIcons.filterAltRounded),
+            title: Text(l10n.surveyDetectionSampling),
           ),
-          Slider(
-            value: topN.toDouble(),
-            min: 1,
-            max: 50,
-            divisions: 49,
-            label: '$topN',
-            onChanged:
-                (v) => ref
-                    .read(surveyTopNPerSpeciesProvider.notifier)
-                    .set(v.round()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(value: 'all', label: Text(l10n.surveySamplingAll)),
+                ButtonSegment(
+                  value: 'topN',
+                  label: Text(l10n.surveySamplingTopN),
+                ),
+                ButtonSegment(
+                  value: 'smart',
+                  label: Text(l10n.surveySamplingSmart),
+                ),
+              ],
+              selected: {sampling},
+              onSelectionChanged: (s) {
+                HapticFeedback.selectionClick();
+                ref.read(surveyDetectionSamplingProvider.notifier).set(s.first);
+              },
+            ),
           ),
+
+          // Top N (visible only when sampling = topN or smart)
+          if (sampling != 'all') ...[
+            ListTile(
+              leading: const Icon(AppIcons.formatListNumberedRounded),
+              title: Text(l10n.surveyTopNPerSpecies),
+              subtitle: Text('$topN'),
+            ),
+            Slider(
+              value: topN.toDouble(),
+              min: 1,
+              max: 50,
+              divisions: 49,
+              label: '$topN',
+              onChanged:
+                  (v) => ref
+                      .read(surveyTopNPerSpeciesProvider.notifier)
+                      .set(v.round()),
+            ),
+          ],
         ],
       ],
     );
@@ -1996,15 +1999,17 @@ class _ReadyStep extends ConsumerWidget {
                     '$maxDuration ${l10n.surveyHours}',
                   ),
                   _SummaryRow(
-                    AppIcons.filterAltRounded,
-                    l10n.surveyDetectionSampling,
-                    sampling,
-                  ),
-                  _SummaryRow(
                     AppIcons.fiberManualRecordRounded,
                     l10n.surveyRecordingMode,
                     recordingMode,
                   ),
+                  // Sampling only applies to per-detection clips.
+                  if (recordingMode == 'detections')
+                    _SummaryRow(
+                      AppIcons.filterAltRounded,
+                      l10n.surveyDetectionSampling,
+                      sampling,
+                    ),
                 ],
               ),
             ),

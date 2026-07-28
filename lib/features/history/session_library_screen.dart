@@ -44,6 +44,7 @@ import '../survey/survey_setup_screen.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
+import 'services/session_audio_trim.dart';
 import 'services/share_file_params.dart';
 
 /// How sessions are ordered in the library.
@@ -851,8 +852,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   /// Opens the platform share sheet with the session exported using the
   /// user's saved export-format and include-audio preferences. Returns
   /// silently if the export couldn't be built (e.g. no audio for an
-  /// audio-only export of a metadata-only session).
+  /// audio-only export of a metadata-only session) — except for a trimmed
+  /// recording the app can't cut, which is reported so the share button
+  /// doesn't just appear to do nothing.
   Future<void> _shareSession(LiveSession session) async {
+    final l10n = AppLocalizations.of(context)!;
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
     final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
@@ -878,7 +882,14 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       includeHtmlReport: includeHtmlReport,
       includeAppMetadata: includeAppMetadata,
     );
-    if (exportPath == null) return;
+    if (exportPath == null) {
+      if (mounted && includeAudio && session.hasAudioTrim) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.sessionTrimExportFailed)));
+      }
+      return;
+    }
     await SharePlus.instance.share(shareParamsForFile(exportPath));
   }
 
@@ -1762,12 +1773,11 @@ class _SessionSizeChip extends StatelessWidget {
   Future<int> _computeSize() async {
     var total = 0;
     // 1) Continuous session recording (live, point count, file analysis).
-    //    When the user trimmed the recording in session review the file
-    //    on disk is intentionally left untouched (so trim is reversible),
-    //    but the *effective* on-disk usage from the user's point of view
-    //    is the trimmed extent — that's what they hear back, share, and
-    //    export. Scale the raw file length by the trim ratio so the
-    //    library chip reflects the trim immediately.
+    //    Saving a trimmed session cuts the recording down for real, so its
+    //    file length is already the truth. A trim range still on the session
+    //    means the cut hasn't happened (or couldn't) — the user nevertheless
+    //    only hears, shares and exports the trimmed extent, so scale the raw
+    //    length by the trim ratio for those.
     final rec = session.recordingPath;
     if (rec != null) {
       try {
