@@ -510,6 +510,124 @@ class _WeatherRow extends StatelessWidget {
   }
 }
 
+/// Height of every full-width media panel in the review header — the
+/// spectrogram strip, the trim editor, and the map when it shares a
+/// [_MediaTabPanel] with them.
+const double _kReviewStripHeight = 150;
+
+/// Puts the survey map and the spectrogram behind tabs in the one session
+/// type that has both (a survey recorded with full audio).
+///
+/// Sessions with only one of the two never reach this widget, so the tab bar
+/// is never shown as a single-choice control. Both panels stay mounted in an
+/// [IndexedStack] so switching tabs preserves the map camera and the
+/// spectrogram's zoom/scroll position rather than resetting them.
+class _MediaTabPanel extends StatefulWidget {
+  const _MediaTabPanel({
+    required this.map,
+    required this.spectrogram,
+    required this.trimming,
+  });
+
+  final Widget map;
+  final Widget spectrogram;
+
+  /// Whether trim editing is active. Trimming happens on the spectrogram, so
+  /// starting it selects that tab; the user stays free to switch back.
+  final bool trimming;
+
+  @override
+  State<_MediaTabPanel> createState() => _MediaTabPanelState();
+}
+
+class _MediaTabPanelState extends State<_MediaTabPanel>
+    with SingleTickerProviderStateMixin {
+  static const int _mapIndex = 0;
+  static const int _spectrogramIndex = 1;
+
+  late int _index = widget.trimming ? _spectrogramIndex : _mapIndex;
+
+  late final TabController _controller = TabController(
+    length: 2,
+    initialIndex: _index,
+    vsync: this,
+  );
+
+  @override
+  void didUpdateWidget(_MediaTabPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.trimming && !oldWidget.trimming) {
+      _selectTab(_spectrogramIndex);
+    }
+  }
+
+  /// Drives both the indicator and the [IndexedStack]. Kept as our own field
+  /// rather than read off the controller so the panel swaps the moment a tab
+  /// is tapped, instead of waiting out the indicator's slide animation.
+  void _selectTab(int index) {
+    if (_index == index) return;
+    setState(() => _index = index);
+    _controller.animateTo(index);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  static Tab _mediaTab(IconData icon, String label) {
+    return Tab(
+      height: 40,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // A TabBarView would swipe between panels, and a horizontal swipe is
+        // already how the user pans the map and scrubs the spectrogram — so
+        // the tab bar only drives an IndexedStack.
+        TabBar(
+          controller: _controller,
+          onTap: _selectTab,
+          // Icons sit beside the label rather than above it: the default
+          // icon-over-text tab is 72 dp tall, which would cost half the
+          // height of the panel it labels.
+          tabs: [
+            _mediaTab(AppIcons.map, l10n.surveyTabMap),
+            _mediaTab(AppIcons.graphicEq, l10n.surveyTabSpectrogram),
+          ],
+          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+          indicatorWeight: 2,
+          labelStyle: theme.textTheme.labelSmall,
+        ),
+        SizedBox(
+          height: _kReviewStripHeight,
+          child: IndexedStack(
+            index: _index,
+            sizing: StackFit.expand,
+            children: [widget.map, widget.spectrogram],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Shows a scrollable spectrogram from a pre-computed image.
 ///
 /// The painter derives pixels-per-second from image width / player duration,
@@ -733,7 +851,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
         widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
     if (!hasSpectrogram) {
       return Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child:
             widget.decoding
@@ -753,7 +871,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       onScaleStart: _handleScaleStart,
       onScaleUpdate: _handleScaleUpdate,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: Stack(
           children: [
@@ -775,7 +893,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
                   ref.watch(timestampDisplayModeProvider),
                 ),
               ),
-              size: const Size(double.infinity, 150),
+              size: const Size(double.infinity, _kReviewStripHeight),
             ),
             if (widget.decoding)
               Positioned(
@@ -3417,7 +3535,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       onScaleUpdate: _onScaleUpdate,
       onScaleEnd: _onScaleEnd,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: CustomPaint(
           painter: _TrimSpectrogramPainter(

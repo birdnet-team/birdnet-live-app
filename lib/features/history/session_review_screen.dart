@@ -3675,11 +3675,21 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   /// Builds the media widgets: summary header, map, spectrogram, trim bar,
   /// and annotations. Used by both portrait and landscape layouts.
+  ///
+  /// A survey recorded with full audio is the only session that has both a
+  /// GPS track and a continuous recording to show. Stacking the two panels
+  /// leaves each of them too short to be useful, so that one case puts them
+  /// behind tabs instead ([_MediaTabPanel]); every other session still shows
+  /// whichever single panel it has.
   List<Widget> _buildMediaWidgets(
     BuildContext context,
     ThemeData theme,
     AppLocalizations l10n,
   ) {
+    final mapPanel = _buildSurveyMapPanel(context);
+    final audioPanel = _buildAudioPanel();
+    final useTabs = mapPanel != null && audioPanel != null;
+
     return [
       _SummaryHeader(
         session: widget.session,
@@ -3700,56 +3710,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 : null,
         onFetchWeather: _resolveWeather,
       ),
-      if (widget.session.type == SessionType.survey &&
-          (widget.session.gpsTrack.isNotEmpty ||
-              (widget.session.latitude != null &&
-                  widget.session.longitude != null)))
-        Stack(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.18,
-              child: ClipRRect(
-                child: SurveyMapWidget(
-                  gpsTrack: widget.session.gpsTrack,
-                  detections: _detections,
-                  autoFollow: false,
-                  fitAllPoints: widget.session.gpsTrack.length >= 2,
-                  highlightedDetection: _highlightedDetection,
-                  initialCenter:
-                      widget.session.latitude != null &&
-                              widget.session.longitude != null
-                          ? LatLng(
-                            widget.session.latitude!,
-                            widget.session.longitude!,
-                          )
-                          : null,
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Material(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.8),
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => _openFullscreenSurveyMap(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      AppIcons.fullscreen,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
         _ReviewWarningCard(
           icon: AppIcons.warningAmberRounded,
@@ -3757,96 +3717,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           body: l10n.sessionReviewAudioShortBody,
           onDismiss: _dismissAudioWarning,
         ),
-      if (_audioAvailable) ...[
-        if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null)
-          _TrimSpectrogramView(
-            spectrogramImage: (_fullSpectrogramImage ?? _spectrogramImage)!,
-            durationSec:
-                _fullDurationSec > 0
-                    ? _fullDurationSec
-                    : _duration.inMicroseconds / 1000000.0,
-            initialStartSec: _trimStartSec ?? 0.0,
-            initialEndSec:
-                _trimEndSec ??
-                (_fullDurationSec > 0
-                    ? _fullDurationSec
-                    : _duration.inMicroseconds / 1000000.0),
-            onChanged: _onTrimChanged,
-            quality: ref.watch(spectrogramQualityProvider),
-          )
-        else
-          Stack(
-            children: [
-              _SpectrogramStrip(
-                session: widget.session,
-                spectrogramImage: _spectrogramImage,
-                spectrogramChunks: List.unmodifiable(_spectrogramChunks),
-                decoding: _decoding,
-                positionNotifier: _positionNotifier,
-                duration: _duration,
-                timelineOffsetSec: _clipOffsetSec,
-                onViewportChanged: _requestSpectrogramViewport,
-                onSeek: _seekToPosition,
-                onPause: _pausePlayer,
-                isPlaying: _isPlaying,
-                userDefaultViewSeconds:
-                    ref.watch(spectrogramDurationProvider).toDouble(),
-                quality: ref.watch(spectrogramQualityProvider),
-              ),
-              // Lazy trim editor: no full-file spectrogram thumbnail is
-              // available, so we overlay trim handles directly on the
-              // live (chunk-painted) strip and operate on whatever
-              // window is currently visible. The user pre-zooms to the
-              // region of interest, then drags handles inward.
-              if (_trimMode &&
-                  _spectrogramLazy &&
-                  _lastViewportCenterSec != null &&
-                  _lastViewportViewSec != null)
-                Positioned.fill(
-                  child: Builder(
-                    builder: (context) {
-                      final totalSec =
-                          _spectrogramAudioMetadata?.duration.inMicroseconds !=
-                                  null
-                              ? _spectrogramAudioMetadata!
-                                      .duration
-                                      .inMicroseconds /
-                                  1000000.0
-                              : _fullDurationSec;
-                      final visibleStart = (_lastViewportCenterSec! -
-                              _lastViewportViewSec! / 2)
-                          .clamp(0.0, totalSec);
-                      final visibleEnd = (_lastViewportCenterSec! +
-                              _lastViewportViewSec! / 2)
-                          .clamp(0.0, totalSec);
-                      return _TrimOverlay.windowed(
-                        visibleStartSec: visibleStart,
-                        visibleEndSec: visibleEnd,
-                        initialStartSec: _trimStartSec ?? visibleStart,
-                        initialEndSec: _trimEndSec ?? visibleEnd,
-                        onChanged: _onTrimChanged,
-                      );
-                    },
-                  ),
-                ),
-              Positioned(
-                left: 8,
-                bottom: 8,
-                child: _PlayPauseButton(
-                  isPlaying: _isPlaying,
-                  onToggle: () {
-                    // Manual play/pause cancels any pending auto-stop.
-                    _autoStopPosition = null;
-                    if (_isPlaying) {
-                      _player.pause();
-                    } else {
-                      _player.play();
-                    }
-                  },
-                ),
-              ),
-            ],
+      if (useTabs)
+        _MediaTabPanel(
+          map: mapPanel,
+          spectrogram: audioPanel,
+          trimming: _trimMode,
+        )
+      else ...[
+        if (mapPanel != null)
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.18,
+            child: mapPanel,
           ),
+        if (audioPanel != null) audioPanel,
       ],
       if (_trimMode)
         Padding(
@@ -3879,6 +3762,156 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           ),
         ),
     ];
+  }
+
+  /// The survey track map, or null when this session has no location to show.
+  ///
+  /// Returned unsized so the caller can decide the height — standalone it
+  /// gets a share of the screen, inside [_MediaTabPanel] it matches the
+  /// spectrogram strip.
+  Widget? _buildSurveyMapPanel(BuildContext context) {
+    final hasLocation =
+        widget.session.gpsTrack.isNotEmpty ||
+        (widget.session.latitude != null && widget.session.longitude != null);
+    if (widget.session.type != SessionType.survey || !hasLocation) return null;
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: ClipRRect(
+            child: SurveyMapWidget(
+              gpsTrack: widget.session.gpsTrack,
+              detections: _detections,
+              autoFollow: false,
+              fitAllPoints: widget.session.gpsTrack.length >= 2,
+              highlightedDetection: _highlightedDetection,
+              initialCenter:
+                  widget.session.latitude != null &&
+                          widget.session.longitude != null
+                      ? LatLng(
+                        widget.session.latitude!,
+                        widget.session.longitude!,
+                      )
+                      : null,
+            ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => _openFullscreenSurveyMap(context),
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  AppIcons.fullscreen,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// The spectrogram strip (or the trim editor while trimming), or null when
+  /// this session has no continuous recording.
+  Widget? _buildAudioPanel() {
+    if (!_audioAvailable) return null;
+
+    if (_trimMode && (_fullSpectrogramImage ?? _spectrogramImage) != null) {
+      return _TrimSpectrogramView(
+        spectrogramImage: (_fullSpectrogramImage ?? _spectrogramImage)!,
+        durationSec:
+            _fullDurationSec > 0
+                ? _fullDurationSec
+                : _duration.inMicroseconds / 1000000.0,
+        initialStartSec: _trimStartSec ?? 0.0,
+        initialEndSec:
+            _trimEndSec ??
+            (_fullDurationSec > 0
+                ? _fullDurationSec
+                : _duration.inMicroseconds / 1000000.0),
+        onChanged: _onTrimChanged,
+        quality: ref.watch(spectrogramQualityProvider),
+      );
+    }
+
+    return Stack(
+      children: [
+        _SpectrogramStrip(
+          session: widget.session,
+          spectrogramImage: _spectrogramImage,
+          spectrogramChunks: List.unmodifiable(_spectrogramChunks),
+          decoding: _decoding,
+          positionNotifier: _positionNotifier,
+          duration: _duration,
+          timelineOffsetSec: _clipOffsetSec,
+          onViewportChanged: _requestSpectrogramViewport,
+          onSeek: _seekToPosition,
+          onPause: _pausePlayer,
+          isPlaying: _isPlaying,
+          userDefaultViewSeconds:
+              ref.watch(spectrogramDurationProvider).toDouble(),
+          quality: ref.watch(spectrogramQualityProvider),
+        ),
+        // Lazy trim editor: no full-file spectrogram thumbnail is
+        // available, so we overlay trim handles directly on the
+        // live (chunk-painted) strip and operate on whatever
+        // window is currently visible. The user pre-zooms to the
+        // region of interest, then drags handles inward.
+        if (_trimMode &&
+            _spectrogramLazy &&
+            _lastViewportCenterSec != null &&
+            _lastViewportViewSec != null)
+          Positioned.fill(
+            child: Builder(
+              builder: (context) {
+                final totalSec =
+                    _spectrogramAudioMetadata?.duration.inMicroseconds != null
+                        ? _spectrogramAudioMetadata!.duration.inMicroseconds /
+                            1000000.0
+                        : _fullDurationSec;
+                final visibleStart = (_lastViewportCenterSec! -
+                        _lastViewportViewSec! / 2)
+                    .clamp(0.0, totalSec);
+                final visibleEnd = (_lastViewportCenterSec! +
+                        _lastViewportViewSec! / 2)
+                    .clamp(0.0, totalSec);
+                return _TrimOverlay.windowed(
+                  visibleStartSec: visibleStart,
+                  visibleEndSec: visibleEnd,
+                  initialStartSec: _trimStartSec ?? visibleStart,
+                  initialEndSec: _trimEndSec ?? visibleEnd,
+                  onChanged: _onTrimChanged,
+                );
+              },
+            ),
+          ),
+        Positioned(
+          left: 8,
+          bottom: 8,
+          child: _PlayPauseButton(
+            isPlaying: _isPlaying,
+            onToggle: () {
+              // Manual play/pause cancels any pending auto-stop.
+              _autoStopPosition = null;
+              if (_isPlaying) {
+                _player.pause();
+              } else {
+                _player.play();
+              }
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   /// Compact chip for a single annotation. Tapping reopens the editor

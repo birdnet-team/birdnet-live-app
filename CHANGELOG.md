@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-07-28
+
+### Changed
+
+- Survey setup no longer asks about clip subsampling when the recording mode is **Full audio** or **Off**. Detection sampling (and the clip padding slider) only decides which per-detection clips are kept, so it had no effect in those modes; the controls and the setup summary row now appear only for **Detections**, matching the ARU setup screen.
+- Session Review now shows the survey map and the spectrogram as tabs rather than stacking them, for surveys recorded with full audio — the only sessions that have both. Each view gets the full panel height instead of half, and switching tabs keeps the map position and the spectrogram's zoom. Starting a trim selects the spectrogram tab, since that is where trimming happens. Sessions with only a map or only a spectrogram are unchanged.
+
 ## [0.19.0] - 2026-07-27
 
 ### Fixed
