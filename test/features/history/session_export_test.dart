@@ -11,6 +11,7 @@ import 'package:birdnet_live/features/history/session_export.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
+import 'package:birdnet_live/features/recording/wav_writer.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
@@ -1784,6 +1785,253 @@ void main() {
         names.any((n) => n.contains('2025-06-16') && n.endsWith('.json')),
         isTrue,
       );
+    });
+  });
+
+  // ── Trimmed sessions (issue #177) ───────────────────────────────────────
+
+  group('buildSessionExport with a trimmed recording', () {
+    late Directory tempDir;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('session_export_trim_');
+    });
+    tearDown(() {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    });
+
+    /// A 60 s mono 32 kHz WAV whose sample values encode their own index,
+    /// so a slice can be located in the original.
+    Future<String> writeWav(Directory dir) async {
+      const rate = 32000;
+      final samples = Int16List(rate * 60);
+      for (var i = 0; i < samples.length; i++) {
+        samples[i] = (i % 30000) - 15000;
+      }
+      final path = '${dir.path}/full.wav';
+      await WavWriter.writePcm16File(
+        filePath: path,
+        samples: samples,
+        sampleRate: rate,
+      );
+      return path;
+    }
+
+    LiveSession trimmedSession(String wavPath) {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        recordingPath: wavPath,
+        detections: [
+          // Dropped by the user's trim in review, kept here to prove the
+          // export never emits a negative offset if one survives.
+          _det(
+            'Erithacus rubecula',
+            'European Robin',
+            0.8,
+            const Duration(seconds: 4),
+            start,
+          ),
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 30),
+            start,
+          ),
+        ],
+      );
+      session.trimStartSec = 10.0;
+      session.trimEndSec = 40.0;
+      return session;
+    }
+
+    test('ZIP audio is the trimmed extent, not the full recording', () async {
+      final wavPath = await writeWav(tempDir);
+      final session = trimmedSession(wavPath);
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+      expect(zipPath, isNotNull);
+
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      final audio = archive.firstWhere((f) => f.name == '$_prefix.wav');
+      final audioPath = '${tempDir.path}/from_zip.wav';
+      File(audioPath).writeAsBytesSync(audio.content as List<int>);
+
+      final decoded = await AudioDecoder.decodeFile(audioPath);
+      expect(decoded.sampleRate, 32000);
+      expect(decoded.totalSamples, 32000 * 30);
+      // First sample of the export is the first sample of second 10.
+      expect(decoded.samples.first, ((32000 * 10) % 30000) - 15000);
+
+      // The untrimmed recording is left alone on disk.
+      final original = await AudioDecoder.inspectFile(wavPath);
+      expect(original.totalSamples, 32000 * 60);
+    });
+
+    test('Raven and CSV offsets index the trimmed audio', () async {
+      final wavPath = await writeWav(tempDir);
+      final session = trimmedSession(wavPath);
+
+      final raven = buildRavenSelectionTable(
+        session,
+        audioFileName: '$_prefix.wav',
+      );
+      final ravenRow = raven
+          .split('\n')
+          .firstWhere((l) => l.contains('Turdus merula'))
+          .split('\t');
+      // Detection at 30 s of the recording is 20 s into a trim at 10 s.
+      expect(double.parse(ravenRow[4]), closeTo(20.0, 0.001));
+
+      final csv = buildCsvExport(session, audioFileName: '$_prefix.wav');
+      final csvRow = csv
+          .split('\n')
+          .firstWhere((l) => l.contains('Turdus merula'))
+          .split(',');
+      expect(double.parse(csvRow[1]), closeTo(20.0, 0.001));
+
+      // A detection before the trim start clamps to zero instead of
+      // pointing before the start of the file.
+      final earlyRow = raven
+          .split('\n')
+          .firstWhere((l) => l.contains('Erithacus rubecula'))
+          .split('\t');
+      expect(double.parse(earlyRow[4]), 0.0);
+    });
+
+    test('JSON offsets and trimmed duration follow the trim', () async {
+      final wavPath = await writeWav(tempDir);
+      final session = trimmedSession(wavPath);
+      session.annotations.addAll([
+        SessionAnnotation(
+          text: 'Before trim',
+          createdAt: DateTime.utc(2025),
+          offsetInRecording: 5,
+        ),
+        SessionAnnotation(
+          text: 'Inside trim',
+          createdAt: DateTime.utc(2025),
+          offsetInRecording: 15,
+        ),
+      ]);
+
+      final map = jsonDecode(buildJsonExport(session)) as Map<String, dynamic>;
+      expect(map['trimStartSec'], 10.0);
+      expect(map['trimEndSec'], 40.0);
+      expect(map['trimmedDurationSec'], closeTo(30.0, 0.001));
+
+      final detections = map['detections'] as List<dynamic>;
+      final blackbird =
+          detections.firstWhere(
+                (d) => (d as Map)['scientificName'] == 'Turdus merula',
+              )
+              as Map<String, dynamic>;
+      expect(blackbird['beginTimeSec'], closeTo(20.0, 0.001));
+
+      final annotations = map['annotations'] as List<dynamic>;
+      expect((annotations[0] as Map).containsKey('offsetInRecording'), isFalse);
+      expect((annotations[1] as Map)['offsetInRecording'], 5.0);
+    });
+
+    test('does not export full audio with trim-rebased offsets', () async {
+      final path = '${tempDir.path}/unsupported.mp3';
+      File(path).writeAsBytesSync(List<int>.filled(4096, 7));
+      final session = trimmedSession(path);
+
+      final exportPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+
+      expect(exportPath, isNull);
+    });
+
+    test('an untrimmed session still ships the recording verbatim', () async {
+      final wavPath = await writeWav(tempDir);
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        recordingPath: wavPath,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 30),
+            start,
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      final audio = archive.firstWhere((f) => f.name == '$_prefix.wav');
+      expect((audio.content as List<int>).length, File(wavPath).lengthSync());
+    });
+
+    test('sweeps stale staged trims but spares recent ones', () async {
+      final staging = Directory(
+        p.join(Directory.systemTemp.path, 'birdnet_export_trim'),
+      )..createSync(recursive: true);
+      // The audio-only share path returns its staged file to the share sheet
+      // and can't delete it; the next export is what reclaims the space.
+      final stale =
+          File(p.join(staging.path, 'sweep_test_stale.wav'))
+            ..writeAsBytesSync(List<int>.filled(2048, 1))
+            ..setLastModifiedSync(
+              DateTime.now().subtract(const Duration(hours: 6)),
+            );
+      final recent = File(p.join(staging.path, 'sweep_test_recent.wav'))
+        ..writeAsBytesSync(List<int>.filled(2048, 1));
+      addTearDown(() {
+        for (final f in [stale, recent]) {
+          if (f.existsSync()) f.deleteSync();
+        }
+      });
+
+      final wavPath = await writeWav(tempDir);
+      final zipPath = await buildSessionExport(
+        trimmedSession(wavPath),
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+      expect(zipPath, isNotNull);
+
+      expect(stale.existsSync(), isFalse);
+      // Still inside the grace period — a share sheet could be reading it.
+      expect(recent.existsSync(), isTrue);
+    });
+
+    test('audio-only share returns the trimmed file', () async {
+      final wavPath = await writeWav(tempDir);
+      final session = trimmedSession(wavPath);
+
+      final path = await buildSessionExport(
+        session,
+        formats: const {},
+        includeAudio: true,
+        includeAppMetadata: false,
+      );
+      expect(path, isNotNull);
+      expect(path!.endsWith('.wav'), isTrue);
+      final decoded = await AudioDecoder.decodeFile(path);
+      expect(decoded.totalSamples, 32000 * 30);
+      addTearDown(() {
+        final f = File(path);
+        if (f.existsSync()) f.deleteSync();
+      });
     });
   });
 }

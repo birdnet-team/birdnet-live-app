@@ -17,20 +17,21 @@ Color _reviewPrimary(ThemeData theme, int alpha) {
 // ═════════════════════════════════════════════════════════════════════════════
 
 /// Snapshot of mutable review state for undo/redo.
+///
+/// The trim is stored as the applied range only; restoring it is enough for
+/// the screen to re-derive the player clip and the spectrogram crop.
 class _ReviewSnapshot {
   _ReviewSnapshot({
     required this.detections,
     required this.annotations,
     required this.trimStartSec,
     required this.trimEndSec,
-    required this.clipOffsetSec,
   });
 
   final List<DetectionRecord> detections;
   final List<SessionAnnotation> annotations;
   final double? trimStartSec;
   final double? trimEndSec;
-  final double clipOffsetSec;
 }
 
 /// A cluster of consecutive detections of the same species.
@@ -3293,13 +3294,21 @@ class _TrimOverlayState extends State<_TrimOverlay> {
             setState(() {
               final frac = (d.localPosition.dx / w).clamp(0.0, 1.0);
               if (_draggingStart) {
-                _startFrac = math.min(frac, _endFrac - 0.01);
+                _startFrac = math.max(0.0, math.min(frac, _endFrac - 0.01));
               } else if (_draggingEnd) {
-                _endFrac = math.max(frac, _startFrac + 0.01);
+                _endFrac = math.min(1.0, math.max(frac, _startFrac + 0.01));
               }
             });
+            // Report continuously so the applied range always matches what
+            // is drawn, even when the gesture ends in a cancel.
+            _reportChange();
           },
           onHorizontalDragEnd: (_) {
+            _draggingStart = false;
+            _draggingEnd = false;
+            _reportChange();
+          },
+          onHorizontalDragCancel: () {
             _draggingStart = false;
             _draggingEnd = false;
             _reportChange();
@@ -3444,11 +3453,55 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
   late double _endSec;
   String? _activeDrag; // 'start', 'end', or null for zoom/pan
 
+  /// Shortest selection the handles may produce, in seconds.
+  static const double _minSelectionSec = 0.5;
+
   @override
   void initState() {
     super.initState();
     _startSec = widget.initialStartSec;
     _endSec = widget.initialEndSec;
+    _normalizeHandles();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrimSpectrogramView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Never fight a live drag; the local values are authoritative then.
+    if (_activeDrag != null) return;
+
+    // Adopt handle positions the *parent* changed. The common case is a
+    // recording whose true length only arrived after the editor opened
+    // (just_audio can publish the duration asynchronously), which would
+    // otherwise leave the end handle pinned to a stale duration.
+    if (widget.initialStartSec != oldWidget.initialStartSec) {
+      _startSec = widget.initialStartSec;
+    }
+    if (widget.initialEndSec != oldWidget.initialEndSec) {
+      _endSec = widget.initialEndSec;
+    }
+    if (widget.durationSec != oldWidget.durationSec) {
+      _clampScroll();
+    }
+    _normalizeHandles();
+  }
+
+  /// Clamps both handles into `[0, durationSec]` and keeps them at least
+  /// [_minSelectionSec] apart, so no code path can hand the caller an
+  /// inverted or zero-length range.
+  void _normalizeHandles() {
+    final total = widget.durationSec;
+    if (total <= 0) return;
+    _startSec = _startSec.clamp(0.0, total);
+    _endSec = _endSec.clamp(0.0, total);
+    if (_endSec - _startSec < _minSelectionSec) {
+      if (_startSec + _minSelectionSec <= total) {
+        _endSec = _startSec + _minSelectionSec;
+      } else {
+        _endSec = total;
+        _startSec = math.max(0.0, total - _minSelectionSec);
+      }
+    }
   }
 
   double get _viewDurationSec => widget.durationSec / _zoom;
@@ -3500,11 +3553,17 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       ).clamp(0.0, widget.durationSec);
       setState(() {
         if (_activeDrag == 'start') {
-          _startSec = math.min(sec, _endSec - 0.5);
+          _startSec = math.max(0.0, math.min(sec, _endSec - _minSelectionSec));
         } else {
-          _endSec = math.max(sec, _startSec + 0.5);
+          _endSec = math.min(
+            widget.durationSec,
+            math.max(sec, _startSec + _minSelectionSec),
+          );
         }
       });
+      // Report continuously so the applied range always matches what is
+      // drawn, even if the gesture ends in a cancel rather than an end.
+      widget.onChanged(_startSec, _endSec);
     } else {
       setState(() {
         _zoom = (_baseZoom * details.scale).clamp(1.0, 20.0);
@@ -3521,6 +3580,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
 
   void _onScaleEnd(ScaleEndDetails details) {
     if (_activeDrag != null) {
+      _normalizeHandles();
       widget.onChanged(_startSec, _endSec);
     }
     _activeDrag = null;

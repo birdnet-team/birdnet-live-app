@@ -42,9 +42,71 @@ import '../recording/wav_writer.dart';
 import 'html_report.dart';
 import 'services/audio_share_extension.dart';
 import 'services/detection_audio_window.dart';
+import 'services/session_audio_trim.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
 const int _highFreqHz = 16000;
+
+/// How long a staged trim is left alone before it counts as garbage.
+///
+/// The audio-only share path hands its staged file straight to the share
+/// sheet and cannot delete it afterwards — the receiving app may still be
+/// reading it, on Android through a content URI that outlives our `share()`
+/// call. So the *next* export sweeps it instead, and this grace period keeps
+/// that sweep from pulling a file out of a sheet the user still has open.
+const Duration _kExportTrimStagingTtl = Duration(hours: 1);
+
+/// Directory holding trimmed audio staged for an export.
+Directory _exportTrimStagingDir() =>
+    Directory(p.join(Directory.systemTemp.path, 'birdnet_export_trim'));
+
+/// Best-effort removal of staged trims left behind by earlier exports.
+///
+/// Each entry is a full trimmed recording, so without this they accumulate
+/// one per trimmed session ever shared as bare audio.
+Future<void> _sweepExportTrimStaging() async {
+  try {
+    final dir = _exportTrimStagingDir();
+    if (!await dir.exists()) return;
+    final cutoff = DateTime.now().subtract(_kExportTrimStagingTtl);
+    await for (final entity in dir.list(followLinks: false)) {
+      if (entity is! File) continue;
+      try {
+        if ((await entity.stat()).modified.isAfter(cutoff)) continue;
+        await entity.delete();
+      } catch (_) {
+        // Locked or vanished — the next export tries again.
+      }
+    }
+  } catch (_) {
+    // Housekeeping must never fail an export.
+  }
+}
+
+/// Rebases an offset on the *recorded* timeline onto the exported audio.
+///
+/// Exports of a trimmed session ship the trimmed recording, so every time
+/// column has to move with it — otherwise Raven and the CSV would point
+/// past the end of the file they reference (see issue #177). Untrimmed
+/// sessions pass through unchanged.
+double _exportTimelineOffset(LiveSession session, double relativeSec) {
+  if (!session.hasAudioTrim) return relativeSec;
+  final rebased = relativeSec - session.trimStartSeconds;
+  if (rebased <= 0) return 0.0;
+  final limit = session.trimmedTimelineSeconds;
+  return limit > 0 && rebased > limit ? limit : rebased;
+}
+
+double? _exportAnnotationOffset(LiveSession session, double? sourceOffsetSec) {
+  if (sourceOffsetSec == null) return null;
+  if (!session.hasAudioTrim) return sourceOffsetSec;
+  final end = session.trimEndSeconds;
+  if (sourceOffsetSec < session.trimStartSeconds ||
+      (end != null && sourceOffsetSec >= end)) {
+    return null;
+  }
+  return sourceOffsetSec - session.trimStartSeconds;
+}
 
 /// Decodes a FLAC file and returns the bytes of an equivalent PCM WAV.
 /// Returns null if decoding fails (caller should fall back to original file).
@@ -218,8 +280,12 @@ String buildRavenSelectionTable(
       clipContextSeconds: clipContext,
     );
     // Session-relative offset (always computed; used for either Begin Time
-    // or the auxiliary Survey Time column).
-    final surveySec = isGlobal ? 0.0 : timing.detectionStartSec;
+    // or the auxiliary Survey Time column), rebased onto the exported
+    // (possibly trimmed) audio so it indexes the file the row references.
+    final surveySec =
+        isGlobal
+            ? 0.0
+            : _exportTimelineOffset(session, timing.detectionStartSec);
 
     // Begin/End times depend on whether the row references a clip file.
     final double beginSec;
@@ -232,8 +298,8 @@ String buildRavenSelectionTable(
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = timing.detectionStartSec;
-      endSec = timing.detectionEndSec;
+      beginSec = surveySec;
+      endSec = _exportTimelineOffset(session, timing.detectionEndSec);
     }
 
     final commonName = _localizedCommon(
@@ -355,8 +421,12 @@ String buildCsvExport(
       d,
       clipContextSeconds: clipContext,
     );
-    // Session-relative offset.
-    final surveySec = isGlobal ? 0.0 : timing.detectionStartSec;
+    // Session-relative offset, rebased onto the exported (possibly trimmed)
+    // audio so it indexes the file the row references.
+    final surveySec =
+        isGlobal
+            ? 0.0
+            : _exportTimelineOffset(session, timing.detectionStartSec);
 
     final double beginSec;
     final double endSec;
@@ -367,8 +437,8 @@ String buildCsvExport(
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = timing.detectionStartSec;
-      endSec = timing.detectionEndSec;
+      beginSec = surveySec;
+      endSec = _exportTimelineOffset(session, timing.detectionEndSec);
     }
 
     final localizedCommon = _localizedCommon(
@@ -713,14 +783,22 @@ String buildJsonExport(
     'settings': session.settings.toJson(),
     if (session.trimStartSec != null) 'trimStartSec': session.trimStartSec,
     if (session.trimEndSec != null) 'trimEndSec': session.trimEndSec,
+    // Exports of a trimmed session ship the trimmed audio, so record how
+    // long that is — `trimStartSec`/`trimEndSec` describe where it was cut
+    // from the *original* recording, `beginTimeSec` indexes the export.
+    if (session.hasAudioTrim)
+      'trimmedDurationSec': num.parse(
+        session.trimmedTimelineSeconds.toStringAsFixed(3),
+      ),
     if (session.segments.isNotEmpty)
       'segments': session.segments.map((s) => s.toJson()).toList(),
     if (session.aruMetadata != null) 'aru': session.aruMetadata!.toJson(),
     'detections':
         session.detections.map((d) {
           // Gap-removed offset into the recorded audio (see
-          // absoluteToRelative); keeps resumed sessions aligned.
-          final beginSec = session.absoluteToRelative(d.timestamp);
+          // absoluteToRelative), rebased onto the trimmed extent when the
+          // session was trimmed; keeps resumed sessions aligned.
+          final beginSec = session.trimmedRelative(d.timestamp);
           return {
             'timestamp': d.timestamp.toUtc().toIso8601String(),
             'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
@@ -739,7 +817,20 @@ String buildJsonExport(
           };
         }).toList(),
     if (session.annotations.isNotEmpty)
-      'annotations': session.annotations.map((a) => a.toJson()).toList(),
+      'annotations':
+          session.annotations.map((annotation) {
+            final json = annotation.toJson();
+            final offset = _exportAnnotationOffset(
+              session,
+              annotation.offsetInRecording,
+            );
+            if (offset == null) {
+              json.remove('offsetInRecording');
+            } else {
+              json['offsetInRecording'] = offset;
+            }
+            return json;
+          }).toList(),
   };
 
   return const JsonEncoder.withIndent('  ').convert(map);
@@ -780,12 +871,13 @@ Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
   }
 }
 
-double _recordedTimelineDurationSeconds(LiveSession session) {
-  if (session.segments.isNotEmpty) {
-    return session.absoluteToRelative(session.endTime ?? DateTime.now());
-  }
-  return session.duration.inMicroseconds / 1e6;
-}
+/// Length of the audio timeline the export describes.
+///
+/// Segment-backed sessions use their exact gap-removed timeline so resumed
+/// sessions don't include stopped time, and a trimmed session reports the
+/// trimmed extent — that is the audio the bundle actually ships.
+double _recordedTimelineDurationSeconds(LiveSession session) =>
+    session.trimmedTimelineSeconds;
 
 Map<String, dynamic> _withAruCycleExportFiles(
   Map<String, dynamic>? metadata,
@@ -848,6 +940,18 @@ Future<String?> buildSessionExport(
   final fullRecordingPath = await _resolveFullRecordingPath(
     session.recordingPath,
   );
+  final recordingPath = session.recordingPath;
+  if (includeAudio &&
+      session.hasAudioTrim &&
+      fullRecordingPath == null &&
+      recordingPath != null &&
+      FileSystemEntity.typeSync(recordingPath) !=
+          FileSystemEntityType.notFound) {
+    // A playable recording exists, but the trim slicer cannot materialize
+    // its container. Returning a document-only export would silently ignore
+    // the user's explicit request to include the trimmed audio.
+    return null;
+  }
 
   // Full recording: single finalized file, or a session directory containing
   // the finalized `full.wav` / `full.flac` recording.
@@ -904,6 +1008,30 @@ Future<String?> buildSessionExport(
                   fallbackAudioShareExtension
               : fallbackAudioShareExtension);
   final audioFileName = '$prefix$audioExt';
+
+  // ── Apply the session's trim to the exported audio ────────────────
+  // Trimming in Session Review only stores a range; the recording on disk
+  // stays whole so the trim can be widened or reset later. The export is
+  // where that range has to become real audio — without this the bundle
+  // ships the full recording while every time column has already been
+  // rebased onto the trimmed extent (issue #177).
+  // Clear out staged trims from earlier exports before adding another.
+  await _sweepExportTrimStaging();
+
+  TrimmedAudioFile? trimmedRecording;
+  if (includeAudio && hasFullRecording && session.hasAudioTrim) {
+    trimmedRecording = await writeTrimmedAudioFile(
+      sourcePath: fullRecordingPath,
+      destPath: p.join(_exportTrimStagingDir().path, audioFileName),
+      startSec: session.trimStartSeconds,
+      endSec: session.trimEndSeconds,
+      asWav: shareAudioAsWav || fullRecordingSourceExt == '.wav',
+    );
+    // Never pair the full source with trim-rebased timestamps. A caller may
+    // retry without audio, but an apparently successful mismatched export is
+    // not a valid fallback.
+    if (trimmedRecording == null) return null;
+  }
 
   // Map detection index → export clip filename.
   Map<int, String>? clipFileMap;
@@ -1041,6 +1169,10 @@ Future<String?> buildSessionExport(
   // raw audio file (converted to WAV if requested), renamed to the
   // BirdNET_Live_… prefix so the receiving app shows a sensible filename.
   if (!mustZip && includeAudio && hasFullRecording && !hasCompanion) {
+    // The trimmed file was written under the export filename already, in
+    // the requested container — hand it straight to the share sheet.
+    if (trimmedRecording != null) return trimmedRecording.file.path;
+
     if (shareAudioAsWav && fullRecordingSourceExt == '.flac') {
       final wavBytes = await _flacToWavBytes(fullRecordingPath);
       if (wavBytes != null) {
@@ -1092,8 +1224,21 @@ Future<String?> buildSessionExport(
 
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
-        final bytes = await audioBytes(fullRecordingPath);
+        // A materialized trim is already in the requested container.
+        final bytes =
+            trimmedRecording != null
+                ? await trimmedRecording.file.readAsBytes()
+                : await audioBytes(fullRecordingPath);
         archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
+        if (trimmedRecording != null) {
+          // The bytes are in the archive now; don't leave a second copy of
+          // the recording sitting in the temp directory.
+          try {
+            await trimmedRecording.file.delete();
+          } catch (_) {
+            // Best-effort cleanup.
+          }
+        }
       } else {
         for (final entry in clipExportNames.entries) {
           final bytes = await audioBytes(clipEntries[entry.key]!.path);
@@ -1249,23 +1394,8 @@ Future<String?> buildSessionExport(
 /// Most completed sessions store the finalized file path directly. Active or
 /// crash-recovered sessions may still point at the session recording directory;
 /// support that shape as well so export does not silently drop available audio.
-Future<String?> _resolveFullRecordingPath(String? recordingPath) async {
-  if (recordingPath == null || recordingPath.isEmpty) return null;
-
-  if (FileSystemEntity.isFileSync(recordingPath)) {
-    final ext = await sourceAudioExtensionForFile(File(recordingPath));
-    return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
-  }
-
-  if (FileSystemEntity.isDirectorySync(recordingPath)) {
-    final flac = File(p.join(recordingPath, 'full.flac'));
-    if (flac.existsSync()) return flac.path;
-    final wav = File(p.join(recordingPath, 'full.wav'));
-    if (wav.existsSync()) return wav.path;
-  }
-
-  return null;
-}
+Future<String?> _resolveFullRecordingPath(String? recordingPath) =>
+    resolveSessionRecordingFile(recordingPath);
 
 /// Builds a human-readable text file of session annotations.
 String _buildAnnotationsText(LiveSession session) {
@@ -1275,9 +1405,10 @@ String _buildAnnotationsText(LiveSession session) {
   buf.writeln();
 
   for (final a in session.annotations) {
-    if (a.offsetInRecording != null) {
-      final m = a.offsetInRecording! ~/ 60;
-      final s = (a.offsetInRecording! % 60).toInt();
+    final offset = _exportAnnotationOffset(session, a.offsetInRecording);
+    if (offset != null) {
+      final m = offset ~/ 60;
+      final s = (offset % 60).toInt();
       buf.write(
         '[${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}] ',
       );
@@ -1426,7 +1557,7 @@ Future<String?> buildMultiSessionExport(
     if (metadataProvider != null) {
       metadata = await metadataProvider(session);
     }
-    final path = await buildSessionExport(
+    var path = await buildSessionExport(
       session,
       formats: formats,
       includeAudio: includeAudio,
@@ -1439,6 +1570,25 @@ Future<String?> buildMultiSessionExport(
       includeHtmlReport: includeHtmlReport,
       includeAppMetadata: includeAppMetadata,
     );
+    // A trimmed recording in a container the slicer can't cut fails the whole
+    // session rather than shipping audio that disagrees with its timestamps.
+    // In a bulk export that would silently drop the session's documents too,
+    // so fall back to a document-only bundle for that one session.
+    if (path == null && includeAudio && formats.isNotEmpty) {
+      path = await buildSessionExport(
+        session,
+        formats: formats,
+        includeAudio: false,
+        shareAudioAsWav: shareAudioAsWav,
+        taxonomy: taxonomy,
+        speciesLocale: speciesLocale,
+        clipContextSecondsOverride: clipContextSecondsOverride,
+        metadata: metadata,
+        useAbsoluteSurveyTime: useAbsoluteSurveyTime,
+        includeHtmlReport: includeHtmlReport,
+        includeAppMetadata: includeAppMetadata,
+      );
+    }
     if (path == null) continue;
 
     final file = File(path);

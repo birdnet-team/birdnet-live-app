@@ -34,6 +34,7 @@ import 'package:intl/intl.dart';
 
 import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
+import 'services/session_audio_trim.dart';
 
 /// Builds a self-contained HTML report for [session].
 ///
@@ -1027,8 +1028,8 @@ String _buildDataPayload(
     final clipName = clipFileMap?[i];
     dets.add({
       'common': _localizedCommon(d, taxonomy, speciesLocale),
-      'sci': taxonomy?.displayScientificName(d.scientificName) ??
-          d.scientificName,
+      'sci':
+          taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName,
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
@@ -1072,7 +1073,7 @@ Map<String, dynamic>? _buildTimelinePayload(LiveSession session) {
   final bins = List<int>.filled(actualBins, 0, growable: false);
 
   for (final d in session.detections) {
-    final offset = session.absoluteToRelative(d.timestamp);
+    final offset = session.trimmedRelative(d.timestamp);
     final clampedOffset = offset.clamp(0, durationSeconds.toDouble());
     final index =
         (clampedOffset / binSeconds).floor().clamp(0, actualBins - 1).toInt();
@@ -1088,9 +1089,11 @@ Map<String, dynamic>? _buildTimelinePayload(LiveSession session) {
 }
 
 int _timelineDurationSeconds(LiveSession session) {
-  var durationSeconds = session.duration.inSeconds;
+  // Offsets in the report index the exported audio, so a trimmed session
+  // measures its timeline from the trim start.
+  var durationSeconds = session.trimmedTimelineSeconds.round();
   for (final d in session.detections) {
-    final offset = session.absoluteToRelative(d.timestamp).ceil();
+    final offset = session.trimmedRelative(d.timestamp).ceil();
     if (offset + 1 > durationSeconds) {
       durationSeconds = offset + 1;
     }
@@ -1255,7 +1258,7 @@ String _buildDetectionsHtml(
       final confPct = (d.confidence * 100).round();
       final scoreClass =
           d.confidence >= 0.7 ? 'high' : (d.confidence < 0.4 ? 'low' : '');
-      final relSec = session.absoluteToRelative(d.timestamp).round();
+      final relSec = session.trimmedRelative(d.timestamp).round();
       final relText = _fmtRelative(relSec);
       final wallText = timeFmt.format(d.timestamp.toLocal());
       final clipNameRaw = clipFileMap?[i];
