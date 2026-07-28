@@ -1287,10 +1287,6 @@ class _SurveySpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000;
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isActive,
@@ -1298,7 +1294,7 @@ class _SurveySpectrogram extends ConsumerWidget {
       colorMapName: colorMap,
       dbFloor: dbFloor,
       dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
+      displaySeconds: durationSec.toDouble(),
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,

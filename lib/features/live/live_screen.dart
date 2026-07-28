@@ -1146,13 +1146,6 @@ class _LiveSpectrogram extends ConsumerWidget {
     final durationSec = ref.watch(spectrogramDurationProvider);
     final maxFreq = ref.watch(spectrogramMaxFreqProvider);
 
-    // Compute maxColumns from desired duration:
-    // hopSize = fftSize ~/ 2, hop duration = hopSize / sampleRate
-    // maxColumns = durationSec / hopDuration
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000; // AppConstants.sampleRate
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
@@ -1164,7 +1157,7 @@ class _LiveSpectrogram extends ConsumerWidget {
         colorMapName: colorMap,
         dbFloor: dbFloor,
         dbCeiling: dbCeiling,
-        maxColumns: maxColumns,
+        displaySeconds: durationSec.toDouble(),
         showFrequencyAxis: false,
         showTimeAxis: false,
         maxDisplayFrequency: maxFreq,
