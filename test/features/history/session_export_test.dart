@@ -86,6 +86,101 @@ void main() {
       expect(header, contains('Confidence'));
     });
 
+    test('resumed session: Begin Time uses gap-removed audio offset', () {
+      // Run 1: 08:00:00–08:05:00 (300 s recorded). Stopped, then resumed.
+      // Run 2: 08:35:00–08:40:00 (30-minute gap while stopped). A detection
+      // 10 s into run 2 must map to 310 s in the gap-removed recording
+      // (300 s of run 1 + 10 s), NOT 2110 s of wall-clock since start.
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final seg2Start = start.add(const Duration(minutes: 35));
+      final session = LiveSession(
+        id: '2025-06-15T08-00-00',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 40)),
+        type: SessionType.survey,
+        recordedDurationSeconds: 600,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.95,
+            const Duration(seconds: 10),
+            seg2Start,
+          ),
+        ],
+        settings: SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1.0,
+          speciesFilterMode: 'off',
+          clipContextSeconds: 0,
+        ),
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 5)),
+          ),
+          SessionSegment(
+            startTime: seg2Start,
+            endTime: start.add(const Duration(minutes: 40)),
+          ),
+        ],
+      );
+
+      final table = buildRavenSelectionTable(
+        session,
+        audioFileName: '$_prefix.wav',
+      );
+      final cols = table
+          .split('\n')
+          .where((l) => l.isNotEmpty)
+          .toList()[1]
+          .split('\t');
+
+      expect(cols[4], '310.000'); // Begin Time (gap removed)
+      expect(cols[5], '313.000'); // End Time (310 + 3)
+    });
+
+    test('resumed session: global annotation ends at recorded duration', () {
+      final start = DateTime.utc(2025, 6, 15, 8);
+      final resumedAt = start.add(const Duration(minutes: 35));
+      final session = LiveSession(
+        id: 'resumed',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 40)),
+        type: SessionType.survey,
+        detections: [
+          DetectionRecord(
+            scientificName: 'Global',
+            commonName: 'Global',
+            confidence: 1,
+            timestamp: start,
+            source: DetectionSource.manualGlobal,
+          ),
+        ],
+        settings: const SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1,
+          speciesFilterMode: 'off',
+        ),
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 5)),
+          ),
+          SessionSegment(
+            startTime: resumedAt,
+            endTime: start.add(const Duration(minutes: 40)),
+          ),
+        ],
+      );
+
+      final cols = buildRavenSelectionTable(session).split('\n')[1].split('\t');
+      expect(cols[4], '0.000');
+      expect(cols[5], '600.000');
+    });
+
     test('empty detections produces header only', () {
       final session = _makeSession();
       final table = buildRavenSelectionTable(session);
