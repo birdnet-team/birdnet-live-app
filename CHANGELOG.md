@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed a serious problem where another app taking the microphone during a survey (for example, opening the camera to shoot a video) could leave the phone unable to record audio in any app until it was rebooted. The app no longer keeps re-grabbing a microphone it can't have while running in the background, which was what wedged the device audio system. Losing the microphone is now handled gracefully: the survey signal meter shows a crossed-out mic, the ongoing notification explains that another app is using the microphone, and audio recording resumes automatically as soon as you return to the app.
+- Resuming a survey from Session Review now keeps the elapsed timer running correctly. Previously the counter froze shortly after resuming and the saved duration came out too short; the timer now continues from where it left off and counts only time the survey is actively recording, excluding the gap while it was stopped. The live detections-per-minute rate is likewise now based on active recording time rather than wall-clock time since the survey first started.
+- Detection timestamps in exports (Raven selection tables, CSV, and JSON) now line up with the audio for resumed survey sessions. Offsets are measured against the actual recorded audio with the stopped gap removed, matching in-app playback, instead of counting the pause as if it were recorded.
+- The "recording shorter than session" warning in Session Review and exports now measures the expected audio length the same way (gap-removed), so resumed sessions are no longer falsely flagged as truncated.
+
+### Changed
+
+- The **Continue Survey** button in Session Review is now hidden for sessions that recorded full audio, because a continuous audio file can't be safely extended across a stop-and-resume. Surveys recorded with clip subsampling (or no audio) can still be resumed as before, and a resumed survey now keeps its original recording mode.
 
 ## [0.18.9] - 2026-07-11
 

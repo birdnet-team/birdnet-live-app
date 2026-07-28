@@ -1078,26 +1078,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 _formatLabelForPath(path),
               );
       final audioSec = metadata.duration.inMicroseconds / 1e6;
-      var expectedSec = 0.0;
-      final recordedSec = widget.session.recordedDurationSeconds?.toDouble();
-      if (recordedSec != null && recordedSec > 0) {
-        expectedSec = recordedSec;
-      } else {
-        final end = widget.session.endTime;
-        if (end != null) {
-          expectedSec = math.max(
-            expectedSec,
-            end.difference(widget.session.startTime).inMicroseconds / 1e6,
-          );
-        }
-        for (final detection in widget.session.detections) {
-          final eventEnd = detection.endTimestamp ?? detection.timestamp;
-          expectedSec = math.max(
-            expectedSec,
-            eventEnd.difference(widget.session.startTime).inMicroseconds / 1e6,
-          );
-        }
-      }
+      final expectedSec = widget.session.expectedRecordedAudioSeconds;
       final isTruncated = expectedSec > 0 && audioSec + 5 < expectedSec;
       if (mounted && isTruncated != _audioTruncatedWarning) {
         setState(() => _audioTruncatedWarning = isTruncated);
@@ -1973,6 +1954,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  /// Whether this session may be resumed ("Continue survey").
+  ///
+  /// Only survey sessions qualify, and only when they were NOT recorded in
+  /// full-audio mode. Full-audio recordings are a single continuous file that
+  /// cannot be safely concatenated across a stop/resume (the FLAC stream is
+  /// already finalized), so resuming them would desync the audio timeline
+  /// from the detections. Clip-subsampling and no-recording sessions have no
+  /// such continuous file and resume cleanly.
+  bool get _canContinueSurvey {
+    if (widget.session.type != SessionType.survey) return false;
+    return switch (widget.session.settings.recordingMode) {
+      'detections' || 'detectionsOnly' || 'off' => true,
+      // A legacy session without a recording-mode snapshot is safe to resume
+      // only when it has no associated audio. An existing path may point to a
+      // finalized full recording, which must not be overwritten.
+      null => widget.session.recordingPath == null,
+      _ => false,
+    };
+  }
+
   /// Resume an unfinished survey session (after user confirmation).
   Future<void> _continueSurvey() async {
     final l10n = AppLocalizations.of(context)!;
@@ -2448,10 +2449,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => _SessionHelpSheet(
-            showContinueSurvey: widget.session.type == SessionType.survey,
-          ),
+      builder: (_) => _SessionHelpSheet(showContinueSurvey: _canContinueSurvey),
     );
   }
 
@@ -3661,7 +3659,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             tooltip: l10n.sessionDiscard,
             onPressed: _discard,
           ),
-          if (widget.session.type == SessionType.survey)
+          if (_canContinueSurvey)
             IconButton(
               icon: Icon(
                 AppIcons.playArrowRounded,

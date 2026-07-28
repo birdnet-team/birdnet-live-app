@@ -525,6 +525,80 @@ void main() {
       expect(session.segments.single.endTime, isNotNull);
     });
 
+    test('resume opens a distinct segment and keeps accumulated time', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: start.add(const Duration(minutes: 10)),
+        recordedDurationSeconds: 600,
+        settings: testSettings,
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(minutes: 10)),
+          ),
+        ],
+      );
+
+      // Guard: while stopped, startSegment must not reopen anything.
+      session.startSegment();
+      expect(session.segments, hasLength(1));
+
+      session.resume();
+
+      expect(session.segments, hasLength(2));
+      expect(session.segments.last.endTime, isNull);
+      // Duration continues from the accumulated 10 minutes plus the live
+      // segment (a few ms of wall-clock), so it must exceed the base total.
+      expect(
+        session.duration,
+        greaterThanOrEqualTo(const Duration(minutes: 10)),
+      );
+    });
+
+    test('resume never merges a recently closed segment', () {
+      final end = DateTime.now();
+      final start = end.subtract(const Duration(minutes: 10));
+      final session = LiveSession(
+        id: 'test',
+        startTime: start,
+        endTime: end,
+        recordedDurationSeconds: 600,
+        settings: testSettings,
+        segments: [SessionSegment(startTime: start, endTime: end)],
+      );
+
+      session.resume();
+
+      expect(session.segments, hasLength(2));
+      expect(session.segments.first.endTime, end);
+      expect(session.segments.last.startTime, isNot(start));
+      expect(session.segments.last.endTime, isNull);
+    });
+
+    test('resume seeds timing for a legacy session', () {
+      final start = DateTime(2026, 2, 28, 14, 0);
+      final end = start.add(const Duration(minutes: 10));
+      final session = LiveSession(
+        id: 'legacy',
+        startTime: start,
+        endTime: end,
+        settings: testSettings,
+      );
+
+      session.resume();
+
+      expect(session.recordedDurationSeconds, 600);
+      expect(session.segments, hasLength(2));
+      expect(session.segments.first.startTime, start);
+      expect(session.segments.first.endTime, end);
+      expect(
+        session.duration,
+        greaterThanOrEqualTo(const Duration(minutes: 10)),
+      );
+    });
+
     test('toJson closes stale open segment for ended session', () {
       final start = DateTime(2026, 2, 28, 14, 0);
       final end = start.add(const Duration(minutes: 10));

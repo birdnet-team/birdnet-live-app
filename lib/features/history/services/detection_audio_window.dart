@@ -20,9 +20,12 @@ DetectionAudioWindow detectionAudioWindow(
   double? clipContextSeconds,
 }) {
   final context = math.max(0.0, clipContextSeconds ?? 0.0);
-  final start =
-      detection.timestamp.difference(session.startTime).inMicroseconds /
-      Duration.microsecondsPerSecond;
+  // Offset into the *recorded* audio timeline, which is a gap-removed
+  // concatenation of the session's segments. absoluteToRelative collapses
+  // any pause/resume gaps so a resumed session's detections line up with
+  // the actual audio position (matching in-app playback). For single-run
+  // sessions (no segments) this reduces to timestamp - startTime.
+  final start = session.absoluteToRelative(detection.timestamp);
   final duration = detectionDurationSeconds(detection, session.settings);
   final clipStart = math.max(0.0, start - context);
   final detectionStartInClip = start - clipStart;

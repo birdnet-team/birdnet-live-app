@@ -989,6 +989,37 @@ class LiveSession {
     return (endTime ?? DateTime.now()).difference(startTime);
   }
 
+  /// Expected length of the concatenated recorded audio in seconds, with
+  /// pause/resume gaps removed.
+  ///
+  /// Used to detect a truncated recording (an audio file that ends before the
+  /// session's latest event) without falsely flagging resumed sessions, whose
+  /// wall-clock span includes the stopped gap. Shared by the export and
+  /// Session Review integrity checks so both agree.
+  double get expectedRecordedAudioSeconds {
+    if (segments.isNotEmpty) {
+      // Segment timestamps retain sub-second precision and collapse resume
+      // gaps, so they are the closest model of the concatenated audio.
+      return absoluteToRelative(endTime ?? DateTime.now());
+    }
+    // No segments: fall back to the accumulated recorded seconds, else the
+    // wall-clock span, then extend to cover any detection that ends later.
+    final recorded = _recordedDurationSeconds?.toDouble();
+    final end = endTime;
+    var expected =
+        recorded != null && recorded > 0
+            ? recorded
+            : end == null
+            ? 0.0
+            : end.difference(startTime).inMicroseconds / 1e6;
+    for (final detection in detections) {
+      final eventEnd = detection.endTimestamp ?? detection.timestamp;
+      final rel = absoluteToRelative(eventEnd);
+      if (rel > expected) expected = rel;
+    }
+    return expected;
+  }
+
   /// Number of unique species detected.
   int get uniqueSpeciesCount =>
       detections.map((d) => d.scientificName).toSet().length;
@@ -1163,6 +1194,30 @@ class LiveSession {
       }
     }
     segments.add(SessionSegment(startTime: now));
+  }
+
+  /// Reactivates an ended session and opens a distinct recording segment.
+  ///
+  /// A resume must never use [startSegment]'s short-gap merge behavior:
+  /// [recordedDurationSeconds] already includes the closed segment, so
+  /// reopening it would count that time twice. Legacy sessions without
+  /// segment or accumulated-duration data are seeded from their original
+  /// wall-clock span before the new segment starts.
+  void resume() {
+    final previousEnd = endTime;
+    if (previousEnd == null) return;
+
+    if (segments.isEmpty) {
+      segments.add(SessionSegment(startTime: startTime, endTime: previousEnd));
+    }
+    _recordedDurationSeconds ??= segments.fold<int>(0, (total, segment) {
+      final segmentEnd = segment.endTime ?? previousEnd;
+      final seconds = segmentEnd.difference(segment.startTime).inSeconds;
+      return total + (seconds > 0 ? seconds : 0);
+    });
+
+    endTime = null;
+    segments.add(SessionSegment(startTime: DateTime.now()));
   }
 
   /// Closes the currently active recording segment.

@@ -27,7 +27,6 @@
 
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -199,11 +198,10 @@ String buildRavenSelectionTable(
     '${hasNotes ? '\tNote' : ''}',
   );
 
-  final sessionDurationSec =
-      session.endTime != null
-          ? session.endTime!.difference(session.startTime).inMilliseconds /
-              1000.0
-          : 0.0;
+  // Length of the recorded audio timeline, used as the end offset for
+  // whole-session (global) clips. Segment-backed sessions use their exact
+  // gap-removed timeline so resumed sessions don't include stopped time.
+  final sessionDurationSec = _recordedTimelineDurationSeconds(session);
 
   for (var i = 0; i < session.detections.length; i++) {
     final d = session.detections[i];
@@ -340,11 +338,10 @@ String buildCsvExport(
     '${hasMemos ? ',Voice Memo' : ''}',
   );
 
-  final sessionDurationSec =
-      session.endTime != null
-          ? session.endTime!.difference(session.startTime).inMilliseconds /
-              1000.0
-          : 0.0;
+  // Length of the recorded audio timeline, used as the end offset for
+  // whole-session (global) clips. Segment-backed sessions use their exact
+  // gap-removed timeline so resumed sessions don't include stopped time.
+  final sessionDurationSec = _recordedTimelineDurationSeconds(session);
 
   for (var i = 0; i < session.detections.length; i++) {
     final d = session.detections[i];
@@ -721,8 +718,9 @@ String buildJsonExport(
     if (session.aruMetadata != null) 'aru': session.aruMetadata!.toJson(),
     'detections':
         session.detections.map((d) {
-          final beginSec =
-              d.timestamp.difference(session.startTime).inMilliseconds / 1000.0;
+          // Gap-removed offset into the recorded audio (see
+          // absoluteToRelative); keeps resumed sessions aligned.
+          final beginSec = session.absoluteToRelative(d.timestamp);
           return {
             'timestamp': d.timestamp.toUtc().toIso8601String(),
             'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
@@ -764,21 +762,7 @@ Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
               _formatLabelForPath(audioPath),
             );
     final audioSec = audio.duration.inMicroseconds / 1e6;
-    var expectedSec = 0.0;
-    final end = session.endTime;
-    if (end != null) {
-      expectedSec = math.max(
-        expectedSec,
-        end.difference(session.startTime).inMicroseconds / 1e6,
-      );
-    }
-    for (final detection in session.detections) {
-      final eventEnd = detection.endTimestamp ?? detection.timestamp;
-      expectedSec = math.max(
-        expectedSec,
-        eventEnd.difference(session.startTime).inMicroseconds / 1e6,
-      );
-    }
+    final expectedSec = session.expectedRecordedAudioSeconds;
     if (expectedSec <= 0 || audioSec + 5 >= expectedSec) return metadata;
 
     final enriched = <String, dynamic>{...?metadata};
@@ -794,6 +778,13 @@ Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
   } catch (_) {
     return metadata;
   }
+}
+
+double _recordedTimelineDurationSeconds(LiveSession session) {
+  if (session.segments.isNotEmpty) {
+    return session.absoluteToRelative(session.endTime ?? DateTime.now());
+  }
+  return session.duration.inMicroseconds / 1e6;
 }
 
 Map<String, dynamic> _withAruCycleExportFiles(

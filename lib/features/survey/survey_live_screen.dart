@@ -534,9 +534,23 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final inferenceRate = ref.read(surveyInferenceRateProvider);
     final confidenceThreshold = ref.read(confidenceThresholdProvider);
     final filterMode = ref.read(speciesFilterModeProvider);
-    final recordingModeStr = ref.read(surveyRecordingModeProvider);
+    // When resuming, keep the session's *original* recording mode and format
+    // rather than the current global setting. This preserves continuity (a
+    // clip-subsampling session stays clips) and guarantees a resumed session
+    // never switches into full-audio recording — which can't be safely
+    // concatenated across a resume, and is why the Continue button is hidden
+    // for full-audio sessions in the first place.
+    final resumeSettings = widget.resumeSession?.settings;
+    var recordingModeStr = ref.read(surveyRecordingModeProvider);
+    var recordingFormat = ref.read(recordingFormatProvider);
+    if (widget.resumeSession != null) {
+      // Legacy resumable sessions have no recording snapshot and no audio
+      // path. Keep them audio-free instead of inheriting a newer global
+      // setting that could create a partial full-session recording.
+      recordingModeStr = resumeSettings?.recordingMode ?? 'off';
+      recordingFormat = resumeSettings?.recordingFormat ?? recordingFormat;
+    }
     final recordingMode = recordingModeFromString(recordingModeStr);
-    final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final gpsInterval = ref.read(surveyGpsIntervalProvider);
     final maxDuration = ref.read(surveyMaxDurationProvider);
@@ -1049,6 +1063,12 @@ class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
   }
 
   void _startTimer() {
+    // Reflect the current elapsed immediately so a resumed session shows its
+    // accumulated total right away instead of flashing 00:00:00 until the
+    // first tick fires. Assigning without setState is safe here: _startTimer
+    // is only called from initState / didUpdateWidget, both already inside a
+    // build cycle that will render this value.
+    _elapsed = ref.read(surveyControllerProvider).elapsed;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         setState(() {
@@ -1343,11 +1363,15 @@ class _SurveySummaryTab extends ConsumerWidget {
           return b.bestConfidence.compareTo(a.bestConfidence);
         });
 
-    final elapsed = DateTime.now().difference(session!.startTime);
+    // Rate is per minute of *active recording* time, not wall-clock since
+    // start — otherwise a resumed session dilutes the rate with the entire
+    // stopped gap. [LiveSession.duration] already excludes pause/resume gaps
+    // and matches the on-screen elapsed timer.
+    final elapsed = session!.duration;
+    final activeMinutes = elapsed.inMilliseconds / 60000.0;
     final rate =
-        elapsed.inSeconds > 0
-            ? (detections.length / (elapsed.inMinutes.clamp(1, 999999)))
-                .toStringAsFixed(1)
+        activeMinutes > 0
+            ? (detections.length / activeMinutes).toStringAsFixed(1)
             : '0';
 
     return ListView(
