@@ -17,20 +17,21 @@ Color _reviewPrimary(ThemeData theme, int alpha) {
 // ═════════════════════════════════════════════════════════════════════════════
 
 /// Snapshot of mutable review state for undo/redo.
+///
+/// The trim is stored as the applied range only; restoring it is enough for
+/// the screen to re-derive the player clip and the spectrogram crop.
 class _ReviewSnapshot {
   _ReviewSnapshot({
     required this.detections,
     required this.annotations,
     required this.trimStartSec,
     required this.trimEndSec,
-    required this.clipOffsetSec,
   });
 
   final List<DetectionRecord> detections;
   final List<SessionAnnotation> annotations;
   final double? trimStartSec;
   final double? trimEndSec;
-  final double clipOffsetSec;
 }
 
 /// A cluster of consecutive detections of the same species.
@@ -510,6 +511,124 @@ class _WeatherRow extends StatelessWidget {
   }
 }
 
+/// Height of every full-width media panel in the review header — the
+/// spectrogram strip, the trim editor, and the map when it shares a
+/// [_MediaTabPanel] with them.
+const double _kReviewStripHeight = 150;
+
+/// Puts the survey map and the spectrogram behind tabs in the one session
+/// type that has both (a survey recorded with full audio).
+///
+/// Sessions with only one of the two never reach this widget, so the tab bar
+/// is never shown as a single-choice control. Both panels stay mounted in an
+/// [IndexedStack] so switching tabs preserves the map camera and the
+/// spectrogram's zoom/scroll position rather than resetting them.
+class _MediaTabPanel extends StatefulWidget {
+  const _MediaTabPanel({
+    required this.map,
+    required this.spectrogram,
+    required this.trimming,
+  });
+
+  final Widget map;
+  final Widget spectrogram;
+
+  /// Whether trim editing is active. Trimming happens on the spectrogram, so
+  /// starting it selects that tab; the user stays free to switch back.
+  final bool trimming;
+
+  @override
+  State<_MediaTabPanel> createState() => _MediaTabPanelState();
+}
+
+class _MediaTabPanelState extends State<_MediaTabPanel>
+    with SingleTickerProviderStateMixin {
+  static const int _mapIndex = 0;
+  static const int _spectrogramIndex = 1;
+
+  late int _index = widget.trimming ? _spectrogramIndex : _mapIndex;
+
+  late final TabController _controller = TabController(
+    length: 2,
+    initialIndex: _index,
+    vsync: this,
+  );
+
+  @override
+  void didUpdateWidget(_MediaTabPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.trimming && !oldWidget.trimming) {
+      _selectTab(_spectrogramIndex);
+    }
+  }
+
+  /// Drives both the indicator and the [IndexedStack]. Kept as our own field
+  /// rather than read off the controller so the panel swaps the moment a tab
+  /// is tapped, instead of waiting out the indicator's slide animation.
+  void _selectTab(int index) {
+    if (_index == index) return;
+    setState(() => _index = index);
+    _controller.animateTo(index);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  static Tab _mediaTab(IconData icon, String label) {
+    return Tab(
+      height: 40,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // A TabBarView would swipe between panels, and a horizontal swipe is
+        // already how the user pans the map and scrubs the spectrogram — so
+        // the tab bar only drives an IndexedStack.
+        TabBar(
+          controller: _controller,
+          onTap: _selectTab,
+          // Icons sit beside the label rather than above it: the default
+          // icon-over-text tab is 72 dp tall, which would cost half the
+          // height of the panel it labels.
+          tabs: [
+            _mediaTab(AppIcons.map, l10n.surveyTabMap),
+            _mediaTab(AppIcons.graphicEq, l10n.surveyTabSpectrogram),
+          ],
+          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+          indicatorWeight: 2,
+          labelStyle: theme.textTheme.labelSmall,
+        ),
+        SizedBox(
+          height: _kReviewStripHeight,
+          child: IndexedStack(
+            index: _index,
+            sizing: StackFit.expand,
+            children: [widget.map, widget.spectrogram],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Shows a scrollable spectrogram from a pre-computed image.
 ///
 /// The painter derives pixels-per-second from image width / player duration,
@@ -733,7 +852,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
         widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
     if (!hasSpectrogram) {
       return Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child:
             widget.decoding
@@ -753,7 +872,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       onScaleStart: _handleScaleStart,
       onScaleUpdate: _handleScaleUpdate,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: Stack(
           children: [
@@ -775,7 +894,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
                   ref.watch(timestampDisplayModeProvider),
                 ),
               ),
-              size: const Size(double.infinity, 150),
+              size: const Size(double.infinity, _kReviewStripHeight),
             ),
             if (widget.decoding)
               Positioned(
@@ -3175,13 +3294,21 @@ class _TrimOverlayState extends State<_TrimOverlay> {
             setState(() {
               final frac = (d.localPosition.dx / w).clamp(0.0, 1.0);
               if (_draggingStart) {
-                _startFrac = math.min(frac, _endFrac - 0.01);
+                _startFrac = math.max(0.0, math.min(frac, _endFrac - 0.01));
               } else if (_draggingEnd) {
-                _endFrac = math.max(frac, _startFrac + 0.01);
+                _endFrac = math.min(1.0, math.max(frac, _startFrac + 0.01));
               }
             });
+            // Report continuously so the applied range always matches what
+            // is drawn, even when the gesture ends in a cancel.
+            _reportChange();
           },
           onHorizontalDragEnd: (_) {
+            _draggingStart = false;
+            _draggingEnd = false;
+            _reportChange();
+          },
+          onHorizontalDragCancel: () {
             _draggingStart = false;
             _draggingEnd = false;
             _reportChange();
@@ -3326,11 +3453,55 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
   late double _endSec;
   String? _activeDrag; // 'start', 'end', or null for zoom/pan
 
+  /// Shortest selection the handles may produce, in seconds.
+  static const double _minSelectionSec = 0.5;
+
   @override
   void initState() {
     super.initState();
     _startSec = widget.initialStartSec;
     _endSec = widget.initialEndSec;
+    _normalizeHandles();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrimSpectrogramView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Never fight a live drag; the local values are authoritative then.
+    if (_activeDrag != null) return;
+
+    // Adopt handle positions the *parent* changed. The common case is a
+    // recording whose true length only arrived after the editor opened
+    // (just_audio can publish the duration asynchronously), which would
+    // otherwise leave the end handle pinned to a stale duration.
+    if (widget.initialStartSec != oldWidget.initialStartSec) {
+      _startSec = widget.initialStartSec;
+    }
+    if (widget.initialEndSec != oldWidget.initialEndSec) {
+      _endSec = widget.initialEndSec;
+    }
+    if (widget.durationSec != oldWidget.durationSec) {
+      _clampScroll();
+    }
+    _normalizeHandles();
+  }
+
+  /// Clamps both handles into `[0, durationSec]` and keeps them at least
+  /// [_minSelectionSec] apart, so no code path can hand the caller an
+  /// inverted or zero-length range.
+  void _normalizeHandles() {
+    final total = widget.durationSec;
+    if (total <= 0) return;
+    _startSec = _startSec.clamp(0.0, total);
+    _endSec = _endSec.clamp(0.0, total);
+    if (_endSec - _startSec < _minSelectionSec) {
+      if (_startSec + _minSelectionSec <= total) {
+        _endSec = _startSec + _minSelectionSec;
+      } else {
+        _endSec = total;
+        _startSec = math.max(0.0, total - _minSelectionSec);
+      }
+    }
   }
 
   double get _viewDurationSec => widget.durationSec / _zoom;
@@ -3382,11 +3553,17 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       ).clamp(0.0, widget.durationSec);
       setState(() {
         if (_activeDrag == 'start') {
-          _startSec = math.min(sec, _endSec - 0.5);
+          _startSec = math.max(0.0, math.min(sec, _endSec - _minSelectionSec));
         } else {
-          _endSec = math.max(sec, _startSec + 0.5);
+          _endSec = math.min(
+            widget.durationSec,
+            math.max(sec, _startSec + _minSelectionSec),
+          );
         }
       });
+      // Report continuously so the applied range always matches what is
+      // drawn, even if the gesture ends in a cancel rather than an end.
+      widget.onChanged(_startSec, _endSec);
     } else {
       setState(() {
         _zoom = (_baseZoom * details.scale).clamp(1.0, 20.0);
@@ -3403,6 +3580,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
 
   void _onScaleEnd(ScaleEndDetails details) {
     if (_activeDrag != null) {
+      _normalizeHandles();
       widget.onChanged(_startSec, _endSec);
     }
     _activeDrag = null;
@@ -3417,7 +3595,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       onScaleUpdate: _onScaleUpdate,
       onScaleEnd: _onScaleEnd,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: CustomPaint(
           painter: _TrimSpectrogramPainter(

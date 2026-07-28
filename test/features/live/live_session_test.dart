@@ -968,4 +968,193 @@ void main() {
       expect(json.containsKey('trimEndSec'), isFalse);
     });
   });
+
+  group('applyDestructiveTrim', () {
+    final start = DateTime.utc(2026, 3, 1, 10, 0, 0);
+
+    LiveSession build({List<SessionSegment> segments = const []}) {
+      final session = LiveSession(
+        id: 'test-destructive-trim',
+        startTime: start,
+        settings: testSettings,
+        segments: List.of(segments),
+        trimStartSec: 60.0,
+        trimEndSec: 200.0,
+      );
+      session.endTime = start.add(const Duration(minutes: 5));
+      return session;
+    }
+
+    test('rebases a single-run session onto the retained stretch', () {
+      final session = build();
+      session.applyDestructiveTrim(startSec: 60.0, endSec: 200.0);
+
+      // startTime is untouched — the session still began when it began.
+      expect(session.startTime, start);
+      expect(session.trimStartSec, isNull);
+      expect(session.trimEndSec, isNull);
+      expect(session.recordedDurationSeconds, 140);
+      expect(session.duration, const Duration(seconds: 140));
+
+      // Offsets now index the shorter recording.
+      expect(
+        session.absoluteToRelative(start.add(const Duration(seconds: 90))),
+        closeTo(30.0, 0.001),
+      );
+      expect(
+        session.relativeToAbsolute(30.0),
+        start.add(const Duration(seconds: 90)),
+      );
+      expect(session.expectedRecordedAudioSeconds, closeTo(140.0, 0.001));
+    });
+
+    test('keeps every segment that overlaps the retained range', () {
+      final session = build(
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(seconds: 60)),
+          ),
+          SessionSegment(
+            startTime: start.add(const Duration(seconds: 180)),
+            endTime: start.add(const Duration(seconds: 240)),
+          ),
+        ],
+      );
+      // Audio is 120 s long (the gap is not recorded); keep 30 s–90 s of it.
+      session.applyDestructiveTrim(startSec: 30.0, endSec: 90.0);
+
+      expect(session.segments.length, 2);
+      expect(
+        session.segments.first.startTime,
+        start.add(const Duration(seconds: 30)),
+      );
+      expect(
+        session.segments.last.endTime,
+        start.add(const Duration(seconds: 210)),
+      );
+      expect(session.recordedDurationSeconds, 60);
+    });
+
+    test('drops segments that fall entirely outside the range', () {
+      final session = build(
+        segments: [
+          SessionSegment(
+            startTime: start,
+            endTime: start.add(const Duration(seconds: 60)),
+          ),
+          SessionSegment(
+            startTime: start.add(const Duration(seconds: 180)),
+            endTime: start.add(const Duration(seconds: 240)),
+          ),
+        ],
+      );
+      // Keep only the tail of the second segment.
+      session.applyDestructiveTrim(startSec: 70.0, endSec: 120.0);
+
+      expect(session.segments.length, 1);
+      expect(
+        session.segments.single.startTime,
+        start.add(const Duration(seconds: 190)),
+      );
+      expect(
+        session.segments.single.endTime,
+        start.add(const Duration(seconds: 240)),
+      );
+      expect(
+        session.absoluteToRelative(start.add(const Duration(seconds: 200))),
+        closeTo(10.0, 0.001),
+      );
+    });
+
+    test('measures the retained audio, not the requested range', () {
+      final session = build();
+      // The session's own timeline is 300 s; ask to keep past the end of it.
+      session.applyDestructiveTrim(startSec: 240.0, endSec: 900.0);
+
+      expect(session.recordedDurationSeconds, 60);
+      expect(session.duration, const Duration(seconds: 60));
+      expect(session.expectedRecordedAudioSeconds, closeTo(60.0, 0.001));
+    });
+
+    test('keeps an audio tail that extends past the session clock', () {
+      final session = build();
+      session.endTime = start.add(const Duration(seconds: 299));
+      final tailDetection = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Common Blackbird',
+        confidence: 0.8,
+        timestamp: start.add(const Duration(milliseconds: 299200)),
+        endTimestamp: start.add(const Duration(milliseconds: 299800)),
+      );
+      session.detections.add(tailDetection);
+
+      // The committed file contained one more second than the wall-clock
+      // session. That final second still needs a timeline after the cut.
+      session.applyDestructiveTrim(startSec: 299.0, endSec: 300.0);
+
+      expect(session.trimStartSec, isNull);
+      expect(session.trimEndSec, isNull);
+      expect(session.segments, hasLength(1));
+      expect(
+        session.segments.single.startTime,
+        start.add(const Duration(seconds: 299)),
+      );
+      expect(
+        session.segments.single.endTime,
+        start.add(const Duration(seconds: 300)),
+      );
+      expect(session.recordedDurationSeconds, 1);
+      expect(session.detections, [same(tailDetection)]);
+    });
+
+    test('drops detections whose audio was cut away', () {
+      final session = build();
+      DetectionRecord detection(int atSec) => DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Common Blackbird',
+        confidence: 0.8,
+        timestamp: start.add(Duration(seconds: atSec)),
+      );
+      final before = detection(10);
+      final inside = detection(90);
+      final after = detection(280);
+      session.detections.addAll([before, inside, after]);
+
+      session.applyDestructiveTrim(startSec: 60.0, endSec: 200.0);
+
+      expect(session.detections, [same(inside)]);
+      // Capture time is untouched; only the mapping into the file moved.
+      expect(session.detections.single.timestamp, inside.timestamp);
+      expect(
+        session.absoluteToRelative(inside.timestamp),
+        closeTo(30.0, 0.001),
+      );
+    });
+
+    test('leaves the session alone when nothing survives the cut', () {
+      final session = build();
+      session.applyDestructiveTrim(startSec: 600.0, endSec: 700.0);
+
+      expect(session.segments, isEmpty);
+      expect(session.trimStartSec, 60.0);
+      expect(session.trimEndSec, 200.0);
+    });
+
+    test('round-trips the rebased timeline through JSON', () {
+      final session = build();
+      session.applyDestructiveTrim(startSec: 60.0, endSec: 200.0);
+
+      final rt = LiveSession.fromJson(
+        jsonDecode(jsonEncode(session.toJson())) as Map<String, dynamic>,
+      );
+      expect(rt.trimStartSec, isNull);
+      expect(rt.segments.length, 1);
+      expect(rt.recordedDurationSeconds, 140);
+      expect(
+        rt.absoluteToRelative(start.add(const Duration(seconds: 90))),
+        closeTo(30.0, 0.001),
+      );
+    });
+  });
 }
