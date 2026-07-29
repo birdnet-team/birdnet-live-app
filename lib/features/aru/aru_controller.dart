@@ -39,9 +39,18 @@ typedef AruCycleRecordingStopper =
       DateTime endedAt,
     );
 
-/// Saves a detection-only clip while an ARU cycle is recording.
+/// Cuts detection-only clips for a batch of records while a cycle is
+/// recording, all from the same slice of audio.
+///
+/// Batched rather than per-record so a sync round costs one post-roll wait and
+/// anchors every clip in the round to the same moment — the Live and Survey
+/// inference loops cut their clips the same way. Returns the written path per
+/// record; records whose clip could not be written are absent from the map.
 typedef AruDetectionClipSaver =
-    Future<String?> Function(LiveSession session, DetectionRecord record);
+    Future<Map<DetectionRecord, String>> Function(
+      LiveSession session,
+      List<DetectionRecord> records,
+    );
 
 /// Minimal ARU controller that owns schedule transitions and session metadata.
 ///
@@ -54,20 +63,20 @@ class AruController {
     AruSessionDiscarder? discardSession,
     AruCycleRecordingStarter? startCycleRecording,
     AruCycleRecordingStopper? stopCycleRecording,
-    AruDetectionClipSaver? saveDetectionClip,
+    AruDetectionClipSaver? saveDetectionClips,
     DateTime Function()? now,
   }) : _saveSession = saveSession,
        _discardSession = discardSession,
        _startCycleRecording = startCycleRecording,
        _stopCycleRecording = stopCycleRecording,
-       _saveDetectionClip = saveDetectionClip,
+       _saveDetectionClips = saveDetectionClips,
        _now = now ?? DateTime.now;
 
   final AruSessionSaver _saveSession;
   final AruSessionDiscarder? _discardSession;
   final AruCycleRecordingStarter? _startCycleRecording;
   final AruCycleRecordingStopper? _stopCycleRecording;
-  final AruDetectionClipSaver? _saveDetectionClip;
+  final AruDetectionClipSaver? _saveDetectionClips;
   final DateTime Function() _now;
 
   AruControllerState _state = AruControllerState.idle;
@@ -77,6 +86,7 @@ class AruController {
   int? _activeCycleIndex;
   DateTime? _activeCycleStart;
   AruDetectionSampler? _sampler;
+  final DetectionClipPeakTracker _clipPeakTracker = DetectionClipPeakTracker();
   LiveSession? _lastReviewSession;
 
   AruControllerState get state => _state;
@@ -126,6 +136,7 @@ class AruController {
     );
     _activeCycleIndex = null;
     _activeCycleStart = null;
+    _clipPeakTracker.clear();
     _lastReviewSession = session;
     _sampler = AruDetectionSampler(
       mode: samplingModeFromString(session.aruMetadata!.samplingMode),
@@ -156,6 +167,7 @@ class AruController {
     _errorMessage = null;
     _activeCycleIndex = null;
     _activeCycleStart = null;
+    _clipPeakTracker.clear();
 
     try {
       _calculator = AruScheduleCalculator(metadata.toScheduleConfig());
@@ -265,21 +277,71 @@ class AruController {
     final session = _session;
     if (session == null || records.isEmpty) return;
 
-    var changed = false;
-    for (final record in records) {
-      final existingIndex = _detectionIndex(session.detections, record);
-      final existing =
-          existingIndex == -1 ? null : session.detections[existingIndex];
-      final synced = await _syncedDetectionRecord(session, record, existing);
+    // Pass 1 — pair each incoming record with the one already in the session
+    // and work out which of them want a clip cut from the audio available
+    // right now. Deciding up front lets the whole round share one post-roll
+    // wait and one slice of audio, exactly as the Live and Survey inference
+    // loops do it.
+    final pairs = <_DetectionSyncPair>[];
+    final wantsClip = <DetectionRecord>[];
+    final savesClips =
+        recordingModeFromString(
+          session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
+        ) ==
+        RecordingMode.detectionsOnly;
 
-      if (existingIndex == -1) {
+    for (final record in records) {
+      final index = _detectionIndex(session.detections, record);
+      final existing = index == -1 ? null : session.detections[index];
+      pairs.add(_DetectionSyncPair(record, existing, index));
+      if (savesClips && _wantsDetectionClip(record, existing)) {
+        wantsClip.add(record);
+      }
+    }
+
+    // Date the analyzed window before the saver waits for post-roll. Using
+    // the clock after that await shifts the claimed window forward by exactly
+    // the configured clip context.
+    final clipWindowStart = _now().subtract(
+      Duration(seconds: session.settings.windowDuration),
+    );
+    final clips =
+        wantsClip.isEmpty
+            ? const <DetectionRecord, String>{}
+            : await _saveDetectionClips?.call(session, wantsClip) ??
+                const <DetectionRecord, String>{};
+
+    // Pass 2 — apply. `addDetection` appends, so the indices captured above
+    // still point at the same records.
+    var changed = false;
+    final supersededClipPaths = <String>[];
+    for (final pair in pairs) {
+      final synced = await _syncedDetectionRecord(pair, clips, clipWindowStart);
+
+      if (pair.index == -1) {
         session.addDetection(synced);
         changed = true;
-      } else if (!_sameDetectionPayload(existing!, synced)) {
-        session.detections[existingIndex] = synced;
-        _sampler?.replaceRecord(existing, synced);
+      } else if (!_sameDetectionPayload(pair.existing!, synced)) {
+        session.detections[pair.index] = synced;
+        _sampler?.replaceRecord(pair.existing!, synced);
         changed = true;
       }
+      final fresh = clips[pair.record];
+      final previous = pair.existing?.audioClipPath;
+      if (fresh != null) {
+        _clipPeakTracker.recordSaved(
+          _detectionClipKey(pair.record),
+          pair.record.confidence,
+        );
+        if (previous != null && previous != fresh) {
+          supersededClipPaths.add(previous);
+        }
+      }
+    }
+    // Every session record points at its fresh file before deletion can yield
+    // to cycle finalization.
+    for (final path in supersededClipPaths) {
+      await deleteDetectionClipFile(path, logTag: 'AruController');
     }
     if (!changed) return;
 
@@ -287,29 +349,53 @@ class AruController {
     await _persist();
   }
 
-  Future<DetectionRecord> _syncedDetectionRecord(
-    LiveSession session,
-    DetectionRecord record,
-    DetectionRecord? existing,
-  ) async {
-    var audioClipPath = existing?.audioClipPath ?? record.audioClipPath;
-    final isNew = existing == null;
+  /// Whether [record] wants a clip cut from the audio in the ring buffer now.
+  ///
+  /// Only while the detection is still open: once the species has stopped
+  /// vocalizing the buffer holds later, unrelated audio. Beyond that the
+  /// decision is [DetectionClipPeakTracker.needsClip]'s — the same rule Live
+  /// and Survey apply.
+  bool _wantsDetectionClip(DetectionRecord record, DetectionRecord? existing) {
     final closesNow =
         record.endTimestamp != null && existing?.endTimestamp == null;
-    final mode = recordingModeFromString(
-      session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
+    if (existing != null && (closesNow || existing.endTimestamp != null)) {
+      return false;
+    }
+    return _clipPeakTracker.needsClip(
+      key: _detectionClipKey(record),
+      candidateConfidence: record.confidence,
+      currentConfidence: existing?.confidence ?? record.confidence,
+      hasClip: (existing?.audioClipPath ?? record.audioClipPath) != null,
+      isNew: existing == null,
     );
+  }
 
-    // Save the detection clip the moment the species first appears, while the
-    // analyzed audio is still fresh in the ring buffer — matching how Live and
-    // Survey capture clips. Saving at close time (after the species had already
-    // disappeared) grabbed unrelated, later audio, producing clips that did not
-    // contain the detected species; the cycle's recording could also have
-    // stopped by then, yielding no clip at all.
-    if (isNew &&
-        mode == RecordingMode.detectionsOnly &&
-        audioClipPath == null) {
-      audioClipPath = await _saveDetectionClip?.call(session, record);
+  Future<DetectionRecord> _syncedDetectionRecord(
+    _DetectionSyncPair pair,
+    Map<DetectionRecord, String> clips,
+    DateTime clipWindowStart,
+  ) async {
+    final record = pair.record;
+    final existing = pair.existing;
+    var audioClipPath = existing?.audioClipPath ?? record.audioClipPath;
+    var clipTimestamp = existing?.clipTimestamp ?? record.clipTimestamp;
+    final clipKey = _detectionClipKey(record);
+    final closesNow =
+        record.endTimestamp != null && existing?.endTimestamp == null;
+
+    // A clip is cut the moment the species first appears — while the analyzed
+    // audio is still fresh in the ring buffer — and re-cut whenever the
+    // detection reaches a new confidence peak. A merged detection spans many
+    // windows but a clip holds one, and the first window is typically its
+    // weakest, so the clip has to follow the peak.
+    final fresh = clips[record];
+    if (fresh != null) {
+      audioClipPath = fresh;
+      clipTimestamp = clipWindowStart;
+    } else if (existing == null && audioClipPath != null) {
+      // Arrived with a clip already attached: adopt its score as the baseline
+      // so later peaks are measured against the audio actually on disk.
+      _clipPeakTracker.recordSaved(clipKey, record.confidence);
     }
 
     final synced = DetectionRecord(
@@ -322,6 +408,7 @@ class AruController {
       timestamp: record.timestamp,
       endTimestamp: record.endTimestamp ?? existing?.endTimestamp,
       audioClipPath: audioClipPath,
+      clipTimestamp: audioClipPath == null ? null : clipTimestamp,
       source: record.source,
       latitude: record.latitude ?? existing?.latitude,
       longitude: record.longitude ?? existing?.longitude,
@@ -332,6 +419,7 @@ class AruController {
 
     if (closesNow) {
       await _sampler?.onRecordClosed(synced);
+      _clipPeakTracker.forget(clipKey);
     }
 
     return synced;
@@ -345,6 +433,10 @@ class AruController {
     );
   }
 
+  String _detectionClipKey(DetectionRecord record) =>
+      '${record.scientificName}\u0000'
+      '${record.timestamp.microsecondsSinceEpoch}';
+
   bool _sameDetectionPayload(DetectionRecord a, DetectionRecord b) {
     return a.scientificName == b.scientificName &&
         a.commonName == b.commonName &&
@@ -352,6 +444,7 @@ class AruController {
         a.timestamp == b.timestamp &&
         a.endTimestamp == b.endTimestamp &&
         a.audioClipPath == b.audioClipPath &&
+        a.clipTimestamp == b.clipTimestamp &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude &&
         a.confirmedAt == b.confirmedAt &&
@@ -799,4 +892,17 @@ class AruController {
   bool _isTestCycle(LiveSession session, int cycleIndex) {
     return session.aruMetadata?.testCycleEnabled == true && cycleIndex == 0;
   }
+}
+
+/// An incoming detection paired with the session record it updates.
+///
+/// Resolved once per sync round so the clip decision and the record rebuild
+/// agree on the pairing without scanning the session twice. [index] is `-1`
+/// when the detection is new to the session.
+class _DetectionSyncPair {
+  _DetectionSyncPair(this.record, this.existing, this.index);
+
+  final DetectionRecord record;
+  final DetectionRecord? existing;
+  final int index;
 }

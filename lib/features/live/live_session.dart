@@ -352,6 +352,7 @@ class DetectionRecord {
     required this.timestamp,
     this.endTimestamp,
     this.audioClipPath,
+    this.clipTimestamp,
     this.source = DetectionSource.auto,
     this.latitude,
     this.longitude,
@@ -392,6 +393,22 @@ class DetectionRecord {
   /// underlying file) when an audio clip is dropped to enforce per-species
   /// or spatial caps. The detection record itself is always retained.
   String? audioClipPath;
+
+  /// Start of the analysis window [audioClipPath] was cut from.
+  ///
+  /// [timestamp] and [endTimestamp] describe when the *bird* was heard — the
+  /// full span the species stayed above threshold, which is the ecologically
+  /// meaningful number and often far longer than any clip. This describes
+  /// where the *audio* came from instead: a clip holds one analysis window,
+  /// re-cut as the detection climbs to its confidence peak, so it generally
+  /// sits somewhere in the middle of that span rather than at its start.
+  ///
+  /// Always kept in step with [audioClipPath], so it describes the file
+  /// currently on disk. Only meaningful while [audioClipPath] is non-null.
+  ///
+  /// `null` for sessions recorded before clips followed the peak, where the
+  /// clip was cut on arrival and [timestamp] is the correct fallback.
+  DateTime? clipTimestamp;
 
   /// How this detection was created.
   final DetectionSource source;
@@ -452,6 +469,7 @@ class DetectionRecord {
   factory DetectionRecord.fromDetection(
     Detection detection, {
     String? audioClipPath,
+    DateTime? clipTimestamp,
   }) {
     return DetectionRecord(
       scientificName: detection.species.scientificName,
@@ -459,11 +477,13 @@ class DetectionRecord {
       confidence: detection.confidence,
       timestamp: detection.timestamp ?? DateTime.now(),
       audioClipPath: audioClipPath,
+      clipTimestamp: audioClipPath == null ? null : clipTimestamp,
     );
   }
 
   /// Deserialize from JSON.
   factory DetectionRecord.fromJson(Map<String, dynamic> json) {
+    final audioClipPath = json['audioClipPath'] as String?;
     return DetectionRecord(
       scientificName: json['scientificName'] as String,
       commonName: json['commonName'] as String,
@@ -473,7 +493,11 @@ class DetectionRecord {
           json['endTimestamp'] != null
               ? DateTime.parse(json['endTimestamp'] as String)
               : null,
-      audioClipPath: json['audioClipPath'] as String?,
+      audioClipPath: audioClipPath,
+      clipTimestamp:
+          audioClipPath != null && json['clipTimestamp'] != null
+              ? DateTime.parse(json['clipTimestamp'] as String)
+              : null,
       source: switch (json['source'] as String?) {
         'manual' => DetectionSource.manual,
         'manualGlobal' => DetectionSource.manualGlobal,
@@ -500,6 +524,8 @@ class DetectionRecord {
     if (endTimestamp != null)
       'endTimestamp': endTimestamp!.toUtc().toIso8601String(),
     if (audioClipPath != null) 'audioClipPath': audioClipPath,
+    if (audioClipPath != null && clipTimestamp != null)
+      'clipTimestamp': clipTimestamp!.toUtc().toIso8601String(),
     if (source != DetectionSource.auto) 'source': source.name,
     if (latitude != null) 'detLat': latitude,
     if (longitude != null) 'detLon': longitude,
@@ -1047,6 +1073,16 @@ class LiveSession {
   /// emitted slightly before the recorder fully spun up cannot produce
   /// negative session-relative offsets (e.g. "00:-1") downstream.
   DetectionRecord _clampToSession(DetectionRecord r) {
+    // The clip's own window can start before the session when a detection
+    // lands in the pre-roll; clamp it on the same rule so it can never
+    // produce a negative offset downstream. Done in place — [clipTimestamp]
+    // is mutable, and letting it trigger the copy below would hand back a
+    // different instance than the detection sampler is holding, so a later
+    // eviction would clear the clip on an orphan and leave the session's
+    // record pointing at a deleted file.
+    if (r.clipTimestamp != null && r.clipTimestamp!.isBefore(startTime)) {
+      r.clipTimestamp = startTime;
+    }
     final needsTs = r.timestamp.isBefore(startTime);
     final needsEnd =
         r.endTimestamp != null && r.endTimestamp!.isBefore(startTime);
@@ -1060,6 +1096,7 @@ class LiveSession {
       timestamp: clampedTs,
       endTimestamp: clampedEnd,
       audioClipPath: r.audioClipPath,
+      clipTimestamp: r.clipTimestamp,
       source: r.source,
       latitude: r.latitude,
       longitude: r.longitude,

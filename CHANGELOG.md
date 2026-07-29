@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.3] - 2026-07-29
+
+### Fixed
+
+- Detection clips now come from the strongest part of a detection instead of its first moment. A detection lasts as long as the species keeps being heard — often many analysis windows — but a clip holds one window, and the app was always keeping the first one. Since birds typically enter just above the confidence threshold and peak a few seconds later, the saved audio was usually the weakest evidence of the detection and did not match the confidence shown next to it. The clip is now re-cut whenever a detection reaches a noticeably higher score, so what you end up with is the best window the app heard. This also makes **Top N** and **Smart** clip subsampling keep the right clips, since they rank detections by that peak score. Use the clip padding setting to keep more audio around the window. Live, Survey and ARU deployments all follow the same rule, and when several species peak in the same moment their clips are now all cut from that moment instead of drifting later one by one — which is what ARU deployments used to do on a busy dawn chorus.
+- Session Review now shows the right times for clip-only sessions. A detection can run for half a minute while the clip saved for it holds a single analysis window plus your clip padding — so the start-to-end time on each row was describing the bird, not the audio, and the two no longer lined up once clips started following the strongest moment. Rows in sessions without a full recording now show the span the clip actually covers, and the full time the species was heard moved to the detection's player sheet, where it can't be mistaken for the clip length. Sessions with a full recording are unchanged. This also corrects the detection offsets written into Raven and CSV exports for clip-only sessions, which had been pointing at the moment the bird was first heard rather than the moment the clip was cut. Older clips without peak metadata stay anchored to the first detection window.
+- Every detection now owns its own clip file. When several species appeared in the same moment they used to share a single file, so **Top N** and **Smart** subsampling could delete a clip that another detection still pointed at, leaving that detection with a broken play button. A species that was already being heard could also pick up a clip that had been cut for a different species entirely. Both are fixed. The trade-off is more audio on disk when many species are heard at once — subsampling still trims it back at the end of a detection.
+
 ## [0.19.2] - 2026-07-28
 
 ### Changed

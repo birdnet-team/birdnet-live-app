@@ -137,6 +137,91 @@ void main() {
       expect(record.audioClipPath, isNull);
     });
 
+    test('fromDetection records the window a clip was cut from', () {
+      final windowStart = DateTime(2026, 2, 28, 14, 30, 12);
+      final record = DetectionRecord.fromDetection(
+        testDetection,
+        audioClipPath: '/tmp/clip.wav',
+        clipTimestamp: windowStart,
+      );
+
+      // The bird was first heard at 14:30:00 but the clip holds the window
+      // starting at 14:30:12 — the two are deliberately different.
+      expect(record.timestamp, DateTime(2026, 2, 28, 14, 30, 0));
+      expect(record.clipTimestamp, windowStart);
+    });
+
+    test('fromDetection ignores a clip window with no clip', () {
+      final record = DetectionRecord.fromDetection(
+        testDetection,
+        clipTimestamp: DateTime(2026, 2, 28, 14, 30, 12),
+      );
+
+      expect(record.audioClipPath, isNull);
+      expect(record.clipTimestamp, isNull);
+    });
+
+    test('clipTimestamp survives a JSON round-trip', () {
+      // UTC in, UTC out — toJson normalizes, matching the other timestamps.
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime.utc(2026, 2, 28, 14, 30, 0),
+        endTimestamp: DateTime.utc(2026, 2, 28, 14, 30, 30),
+        audioClipPath: '/recordings/clip.wav',
+        clipTimestamp: DateTime.utc(2026, 2, 28, 14, 30, 12),
+      );
+
+      final restored = DetectionRecord.fromJson(
+        jsonDecode(jsonEncode(record.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(restored.clipTimestamp, record.clipTimestamp);
+      expect(restored.timestamp, record.timestamp);
+      expect(restored.endTimestamp, record.endTimestamp);
+    });
+
+    test('a record with no clip does not persist a clip window', () {
+      // The sampler clears the path when it evicts a clip; the window it was
+      // cut from describes a file that no longer exists.
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 2, 28, 14, 30, 0),
+        clipTimestamp: DateTime(2026, 2, 28, 14, 30, 12),
+      );
+
+      expect(record.toJson().containsKey('clipTimestamp'), isFalse);
+    });
+
+    test('legacy records without a clip window round-trip as null', () {
+      final restored = DetectionRecord.fromJson({
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': DateTime.utc(2026, 2, 28, 14, 30).toIso8601String(),
+        'audioClipPath': '/recordings/clip.wav',
+      });
+
+      expect(restored.clipTimestamp, isNull);
+    });
+
+    test('fromJson ignores a clip window when the clip path is absent', () {
+      final restored = DetectionRecord.fromJson({
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': DateTime.utc(2026, 2, 28, 14, 30).toIso8601String(),
+        'clipTimestamp':
+            DateTime.utc(2026, 2, 28, 14, 30, 12).toIso8601String(),
+      });
+
+      expect(restored.audioClipPath, isNull);
+      expect(restored.clipTimestamp, isNull);
+    });
+
     test('confidencePercent formats correctly', () {
       final record = DetectionRecord(
         scientificName: 'Turdus merula',
