@@ -876,7 +876,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Brak dostępnych głosów dla tego języka. Więcej możesz dodać w ustawieniach syntezy mowy swojego urządzenia.",
   "settingsHelpAnnouncementsVoice": "Głosy pochodzą z Twojego urządzenia, a nie z aplikacji, i ich jakość bardzo się różni. Jeśli głos domyślny brzmi robotycznie albo używa złego akcentu, wybierz tutaj inny. Więcej głosów zainstalujesz w ustawieniach syntezy mowy swojego urządzenia.",
   "settingsAnnouncementsPreview": "Powiedz próbkę",
-  "settingsAnnouncementsRunSetupWizard": "Uruchom instalację ponownie",
   "settingsAnnouncementsAdvanced": "Zaawansowany",
   "settingsAnnouncementsSpeakerOutputAllowed": "Zezwalaj na głośnik telefonu",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Po wyłączeniu zapowiedzi są pomijane, jeśli nie podłączono słuchawek ani głośnika zewnętrznego. Po włączeniu głośnik telefonu służy jako rozwiązanie zapasowe – przydatne do swobodnego słuchania w domu, ale spodziewaj się krótkiego wyciszenia mikrofonu przy każdej wypowiedzi, aby uniknąć sprzężenia.",

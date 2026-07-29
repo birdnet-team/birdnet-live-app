@@ -876,7 +876,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Geen stemmen beschikbaar voor deze taal. Je kunt er meer toevoegen in de tekst-naar-spraak-instellingen van je apparaat.",
   "settingsHelpAnnouncementsVoice": "Stemmen komen van je apparaat, niet van de app, en hun kwaliteit verschilt sterk. Klinkt de standaardstem robotachtig of gebruikt die het verkeerde accent, kies dan hier een andere. Je kunt meer stemmen installeren in de tekst-naar-spraak-instellingen van je apparaat.",
   "settingsAnnouncementsPreview": "Spreek een voorbeeld",
-  "settingsAnnouncementsRunSetupWizard": "Voer de installatie opnieuw uit",
   "settingsAnnouncementsAdvanced": "Geavanceerd",
   "settingsAnnouncementsSpeakerOutputAllowed": "Telefoonluidspreker toestaan",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Staat dit uit, dan worden aankondigingen overgeslagen als er geen koptelefoon of externe luidspreker is aangesloten. Staat het aan, dan gebruikt de app de telefoonluidspreker als terugval – handig om thuis wat losser te luisteren, maar reken op een korte microfoondemping rond elke uiting om terugkoppeling te voorkomen.",
