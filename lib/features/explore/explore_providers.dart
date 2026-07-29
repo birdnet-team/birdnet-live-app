@@ -97,22 +97,43 @@ final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
 // ---------------------------------------------------------------------------
 
 /// Singleton [LocationService] instance.
+///
+/// The service reads "Use GPS" and the manual coordinates through these
+/// callbacks on every call, so the setting is enforced inside the service —
+/// every feature that fetches a location honours it, not just the ones that
+/// remember to check [useGpsProvider] first.
 final locationServiceProvider = Provider<LocationService>((ref) {
-  return LocationService();
+  return LocationService(
+    gpsEnabled: () => ref.read(useGpsProvider),
+    manualLocation:
+        () => AppLocation(
+          latitude: ref.read(manualLatitudeProvider),
+          longitude: ref.read(manualLongitudeProvider),
+        ),
+  );
 });
 
 /// Current device location — refreshed on demand via [ref.invalidate].
 ///
-/// Falls back to manual coordinates when GPS is disabled.
+/// Falls back to manual coordinates when GPS is disabled; that is enforced
+/// inside [LocationService], and the watches here only decide *when* this
+/// provider recomputes.
+///
+/// Keep the manual-coordinate watches inside the `!useGps` branch. Widening
+/// them adds ways for this provider to be dirty, and every extra invalidation
+/// is a chance to hit a Riverpod "setState during build": a widget whose first
+/// build flushes this provider (the GPS tile in Settings, built lazily by a
+/// ListView) makes the `.future` proxy notify mid-build, and the providers
+/// that `watch(currentLocationProvider.future)` then invalidate themselves
+/// while the frame is still building.
 final currentLocationProvider = FutureProvider<AppLocation?>((ref) async {
   final useGps = ref.watch(useGpsProvider);
-  final service = ref.watch(locationServiceProvider);
-
   if (!useGps) {
-    final lat = ref.watch(manualLatitudeProvider);
-    final lon = ref.watch(manualLongitudeProvider);
-    return AppLocation(latitude: lat, longitude: lon);
+    ref
+      ..watch(manualLatitudeProvider)
+      ..watch(manualLongitudeProvider);
   }
+  final service = ref.watch(locationServiceProvider);
 
   return service.getCurrentLocation();
 });

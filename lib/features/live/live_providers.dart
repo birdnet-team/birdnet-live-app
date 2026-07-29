@@ -183,12 +183,15 @@ void _resolvePendingWeather(Ref ref, List<LiveSession> sessions) async {
     final repo = ref.read(sessionRepositoryProvider);
     final svc = ref.read(weatherServiceProvider);
 
-    final missing = sessions
-        .where((s) =>
-            s.latitude != null &&
-            s.longitude != null &&
-            s.weather == null)
-        .toList();
+    final missing =
+        sessions
+            .where(
+              (s) =>
+                  s.latitude != null &&
+                  s.longitude != null &&
+                  s.weather == null,
+            )
+            .toList();
 
     if (missing.isEmpty) return;
 

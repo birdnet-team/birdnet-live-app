@@ -48,8 +48,10 @@ void main() {
 
     test('loads previously persisted set', () async {
       SharedPreferences.setMockInitialValues({
-        PrefKeys.globalSpeciesHistory:
-            json.encode(['Parus major', 'Turdus merula']),
+        PrefKeys.globalSpeciesHistory: json.encode([
+          'Parus major',
+          'Turdus merula',
+        ]),
       });
       final prefs = await SharedPreferences.getInstance();
       final history = GlobalSpeciesHistory(prefs)..load();
@@ -87,9 +89,11 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final history = GlobalSpeciesHistory(prefs)..load();
 
-      final added = await history.addAll(
-        ['Turdus merula', 'Parus major', 'Cyanistes caeruleus'],
-      );
+      final added = await history.addAll([
+        'Turdus merula',
+        'Parus major',
+        'Cyanistes caeruleus',
+      ]);
       expect(added, {'Parus major', 'Cyanistes caeruleus'});
       expect(history.length, 3);
     });

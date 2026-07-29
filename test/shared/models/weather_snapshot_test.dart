@@ -57,9 +57,9 @@ void main() {
         isNull,
       );
       expect(
-        WeatherSnapshot.fromJson(
-          const <String, dynamic>{'fetchedAt': 'not-a-date'},
-        ),
+        WeatherSnapshot.fromJson(const <String, dynamic>{
+          'fetchedAt': 'not-a-date',
+        }),
         isNull,
       );
     });

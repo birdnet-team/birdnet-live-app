@@ -1184,7 +1184,9 @@ class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
           ],
         ),
         if (species.isNotEmpty) const SizedBox(height: 12),
-        for (final (i, item) in species.take(24).indexed)
+        // Full species list — the panel is a scrollable ListView, so a long
+        // deployment must not silently hide species past an arbitrary cutoff.
+        for (final (i, item) in species.indexed)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Row(

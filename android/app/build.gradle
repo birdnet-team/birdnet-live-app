@@ -131,6 +131,15 @@ flutter {
     source = "../.."
 }
 
+// geolocator normally packages Play Services Location and prefers its fused
+// provider. BirdNET Live deliberately uses Android's LocationManager instead:
+// the fused provider can repeatedly show Google's location-accuracy resolution
+// dialog when Google Location Accuracy is off. Keep the Play libraries needed
+// by Asset Delivery; exclude only the location module.
+configurations.configureEach {
+    exclude group: 'com.google.android.gms', module: 'play-services-location'
+}
+
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 

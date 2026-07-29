@@ -32,6 +32,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/link_launcher.dart';
@@ -106,7 +107,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     final serial = ++_locationRequestSerial;
     try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      // Read the native service state without selecting geolocator's Play
+      // Services fused client.
+      final serviceEnabled = await isPlatformLocationServiceEnabled();
       final loc = await Geolocator.checkPermission();
       if (!mounted || serial != _locationRequestSerial) return;
       setState(() {
@@ -758,10 +761,10 @@ class _PermissionTile extends StatelessWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                         : Text(
-                            Platform.isIOS
-                                ? l10n.permissionRequestIOS
-                                : l10n.permissionRequest,
-                          ),
+                          Platform.isIOS
+                              ? l10n.permissionRequestIOS
+                              : l10n.permissionRequest,
+                        ),
               ),
             ),
         ],

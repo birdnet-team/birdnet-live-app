@@ -17,20 +17,24 @@ Widget _host({required Widget Function(BuildContext) builder}) {
 
 void main() {
   group('WizardScaffold', () {
-    testWidgets('renders title, footer labels, and step semantics',
-        (tester) async {
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 1,
-          totalSteps: 3,
-          onBack: () {},
-          onNext: () {},
-          backLabel: 'Back',
-          nextLabel: 'Next',
-          child: const Text('content'),
+    testWidgets('renders title, footer labels, and step semantics', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 1,
+                totalSteps: 3,
+                onBack: () {},
+                onNext: () {},
+                backLabel: 'Back',
+                nextLabel: 'Next',
+                child: const Text('content'),
+              ),
         ),
-      ));
+      );
 
       expect(find.text('Setup'), findsOneWidget);
       expect(find.text('content'), findsOneWidget);
@@ -40,18 +44,21 @@ void main() {
     });
 
     testWidgets('disables Next button when onNext is null', (tester) async {
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 0,
-          totalSteps: 2,
-          onBack: () {},
-          onNext: null,
-          backLabel: 'Cancel',
-          nextLabel: 'Next',
-          child: const SizedBox(),
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 0,
+                totalSteps: 2,
+                onBack: () {},
+                onNext: null,
+                backLabel: 'Cancel',
+                nextLabel: 'Next',
+                child: const SizedBox(),
+              ),
         ),
-      ));
+      );
 
       final next = tester.widget<FilledButton>(
         find.widgetWithText(FilledButton, 'Next'),
@@ -59,39 +66,46 @@ void main() {
       expect(next.onPressed, isNull);
     });
 
-    testWidgets('uses FilledButton.icon when nextIcon is provided',
-        (tester) async {
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 1,
-          totalSteps: 2,
-          onBack: () {},
-          onNext: () {},
-          backLabel: 'Back',
-          nextLabel: 'Start',
-          nextIcon: Icons.play_arrow,
-          child: const SizedBox(),
+    testWidgets('uses FilledButton.icon when nextIcon is provided', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 1,
+                totalSteps: 2,
+                onBack: () {},
+                onNext: () {},
+                backLabel: 'Back',
+                nextLabel: 'Start',
+                nextIcon: Icons.play_arrow,
+                child: const SizedBox(),
+              ),
         ),
-      ));
+      );
 
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     });
 
     testWidgets('hides footer when showFooter is false', (tester) async {
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 0,
-          totalSteps: 2,
-          onBack: () {},
-          onNext: () {},
-          backLabel: 'Back',
-          nextLabel: 'Next',
-          showFooter: false,
-          child: const SizedBox(),
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 0,
+                totalSteps: 2,
+                onBack: () {},
+                onNext: () {},
+                backLabel: 'Back',
+                nextLabel: 'Next',
+                showFooter: false,
+                child: const SizedBox(),
+              ),
         ),
-      ));
+      );
 
       expect(find.widgetWithText(TextButton, 'Back'), findsNothing);
       expect(find.widgetWithText(FilledButton, 'Next'), findsNothing);
@@ -100,18 +114,21 @@ void main() {
     testWidgets('invokes onBack and onNext callbacks', (tester) async {
       var backTaps = 0;
       var nextTaps = 0;
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 0,
-          totalSteps: 2,
-          onBack: () => backTaps++,
-          onNext: () => nextTaps++,
-          backLabel: 'Back',
-          nextLabel: 'Next',
-          child: const SizedBox(),
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 0,
+                totalSteps: 2,
+                onBack: () => backTaps++,
+                onNext: () => nextTaps++,
+                backLabel: 'Back',
+                nextLabel: 'Next',
+                child: const SizedBox(),
+              ),
         ),
-      ));
+      );
 
       await tester.tap(find.widgetWithText(TextButton, 'Back'));
       await tester.tap(find.widgetWithText(FilledButton, 'Next'));
@@ -122,19 +139,25 @@ void main() {
     });
 
     testWidgets('renders leading widget in AppBar', (tester) async {
-      await tester.pumpWidget(_host(
-        builder: (_) => WizardScaffold(
-          title: 'Setup',
-          step: 0,
-          totalSteps: 2,
-          leading: const Icon(Icons.close, key: ValueKey('leading-close')),
-          onBack: () {},
-          onNext: () {},
-          backLabel: 'Back',
-          nextLabel: 'Next',
-          child: const SizedBox(),
+      await tester.pumpWidget(
+        _host(
+          builder:
+              (_) => WizardScaffold(
+                title: 'Setup',
+                step: 0,
+                totalSteps: 2,
+                leading: const Icon(
+                  Icons.close,
+                  key: ValueKey('leading-close'),
+                ),
+                onBack: () {},
+                onNext: () {},
+                backLabel: 'Back',
+                nextLabel: 'Next',
+                child: const SizedBox(),
+              ),
         ),
-      ));
+      );
 
       expect(find.byKey(const ValueKey('leading-close')), findsOneWidget);
     });

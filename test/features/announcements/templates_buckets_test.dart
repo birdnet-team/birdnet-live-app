@@ -46,7 +46,8 @@ void main() {
       setUpAll(() {
         final file = File('assets/announcements/templates_$locale.json');
         expect(file.existsSync(), isTrue, reason: 'missing template: $locale');
-        final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+        final json =
+            jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
         expect(
           json['locale'],
           locale,
@@ -74,7 +75,8 @@ void main() {
           expect(
             (balanced as List).isNotEmpty,
             isTrue,
-            reason: '$locale bucket "${bucket.jsonKey}" balanced list is empty '
+            reason:
+                '$locale bucket "${bucket.jsonKey}" balanced list is empty '
                 '— the loader drops it and this locale falls back to English',
           );
           // chatty is optional (falls back to balanced), but must not be
@@ -95,8 +97,12 @@ void main() {
           final node = buckets[bucket.jsonKey] as Map?;
           if (node == null) continue; // reported by the coverage test above
           final expected = slotsFor(bucket);
-          final unexpected = ['{name}', '{name1}', '{name2}', '{name3}']
-              .where((p) => !expected.contains(p));
+          final unexpected = [
+            '{name}',
+            '{name1}',
+            '{name2}',
+            '{name3}',
+          ].where((p) => !expected.contains(p));
 
           for (final variant in [
             ...?(node['balanced'] as List?),
@@ -107,7 +113,8 @@ void main() {
               expect(
                 variant.contains(placeholder),
                 isTrue,
-                reason: '$locale bucket "${bucket.jsonKey}" variant is missing '
+                reason:
+                    '$locale bucket "${bucket.jsonKey}" variant is missing '
                     '$placeholder: "$variant"',
               );
             }
@@ -115,7 +122,8 @@ void main() {
               expect(
                 variant.contains(placeholder),
                 isFalse,
-                reason: '$locale bucket "${bucket.jsonKey}" variant uses '
+                reason:
+                    '$locale bucket "${bucket.jsonKey}" variant uses '
                     '$placeholder, which this bucket never fills: "$variant"',
               );
             }

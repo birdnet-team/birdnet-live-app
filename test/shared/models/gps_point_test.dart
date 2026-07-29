@@ -30,11 +30,7 @@ void main() {
     });
 
     test('compact JSON keys', () {
-      final point = GpsPoint(
-        latitude: 52.52,
-        longitude: 13.405,
-        timestamp: ts,
-      );
+      final point = GpsPoint(latitude: 52.52, longitude: 13.405, timestamp: ts);
 
       final json = point.toJson();
       expect(json.containsKey('lat'), isTrue);
@@ -65,7 +61,11 @@ void main() {
     test('equality by lat/lon/timestamp', () {
       final a = GpsPoint(latitude: 52.52, longitude: 13.405, timestamp: ts);
       final b = GpsPoint(
-          latitude: 52.52, longitude: 13.405, timestamp: ts, altitude: 100);
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: ts,
+        altitude: 100,
+      );
 
       expect(a, equals(b));
       expect(a.hashCode, b.hashCode);
@@ -79,10 +79,17 @@ void main() {
     });
 
     test('toString includes measured/interpolated', () {
-      final measured =
-          GpsPoint(latitude: 52.52, longitude: 13.405, timestamp: ts);
+      final measured = GpsPoint(
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: ts,
+      );
       final interp = GpsPoint(
-          latitude: 52.52, longitude: 13.405, timestamp: ts, measured: false);
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: ts,
+        measured: false,
+      );
 
       expect(measured.toString(), contains('measured'));
       expect(interp.toString(), contains('interpolated'));

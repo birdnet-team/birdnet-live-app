@@ -29,10 +29,7 @@ void main() {
     test('predict throws StateError when model not loaded', () {
       final model = ClassifierModel();
       expect(
-        () => model.predict(
-          Float32List(96000),
-          windowSamples: 96000,
-        ),
+        () => model.predict(Float32List(96000), windowSamples: 96000),
         throwsA(isA<StateError>()),
       );
     });
@@ -48,18 +45,13 @@ void main() {
 
   group('ModelOutput', () {
     test('stores predictions list', () {
-      final output = ModelOutput(
-        predictions: [0.1, 0.2, 0.3],
-      );
+      final output = ModelOutput(predictions: [0.1, 0.2, 0.3]);
       expect(output.predictions, [0.1, 0.2, 0.3]);
       expect(output.embeddings, isNull);
     });
 
     test('stores optional embeddings', () {
-      final output = ModelOutput(
-        predictions: [0.1],
-        embeddings: [0.5, 0.6],
-      );
+      final output = ModelOutput(predictions: [0.1], embeddings: [0.5, 0.6]);
       expect(output.embeddings, isNotNull);
       expect(output.embeddings!.length, 2);
     });

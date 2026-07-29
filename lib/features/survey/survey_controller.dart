@@ -69,10 +69,19 @@ enum SurveyState { idle, loading, starting, active, stopping, finalized, error }
 /// Orchestrates a long-running survey with GPS tracking, inference, recording,
 /// and incremental persistence.
 class SurveyController {
-  SurveyController({required this.ringBuffer, required this.recordingService});
+  SurveyController({
+    required this.ringBuffer,
+    required this.recordingService,
+    bool Function()? gpsEnabled,
+  }) : _gpsEnabled = gpsEnabled;
 
   final RingBuffer ringBuffer;
   final RecordingService recordingService;
+
+  /// Reads Settings → Location → Use GPS. When off, no GPS tracker is
+  /// created and the survey runs on the coordinates chosen in setup.
+  final bool Function()? _gpsEnabled;
+  bool get _useGps => _gpsEnabled?.call() ?? true;
   final SurveyNotificationService _notificationService =
       SurveyNotificationService();
   final Battery _battery = Battery();
@@ -489,14 +498,16 @@ class SurveyController {
         _session!.recordingPath = dir;
       }
 
-      // GPS tracking.
-      _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
-      _gpsTracker!.onPoint = _onGpsPoint;
-      if (backgroundGps || foregroundGps) {
-        await _gpsTracker!.startTracking();
-      } else {
-        // Manual GPS mode: capture initial fix.
-        await _gpsTracker!.captureOnce();
+      // GPS tracking — skipped entirely when the user has GPS turned off.
+      if (_useGps) {
+        _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
+        _gpsTracker!.onPoint = _onGpsPoint;
+        if (backgroundGps || foregroundGps) {
+          await _gpsTracker!.startTracking();
+        } else {
+          // Manual GPS mode: capture initial fix.
+          await _gpsTracker!.captureOnce();
+        }
       }
 
       // Max duration auto-stop.
@@ -641,13 +652,15 @@ class SurveyController {
       }
 
       // GPS tracking: seed with existing track data.
-      _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
-      _gpsTracker!.onPoint = _onGpsPoint;
-      _gpsTracker!.seedTrack(existingSession.gpsTrack);
-      if (backgroundGps || foregroundGps) {
-        await _gpsTracker!.startTracking();
-      } else {
-        await _gpsTracker!.captureOnce();
+      if (_useGps) {
+        _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
+        _gpsTracker!.onPoint = _onGpsPoint;
+        _gpsTracker!.seedTrack(existingSession.gpsTrack);
+        if (backgroundGps || foregroundGps) {
+          await _gpsTracker!.startTracking();
+        } else {
+          await _gpsTracker!.captureOnce();
+        }
       }
 
       _maxEndTime = DateTime.now().add(Duration(hours: maxDurationHours));
@@ -854,7 +867,22 @@ class SurveyController {
 
   /// Capture a manual GPS fix (for manual GPS mode).
   Future<void> captureGpsFix() async {
+    if (!_useGps) return;
     await _gpsTracker?.captureOnce();
+  }
+
+  /// Restart foreground GPS tracking after an app lifecycle resume.
+  ///
+  /// The setting is checked here, not only by the screen, so a tracker cannot
+  /// be restarted after the user turns off GPS during an active survey.
+  Future<void> startGpsTracking() async {
+    if (!_useGps) return;
+    await _gpsTracker?.startTracking();
+  }
+
+  /// Stop an active GPS stream when the app-wide setting is turned off.
+  Future<void> stopGpsTracking() async {
+    await _gpsTracker?.stopTracking();
   }
 
   /// Insert a user-entered species observation into the active session.
@@ -868,8 +896,8 @@ class SurveyController {
   ///   - Carries confidence 1.0 (manual entries are by definition certain
   ///     from the user's point of view).
   ///   - Is timestamped to the moment the user confirms the entry.
-  ///   - Is GPS-tagged from [SurveyGpsTracker.lastPoint] when available so it
-  ///     appears on the map alongside auto detections.
+  ///   - Is tagged from [SurveyGpsTracker.lastPoint] when available, falling
+  ///     back to the session's fixed coordinates when GPS is disabled.
   ///   - Skips the [DetectionSampler] (manuals are always kept) and the alert
   ///     coordinator (the user just typed it; alerting them again is noise).
   ///   - Does NOT touch [_activeCardSpecies] \u2014 manuals are one-shot and
@@ -888,8 +916,8 @@ class SurveyController {
       confidence: 1.0,
       timestamp: DateTime.now(),
       source: DetectionSource.manual,
-      latitude: gpsPoint?.latitude,
-      longitude: gpsPoint?.longitude,
+      latitude: gpsPoint?.latitude ?? _session!.latitude,
+      longitude: gpsPoint?.longitude ?? _session!.longitude,
     );
     _session!.addDetection(record);
     _sessionDetections.insert(0, record);
@@ -1105,8 +1133,12 @@ class SurveyController {
           await _sampler?.onRecordClosed(closed);
         }
 
-        // Get current GPS position for detection tagging.
+        // Use the current GPS position for detection tagging. Before the first
+        // fix, or when GPS is disabled, fall back to the session's fixed
+        // coordinates from setup.
         final gpsPoint = _gpsTracker?.lastPoint;
+        final detectionLatitude = gpsPoint?.latitude ?? session.latitude;
+        final detectionLongitude = gpsPoint?.longitude ?? session.longitude;
 
         // Cut this cycle's clips: one for each newly appeared species, plus a
         // re-cut for any ongoing detection that reached a new confidence
@@ -1148,8 +1180,8 @@ class SurveyController {
               timestamp: detection.timestamp ?? DateTime.now(),
               audioClipPath: clipPaths[name],
               clipTimestamp: clipPaths[name] == null ? null : windowTimestamp,
-              latitude: gpsPoint?.latitude,
-              longitude: gpsPoint?.longitude,
+              latitude: detectionLatitude,
+              longitude: detectionLongitude,
             );
 
             // Records are always added to the session. Audio-clip retention
@@ -1187,8 +1219,8 @@ class SurveyController {
                             ? existing.clipTimestamp
                             : windowTimestamp),
                 source: existing.source,
-                latitude: existing.latitude ?? gpsPoint?.latitude,
-                longitude: existing.longitude ?? gpsPoint?.longitude,
+                latitude: existing.latitude ?? detectionLatitude,
+                longitude: existing.longitude ?? detectionLongitude,
               );
               _sessionDetections.remove(existing);
               _sessionDetections.add(updated);
