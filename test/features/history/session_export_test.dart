@@ -365,7 +365,7 @@ void main() {
       expect(cols[5], '19.000');
     });
 
-    test('uses endTimestamp for continuous detections inside clips', () {
+    test('clip rows cover one analysis window for continuous detections', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
       final session = _makeSession(
         windowDuration: 3,
@@ -389,7 +389,7 @@ void main() {
       final cols = table.split('\n')[1].split('\t');
 
       expect(cols[4], '1.000');
-      expect(cols[5], '15.000');
+      expect(cols[5], '4.000');
       expect(cols[11], '5.000');
     });
 

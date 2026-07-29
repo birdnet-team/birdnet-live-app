@@ -2257,11 +2257,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // has clip files but no recorded context value, fall back to the
     // device's current survey clip-context preference.
     final sessionClipContext = widget.session.settings.clipContextSeconds;
-    final hasClips = widget.session.detections.any(
+    final clips = widget.session.detections.where(
       (d) => d.audioClipPath != null && d.audioClipPath!.isNotEmpty,
     );
+    final hasOnlyLegacyClips =
+        clips.isNotEmpty && clips.every((d) => d.clipTimestamp == null);
     final clipContextOverride =
-        (hasClips && sessionClipContext == 0)
+        (hasOnlyLegacyClips && sessionClipContext == 0)
             ? ref.read(surveyClipContextProvider)
             : null;
 
@@ -2371,7 +2373,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 commonName: result.commonName,
                 confidence: result.replaceRecord!.confidence,
                 timestamp: result.replaceRecord!.timestamp,
+                endTimestamp: result.replaceRecord!.endTimestamp,
                 audioClipPath: result.replaceRecord!.audioClipPath,
+                clipTimestamp: result.replaceRecord!.clipTimestamp,
                 source:
                     result.userSpecified
                         ? DetectionSource.userSpecified
@@ -2379,6 +2383,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 confirmedAt: result.replaceRecord!.confirmedAt,
                 note: result.replaceRecord!.note,
                 voiceMemoPath: result.replaceRecord!.voiceMemoPath,
+                latitude: result.replaceRecord!.latitude,
+                longitude: result.replaceRecord!.longitude,
               );
             }
           }
@@ -3655,7 +3661,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             commonName: result.commonName,
             confidence: result.replaceRecord!.confidence,
             timestamp: result.replaceRecord!.timestamp,
+            endTimestamp: result.replaceRecord!.endTimestamp,
             audioClipPath: result.replaceRecord!.audioClipPath,
+            clipTimestamp: result.replaceRecord!.clipTimestamp,
             source:
                 result.userSpecified
                     ? DetectionSource.userSpecified
@@ -3663,6 +3671,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             confirmedAt: result.replaceRecord!.confirmedAt,
             note: result.replaceRecord!.note,
             voiceMemoPath: result.replaceRecord!.voiceMemoPath,
+            latitude: result.replaceRecord!.latitude,
+            longitude: result.replaceRecord!.longitude,
           );
         }
       }

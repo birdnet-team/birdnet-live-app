@@ -18,15 +18,32 @@
 //
 // ```
 // <appDir>/recordings/<sessionId>/
-//   full.wav              ← continuous recording (if mode = full)
-//   clip_<timestamp>.wav  ← detection clips (if mode = detectionsOnly)
+//   full.wav                        ← continuous recording (if mode = full)
+//   clip_<timestamp>_<species>.wav  ← detection clips (if detectionsOnly)
 // ```
+//
+// ### Peak-window clips
+//
+// A merged detection spans every consecutive inference window in which the
+// species stayed above threshold — often far more than the single analyzed
+// window a clip holds. Rather than keep the *first* window (which is usually
+// the weakest, since birds enter near the confidence floor and peak later),
+// callers re-cut the clip whenever the detection reaches a new confidence
+// peak: see [DetectionClipPeakTracker] and [kClipPeakImprovementDelta]. The
+// replacement is published before [RecordingService.deleteClip] removes the
+// old file. The clip a session ends up with
+// therefore comes from the strongest window of the detection, matching the
+// confidence stored on the record.
+//
+// Clip file names embed the species so each record owns exactly one file —
+// re-cutting or evicting one detection's clip can never delete audio another
+// record still points at.
 // =============================================================================
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../audio/ring_buffer.dart';
@@ -44,6 +61,129 @@ enum RecordingMode {
 
   /// Save clips around detected species only.
   detectionsOnly,
+}
+
+/// Minimum confidence gain required before a detection's clip is re-cut at a
+/// stronger analysis window.
+///
+/// A merged detection's confidence is the running maximum over its windows,
+/// so without a margin every marginal uptick near the peak would rewrite the
+/// clip file. At 0.05 a re-cut only happens for a meaningfully better window,
+/// which in practice means a handful of writes per detection at most.
+const double kClipPeakImprovementDelta = 0.05;
+
+/// Tracks the confidence represented by each detection's clip on disk, and
+/// decides when a detection wants a clip cut.
+///
+/// This is the single peak-retention rule for the whole app: Live, Survey and
+/// ARU each own an instance and ask it the same question every round, so the
+/// same bird produces the same clip whichever mode heard it. Only the
+/// *subsampling* that runs afterwards — which clips survive to the end of a
+/// session — is deliberately per-mode.
+///
+/// A detection record's confidence is updated for every stronger inference
+/// window, including improvements too small to justify an immediate re-cut.
+/// Comparing a future score to the record would therefore lose cumulative
+/// gains (for example 0.50 -> 0.53 -> 0.56). This tracker keeps the clip's
+/// actual baseline separate from the record's running maximum.
+class DetectionClipPeakTracker {
+  DetectionClipPeakTracker({this.improvementDelta = kClipPeakImprovementDelta})
+    : assert(improvementDelta >= 0);
+
+  final double improvementDelta;
+  final Map<String, double> _savedConfidenceByKey = {};
+
+  /// Whether a clip should be cut for [key] from the audio available now.
+  ///
+  /// A detection that has no clip yet gets one — on arrival ([isNew]), or on
+  /// any later improvement if the earlier attempt produced no file. A
+  /// detection that already has a clip only replaces it once it beats the
+  /// confidence that clip actually represents by [improvementDelta].
+  ///
+  /// [currentConfidence] is the detection record's running maximum. Requiring
+  /// a genuinely newer peak prevents a failed save from retrying every round
+  /// while the score is unchanged.
+  bool needsClip({
+    required String key,
+    required double candidateConfidence,
+    required double currentConfidence,
+    required bool hasClip,
+    required bool isNew,
+  }) {
+    if (!candidateConfidence.isFinite) return false;
+    if (!hasClip) return isNew || candidateConfidence > currentConfidence;
+    // An arriving detection that already carries a clip keeps it; re-cutting
+    // is for detections we have watched improve.
+    if (isNew || candidateConfidence <= currentConfidence) return false;
+
+    final savedConfidence = _savedConfidenceByKey[key] ?? currentConfidence;
+    // Absorb binary floating-point noise at exact boundaries such as
+    // 0.60 - 0.55, which is slightly less than 0.05 on some runtimes.
+    const epsilon = 1e-12;
+    return candidateConfidence - savedConfidence + epsilon >= improvementDelta;
+  }
+
+  /// Record a successful clip save at [confidence].
+  void recordSaved(String key, double confidence) {
+    if (confidence.isFinite) _savedConfidenceByKey[key] = confidence;
+  }
+
+  /// Stop tracking a closed detection.
+  void forget(String key) => _savedConfidenceByKey.remove(key);
+
+  /// Reset all state at a session boundary.
+  void clear() => _savedConfidenceByKey.clear();
+}
+
+/// Builds a unique clip file name for a detection of [scientificName].
+///
+/// The species is slugged into the name so every record owns its own file:
+/// two species detected in the same inference cycle get distinct clips, and
+/// re-cutting one detection's clip never touches another's. [savedAt] and
+/// [sequence] keep successive re-cuts of the same species distinct so the new
+/// file is written before the old one is deleted.
+String detectionClipName(
+  String scientificName,
+  DateTime savedAt, {
+  int sequence = 0,
+}) {
+  final slug = scientificName.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
+  return 'clip_${savedAt.microsecondsSinceEpoch}_${sequence}_$slug';
+}
+
+/// Cut one detection clip per entry in [items], all from the same audio.
+///
+/// Live, Survey and ARU all reach the same point in a round: several
+/// detections want a clip of the window that just played. Cutting them
+/// together costs one post-roll wait for the round instead of one per
+/// detection, and — more importantly for consistency — anchors every clip in
+/// the round to the same moment. Cutting them one at a time makes each clip
+/// after the first read the ring buffer later than the window that earned the
+/// score, so the same bird would land on a different window depending on how
+/// many other species happened to peak alongside it.
+///
+/// [speciesOf] supplies the scientific name that goes into each file name.
+/// Returns the written path per item; items whose clip could not be written
+/// are absent from the map.
+Future<Map<T, String>> saveDetectionClipsFor<T>({
+  required RecordingService recordingService,
+  required List<T> items,
+  required String Function(T item) speciesOf,
+}) async {
+  if (items.isEmpty) return const {};
+
+  final namesByItem = {
+    for (final item in items)
+      item: recordingService.nextDetectionClipName(speciesOf(item)),
+  };
+  final written = await recordingService.saveDetectionClips(
+    clipNames: namesByItem.values.toList(),
+  );
+
+  return {
+    for (final entry in namesByItem.entries)
+      if (written[entry.value] != null) entry.key: written[entry.value]!,
+  };
 }
 
 /// Parses a [RecordingMode] from its string name.
@@ -99,6 +239,8 @@ class RecordingService {
   bool _isRecording = false;
   bool _flushing = false;
   int _lastFlushPosition = 0;
+  int _nextClipSequence = 0;
+  int _recordingGeneration = 0;
 
   /// Whether a recording is currently in progress.
   bool get isRecording => _isRecording;
@@ -111,6 +253,19 @@ class RecordingService {
 
   /// Path to the session recording directory.
   String? get sessionDir => _sessionDir;
+
+  /// Return a collision-resistant name for the next detection clip.
+  ///
+  /// The per-service sequence disambiguates saves that share the same system
+  /// clock tick and species name. This matters for replacement safety: a
+  /// re-cut must never overwrite the old file before the new one is complete.
+  String nextDetectionClipName(String scientificName, {DateTime? savedAt}) {
+    return detectionClipName(
+      scientificName,
+      savedAt ?? DateTime.now(),
+      sequence: _nextClipSequence++,
+    );
+  }
 
   /// Start recording for the given session.
   ///
@@ -127,6 +282,7 @@ class RecordingService {
     _mode = mode;
     _format = format;
     _isRecording = true;
+    _recordingGeneration++;
 
     final appDir = await getApplicationDocumentsDirectory();
     _sessionDir = '${appDir.path}/recordings/$sessionId';
@@ -163,38 +319,85 @@ class RecordingService {
   ///
   /// Returns the file path of the saved clip, or `null` if not recording.
   Future<String?> saveDetectionClip({required String clipName}) async {
-    if (!_isRecording || _sessionDir == null) return null;
+    final saved = await saveDetectionClips(clipNames: [clipName]);
+    return saved[clipName];
+  }
+
+  /// Save one clip per entry in [clipNames], all cut from the same audio.
+  ///
+  /// Several species commonly hit a new confidence peak in the same inference
+  /// cycle, and they all want the *same* stretch of audio. Waiting for
+  /// post-roll and reading the ring buffer once — then writing N files from
+  /// that one snapshot — keeps a busy cycle to a single
+  /// [clipContextSeconds] delay instead of one per species.
+  ///
+  /// Returns a map of clip name → written file path. Names whose clip could
+  /// not be written (not recording, or silent audio) are absent from the map.
+  Future<Map<String, String>> saveDetectionClips({
+    required List<String> clipNames,
+  }) async {
+    if (clipNames.isEmpty) return const {};
+    if (!_isRecording || _sessionDir == null) return const {};
+    final generation = _recordingGeneration;
 
     if (clipContextSeconds > 0) {
       await Future<void>.delayed(Duration(seconds: clipContextSeconds));
       // Recording may have been stopped while we were waiting for post-roll.
-      if (!_isRecording || _sessionDir == null) return null;
+      if (!_isRecording ||
+          _sessionDir == null ||
+          generation != _recordingGeneration) {
+        return const {};
+      }
     }
 
+    final sessionDir = _sessionDir!;
+    final format = _format;
     final totalSeconds = windowSeconds + 2 * clipContextSeconds;
     final totalSamples = totalSeconds * sampleRate;
     final samples = ringBuffer.readLast(totalSamples);
 
     // Skip silent clips (all zeros = no audio captured yet).
-    if (_isAllSilent(samples)) return null;
+    if (_isAllSilent(samples)) return const {};
 
-    final ext = _format == 'flac' ? 'flac' : 'wav';
-    final filePath = '$_sessionDir/$clipName.$ext';
-    if (_format == 'flac') {
-      await FlacEncoder.writeFile(
-        filePath: filePath,
-        samples: samples,
-        sampleRate: sampleRate,
-      );
-    } else {
-      await WavWriter.writeFile(
-        filePath: filePath,
-        samples: samples,
-        sampleRate: sampleRate,
-      );
+    final ext = format == 'flac' ? 'flac' : 'wav';
+    final written = <String, String>{};
+    for (final clipName in clipNames.toSet()) {
+      final filePath = '$sessionDir/$clipName.$ext';
+      try {
+        if (format == 'flac') {
+          await FlacEncoder.writeFile(
+            filePath: filePath,
+            samples: samples,
+            sampleRate: sampleRate,
+          );
+        } else {
+          await WavWriter.writeFile(
+            filePath: filePath,
+            samples: samples,
+            sampleRate: sampleRate,
+          );
+        }
+        written[clipName] = filePath;
+      } catch (e, st) {
+        debugPrint(
+          '[RecordingService] failed to save clip "$clipName": $e\n$st',
+        );
+        await deleteClip(filePath);
+      }
     }
 
-    return filePath;
+    return written;
+  }
+
+  /// Delete a detection clip file, swallowing and logging I/O errors.
+  Future<void> deleteClip(String? path) async {
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    } catch (e) {
+      debugPrint('[RecordingService] failed to delete clip: $e');
+    }
   }
 
   /// Stop the ongoing recording and finalize any open files.
@@ -205,6 +408,7 @@ class RecordingService {
     if (!_isRecording) return null;
 
     _isRecording = false;
+    _recordingGeneration++;
     _flushTimer?.cancel();
     _flushTimer = null;
 
@@ -252,6 +456,8 @@ class RecordingService {
 
   /// Dispose of all resources.
   void dispose() {
+    _isRecording = false;
+    _recordingGeneration++;
     _flushTimer?.cancel();
     if (_writer?.isOpen == true) {
       _writer!.close();

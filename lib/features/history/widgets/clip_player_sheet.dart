@@ -196,8 +196,10 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
         _decoding = false;
       });
     } catch (e, st) {
-      debugPrint('[ClipPlayerSheet] spectrogram decode failed for '
-          '${widget.clipPath}: $e\n$st');
+      debugPrint(
+        '[ClipPlayerSheet] spectrogram decode failed for '
+        '${widget.clipPath}: $e\n$st',
+      );
       if (mounted) setState(() => _decoding = false);
     }
   }
@@ -439,9 +441,18 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
             ?.lookup(det.scientificName)
             ?.commonNameForLocale(speciesLocale) ??
         det.commonName;
-    final timeStr = DateFormat(
-      'yyyy-MM-dd HH:mm:ss',
-    ).format(det.timestamp.toLocal());
+    // When the species stayed above threshold for longer than one analysis
+    // window, show the whole span the bird was heard for. The review row's
+    // range describes the clip — one window plus padding, cut at the peak —
+    // so this is the one place the full vocalization is still visible, and
+    // nothing here implies it is the length of the audio below.
+    final detStart = det.timestamp.toLocal();
+    final detEnd = det.endTimestamp?.toLocal();
+    final startStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(detStart);
+    final timeStr =
+        detEnd != null && detEnd.isAfter(detStart)
+            ? '$startStr – ${DateFormat('HH:mm:ss').format(detEnd)}'
+            : startStr;
     // Use the unified [ScoreColors] CVD-safe ramp so the avatar border on
     // this sheet matches the same detection's marker on the survey map and
     // its pill color in the Explore list.

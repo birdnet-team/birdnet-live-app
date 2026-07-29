@@ -53,7 +53,10 @@ SamplingMode samplingModeFromString(String value) {
 /// engines (which use deliberately different *selection* strategies) never
 /// diverge on the actual file teardown. Callers are responsible for clearing
 /// the owning record's `audioClipPath` and updating their own drop counters.
-Future<void> deleteDetectionClipFile(String? path, {required String logTag}) async {
+Future<void> deleteDetectionClipFile(
+  String? path, {
+  required String logTag,
+}) async {
   if (path == null) return;
   try {
     final file = File(path);
@@ -168,6 +171,9 @@ class DetectionSampler {
   Future<void> _evictClip(DetectionRecord record) async {
     final path = record.audioClipPath;
     record.audioClipPath = null;
+    // The window the clip was cut from describes a file that no longer
+    // exists; clearing it keeps the record from advertising audio it lost.
+    record.clipTimestamp = null;
     _droppedClipCount++;
     await deleteDetectionClipFile(path, logTag: 'DetectionSampler');
   }

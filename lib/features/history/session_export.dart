@@ -278,6 +278,7 @@ String buildRavenSelectionTable(
       session,
       d,
       clipContextSeconds: clipContext,
+      referencesDetectionClip: referencesClip,
     );
     // Session-relative offset (always computed; used for either Begin Time
     // or the auxiliary Survey Time column), rebased onto the exported
@@ -420,6 +421,7 @@ String buildCsvExport(
       session,
       d,
       clipContextSeconds: clipContext,
+      referencesDetectionClip: referencesClip,
     );
     // Session-relative offset, rebased onto the exported (possibly trimmed)
     // audio so it indexes the file the row references.

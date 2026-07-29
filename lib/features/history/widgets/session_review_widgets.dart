@@ -2031,6 +2031,43 @@ class _ClusterRow extends ConsumerWidget {
   final bool audioAvailable;
   final VoidCallback? onShowOnMap;
 
+  /// Wall-clock span of this cluster's detection clip, or null when the row
+  /// should show the detection span instead.
+  ///
+  /// Returns null for sessions with a full recording (where the detection
+  /// span lines up with audio the user can actually scrub) and for clusters
+  /// with no clip of their own.
+  ///
+  /// The span is `clipContext + windowDuration + clipContext` around the
+  /// analysis window the clip was cut from, so it matches the file byte for
+  /// byte. Records saved before clips followed the confidence peak have no
+  /// [DetectionRecord.clipTimestamp]; those clips were cut on arrival, so
+  /// the detection start is their correct anchor.
+  (DateTime, DateTime)? _clipTimeRange(WidgetRef ref) {
+    if (audioAvailable) return null;
+    final clipRecord =
+        cluster.records
+            .where((r) => (r.audioClipPath ?? '').isNotEmpty)
+            .firstOrNull;
+    if (clipRecord == null) return null;
+
+    // Mirrors the export path: a session with clips but no recorded context
+    // value predates the setting, so fall back to the current preference
+    // rather than claiming zero padding.
+    final recorded = session.settings.clipContextSeconds;
+    final context =
+        recorded == 0 && clipRecord.clipTimestamp == null
+            ? ref.watch(surveyClipContextProvider)
+            : recorded;
+
+    final windowStart = clipRecord.clipTimestamp ?? clipRecord.timestamp;
+    final clipStart = windowStart.subtract(Duration(seconds: context));
+    return (
+      clipStart,
+      clipStart.add(Duration(seconds: context * 2 + windowSec)),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -2047,12 +2084,24 @@ class _ClusterRow extends ConsumerWidget {
     final lastEnd =
         lastRecord.endTimestamp ??
         lastRecord.timestamp.add(Duration(seconds: windowSec));
+
+    // When the only audio is per-detection clips, the row's range has to
+    // describe the *clip*, not the detection. A detection can run for
+    // half a minute while its clip holds one analysis window plus padding,
+    // cut wherever the detection peaked — so a detection span here would
+    // advertise audio the file does not contain. [_clipTimeRange] returns
+    // null for full-recording sessions and for clusters without a clip,
+    // where the detection span is the honest answer.
+    final clipRange = _clipTimeRange(ref);
+    final rangeStart = clipRange?.$1 ?? cluster.firstTimestamp;
+    final rangeEnd = clipRange?.$2 ?? lastEnd;
+
     // Always show the full span (start – end) so users can see the
     // duration of continuous detections at a glance. For very short
     // detections where the formatted strings would be identical, fall
     // back to a single timestamp to keep the row compact.
     final startStr = formatDetectionTime(
-      cluster.firstTimestamp,
+      rangeStart,
       session.startTime,
       tsMode,
       absoluteToRelative: session.absoluteToRelative,
@@ -2062,7 +2111,7 @@ class _ClusterRow extends ConsumerWidget {
       alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
     final endStr = formatDetectionTime(
-      lastEnd,
+      rangeEnd,
       session.startTime,
       tsMode,
       absoluteToRelative: session.absoluteToRelative,
