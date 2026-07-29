@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Map tiles you have already loaded now keep showing when the signal drops. The app was caching tiles to disk but still asking the tile server whether each one was current before drawing it, and OpenStreetMap marks tiles as needing a re-check after a day or so — so a survey area you had mapped the week before came up blank the moment you were out of coverage, which is exactly when an offline map matters. Tiles on disk are now drawn straight away. Maps also load noticeably faster on a slow connection, use less data while you pan and zoom (tiles that scroll out of view mid-download are now cancelled instead of downloaded for nothing), and no longer blank out on a single dropped request. The tile cache is now capped by actual size rather than by tile count, and the old cache left behind by earlier versions is deleted once on first launch to reclaim the space.
+- The Summary tab of an active ARU deployment now lists every species detected, not just the 24 most frequent. The species count above the list already reported the true total, so a busy deployment looked like it was miscounting.
 
 ## [0.19.3] - 2026-07-29
 
