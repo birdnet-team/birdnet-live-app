@@ -624,7 +624,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     // With whileInUse permission, use the GPS stream while in the foreground.
     // The screen's lifecycle handler will stop/restart it as the app is
     // backgrounded and foregrounded.
-    if (!widget.backgroundGps) {
+    if (!widget.backgroundGps && ref.read(useGpsProvider)) {
       final permission = await Geolocator.checkPermission();
       _foregroundGpsStream =
           permission == LocationPermission.whileInUse ||
@@ -793,11 +793,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       // doesn't revoke whileInUse location access, and restart it when the
       // user brings the app back to the front.
       if (state == AppLifecycleState.paused) {
-        controller.gpsTracker?.stopTracking();
+        controller.stopGpsTracking();
       } else if (state == AppLifecycleState.resumed) {
-        controller.gpsTracker?.startTracking();
+        controller.startGpsTracking();
       }
-    } else if (state == AppLifecycleState.resumed && !widget.backgroundGps) {
+    } else if (state == AppLifecycleState.resumed &&
+        !widget.backgroundGps &&
+        ref.read(useGpsProvider)) {
       // Manual GPS mode: capture a single fix when the user returns.
       controller.captureGpsFix();
     }
