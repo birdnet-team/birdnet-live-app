@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.5] - 2026-07-29
+
+### Fixed
+
+- The app no longer triggers Google's "turn on location services" dialog. Location fixes now come from Android's own location provider instead of the Play Services one, which pops that dialog on every request when you have declined Google Location Accuracy — a system dialog the app cannot suppress. GPS may take a little longer to get a first fix indoors; outdoors it is unchanged.
+- Turning off **Use GPS** in Settings now stops all location access, not just some of it. Survey GPS tracking ran regardless of the setting, and the Survey, Point Count and ARU setup wizards still asked for a fix and could prompt for permission. All location access now goes through one place that honours the setting, and the setup wizards start on manual entry with your saved coordinates.
+
 ## [0.19.4] - 2026-07-29
 
 ### Changed
