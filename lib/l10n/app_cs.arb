@@ -713,6 +713,8 @@
   "surveyTrackMap": "Trasa Survey",
   "surveyMapFilterTitle": "Zobrazit na mapě",
   "surveyMapFilterTooltip": "Filtrovat značky",
+  "surveyMapFullscreen": "Mapa na celou obrazovku",
+  "surveyMapRecenter": "Vycentrovat na aktuální pozici",
   "surveyMapFilterChipAll": "Všechny detekce",
   "surveyMapFilterAll": "Všechny detekce",
   "surveyMapFilterWithAudio": "S audiozaznamem",

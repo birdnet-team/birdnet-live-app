@@ -67,6 +67,8 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
     this.initialCenter,
     this.interactionOptions,
     this.tileLayerBuilder,
+    this.mapController,
+    this.highlightVerticalBias = 0,
   });
 
   /// GPS track points.
@@ -103,12 +105,27 @@ class SurveyMapWidget extends ConsumerStatefulWidget {
   /// exercising marker and cluster semantics.
   final WidgetBuilder? tileLayerBuilder;
 
+  /// Optional externally owned map controller. Hosts pass one when they need
+  /// to drive the camera themselves (e.g. the fullscreen live map's
+  /// "recenter on current position" button). When null the widget creates
+  /// and owns its own controller.
+  final MapController? mapController;
+
+  /// Fraction of the map's height by which a newly highlighted detection is
+  /// raised above the camera center. 0 centers the detection exactly; 0.25
+  /// puts it a quarter of the viewport above center so a bottom sheet
+  /// (the clip player) can't cover the marker the user just tapped.
+  final double highlightVerticalBias;
+
   @override
   ConsumerState<SurveyMapWidget> createState() => _SurveyMapWidgetState();
 }
 
 class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
-  final MapController _mapController = MapController();
+  /// Owned only when the host didn't supply one — an externally passed
+  /// controller outlives this state and must not be disposed here.
+  late final MapController _mapController =
+      widget.mapController ?? MapController();
   bool? _hasConsent;
   int _lastTrackLength = 0;
   bool _initialFitDone = false;
@@ -146,12 +163,19 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     super.didUpdateWidget(oldWidget);
     if (!_mapReady) return;
 
-    // Handle highlight change — center on highlighted detection.
+    // Every camera move below is deferred to the end of the frame.
+    // `didUpdateWidget` runs *during* build, and `MapController.move`
+    // synchronously fires `onPositionChanged` — which calls `setState` when
+    // the zoom crosses the dot/silhouette threshold. Calling that mid-build
+    // throws, which used to abort the highlight move half-way through (the
+    // first tap after opening the map landed on the plain center, skipping
+    // the vertical bias, because only that first tap crossed the threshold).
     if (widget.highlightedDetection != null &&
         widget.highlightedDetection != oldWidget.highlightedDetection) {
       final d = widget.highlightedDetection!;
       if (d.latitude != null && d.longitude != null) {
-        _mapController.move(LatLng(d.latitude!, d.longitude!), 18);
+        final target = LatLng(d.latitude!, d.longitude!);
+        _afterFrame(() => _moveToHighlight(target));
       }
       return;
     }
@@ -163,11 +187,46 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
         widget.gpsTrack.isNotEmpty) {
       _lastTrackLength = widget.gpsTrack.length;
       final last = widget.gpsTrack.last;
-      _mapController.move(
-        LatLng(last.latitude, last.longitude),
-        _mapController.camera.zoom,
-      );
+      _afterFrame(() {
+        _mapController.move(
+          LatLng(last.latitude, last.longitude),
+          _mapController.camera.zoom,
+        );
+      });
     }
+  }
+
+  /// Run [action] once the current frame is done, skipping it if this state
+  /// or the map went away in the meantime.
+  void _afterFrame(VoidCallback action) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _mapReady) action();
+    });
+  }
+
+  /// Center the camera on a highlighted detection at [zoom], honouring
+  /// [SurveyMapWidget.highlightVerticalBias].
+  ///
+  /// With a non-zero bias we move twice: once to put the detection at the
+  /// exact center (which gives us a camera whose projection we can query),
+  /// then again onto the point that sits `bias × height` pixels *below* the
+  /// detection. The detection ends up that far above center, clear of the
+  /// clip player sheet that slides in over the bottom of the map. Going
+  /// through [MapCamera.screenOffsetToLatLng] keeps the math correct at any
+  /// zoom, latitude, and map rotation.
+  void _moveToHighlight(LatLng target, {double zoom = 18}) {
+    _mapController.move(target, zoom);
+    final bias = widget.highlightVerticalBias;
+    if (bias <= 0) return;
+    final camera = _mapController.camera;
+    final size = camera.nonRotatedSize;
+    if (!size.height.isFinite || size.height <= 0) return;
+    _mapController.move(
+      camera.screenOffsetToLatLng(
+        size.center(Offset.zero) + Offset(0, size.height * bias),
+      ),
+      zoom,
+    );
   }
 
   void _checkConsent() {
@@ -326,9 +385,10 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
           // Uniform bounding box so audio and silent markers visually match —
           // the corner play badge needs a few extra pixels of padding either
           // way. Slightly larger than the pre-#33 sizes so silhouettes stay
-          // legible when zoomed in.
-          width: isHighlighted ? 56 : 48,
-          height: isHighlighted ? 56 : 48,
+          // legible when zoomed in, and roomy enough for a highlighted
+          // audio marker that also carries the confirmed checkmark.
+          width: isHighlighted ? 60 : 48,
+          height: isHighlighted ? 60 : 48,
           child: SurveyMapMarkerSemantics(
             label: displayName,
             confidence: det.confidence,
@@ -339,13 +399,22 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
                 widget.onMarkerTap != null
                     ? () => widget.onMarkerTap!(det)
                     : null,
-            child: _SpeciesMarker(
-              scientificName: det.scientificName,
-              confidence: det.confidence,
-              isHighlighted: isHighlighted,
-              hasAudio: hasAudio,
-              useDot: useDot,
-              isConfirmed: det.isConfirmed,
+            // The marker box hands its child *tight* constraints, which a
+            // bare sized Container silently inflates to fill (a Container's
+            // width/height lose to tight incoming constraints). That made
+            // silent markers render at the full box size instead of their
+            // intended diameter — and therefore bigger than the audio
+            // markers, whose inner Center already shielded them. Centering
+            // here loosens the constraints for every marker form at once.
+            child: Center(
+              child: _SpeciesMarker(
+                scientificName: det.scientificName,
+                confidence: det.confidence,
+                isHighlighted: isHighlighted,
+                hasAudio: hasAudio,
+                useDot: useDot,
+                isConfirmed: det.isConfirmed,
+              ),
             ),
           ),
         ),
@@ -775,13 +844,14 @@ class _SpeciesMarker extends ConsumerWidget {
       );
     }
 
-    // Silent (no-audio) markers are noticeably smaller than audio ones so
-    // the visual hierarchy reads at a glance — audio detections are the
-    // primary content, silent ones are context. The highlighted size is also
-    // shrunk for silent markers so a stray rebuild can never make a silent
-    // marker visually outweigh an unhighlighted audio one.
+    // Silent (no-audio) markers use a slightly smaller circle than audio
+    // ones so the two forms read as the *same* size on the map: an audio
+    // marker carries a play badge that overhangs its avatar, and without
+    // the 4 px handicap that badge makes it look like the bigger pin.
+    // Ranking still comes through via desaturation, opacity, and the
+    // neutral border — not size.
     final size =
-        isHighlighted ? (hasAudio ? 48.0 : 36.0) : (hasAudio ? 36.0 : 24.0);
+        isHighlighted ? (hasAudio ? 48.0 : 44.0) : (hasAudio ? 36.0 : 32.0);
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =

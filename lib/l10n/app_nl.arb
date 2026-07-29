@@ -727,6 +727,8 @@
   "surveyTrackMap": "Survey Volgen",
   "surveyMapFilterTitle": "Toon op kaart",
   "surveyMapFilterTooltip": "Kaartmarkeringen filteren",
+  "surveyMapFullscreen": "Kaart op volledig scherm",
+  "surveyMapRecenter": "Centreren op je huidige positie",
   "surveyMapFilterChipAll": "Alle detecties",
   "surveyMapFilterAll": "Alle detecties",
   "surveyMapFilterWithAudio": "Met audioclip",

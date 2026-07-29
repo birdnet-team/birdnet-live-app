@@ -729,6 +729,8 @@
   "surveyTrackMap": "Survey-Strecke",
   "surveyMapFilterTitle": "Auf Karte anzeigen",
   "surveyMapFilterTooltip": "Markierungen filtern",
+  "surveyMapFullscreen": "Karte im Vollbild",
+  "surveyMapRecenter": "Auf aktuelle Position zentrieren",
   "surveyMapFilterChipAll": "Alle Detektionen",
   "surveyMapFilterAll": "Alle Detektionen",
   "surveyMapFilterWithAudio": "Mit Audioclip",
