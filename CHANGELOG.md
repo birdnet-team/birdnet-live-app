@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The map during an active survey can now be opened full screen, from the expand button in its top-right corner. The small map keeps following your position as before; the full screen one hands the camera to you, so panning and zooming to look ahead along a transect no longer gets undone by the next GPS fix. A button in the bottom-left corner recenters on your current position when you want it back.
+
+### Fixed
+
+- Detections without an audio clip no longer draw a larger pin on the survey map than the ones with a clip. Their marker was being stretched to fill the space reserved for the largest possible pin, which made a silent detection the most prominent thing on the map. Silent markers now render at their intended size, slightly smaller than a marker with a clip so the play badge on the latter doesn't make it look bigger — the two read as the same size, and audio still stands out through color rather than size.
+- Playing a detection from the full screen survey map in Session Review now keeps its marker in view. The map centered on the detection and the player sheet then covered it; the map now offsets the marker above center, so you can see which detection you are listening to.
+
 ## [0.19.3] - 2026-07-29
 
 ### Fixed

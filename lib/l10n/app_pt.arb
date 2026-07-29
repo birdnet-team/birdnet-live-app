@@ -713,6 +713,8 @@
   "surveyTrackMap": "Percurso do Survey",
   "surveyMapFilterTitle": "Mostrar no mapa",
   "surveyMapFilterTooltip": "Filtrar marcadores",
+  "surveyMapFullscreen": "Mapa em tela cheia",
+  "surveyMapRecenter": "Centralizar na posição atual",
   "surveyMapFilterChipAll": "Todas as detecções",
   "surveyMapFilterAll": "Todas as deteções",
   "surveyMapFilterWithAudio": "Com clipe de áudio",

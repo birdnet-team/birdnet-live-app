@@ -727,6 +727,8 @@
   "surveyTrackMap": "Survey Utwór",
   "surveyMapFilterTitle": "Pokaż na mapie",
   "surveyMapFilterTooltip": "Filtruj znaczniki mapy",
+  "surveyMapFullscreen": "Mapa na pełnym ekranie",
+  "surveyMapRecenter": "Wyśrodkuj na bieżącej pozycji",
   "surveyMapFilterChipAll": "Wszystkie wykrycia",
   "surveyMapFilterAll": "Wszystkie wykrycia",
   "surveyMapFilterWithAudio": "Z klipem dźwiękowym",

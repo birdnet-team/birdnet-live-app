@@ -21,6 +21,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -183,6 +184,43 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         snackBarController.close();
       } catch (_) {}
     });
+  }
+
+  /// Center used before the first GPS fix lands, so the map isn't stranded
+  /// over the default world view while the survey warms up.
+  LatLng? get _mapFallbackCenter =>
+      widget.startLatitude != null && widget.startLongitude != null
+          ? LatLng(widget.startLatitude!, widget.startLongitude!)
+          : null;
+
+  /// Open the clip player for a live detection marker. Shared by the inline
+  /// map tab and the fullscreen map so both surfaces behave identically.
+  /// Returns the sheet's future so callers can refresh once it closes.
+  Future<void> _openLiveClipPlayer(DetectionRecord detection) {
+    return showClipPlayerSheet(
+      context,
+      detection: detection,
+      session: ref.read(surveySessionProvider),
+      onConfirmChanged: () {
+        if (mounted) setState(() {});
+      },
+      onDelete: () => _deleteLiveDetectionWithUndo(detection),
+    );
+  }
+
+  /// Push the fullscreen live map. Unlike the inline map it does not
+  /// auto-follow the GPS position — the user pans and zooms freely for
+  /// navigation and taps the recenter button to jump back.
+  void _openFullscreenLiveMap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (_) => _FullscreenLiveSurveyMapScreen(
+              fallbackCenter: _mapFallbackCenter,
+              onMarkerTap: _openLiveClipPlayer,
+            ),
+      ),
+    );
   }
 
   /// Open the species picker and, on confirm, log a manual observation.
@@ -904,27 +942,47 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       controller: _tabController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        SurveyMapWidget(
-          gpsTrack: controller.gpsTracker?.track ?? [],
-          detections: session?.detections ?? [],
-          initialCenter:
-              widget.startLatitude != null && widget.startLongitude != null
-                  ? LatLng(widget.startLatitude!, widget.startLongitude!)
-                  : null,
-          // Tapping a marker that has a kept clip opens the same
-          // player sheet as the post-session map - so the live and
-          // review surfaces feel like one continuous experience.
-          onMarkerTap: (detection) {
-            showClipPlayerSheet(
-              context,
-              detection: detection,
-              session: session,
-              onConfirmChanged: () {
-                if (mounted) setState(() {});
-              },
-              onDelete: () => _deleteLiveDetectionWithUndo(detection),
-            );
-          },
+        Stack(
+          children: [
+            Positioned.fill(
+              child: SurveyMapWidget(
+                gpsTrack: controller.gpsTracker?.track ?? [],
+                detections: session?.detections ?? [],
+                initialCenter: _mapFallbackCenter,
+                // Tapping a marker that has a kept clip opens the same
+                // player sheet as the post-session map - so the live and
+                // review surfaces feel like one continuous experience.
+                onMarkerTap: (detection) => _openLiveClipPlayer(detection),
+              ),
+            ),
+            // Expand affordance mirroring Session Review's inline map: the
+            // minimized map keeps auto-following the current position, the
+            // fullscreen one hands panning and zooming to the user.
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: theme.colorScheme.surface.withValues(alpha: 0.8),
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _openFullscreenLiveMap,
+                  child: Tooltip(
+                    message: l10n.surveyMapFullscreen,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        AppIcons.fullscreen,
+                        size: 20,
+                        color: theme.colorScheme.onSurface,
+                        semanticLabel: l10n.surveyMapFullscreen,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
@@ -1016,6 +1074,106 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         ],
         const SizedBox(height: 16),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fullscreen Live Survey Map
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Fullscreen version of the live survey map.
+///
+/// The inline map tab keeps the camera pinned to the latest GPS fix, which is
+/// what you want in a glanceable strip but makes the map useless for looking
+/// ahead. This screen turns auto-follow off so the map behaves like a normal
+/// navigation map — pan and zoom stay exactly where the user put them, no
+/// matter how many GPS points arrive — with a recenter button to jump back to
+/// the current position on demand.
+class _FullscreenLiveSurveyMapScreen extends ConsumerStatefulWidget {
+  const _FullscreenLiveSurveyMapScreen({
+    required this.onMarkerTap,
+    this.fallbackCenter,
+  });
+
+  /// Opens the clip player for a tapped detection. Owned by the live screen
+  /// so deletes and confirmations mutate the one running session.
+  final Future<void> Function(DetectionRecord detection) onMarkerTap;
+
+  /// Where to center before the first GPS fix arrives.
+  final LatLng? fallbackCenter;
+
+  @override
+  ConsumerState<_FullscreenLiveSurveyMapScreen> createState() =>
+      _FullscreenLiveSurveyMapScreenState();
+}
+
+class _FullscreenLiveSurveyMapScreenState
+    extends ConsumerState<_FullscreenLiveSurveyMapScreen> {
+  /// Owned here (rather than inside [SurveyMapWidget]) so the recenter
+  /// button can drive the camera.
+  final MapController _mapController = MapController();
+
+  /// Set once the map has been laid out at least once — [MapController]
+  /// throws when used before that.
+  bool _mapReady = false;
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  void _recenter() {
+    if (!_mapReady) return;
+    final track = ref.read(surveyControllerProvider).gpsTracker?.track;
+    final target =
+        track != null && track.isNotEmpty
+            ? LatLng(track.last.latitude, track.last.longitude)
+            : widget.fallbackCenter;
+    if (target == null) return;
+    // Keep the user's zoom when they're already close in; only pull in when
+    // they've zoomed out far enough that the position marker would be lost.
+    final zoom = _mapController.camera.zoom;
+    _mapController.move(target, zoom < 16 ? 17 : zoom);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // Same rebuild signal the live dashboard uses: the session object is
+    // mutated in place, so the per-cycle detections provider is what tells us
+    // new markers and GPS points have landed.
+    ref.watch(surveyDetectionsProvider);
+    final session = ref.watch(surveySessionProvider);
+    final controller = ref.read(surveyControllerProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.surveyTrackMap)),
+      body: SurveyMapWidget(
+        mapController: _mapController,
+        gpsTrack: controller.gpsTracker?.track ?? const [],
+        detections: session?.detections ?? const [],
+        // Free navigation: never yank the camera back to the latest fix.
+        autoFollow: false,
+        initialCenter: widget.fallbackCenter,
+        onMarkerTap: (detection) async {
+          await widget.onMarkerTap(detection);
+          // The sheet can delete the detection; rebuild so its marker goes.
+          if (mounted) setState(() {});
+        },
+        onCameraMove: (_) {
+          if (!_mapReady) _mapReady = true;
+        },
+      ),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: _recenter,
+        tooltip: l10n.surveyMapRecenter,
+        child: const Icon(AppIcons.myLocation),
+      ),
+      // Bottom-left: the OpenStreetMap attribution badge owns the
+      // bottom-right corner of every map in the app.
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }

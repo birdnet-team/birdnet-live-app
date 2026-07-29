@@ -713,6 +713,8 @@
   "surveyTrackMap": "Tracé du relevé",
   "surveyMapFilterTitle": "Afficher sur la carte",
   "surveyMapFilterTooltip": "Filtrer les marqueurs",
+  "surveyMapFullscreen": "Carte en plein écran",
+  "surveyMapRecenter": "Centrer sur la position actuelle",
   "surveyMapFilterChipAll": "Toutes les détections",
   "surveyMapFilterAll": "Toutes les détections",
   "surveyMapFilterWithAudio": "Avec clip audio",

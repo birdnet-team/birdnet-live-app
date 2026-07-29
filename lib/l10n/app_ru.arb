@@ -727,6 +727,8 @@
   "surveyTrackMap": "Survey Трек",
   "surveyMapFilterTitle": "Показать на карте",
   "surveyMapFilterTooltip": "Фильтровать маркеры карты",
+  "surveyMapFullscreen": "Карта на весь экран",
+  "surveyMapRecenter": "Центрировать по текущей позиции",
   "surveyMapFilterChipAll": "Все обнаружения",
   "surveyMapFilterAll": "Все обнаружения",
   "surveyMapFilterWithAudio": "С аудиоклипом",

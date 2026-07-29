@@ -4886,6 +4886,10 @@ class _FullscreenSurveyMapScreenState
             fitAllPoints: true,
             highlightedDetection: _highlight,
             onMarkerTap: _onMarkerTap,
+            // Tapping a marker opens the clip player sheet over the bottom
+            // half of the screen. Raise the focused detection above center
+            // so the sheet never covers the marker being played.
+            highlightVerticalBias: 0.25,
           ),
           // Persistent filter chip — promotes the AppBar action to a
           // first-class on-map affordance so the filter is discoverable
