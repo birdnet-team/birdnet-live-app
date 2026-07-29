@@ -871,7 +871,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Não há vozes selecionáveis para este idioma. Podes adicionar mais nas definições de conversão de texto em voz do teu dispositivo.",
   "settingsHelpAnnouncementsVoice": "As vozes vêm do teu dispositivo, não da app, e a qualidade varia muito. Se a voz predefinida soar robótica ou usar o sotaque errado, escolhe outra aqui. Podes instalar mais vozes nas definições de conversão de texto em voz do teu dispositivo.",
   "settingsAnnouncementsPreview": "Ouvir exemplo",
-  "settingsAnnouncementsRunSetupWizard": "Refazer configuração",
   "settingsAnnouncementsAdvanced": "Avançado",
   "settingsAnnouncementsSpeakerOutputAllowed": "Permitir altifalante do telefone",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Se desativado, os anúncios são ignorados quando não há auscultadores nem altifalante externo ligados. Se ativo, o altifalante do telefone é usado como alternativa — útil para escuta casual em casa, mas conte com um breve silenciamento do microfone em torno de cada anúncio para evitar realimentação.",

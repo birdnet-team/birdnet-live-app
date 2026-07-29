@@ -871,7 +871,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Pro tento jazyk nejsou k dispozici žádné hlasy. Další můžete přidat v nastavení převodu textu na řeč ve svém zařízení.",
   "settingsHelpAnnouncementsVoice": "Hlasy pocházejí z vašeho zařízení, ne z aplikace, a jejich kvalita se hodně liší. Pokud výchozí hlas zní roboticky nebo používá špatný přízvuk, vyberte zde jiný. Další hlasy můžete nainstalovat v nastavení převodu textu na řeč ve svém zařízení.",
   "settingsAnnouncementsPreview": "Přehrát ukázku",
-  "settingsAnnouncementsRunSetupWizard": "Spustit nastavení znovu",
   "settingsAnnouncementsAdvanced": "Pokročilé",
   "settingsAnnouncementsSpeakerOutputAllowed": "Povolit reproduktor telefonu",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Když je vypnuto, oznámení se přeskakují bez sluchátek nebo externího reproduktoru. Když je zapnuto, slouží reproduktor telefonu jako záloha — hodí se doma, počítejte s krátkým ztišením mikrofonu kolem každého oznámení proti zpětné vazbě.",

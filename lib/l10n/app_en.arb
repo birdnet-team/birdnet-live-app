@@ -3751,8 +3751,6 @@
   "@settingsHelpAnnouncementsVoice": {"description": "Long-form help for the voice picker"},
   "settingsAnnouncementsPreview": "Speak a sample",
   "@settingsAnnouncementsPreview": {"description": "Button: speak a sample utterance with current settings"},
-  "settingsAnnouncementsRunSetupWizard": "Run setup again",
-  "@settingsAnnouncementsRunSetupWizard": {"description": "Button: re-run the announcements setup wizard"},
   "settingsAnnouncementsAdvanced": "Advanced",
   "@settingsAnnouncementsAdvanced": {"description": "Disclosure heading for advanced numeric settings"},
   "settingsAnnouncementsSpeakerOutputAllowed": "Allow phone speaker",

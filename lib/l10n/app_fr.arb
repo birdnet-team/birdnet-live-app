@@ -871,7 +871,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Aucune voix disponible pour cette langue. Tu peux en ajouter dans les réglages de synthèse vocale de ton appareil.",
   "settingsHelpAnnouncementsVoice": "Les voix proviennent de ton appareil, pas de l'app, et leur qualité varie beaucoup. Si la voix par défaut sonne robotique ou utilise le mauvais accent, choisis-en une autre ici. Tu peux installer d'autres voix dans les réglages de synthèse vocale de ton appareil.",
   "settingsAnnouncementsPreview": "Tester un exemple",
-  "settingsAnnouncementsRunSetupWizard": "Relancer la configuration",
   "settingsAnnouncementsAdvanced": "Avancé",
   "settingsAnnouncementsSpeakerOutputAllowed": "Autoriser le haut-parleur du téléphone",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Désactivé : les annonces sont sautées sans écouteurs ou haut-parleur externe. Activé : le haut-parleur sert de repli — pratique pour une écoute occasionnelle, attendez-vous à une brève coupure du micro autour de chaque énoncé pour éviter le retour.",

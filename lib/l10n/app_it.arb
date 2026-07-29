@@ -871,7 +871,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Nessuna voce selezionabile per questa lingua. Puoi aggiungerne altre nelle impostazioni di sintesi vocale del dispositivo.",
   "settingsHelpAnnouncementsVoice": "Le voci provengono dal tuo dispositivo, non dall'app, e la loro qualità varia molto. Se la voce predefinita suona robotica o usa l'accento sbagliato, scegline un'altra qui. Puoi installare altre voci nelle impostazioni di sintesi vocale del dispositivo.",
   "settingsAnnouncementsPreview": "Prova un esempio",
-  "settingsAnnouncementsRunSetupWizard": "Riapri la configurazione",
   "settingsAnnouncementsAdvanced": "Avanzato",
   "settingsAnnouncementsSpeakerOutputAllowed": "Consenti altoparlante del telefono",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Se disattivo, gli annunci vengono saltati senza cuffie o altoparlante esterno. Se attivo, l'altoparlante del telefono fa da fallback — comodo in casa, prevedi un breve silenziamento del microfono attorno a ogni annuncio per evitare il rientro.",

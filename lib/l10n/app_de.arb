@@ -871,7 +871,6 @@
   "settingsAnnouncementsVoiceUnavailable": "Keine wählbaren Stimmen für diese Sprache. Weitere können Sie in den Text-in-Sprache-Einstellungen Ihres Geräts hinzufügen.",
   "settingsHelpAnnouncementsVoice": "Die Stimmen stammen vom Gerät, nicht von der App, und ihre Qualität schwankt stark. Klingt die Standardstimme roboterhaft oder nutzt den falschen Akzent, wählen Sie hier eine andere. Weitere Stimmen können Sie in den Text-in-Sprache-Einstellungen Ihres Geräts installieren.",
   "settingsAnnouncementsPreview": "Beispiel sprechen",
-  "settingsAnnouncementsRunSetupWizard": "Einrichtung erneut starten",
   "settingsAnnouncementsAdvanced": "Erweitert",
   "settingsAnnouncementsSpeakerOutputAllowed": "Telefonlautsprecher erlauben",
   "settingsHelpAnnouncementsSpeakerOutputAllowed": "Wenn aus, werden Ansagen übersprungen, falls keine Kopfhörer oder externer Lautsprecher angeschlossen sind. Wenn an, dient der Telefonlautsprecher als Fallback — praktisch zu Hause, das Mikrofon wird dann pro Ansage kurz stummgeschaltet, um Rückkopplung zu vermeiden.",
