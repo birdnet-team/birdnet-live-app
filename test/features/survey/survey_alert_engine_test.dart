@@ -105,10 +105,7 @@ void main() {
         minConfidence: 0.0,
         globalHistory: emptyHistory,
       );
-      expect(
-        engine.evaluate(det(name: ''), firstInSession: true),
-        isNull,
-      );
+      expect(engine.evaluate(det(name: ''), firstInSession: true), isNull);
     });
 
     test('firstInSession mode fires once and reports correct reason', () {
@@ -124,25 +121,27 @@ void main() {
       expect(c.commonName, 'Eurasian Blackbird');
     });
 
-    test('firstEver fires only when species absent from global history',
-        () async {
-      final prefs = await SharedPreferences.getInstance();
-      final history = GlobalSpeciesHistory(prefs)..load();
-      await history.add('Turdus merula');
+    test(
+      'firstEver fires only when species absent from global history',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        final history = GlobalSpeciesHistory(prefs)..load();
+        await history.add('Turdus merula');
 
-      final engine = SurveyAlertEngine(
-        mode: AlertMode.firstEver,
-        minConfidence: 0.0,
-        globalHistory: history,
-      );
-      expect(engine.evaluate(det(), firstInSession: true), isNull);
-      final c = engine.evaluate(
-        det(name: 'Parus major'),
-        firstInSession: true,
-      );
-      expect(c, isNotNull);
-      expect(c!.reason, AlertReason.firstEver);
-    });
+        final engine = SurveyAlertEngine(
+          mode: AlertMode.firstEver,
+          minConfidence: 0.0,
+          globalHistory: history,
+        );
+        expect(engine.evaluate(det(), firstInSession: true), isNull);
+        final c = engine.evaluate(
+          det(name: 'Parus major'),
+          firstInSession: true,
+        );
+        expect(c, isNotNull);
+        expect(c!.reason, AlertReason.firstEver);
+      },
+    );
 
     test('rare mode fires when geoScore below threshold', () {
       final engine = SurveyAlertEngine(
@@ -157,10 +156,7 @@ void main() {
       );
       expect(engine.evaluate(det(), firstInSession: true), isNull);
 
-      final c = engine.evaluate(
-        det(name: 'Parus major'),
-        firstInSession: true,
-      );
+      final c = engine.evaluate(det(name: 'Parus major'), firstInSession: true);
       expect(c, isNotNull);
       expect(c!.reason, AlertReason.rare);
       expect(c.geoScore, 0.02);
@@ -201,10 +197,7 @@ void main() {
         watchlist: const {'Parus major'},
       );
       expect(engine.evaluate(det(), firstInSession: true), isNull);
-      final c = engine.evaluate(
-        det(name: 'Parus major'),
-        firstInSession: true,
-      );
+      final c = engine.evaluate(det(name: 'Parus major'), firstInSession: true);
       expect(c, isNotNull);
       expect(c!.reason, AlertReason.watchlist);
     });

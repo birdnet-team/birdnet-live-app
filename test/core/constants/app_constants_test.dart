@@ -25,7 +25,17 @@ void main() {
 
   group('policyDocsLocalePrefix (privacy / acceptable use)', () {
     test('returns a prefix for every locale with a translated policy', () {
-      for (final loc in ['de', 'cs', 'es', 'fr', 'it', 'pt', 'nl', 'pl', 'ru']) {
+      for (final loc in [
+        'de',
+        'cs',
+        'es',
+        'fr',
+        'it',
+        'pt',
+        'nl',
+        'pl',
+        'ru',
+      ]) {
         expect(AppConstants.policyDocsLocalePrefix(loc), '/$loc');
       }
     });

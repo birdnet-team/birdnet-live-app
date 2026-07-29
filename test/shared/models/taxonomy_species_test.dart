@@ -188,7 +188,7 @@ void main() {
       expect(
         sp.ebirdListenUrl,
         'https://media.ebird.org/catalog?taxonCode=gretit1'
-            '&mediaType=audio&sort=rating_rank_desc',
+        '&mediaType=audio&sort=rating_rank_desc',
       );
     });
 

@@ -44,8 +44,7 @@ void main() {
             expect(
               windowSeconds,
               closeTo(seconds, 0.05),
-              reason:
-                  'fftSize $fftSize, quality $quality, ${seconds}s window',
+              reason: 'fftSize $fftSize, quality $quality, ${seconds}s window',
             );
           }
         }
@@ -55,9 +54,7 @@ void main() {
     test('fftSize does not change the column grid', () {
       final grids =
           fftSizes
-              .map(
-                (f) => SpectrogramTimebase(displaySeconds: 15, fftSize: f),
-              )
+              .map((f) => SpectrogramTimebase(displaySeconds: 15, fftSize: f))
               .toList();
 
       for (final tb in grids.skip(1)) {
