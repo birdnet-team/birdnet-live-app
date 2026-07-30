@@ -242,10 +242,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// Open the species picker and, on confirm, log a manual observation.
   ///
   /// Manual entries get [DetectionSource.manual], a 1.0 confidence, the
-  /// current GPS fix (if available), and "now" as their timestamp. They
-  /// surface immediately in the live detection list and on the map, and are
-  /// visually distinguished by a small `edit_note` chip + "manual" badge
-  /// everywhere a [DetectionRecord] is rendered.
+  /// current GPS fix (if available), "now" as their timestamp, and whichever
+  /// heard / seen evidence the user ticked in the picker. They surface
+  /// immediately in the live detection list and on the map, and are visually
+  /// distinguished by a small `edit_note` chip + "manual" badge (plus the
+  /// hearing / visibility glyphs) everywhere a [DetectionRecord] is rendered.
   Future<void> _addManualObservation() async {
     if (!mounted) return;
     final controller = ref.read(surveyControllerProvider);
@@ -275,6 +276,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final record = await controller.addManualDetection(
       scientificName: result.scientificName,
       commonName: result.commonName,
+      evidence: result.evidence,
+      userSpecified: result.userSpecified,
     );
     if (record == null || !mounted) return;
     setState(() {});

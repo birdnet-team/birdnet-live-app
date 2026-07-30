@@ -143,12 +143,19 @@ final currentLocationProvider = FutureProvider<AppLocation?>((ref) async {
 // ---------------------------------------------------------------------------
 
 /// Singleton [TaxonomyService] loaded from the bundled CSV.
+///
+/// Loaded as bytes rather than via `loadString`: the decode *and* the parse
+/// then happen together on one background isolate, and the ~11 MB string never
+/// has to exist on the main isolate — where `CachingAssetBundle` would also
+/// hold on to it for the rest of the process.
 final taxonomyServiceProvider = FutureProvider<TaxonomyService>((ref) async {
   final service = TaxonomyService();
-  final csvContent = await rootBundle.loadString(
+  final csvBytes = await rootBundle.load(
     '${AppConstants.modelAssetsDir}/taxonomy.csv',
   );
-  service.loadFromCsv(csvContent);
+  await service.loadFromCsvBytes(
+    csvBytes.buffer.asUint8List(csvBytes.offsetInBytes, csvBytes.lengthInBytes),
+  );
   return service;
 });
 

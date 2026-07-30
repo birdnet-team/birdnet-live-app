@@ -93,12 +93,24 @@ Trimming is metadata-only — the original recording is not modified:
 
 ## Add Species Overlay
 
-`_AddSpeciesOverlay` is a full-screen route using `TaxonomyService.search()`:
+`AddSpeciesOverlay` is a full-screen route using `TaxonomyService.search()`:
 
 - **Search**: real-time substring match on common + scientific names (limit 30).
 - **Insert modes**: global (at session start), at timestamp (playhead position), replace (swaps an existing detection).
+- **Confirm step**: tapping a result (or finishing the "Other (specify)" dialog) opens `_ConfirmSpeciesSheet` rather than popping the route. The sheet previews the chosen species and carries two independent heard / seen checkboxes, collapsed into a `DetectionEvidence?` on confirm (`heard`, `seen`, `heardAndSeen`, or `null` when neither box is ticked). Cancelling returns to the search. Checkbox state lives on `_AddSpeciesOverlayState`, so it survives a cancel and carries over to the next species; it defaults to *heard*, or seeds from the target record in a locked replace.
 - **Unknown/Other**: quick action using `DetectionRecord.unknownSpeciesName`.
-- Returns `_AddSpeciesResult` with the chosen species and mode.
+- Returns `AddSpeciesResult` with the chosen species, mode, and evidence.
+
+`DetectionRecord.evidence` is only ever set on manual records. Consumers must
+read `null` as *not specified* rather than *neither heard nor seen* — model
+detections, sessions saved before the field existed, and manual entries with
+both boxes clear all share that state. The shared hearing / visibility
+iconography lives in `DetectionEvidenceBadge`
+(`lib/shared/widgets/detection_evidence_badge.dart`), whose `aggregateEvidence()`
+helper ORs the flags for rows that stand in for several records (species
+headers, clustered timestamp rows). Exports surface the field as an `Evidence`
+column (CSV / Raven, values `heard`, `seen`, `heard+seen`, emitted only when
+some detection carries one) and as an `evidence` key in JSON.
 
 ## Annotations
 

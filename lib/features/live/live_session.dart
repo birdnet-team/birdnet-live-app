@@ -340,6 +340,51 @@ enum DetectionSource {
   userSpecified,
 }
 
+/// What the user based a manually-entered observation on.
+///
+/// Only ever set on records the user added by hand (any of the manual
+/// [DetectionSource] values). Model detections leave it `null` — the model
+/// only ever "hears" a bird, so tagging them would add no information — and
+/// so do sessions recorded before this field existed.
+enum DetectionEvidence {
+  /// The user heard the bird but did not see it.
+  heard,
+
+  /// The user saw the bird but did not hear it.
+  seen,
+
+  /// The user both heard and saw the bird.
+  heardAndSeen;
+
+  /// Whether this evidence includes an acoustic observation.
+  bool get includesHeard => this != seen;
+
+  /// Whether this evidence includes a visual observation.
+  bool get includesSeen => this != heard;
+
+  /// Collapse two independent checkbox states into an evidence value.
+  ///
+  /// Returns `null` when neither box is ticked — "evidence not specified",
+  /// which is the same state legacy manual records are in.
+  static DetectionEvidence? fromFlags({
+    required bool heard,
+    required bool seen,
+  }) {
+    if (heard && seen) return DetectionEvidence.heardAndSeen;
+    if (heard) return DetectionEvidence.heard;
+    if (seen) return DetectionEvidence.seen;
+    return null;
+  }
+
+  /// Parse a persisted [name], tolerating null / unknown values.
+  static DetectionEvidence? fromName(String? name) => switch (name) {
+    'heard' => DetectionEvidence.heard,
+    'seen' => DetectionEvidence.seen,
+    'heardAndSeen' => DetectionEvidence.heardAndSeen,
+    _ => null,
+  };
+}
+
 /// A timestamped detection record for session persistence.
 ///
 /// Unlike [Detection] (which holds a full [Species] object), this stores
@@ -354,6 +399,7 @@ class DetectionRecord {
     this.audioClipPath,
     this.clipTimestamp,
     this.source = DetectionSource.auto,
+    this.evidence,
     this.latitude,
     this.longitude,
     this.confirmedAt,
@@ -412,6 +458,21 @@ class DetectionRecord {
 
   /// How this detection was created.
   final DetectionSource source;
+
+  /// What the user based this observation on — heard, seen, or both.
+  ///
+  /// Only meaningful for manually-entered records; `null` for model
+  /// detections, for legacy manual records saved before the heard/seen
+  /// checkboxes existed, and whenever the user left both boxes unticked.
+  /// Consumers must treat `null` as "not specified" rather than "not
+  /// heard and not seen".
+  final DetectionEvidence? evidence;
+
+  /// Convenience: whether the user recorded an acoustic observation.
+  bool get wasHeard => evidence?.includesHeard ?? false;
+
+  /// Convenience: whether the user recorded a visual observation.
+  bool get wasSeen => evidence?.includesSeen ?? false;
 
   /// GPS latitude at the time of detection (null if unavailable).
   final double? latitude;
@@ -504,6 +565,7 @@ class DetectionRecord {
         'userSpecified' => DetectionSource.userSpecified,
         _ => DetectionSource.auto,
       },
+      evidence: DetectionEvidence.fromName(json['evidence'] as String?),
       latitude: (json['detLat'] as num?)?.toDouble(),
       longitude: (json['detLon'] as num?)?.toDouble(),
       confirmedAt:
@@ -527,6 +589,7 @@ class DetectionRecord {
     if (audioClipPath != null && clipTimestamp != null)
       'clipTimestamp': clipTimestamp!.toUtc().toIso8601String(),
     if (source != DetectionSource.auto) 'source': source.name,
+    if (evidence != null) 'evidence': evidence!.name,
     if (latitude != null) 'detLat': latitude,
     if (longitude != null) 'detLon': longitude,
     if (confirmedAt != null)
@@ -1098,6 +1161,7 @@ class LiveSession {
       audioClipPath: r.audioClipPath,
       clipTimestamp: r.clipTimestamp,
       source: r.source,
+      evidence: r.evidence,
       latitude: r.latitude,
       longitude: r.longitude,
       confirmedAt: r.confirmedAt,

@@ -6,6 +6,9 @@
 // API enrichment tests are skipped (network-dependent).
 // =============================================================================
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -84,6 +87,20 @@ void main() {
       service.loadFromCsv(_testCsvQuoted);
       expect(service.speciesCount, 1);
       expect(service.lookup('Parus major'), isNull);
+    });
+
+    test('decodes and parses bytes on a background isolate', () async {
+      final service = TaxonomyService();
+
+      await service.loadFromCsvBytes(
+        Uint8List.fromList(utf8.encode(_testCsvQuoted)),
+      );
+
+      expect(service.speciesCount, 1);
+      expect(
+        service.lookup('Strix aluco')?.commonNameAlt,
+        'Brown Owl, Eurasian Tawny Owl',
+      );
     });
   });
 

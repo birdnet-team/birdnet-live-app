@@ -36,6 +36,17 @@ Un champ de recherche au-dessus de la liste filtre les espèces par nom commun o
 
 Le tri choisi est conservé d'une session à l'autre.
 
+### Ajouter une espèce à la main
+
+Le bouton :material-plus-circle-outline: de la barre d'outils ouvre le sélecteur d'espèces pour les oiseaux que BirdNET a manqués. Toucher un résultat ne l'insère pas immédiatement : une fiche de confirmation apparaît d'abord, avec l'espèce choisie et deux cases à cocher :
+
+- :material-ear-hearing: **Entendu** — vous avez entendu l'oiseau.
+- :material-eye: **Vu** — vous avez vu l'oiseau.
+
+Cochez l'une, les deux ou aucune, puis touchez **Ajouter**. **Annuler** — ou un glissement vers le bas — vous ramène à la recherche : une erreur de doigt ne coûte rien. **Entendu** est coché par défaut, et votre choix est conservé pour l'espèce suivante : une série d'oiseaux seulement vus ne demande de cocher **Vu** qu'une fois. Si vous laissez les deux vides, l'entrée est enregistrée sans type d'observation, et non comme « ni l'un ni l'autre ».
+
+Le choix est stocké sur la détection et affiché sous forme d'une petite oreille et/ou d'un œil à côté du badge « manuel », partout où cette détection apparaît : en-têtes d'espèce, lignes de grappe, lecteur de clip et liste du survey en direct. Il se retrouve aussi dans les exports : colonne `Evidence` dans les CSV et les tables Raven, champ `evidence` en JSON, et pastille dans le rapport HTML. La même fiche apparaît lors d'un **Remplacer l'espèce**, pré-remplie avec ce que l'enregistrement portait déjà.
+
 ### Actions par détection
 
 Partout où une détection apparaît — la liste des espèces, le lecteur de clips, la liste du relevé en direct et les marqueurs de la carte du relevé — le même ensemble d'actions est utilisé :

@@ -2,8 +2,10 @@
 // HTML Session Report
 // =============================================================================
 //
-// Builds a self-contained `report.html` document that ships at the root of
-// the export ZIP next to the audio clips. Open it in any browser after the
+// Builds a self-contained `<session>_report.html` document that ships at the
+// root of the export ZIP next to the audio clips. The session-name prefix
+// keeps reports from colliding when several archives are extracted into the
+// same folder. Open it in any browser after the
 // archive is unzipped - the page is fully styled, prints cleanly, and lays
 // out everything a reviewer needs at a glance:
 //
@@ -548,6 +550,20 @@ section.card h2 {
   font-weight: 600;
   background: var(--primary-dim);
   color: var(--primary);
+}
+/* Heard / seen pill on manually-entered occurrences. Neutral surface
+   rather than the primary tint used by .occ-confirmed, so provenance
+   reads as secondary to the confirm state. */
+.occ-evidence {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-muted);
 }
 .occ-note {
   margin-top: 6px;
@@ -1278,6 +1294,17 @@ String _buildDetectionsHtml(
       } else {
         buf.writeln(
           '          <span style="color:var(--text-muted)">${_esc(relText)}</span>',
+        );
+      }
+      final evidenceText = switch (d.evidence) {
+        DetectionEvidence.heard => 'Heard',
+        DetectionEvidence.seen => 'Seen',
+        DetectionEvidence.heardAndSeen => 'Heard and seen',
+        null => null,
+      };
+      if (evidenceText != null) {
+        buf.writeln(
+          '          <span class="occ-evidence">${_esc(evidenceText)}</span>',
         );
       }
       if (d.isConfirmed) {

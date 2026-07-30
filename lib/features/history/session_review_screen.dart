@@ -77,6 +77,7 @@ import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
+import '../../shared/widgets/detection_evidence_badge.dart';
 import '../../shared/widgets/stat_chip.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
@@ -2337,6 +2338,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   result.userSpecified
                       ? DetectionSource.userSpecified
                       : DetectionSource.manualGlobal,
+              evidence: result.evidence,
             ),
           );
           break;
@@ -2360,6 +2362,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   result.userSpecified
                       ? DetectionSource.userSpecified
                       : DetectionSource.manual,
+              evidence: result.evidence,
             ),
           );
           break;
@@ -2380,6 +2383,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     result.userSpecified
                         ? DetectionSource.userSpecified
                         : DetectionSource.manual,
+                evidence: result.evidence,
                 confirmedAt: result.replaceRecord!.confirmedAt,
                 note: result.replaceRecord!.note,
                 voiceMemoPath: result.replaceRecord!.voiceMemoPath,
@@ -3668,6 +3672,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 result.userSpecified
                     ? DetectionSource.userSpecified
                     : DetectionSource.manual,
+            evidence: result.evidence,
             confirmedAt: result.replaceRecord!.confirmedAt,
             note: result.replaceRecord!.note,
             voiceMemoPath: result.replaceRecord!.voiceMemoPath,

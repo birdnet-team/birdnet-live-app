@@ -891,11 +891,15 @@ class SurveyController {
   /// log birds they saw or heard but BirdNET didn't detect (or before/after
   /// inference would catch them). The record:
   ///
-  ///   - Has [DetectionSource.manual] so it's clearly distinguishable from
-  ///     model detections everywhere it's rendered or exported.
+  ///   - Has [DetectionSource.manual] — or [DetectionSource.userSpecified]
+  ///     when the label was typed via "Other (specify)" rather than picked
+  ///     from the taxonomy — so it's clearly distinguishable from model
+  ///     detections everywhere it's rendered or exported.
   ///   - Carries confidence 1.0 (manual entries are by definition certain
   ///     from the user's point of view).
   ///   - Is timestamped to the moment the user confirms the entry.
+  ///   - Carries the heard / seen [evidence] the user ticked in the picker,
+  ///     or null when they ticked neither.
   ///   - Is tagged from [SurveyGpsTracker.lastPoint] when available, falling
   ///     back to the session's fixed coordinates when GPS is disabled.
   ///   - Skips the [DetectionSampler] (manuals are always kept) and the alert
@@ -907,6 +911,8 @@ class SurveyController {
   Future<DetectionRecord?> addManualDetection({
     required String scientificName,
     required String commonName,
+    DetectionEvidence? evidence,
+    bool userSpecified = false,
   }) async {
     if (_session == null) return null;
     final gpsPoint = _gpsTracker?.lastPoint;
@@ -915,7 +921,11 @@ class SurveyController {
       commonName: commonName,
       confidence: 1.0,
       timestamp: DateTime.now(),
-      source: DetectionSource.manual,
+      source:
+          userSpecified
+              ? DetectionSource.userSpecified
+              : DetectionSource.manual,
+      evidence: evidence,
       latitude: gpsPoint?.latitude ?? _session!.latitude,
       longitude: gpsPoint?.longitude ?? _session!.longitude,
     );
