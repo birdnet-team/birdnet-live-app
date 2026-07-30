@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- previewLayout (API 31+) renders the real tile in the widget picker;
+     previewImage is the pre-31 fallback. Resizing is horizontal only — the
+     tile is a single row of content, so extra height would only stretch
+     empty surface. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/quick_listen_widget"
+    android:previewLayout="@layout/quick_listen_widget"
+    android:description="@string/quick_listen_widget_description"
+    android:resizeMode="horizontal"
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher" />

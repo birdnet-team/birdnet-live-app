@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.19.5] - 2026-07-29
 
+### Added
+
+- Added a "Quick Listen" home-screen widget (Android), in 2x1 and 1x1 sizes, that jumps straight into Live Mode and starts listening. It leaves a running ARU deployment and an already-open Live Mode session alone.
+
 ### Fixed
 
 - The app no longer triggers Google's "turn on location services" dialog. Location fixes now come from Android's own location provider instead of the Play Services one, which pops that dialog on every request when you have declined Google Location Accuracy — a system dialog the app cannot suppress. GPS may take a little longer to get a first fix indoors; outdoors it is unchanged.

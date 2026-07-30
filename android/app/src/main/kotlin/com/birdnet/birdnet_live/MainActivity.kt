@@ -23,14 +23,19 @@ class MainActivity: FlutterActivity() {
     private val ARU_NOTIFICATION_CHANNEL = "com.birdnet/aru_notification"
     private val ARU_NOTIFICATION_INTENTS_CHANNEL = "com.birdnet/aru_notification_intents"
     private val ARU_NOTIFICATION_ACTION_EXTRA = "com.birdnet.aru_notification_action"
+    private val QUICK_ACTION_INTENTS_CHANNEL = "com.birdnet/quick_action_intents"
+    private val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var activeDecodeJob: Job? = null
     private var pendingAruNotificationAction: String? = null
     private var aruNotificationIntentChannel: MethodChannel? = null
+    private var pendingQuickAction: String? = null
+    private var quickActionIntentChannel: MethodChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         captureAruNotificationAction(intent)
+        captureQuickAction(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
@@ -38,6 +43,7 @@ class MainActivity: FlutterActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         captureAruNotificationAction(intent)
+        captureQuickAction(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
@@ -94,6 +100,29 @@ class MainActivity: FlutterActivity() {
                         val action = call.arguments as? String
                         if (pendingAruNotificationAction == action) {
                             pendingAruNotificationAction = null
+                        }
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        }
+
+        quickActionIntentChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            QUICK_ACTION_INTENTS_CHANNEL
+        ).also { channel ->
+            channel.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "takePendingAction" -> {
+                        val action = pendingQuickAction
+                        pendingQuickAction = null
+                        result.success(action)
+                    }
+                    "clearPendingAction" -> {
+                        val action = call.arguments as? String
+                        if (pendingQuickAction == action) {
+                            pendingQuickAction = null
                         }
                         result.success(null)
                     }
@@ -301,6 +330,7 @@ class MainActivity: FlutterActivity() {
 
     override fun onDestroy() {
         aruNotificationIntentChannel = null
+        quickActionIntentChannel = null
         scope.cancel()
         super.onDestroy()
     }
@@ -310,6 +340,13 @@ class MainActivity: FlutterActivity() {
         pendingAruNotificationAction = action
         aruNotificationIntentChannel?.invokeMethod("onNotificationAction", action)
         intent.removeExtra(ARU_NOTIFICATION_ACTION_EXTRA)
+    }
+
+    private fun captureQuickAction(intent: Intent?) {
+        val action = intent?.getStringExtra(QUICK_ACTION_EXTRA) ?: return
+        pendingQuickAction = action
+        quickActionIntentChannel?.invokeMethod("onQuickAction", action)
+        intent.removeExtra(QUICK_ACTION_EXTRA)
     }
 
     private fun updateAruNotification(args: Map<String, Any?>) {

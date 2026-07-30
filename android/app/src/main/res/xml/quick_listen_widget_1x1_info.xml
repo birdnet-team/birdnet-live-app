@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- See quick_listen_widget_info.xml for the preview/resize rationale. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="40dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="1"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/quick_listen_widget_1x1"
+    android:previewLayout="@layout/quick_listen_widget_1x1"
+    android:description="@string/quick_listen_widget_1x1_description"
+    android:resizeMode="none"
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher" />

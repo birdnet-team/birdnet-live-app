@@ -65,6 +65,31 @@
             android:foregroundServiceType="microphone|location"
             android:stopWithTask="true"
             android:exported="false" />
+        <!-- Home-screen "Quick Listen" widget. See QuickListenWidgetProvider.kt. -->
+        <receiver
+            android:name=".QuickListenWidgetProvider"
+            android:exported="false"
+            android:label="@string/quick_listen_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_listen_widget_info" />
+        </receiver>
+        <!-- Compact 1x1 "Quick Listen" widget. Same click behavior, smaller
+             icon-only layout. See QuickListenWidgetProvider.kt. -->
+        <receiver
+            android:name=".QuickListenWidgetProviderCompact"
+            android:exported="false"
+            android:label="@string/quick_listen_widget_1x1_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_listen_widget_1x1_info" />
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

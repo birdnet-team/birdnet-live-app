@@ -46,9 +46,39 @@ import 'widgets/detection_list_widget.dart';
 // with no AppBar — edge-to-edge with SafeArea only at top/bottom.
 // =============================================================================
 
+/// Tracks whether a [LiveScreen] instance is currently mounted, so other
+/// parts of the app (the Quick Listen widget's launch handler) can tell
+/// "the user is already looking at Live Mode" from "a session is active/
+/// paused but the user is elsewhere" without walking the navigator's route
+/// stack.
+///
+/// Counted rather than a plain bool: replacing one Live Mode route with
+/// another (`pushAndRemoveUntil`) mounts the incoming screen before the
+/// outgoing one is disposed, so a bool would be left reading `false` while
+/// Live Mode is on screen.
+abstract final class LiveScreenPresence {
+  static int _mountedCount = 0;
+
+  static bool get isMounted => _mountedCount > 0;
+
+  static void register() => _mountedCount++;
+
+  static void unregister() {
+    if (_mountedCount > 0) _mountedCount--;
+  }
+}
+
 /// Live mode screen — real-time species identification.
 class LiveScreen extends ConsumerStatefulWidget {
-  const LiveScreen({super.key});
+  const LiveScreen({super.key, this.forceAutoStart = false});
+
+  /// One-shot override that starts a session as soon as the model is
+  /// ready, regardless of the persistent [liveAutoStartProvider] setting.
+  /// Used by the Quick Listen home-screen widget so tapping it always
+  /// starts listening without silently flipping the user's saved
+  /// preference. Guarded by the same [_autoStartAttempted] single-attempt
+  /// latch as the persistent setting.
+  final bool forceAutoStart;
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
@@ -77,6 +107,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   @override
   void initState() {
     super.initState();
+    LiveScreenPresence.register();
     WidgetsBinding.instance.addObserver(this);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
@@ -162,7 +193,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         !_autoStartAttempted &&
         !_isStarting &&
         controller.state == LiveState.ready &&
-        ref.read(liveAutoStartProvider)) {
+        (widget.forceAutoStart || ref.read(liveAutoStartProvider))) {
       _autoStartAttempted = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted) _toggleSession();
@@ -333,6 +364,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void dispose() {
+    LiveScreenPresence.unregister();
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
 
@@ -357,7 +389,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // Only [paused] means the app is actually backgrounded. [inactive] also
     // fires for transient interruptions that leave the app on screen — the
     // rotation transition under auto-rotate, the app switcher, Control
-    // Center, an incoming call — and must not tear down a live recording.
+    // Center, an incoming call, and the task-to-front blip when the Quick
+    // Listen widget or an ARU notification action relaunches an app that is
+    // already in the foreground — and must not tear down a live recording.
     if (state == AppLifecycleState.paused) {
       _enqueueLifecycleTransition(_pauseSessionForBackground);
     } else if (state == AppLifecycleState.resumed) {

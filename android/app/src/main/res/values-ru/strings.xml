@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_listen_widget_label">Быстрое прослушивание</string>
+    <string name="quick_listen_widget_description">Перейти сразу в Live Mode и начать прослушивание.</string>
+    <string name="quick_listen_widget_button">Начать прослушивание</string>
+    <string name="quick_listen_widget_1x1_label">Быстрое прослушивание (компактное)</string>
+    <string name="quick_listen_widget_1x1_description">Небольшая плитка только со значком — нажмите, чтобы сразу перейти в Live Mode и начать прослушивание.</string>
+</resources>
