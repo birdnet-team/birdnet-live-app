@@ -354,28 +354,54 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = ref.read(liveControllerProvider);
-
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      // App going to background — pause session to stop recording/inference.
-      if (controller.state == LiveState.active) {
-        _pauseSessionForBackground();
-      }
+    // Only [paused] means the app is actually backgrounded. [inactive] also
+    // fires for transient interruptions that leave the app on screen — the
+    // rotation transition under auto-rotate, the app switcher, Control
+    // Center, an incoming call — and must not tear down a live recording.
+    if (state == AppLifecycleState.paused) {
+      _enqueueLifecycleTransition(_pauseSessionForBackground);
     } else if (state == AppLifecycleState.resumed) {
-      // App returning to foreground — resume if we paused for background.
-      if (controller.state == LiveState.paused && _pausedByLifecycle) {
-        _resumeSessionFromBackground();
-      }
+      _enqueueLifecycleTransition(_resumeSessionFromBackground);
     }
   }
 
   bool _pausedByLifecycle = false;
 
+  /// Tail of the serialized lifecycle pause/resume chain.
+  Future<void> _lifecycleTransition = Future<void>.value();
+
+  /// Queue a lifecycle transition behind any still-running one.
+  ///
+  /// Pausing spans an await (tearing down audio capture) during which the
+  /// controller still reports [LiveState.active]. A quick background→
+  /// foreground bounce would otherwise let the resume observe that stale
+  /// state, skip itself, and strand the session paused with no further
+  /// lifecycle event coming. Serializing makes each transition read the
+  /// state its predecessor actually left behind.
+  void _enqueueLifecycleTransition(Future<void> Function() transition) {
+    _lifecycleTransition = _lifecycleTransition.then((_) async {
+      if (!mounted) return;
+      try {
+        await transition();
+      } catch (e, stack) {
+        // A throwing transition must not poison the chain. An errored tail
+        // makes every later `.then` propagate the error instead of running
+        // its callback, which would leave the screen deaf to background and
+        // foreground events for the rest of its life — exactly the stuck
+        // state the queue exists to prevent.
+        debugPrint('LiveScreen: lifecycle transition failed: $e\n$stack');
+      }
+    });
+  }
+
   Future<void> _pauseSessionForBackground() async {
+    // The session is already being torn down — finalizing stops capture and
+    // closes the session itself, so pausing would only race it.
+    if (_finalizing) return;
+    final controller = ref.read(liveControllerProvider);
+    if (controller.state != LiveState.active) return;
     _pausedByLifecycle = true;
     _sessionTimer?.cancel();
-    final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     await captureNotifier.stop();
     await controller.pauseSession();
@@ -383,12 +409,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   }
 
   Future<void> _resumeSessionFromBackground() async {
-    _pausedByLifecycle = false;
+    // Don't hand the microphone back to a session that is on its way out.
+    if (_finalizing) return;
     final controller = ref.read(liveControllerProvider);
+    if (!_pausedByLifecycle || controller.state != LiveState.paused) return;
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final audioSource = ref.read(audioSourceProvider);
     await captureNotifier.start(source: audioSource);
     await controller.resumeSession();
+    // Disarmed only once the resume has actually landed. Clearing it up front
+    // would make a failure here permanent: the session would stay paused with
+    // the flag down, so no later `resumed` event could retry it.
+    _pausedByLifecycle = false;
     _onControllerStateChanged();
     _startSessionTimer();
   }
