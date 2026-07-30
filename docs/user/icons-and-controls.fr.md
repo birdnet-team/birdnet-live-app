@@ -72,6 +72,8 @@ Ces contrôles apparaissent sur chaque ligne de détection dans l'application �
 | :material-swap-horizontal: **Remplacer l'espèce** | Choisir une autre espèce pour cette détection. S'ouvre aussi en faisant glisser une ligne vers la gauche. |
 | :material-delete-outline: **Supprimer la détection** | Supprime immédiatement la ligne. Une notification d'annulation apparaît quelques secondes. Se déclenche aussi en faisant glisser une ligne vers la droite. |
 | :material-delete-sweep-outline: **Supprimer l'espèce** | Supprime en une seule fois toutes les détections de cette espèce dans la session, avec la même possibilité d'annulation. |
+| :material-ear-hearing: **Entendu** | Sur une détection ajoutée à la main : vous avez entendu l'oiseau. Défini par la case de la fiche de confirmation affichée après le choix de l'espèce. |
+| :material-eye: **Vu** | Sur une détection ajoutée à la main : vous avez vu l'oiseau. Les deux icônes ensemble signifient entendu *et* vu. |
 
 ## Barre d'outils du Résumé de la session
 

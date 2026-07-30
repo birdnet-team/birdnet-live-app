@@ -96,6 +96,12 @@ Cada linha de detecção também expõe as mesmas ações por detecção usadas 
 
 As mesmas ações estão disponíveis no **mapa do percurso ao vivo**: toque em um marcador de detecção para abrir o painel do reprodutor de clipe com confirmar, compartilhar e excluir. O compartilhamento durante um Survey funciona mesmo quando você optou por uma única gravação WAV contínua em vez de clipes por detecção — a janela de áudio relevante é recortada do arquivo em andamento em tempo real. Consulte [Resumo da Session → Compartilhar uma única detecção](session-review.md#compartilhar-uma-unica-deteccao) para detalhes.
 
+### Registrar uma observação
+
+O botão :material-plus-circle-outline: do survey ao vivo abre um pequeno menu com **Adicionar espécie** e **Adicionar nota**. **Adicionar espécie** abre o mesmo seletor usado em [Session Review](session-review.md#adicionar-uma-especie-manualmente), escolha uma espécie, depois marque :material-ear-hearing: **Ouvida** e/ou :material-eye: **Vista** na folha de confirmação e toque em **Adicionar**. O registro recebe o carimbo de tempo daquele momento e a posição GPS atual, e aparece imediatamente na lista de detecções e no mapa da rota, com o selo manual e os ícones de orelha / olho correspondentes.
+
+Memos de voz estão ausentes aqui de propósito: o microfone está ocupado com a gravação do próprio survey. Anexe-os em Session Review depois que o survey terminar.
+
 ## Operação em segundo plano
 
 O Modo Survey mantém uma notificação persistente em primeiro plano visível durante a gravação, para que o Android não suspenda o pipeline de áudio. A notificação se expande para mostrar:

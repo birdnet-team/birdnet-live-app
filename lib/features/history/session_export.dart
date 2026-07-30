@@ -181,6 +181,19 @@ String _localizedCommon(
   return localized.isNotEmpty ? localized : d.commonName;
 }
 
+/// Stable, machine-readable value for the `Evidence` export column.
+///
+/// Deliberately English and lower-case regardless of the user's locale — it
+/// mirrors the persisted [DetectionEvidence] name so a downstream pipeline
+/// can match on it. Empty for detections with no evidence recorded, which
+/// must be read as "not specified", not "neither heard nor seen".
+String _evidenceField(DetectionRecord d) => switch (d.evidence) {
+  DetectionEvidence.heard => 'heard',
+  DetectionEvidence.seen => 'seen',
+  DetectionEvidence.heardAndSeen => 'heard+seen',
+  null => '',
+};
+
 /// Resolves the canonical (taxonomy-current) scientific name for a detection.
 ///
 /// Falls back to the detection's stored model-label scientific name when no
@@ -230,6 +243,7 @@ String buildRavenSelectionTable(
     (d) => d.latitude != null && d.longitude != null,
   );
   final hasNotes = session.detections.any((d) => d.hasNote);
+  final hasEvidence = session.detections.any((d) => d.evidence != null);
   // Prefer the per-session value, but allow callers to override (e.g. legacy
   // sessions persisted before [SessionSettings.clipContextSeconds] existed,
   // where the field defaults to 0 and would falsely place every detection at
@@ -257,6 +271,7 @@ String buildRavenSelectionTable(
     '\t$surveyTimeHeader'
     '\tConfirmed\tConfirmed At (UTC)'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}'
+    '${hasEvidence ? '\tEvidence' : ''}'
     '${hasNotes ? '\tNote' : ''}',
   );
 
@@ -322,6 +337,7 @@ String buildRavenSelectionTable(
             ? '\t${d.latitude?.toStringAsFixed(6) ?? ''}'
                 '\t${d.longitude?.toStringAsFixed(6) ?? ''}'
             : '';
+    final evidenceSuffix = hasEvidence ? '\t${_evidenceField(d)}' : '';
     // Raven selection tables are tab-separated, so collapse any embedded
     // tabs/newlines from a free-form note to spaces to keep one row per
     // detection. Notes longer than ~200 chars are not truncated; Raven
@@ -346,6 +362,7 @@ String buildRavenSelectionTable(
       '$surveyTimeSuffix'
       '$confirmedSuffix'
       '$coordSuffix'
+      '$evidenceSuffix'
       '$noteSuffix',
     );
   }
@@ -382,6 +399,7 @@ String buildCsvExport(
   );
   final hasNotes = session.detections.any((d) => d.hasNote);
   final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
+  final hasEvidence = session.detections.any((d) => d.evidence != null);
   final clipContext =
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
@@ -401,6 +419,7 @@ String buildCsvExport(
     ',$surveyTimeHeader'
     ',Confirmed,Confirmed At (UTC)'
     '${hasCoords ? ',Latitude,Longitude' : ''}'
+    '${hasEvidence ? ',Evidence' : ''}'
     '${hasNotes ? ',Note' : ''}'
     '${hasMemos ? ',Voice Memo' : ''}',
   );
@@ -467,6 +486,7 @@ String buildCsvExport(
             ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
                 ',${d.longitude?.toStringAsFixed(6) ?? ''}'
             : '';
+    final evidenceRef = hasEvidence ? ',${_evidenceField(d)}' : '';
     final noteRef = hasNotes ? ',${_csvField(d.note ?? '')}' : '';
     final memoRef =
         hasMemos
@@ -484,6 +504,7 @@ String buildCsvExport(
       '$surveyTimeRef'
       '$confirmedRef'
       '$coordRef'
+      '$evidenceRef'
       '$noteRef'
       '$memoRef',
     );
@@ -810,6 +831,7 @@ String buildJsonExport(
             if (d.latitude != null) 'latitude': d.latitude,
             if (d.longitude != null) 'longitude': d.longitude,
             if (d.source != DetectionSource.auto) 'source': d.source.name,
+            if (d.evidence != null) 'evidence': d.evidence!.name,
             'confirmed': d.isConfirmed,
             if (d.confirmedAt != null)
               'confirmedAt': d.confirmedAt!.toUtc().toIso8601String(),
@@ -1357,7 +1379,7 @@ Future<String?> buildSessionExport(
       );
       final reportBytes = Uint8List.fromList(utf8.encode(reportHtml));
       archive.addFile(
-        ArchiveFile('report.html', reportBytes.length, reportBytes),
+        ArchiveFile('${prefix}_report.html', reportBytes.length, reportBytes),
       );
     }
 

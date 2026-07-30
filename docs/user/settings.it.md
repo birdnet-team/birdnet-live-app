@@ -175,6 +175,10 @@ L'intuizione: molti flussi di lavoro richiedono più formati contemporaneamente 
 
 Includi l'audio salvato insieme alle tabelle o ai metadati esportati quando supportato dal flusso di lavoro di esportazione.
 
+### Includi report HTML
+
+Quando è attivo, ogni ZIP di esportazione contiene anche un file `<session>_report.html` accanto alla tabella, ai clip audio e al GPX. Aprilo in qualsiasi browser per ottenere un riepilogo della Session pronto per la stampa: una scheda di intestazione con data, posizione, osservatore e totali; una mappa interattiva della traccia GPS e dei marcatori di rilevamento; una scheda per ogni rilevamento con miniatura della tassonomia Cornell, nomi, indicatore del punteggio, conferma, eventuali note e clip audio originale incorporato come lettore; e le impostazioni di analisi utilizzate. Le miniature delle specie e i riquadri della mappa richiedono una connessione alla prima apertura del file, ma testo, layout, riproduzione audio e collegamenti funzionano offline. Disattiva questa opzione se ti servono solo i dati grezzi e vuoi mantenere lo ZIP leggermente più piccolo.
+
 ## Privacy
 
 Questa sezione controlla **quali servizi di terze parti BirdNET Live può contattare per tuo conto**. L'inferenza viene eseguita interamente sul tuo dispositivo — questi interruttori governano solo funzionalità di rete opzionali. Tutti e tre gli interruttori sono **disattivati per impostazione predefinita** su una nuova installazione; nulla esce finché non lo autorizzi. L'intuizione: ogni interruttore copre un servizio concreto e un beneficio concreto, così attivi esattamente ciò che ti serve.

@@ -915,7 +915,7 @@ void main() {
         expect(names, contains('$_prefix.selections.txt'));
         expect(names, contains('$_prefix.gpx'));
         expect(names, contains('$_prefix.metadata.json'));
-        expect(names, contains('report.html'));
+        expect(names, contains('${_prefix}_report.html'));
       },
     );
 
@@ -1702,6 +1702,116 @@ void main() {
         expect('<cmt>'.allMatches(gpx).length, 1);
       },
     );
+  });
+
+  group('heard/seen evidence in exports', () {
+    DetectionRecord makeEvidence(
+      String sci,
+      String common,
+      Duration offset,
+      DateTime start, {
+      DetectionEvidence? evidence,
+    }) {
+      return DetectionRecord(
+        scientificName: sci,
+        commonName: common,
+        confidence: 1.0,
+        timestamp: start.add(offset),
+        source: DetectionSource.manual,
+        evidence: evidence,
+      );
+    }
+
+    LiveSession mixedSession() {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      return _makeSession(
+        detections: [
+          makeEvidence(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            const Duration(seconds: 5),
+            start,
+            evidence: DetectionEvidence.heardAndSeen,
+          ),
+          makeEvidence(
+            'Erithacus rubecula',
+            'European Robin',
+            const Duration(seconds: 10),
+            start,
+            evidence: DetectionEvidence.seen,
+          ),
+          // No evidence recorded — the column must stay empty rather than
+          // implying the bird was neither heard nor seen.
+          _det(
+            'Parus major',
+            'Great Tit',
+            0.8,
+            const Duration(seconds: 15),
+            start,
+          ),
+        ],
+      );
+    }
+
+    test('CSV emits an Evidence column with per-row values', () {
+      final csv = buildCsvExport(mixedSession());
+      final lines = csv.trim().split('\n');
+      final header = lines.first.split(',');
+      expect(header, contains('Evidence'));
+      final idx = header.indexOf('Evidence');
+
+      expect(lines[1].split(',')[idx], 'heard+seen');
+      expect(lines[2].split(',')[idx], 'seen');
+      expect(lines[3].split(',')[idx], '');
+    });
+
+    test('Raven table emits an Evidence column with per-row values', () {
+      final table = buildRavenSelectionTable(mixedSession());
+      // Split without trimming: the last row ends in empty tab-separated
+      // cells, and trimming would eat them along with the trailing newline.
+      final lines = table.split('\n');
+      final header = lines.first.split('\t');
+      expect(header, contains('Evidence'));
+      final idx = header.indexOf('Evidence');
+
+      expect(lines[1].split('\t')[idx], 'heard+seen');
+      expect(lines[2].split('\t')[idx], 'seen');
+      expect(lines[3].split('\t')[idx], '');
+    });
+
+    test('the Evidence column is omitted when no detection carries it', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            start,
+          ),
+        ],
+      );
+
+      expect(
+        buildCsvExport(session).split('\n').first,
+        isNot(contains('Evidence')),
+      );
+      expect(
+        buildRavenSelectionTable(session).split('\n').first,
+        isNot(contains('Evidence')),
+      );
+    });
+
+    test('JSON export round-trips evidence and omits it when unset', () {
+      final map =
+          jsonDecode(buildJsonExport(mixedSession())) as Map<String, dynamic>;
+      final dets = (map['detections'] as List).cast<Map<String, dynamic>>();
+
+      expect(dets[0]['evidence'], 'heardAndSeen');
+      expect(dets[1]['evidence'], 'seen');
+      expect(dets[2].containsKey('evidence'), isFalse);
+    });
   });
 
   group('buildMultiSessionExport', () {

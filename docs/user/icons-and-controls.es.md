@@ -72,6 +72,8 @@ Estos controles aparecen en cada fila de detección de toda la app: la lista de 
 | :material-swap-horizontal: **Reemplazar especie** | Elige otra especie para esta detección. También se abre deslizando una fila de revisión hacia la izquierda. |
 | :material-delete-outline: **Eliminar detección** | Quita la fila de inmediato. Aparece un SnackBar para deshacer durante unos segundos. También se activa deslizando una fila de revisión hacia la derecha. |
 | :material-delete-sweep-outline: **Eliminar especie** | Quita de la Session todas las detecciones de esa especie de una sola vez, con el mismo SnackBar para deshacer. |
+| :material-ear-hearing: **Oída** | En una detección agregada a mano: escuchaste el ave. Se define con la casilla de la hoja de confirmación que aparece tras elegir la especie. |
+| :material-eye: **Vista** | En una detección agregada a mano: viste el ave. Ambos iconos juntos significan oída *y* vista. |
 
 ## Barra de herramientas del Resumen de la Session
 

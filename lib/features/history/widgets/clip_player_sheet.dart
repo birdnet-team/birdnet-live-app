@@ -31,6 +31,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
+import '../../../shared/widgets/detection_evidence_badge.dart';
 import '../../explore/explore_providers.dart';
 import '../../explore/widgets/species_info_overlay.dart';
 import '../../live/live_session.dart';
@@ -556,6 +557,13 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                                 ),
                               ),
                             ),
+                            if (det.evidence != null) ...[
+                              const SizedBox(width: 8),
+                              DetectionEvidenceBadge(
+                                evidence: det.evidence,
+                                size: 16,
+                              ),
+                            ],
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(

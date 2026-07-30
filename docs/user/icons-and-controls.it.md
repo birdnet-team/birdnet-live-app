@@ -72,6 +72,8 @@ Questi controlli compaiono su ogni riga di rilevazione nell'app — l'elenco del
 | :material-swap-horizontal: **Sostituisci specie** | Scegli una specie diversa per questa rilevazione. Si apre anche scorrendo verso sinistra una riga in revisione. |
 | :material-delete-outline: **Elimina rilevazione** | Rimuove subito la riga. Per alcuni secondi appare una SnackBar per annullare. Si attiva anche scorrendo verso destra una riga in revisione. |
 | :material-delete-sweep-outline: **Elimina specie** | Rimuove in un colpo solo tutte le rilevazioni di quella specie dalla Session, con la stessa SnackBar per annullare. |
+| :material-ear-hearing: **Sentito** | Su una rilevazione aggiunta a mano: hai sentito l'uccello. Si imposta con la casella del pannello di conferma mostrato dopo aver scelto la specie. |
+| :material-eye: **Visto** | Su una rilevazione aggiunta a mano: hai visto l'uccello. Le due icone insieme significano sentito *e* visto. |
 
 ## Barra degli strumenti del Riepilogo sessione
 

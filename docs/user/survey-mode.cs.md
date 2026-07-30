@@ -96,6 +96,12 @@ Každý řádek detekce také nabízí stejné akce u jednotlivých detekcí jak
 
 Stejné akce jsou dostupné z **živé mapy trasy**: klepnutím na značku detekce otevřete panel přehrávače klipu s potvrzením, sdílením a smazáním. Sdílení během survey funguje i tehdy, když jste zvolili jedno souvislé nahrávání WAV místo klipů u jednotlivých detekcí — příslušné zvukové okno se za běhu vyřízne z právě nahrávaného souboru. Podrobnosti viz [Přehled Session → Sdílení jedné detekce](session-review.md#sdileni-jedne-detekce).
 
+### Zaznamenání pozorování
+
+Tlačítko :material-plus-circle-outline: v živém Survey otevře malou nabídku s položkami **Přidat druh** a **Přidat poznámku**. **Přidat druh** otevře stejné vyhledávání jako [Session Review](session-review.md#rucni-pridani-druhu), vyberte druh, poté v potvrzovacím panelu zaškrtněte :material-ear-hearing: **Slyšeno** a/nebo :material-eye: **Viděno** a klepněte na **Přidat**. Záznam dostane časové razítko daného okamžiku, aktuální GPS pozici a ihned se objeví v seznamu detekcí i na mapě trasy s odznakem ručního zadání a odpovídajícími ikonami ucha / oka.
+
+Hlasové poznámky zde záměrně chybí: mikrofon je zaneprázdněn vlastním nahráváním Survey. Připojte je v Session Review po skončení Survey.
+
 ## Provoz na pozadí
 
 Režim Survey udržuje během nahrávání viditelné trvalé oznámení na popředí, aby Android nepozastavil audio pipeline. Oznámení se rozbalí a zobrazí:

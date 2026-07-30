@@ -103,6 +103,12 @@ Ogni riga di rilevazione mostra anche le stesse azioni per rilevazione usate nel
 
 Le stesse azioni sono disponibili dalla **mappa del percorso in tempo reale**: tocca un marcatore di rilevazione per aprire il pannello del lettore dei clip con conferma, condivisione ed eliminazione. La condivisione durante un Survey funziona anche quando hai scelto un'unica registrazione WAV continua invece dei clip per rilevazione — la finestra audio pertinente viene estratta al volo dal file in corso. Vedi [Riepilogo sessione → Condivisione di una singola rilevazione](session-review.md#condivisione-di-una-singola-rilevazione) per i dettagli.
 
+### Registrare un'osservazione
+
+Il pulsante :material-plus-circle-outline: del survey dal vivo apre un piccolo menu con **Aggiungi specie** e **Aggiungi nota**. **Aggiungi specie** apre lo stesso selettore usato in [Session Review](session-review.md#aggiungere-una-specie-a-mano), scegli una specie, poi seleziona :material-ear-hearing: **Sentito** e/o :material-eye: **Visto** nel pannello di conferma e tocca **Aggiungi**. La voce viene marcata con l'ora di quel momento e con la posizione GPS corrente e compare subito nell'elenco delle rilevazioni e sulla mappa del percorso, con il badge manuale e le relative icone orecchio / occhio.
+
+I memo vocali sono volutamente assenti qui: il microfono è impegnato con la registrazione del survey. Aggiungili in Session Review al termine.
+
 ## Funzionamento in background
 
 La modalità Survey mantiene visibile una notifica persistente in primo piano durante la registrazione, così Android non sospende la pipeline audio. La notifica si espande per mostrare:

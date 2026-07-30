@@ -36,6 +36,17 @@ Un campo de búsqueda sobre la lista filtra las especies por nombre común o cie
 
 El orden elegido se mantiene entre Sessions.
 
+### Agregar una especie a mano
+
+El botón :material-plus-circle-outline: de la barra de herramientas abre el buscador de especies para aves que BirdNET no detectó. Tocar un resultado no la inserta de inmediato: primero aparece una hoja de confirmación con la especie elegida y dos casillas:
+
+- :material-ear-hearing: **Oída** — escuchaste el ave.
+- :material-eye: **Vista** — viste el ave.
+
+Marca una, ambas o ninguna y luego toca **Agregar**. **Cancelar** —o deslizar hacia abajo— te devuelve a la búsqueda, así que un toque equivocado no cuesta nada. **Oída** viene marcada y tu elección se mantiene para la siguiente especie, de modo que registrar una serie de aves que solo viste requiere marcar **Vista** una sola vez. Si dejas ambas sin marcar, la entrada se guarda sin tipo de observación, no como "ninguna de las dos".
+
+La elección se guarda en la detección y aparece como un pequeño icono de oído u ojo junto a la insignia de entrada manual en todos los lugares donde se muestra esa detección: encabezados de especie, filas de grupo, el reproductor de clips y la lista del survey en vivo. También llega a las exportaciones: una columna `Evidence` en CSV y en las tablas de Raven, un campo `evidence` en JSON y una etiqueta en el informe HTML. La misma hoja aparece al usar **Reemplazar especie**, precargada con lo que ya tenía ese registro.
+
 ### Acciones por detección
 
 En todos los lugares donde aparece una detección —la lista de especies, la hoja del reproductor de clips, la lista del Survey en vivo y los marcadores del mapa del Survey— se usa el mismo conjunto de acciones:

@@ -72,6 +72,8 @@ Diese Steuerelemente erscheinen in jeder Erkennungszeile der App – in der Arte
 | :material-swap-horizontal: **Art ersetzen** | Eine andere Art für diese Erkennung auswählen. Lässt sich auch durch Wischen einer Übersichtszeile nach links öffnen. |
 | :material-delete-outline: **Erkennung löschen** | Entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen. Lässt sich auch durch Wischen einer Übersichtszeile nach rechts auslösen. |
 | :material-delete-sweep-outline: **Art löschen** | Entfernt jede Erkennung dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. |
+| :material-ear-hearing: **Gehört** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gehört. Wird über das Kontrollkästchen im Bestätigungsfenster nach der Artenauswahl gesetzt. |
+| :material-eye: **Gesehen** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gesehen. Beide Symbole zusammen bedeuten gehört *und* gesehen. |
 
 ## Session-Übersicht-Symbolleiste
 

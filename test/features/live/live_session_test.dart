@@ -885,6 +885,86 @@ void main() {
     });
   });
 
+  // ── DetectionEvidence ──────────────────────────────────────────────────
+
+  group('DetectionEvidence', () {
+    test('defaults to null and stays out of JSON', () {
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime.now(),
+      );
+      expect(record.evidence, isNull);
+      expect(record.wasHeard, isFalse);
+      expect(record.wasSeen, isFalse);
+      expect(record.toJson().containsKey('evidence'), isFalse);
+    });
+
+    test('each value round-trips through JSON', () {
+      for (final value in DetectionEvidence.values) {
+        final record = DetectionRecord(
+          scientificName: 'Turdus merula',
+          commonName: 'Eurasian Blackbird',
+          confidence: 1.0,
+          timestamp: DateTime(2026, 3, 1, 10, 0),
+          source: DetectionSource.manual,
+          evidence: value,
+        );
+        final json = record.toJson();
+        expect(json['evidence'], value.name);
+        expect(DetectionRecord.fromJson(json).evidence, value);
+      }
+    });
+
+    test('legacy records without the field parse as unspecified', () {
+      final record = DetectionRecord.fromJson({
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 1.0,
+        'timestamp': DateTime(2026, 3, 1).toIso8601String(),
+        'source': 'manual',
+      });
+      expect(record.evidence, isNull);
+    });
+
+    test('an unknown persisted value degrades to unspecified', () {
+      final record = DetectionRecord.fromJson({
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 1.0,
+        'timestamp': DateTime(2026, 3, 1).toIso8601String(),
+        'evidence': 'smelled',
+      });
+      expect(record.evidence, isNull);
+    });
+
+    test('fromFlags collapses the two checkboxes', () {
+      expect(
+        DetectionEvidence.fromFlags(heard: true, seen: false),
+        DetectionEvidence.heard,
+      );
+      expect(
+        DetectionEvidence.fromFlags(heard: false, seen: true),
+        DetectionEvidence.seen,
+      );
+      expect(
+        DetectionEvidence.fromFlags(heard: true, seen: true),
+        DetectionEvidence.heardAndSeen,
+      );
+      expect(DetectionEvidence.fromFlags(heard: false, seen: false), isNull);
+    });
+
+    test('includes flags match the tickboxes that produced them', () {
+      expect(DetectionEvidence.heard.includesHeard, isTrue);
+      expect(DetectionEvidence.heard.includesSeen, isFalse);
+      expect(DetectionEvidence.seen.includesHeard, isFalse);
+      expect(DetectionEvidence.seen.includesSeen, isTrue);
+      expect(DetectionEvidence.heardAndSeen.includesHeard, isTrue);
+      expect(DetectionEvidence.heardAndSeen.includesSeen, isTrue);
+    });
+  });
+
   // ── Unknown species ────────────────────────────────────────────────────
 
   group('Unknown species', () {

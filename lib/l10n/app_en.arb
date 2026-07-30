@@ -1567,7 +1567,7 @@
   "@sessionHelpOverview": {
     "description": "Overview section of the session review help"
   },
-  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. Use \"Unknown / Other\" for unidentified calls.",
+  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. After picking a species, a confirmation sheet lets you tick Heard and/or Seen before the entry is added. Use \"Unknown / Other\" for unidentified calls.",
   "@sessionHelpAddSpecies": {
     "description": "Help text explaining the add species feature"
   },
@@ -2347,7 +2347,7 @@
   "@settingsHelpIncludeAudioFiles": {
     "description": "Help text for include audio files setting"
   },
-  "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained `report.html`. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
+  "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained HTML report named after the session (`<session>_report.html`), so reports from several exports never overwrite each other. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
   "@settingsHelpExportHtmlReport": {
     "description": "Help text for export HTML report setting"
   },
@@ -3096,6 +3096,34 @@
   "detectionSourceManual": "Manual",
   "@detectionSourceManual": {
     "description": "Short label/badge shown on a detection that was entered manually by the user (not produced by the model)."
+  },
+  "detectionEvidenceLabel": "Observation type",
+  "@detectionEvidenceLabel": {
+    "description": "Label above the heard/seen checkboxes in the confirm sheet shown after picking a species."
+  },
+  "detectionEvidenceHint": "Optional — leave both unticked to record no observation type.",
+  "@detectionEvidenceHint": {
+    "description": "Helper text below the heard/seen checkboxes explaining that the choice is optional."
+  },
+  "sessionAddSpeciesConfirm": "Add",
+  "@sessionAddSpeciesConfirm": {
+    "description": "Confirm button in the sheet that inserts the picked species into the session."
+  },
+  "sessionReplaceSpeciesConfirm": "Replace",
+  "@sessionReplaceSpeciesConfirm": {
+    "description": "Confirm button in the same sheet when the picked species replaces an existing detection."
+  },
+  "detectionEvidenceHeard": "Heard",
+  "@detectionEvidenceHeard": {
+    "description": "Checkbox label / badge tooltip: the user heard the bird but did not see it."
+  },
+  "detectionEvidenceSeen": "Seen",
+  "@detectionEvidenceSeen": {
+    "description": "Checkbox label / badge tooltip: the user saw the bird but did not hear it."
+  },
+  "detectionEvidenceHeardAndSeen": "Heard and seen",
+  "@detectionEvidenceHeardAndSeen": {
+    "description": "Badge tooltip shown when the user ticked both the heard and the seen checkbox for a manual detection."
   },
   "detectionSeekToPosition": "Jump to position",
   "@detectionSeekToPosition": {
