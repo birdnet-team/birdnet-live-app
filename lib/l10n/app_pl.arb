@@ -26,6 +26,8 @@
   "skip": "Pomiń",
   "next": "Dalej",
   "done": "Gotowe",
+  "quickListenBlockedTitle": "Najpierw zakończ bieżącą Session",
+  "quickListenBlockedMessage": "Szybkie słuchanie nie może się rozpocząć, gdy Session {mode} trwa lub jest uruchamiana. Najpierw zatrzymaj tę Session, a następnie ponownie dotknij widżetu.",
   "termsOfUseTitle": "Polityka dopuszczalnego użycia",
   "privacyPolicyTitle": "Polityka prywatności",
   "acceptTerms": "Akceptuj",

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home-screen widget picker label/description and button text. See
+         QuickListenWidgetProvider.kt. "Live Mode" is kept in English in
+         every locale per AGENTS.md's technical-term list. -->
+    <string name="quick_listen_widget_label">Quick Listen</string>
+    <string name="quick_listen_widget_description">Jump straight into Live Mode and start listening.</string>
+    <string name="quick_listen_widget_button">Start Listening</string>
+    <string name="quick_listen_widget_1x1_label">Quick Listen (compact)</string>
+    <string name="quick_listen_widget_1x1_description">Small icon-only tile — tap to jump straight into Live Mode and start listening.</string>
+</resources>

@@ -188,6 +188,8 @@ Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de f
 
 Une fois activé, le mode En direct commence à enregistrer dès l'ouverture de l'écran et la fin du chargement du modèle — sans avoir à appuyer sur le bouton du microphone. Utile pour les installations de type kiosque, l'usage mains libres (p. ex. appareil monté sur le terrain) ou tout flux où vous savez déjà qu'ouvrir le mode En direct signifie « démarrer maintenant ». Désactivé par défaut pour qu'un appui accidentel sur la tuile En direct depuis l'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se déclenche qu'une fois par visite de l'écran : arrêter une session puis réappuyer sur le micro fonctionne toujours comme un redémarrage manuel.
 
+Ce réglage concerne l'ouverture du mode En direct depuis l'application. Le [widget « Écoute rapide »](live-mode.md) démarre l'écoute lorsqu'on appuie dessus, quel que soit ce réglage, et le laisse inchangé. Si une Session Point Count, Survey, File Analysis ou mode ARU est déjà en cours ou démarre, il la préserve et vous demande d'abord de l'arrêter.
+
 ## Localisation
 
 ### Utiliser le GPS

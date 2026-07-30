@@ -26,6 +26,8 @@
   "skip": "Überspringen",
   "next": "Weiter",
   "done": "Fertig",
+  "quickListenBlockedTitle": "Aktuelle Session zuerst beenden",
+  "quickListenBlockedMessage": "Quick Listen kann nicht starten, während eine {mode}-Session läuft oder gestartet wird. Beenden Sie zuerst diese Session und tippen Sie dann erneut auf das Widget.",
   "termsOfUseTitle": "Richtlinie zur akzeptablen Nutzung",
   "privacyPolicyTitle": "Datenschutzrichtlinie",
   "acceptTerms": "Akzeptieren",

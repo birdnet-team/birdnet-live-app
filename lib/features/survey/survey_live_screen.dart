@@ -29,6 +29,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/quick_action_service.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -91,6 +92,8 @@ class SurveyLiveScreen extends ConsumerStatefulWidget {
 
 class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final Object _quickListenSafetyOwner = Object();
+
   bool _started = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
@@ -111,6 +114,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void initState() {
     super.initState();
+    QuickListenSafety.registerIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+      QuickListenSessionOwner.survey,
+    );
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
@@ -833,6 +840,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
   @override
   void dispose() {
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     if (_surveyController.onStateChanged == _onControllerStateChanged) {
       _surveyController.onStateChanged = null;
     }

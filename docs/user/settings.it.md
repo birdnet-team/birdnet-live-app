@@ -132,6 +132,12 @@ Quando **Solo rilevamenti** è attivo, l'app mostra un singolo cursore **Contest
 
 Scegli **WAV** o **FLAC**.
 
+### Avvia registrazione automaticamente (solo modalità Live)
+
+Quando è attiva, la modalità Live avvia la registrazione appena si apre e il modello termina il caricamento, senza dover toccare il pulsante del microfono. È disattivata per impostazione predefinita.
+
+Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. Il [widget «Ascolto rapido»](live-mode.md) avvia l'ascolto quando viene toccato indipendentemente da questa impostazione e non la modifica. Se una Session Point Count, Survey, File Analysis o modalità ARU è già in corso o si sta avviando, conserva quella Session e chiede prima di interromperla.
+
 ## Posizione
 
 ### Usa il GPS

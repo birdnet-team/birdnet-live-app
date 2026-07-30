@@ -26,6 +26,8 @@
   "skip": "Přeskočit",
   "next": "Další",
   "done": "Hotovo",
+  "quickListenBlockedTitle": "Nejprve ukončete aktuální Session",
+  "quickListenBlockedMessage": "Rychlý poslech nelze spustit, dokud běží nebo se spouští Session {mode}. Nejprve tuto Session zastavte a potom na widget klepněte znovu.",
   "termsOfUseTitle": "Zásady přijatelného použití",
   "privacyPolicyTitle": "Zásady ochrany osobních údajů",
   "acceptTerms": "Přijmout",

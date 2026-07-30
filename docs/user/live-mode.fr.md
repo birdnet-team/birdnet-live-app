@@ -6,6 +6,21 @@ Le mode En direct est le moyen le plus rapide d'écouter via le microphone du t�
 
 Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :material-microphone:.
 
+## Widget « Écoute rapide »
+
+**Android uniquement.** Un widget sur l'écran d'accueil démarre l'écoute en un seul appui, sans avoir à ouvrir l'application puis à y naviguer — pratique lorsque vous entendez quelque chose que vous voulez identifier avant qu'il ne se taise.
+
+Ajoutez-le comme n'importe quel widget : appuyez longuement sur un espace libre de l'écran d'accueil, appuyez sur **Widgets**, cherchez **BirdNET Live** et faites glisser l'une des deux tuiles.
+
+- **Écoute rapide** (2×1) — icône accompagnée du libellé **Démarrer l'écoute**
+- **Écoute rapide (compacte)** (1×1) — icône seule
+
+Les deux font la même chose. Un appui sur l'une ou l'autre ouvre le mode En direct et commence à écouter immédiatement, quel que soit le réglage **Démarrer l'enregistrement automatiquement**. Le widget ne modifie pas ce réglage.
+
+Si le mode En direct est déjà ouvert, le widget revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
+
+Écoute rapide ne remplace jamais un autre mode en cours. Si une Session Point Count, Survey, File Analysis ou [mode ARU](aru-mode.md) est en cours ou démarre, l'application revient au premier plan et vous demande d'arrêter d'abord cette Session. Son écran et son travail restent accessibles et ne sont pas interrompus.
+
 ## Barre supérieure
 
 La barre supérieure contient trois éléments :

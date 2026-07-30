@@ -26,6 +26,8 @@
   "skip": "Passer",
   "next": "Suivant",
   "done": "Terminé",
+  "quickListenBlockedTitle": "Terminez d’abord la Session en cours",
+  "quickListenBlockedMessage": "Écoute rapide ne peut pas démarrer pendant qu’une Session {mode} est en cours ou démarre. Arrêtez d’abord cette Session, puis appuyez de nouveau sur le widget.",
   "termsOfUseTitle": "Politique d'utilisation acceptable",
   "privacyPolicyTitle": "Politique de confidentialité",
   "acceptTerms": "Accepter",
