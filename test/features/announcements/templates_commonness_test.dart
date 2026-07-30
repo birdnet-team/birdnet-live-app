@@ -29,6 +29,7 @@ void main() {
     'nb',
     'pl',
     'ru',
+    'zh',
   ];
 
   test('CommonnessBin mirrors ExploreTier (same level names)', () {

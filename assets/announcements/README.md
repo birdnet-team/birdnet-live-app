@@ -26,10 +26,10 @@ sounds natural in English rarely maps word for word.
 
 ## Files
 
-One file per locale, `templates_<locale>.json`. All 11 shipped locales must
+One file per locale, `templates_<locale>.json`. All 12 shipped locales must
 be present and complete:
 
-`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `nb` · `pl` · `ru`
+`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `nb` · `pl` · `ru` · `zh`
 
 Loaded by
 [`TemplateLibrary`](../../lib/features/announcements/phrasing/template_library.dart),
@@ -130,6 +130,16 @@ A lint test catches gendered determiners automatically
 (`test/features/announcements/templates_gender_lint_test.dart`), but it is a
 regex and cannot catch case or verb agreement — new lines still need a native
 speaker's eye.
+
+Chinese (`zh`) has no articles, gender, or case, so `{name}` drops in
+unmodified — but it has its own trap: **measure words**. The model covers
+insects, amphibians, and mammals as well as birds, and nothing tells you which
+group `{name}` belongs to at speak time. `一只` is safe for birds, frogs, most
+insects, and small mammals but wrong for large ones (`一头`). Prefer
+classifier-free constructions (`是{name}。`, `{name}，就在附近。`) and reach for
+`一只` only where it genuinely reads better. The a/the contrast that separates
+the first-detection buckets from the repeat buckets is carried by adverbs
+(`又`, `还在`, `仍`), not by anything article-shaped.
 
 ## Other conventions
 
