@@ -21,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/services/location_service.dart';
 import '../../shared/models/gps_point.dart';
 
 /// Tracks GPS position during a survey and maintains the track + distance.
@@ -75,30 +76,12 @@ class SurveyGpsTracker {
   Future<void> startTracking() async {
     if (_positionSub != null) return;
 
-    late final LocationSettings locationSettings;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.high,
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: buildLocationSettings(
         distanceFilter: distanceFilterMeters,
         intervalDuration: Duration(seconds: intervalSeconds),
-      );
-    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS) {
-      locationSettings = AppleSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: distanceFilterMeters,
-        allowBackgroundLocationUpdates: true,
-        showBackgroundLocationIndicator: true,
-      );
-    } else {
-      locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: distanceFilterMeters,
-      );
-    }
-
-    _positionSub = Geolocator.getPositionStream(
-      locationSettings: locationSettings,
+        background: true,
+      ),
     ).listen(
       _onPosition,
       onError: (Object error, StackTrace stackTrace) {
@@ -122,9 +105,8 @@ class SurveyGpsTracker {
   Future<GpsPoint?> captureOnce() async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
+        locationSettings: buildLocationSettings(
+          timeLimit: const Duration(seconds: 10),
         ),
       );
       final point = _positionToGpsPoint(position, measured: true);

@@ -192,6 +192,9 @@ abstract final class AppIcons {
   static const IconData uploadFileRounded = Symbols.upload_file_rounded;
   static const IconData verifiedRounded = Symbols.verified_rounded;
   static const IconData vibrationRounded = Symbols.vibration_rounded;
+
+  /// Visual observation ("seen"). Pairs with [hearing] on manual detections.
+  static const IconData visibility = Symbols.visibility;
   static const IconData volunteerActivism = Symbols.volunteer_activism;
   static const IconData volumeDown = Symbols.volume_down;
   static const IconData volumeMuteRounded = Symbols.volume_mute_rounded;

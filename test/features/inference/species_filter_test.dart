@@ -14,13 +14,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Build a test species.
 Species _sp(int idx, String sciName) => Species(
-      index: idx,
-      id: idx,
-      scientificName: sciName,
-      commonName: 'Common $idx',
-      className: 'Aves',
-      order: 'Order',
-    );
+  index: idx,
+  id: idx,
+  scientificName: sciName,
+  commonName: 'Common $idx',
+  className: 'Aves',
+  order: 'Order',
+);
 
 /// Build a test detection.
 Detection _det(Species sp, double confidence) =>
@@ -163,7 +163,9 @@ void main() {
       // Should be sorted descending: 0.72, 0.25, 0.007, 0.0
       for (var i = 1; i < result.length; i++) {
         expect(
-            result[i].confidence, lessThanOrEqualTo(result[i - 1].confidence));
+          result[i].confidence,
+          lessThanOrEqualTo(result[i - 1].confidence),
+        );
       }
     });
 

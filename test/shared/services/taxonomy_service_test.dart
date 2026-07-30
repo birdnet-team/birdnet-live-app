@@ -6,6 +6,9 @@
 // API enrichment tests are skipped (network-dependent).
 // =============================================================================
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -85,6 +88,20 @@ void main() {
       expect(service.speciesCount, 1);
       expect(service.lookup('Parus major'), isNull);
     });
+
+    test('decodes and parses bytes on a background isolate', () async {
+      final service = TaxonomyService();
+
+      await service.loadFromCsvBytes(
+        Uint8List.fromList(utf8.encode(_testCsvQuoted)),
+      );
+
+      expect(service.speciesCount, 1);
+      expect(
+        service.lookup('Strix aluco')?.commonNameAlt,
+        'Brown Owl, Eurasian Tawny Owl',
+      );
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -100,10 +117,7 @@ void main() {
     });
 
     test('returns matching species in order', () {
-      final results = service.lookupAll([
-        'Turdus merula',
-        'Parus major',
-      ]);
+      final results = service.lookupAll(['Turdus merula', 'Parus major']);
       expect(results.length, 2);
       expect(results[0].scientificName, 'Turdus merula');
       expect(results[1].scientificName, 'Parus major');

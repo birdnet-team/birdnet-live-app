@@ -201,6 +201,7 @@ Future<File?> _extractClipFromFullAudio(
     session,
     detection,
     clipContextSeconds: session.settings.clipContextSeconds.toDouble(),
+    referencesDetectionClip: false,
   );
 
   final ext = await sourceAudioExtensionForFile(src);
@@ -465,6 +466,17 @@ String _buildBody(DetectionRecord d) {
     lines.add(
       'geo:${d.latitude!.toStringAsFixed(4)},${d.longitude!.toStringAsFixed(4)}',
     );
+  }
+  // Heard / seen, when the user recorded it on a manual entry. Plain
+  // English like the 'Confirmed' line below — the share body is a
+  // machine-friendly payload, not localized UI.
+  final evidence = d.evidence;
+  if (evidence != null) {
+    lines.add(switch (evidence) {
+      DetectionEvidence.heard => 'Heard',
+      DetectionEvidence.seen => 'Seen',
+      DetectionEvidence.heardAndSeen => 'Heard and seen',
+    });
   }
   if (d.isConfirmed) {
     lines.add('Confirmed');

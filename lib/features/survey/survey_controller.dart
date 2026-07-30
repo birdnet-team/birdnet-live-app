@@ -47,6 +47,7 @@ import '../history/session_path_codec.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
+import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
 import '../recording/recording_service.dart';
 import 'detection_sampler.dart';
@@ -68,10 +69,19 @@ enum SurveyState { idle, loading, starting, active, stopping, finalized, error }
 /// Orchestrates a long-running survey with GPS tracking, inference, recording,
 /// and incremental persistence.
 class SurveyController {
-  SurveyController({required this.ringBuffer, required this.recordingService});
+  SurveyController({
+    required this.ringBuffer,
+    required this.recordingService,
+    bool Function()? gpsEnabled,
+  }) : _gpsEnabled = gpsEnabled;
 
   final RingBuffer ringBuffer;
   final RecordingService recordingService;
+
+  /// Reads Settings → Location → Use GPS. When off, no GPS tracker is
+  /// created and the survey runs on the coordinates chosen in setup.
+  final bool Function()? _gpsEnabled;
+  bool get _useGps => _gpsEnabled?.call() ?? true;
   final SurveyNotificationService _notificationService =
       SurveyNotificationService();
   final Battery _battery = Battery();
@@ -121,6 +131,12 @@ class SurveyController {
 
   /// Species currently shown as active detection cards.
   final Map<String, DetectionRecord> _activeCardSpecies = {};
+
+  /// Confidence of the audio window currently saved for each active species.
+  ///
+  /// The detection record itself keeps advancing on every stronger score, even
+  /// when that gain is too small to re-cut immediately.
+  final DetectionClipPeakTracker _clipPeakTracker = DetectionClipPeakTracker();
 
   /// Optional per-survey alert pipeline. `null` when alerts are disabled
   /// for the current survey (mode == off, or no notifier was configured).
@@ -441,6 +457,7 @@ class SurveyController {
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
       _activeCardSpecies.clear();
+      _clipPeakTracker.clear();
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
@@ -481,14 +498,16 @@ class SurveyController {
         _session!.recordingPath = dir;
       }
 
-      // GPS tracking.
-      _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
-      _gpsTracker!.onPoint = _onGpsPoint;
-      if (backgroundGps || foregroundGps) {
-        await _gpsTracker!.startTracking();
-      } else {
-        // Manual GPS mode: capture initial fix.
-        await _gpsTracker!.captureOnce();
+      // GPS tracking — skipped entirely when the user has GPS turned off.
+      if (_useGps) {
+        _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
+        _gpsTracker!.onPoint = _onGpsPoint;
+        if (backgroundGps || foregroundGps) {
+          await _gpsTracker!.startTracking();
+        } else {
+          // Manual GPS mode: capture initial fix.
+          await _gpsTracker!.captureOnce();
+        }
       }
 
       // Max duration auto-stop.
@@ -593,6 +612,7 @@ class SurveyController {
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
       _activeCardSpecies.clear();
+      _clipPeakTracker.clear();
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
@@ -632,21 +652,29 @@ class SurveyController {
       }
 
       // GPS tracking: seed with existing track data.
-      _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
-      _gpsTracker!.onPoint = _onGpsPoint;
-      _gpsTracker!.seedTrack(existingSession.gpsTrack);
-      if (backgroundGps || foregroundGps) {
-        await _gpsTracker!.startTracking();
-      } else {
-        await _gpsTracker!.captureOnce();
+      if (_useGps) {
+        _gpsTracker = SurveyGpsTracker(intervalSeconds: gpsIntervalSeconds);
+        _gpsTracker!.onPoint = _onGpsPoint;
+        _gpsTracker!.seedTrack(existingSession.gpsTrack);
+        if (backgroundGps || foregroundGps) {
+          await _gpsTracker!.startTracking();
+        } else {
+          await _gpsTracker!.captureOnce();
+        }
       }
 
       _maxEndTime = DateTime.now().add(Duration(hours: maxDurationHours));
       _autoStopBattery = autoStopBattery;
 
-      // Open a new recording segment. Any previously accumulated time on
-      // the session is preserved via [LiveSession.recordedDurationSeconds].
-      _session?.startSegment();
+      await _notificationService.start(
+        title: _notificationTitle,
+        text: _buildNotificationText(),
+      );
+
+      // Reactivate only after all fallible async setup has completed so the
+      // original session stays untouched if setup fails. LiveSession.resume
+      // always opens a distinct segment and seeds legacy duration tracking.
+      _session!.resume();
       _segmentStart = DateTime.now();
 
       final intervalMs = (1000.0 / inferenceRate).round();
@@ -654,7 +682,6 @@ class SurveyController {
         Duration(milliseconds: intervalMs),
         (_) => _runInference(windowDuration: windowDuration),
       );
-
       _persistTimer = Timer.periodic(
         const Duration(seconds: _persistIntervalSeconds),
         (_) {
@@ -662,15 +689,9 @@ class SurveyController {
           _checkBatteryAutoStop();
         },
       );
-
       _notificationTimer = Timer.periodic(
         const Duration(seconds: _notificationIntervalSeconds),
         (_) => _updateNotification(),
-      );
-
-      await _notificationService.start(
-        title: _notificationTitle,
-        text: _buildNotificationText(),
       );
 
       _state = SurveyState.active;
@@ -718,6 +739,7 @@ class SurveyController {
     _refreshRecentForNotification();
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _clipPeakTracker.clear();
   }
 
   /// Stop and finalize the survey.
@@ -790,6 +812,7 @@ class SurveyController {
           timestamp: existing.timestamp,
           endTimestamp: now,
           audioClipPath: existing.audioClipPath,
+          clipTimestamp: existing.clipTimestamp,
           source: existing.source,
           latitude: existing.latitude,
           longitude: existing.longitude,
@@ -830,6 +853,7 @@ class SurveyController {
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
       _activeCardSpecies.clear();
+      _clipPeakTracker.clear();
       _gpsTracker = null;
       _sampler = null;
 
@@ -843,7 +867,22 @@ class SurveyController {
 
   /// Capture a manual GPS fix (for manual GPS mode).
   Future<void> captureGpsFix() async {
+    if (!_useGps) return;
     await _gpsTracker?.captureOnce();
+  }
+
+  /// Restart foreground GPS tracking after an app lifecycle resume.
+  ///
+  /// The setting is checked here, not only by the screen, so a tracker cannot
+  /// be restarted after the user turns off GPS during an active survey.
+  Future<void> startGpsTracking() async {
+    if (!_useGps) return;
+    await _gpsTracker?.startTracking();
+  }
+
+  /// Stop an active GPS stream when the app-wide setting is turned off.
+  Future<void> stopGpsTracking() async {
+    await _gpsTracker?.stopTracking();
   }
 
   /// Insert a user-entered species observation into the active session.
@@ -852,13 +891,17 @@ class SurveyController {
   /// log birds they saw or heard but BirdNET didn't detect (or before/after
   /// inference would catch them). The record:
   ///
-  ///   - Has [DetectionSource.manual] so it's clearly distinguishable from
-  ///     model detections everywhere it's rendered or exported.
+  ///   - Has [DetectionSource.manual] — or [DetectionSource.userSpecified]
+  ///     when the label was typed via "Other (specify)" rather than picked
+  ///     from the taxonomy — so it's clearly distinguishable from model
+  ///     detections everywhere it's rendered or exported.
   ///   - Carries confidence 1.0 (manual entries are by definition certain
   ///     from the user's point of view).
   ///   - Is timestamped to the moment the user confirms the entry.
-  ///   - Is GPS-tagged from [SurveyGpsTracker.lastPoint] when available so it
-  ///     appears on the map alongside auto detections.
+  ///   - Carries the heard / seen [evidence] the user ticked in the picker,
+  ///     or null when they ticked neither.
+  ///   - Is tagged from [SurveyGpsTracker.lastPoint] when available, falling
+  ///     back to the session's fixed coordinates when GPS is disabled.
   ///   - Skips the [DetectionSampler] (manuals are always kept) and the alert
   ///     coordinator (the user just typed it; alerting them again is noise).
   ///   - Does NOT touch [_activeCardSpecies] \u2014 manuals are one-shot and
@@ -868,6 +911,8 @@ class SurveyController {
   Future<DetectionRecord?> addManualDetection({
     required String scientificName,
     required String commonName,
+    DetectionEvidence? evidence,
+    bool userSpecified = false,
   }) async {
     if (_session == null) return null;
     final gpsPoint = _gpsTracker?.lastPoint;
@@ -876,9 +921,13 @@ class SurveyController {
       commonName: commonName,
       confidence: 1.0,
       timestamp: DateTime.now(),
-      source: DetectionSource.manual,
-      latitude: gpsPoint?.latitude,
-      longitude: gpsPoint?.longitude,
+      source:
+          userSpecified
+              ? DetectionSource.userSpecified
+              : DetectionSource.manual,
+      evidence: evidence,
+      latitude: gpsPoint?.latitude ?? _session!.latitude,
+      longitude: gpsPoint?.longitude ?? _session!.longitude,
     );
     _session!.addDetection(record);
     _sessionDetections.insert(0, record);
@@ -1005,6 +1054,12 @@ class SurveyController {
     try {
       final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
       final windowSamples = windowDuration * sampleRate;
+      // Dated at the read so a clip cut from this cycle knows which stretch
+      // of audio it holds. The samples just read end at "now", so the window
+      // they cover starts [windowDuration] earlier.
+      final windowTimestamp = DateTime.now().subtract(
+        Duration(seconds: windowDuration),
+      );
       final audioSamples = ringBuffer.readLast(windowSamples);
 
       if (kDebugMode && _inferenceCycleCount % 30 == 0) {
@@ -1041,7 +1096,8 @@ class SurveyController {
       ];
 
       // Detection counting (card-visibility based, same as LiveController).
-      if (_session != null) {
+      final session = _session;
+      if (session != null) {
         final currentNames = <String>{
           for (final d in filteredDetections) d.species.scientificName,
         };
@@ -1058,6 +1114,7 @@ class SurveyController {
         final closingNow = DateTime.now();
         for (final name in disappeared) {
           final existing = _activeCardSpecies.remove(name);
+          _clipPeakTracker.forget(name);
           if (existing == null) continue;
           // Mutate endTimestamp in place via list-replace (endTimestamp is
           // a final field). The new record carries the same audioClipPath
@@ -1069,6 +1126,7 @@ class SurveyController {
             timestamp: existing.timestamp,
             endTimestamp: closingNow,
             audioClipPath: existing.audioClipPath,
+            clipTimestamp: existing.clipTimestamp,
             source: existing.source,
             latitude: existing.latitude,
             longitude: existing.longitude,
@@ -1085,29 +1143,55 @@ class SurveyController {
           await _sampler?.onRecordClosed(closed);
         }
 
-        // Get current GPS position for detection tagging.
+        // Use the current GPS position for detection tagging. Before the first
+        // fix, or when GPS is disabled, fall back to the session's fixed
+        // coordinates from setup.
         final gpsPoint = _gpsTracker?.lastPoint;
+        final detectionLatitude = gpsPoint?.latitude ?? session.latitude;
+        final detectionLongitude = gpsPoint?.longitude ?? session.longitude;
 
-        String? clipPath;
-        if (_saveDetectionClips && appeared.isNotEmpty) {
-          final clipName = 'clip_${DateTime.now().millisecondsSinceEpoch}';
-          clipPath = await recordingService.saveDetectionClip(
-            clipName: clipName,
-          );
+        // Cut this cycle's clips: one for each newly appeared species, plus a
+        // re-cut for any ongoing detection that reached a new confidence
+        // peak. A merged detection can span far more windows than a clip
+        // holds, so the window we keep must be the strongest one — the first
+        // window is typically the weakest, since species enter near the
+        // confidence floor and peak a few cycles later. The sampler ranks
+        // clips by peak confidence, so this is also what makes its Top N
+        // choices reflect audio it actually kept.
+        final clipPaths = await _saveCycleClips(
+          filteredDetections,
+          appeared: appeared,
+        );
+
+        // The post-roll wait inside the clip save is the one point in a cycle
+        // where the survey can be torn down underneath us: `stopSurvey` flips
+        // to `stopping` and then closes every active record — handing it to
+        // the sampler — across several awaits of its own. Continuing here
+        // would attach records to a finished survey and, worse, let a re-cut
+        // delete the clip file a just-closed record still points at.
+        if (!identical(_session, session) || _state != SurveyState.active) {
+          for (final path in clipPaths.values) {
+            await recordingService.deleteClip(path);
+          }
+          return;
         }
 
         for (final detection in filteredDetections) {
           final name = detection.species.scientificName;
 
           if (appeared.contains(name)) {
+            // Every clip in this cycle came from one ring-buffer read, so
+            // they all hold the window that just ran: `windowTimestamp`
+            // dates the audio for all of them.
             final record = DetectionRecord(
               scientificName: detection.species.scientificName,
               commonName: detection.species.commonName,
               confidence: detection.confidence,
               timestamp: detection.timestamp ?? DateTime.now(),
-              audioClipPath: clipPath,
-              latitude: gpsPoint?.latitude,
-              longitude: gpsPoint?.longitude,
+              audioClipPath: clipPaths[name],
+              clipTimestamp: clipPaths[name] == null ? null : windowTimestamp,
+              latitude: detectionLatitude,
+              longitude: detectionLongitude,
             );
 
             // Records are always added to the session. Audio-clip retention
@@ -1117,6 +1201,9 @@ class SurveyController {
             _sessionDetections.insert(0, record);
             _refreshRecentForNotification();
             _activeCardSpecies[name] = record;
+            if (record.audioClipPath != null) {
+              _clipPeakTracker.recordSaved(name, detection.confidence);
+            }
             // Feed the alert pipeline AFTER the record is durably tracked
             // so a notification firing implies the detection was kept.
             _alertCoordinator?.onDetection(record);
@@ -1125,15 +1212,25 @@ class SurveyController {
             // appears at the top of the recent detections list.
             final existing = _activeCardSpecies[name]!;
             if (detection.confidence > existing.confidence) {
+              final freshClip = clipPaths[name];
+              final clipPath = freshClip ?? existing.audioClipPath;
               final updated = DetectionRecord(
                 scientificName: existing.scientificName,
                 commonName: existing.commonName,
                 confidence: detection.confidence,
                 timestamp: existing.timestamp,
-                audioClipPath: existing.audioClipPath ?? clipPath,
+                audioClipPath: clipPath,
+                // A re-cut moves the audio to this cycle's window; keeping
+                // the old clip keeps the window it was cut from.
+                clipTimestamp:
+                    clipPath == null
+                        ? null
+                        : (freshClip == null
+                            ? existing.clipTimestamp
+                            : windowTimestamp),
                 source: existing.source,
-                latitude: existing.latitude ?? gpsPoint?.latitude,
-                longitude: existing.longitude ?? gpsPoint?.longitude,
+                latitude: existing.latitude ?? detectionLatitude,
+                longitude: existing.longitude ?? detectionLongitude,
               );
               _sessionDetections.remove(existing);
               _sessionDetections.add(updated);
@@ -1141,6 +1238,14 @@ class SurveyController {
               if (lsIdx != -1) _session!.detections[lsIdx] = updated;
               _refreshRecentForNotification();
               _activeCardSpecies[name] = updated;
+
+              if (freshClip != null) {
+                // Publish the replacement before the first await. Otherwise
+                // stopSurvey can persist the old path after its file has
+                // already been deleted.
+                _clipPeakTracker.recordSaved(name, detection.confidence);
+                await recordingService.deleteClip(existing.audioClipPath);
+              }
             }
           }
         }
@@ -1187,6 +1292,42 @@ class SurveyController {
     } finally {
       _inferring = false;
     }
+  }
+
+  /// Cut this cycle's detection clips, returning scientific name → clip path.
+  ///
+  /// Which species need one is [DetectionClipPeakTracker.needsClip]'s call —
+  /// the same rule Live and ARU apply — and they are all cut from a single
+  /// ring-buffer read so the whole cycle costs one post-roll wait.
+  Future<Map<String, String>> _saveCycleClips(
+    List<Detection> detections, {
+    required Set<String> appeared,
+  }) async {
+    if (!_saveDetectionClips) return const {};
+
+    final needsClip = <String>[];
+    for (final detection in detections) {
+      final name = detection.species.scientificName;
+      final isNew = appeared.contains(name);
+      final existing = _activeCardSpecies[name];
+      if (!isNew && existing == null) continue;
+
+      if (_clipPeakTracker.needsClip(
+        key: name,
+        candidateConfidence: detection.confidence,
+        currentConfidence: existing?.confidence ?? detection.confidence,
+        hasClip: existing?.audioClipPath != null,
+        isNew: isNew,
+      )) {
+        needsClip.add(name);
+      }
+    }
+
+    return saveDetectionClipsFor<String>(
+      recordingService: recordingService,
+      items: needsClip,
+      speciesOf: (name) => name,
+    );
   }
 
   // ── Persistence ─────────────────────────────────────────────────────────

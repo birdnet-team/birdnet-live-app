@@ -194,7 +194,6 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
                   child: Text(
                     '${l10n.speciesPhotoCreditLabel}: ${_detail!.imageAuthor}'
-                    '${_detail!.imageLicense != null ? ' (${_detail!.imageLicense})' : ''}'
                     '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color:

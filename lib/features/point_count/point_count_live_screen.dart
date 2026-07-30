@@ -34,6 +34,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/quick_action_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -98,6 +99,8 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
 
 class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
+  final Object _quickListenSafetyOwner = Object();
+
   /// Remaining time in the countdown (updated every second).
   late final ValueNotifier<Duration> _remainingNotifier;
 
@@ -113,6 +116,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   @override
   void initState() {
     super.initState();
+    QuickListenSafety.registerIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+      QuickListenSessionOwner.pointCount,
+    );
     WidgetsBinding.instance.addObserver(this);
     _remainingNotifier = ValueNotifier(
       Duration(minutes: widget.durationMinutes),
@@ -380,6 +387,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
   @override
   void dispose() {
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     _remainingNotifier.dispose();
@@ -878,10 +888,6 @@ class _PointCountSpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000;
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isCapturing,
@@ -889,7 +895,7 @@ class _PointCountSpectrogram extends ConsumerWidget {
       colorMapName: colorMap,
       dbFloor: dbFloor,
       dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
+      displaySeconds: durationSec.toDouble(),
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,

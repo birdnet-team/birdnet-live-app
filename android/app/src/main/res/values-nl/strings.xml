@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_listen_widget_label">Snel luisteren</string>
+    <string name="quick_listen_widget_description">Ga direct naar Live Mode en begin met luisteren.</string>
+    <string name="quick_listen_widget_button">Luisteren starten</string>
+    <string name="quick_listen_widget_1x1_label">Snel luisteren (compact)</string>
+    <string name="quick_listen_widget_1x1_description">Klein tegeltje met alleen een pictogram — tik om direct naar Live Mode te gaan en te beginnen met luisteren.</string>
+</resources>

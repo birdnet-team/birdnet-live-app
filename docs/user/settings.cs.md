@@ -180,6 +180,8 @@ Toto nastavení platí pro zvuk nahraný BirdNET Live. **Analýza souborů** udr
 
 Je-li zapnuto, režim Live začne nahrávat hned po otevření obrazovky a dokončení načtení modelu — bez nutnosti klepnout na tlačítko mikrofonu. Užitečné pro kioskové nasazení, hands-free použití (např. upevnění zařízení v terénu) nebo jakýkoli postup, kde uživatel již ví, že otevření Live vždy znamená „začni teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nespustilo Session. Automatické spuštění se aktivuje jen jednou na každou návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon stále funguje jako ruční restart.
 
+Toto nastavení se týká otevření režimu Live z aplikace. [Widget „Rychlý poslech“](live-mode.md) po klepnutí spustí poslech bez ohledu na toto nastavení a nijak je nemění. Pokud již běží nebo se spouští Session Point Count, Survey, File Analysis nebo režimu ARU, zachová ji a místo toho vás vyzve, abyste ji nejprve zastavili.
+
 ## Poloha
 
 ### Použít GPS
@@ -231,7 +233,7 @@ Je-li zapnuto, export ZIP nese vedlejší soubor `*.metadata.json` popisující,
 
 ### Zahrnout HTML report
 
-Je-li zapnuto, každý export ZIP obsahuje vedle tabulky, audio klipů a GPX také soubor `report.html`. Otevřete jej v libovolném webovém prohlížeči a získáte tiskově připravený souhrn Session: záhlaví s datem, polohou, pozorovatelem a součty; interaktivní mapu GPS trasy a značek detekcí; kartu pro každou detekci s náhledem z taxonomie Cornell, názvy, štítkem skóre, vaším potvrzením, případnou poznámkou, kterou jste napsali, a původním audio klipem vloženým jako přehrávač; a použitá nastavení analýzy. Intuice: CSV je skvělé pro analytické pipeline, ale nepoužitelné pro sdílení s netechnickým spolupracovníkem nebo pro rychlý tištěný terénní souhrn — HTML report tuto mezeru zaplní jedním klepnutím. Náhledy druhů a mapové dlaždice potřebují připojení při prvním otevření souboru (načítají se živě z taxonomického API BirdNET a z OpenStreetMap), ale vše ostatní — text, rozvržení, přehrávání zvuku, odkazy — funguje plně offline. Vypněte, pokud potřebujete jen surová data a chcete ZIP udržet o pár KB menší.
+Je-li zapnuto, každý export ZIP obsahuje vedle tabulky, audio klipů a GPX také soubor `<session>_report.html`. Otevřete jej v libovolném webovém prohlížeči a získáte tiskově připravený souhrn Session: záhlaví s datem, polohou, pozorovatelem a součty; interaktivní mapu GPS trasy a značek detekcí; kartu pro každou detekci s náhledem z taxonomie Cornell, názvy, štítkem skóre, vaším potvrzením, případnou poznámkou, kterou jste napsali, a původním audio klipem vloženým jako přehrávač; a použitá nastavení analýzy. Intuice: CSV je skvělé pro analytické pipeline, ale nepoužitelné pro sdílení s netechnickým spolupracovníkem nebo pro rychlý tištěný terénní souhrn — HTML report tuto mezeru zaplní jedním klepnutím. Náhledy druhů a mapové dlaždice potřebují připojení při prvním otevření souboru (načítají se živě z taxonomického API BirdNET a z OpenStreetMap), ale vše ostatní — text, rozvržení, přehrávání zvuku, odkazy — funguje plně offline. Vypněte, pokud potřebujete jen surová data a chcete ZIP udržet o pár KB menší.
 
 ### Sdílení pouze zvuku
 

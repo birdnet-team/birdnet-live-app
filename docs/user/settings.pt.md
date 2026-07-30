@@ -188,6 +188,8 @@ Esta configuração se aplica ao áudio gravado pelo BirdNET Live. A **Análise 
 
 Quando ativado, o Modo Live começa a gravar assim que a tela abre e o modelo termina de carregar — sem precisar tocar no botão do microfone. Útil para instalações tipo quiosque, uso viva-voz (por exemplo, ao montar o dispositivo em campo) ou qualquer fluxo de trabalho em que já se sabe que abrir o Live significa sempre "começar agora". Desativado por padrão para que um toque acidental no cartão do Live, na tela de Início, não inicie uma Session silenciosamente. O início automático ocorre apenas uma vez por visita à tela, então parar uma Session e tocar no microfone novamente ainda funciona como reinício manual.
 
+Esta configuração vale para abrir o Modo Live de dentro do app. O [widget «Escuta rápida»](live-mode.md) começa a escutar ao ser tocado, qualquer que seja esta configuração, e não a altera. Se uma Session de Point Count, Survey, File Analysis ou Modo ARU já estiver em andamento ou iniciando, ele preserva essa Session e pede que você a encerre primeiro.
+
 ## Localização
 
 ### Usar GPS
@@ -235,7 +237,7 @@ Inclui o áudio salvo junto com as tabelas ou metadados exportados, quando supor
 
 ### Incluir relatório HTML
 
-Quando ativado, cada ZIP de exportação também contém um arquivo `report.html` ao lado da tabela, dos clipes de áudio e do GPX. Abra-o em qualquer navegador e você terá um resumo pronto para impressão da Session: cartão de cabeçalho com data, localização, observador e totais; um mapa interativo do percurso GPS e dos marcadores de detecção; um cartão por detecção com a miniatura da taxonomia da Cornell, os nomes, a pílula de pontuação, sua confirmação, qualquer nota digitada e o clipe de áudio original embutido como reprodutor; e as configurações de análise usadas. A intuição: um CSV é ótimo para pipelines de análise, mas inútil para compartilhar com um colaborador não técnico ou imprimir um resumo de campo rápido — o relatório HTML preenche essa lacuna com um toque. As miniaturas das espécies e os tiles de mapa precisam de conexão na primeira vez que o arquivo é aberto (são buscados ao vivo da API de taxonomia do BirdNET e do OpenStreetMap), mas todo o resto — texto, layout, reprodução de áudio, links — funciona totalmente offline. Desative isto se você só precisa dos dados brutos e quer manter o ZIP alguns KB menor.
+Quando ativado, cada ZIP de exportação também contém um arquivo `<session>_report.html` ao lado da tabela, dos clipes de áudio e do GPX. Abra-o em qualquer navegador e você terá um resumo pronto para impressão da Session: cartão de cabeçalho com data, localização, observador e totais; um mapa interativo do percurso GPS e dos marcadores de detecção; um cartão por detecção com a miniatura da taxonomia da Cornell, os nomes, a pílula de pontuação, sua confirmação, qualquer nota digitada e o clipe de áudio original embutido como reprodutor; e as configurações de análise usadas. A intuição: um CSV é ótimo para pipelines de análise, mas inútil para compartilhar com um colaborador não técnico ou imprimir um resumo de campo rápido — o relatório HTML preenche essa lacuna com um toque. As miniaturas das espécies e os tiles de mapa precisam de conexão na primeira vez que o arquivo é aberto (são buscados ao vivo da API de taxonomia do BirdNET e do OpenStreetMap), mas todo o resto — texto, layout, reprodução de áudio, links — funciona totalmente offline. Desative isto se você só precisa dos dados brutos e quer manter o ZIP alguns KB menor.
 
 ## Privacidade
 

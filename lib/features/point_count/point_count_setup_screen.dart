@@ -100,10 +100,20 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     _confidenceThreshold = ref.read(confidenceThresholdProvider);
     _sensitivity = ref.read(sensitivityProvider);
     _speciesFilterMode = ref.read(speciesFilterModeProvider);
-    // Start fetching GPS location immediately. Reuse a recent fix if one
-    // is still warm — closing and reopening the wizard within a couple of
-    // minutes shouldn't burn another 10s waiting on the same fix.
-    _fetchGpsLocation();
+    if (ref.read(useGpsProvider)) {
+      // Start fetching GPS location immediately. Reuse a recent fix if one
+      // is still warm — closing and reopening the wizard within a couple of
+      // minutes shouldn't burn another 10s waiting on the same fix.
+      _fetchGpsLocation();
+    } else {
+      // GPS is off app-wide: start on the manual tab seeded with the
+      // coordinates from Settings rather than presenting them as a fix.
+      _locationChoice = _LocationChoice.manual;
+      _latitude = ref.read(manualLatitudeProvider);
+      _longitude = ref.read(manualLongitudeProvider);
+      _latController.text = _latitude!.toStringAsFixed(5);
+      _lonController.text = _longitude!.toStringAsFixed(5);
+    }
   }
 
   @override
@@ -510,6 +520,7 @@ class _DurationStep extends ConsumerWidget {
               value: _LocationChoice.gps,
               icon: const Icon(AppIcons.myLocation, size: 18),
               label: Text(l10n.pointCountLocationGps),
+              enabled: ref.watch(useGpsProvider),
             ),
             ButtonSegment(
               value: _LocationChoice.manual,

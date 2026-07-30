@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Quick Listen home-screen widget (dark). Mirrors the app's dark
+         ColorScheme in lib/core/theme/app_theme.dart. See values/colors.xml. -->
+    <color name="widget_surface">#2C2C2C</color>
+    <color name="widget_on_surface">#E0E0E0</color>
+    <color name="widget_accent">#EF5350</color>
+    <!-- accent at ~20% alpha, matching _ModeCard's withAlpha(50) in dark. -->
+    <color name="widget_accent_container">#32EF5350</color>
+</resources>

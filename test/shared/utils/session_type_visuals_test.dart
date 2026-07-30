@@ -15,7 +15,10 @@ void main() {
         AppIcons.locationOnRounded,
       );
       expect(sessionTypeIcon(SessionType.survey), AppIcons.routeRounded);
-      expect(sessionTypeIcon(SessionType.fileUpload), AppIcons.audioFileRounded);
+      expect(
+        sessionTypeIcon(SessionType.fileUpload),
+        AppIcons.audioFileRounded,
+      );
     });
   });
 

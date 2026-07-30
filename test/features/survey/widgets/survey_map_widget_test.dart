@@ -18,49 +18,50 @@ AppLocalizations _l10n(WidgetTester tester) {
 
 void main() {
   group('Survey map accessibility widgets', () {
-    testWidgets('marker semantics expose species, confidence, audio, and confirmation', (
-      tester,
-    ) async {
-      const label = 'Great Tit';
-      await tester.pumpWidget(
-        _host(
-          SurveyMapMarkerSemantics(
-            label: label,
-            confidence: 0.87,
-            hasAudio: true,
-            isConfirmed: true,
-            onTap: () {},
-            child: const SizedBox(width: 48, height: 48),
-          ),
-        ),
-      );
-
-      final semantics = tester.ensureSemantics();
-      try {
-        final l10n = _l10n(tester);
-        final markerFinder = find.bySemanticsLabel(label);
-
-        expect(
-          tester.getSemantics(markerFinder),
-          matchesSemantics(
-            label: label,
-            value: buildSurveyMapMarkerSemanticsValue(
-              l10n: l10n,
+    testWidgets(
+      'marker semantics expose species, confidence, audio, and confirmation',
+      (tester) async {
+        const label = 'Great Tit';
+        await tester.pumpWidget(
+          _host(
+            SurveyMapMarkerSemantics(
+              label: label,
               confidence: 0.87,
               hasAudio: true,
               isConfirmed: true,
+              onTap: () {},
+              child: const SizedBox(width: 48, height: 48),
             ),
-            isButton: true,
-            hasEnabledState: true,
-            isEnabled: true,
-            hasSelectedState: true,
-            hasTapAction: true,
           ),
         );
-      } finally {
-        semantics.dispose();
-      }
-    });
+
+        final semantics = tester.ensureSemantics();
+        try {
+          final l10n = _l10n(tester);
+          final markerFinder = find.bySemanticsLabel(label);
+
+          expect(
+            tester.getSemantics(markerFinder),
+            matchesSemantics(
+              label: label,
+              value: buildSurveyMapMarkerSemanticsValue(
+                l10n: l10n,
+                confidence: 0.87,
+                hasAudio: true,
+                isConfirmed: true,
+              ),
+              isButton: true,
+              hasEnabledState: true,
+              isEnabled: true,
+              hasSelectedState: true,
+              hasTapAction: true,
+            ),
+          );
+        } finally {
+          semantics.dispose();
+        }
+      },
+    );
 
     testWidgets('cluster bubble exposes localized detection count semantics', (
       tester,
@@ -70,7 +71,10 @@ void main() {
       final semantics = tester.ensureSemantics();
       try {
         final l10n = _l10n(tester);
-        expect(find.bySemanticsLabel(l10n.sessionDetectionCount(2)), findsOneWidget);
+        expect(
+          find.bySemanticsLabel(l10n.sessionDetectionCount(2)),
+          findsOneWidget,
+        );
       } finally {
         semantics.dispose();
       }
@@ -89,8 +93,12 @@ void main() {
         ),
       );
 
-      final smallBubble = tester.getSize(find.byType(SurveyMapClusterBubble).at(0));
-      final largeBubble = tester.getSize(find.byType(SurveyMapClusterBubble).at(1));
+      final smallBubble = tester.getSize(
+        find.byType(SurveyMapClusterBubble).at(0),
+      );
+      final largeBubble = tester.getSize(
+        find.byType(SurveyMapClusterBubble).at(1),
+      );
 
       expect(largeBubble.width, greaterThan(smallBubble.width));
       expect(largeBubble.height, greaterThan(smallBubble.height));

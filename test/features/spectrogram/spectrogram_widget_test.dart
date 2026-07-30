@@ -27,7 +27,7 @@ void main() {
       int fftSize = 256,
       double dbFloor = -80.0,
       double dbCeiling = 0.0,
-      int maxColumns = 50,
+      double displaySeconds = 2.0,
       bool isActive = false,
     }) {
       return MaterialApp(
@@ -42,7 +42,7 @@ void main() {
               colorMapName: colorMapName,
               dbFloor: dbFloor,
               dbCeiling: dbCeiling,
-              maxColumns: maxColumns,
+              displaySeconds: displaySeconds,
             ),
           ),
         ),
@@ -63,15 +63,16 @@ void main() {
     //   LateInitializationError: Field '_painter@...' has not been initialized.
 
     testWidgets(
-        'first build does not throw LateInitializationError (regression)',
-        (tester) async {
-      // This single pump exercises initState → _initProcessor with an
-      // uninitialized _painter.  Without the _painterInitialized guard it
-      // would throw immediately.
-      await tester.pumpWidget(buildWidget());
-      // No exception = regression does not reoccur.
-      expect(find.byType(SpectrogramWidget), findsOneWidget);
-    });
+      'first build does not throw LateInitializationError (regression)',
+      (tester) async {
+        // This single pump exercises initState → _initProcessor with an
+        // uninitialized _painter.  Without the _painterInitialized guard it
+        // would throw immediately.
+        await tester.pumpWidget(buildWidget());
+        // No exception = regression does not reoccur.
+        expect(find.byType(SpectrogramWidget), findsOneWidget);
+      },
+    );
 
     // ─── Settings changes (didUpdateWidget → _initProcessor) ──────────────
 
@@ -96,16 +97,21 @@ void main() {
       expect(find.byType(SpectrogramWidget), findsOneWidget);
     });
 
-    testWidgets('multiple consecutive settings changes do not throw',
-        (tester) async {
+    testWidgets('multiple consecutive settings changes do not throw', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-          buildWidget(colorMapName: 'viridis', fftSize: 256, maxColumns: 50));
+        buildWidget(colorMapName: 'viridis', fftSize: 256, displaySeconds: 2),
+      );
       await tester.pumpWidget(
-          buildWidget(colorMapName: 'grayscale', fftSize: 256, maxColumns: 50));
+        buildWidget(colorMapName: 'grayscale', fftSize: 256, displaySeconds: 2),
+      );
       await tester.pumpWidget(
-          buildWidget(colorMapName: 'birdnet', fftSize: 512, maxColumns: 100));
+        buildWidget(colorMapName: 'birdnet', fftSize: 512, displaySeconds: 5),
+      );
       await tester.pumpWidget(
-          buildWidget(colorMapName: 'viridis', fftSize: 256, maxColumns: 50));
+        buildWidget(colorMapName: 'viridis', fftSize: 256, displaySeconds: 2),
+      );
       expect(find.byType(SpectrogramWidget), findsOneWidget);
     });
 

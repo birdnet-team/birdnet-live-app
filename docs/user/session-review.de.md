@@ -36,6 +36,17 @@ Ein Suchfeld über der Liste filtert die Arten nach gebräuchlichem oder wissens
 
 Die gewählte Sortierung bleibt über Sessions hinweg erhalten.
 
+### Arten manuell hinzufügen
+
+Die Schaltfläche :material-plus-circle-outline: in der Werkzeugleiste öffnet die Artensuche für Vögel, die BirdNET übersehen hat. Ein Tipp auf ein Suchergebnis fügt die Art nicht sofort ein — zuerst erscheint ein Bestätigungsfenster mit der gewählten Art und zwei Kontrollkästchen:
+
+- :material-ear-hearing: **Gehört** — Sie haben den Vogel gehört.
+- :material-eye: **Gesehen** — Sie haben den Vogel gesehen.
+
+Wählen Sie eines, beides oder keines aus und tippen Sie auf **Hinzufügen**. **Abbrechen** — oder ein Wisch nach unten — bringt Sie zurück zur Suche, ein Fehltipp kostet also nichts. **Gehört** ist standardmäßig aktiviert, und Ihre Auswahl bleibt für die nächste Art erhalten: Eine Reihe nur gesehener Vögel erfordert nur ein einziges Setzen von **Gesehen**. Bleiben beide leer, wird der Eintrag ohne Beobachtungsart gespeichert — nicht als „weder noch“.
+
+Die Auswahl wird an der Detektion gespeichert und überall als kleines Ohr- und/oder Augensymbol neben dem Manuell-Abzeichen angezeigt: in Artenüberschriften, Cluster-Zeilen, im Clip-Player und in der Live-Survey-Liste. Sie wandert auch in die Exporte: als Spalte `Evidence` in CSV- und Raven-Tabellen, als Feld `evidence` in JSON und als Chip im HTML-Bericht. Dasselbe Fenster erscheint bei **Art ersetzen**, vorbelegt mit dem, was der Datensatz bereits trug.
+
 ### Aktionen je Detektion
 
 Überall dort, wo eine Detektion erscheint – in der Artenliste, im Clip-Player-Blatt, in der Live-Survey-Liste und an den Survey-Kartenmarkierungen –, stehen dieselben Aktionen zur Verfügung:

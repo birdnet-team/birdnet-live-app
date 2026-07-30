@@ -459,7 +459,7 @@ final shareAudioAsWavProvider =
       return BoolSettingNotifier(prefs, PrefKeys.shareAudioAsWav, false);
     });
 
-/// Bundle a self-contained `report.html` next to the audio inside the
+/// Bundle a self-contained `<session>_report.html` next to the audio in the
 /// export ZIP (default true). The HTML opens in any browser, embeds the
 /// session metadata + clip players, and pulls species images / data
 /// from the BirdNET taxonomy API on the fly. Off-by-default for users

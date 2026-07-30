@@ -75,7 +75,8 @@ void main() {
     });
 
     test('handles Windows-style line endings (CRLF)', () {
-      const crlf = 'idx;id;sci_name;com_name;class;order\r\n'
+      const crlf =
+          'idx;id;sci_name;com_name;class;order\r\n'
           '0;1;Sp A;Name A;Aves;Order\r\n'
           '1;2;Sp B;Name B;Aves;Order\r\n';
 
@@ -163,10 +164,7 @@ void main() {
         file: 'labels.csv',
         delimiter: ',',
         hasHeader: true,
-        columns: {
-          'scientificName': 'species',
-          'commonName': 'common',
-        },
+        columns: {'scientificName': 'species', 'commonName': 'common'},
       );
       const csv = '''species,common
 Parus major,Great Tit
@@ -188,10 +186,7 @@ Turdus merula,Eurasian Blackbird''';
         file: 'labels.tsv',
         delimiter: '\t',
         hasHeader: true,
-        columns: {
-          'index': 'idx',
-          'scientificName': 'name',
-        },
+        columns: {'index': 'idx', 'scientificName': 'name'},
       );
       const tsv = 'idx\tname\n0\tParus major\n1\tTurdus merula';
 
@@ -209,10 +204,7 @@ Turdus merula,Eurasian Blackbird''';
         file: 'labels.csv',
         delimiter: ',',
         hasHeader: true,
-        columns: {
-          'scientificName': 'name',
-          'commonName': 'common',
-        },
+        columns: {'scientificName': 'name', 'commonName': 'common'},
       );
       const csv = '''name,common
 Species A,Common A
@@ -252,9 +244,7 @@ Turdus merula,Eurasian Blackbird''';
         file: 'labels.csv',
         delimiter: ';',
         hasHeader: true,
-        columns: {
-          'scientificName': 'sci',
-        },
+        columns: {'scientificName': 'sci'},
       );
       const csv = '''sci
 Parus major''';

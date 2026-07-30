@@ -100,7 +100,8 @@ class WeatherService {
     // observed within 2 hours of `at`.
     final cellLatStr = cellLat.toStringAsFixed(1);
     final cellLonStr = cellLon.toStringAsFixed(1);
-    final persistentPrefix = '${PrefKeys.weatherCachePrefix}${cellLatStr}_${cellLonStr}_';
+    final persistentPrefix =
+        '${PrefKeys.weatherCachePrefix}${cellLatStr}_${cellLonStr}_';
     final persistentKey = '$persistentPrefix${hourKey.toIso8601String()}';
 
     final inFlight = _inFlight[persistentKey];
@@ -136,7 +137,8 @@ class WeatherService {
     final Uri uri;
     if (daysAgo > 90) {
       // Historical API
-      final dateStr = '${at.year}-${at.month.toString().padLeft(2, '0')}-${at.day.toString().padLeft(2, '0')}';
+      final dateStr =
+          '${at.year}-${at.month.toString().padLeft(2, '0')}-${at.day.toString().padLeft(2, '0')}';
       uri = Uri.parse('https://archive-api.open-meteo.com/v1/archive').replace(
         queryParameters: {
           'latitude': latitude.toStringAsFixed(4),
@@ -260,7 +262,8 @@ class WeatherService {
                 final fetchedAtStr = decoded['fetchedAt'] as String?;
                 if (fetchedAtStr != null) {
                   final fetchedAt = DateTime.tryParse(fetchedAtStr);
-                  if (fetchedAt != null && nowTime.difference(fetchedAt).inDays > 30) {
+                  if (fetchedAt != null &&
+                      nowTime.difference(fetchedAt).inDays > 30) {
                     await prefs.remove(key);
                   }
                 }

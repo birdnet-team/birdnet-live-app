@@ -132,6 +132,12 @@ Quando **Solo rilevamenti** è attivo, l'app mostra un singolo cursore **Contest
 
 Scegli **WAV** o **FLAC**.
 
+### Avvia registrazione automaticamente (solo modalità Live)
+
+Quando è attiva, la modalità Live avvia la registrazione appena si apre e il modello termina il caricamento, senza dover toccare il pulsante del microfono. È disattivata per impostazione predefinita.
+
+Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. Il [widget «Ascolto rapido»](live-mode.md) avvia l'ascolto quando viene toccato indipendentemente da questa impostazione e non la modifica. Se una Session Point Count, Survey, File Analysis o modalità ARU è già in corso o si sta avviando, conserva quella Session e chiede prima di interromperla.
+
 ## Posizione
 
 ### Usa il GPS
@@ -168,6 +174,10 @@ L'intuizione: molti flussi di lavoro richiedono più formati contemporaneamente 
 ### Include file audio
 
 Includi l'audio salvato insieme alle tabelle o ai metadati esportati quando supportato dal flusso di lavoro di esportazione.
+
+### Includi report HTML
+
+Quando è attivo, ogni ZIP di esportazione contiene anche un file `<session>_report.html` accanto alla tabella, ai clip audio e al GPX. Aprilo in qualsiasi browser per ottenere un riepilogo della Session pronto per la stampa: una scheda di intestazione con data, posizione, osservatore e totali; una mappa interattiva della traccia GPS e dei marcatori di rilevamento; una scheda per ogni rilevamento con miniatura della tassonomia Cornell, nomi, indicatore del punteggio, conferma, eventuali note e clip audio originale incorporato come lettore; e le impostazioni di analisi utilizzate. Le miniature delle specie e i riquadri della mappa richiedono una connessione alla prima apertura del file, ma testo, layout, riproduzione audio e collegamenti funzionano offline. Disattiva questa opzione se ti servono solo i dati grezzi e vuoi mantenere lo ZIP leggermente più piccolo.
 
 ## Privacy
 

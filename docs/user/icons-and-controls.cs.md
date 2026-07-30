@@ -72,6 +72,8 @@ Tyto ovládací prvky se objevují u každého řádku detekce v celé aplikaci 
 | :material-swap-horizontal: **Nahradit druh** | Zvolí pro tuto detekci jiný druh. Otevře se také přejetím řádku přehledu doleva. |
 | :material-delete-outline: **Smazat detekci** | Okamžitě odebere řádek. Na pár sekund se objeví SnackBar s možností vrácení. Spustí se také přejetím řádku přehledu doprava. |
 | :material-delete-sweep-outline: **Smazat druh** | Odebere ze session všechny detekce daného druhu naráz, se stejným vrácením přes SnackBar. |
+| :material-ear-hearing: **Slyšeno** | U ručně přidané detekce: ptáka jste slyšeli. Nastavuje se políčkem v potvrzovacím panelu po výběru druhu. |
+| :material-eye: **Viděno** | U ručně přidané detekce: ptáka jste viděli. Obě ikony současně znamenají slyšeno *i* viděno. |
 
 ## Panel nástrojů Přehledu Session
 

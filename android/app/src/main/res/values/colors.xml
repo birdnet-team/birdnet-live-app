@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#00000000</color>
+
+    <!-- Quick Listen home-screen widget (light). Values are lifted straight
+         from the app's light ColorScheme in lib/core/theme/app_theme.dart so
+         the tile reads as part of the app: surfaceContainerHighest panel,
+         onSurface label, error accent for Live Mode. values-night/ carries
+         the dark equivalents. -->
+    <color name="widget_surface">#EEEEEE</color>
+    <color name="widget_on_surface">#000000</color>
+    <color name="widget_accent">#B00020</color>
+    <!-- accent at ~12% alpha, matching _ModeCard's withAlpha(30) icon tile. -->
+    <color name="widget_accent_container">#1EB00020</color>
 </resources>

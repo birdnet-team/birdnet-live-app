@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tinted accent tile behind the Quick Listen icon. Same treatment as the
+     mode cards' icon containers (lib/features/home/home_screen.dart):
+     rounded square filled with the accent at low alpha, icon drawn in the
+     full accent color. Live Mode's accent is the error palette per
+     AGENTS.md ("Dynamic color semantics: live=error"); it is static here
+     because dynamic color cannot be resolved outside the Flutter engine. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_accent_container" />
+    <corners android:radius="14dp" />
+</shape>

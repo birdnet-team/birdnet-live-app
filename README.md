@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
    <img src="https://img.shields.io/badge/flutter-%3E%3D3.27-blue.svg" alt="Flutter >=3.27">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-0.18.9-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.0.0-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
 </p>
 
@@ -74,7 +74,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **On-device inference** — BirdNET+ model (9,789 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — UI translations for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Polish, and Russian
+- **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Polish, and Russian
 
 ## Install on Android
 
@@ -201,6 +201,8 @@ lib/
 
 docs/             # MkDocs source for GitHub Pages documentation
 assets/           # App assets (LFS ONNX models, species data, images, fonts)
+  announcements/  # Spoken announcement phrasing per locale (second translation
+                  #   surface — see assets/announcements/README.md)
 test/             # Tests mirroring lib/ structure
 ```
 
@@ -223,6 +225,15 @@ dart format .        # Format code
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Contributing Translations
+
+Translations are very welcome contributions, and they cover **two** surfaces — both need updating for a language to be complete:
+
+- **UI strings** — ARB files in `lib/l10n/`. See [CONTRIBUTING.md](CONTRIBUTING.md#translation-contributions).
+- **Spoken announcement phrasing** — the sentences the app says out loud, in `assets/announcements/templates_<locale>.json`. See [assets/announcements/README.md](assets/announcements/README.md).
+
+The announcement templates are not in ARB because each entry is a *list* of interchangeable variants rather than a single string. A missing or incomplete template file falls back to English silently, so it is easy to ship a "complete" translation that still speaks English.
 
 ## License
 

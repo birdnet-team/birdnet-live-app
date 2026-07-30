@@ -46,9 +46,55 @@ import 'widgets/detection_list_widget.dart';
 // with no AppBar — edge-to-edge with SafeArea only at top/bottom.
 // =============================================================================
 
+/// Tracks mounted Live Mode routes so Quick Listen can reveal and reuse an
+/// existing screen instead of rebuilding it.
+///
+/// Reusing matters while a session is active: disposing its screen cancels
+/// the duration-warning timer and disables the wakelock even though the
+/// app-wide controller keeps recording. Route identity also stays correct
+/// when two routes briefly overlap during a transition.
+abstract final class LiveScreenPresence {
+  static final Map<Route<dynamic>, VoidCallback> _routes =
+      <Route<dynamic>, VoidCallback>{};
+
+  static bool get isMounted => _routes.isNotEmpty;
+
+  /// Prefer the visible route, then the most recently mounted route.
+  static Route<dynamic>? get mountedRoute {
+    for (final route in _routes.keys.toList().reversed) {
+      if (route.isCurrent) return route;
+    }
+    if (_routes.isEmpty) return null;
+    return _routes.keys.last;
+  }
+
+  static void register(
+    Route<dynamic> route, {
+    required VoidCallback onStartListening,
+  }) {
+    _routes[route] = onStartListening;
+  }
+
+  static void unregister(Route<dynamic> route) {
+    _routes.remove(route);
+  }
+
+  static void requestStartListening(Route<dynamic> route) {
+    _routes[route]?.call();
+  }
+}
+
 /// Live mode screen — real-time species identification.
 class LiveScreen extends ConsumerStatefulWidget {
-  const LiveScreen({super.key});
+  const LiveScreen({super.key, this.forceAutoStart = false});
+
+  /// One-shot override that starts a session as soon as the model is
+  /// ready, regardless of the persistent [liveAutoStartProvider] setting.
+  /// Used by the Quick Listen home-screen widget so tapping it always
+  /// starts listening without silently flipping the user's saved
+  /// preference. Guarded by the same [_autoStartAttempted] single-attempt
+  /// latch as the persistent setting.
+  final bool forceAutoStart;
 
   @override
   ConsumerState<LiveScreen> createState() => _LiveScreenState();
@@ -61,6 +107,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   Timer? _sessionTimer;
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
+  bool _startScheduled = false;
+  bool _forceAutoStartRequested = false;
+  Route<dynamic>? _presenceRoute;
 
   /// Whether [_initLiveScreen] has finished clearing the previous session's
   /// state.  The controller's load may settle — and notify — before that, so
@@ -77,6 +126,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   @override
   void initState() {
     super.initState();
+    _forceAutoStartRequested = widget.forceAutoStart;
     WidgetsBinding.instance.addObserver(this);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
@@ -86,6 +136,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
     // Deferred to post-frame so provider updates don't fire during build.
     SchedulerBinding.instance.addPostFrameCallback((_) => _initLiveScreen());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route == null || identical(route, _presenceRoute)) return;
+    final previousRoute = _presenceRoute;
+    if (previousRoute != null) {
+      LiveScreenPresence.unregister(previousRoute);
+    }
+    _presenceRoute = route;
+    LiveScreenPresence.register(
+      route,
+      onStartListening: _requestQuickListenStart,
+    );
   }
 
   /// Bring the screen in sync with the controller, whatever state it is in.
@@ -161,13 +227,44 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (_initialised &&
         !_autoStartAttempted &&
         !_isStarting &&
+        !_startScheduled &&
         controller.state == LiveState.ready &&
-        ref.read(liveAutoStartProvider)) {
-      _autoStartAttempted = true;
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _toggleSession();
-      });
+        (_forceAutoStartRequested || ref.read(liveAutoStartProvider))) {
+      _forceAutoStartRequested = false;
+      _scheduleStart();
     }
+  }
+
+  void _requestQuickListenStart() {
+    if (!mounted || _isStarting || _startScheduled) return;
+    final controller = ref.read(liveControllerProvider);
+    if (controller.state == LiveState.active ||
+        controller.state == LiveState.paused) {
+      return;
+    }
+
+    _forceAutoStartRequested = true;
+    _autoStartAttempted = false;
+    if (!_initialised) return;
+
+    if (controller.state == LiveState.ready) {
+      _onControllerStateChanged();
+    } else {
+      // A second tap after a failed load should retry, and a tap while the
+      // home-screen warm-up is loading should join that load immediately.
+      _forceAutoStartRequested = false;
+      _scheduleStart();
+    }
+  }
+
+  void _scheduleStart() {
+    if (_isStarting || _startScheduled) return;
+    _autoStartAttempted = true;
+    _startScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _startScheduled = false;
+      if (mounted) unawaited(_toggleSession());
+    });
   }
 
   /// Handle the main action button press (pause / resume / start).
@@ -333,6 +430,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void dispose() {
+    final presenceRoute = _presenceRoute;
+    if (presenceRoute != null) {
+      LiveScreenPresence.unregister(presenceRoute);
+    }
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
 
@@ -354,28 +455,56 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = ref.read(liveControllerProvider);
-
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      // App going to background — pause session to stop recording/inference.
-      if (controller.state == LiveState.active) {
-        _pauseSessionForBackground();
-      }
+    // Only [paused] means the app is actually backgrounded. [inactive] also
+    // fires for transient interruptions that leave the app on screen — the
+    // rotation transition under auto-rotate, the app switcher, Control
+    // Center, an incoming call, and the task-to-front blip when the Quick
+    // Listen widget or an ARU notification action relaunches an app that is
+    // already in the foreground — and must not tear down a live recording.
+    if (state == AppLifecycleState.paused) {
+      _enqueueLifecycleTransition(_pauseSessionForBackground);
     } else if (state == AppLifecycleState.resumed) {
-      // App returning to foreground — resume if we paused for background.
-      if (controller.state == LiveState.paused && _pausedByLifecycle) {
-        _resumeSessionFromBackground();
-      }
+      _enqueueLifecycleTransition(_resumeSessionFromBackground);
     }
   }
 
   bool _pausedByLifecycle = false;
 
+  /// Tail of the serialized lifecycle pause/resume chain.
+  Future<void> _lifecycleTransition = Future<void>.value();
+
+  /// Queue a lifecycle transition behind any still-running one.
+  ///
+  /// Pausing spans an await (tearing down audio capture) during which the
+  /// controller still reports [LiveState.active]. A quick background→
+  /// foreground bounce would otherwise let the resume observe that stale
+  /// state, skip itself, and strand the session paused with no further
+  /// lifecycle event coming. Serializing makes each transition read the
+  /// state its predecessor actually left behind.
+  void _enqueueLifecycleTransition(Future<void> Function() transition) {
+    _lifecycleTransition = _lifecycleTransition.then((_) async {
+      if (!mounted) return;
+      try {
+        await transition();
+      } catch (e, stack) {
+        // A throwing transition must not poison the chain. An errored tail
+        // makes every later `.then` propagate the error instead of running
+        // its callback, which would leave the screen deaf to background and
+        // foreground events for the rest of its life — exactly the stuck
+        // state the queue exists to prevent.
+        debugPrint('LiveScreen: lifecycle transition failed: $e\n$stack');
+      }
+    });
+  }
+
   Future<void> _pauseSessionForBackground() async {
+    // The session is already being torn down — finalizing stops capture and
+    // closes the session itself, so pausing would only race it.
+    if (_finalizing) return;
+    final controller = ref.read(liveControllerProvider);
+    if (controller.state != LiveState.active) return;
     _pausedByLifecycle = true;
     _sessionTimer?.cancel();
-    final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     await captureNotifier.stop();
     await controller.pauseSession();
@@ -383,12 +512,18 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   }
 
   Future<void> _resumeSessionFromBackground() async {
-    _pausedByLifecycle = false;
+    // Don't hand the microphone back to a session that is on its way out.
+    if (_finalizing) return;
     final controller = ref.read(liveControllerProvider);
+    if (!_pausedByLifecycle || controller.state != LiveState.paused) return;
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final audioSource = ref.read(audioSourceProvider);
     await captureNotifier.start(source: audioSource);
     await controller.resumeSession();
+    // Disarmed only once the resume has actually landed. Clearing it up front
+    // would make a failure here permanent: the session would stay paused with
+    // the flag down, so no later `resumed` event could retry it.
+    _pausedByLifecycle = false;
     _onControllerStateChanged();
     _startSessionTimer();
   }
@@ -1146,13 +1281,6 @@ class _LiveSpectrogram extends ConsumerWidget {
     final durationSec = ref.watch(spectrogramDurationProvider);
     final maxFreq = ref.watch(spectrogramMaxFreqProvider);
 
-    // Compute maxColumns from desired duration:
-    // hopSize = fftSize ~/ 2, hop duration = hopSize / sampleRate
-    // maxColumns = durationSec / hopDuration
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000; // AppConstants.sampleRate
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
@@ -1164,7 +1292,7 @@ class _LiveSpectrogram extends ConsumerWidget {
         colorMapName: colorMap,
         dbFloor: dbFloor,
         dbCeiling: dbCeiling,
-        maxColumns: maxColumns,
+        displaySeconds: durationSec.toDouble(),
         showFrequencyAxis: false,
         showTimeAxis: false,
         maxDisplayFrequency: maxFreq,

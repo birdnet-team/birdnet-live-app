@@ -158,9 +158,7 @@ class _VerbosityPicker extends ConsumerWidget {
                   selected: value == o,
                   onSelected: (sel) {
                     if (sel) {
-                      ref
-                          .read(announcementsVerbosityProvider.notifier)
-                          .set(o);
+                      ref.read(announcementsVerbosityProvider.notifier).set(o);
                     }
                   },
                 ),
@@ -529,8 +527,7 @@ class _VoicePickerSheetState extends ConsumerState<_VoicePickerSheet> {
       child: FutureBuilder<List<TtsVoice>>(
         future: _voices,
         builder: (context, snapshot) {
-          final loading =
-              snapshot.connectionState == ConnectionState.waiting;
+          final loading = snapshot.connectionState == ConnectionState.waiting;
           final voices = snapshot.data ?? const <TtsVoice>[];
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -563,9 +560,7 @@ class _VoicePickerSheetState extends ConsumerState<_VoicePickerSheet> {
                       children: [
                         RadioListTile<String>(
                           value: '',
-                          title: Text(
-                            l10n.settingsAnnouncementsVoiceDefault,
-                          ),
+                          title: Text(l10n.settingsAnnouncementsVoiceDefault),
                         ),
                         for (final voice in voices)
                           RadioListTile<String>(

@@ -72,6 +72,8 @@ These controls appear on every detection row across the app — Session Review s
 | :material-swap-horizontal: **Replace species** | Pick a different species for this detection. Also opens by swiping a review row to the left. |
 | :material-delete-outline: **Delete detection** | Removes the row immediately. An undo SnackBar appears for a few seconds. Also triggered by swiping a review row to the right. |
 | :material-delete-sweep-outline: **Delete species** | Removes every detection of that species from the session in one shot, with the same SnackBar undo. |
+| :material-ear-hearing: **Heard** | On a manually added detection: you heard the bird. Set from the checkbox on the confirmation sheet shown after picking a species. |
+| :material-eye: **Seen** | On a manually added detection: you saw the bird. Both glyphs together mean heard *and* seen. |
 
 ## Session Review Toolbar
 

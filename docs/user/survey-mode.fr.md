@@ -103,6 +103,12 @@ Chaque ligne de détection donne aussi accès aux mêmes actions par détection 
 
 Les mêmes actions sont disponibles depuis la **carte de l'itinéraire en direct** : appuyez sur un marqueur de détection pour ouvrir le lecteur de clips avec confirmation, partage et suppression. Le partage pendant un relevé fonctionne même si vous avez choisi un seul enregistrement WAV continu au lieu de clips par détection — la fenêtre audio correspondante est extraite à la volée du fichier en cours. Voir [Résumé de la session → Partage d'une seule détection](session-review.md#partage-dune-seule-détection) pour plus de détails.
 
+### Enregistrer une observation
+
+Le bouton :material-plus-circle-outline: du survey en direct ouvre un petit menu avec **Ajouter une espèce** et **Ajouter une note**. **Ajouter une espèce** ouvre le même sélecteur que [Session Review](session-review.md#ajouter-une-espece-a-la-main), choisissez une espèce, puis cochez :material-ear-hearing: **Entendu** et/ou :material-eye: **Vu** sur la fiche de confirmation et touchez **Ajouter**. L'entrée est horodatée à cet instant, associée au point GPS courant, et apparaît immédiatement dans la liste des détections et sur la carte de l'itinéraire, avec le badge « manuel » et les icônes oreille / œil correspondantes.
+
+Les mémos vocaux sont volontairement absents ici : le microphone est occupé par la capture du survey. Ajoutez-les dans Session Review une fois le survey terminé.
+
 ## Fonctionnement en arrière-plan
 
 Le mode Relevé garde une notification persistante de premier plan visible pendant l'enregistrement pour qu'Android ne suspende pas le pipeline audio. La notification se déplie pour afficher :

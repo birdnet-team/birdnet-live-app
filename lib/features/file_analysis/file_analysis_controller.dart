@@ -550,6 +550,7 @@ class FileAnalysisController {
               timestamp: existing.timestamp,
               endTimestamp: windowEnd,
               audioClipPath: existing.audioClipPath,
+              clipTimestamp: existing.clipTimestamp,
               source: existing.source,
               latitude: existing.latitude,
               longitude: existing.longitude,

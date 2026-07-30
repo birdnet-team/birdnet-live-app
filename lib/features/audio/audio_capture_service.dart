@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart'
+    show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
 import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -56,12 +58,38 @@ enum CaptureState {
 /// float32 samples into a [RingBuffer].  Exposes a [levelStream] for
 /// UI level metering and an [onWindowReady] callback for downstream
 /// consumers (inference, spectrogram).
-class AudioCaptureService {
+class AudioCaptureService with WidgetsBindingObserver {
   AudioCaptureService({RingBuffer? ringBuffer})
     : _ringBuffer = ringBuffer ?? RingBuffer() {
     _watchdogTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       _checkWatchdog();
     });
+    // Observe app lifecycle so we know whether we're allowed to fight for
+    // the mic. Android will not hand the microphone to a backgrounded app
+    // while a foreground app holds it, so we only retry in the foreground
+    // (see [_checkWatchdog] / [setForeground]).
+    final binding = WidgetsBinding.instance;
+    _isForeground =
+        binding.lifecycleState == null ||
+        binding.lifecycleState == AppLifecycleState.resumed;
+    binding.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        setForeground(true);
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        setForeground(false);
+      case AppLifecycleState.inactive:
+        // Transient (app switcher, notification shade, incoming-call banner).
+        // Don't change our foreground stance on it — a real background
+        // transition always arrives as `paused` right after.
+        break;
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -111,6 +139,16 @@ class AudioCaptureService {
   DateTime _lastDataTime = DateTime.now();
 
   bool _isRestarting = false;
+
+  /// Whether the app is currently in the foreground. Kept up to date by the
+  /// [WidgetsBindingObserver] hook. We only fight to reclaim a lost mic while
+  /// foreground (see [_checkWatchdog]).
+  bool _isForeground = true;
+
+  /// Set once we've released the recorder because the mic was lost while
+  /// backgrounded, so the watchdog doesn't keep tearing down every 2 s.
+  /// Cleared when we return to the foreground or audio starts flowing again.
+  bool _backgroundReleased = false;
 
   // ── Live-tunable DSP ────────────────────────────────────────
   //
@@ -203,25 +241,42 @@ class AudioCaptureService {
     });
   }
 
-  // ── Microphone-contention detection ────────────────────────────────────
+  // ── Microphone-loss handling ───────────────────────────────────────────
   //
-  // Some Android apps (audiobook / music players, voice recorders) hold
-  // exclusive control of the microphone. When the watchdog detects a
-  // stall it tries to reclaim the mic, which interrupts the other app
-  // (e.g. an audiobook stops every 2 s). To avoid that, after a few
-  // consecutive failed restarts we stop fighting for the mic and
-  // surface a "contested" signal so the foreground notification can
-  // explain to the user why audio appears frozen.
-  static const int _contestedThreshold = 3;
-  static const Duration _contestedBackoff = Duration(seconds: 30);
-  int _consecutiveStalls = 0;
-  DateTime? _backoffUntil;
+  // Another app (the camera/video recorder, a voice recorder, a call) can
+  // take exclusive control of the microphone at any time. When that happens
+  // our audio stream stalls or errors out. How we react depends on whether
+  // we're in the foreground:
+  //
+  //   • Foreground — retry with a capped exponential back-off so we reclaim
+  //     the mic the moment the other app releases it, without hammering.
+  //
+  //   • Background — DO NOT retry. Android will not grant the mic to a
+  //     backgrounded app while a foreground app holds it, and repeatedly
+  //     re-opening `AudioRecord` against a contended mic wedges the device
+  //     audio HAL (the whole phone loses mic access until it reboots). We
+  //     release our handle cleanly and wait until the app is foregrounded
+  //     again (see [setForeground]).
+  //
+  // Either way we surface [isMicContested] / [micContestedStream] so the UI
+  // can show an "X" on the signal meter and the foreground notification can
+  // explain why audio appears frozen.
+  static const Duration _minRetryBackoff = Duration(seconds: 2);
+  static const Duration _maxRetryBackoff = Duration(seconds: 20);
+
+  /// How long a running stream may go without delivering audio before we
+  /// treat the mic as lost. Kept above the watchdog period so a single
+  /// slow chunk doesn't trip it.
+  static const Duration _stallTimeout = Duration(seconds: 3);
+
+  Duration _retryBackoff = _minRetryBackoff;
+  DateTime? _nextRetryAt;
   bool _micContested = false;
   final _micContestedController = StreamController<bool>.broadcast();
 
-  /// Whether the microphone is currently considered contested
-  /// (another app appears to hold it). Updated by the internal
-  /// watchdog after repeated restart attempts fail to deliver audio.
+  /// Whether the microphone is currently held by another app (or otherwise
+  /// unavailable). Drives the survey signal-meter "X" and the foreground
+  /// notification's status line.
   bool get isMicContested => _micContested;
 
   /// Emits `true` when the microphone becomes contested and `false`
@@ -236,47 +291,106 @@ class AudioCaptureService {
     }
   }
 
+  /// Inform the service whether the app is in the foreground. Wired
+  /// automatically via the [WidgetsBindingObserver] hook; also exposed so
+  /// callers/tests can drive it directly.
+  ///
+  /// Returning to the foreground after losing the mic in the background
+  /// resets the back-off and immediately attempts to reclaim it.
+  void setForeground(bool foreground) {
+    if (_isForeground == foreground) return;
+    _isForeground = foreground;
+    debugPrint('AudioCapture: foreground=$foreground');
+    if (!foreground) return;
+
+    // Back in the foreground — allow retries again and try right away if we
+    // dropped the mic while backgrounded.
+    _backgroundReleased = false;
+    _retryBackoff = _minRetryBackoff;
+    _nextRetryAt = null;
+    if (_shouldBeCapturing && _state != CaptureState.capturing) {
+      _restart();
+    }
+  }
+
   void _checkWatchdog() {
     if (!_shouldBeCapturing || _isRestarting) return;
 
-    // Honor the back-off window: stop hammering the mic while another
-    // app is using it. The stall check still updates `_lastDataTime`
-    // so once data starts flowing again we'll exit back-off naturally.
     final now = DateTime.now();
-    if (_backoffUntil != null && now.isBefore(_backoffUntil!)) return;
 
     final isStalled =
         _state == CaptureState.capturing &&
-        now.difference(_lastDataTime) > const Duration(seconds: 2);
+        now.difference(_lastDataTime) > _stallTimeout;
     final isFailed =
         _state == CaptureState.error || _state == CaptureState.stopped;
 
-    if (isFailed || isStalled) {
-      _consecutiveStalls++;
-      debugPrint(
-        'Watchdog: Audio stream stall/failure detected '
-        '(stalled: $isStalled, failed: $isFailed, '
-        'consecutive: $_consecutiveStalls). Restarting...',
-      );
-      if (_consecutiveStalls >= _contestedThreshold) {
-        // Repeated failures — assume another app owns the mic. Back
-        // off so we don't keep interrupting it.
-        _backoffUntil = now.add(_contestedBackoff);
-        _setMicContested(true);
+    if (!isStalled && !isFailed) {
+      // Audio is flowing — clear any lost/retry state.
+      _onCaptureHealthy();
+      return;
+    }
+
+    // Mic is lost. Surface it to the UI immediately so the signal meter
+    // flips to "X" without waiting for a retry to fail.
+    _setMicContested(true);
+
+    if (!_isForeground) {
+      // Background: stop fighting for the mic. Release our handle once and
+      // wait for the foreground transition to try again.
+      if (!_backgroundReleased) {
+        _backgroundReleased = true;
         debugPrint(
-          'Watchdog: microphone contested — backing off for '
-          '${_contestedBackoff.inSeconds}s',
+          'Watchdog: mic lost while backgrounded — releasing until foreground',
         );
-        return;
+        _releaseForContention();
       }
-      _restart();
-    } else {
-      // Audio is flowing normally — clear contested state.
-      if (_consecutiveStalls != 0 || _micContested) {
-        _consecutiveStalls = 0;
-        _backoffUntil = null;
-        _setMicContested(false);
-      }
+      return;
+    }
+
+    // Foreground: retry with capped exponential back-off.
+    if (_nextRetryAt != null && now.isBefore(_nextRetryAt!)) return;
+    _retryBackoff =
+        _nextRetryAt == null
+            ? _minRetryBackoff
+            : Duration(
+              milliseconds: math.min(
+                _retryBackoff.inMilliseconds * 2,
+                _maxRetryBackoff.inMilliseconds,
+              ),
+            );
+    _nextRetryAt = now.add(_retryBackoff);
+    debugPrint(
+      'Watchdog: mic lost in foreground (stalled: $isStalled, '
+      'failed: $isFailed) — reclaiming, next retry in '
+      '${_retryBackoff.inSeconds}s',
+    );
+    _restart();
+  }
+
+  /// Reset all lost/retry bookkeeping when audio is confirmed flowing.
+  void _onCaptureHealthy() {
+    if (!_micContested &&
+        _nextRetryAt == null &&
+        !_backgroundReleased &&
+        _retryBackoff == _minRetryBackoff) {
+      return;
+    }
+    _nextRetryAt = null;
+    _retryBackoff = _minRetryBackoff;
+    _backgroundReleased = false;
+    _setMicContested(false);
+  }
+
+  /// Fully tear down capture and release the native recorder while keeping
+  /// [_shouldBeCapturing] set, so we resume automatically once foregrounded.
+  Future<void> _releaseForContention() async {
+    if (_isRestarting) return;
+    _isRestarting = true;
+    try {
+      await _teardownCapture();
+    } catch (_) {
+    } finally {
+      _isRestarting = false;
     }
   }
 
@@ -284,8 +398,11 @@ class AudioCaptureService {
     if (_isRestarting) return;
     _isRestarting = true;
     try {
-      await stop();
-      _shouldBeCapturing = true; // stop sets this to false
+      // Fully dispose the old recorder, not just stop it: a recorder that
+      // lost the mic can stay wedged and never deliver audio again, so a
+      // reliable reclaim needs a fresh AudioRecord instance.
+      await _teardownCapture();
+      _shouldBeCapturing = true;
       await start(source: _currentSource);
     } catch (_) {
     } finally {
@@ -413,6 +530,11 @@ class AudioCaptureService {
 
       _state = CaptureState.capturing;
       _lastError = null;
+      // A fresh stream is open. Keep the mic marked lost until real audio
+      // actually arrives (the other app may still hold it) — [_onAudioData]
+      // clears it — but reset the release latch so the watchdog can act on
+      // this new attempt.
+      _backgroundReleased = false;
       debugPrint('Audio capture started @ ${AppConstants.sampleRate} Hz');
     } catch (e, st) {
       _state = CaptureState.error;
@@ -421,34 +543,54 @@ class AudioCaptureService {
     }
   }
 
-  /// Stop capturing audio.
+  /// Stop capturing audio (user- or session-initiated).
   Future<void> stop() async {
     _shouldBeCapturing = false;
+    await _teardownCapture();
+    debugPrint('Audio capture stopped');
+  }
 
+  /// Cancel the level timer + audio stream and fully release the native
+  /// recorder, leaving [_state] at [CaptureState.stopped].
+  ///
+  /// Fully disposing the recorder (not merely calling `stop()` on it) is what
+  /// makes reclaiming the mic reliable: a recorder that lost the mic to
+  /// another app can stay wedged, so every restart builds a fresh
+  /// [AudioRecorder] via the lazy [_rec] getter. It also frees the mic for
+  /// other apps promptly when we intentionally stop.
+  Future<void> _teardownCapture() async {
     _levelTimer?.cancel();
     _levelTimer = null;
 
     await _streamSub?.cancel();
     _streamSub = null;
 
-    try {
-      if (_recorder != null) await _rec.stop();
-    } catch (_) {
-      // Recorder may already be stopped.
+    final rec = _recorder;
+    _recorder = null;
+    if (rec != null) {
+      try {
+        await rec.stop();
+      } catch (_) {
+        // Recorder may already be stopped or wedged; ignore.
+      }
+      try {
+        await rec.dispose();
+      } catch (_) {
+        // Best-effort native release.
+      }
     }
 
     _state = CaptureState.stopped;
-    debugPrint('Audio capture stopped');
   }
 
   /// Release all resources.  Call when the service is no longer needed.
   Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
     _watchdogTimer?.cancel();
     await stop();
     await _levelController.close();
     await _dataController.close();
     await _micContestedController.close();
-    _recorder?.dispose();
   }
 
   // ---------------------------------------------------------------------------
@@ -460,13 +602,9 @@ class AudioCaptureService {
   /// Process incoming PCM16 audio data.
   void _onAudioData(Uint8List bytes) {
     _lastDataTime = DateTime.now();
-    // Audio is flowing — clear any pending mic-contention back-off so
-    // the foreground notification reflects the recovered state.
-    if (_consecutiveStalls != 0 || _micContested) {
-      _consecutiveStalls = 0;
-      _backoffUntil = null;
-      _setMicContested(false);
-    }
+    // Audio is flowing — clear any lost/retry state so the UI and the
+    // foreground notification reflect the recovered mic.
+    _onCaptureHealthy();
 
     // Convert signed 16-bit PCM (little-endian) → float32 [-1.0, 1.0].
     final samples = _pcm16ToFloat32(bytes);

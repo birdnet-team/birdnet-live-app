@@ -195,6 +195,8 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
+This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) starts listening when tapped, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
+
 ### Save sessions automatically (Live and Point Count)
 
 When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
@@ -217,7 +219,13 @@ Shown only when **Auto-play voice memos** is enabled. Controls how much the main
 
 ### Use GPS
 
-Use device GPS instead of manual coordinates.
+Use device GPS instead of manual coordinates. On Android, fixes come from the
+platform location provider rather than Google Play Services, so the app does
+not trigger Google's location-accuracy resolution dialog. With this off, the
+app never reads the GPS or asks for location permission on its own: the
+Survey, Point Count and ARU setup wizards open on manual entry with your saved
+coordinates, survey GPS tracking does not run, and offline map preparation
+centres on those coordinates too.
 
 ### Manual coordinates
 
@@ -264,7 +272,7 @@ When on, the export ZIP carries a `*.metadata.json` side-file describing how the
 
 ### Include HTML report
 
-When on, every export ZIP also contains a `report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
+When on, every export ZIP also contains a `<session>_report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
 
 ### Audio-only sharing
 
