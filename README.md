@@ -74,7 +74,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **On-device inference** — BirdNET+ model (9,789 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Polish, and Russian
+- **Localization** — UI translations and spoken announcement phrasing for: English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, and Russian
 
 ## Install on Android
 
