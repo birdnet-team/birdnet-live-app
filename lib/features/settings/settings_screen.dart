@@ -1218,6 +1218,7 @@ class _LanguageTile extends ConsumerWidget {
             const DropdownMenuItem(value: 'pl', child: Text('Polski')),
             const DropdownMenuItem(value: 'pt', child: Text('Português')),
             const DropdownMenuItem(value: 'ru', child: Text('Русский')),
+            const DropdownMenuItem(value: 'zh', child: Text('简体中文')),
           ],
           onChanged: (value) {
             ref

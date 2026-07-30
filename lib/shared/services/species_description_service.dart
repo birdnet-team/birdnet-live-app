@@ -46,22 +46,46 @@ class SpeciesDescriptionService {
     'nl',
     'pl',
     'ru',
+    'zh',
   ];
+
+  /// Resolve a species-locale tag to a bundled description locale.
+  ///
+  /// Callers pass [effectiveSpeciesLocaleProvider], which carries a region
+  /// for Chinese (`zh-CN` — the tag produced for every Chinese system locale
+  /// and the only Chinese option in the species-language picker) and for the
+  /// regional picker entries (`es_ES`, `pt_PT`, ...). The bundles are keyed by
+  /// bare language code, so an exact-tag lookup misses the asset entirely and
+  /// silently drops the user back to English. Try the exact tag, then the
+  /// language subtag, then `en`.
+  @visibleForTesting
+  static String resolveBundleLocale(String locale) {
+    final normalized = locale.trim().replaceAll('_', '-');
+    if (normalized.isEmpty) return 'en';
+    if (availableLocales.contains(normalized)) return normalized;
+    final dash = normalized.indexOf('-');
+    if (dash > 0) {
+      final base = normalized.substring(0, dash);
+      if (availableLocales.contains(base)) return base;
+    }
+    return 'en';
+  }
 
   /// Get the description for [scientificName] in [locale].
   ///
   /// Falls back to English if the description is not available in the
   /// requested locale.  Returns null if no description exists at all.
   Future<String?> getDescription(String scientificName, String locale) async {
+    final resolved = resolveBundleLocale(locale);
     // Ensure the requested locale is loaded.
-    if (!_cache.containsKey(locale)) {
-      await _loadLocale(locale);
+    if (!_cache.containsKey(resolved)) {
+      await _loadLocale(resolved);
     }
     // Ensure English fallback is loaded.
     if (!_cache.containsKey('en')) {
       await _loadLocale('en');
     }
-    return _cache[locale]?[scientificName] ?? _cache['en']?[scientificName];
+    return _cache[resolved]?[scientificName] ?? _cache['en']?[scientificName];
   }
 
   /// Load and decompress a single locale file.
