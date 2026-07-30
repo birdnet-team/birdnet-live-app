@@ -201,6 +201,7 @@ Future<File?> _extractClipFromFullAudio(
     session,
     detection,
     clipContextSeconds: session.settings.clipContextSeconds.toDouble(),
+    referencesDetectionClip: false,
   );
 
   final ext = await sourceAudioExtensionForFile(src);

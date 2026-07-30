@@ -121,14 +121,14 @@ final aruControllerProvider = Provider<AruController>((ref) {
       aruCaptureActive = !captureWasRunning;
       return path;
     },
-    saveDetectionClip: (session, record) async {
-      final timestamp = record.timestamp.toUtc().millisecondsSinceEpoch;
-      final safeName = record.scientificName.replaceAll(
-        RegExp(r'[^A-Za-z0-9_-]+'),
-        '_',
-      );
-      return recordingService.saveDetectionClip(
-        clipName: 'clip_${timestamp}_$safeName',
+    saveDetectionClips: (session, records) {
+      // Clip names come from the save time, not the detection time, so
+      // re-cutting a detection's clip at a stronger window writes a new file
+      // instead of overwriting the only copy in place.
+      return saveDetectionClipsFor<DetectionRecord>(
+        recordingService: recordingService,
+        items: records,
+        speciesOf: (record) => record.scientificName,
       );
     },
     stopCycleRecording: (session, cycle, endedAt) async {

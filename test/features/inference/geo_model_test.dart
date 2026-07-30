@@ -11,7 +11,8 @@ import 'package:birdnet_live/features/inference/geo_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Minimal tab-delimited labels (same format as geomodel labels file).
-const _testLabels = '1044390\tParus major\tGreat Tit\n'
+const _testLabels =
+    '1044390\tParus major\tGreat Tit\n'
     '1044391\tTurdus merula\tEurasian Blackbird\n'
     '1044392\tErithacus rubecula\tEuropean Robin\n'
     '1044393\tFringilla coelebs\tCommon Chaffinch\n'
@@ -187,8 +188,11 @@ void main() {
       for (var m = 1; m <= 12; m++) {
         for (var d = 1; d <= 28; d++) {
           final w = GeoModel.dateTimeToWeek(DateTime(2026, m, d));
-          expect(w, inInclusiveRange(1, 48),
-              reason: 'Month $m, day $d → week $w');
+          expect(
+            w,
+            inInclusiveRange(1, 48),
+            reason: 'Month $m, day $d → week $w',
+          );
         }
       }
     });

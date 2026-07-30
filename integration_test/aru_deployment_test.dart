@@ -202,25 +202,32 @@ void main() {
         '${sandbox.path}/clips',
       ).create(recursive: true);
 
-      // Real clip saver: writes a small file and returns its path, mirroring
-      // the detections-only retention path.
-      Future<String?> saveClip(
+      // Real clip saver: writes a small file per record in the round and
+      // returns their paths, mirroring the detections-only retention path.
+      Future<Map<DetectionRecord, String>> saveClips(
         LiveSession session,
-        DetectionRecord record,
+        List<DetectionRecord> records,
       ) async {
-        final safeTs = record.timestamp.toIso8601String().replaceAll(':', '-');
-        final path =
-            '${clipsDir.path}/clip_${record.scientificName}_$safeTs.wav';
-        await File(path).writeAsBytes(
-          List<int>.filled(64, 0),
-          flush: true,
-        );
-        return path;
+        final written = <DetectionRecord, String>{};
+        for (final record in records) {
+          final safeTs = record.timestamp.toIso8601String().replaceAll(
+                ':',
+                '-',
+              );
+          final path =
+              '${clipsDir.path}/clip_${record.scientificName}_$safeTs.wav';
+          await File(path).writeAsBytes(
+            List<int>.filled(64, 0),
+            flush: true,
+          );
+          written[record] = path;
+        }
+        return written;
       }
 
       final controller = AruController(
         saveSession: repository.save,
-        saveDetectionClip: saveClip,
+        saveDetectionClips: saveClips,
         now: () => scheduleStart.subtract(const Duration(minutes: 5)),
       );
 

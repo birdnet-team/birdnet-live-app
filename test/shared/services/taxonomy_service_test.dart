@@ -100,10 +100,7 @@ void main() {
     });
 
     test('returns matching species in order', () {
-      final results = service.lookupAll([
-        'Turdus merula',
-        'Parus major',
-      ]);
+      final results = service.lookupAll(['Turdus merula', 'Parus major']);
       expect(results.length, 2);
       expect(results[0].scientificName, 'Turdus merula');
       expect(results[1].scientificName, 'Parus major');

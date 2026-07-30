@@ -33,7 +33,9 @@ void main() {
 
       test('asserts on non-power-of-two fftSize', () {
         expect(
-            () => FftProcessor(fftSize: 1000), throwsA(isA<AssertionError>()));
+          () => FftProcessor(fftSize: 1000),
+          throwsA(isA<AssertionError>()),
+        );
       });
 
       test('asserts on zero fftSize', () {
@@ -81,10 +83,16 @@ void main() {
 
         final result = fft.process(samples);
         for (var i = 0; i < result.length; i++) {
-          expect(result[i], greaterThanOrEqualTo(0.0),
-              reason: 'Bin $i should be >= 0');
-          expect(result[i], lessThanOrEqualTo(1.0),
-              reason: 'Bin $i should be <= 1');
+          expect(
+            result[i],
+            greaterThanOrEqualTo(0.0),
+            reason: 'Bin $i should be >= 0',
+          );
+          expect(
+            result[i],
+            lessThanOrEqualTo(1.0),
+            reason: 'Bin $i should be <= 1',
+          );
         }
       });
 
@@ -95,8 +103,11 @@ void main() {
 
         // All bins should be at 0.0 (below dbFloor).
         for (var i = 0; i < result.length; i++) {
-          expect(result[i], closeTo(0.0, 0.01),
-              reason: 'Silent bin $i should map to ~0');
+          expect(
+            result[i],
+            closeTo(0.0, 0.01),
+            reason: 'Silent bin $i should map to ~0',
+          );
         }
       });
 
@@ -170,8 +181,11 @@ void main() {
 
         // All bins should be deeply negative (near epsilon floor).
         for (var i = 0; i < result.length; i++) {
-          expect(result[i], lessThan(-80),
-              reason: 'Silent bin $i should be < -80 dB');
+          expect(
+            result[i],
+            lessThan(-80),
+            reason: 'Silent bin $i should be < -80 dB',
+          );
         }
       });
     });
@@ -206,8 +220,11 @@ void main() {
         // The energy should be concentrated near the peak, not spread out.
         // Check that bins far from the peak are substantially lower.
         final farBin = (peakBin + result.length ~/ 4) % result.length;
-        expect(result[farBin], lessThan(peakVal * 0.3),
-            reason: 'Far bin should have much less energy than peak');
+        expect(
+          result[farBin],
+          lessThan(peakVal * 0.3),
+          reason: 'Far bin should have much less energy than peak',
+        );
       });
     });
 

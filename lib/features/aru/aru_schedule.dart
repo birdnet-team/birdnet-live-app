@@ -401,7 +401,9 @@ class AruScheduleCalculator {
     config.validateOrThrow();
   }
 
-  final AruScheduleConfig config;  /// Evaluate the deployment state at [now].
+  final AruScheduleConfig config;
+
+  /// Evaluate the deployment state at [now].
   AruScheduleSnapshot snapshotAt(DateTime now) {
     if (now.isBefore(config.startTime)) {
       return AruScheduleSnapshot(

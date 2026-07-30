@@ -217,7 +217,13 @@ Shown only when **Auto-play voice memos** is enabled. Controls how much the main
 
 ### Use GPS
 
-Use device GPS instead of manual coordinates.
+Use device GPS instead of manual coordinates. On Android, fixes come from the
+platform location provider rather than Google Play Services, so the app does
+not trigger Google's location-accuracy resolution dialog. With this off, the
+app never reads the GPS or asks for location permission on its own: the
+Survey, Point Count and ARU setup wizards open on manual entry with your saved
+coordinates, survey GPS tracking does not run, and offline map preparation
+centres on those coordinates too.
 
 ### Manual coordinates
 

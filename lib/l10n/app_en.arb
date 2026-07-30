@@ -1525,6 +1525,26 @@
   "@sessionTrimWarning": {
     "description": "Warning shown when applying a trim that removes detections"
   },
+  "sessionTrimCommitTitle": "Trim recording permanently?",
+  "@sessionTrimCommitTitle": {
+    "description": "Title of the dialog confirming that saving will permanently cut the recording to the trimmed range"
+  },
+  "sessionTrimCommitMessage": "Saving deletes the audio outside the trimmed range from this recording. This cannot be undone.",
+  "@sessionTrimCommitMessage": {
+    "description": "Body of the dialog confirming that saving will permanently cut the recording to the trimmed range"
+  },
+  "sessionTrimCommitConfirm": "Trim and Save",
+  "@sessionTrimCommitConfirm": {
+    "description": "Confirm button label for the destructive trim dialog"
+  },
+  "sessionTrimCommitFailed": "The recording could not be trimmed. The session was saved and the trim still applies to playback and exports.",
+  "@sessionTrimCommitFailed": {
+    "description": "Snack bar shown when the recording file could not be cut, so the trim stays as an editable range"
+  },
+  "sessionTrimExportFailed": "The trimmed audio could not be prepared for sharing.",
+  "@sessionTrimExportFailed": {
+    "description": "Snack bar shown when a trimmed recording cannot be materialized for export"
+  },
   "sessionHelpTitle": "Session Review Help",
   "@sessionHelpTitle": {
     "description": "Title for the session review help dialog"
@@ -1541,7 +1561,7 @@
   "@sessionHelpAnnotations": {
     "description": "Help text explaining annotations"
   },
-  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim.",
+  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim. Saving the session then cuts the audio outside that range from the recording for good.",
   "@sessionHelpTrimming": {
     "description": "Help text explaining recording trimming"
   },
@@ -3179,6 +3199,14 @@
   "@surveyMapFilterTooltip": {
     "description": "Tooltip for the survey map filter button"
   },
+  "surveyMapFullscreen": "Full screen map",
+  "@surveyMapFullscreen": {
+    "description": "Tooltip for the button that opens the survey map full screen"
+  },
+  "surveyMapRecenter": "Center on current position",
+  "@surveyMapRecenter": {
+    "description": "Tooltip for the button that recenters the full screen live survey map on the current GPS position"
+  },
   "surveyMapFilterChipAll": "All detections",
   "@surveyMapFilterChipAll": {
     "description": "Persistent map filter chip label when no filter is active"
@@ -3723,8 +3751,6 @@
   "@settingsHelpAnnouncementsVoice": {"description": "Long-form help for the voice picker"},
   "settingsAnnouncementsPreview": "Speak a sample",
   "@settingsAnnouncementsPreview": {"description": "Button: speak a sample utterance with current settings"},
-  "settingsAnnouncementsRunSetupWizard": "Run setup again",
-  "@settingsAnnouncementsRunSetupWizard": {"description": "Button: re-run the announcements setup wizard"},
   "settingsAnnouncementsAdvanced": "Advanced",
   "@settingsAnnouncementsAdvanced": {"description": "Disclosure heading for advanced numeric settings"},
   "settingsAnnouncementsSpeakerOutputAllowed": "Allow phone speaker",

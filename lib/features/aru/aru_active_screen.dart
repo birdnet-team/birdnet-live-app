@@ -1080,10 +1080,6 @@ class _AruSpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000;
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isActive,
@@ -1091,7 +1087,7 @@ class _AruSpectrogram extends ConsumerWidget {
       colorMapName: colorMap,
       dbFloor: dbFloor,
       dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
+      displaySeconds: durationSec.toDouble(),
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,
@@ -1188,7 +1184,9 @@ class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
           ],
         ),
         if (species.isNotEmpty) const SizedBox(height: 12),
-        for (final (i, item) in species.take(24).indexed)
+        // Full species list — the panel is a scrollable ListView, so a long
+        // deployment must not silently hide species past an arbitrary cutoff.
+        for (final (i, item) in species.indexed)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Row(

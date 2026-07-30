@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -9,6 +11,7 @@ import 'core/constants/app_constants.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/survey/survey_notification.dart';
 import 'shared/providers/app_providers.dart';
+import 'shared/widgets/open_street_map_tile_layer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +66,17 @@ Future<void> main() async {
       await prefs.setDouble(PrefKeys.scorePoolingMaxAgeSeconds, 10.0);
     }
     await prefs.setBool(PrefKeys.scorePoolingDefaultMigration, true);
+  }
+
+  // One-time removal of the pre-0.19.4 `flutter_cache_manager` tile store,
+  // superseded by flutter_map's built-in tile cache. Deliberately not awaited:
+  // it only frees disk space and must never delay first paint.
+  if (!(prefs.getBool(PrefKeys.legacyTileCachePurge) ?? false)) {
+    unawaited(
+      purgeLegacyOsmTileCache().then(
+        (_) => prefs.setBool(PrefKeys.legacyTileCachePurge, true),
+      ),
+    );
   }
 
   runApp(

@@ -58,6 +58,33 @@ void main() {
       expect(service.state, CaptureState.stopped);
     });
 
+    test('microphone is not contested on a fresh service', () {
+      final service = AudioCaptureService();
+      expect(service.isMicContested, isFalse);
+      service.dispose();
+    });
+
+    test('micContestedStream is a broadcast stream', () {
+      final service = AudioCaptureService();
+      // Two listeners must be allowed (UI + notification wiring both listen).
+      final subA = service.micContestedStream.listen((_) {});
+      final subB = service.micContestedStream.listen((_) {});
+      subA.cancel();
+      subB.cancel();
+      service.dispose();
+    });
+
+    test('setForeground toggles without a running recorder', () {
+      final service = AudioCaptureService();
+      // Never started, so flipping foreground/background must be a safe no-op
+      // (nothing to reclaim, nothing to release).
+      service.setForeground(false);
+      service.setForeground(true);
+      expect(service.state, CaptureState.stopped);
+      expect(service.isMicContested, isFalse);
+      service.dispose();
+    });
+
     test(
       'switchSource while stopped stores the choice without starting',
       () async {

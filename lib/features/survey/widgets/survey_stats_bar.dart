@@ -13,7 +13,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/utils/app_icons.dart';
 import '../../../shared/widgets/stat_chip.dart';
 
-enum _AudioQuality { bad, marginal, good }
+enum _AudioQuality { lost, bad, marginal, good }
 
 /// Compact statistics bar for an active survey.
 class SurveyStatsBar extends StatelessWidget {
@@ -24,6 +24,7 @@ class SurveyStatsBar extends StatelessWidget {
     required this.speciesCount,
     this.audioLevel = 0,
     this.peakLevel = 0,
+    this.micLost = false,
   });
 
   /// Distance walked in meters.
@@ -41,6 +42,12 @@ class SurveyStatsBar extends StatelessWidget {
   /// Current peak audio level (0.0 – 1.0).
   final double peakLevel;
 
+  /// Whether the microphone is currently held by another app (or otherwise
+  /// unavailable). Overrides the level-based assessment with a clear
+  /// "mic lost" state (crossed-out mic, no bars) so the surveyor sees at a
+  /// glance that audio isn't being captured right now.
+  final bool micLost;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -53,9 +60,13 @@ class SurveyStatsBar extends StatelessWidget {
     //   green  = good ambient signal (typical birdsong environment)
     //   amber  = marginal (very quiet or moderately loud)
     //   red    = bad (silence / no signal, or clipping / wind noise)
+    //   red X  = mic lost (another app grabbed it)
     final semanticColors = AppSemanticColors.of(context);
     final _AudioQuality quality;
-    if (audioLevel < 0.0005) {
+    if (micLost) {
+      // Another app owns the mic — no capture is happening.
+      quality = _AudioQuality.lost;
+    } else if (audioLevel < 0.0005) {
       // Silence or mic not working.
       quality = _AudioQuality.bad;
     } else if (peakLevel > 0.95) {
@@ -73,6 +84,7 @@ class SurveyStatsBar extends StatelessWidget {
     }
 
     final levelColor = switch (quality) {
+      _AudioQuality.lost => theme.colorScheme.error,
       _AudioQuality.bad => theme.colorScheme.error,
       _AudioQuality.marginal => theme.colorScheme.tertiary,
       _AudioQuality.good => semanticColors.success,
@@ -142,6 +154,31 @@ class _AudioLevelChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurface.withAlpha(40);
+
+    // Mic lost: crossed-out mic and no filled bars — an unmistakable "audio
+    // is not being captured" indicator distinct from a merely quiet signal.
+    if (quality == _AudioQuality.lost) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Icon(AppIcons.micOff, size: 16, color: color),
+          const SizedBox(width: 3),
+          for (int i = 0; i < 3; i++)
+            Container(
+              width: 4,
+              height: 6.0 + i * 4,
+              margin: const EdgeInsets.only(right: 1.5),
+              decoration: BoxDecoration(
+                color: muted,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+        ],
+      );
+    }
+
     final int filledBars;
     if (quality == _AudioQuality.good) {
       filledBars = 3;
@@ -150,7 +187,6 @@ class _AudioLevelChip extends StatelessWidget {
     } else {
       filledBars = 1;
     }
-    final muted = theme.colorScheme.onSurface.withAlpha(40);
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,

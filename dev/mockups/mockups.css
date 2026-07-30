@@ -247,12 +247,22 @@ select option {
 
 .feature-copy {
   position: absolute;
-  left: 58px;
-  bottom: 76px;
+  left: 96px;
+  bottom: 62px;
   z-index: 2;
   width: 560px;
   color: var(--ink);
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.44);
+}
+
+.feature-logo {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 0 18px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.34);
 }
 
 .feature-title {

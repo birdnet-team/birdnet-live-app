@@ -115,6 +115,10 @@ abstract final class PrefKeys {
   static const String scorePoolingDefaultMigration =
       'score_pooling_default_migration_v1';
 
+  /// One-shot flag for deleting the pre-0.19.4 `flutter_cache_manager` tile
+  /// store, which flutter_map's built-in tile cache replaced.
+  static const String legacyTileCachePurge = 'legacy_tile_cache_purge_v1';
+
   // Advanced temporal-pooling knobs (LME alpha + support gate). Normally
   // baked into the model config; exposed as overridable settings so they can
   // be tuned live. Defaults mirror `temporalPooling` in model_config.json.
