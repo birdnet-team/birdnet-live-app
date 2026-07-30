@@ -180,6 +180,8 @@ Toto nastavení platí pro zvuk nahraný BirdNET Live. **Analýza souborů** udr
 
 Je-li zapnuto, režim Live začne nahrávat hned po otevření obrazovky a dokončení načtení modelu — bez nutnosti klepnout na tlačítko mikrofonu. Užitečné pro kioskové nasazení, hands-free použití (např. upevnění zařízení v terénu) nebo jakýkoli postup, kde uživatel již ví, že otevření Live vždy znamená „začni teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nespustilo Session. Automatické spuštění se aktivuje jen jednou na každou návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon stále funguje jako ruční restart.
 
+Toto nastavení se týká otevření režimu Live z aplikace. [Widget „Rychlý poslech“](live-mode.md) po klepnutí vždy spustí poslech bez ohledu na toto nastavení a nijak je nemění.
+
 ## Poloha
 
 ### Použít GPS

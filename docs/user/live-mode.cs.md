@@ -6,6 +6,22 @@ Režim Live je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a 
 
 Na domovské obrazovce klepněte na kartu **Live** s ikonou :material-microphone:.
 
+## Widget „Rychlý poslech“
+
+**Pouze Android.** Widget na domovské obrazovce spustí poslech jediným klepnutím, aniž byste museli nejprve otevřít aplikaci a proklikat se do režimu — hodí se, když uslyšíte něco, co chcete určit dřív, než to přestane zpívat.
+
+Přidáte jej stejně jako kterýkoli jiný widget: podržte prst na prázdném místě domovské obrazovky, klepněte na **Widgety**, najděte **BirdNET Live** a přetáhněte na plochu jednu ze dvou dlaždic.
+
+- **Rychlý poslech** (2×1) — ikona s popiskem **Spustit poslech**
+- **Rychlý poslech (kompaktní)** (1×1) — pouze ikona
+
+Obě dělají totéž. Klepnutí na kteroukoli z nich otevře režim Live a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spustit nahrávání**. Widget toto nastavení nemění.
+
+Ve dvou situacích klepnutí záměrně neudělá nic:
+
+- Běží nasazení v [režimu ARU](aru-mode.md) — widget nepřeruší bezobslužné nahrávání.
+- Režim Live je již otevřený s běžící nebo pozastavenou session. Session zůstane beze změny, místo aby se restartovala.
+
 ## Horní lišta
 
 Horní lišta obsahuje tři prvky:

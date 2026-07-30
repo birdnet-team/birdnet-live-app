@@ -6,6 +6,22 @@ El Modo Live es la forma más rápida de escuchar a través del micrófono del t
 
 Desde la pantalla de Inicio, toca la tarjeta **Modo Live** con el icono :material-microphone:.
 
+## Widget «Escucha rápida»
+
+**Solo Android.** Un widget en la pantalla de inicio empieza a escuchar con un solo toque, sin tener que abrir la app y navegar hasta el modo — útil cuando oyes algo que quieres identificar antes de que deje de cantar.
+
+Se añade como cualquier otro widget: mantén pulsado un hueco libre de la pantalla de inicio, toca **Widgets**, busca **BirdNET Live** y arrastra uno de los dos mosaicos.
+
+- **Escucha rápida** (2×1) — icono con la etiqueta **Empezar a escuchar**
+- **Escucha rápida (compacta)** (1×1) — solo el icono
+
+Ambos hacen lo mismo. Al tocar cualquiera de ellos se abre el Modo Live y empieza a escuchar de inmediato, sea cual sea el valor del ajuste **Iniciar grabación automáticamente**. El widget no modifica ese ajuste.
+
+Hay dos situaciones en las que un toque no hace nada a propósito:
+
+- Hay un despliegue de [Modo ARU](aru-mode.md) en curso, así que el widget no puede interrumpir una grabación desatendida.
+- El Modo Live ya está abierto con una Session en marcha o en pausa. La Session se deja tal cual en vez de reiniciarse.
+
 ## Barra superior
 
 La barra superior contiene tres elementos:

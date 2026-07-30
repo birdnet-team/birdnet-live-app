@@ -6,6 +6,22 @@ Der Live-Modus ist die schnellste Möglichkeit, über das Smartphone-Mikrofon zu
 
 Tippen Sie auf dem Startbildschirm auf die Karte **Live-Modus** mit dem Symbol :material-microphone:.
 
+## Widget „Schnell lauschen“
+
+**Nur Android.** Ein Widget auf dem Startbildschirm beginnt mit einem einzigen Tippen zuzuhören, ohne dass Sie zuerst die App öffnen und dorthin navigieren müssen — praktisch, wenn Sie etwas hören, das Sie bestimmen möchten, bevor es verstummt.
+
+Fügen Sie es wie jedes andere Widget hinzu: Halten Sie eine freie Stelle auf dem Startbildschirm gedrückt, tippen Sie auf **Widgets**, suchen Sie **BirdNET Live** und ziehen Sie eine der beiden Kacheln heraus.
+
+- **Schnell lauschen** (2×1) — Symbol mit der Beschriftung **Zuhören starten**
+- **Schnell lauschen (kompakt)** (1×1) — nur Symbol
+
+Beide tun dasselbe. Ein Tippen auf eine der beiden öffnet den Live-Modus und beginnt sofort zuzuhören, unabhängig davon, wie die Einstellung **Aufnahme automatisch starten** gesetzt ist. Das Widget ändert diese Einstellung nicht.
+
+In zwei Situationen bewirkt ein Tippen bewusst nichts:
+
+- Eine Bereitstellung im [ARU-Modus](aru-mode.md) läuft — das Widget kann eine unbeaufsichtigte Aufnahme nicht unterbrechen.
+- Der Live-Modus ist bereits mit einer laufenden oder pausierten Session geöffnet. Die Session bleibt unverändert, statt neu gestartet zu werden.
+
 ## Obere Leiste
 
 Die obere Leiste enthält drei Elemente:

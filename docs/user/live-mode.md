@@ -6,6 +6,22 @@ Live Mode is the fastest way to listen through the phone microphone and review d
 
 From the Home screen, tap the **Live Mode** card with the :material-microphone: icon.
 
+## Quick Listen Widget
+
+**Android only.** A home-screen widget starts listening in a single tap, without opening the app and navigating in first — useful when you hear something you want identified before it stops calling.
+
+Add it the way you add any widget: press and hold an empty spot on the home screen, tap **Widgets**, find **BirdNET Live**, and drag out one of the two tiles.
+
+- **Quick Listen** (2×1) — icon with a **Start Listening** label
+- **Quick Listen (compact)** (1×1) — icon only
+
+Both do the same thing. Tapping either one opens Live Mode and begins listening straight away, whatever the **Auto-start recording** setting is set to. The widget does not change that setting.
+
+A tap deliberately does nothing in two situations:
+
+- An [ARU Mode](aru-mode.md) deployment is running, so the widget cannot interrupt an unattended recording.
+- Live Mode is already open with a session running or paused. The session is left as it is rather than restarted.
+
 ## Top Bar
 
 The top bar contains three elements:
