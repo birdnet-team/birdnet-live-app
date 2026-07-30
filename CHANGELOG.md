@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-07-30
+
+### Added
+
+- Manually added species can now record whether you **heard** or **saw** the bird. After picking a species, a confirmation sheet lets you tick Heard and/or Seen before the entry is added. This applies everywhere you add a species by hand: Session Review, the replace-species flow, and the live Survey. The choice shows as ear/eye glyphs on detection rows and ships in CSV, Raven, JSON, and HTML exports.
+
+### Changed
+
+- The HTML report in an export ZIP is now named after the Session (`<session>_report.html`) instead of `report.html`, so extracting several exports into the same folder no longer overwrites earlier reports.
+- Species photo credits no longer show the image license in brackets, just the photographer and the source.
+- Reduced scores for Black-crowned Night Heron detections through the model-specific score blacklist.
+
+### Fixed
+
+- The main menu logo no longer appears a beat after the rest of the screen. The background warm-up that prepares Live Mode was parsing the 11 MB taxonomy file on the main thread and holding up the logo behind it; that parse now runs off it.
+
 ## [0.20.0] - 2026-07-30
 
 ### Added
