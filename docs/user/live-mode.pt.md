@@ -17,10 +17,9 @@ Adicione-o como qualquer outro widget: mantenha pressionado um espaço vazio da 
 
 Os dois fazem a mesma coisa. Tocar em qualquer um deles abre o Modo Live e começa a escutar imediatamente, qualquer que seja o valor da configuração **Iniciar gravação automaticamente**. O widget não altera essa configuração.
 
-Em duas situações o toque não faz nada, de propósito:
+Se o Modo Live já estiver aberto, o widget volta para essa mesma tela em vez de recriá-la. Uma Session em andamento ou pausada continua sem alterações; se estiver parada, a escuta começa na tela existente.
 
-- Há uma implantação do [Modo ARU](aru-mode.md) em andamento, então o widget não pode interromper uma gravação não supervisionada.
-- O Modo Live já está aberto com uma Session em andamento ou pausada. A Session é deixada como está, em vez de reiniciada.
+A Escuta rápida nunca substitui outro modo em execução. Se uma Session de Point Count, Survey, File Analysis ou [Modo ARU](aru-mode.md) estiver em andamento ou iniciando, o app vem para o primeiro plano e pede que você encerre primeiro essa Session. A tela e o trabalho continuam acessíveis e não são interrompidos.
 
 ## Barra superior
 

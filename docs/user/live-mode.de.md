@@ -17,10 +17,9 @@ Fügen Sie es wie jedes andere Widget hinzu: Halten Sie eine freie Stelle auf de
 
 Beide tun dasselbe. Ein Tippen auf eine der beiden öffnet den Live-Modus und beginnt sofort zuzuhören, unabhängig davon, wie die Einstellung **Aufnahme automatisch starten** gesetzt ist. Das Widget ändert diese Einstellung nicht.
 
-In zwei Situationen bewirkt ein Tippen bewusst nichts:
+Ist der Live-Modus bereits geöffnet, kehrt das Widget zu genau diesem Bildschirm zurück, statt ihn neu aufzubauen. Eine laufende oder pausierte Session bleibt unverändert; ist sie gestoppt, beginnt das Zuhören auf dem vorhandenen Bildschirm.
 
-- Eine Bereitstellung im [ARU-Modus](aru-mode.md) läuft — das Widget kann eine unbeaufsichtigte Aufnahme nicht unterbrechen.
-- Der Live-Modus ist bereits mit einer laufenden oder pausierten Session geöffnet. Die Session bleibt unverändert, statt neu gestartet zu werden.
+Quick Listen ersetzt niemals einen anderen laufenden Modus. Wenn eine Point Count-, Survey-, File Analysis- oder [ARU-Modus](aru-mode.md)-Session läuft oder gestartet wird, holt die App sich in den Vordergrund und fordert Sie auf, diese Session zuerst zu beenden. Bildschirm und Arbeit bleiben erreichbar und werden nicht unterbrochen.
 
 ## Obere Leiste
 

@@ -17,10 +17,9 @@ Ajoutez-le comme n'importe quel widget : appuyez longuement sur un espace libre 
 
 Les deux font la même chose. Un appui sur l'une ou l'autre ouvre le mode En direct et commence à écouter immédiatement, quel que soit le réglage **Démarrer l'enregistrement automatiquement**. Le widget ne modifie pas ce réglage.
 
-Dans deux situations, un appui ne fait délibérément rien :
+Si le mode En direct est déjà ouvert, le widget revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
 
-- Un déploiement en [mode ARU](aru-mode.md) est en cours : le widget ne peut pas interrompre un enregistrement sans surveillance.
-- Le mode En direct est déjà ouvert avec une session en cours ou en pause. La session est laissée telle quelle au lieu d'être redémarrée.
+Écoute rapide ne remplace jamais un autre mode en cours. Si une Session Point Count, Survey, File Analysis ou [mode ARU](aru-mode.md) est en cours ou démarre, l'application revient au premier plan et vous demande d'arrêter d'abord cette Session. Son écran et son travail restent accessibles et ne sont pas interrompus.
 
 ## Barre supérieure
 

@@ -17,10 +17,9 @@ Přidáte jej stejně jako kterýkoli jiný widget: podržte prst na prázdném 
 
 Obě dělají totéž. Klepnutí na kteroukoli z nich otevře režim Live a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spustit nahrávání**. Widget toto nastavení nemění.
 
-Ve dvou situacích klepnutí záměrně neudělá nic:
+Pokud je režim Live již otevřený, widget se vrátí na stejnou obrazovku, místo aby ji vytvořil znovu. Běžící nebo pozastavená Session pokračuje beze změny; pokud je zastavená, spustí se poslech na stávající obrazovce.
 
-- Běží nasazení v [režimu ARU](aru-mode.md) — widget nepřeruší bezobslužné nahrávání.
-- Režim Live je již otevřený s běžící nebo pozastavenou session. Session zůstane beze změny, místo aby se restartovala.
+Rychlý poslech nikdy nenahrazuje jiný běžící režim. Pokud běží nebo se spouští Session Point Count, Survey, File Analysis nebo [režimu ARU](aru-mode.md), aplikace se přesune do popředí a vyzve vás, abyste tuto Session nejprve zastavili. Její obrazovka i práce zůstanou dostupné a nepřerušené.
 
 ## Horní lišta
 

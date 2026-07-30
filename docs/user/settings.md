@@ -195,7 +195,7 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
-This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) always starts listening when tapped, whatever this is set to, and leaves the setting untouched.
+This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) starts listening when tapped, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
 
 ### Save sessions automatically (Live and Point Count)
 

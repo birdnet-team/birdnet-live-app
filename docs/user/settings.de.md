@@ -195,7 +195,7 @@ Diese Einstellung gilt für von BirdNET Live aufgenommenes Audio. Die **Dateiana
 
 Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet und das Modell geladen ist – ein Tippen auf die Mikrofontaste ist nicht nötig. Nützlich für kioskartige Aufstellungen, freihändige Nutzung (z. B. wenn das Gerät im Feld montiert ist) oder jeden Arbeitsablauf, bei dem von vornherein klar ist, dass das Öffnen von Live immer „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Tippen auf die Live-Kachel auf der Startseite nicht still eine Session beginnt. Der automatische Start löst nur einmal pro Bildschirmaufruf aus, sodass das Stoppen einer Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
 
-Diese Einstellung gilt für das Öffnen des Live-Modus innerhalb der App. Das [Widget „Schnell lauschen“](live-mode.md) beginnt beim Antippen immer zuzuhören, unabhängig von dieser Einstellung, und lässt sie unverändert.
+Diese Einstellung gilt für das Öffnen des Live-Modus innerhalb der App. Das [Widget „Schnell lauschen“](live-mode.md) beginnt beim Antippen unabhängig von dieser Einstellung zuzuhören und lässt sie unverändert. Läuft oder startet bereits eine Point Count-, Survey-, File Analysis- oder ARU-Modus-Session, bleibt diese erhalten und das Widget fordert Sie stattdessen auf, sie zuerst zu beenden.
 
 ## Standort
 

@@ -17,10 +17,9 @@ Si aggiunge come qualsiasi altro widget: tieni premuto uno spazio libero della s
 
 Fanno la stessa cosa. Toccando l'uno o l'altro si apre la modalità Live e l'ascolto parte subito, qualunque sia il valore dell'impostazione **Avvia registrazione automaticamente**. Il widget non modifica quell'impostazione.
 
-In due situazioni il tocco non fa nulla, di proposito:
+Se la modalità Live è già aperta, il widget torna alla stessa schermata invece di ricrearla. Una Session in corso o in pausa continua senza modifiche; se è ferma, l'ascolto parte nella schermata esistente.
 
-- È in corso un rilevamento in [modalità ARU](aru-mode.md): il widget non può interrompere una registrazione non presidiata.
-- La modalità Live è già aperta con una Session in corso o in pausa. La Session viene lasciata com'è invece di essere riavviata.
+Ascolto rapido non sostituisce mai un'altra modalità in esecuzione. Se una Session Point Count, Survey, File Analysis o [modalità ARU](aru-mode.md) è in corso o si sta avviando, l'app torna in primo piano e chiede di interrompere prima quella Session. La schermata e il lavoro restano accessibili e non vengono interrotti.
 
 ## Barra superiore
 

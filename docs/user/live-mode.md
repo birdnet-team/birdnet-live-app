@@ -17,10 +17,9 @@ Add it the way you add any widget: press and hold an empty spot on the home scre
 
 Both do the same thing. Tapping either one opens Live Mode and begins listening straight away, whatever the **Auto-start recording** setting is set to. The widget does not change that setting.
 
-A tap deliberately does nothing in two situations:
+If Live Mode is already open, the widget returns to that same screen instead of rebuilding it. A running or paused Session continues unchanged; if it is stopped, listening starts on the existing screen.
 
-- An [ARU Mode](aru-mode.md) deployment is running, so the widget cannot interrupt an unattended recording.
-- Live Mode is already open with a session running or paused. The session is left as it is rather than restarted.
+Quick Listen never replaces another running mode. If a Point Count, Survey, File Analysis, or [ARU Mode](aru-mode.md) Session is running or starting, the app comes to the foreground and asks you to stop that Session first. Its screen and work remain accessible and are not interrupted.
 
 ## Top Bar
 
