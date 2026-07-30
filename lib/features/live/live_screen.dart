@@ -46,25 +46,41 @@ import 'widgets/detection_list_widget.dart';
 // with no AppBar — edge-to-edge with SafeArea only at top/bottom.
 // =============================================================================
 
-/// Tracks whether a [LiveScreen] instance is currently mounted, so other
-/// parts of the app (the Quick Listen widget's launch handler) can tell
-/// "the user is already looking at Live Mode" from "a session is active/
-/// paused but the user is elsewhere" without walking the navigator's route
-/// stack.
+/// Tracks mounted Live Mode routes so Quick Listen can reveal and reuse an
+/// existing screen instead of rebuilding it.
 ///
-/// Counted rather than a plain bool: replacing one Live Mode route with
-/// another (`pushAndRemoveUntil`) mounts the incoming screen before the
-/// outgoing one is disposed, so a bool would be left reading `false` while
-/// Live Mode is on screen.
+/// Reusing matters while a session is active: disposing its screen cancels
+/// the duration-warning timer and disables the wakelock even though the
+/// app-wide controller keeps recording. Route identity also stays correct
+/// when two routes briefly overlap during a transition.
 abstract final class LiveScreenPresence {
-  static int _mountedCount = 0;
+  static final Map<Route<dynamic>, VoidCallback> _routes =
+      <Route<dynamic>, VoidCallback>{};
 
-  static bool get isMounted => _mountedCount > 0;
+  static bool get isMounted => _routes.isNotEmpty;
 
-  static void register() => _mountedCount++;
+  /// Prefer the visible route, then the most recently mounted route.
+  static Route<dynamic>? get mountedRoute {
+    for (final route in _routes.keys.toList().reversed) {
+      if (route.isCurrent) return route;
+    }
+    if (_routes.isEmpty) return null;
+    return _routes.keys.last;
+  }
 
-  static void unregister() {
-    if (_mountedCount > 0) _mountedCount--;
+  static void register(
+    Route<dynamic> route, {
+    required VoidCallback onStartListening,
+  }) {
+    _routes[route] = onStartListening;
+  }
+
+  static void unregister(Route<dynamic> route) {
+    _routes.remove(route);
+  }
+
+  static void requestStartListening(Route<dynamic> route) {
+    _routes[route]?.call();
   }
 }
 
@@ -91,6 +107,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   Timer? _sessionTimer;
   bool _durationWarningShown = false;
   bool _autoStartAttempted = false;
+  bool _startScheduled = false;
+  bool _forceAutoStartRequested = false;
+  Route<dynamic>? _presenceRoute;
 
   /// Whether [_initLiveScreen] has finished clearing the previous session's
   /// state.  The controller's load may settle — and notify — before that, so
@@ -107,7 +126,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   @override
   void initState() {
     super.initState();
-    LiveScreenPresence.register();
+    _forceAutoStartRequested = widget.forceAutoStart;
     WidgetsBinding.instance.addObserver(this);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
@@ -117,6 +136,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
     // Deferred to post-frame so provider updates don't fire during build.
     SchedulerBinding.instance.addPostFrameCallback((_) => _initLiveScreen());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route == null || identical(route, _presenceRoute)) return;
+    final previousRoute = _presenceRoute;
+    if (previousRoute != null) {
+      LiveScreenPresence.unregister(previousRoute);
+    }
+    _presenceRoute = route;
+    LiveScreenPresence.register(
+      route,
+      onStartListening: _requestQuickListenStart,
+    );
   }
 
   /// Bring the screen in sync with the controller, whatever state it is in.
@@ -192,13 +227,44 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (_initialised &&
         !_autoStartAttempted &&
         !_isStarting &&
+        !_startScheduled &&
         controller.state == LiveState.ready &&
-        (widget.forceAutoStart || ref.read(liveAutoStartProvider))) {
-      _autoStartAttempted = true;
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _toggleSession();
-      });
+        (_forceAutoStartRequested || ref.read(liveAutoStartProvider))) {
+      _forceAutoStartRequested = false;
+      _scheduleStart();
     }
+  }
+
+  void _requestQuickListenStart() {
+    if (!mounted || _isStarting || _startScheduled) return;
+    final controller = ref.read(liveControllerProvider);
+    if (controller.state == LiveState.active ||
+        controller.state == LiveState.paused) {
+      return;
+    }
+
+    _forceAutoStartRequested = true;
+    _autoStartAttempted = false;
+    if (!_initialised) return;
+
+    if (controller.state == LiveState.ready) {
+      _onControllerStateChanged();
+    } else {
+      // A second tap after a failed load should retry, and a tap while the
+      // home-screen warm-up is loading should join that load immediately.
+      _forceAutoStartRequested = false;
+      _scheduleStart();
+    }
+  }
+
+  void _scheduleStart() {
+    if (_isStarting || _startScheduled) return;
+    _autoStartAttempted = true;
+    _startScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _startScheduled = false;
+      if (mounted) unawaited(_toggleSession());
+    });
   }
 
   /// Handle the main action button press (pause / resume / start).
@@ -364,7 +430,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void dispose() {
-    LiveScreenPresence.unregister();
+    final presenceRoute = _presenceRoute;
+    if (presenceRoute != null) {
+      LiveScreenPresence.unregister(presenceRoute);
+    }
     WidgetsBinding.instance.removeObserver(this);
     _sessionTimer?.cancel();
 

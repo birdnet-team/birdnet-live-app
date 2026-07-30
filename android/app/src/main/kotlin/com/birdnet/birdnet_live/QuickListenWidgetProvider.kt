@@ -22,9 +22,12 @@ import android.widget.RemoteViews
  * only) — same click behavior, different layouts/manifest entries since
  * Android widget providers are identified by component class.
  */
-private object QuickListenWidgetHelper {
+internal object QuickListenContract {
     const val ACTION_START_LISTENING = "startListening"
-    private const val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
+    const val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
+}
+
+private object QuickListenWidgetHelper {
 
     fun updateWidget(
         context: Context,
@@ -43,7 +46,10 @@ private object QuickListenWidgetHelper {
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP
             )
-            putExtra(QUICK_ACTION_EXTRA, ACTION_START_LISTENING)
+            putExtra(
+                QuickListenContract.QUICK_ACTION_EXTRA,
+                QuickListenContract.ACTION_START_LISTENING
+            )
         }
 
         var flags = PendingIntent.FLAG_UPDATE_CURRENT
@@ -57,7 +63,7 @@ private object QuickListenWidgetHelper {
             flags
         )
 
-        views.setOnClickPendingIntent(R.id.quick_listen_widget_root, pendingIntent)
+        views.setOnClickPendingIntent(android.R.id.background, pendingIntent)
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 }

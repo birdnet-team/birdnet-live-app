@@ -24,7 +24,6 @@ class MainActivity: FlutterActivity() {
     private val ARU_NOTIFICATION_INTENTS_CHANNEL = "com.birdnet/aru_notification_intents"
     private val ARU_NOTIFICATION_ACTION_EXTRA = "com.birdnet.aru_notification_action"
     private val QUICK_ACTION_INTENTS_CHANNEL = "com.birdnet/quick_action_intents"
-    private val QUICK_ACTION_EXTRA = "com.birdnet.quick_action"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private var activeDecodeJob: Job? = null
     private var pendingAruNotificationAction: String? = null
@@ -343,10 +342,12 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun captureQuickAction(intent: Intent?) {
-        val action = intent?.getStringExtra(QUICK_ACTION_EXTRA) ?: return
+        val action = intent?.getStringExtra(
+            QuickListenContract.QUICK_ACTION_EXTRA
+        ) ?: return
         pendingQuickAction = action
         quickActionIntentChannel?.invokeMethod("onQuickAction", action)
-        intent.removeExtra(QUICK_ACTION_EXTRA)
+        intent.removeExtra(QuickListenContract.QUICK_ACTION_EXTRA)
     }
 
     private fun updateAruNotification(args: Map<String, Any?>) {

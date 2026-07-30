@@ -26,6 +26,8 @@
   "skip": "Pular",
   "next": "Próximo",
   "done": "Concluído",
+  "quickListenBlockedTitle": "Encerre primeiro a Session atual",
+  "quickListenBlockedMessage": "A Escuta rápida não pode iniciar enquanto uma Session de {mode} estiver em andamento ou iniciando. Encerre primeiro essa Session e toque no widget novamente.",
   "termsOfUseTitle": "Política de uso aceitável",
   "privacyPolicyTitle": "Política de privacidade",
   "acceptTerms": "Aceitar",

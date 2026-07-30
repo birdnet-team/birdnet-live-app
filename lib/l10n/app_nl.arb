@@ -26,6 +26,8 @@
   "skip": "Overslaan",
   "next": "Volgende",
   "done": "Klaar",
+  "quickListenBlockedTitle": "Beëindig eerst de huidige Session",
+  "quickListenBlockedMessage": "Quick Listen kan niet starten terwijl een {mode}-Session actief is of wordt gestart. Stop eerst die Session en tik daarna opnieuw op de widget.",
   "termsOfUseTitle": "Beleid voor aanvaardbaar gebruik",
   "privacyPolicyTitle": "Privacybeleid",
   "acceptTerms": "Accepteren",

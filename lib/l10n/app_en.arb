@@ -104,6 +104,20 @@
   "@done": {
     "description": "Done button label"
   },
+  "quickListenBlockedTitle": "Finish the current Session first",
+  "@quickListenBlockedTitle": {
+    "description": "Title shown after a Quick Listen widget tap is blocked by another recording mode"
+  },
+  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then tap the widget again.",
+  "@quickListenBlockedMessage": {
+    "description": "Explains that Quick Listen will not replace another active recording mode",
+    "placeholders": {
+      "mode": {
+        "type": "String",
+        "example": "Survey"
+      }
+    }
+  },
   "termsOfUseTitle": "Acceptable Use Policy",
   "@termsOfUseTitle": {
     "description": "Acceptable use policy dialog title"

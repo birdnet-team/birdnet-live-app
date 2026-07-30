@@ -26,6 +26,8 @@
   "skip": "Пропустить",
   "next": "Далее",
   "done": "Готово",
+  "quickListenBlockedTitle": "Сначала завершите текущую Session",
+  "quickListenBlockedMessage": "Быстрое прослушивание нельзя запустить, пока Session {mode} выполняется или запускается. Сначала остановите эту Session, затем снова нажмите на виджет.",
   "termsOfUseTitle": "Политика допустимого использования",
   "privacyPolicyTitle": "Политика конфиденциальности",
   "acceptTerms": "Принимать",

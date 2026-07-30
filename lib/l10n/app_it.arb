@@ -26,6 +26,8 @@
   "skip": "Salta",
   "next": "Avanti",
   "done": "Fatto",
+  "quickListenBlockedTitle": "Termina prima la Session in corso",
+  "quickListenBlockedMessage": "Ascolto rapido non può avviarsi mentre è in corso o si sta avviando una Session {mode}. Interrompi prima quella Session, poi tocca di nuovo il widget.",
   "termsOfUseTitle": "Politica di uso accettabile",
   "privacyPolicyTitle": "Informativa sulla privacy",
   "acceptTerms": "Accetta",

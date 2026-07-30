@@ -2,7 +2,7 @@
 <!-- Quick Listen, 2x1: accent icon tile + label, on a rounded surface panel.
      Same composition as the app's Live Mode card on the home screen. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/quick_listen_widget_root"
+    android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
