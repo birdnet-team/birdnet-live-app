@@ -19,7 +19,7 @@ The spoken announcement phrasing is deliberately **not** in ARB — see [Spoken 
 
 ## Supported Languages
 
-Both surfaces are complete for all ten locales, and both must stay complete when a language is added.
+Both surfaces are complete for all 11 locales, and both must stay complete when a language is added.
 
 | Language | UI strings | Spoken phrasing |
 |----------|-----------|-----------------|
@@ -31,6 +31,7 @@ Both surfaces are complete for all ten locales, and both must stay complete when
 | Italian | `lib/l10n/app_it.arb` | `assets/announcements/templates_it.json` |
 | Portuguese | `lib/l10n/app_pt.arb` | `assets/announcements/templates_pt.json` |
 | Dutch | `lib/l10n/app_nl.arb` | `assets/announcements/templates_nl.json` |
+| Norwegian Bokmål | `lib/l10n/app_nb.arb` | `assets/announcements/templates_nb.json` |
 | Polish | `lib/l10n/app_pl.arb` | `assets/announcements/templates_pl.json` |
 | Russian | `lib/l10n/app_ru.arb` | `assets/announcements/templates_ru.json` |
 
@@ -56,7 +57,7 @@ Both surfaces are complete for all ten locales, and both must stay complete when
     }
     ```
 
-2. Add translations to every other ARB file: `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, `app_pt.arb`, `app_nl.arb`, `app_pl.arb`, and `app_ru.arb`:
+2. Add translations to every other ARB file: `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, `app_pt.arb`, `app_nl.arb`, `app_nb.arb`, `app_pl.arb`, and `app_ru.arb`:
 
     ```json
     "myNewString": "Hallo Welt"
