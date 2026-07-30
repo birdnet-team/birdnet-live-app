@@ -9,7 +9,7 @@
 // write a gendered determiner immediately before the name placeholder.
 //
 // Coverage notes:
-//   - Article-gendered locales (de, nl, fr, es, it) get a full article check.
+//   - Article-gendered locales (de, nl, nb, fr, es, it) get a full article check.
 //   - Portuguese deliberately checks only the *unambiguous* articles
 //     (um/uma/uns/umas/os/as): the bare singular "o"/"a" double as a pronoun
 //     and a preposition ("Soa a {name}." is the recommended *safe* pattern),
@@ -34,6 +34,7 @@ void main() {
       'der', 'die', 'das', 'dem', 'den', 'des',
     ],
     'nl': ['de', 'het', 'een'],
+    'nb': ['en', 'ei', 'et', 'den', 'det', 'denne', 'dette', 'disse'],
     'fr': ['un', 'une', 'le', 'la', 'les', 'du', 'des'],
     'es': ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas'],
     'it': ['il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una'],

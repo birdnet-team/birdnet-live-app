@@ -26,7 +26,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:birdnet_live/features/announcements/domain/announcement_buckets.dart';
 
 void main() {
-  const locales = ['en', 'de', 'fr', 'es', 'it', 'pt', 'cs', 'nl', 'pl', 'ru'];
+  const locales = [
+    'en',
+    'de',
+    'fr',
+    'es',
+    'it',
+    'pt',
+    'cs',
+    'nl',
+    'nb',
+    'pl',
+    'ru',
+  ];
 
   // Slots the engine fills per bucket. H_two deliberately has only two,
   // so a two-species coalesce never speaks a half-filled phrase.
