@@ -303,6 +303,12 @@ plugins:
       nav_translations:
         Privacy Policy: Политика конфиденциальности
         Acceptable Use Policy: Политика допустимого использования
+    - locale: zh
+      name: 简体中文
+      build: true
+      nav_translations:
+        Privacy Policy: 隐私政策
+        Acceptable Use Policy: 使用规范
 nav:
 - Home: index.md
 - User Guide:

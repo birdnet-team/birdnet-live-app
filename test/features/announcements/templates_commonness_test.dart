@@ -17,7 +17,19 @@ import 'package:birdnet_live/features/announcements/domain/announcement_signals.
 import 'package:birdnet_live/features/explore/explore_tier.dart';
 
 void main() {
-  const locales = ['en', 'de', 'fr', 'es', 'it', 'pt', 'cs', 'nl', 'pl', 'ru'];
+  const locales = [
+    'en',
+    'de',
+    'fr',
+    'es',
+    'it',
+    'pt',
+    'cs',
+    'nl',
+    'pl',
+    'ru',
+    'zh',
+  ];
 
   test('CommonnessBin mirrors ExploreTier (same level names)', () {
     final bins = CommonnessBin.values.map((e) => e.name).toSet();

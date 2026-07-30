@@ -25,7 +25,7 @@ abstract final class AppConstants {
       'https://birdnet-team.github.io/birdnet-live-app';
 
   /// UI locales that have the full translated user guide on the docs site.
-  /// Other UI locales (e.g. nl, pl, ru) fall back to the English guide.
+  /// Other UI locales (e.g. nl, pl, ru, zh) fall back to the English guide.
   static const Set<String> docsLocales = {'de', 'cs', 'es', 'fr', 'it', 'pt'};
 
   /// UI locales that have a translated Privacy Policy and Acceptable Use
@@ -41,6 +41,7 @@ abstract final class AppConstants {
     'nl',
     'pl',
     'ru',
+    'zh',
   };
 
   /// Docs-site path prefix for [languageCode] (e.g. `/de`), or an empty

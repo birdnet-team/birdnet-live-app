@@ -295,6 +295,22 @@ void main() {
       expect(sp.commonNameForLocale('pt_BR'), 'Chapim-real');
       expect(sp.commonNameForLocale('es_MX'), 'Mexican Spanish');
     });
+
+    // The Simplified Chinese app locale is a bare `zh`, but the bundle only
+    // carries Chinese names under `zh-CN`. Without the zh→zh-CN fallback every
+    // Chinese user would silently read English common names.
+    test('commonNameForLocale resolves every Chinese tag to zh-CN', () {
+      const sp = TaxonomySpecies(
+        scientificName: 'Parus major',
+        commonName: 'Great Tit',
+        commonNames: {'zh-CN': '大山雀'},
+      );
+      expect(sp.commonNameForLocale('zh'), '大山雀');
+      expect(sp.commonNameForLocale('zh-CN'), '大山雀');
+      expect(sp.commonNameForLocale('zh_CN'), '大山雀');
+      expect(sp.commonNameForLocale('zh-Hans'), '大山雀');
+      expect(sp.commonNameForLocale('zh-TW'), '大山雀');
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

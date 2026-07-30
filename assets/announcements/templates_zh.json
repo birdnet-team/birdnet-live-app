@@ -1,0 +1,258 @@
+{
+  "locale": "zh",
+  "version": 4,
+  "_comment": [
+    "Phrasing templates for the Announcements feature. See dev/announcements.md §3.",
+    "Each bucket has a `balanced` list (always present, used by Balanced verbosity)",
+    "and an optional `chatty` list (longer / more conversational variants used when",
+    "the user picks Chatty). Minimal verbosity bypasses these templates and speaks",
+    "just `{name}.` directly. Translators rewrite natively, not literally.",
+    "",
+    "Tone guide (revised v4 — sound like a birding companion, not a classifier):",
+    "  - Minimal: bare species name only (handled by the engine).",
+    "  - Balanced: short, natural, the way a friend walking next to you would",
+    "    point a bird out. Never narrate the model ('solid match', 'good signal',",
+    "    'first one this session') — that's the robotic tone we're avoiding.",
+    "  - Chatty: a relaxed full sentence, occasionally a small warm aside. Hedge",
+    "    like a person ('我觉得', '不太确定'), not like software ('信号较弱').",
+    "",
+    "注意 —— 量词陷阱：",
+    "  中文没有冠词，也不像波兰语/俄语那样有格变化和性数一致，所以 {name} 可以",
+    "  原样嵌入。真正的陷阱是量词：",
+    "    - 模型不只覆盖鸟类，还有昆虫、两栖类和哺乳动物，而 {name} 出现时",
+    "      我们并不知道它属于哪一类。",
+    "    - 「只」对鸟、蛙、多数昆虫和小型兽都成立，但对大型兽（应为「头」）",
+    "      就不自然。因此优先使用不带量词的句式（「是{name}。」「{name}，",
+    "      就在附近。」），只在读起来确实自然时才用「一只」。",
+    "    - 切勿使用「这位」「那头」等把 {name} 限定到特定类群的说法。",
+    "  A 组是首次出现，B/C 组是重复出现 —— 中文靠「又」「还在」「仍」这类副词",
+    "  体现，不要试图翻译英文的 a/the 冠词区别。",
+    "  标点用全角（，。？——），TTS 的停顿和语调才正确。"
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "是{name}。",
+        "有{name}。",
+        "听，{name}。",
+        "{name}，在叫。",
+        "附近有{name}。",
+        "那是{name}。",
+        "{name}，就在那边。",
+        "{name}，听得很清楚。"
+      ],
+      "chatty": [
+        "附近有{name}在叫。",
+        "是{name}，真好听。",
+        "听见了吗？肯定是{name}。",
+        "那边有{name}，一直在叫。",
+        "是{name}，不会听错。",
+        "{name}刚开口。",
+        "有{name}，嗓子挺亮。",
+        "是{name}，听得清清楚楚。"
+      ]
+    },
+    "B": {
+      "balanced": [
+        "{name}又回来了。",
+        "{name}又出现了。",
+        "又是{name}。",
+        "{name}，再一次。",
+        "那只{name}又来了。"
+      ],
+      "chatty": [
+        "{name}又回来了。",
+        "又听见那只{name}了。",
+        "{name}没走远。",
+        "那只{name}总往回飞。",
+        "又是{name}，看来打算待着不走了。"
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name}还在叫。",
+        "{name}仍在继续。",
+        "还是{name}。",
+        "{name}，一直没停。",
+        "{name}接着唱。"
+      ],
+      "chatty": [
+        "{name}还在一直唱。",
+        "那只{name}连口气都没歇。",
+        "{name}就这么一直唱下去。",
+        "还是{name}，嗓子正好。",
+        "{name}看来是安顿下来了。"
+      ]
+    },
+    "D": {
+      "balanced": [
+        "听着像{name}。",
+        "我觉得应该是{name}。",
+        "大概是{name}。",
+        "我猜是{name}。",
+        "多半是{name}。",
+        "应该是{name}吧。",
+        "有几分{name}的味道。"
+      ],
+      "chatty": [
+        "我听着像{name}。",
+        "我觉得是{name}，把握还行。",
+        "这声音有点{name}的意思。",
+        "八成是{name}。",
+        "我想那是{name}。",
+        "这一声我偏向{name}。"
+      ]
+    },
+    "E": {
+      "balanced": [
+        "可能又是{name}。",
+        "听着像{name}又回来了。",
+        "也许是{name}，再一次。",
+        "又是{name}吧，我觉得。",
+        "大概是{name}回来了。"
+      ],
+      "chatty": [
+        "听着像{name}又绕回来了。",
+        "我觉得又是那只{name}。",
+        "可能是{name}，又来了一次。",
+        "多半还是那只{name}。"
+      ]
+    },
+    "F": {
+      "balanced": [
+        "也许是{name}？",
+        "可能是{name}。",
+        "说不定是{name}。",
+        "有点像{name}。",
+        "{name}，或许吧。",
+        "有可能是{name}。",
+        "不太好说，也许是{name}。"
+      ],
+      "chatty": [
+        "可能是{name}，不太好说。",
+        "有点像{name}，值得再听一遍。",
+        "里面也许有{name}，留意一下。",
+        "我猜是{name}，但不敢确定。",
+        "说不定是{name}，这个不好判断。",
+        "我会猜{name}，不过别太当真。"
+      ]
+    },
+    "G": {
+      "balanced": [
+        "可能又是{name}？",
+        "也许是{name}，再一次。",
+        "说不定又是那只{name}。",
+        "大概是{name}回来了吧。",
+        "不太好说，也许又是{name}。"
+      ],
+      "chatty": [
+        "可能又是{name}，不太确定。",
+        "也许是那只{name}绕回来了，不好判断。",
+        "说不定又是{name}，但我不敢打包票。",
+        "有可能又是{name}。"
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "现在有两种：{name1}和{name2}。",
+        "{name1}和{name2}，都在叫。",
+        "{name1}和{name2}，一起。",
+        "两种：{name1}和{name2}。",
+        "{name1}和{name2}都有。"
+      ],
+      "chatty": [
+        "两种同时在叫 —— {name1}和{name2}。",
+        "{name1}和{name2}，你一声我一声。",
+        "这一对不错 —— {name1}和{name2}。",
+        "{name1}和{name2}，嗓子都亮着。",
+        "此刻有两种：{name1}和{name2}。"
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "现在有三种：{name1}、{name2}和{name3}。",
+        "{name1}、{name2}和{name3}，都在叫。",
+        "好几种凑一起：{name1}、{name2}、{name3}。",
+        "{name1}、{name2}和{name3}同时开口。"
+      ],
+      "chatty": [
+        "这会儿不少 —— {name1}、{name2}和{name3}。",
+        "三种同时：{name1}、{name2}和{name3}。",
+        "{name1}、{name2}和{name3}，都来搭腔。",
+        "这一片挺热闹 —— {name1}、{name2}和{name3}。",
+        "小小的合唱：{name1}、{name2}和{name3}。"
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "现在很多：{name1}、{name2}、{name3}，还有别的。",
+        "热闹起来了 —— {name1}、{name2}、{name3}，还有几种。",
+        "此刻很忙：{name1}、{name2}、{name3}，还有好几种。"
+      ],
+      "chatty": [
+        "这会儿真不少 —— {name1}、{name2}、{name3}，还有好几种。",
+        "简直是合唱 —— {name1}、{name2}、{name3}，另外还有别的。",
+        "外面挺热闹 —— {name1}、{name2}、{name3}，还有几种。",
+        "一下子来了不少 —— {name1}、{name2}、{name3}，还有陆续加入的。"
+      ]
+    }
+  },
+  "commonness": {
+    "abundant": [
+      "这一带非常常见。",
+      "这种声音你会经常听到。",
+      "在你所在的区域很常见。",
+      "算是这里的常客。",
+      "这一带耳熟能详的声音。"
+    ],
+    "common": [
+      "这一带的常见种。",
+      "在你所在的区域相当常见。",
+      "算是这里的老面孔。",
+      "在这一带挺典型。",
+      "你所在的地方很适合遇到它。"
+    ],
+    "uncommon": [
+      "在这里不是天天能听到。",
+      "这一带稍微少见一些。",
+      "不错，不是天天来的客人。",
+      "在你所在的区域算是个惊喜。",
+      "这一带不算常有。"
+    ],
+    "frequent": [
+      "这一带的常客。",
+      "在你所在的区域经常能听到。",
+      "在这里出现得挺勤。",
+      "在你所在的区域常来常往。",
+      "这种声音你会时常听到。"
+    ],
+    "scarce": [
+      "这一带比较稀少。",
+      "在你所在的区域不常听到。",
+      "在这里相当少见。",
+      "这一带不太容易碰上。",
+      "在你所在的区域数量很少。"
+    ],
+    "rare": [
+      "这里真正的稀客 —— 运气不错！",
+      "在你所在的区域挺少见的。",
+      "这一带相当罕见。",
+      "值得记一笔 —— 这一带很少见。",
+      "在你所在的区域算是亮点。"
+    ],
+    "seasonalAddendum": [
+      "而且这个时节也不太对。",
+      "一年里这个时候通常也不在。",
+      "按常理，来得偏早或偏晚了些。",
+      "在这里已经过了它常见的季节，挺有意思。",
+      "也超出了它在这里的常规时段。"
+    ]
+  },
+  "_commonnessComment": [
+    "Optional one-line tag-on appended (Chatty only) the *first* time a species",
+    "is announced in a session. Bin = the same distribution-adaptive abundance",
+    "tier shown for the species on the Explore screen. The seasonal addendum is",
+    "appended only when the species is also currently below its annual peak.",
+    "Keep these short — they follow a full sentence, so long clauses drag."
+  ]
+}

@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-07-30
+
+### Added
+
+- Simplified Chinese (简体中文) is now a full app language: UI strings, spoken announcements, and offline species descriptions for 3,641 species. Chinese species common names were already bundled and now resolve for the Chinese app locale. Not yet verified on the Windows desktop build — see `dev/windows.md`.
+
+### Fixed
+
+- Species descriptions and Wikipedia links now resolve for regional species-language settings. Tags carrying a region (`zh-CN`, `es_ES`, `pt_PT`) missed the bundled files, which are keyed by bare language code, and silently fell back to English.
+
 ## [1.0.0] - 2026-07-30
 
 ### Added
