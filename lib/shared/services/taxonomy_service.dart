@@ -25,9 +25,72 @@
 // screen that needs species metadata (explore, live, survey, info overlays).
 // =============================================================================
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/taxonomy_species.dart';
+
+/// Parse the bundled taxonomy CSV into a lookup index keyed by scientific name.
+///
+/// Top-level and free of any [TaxonomyService] state so it can run inside a
+/// `compute()` isolate — see [TaxonomyService.loadFromCsvBytes].
+Map<String, TaxonomySpecies> parseTaxonomyCsv(String csvContent) {
+  final index = <String, TaxonomySpecies>{};
+
+  final lines = csvContent.split('\n');
+  if (lines.isEmpty) return index;
+
+  // Parse header.
+  final header = _parseCsvLine(lines.first);
+  if (header.isEmpty) return index;
+
+  for (var i = 1; i < lines.length; i++) {
+    final line = lines[i].trim();
+    if (line.isEmpty) continue;
+
+    final values = _parseCsvLine(line);
+    if (values.length < header.length) continue;
+
+    final row = <String, String>{};
+    for (var j = 0; j < header.length && j < values.length; j++) {
+      row[header[j]] = values[j];
+    }
+
+    final sciName = row['scientific_name'];
+    if (sciName != null && sciName.isNotEmpty) {
+      index[sciName] = TaxonomySpecies.fromCsvRow(row);
+    }
+  }
+
+  return index;
+}
+
+/// Simple CSV line parser handling commas within quotes.
+List<String> _parseCsvLine(String line) {
+  final result = <String>[];
+  var current = StringBuffer();
+  var inQuotes = false;
+
+  for (var i = 0; i < line.length; i++) {
+    final char = line[i];
+    if (char == '"') {
+      inQuotes = !inQuotes;
+    } else if (char == ',' && !inQuotes) {
+      result.add(current.toString().trim());
+      current = StringBuffer();
+    } else {
+      current.write(char);
+    }
+  }
+  result.add(current.toString().trim());
+  return result;
+}
+
+/// UTF-8 decode *and* parse, so only the raw bytes have to cross the isolate
+/// boundary rather than an 11 MB string on the way in as well.
+Map<String, TaxonomySpecies> _decodeAndParseTaxonomyCsv(Uint8List bytes) =>
+    parseTaxonomyCsv(utf8.decode(bytes));
 
 /// Species metadata service — CSV-backed, fully offline.
 class TaxonomyService {
@@ -63,56 +126,36 @@ class TaxonomyService {
   /// Parse the bundled taxonomy CSV and build the lookup index.
   ///
   /// The CSV is comma-delimited with a header row.
+  ///
+  /// Synchronous, and the bundled CSV is ~11 MB — at app scale prefer
+  /// [loadFromCsvBytes], which does the same work off the main isolate.
   void loadFromCsv(String csvContent) {
-    _csvIndex.clear();
-
-    final lines = csvContent.split('\n');
-    if (lines.isEmpty) return;
-
-    // Parse header.
-    final header = _parseCsvLine(lines.first);
-    if (header.isEmpty) return;
-
-    for (var i = 1; i < lines.length; i++) {
-      final line = lines[i].trim();
-      if (line.isEmpty) continue;
-
-      final values = _parseCsvLine(line);
-      if (values.length < header.length) continue;
-
-      final row = <String, String>{};
-      for (var j = 0; j < header.length && j < values.length; j++) {
-        row[header[j]] = values[j];
-      }
-
-      final sciName = row['scientific_name'];
-      if (sciName != null && sciName.isNotEmpty) {
-        _csvIndex[sciName] = TaxonomySpecies.fromCsvRow(row);
-      }
-    }
+    _csvIndex
+      ..clear()
+      ..addAll(parseTaxonomyCsv(csvContent));
 
     debugPrint('[TaxonomyService] loaded ${_csvIndex.length} species from CSV');
   }
 
-  /// Simple CSV line parser handling commas within quotes.
-  List<String> _parseCsvLine(String line) {
-    final result = <String>[];
-    var current = StringBuffer();
-    var inQuotes = false;
+  /// Decode and parse the taxonomy CSV on a background isolate.
+  ///
+  /// The bundled CSV is ~11 MB over ~9,800 rows, which takes the parser well
+  /// past a second on a mid-range phone. Run on the main isolate that stalls
+  /// every pending callback behind it — including the image decode for the
+  /// main menu's logo — so the parse is handed to `compute()` instead. The
+  /// result is transferred, not copied, so it lands here for free.
+  Future<void> loadFromCsvBytes(Uint8List csvBytes) async {
+    final index = await compute(
+      _decodeAndParseTaxonomyCsv,
+      csvBytes,
+      debugLabel: 'taxonomy CSV parse',
+    );
 
-    for (var i = 0; i < line.length; i++) {
-      final char = line[i];
-      if (char == '"') {
-        inQuotes = !inQuotes;
-      } else if (char == ',' && !inQuotes) {
-        result.add(current.toString().trim());
-        current = StringBuffer();
-      } else {
-        current.write(char);
-      }
-    }
-    result.add(current.toString().trim());
-    return result;
+    _csvIndex
+      ..clear()
+      ..addAll(index);
+
+    debugPrint('[TaxonomyService] loaded ${_csvIndex.length} species from CSV');
   }
 
   // ---------------------------------------------------------------------------
