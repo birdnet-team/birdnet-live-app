@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The app no longer triggers Google's "turn on location services" dialog. Location fixes now come from Android's own location provider instead of the Play Services one, which pops that dialog on every request when you have declined Google Location Accuracy — a system dialog the app cannot suppress. GPS may take a little longer to get a first fix indoors; outdoors it is unchanged.
 - Turning off **Use GPS** in Settings now stops all location access, not just some of it. Survey GPS tracking ran regardless of the setting, and the Survey, Point Count and ARU setup wizards still asked for a fix and could prompt for permission. All location access now goes through one place that honours the setting, and the setup wizards start on manual entry with your saved coordinates.
+- Rotating the phone during a Live recording no longer stops it. The moment of lost focus while the screen turns was being treated as the app going to the background, and a quick turn could leave the session paused for good with no way to resume it. Surveys, point counts and ARU deployments were never affected.
+- A Survey with GPS set to manual no longer takes a fresh location fix every time you rotate the phone. Only actually leaving the app and coming back records a fix now, which saves battery over a long survey. Recorded tracks are unchanged — the stray fixes were already being discarded as GPS jitter.
 
 ## [0.19.4] - 2026-07-29
 

@@ -95,6 +95,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   bool _finalizing = false;
   bool _stopDialogShowing = false;
   bool _foregroundGpsStream = false;
+
+  /// Whether the app has genuinely been backgrounded since the last resume.
+  ///
+  /// A bare `resumed` does not mean the user went away and came back: the
+  /// rotation transition under auto-rotate delivers `inactive` → `resumed`
+  /// without ever reaching `paused`. Work that belongs to "the user returned"
+  /// is keyed off this instead of off `resumed` alone.
+  bool _wasBackgrounded = false;
+
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
@@ -788,19 +797,36 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = ref.read(surveyControllerProvider);
+
+    // Read before the flag is updated below, so a `resumed` still sees whether
+    // it is closing a real backgrounding or just a rotation.
+    final returnedFromBackground =
+        state == AppLifecycleState.resumed && _wasBackgrounded;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _wasBackgrounded = true;
+    } else if (state == AppLifecycleState.resumed) {
+      _wasBackgrounded = false;
+    }
+
     if (_foregroundGpsStream && !widget.backgroundGps) {
       // Foreground-only GPS: stop the stream when backgrounded so the OS
       // doesn't revoke whileInUse location access, and restart it when the
-      // user brings the app back to the front.
+      // user brings the app back to the front. Safe to call on a rotation's
+      // `resumed` too — [SurveyGpsTracker.startTracking] is a no-op while the
+      // stream is still running.
       if (state == AppLifecycleState.paused) {
         controller.stopGpsTracking();
       } else if (state == AppLifecycleState.resumed) {
         controller.startGpsTracking();
       }
-    } else if (state == AppLifecycleState.resumed &&
+    } else if (returnedFromBackground &&
         !widget.backgroundGps &&
         ref.read(useGpsProvider)) {
-      // Manual GPS mode: capture a single fix when the user returns.
+      // Manual GPS mode: capture a single fix when the user returns. Gated on
+      // an actual backgrounding rather than a bare `resumed` — otherwise every
+      // rotation of the phone spins the GPS radio up for a fix nobody asked
+      // for, which adds up over a multi-hour survey.
       controller.captureGpsFix();
     }
   }
