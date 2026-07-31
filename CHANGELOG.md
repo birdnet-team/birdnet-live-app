@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.0.2] - 2026-07-31
+
+### Added
+
+- Added **Ignore species** under Settings → Inference. Users can suppress birds, mammals, amphibians, or insects and ignore very common species with an 80–100% geo-model cutoff (100% by default). The overlay shows how many species are currently ignored from one cached geo-model prediction for the current location. The binary mask zeros geo-model and audio-model scores before temporal pooling, applies across Live Mode, Point Count, Survey, ARU Mode, and File Analysis, and is recorded in Session metadata.
+
 ## [1.0.1] - 2026-07-30
 
 ### Added
