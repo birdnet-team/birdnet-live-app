@@ -112,7 +112,10 @@ abstract final class PostProcessor {
     // Build index-score pairs, filter by threshold, sort descending.
     final indexed = <_IndexedScore>[];
     for (var i = 0; i < scores.length; i++) {
-      if (scores[i] >= threshold) {
+      // A binary inference filter represents suppression as exactly zero.
+      // Never turn those zeros into detections, even when the user sets the
+      // confidence threshold itself to 0%.
+      if (scores[i] > 0.0 && scores[i] >= threshold) {
         indexed.add(_IndexedScore(i, scores[i]));
       }
     }

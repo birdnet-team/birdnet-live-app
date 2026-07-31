@@ -2536,7 +2536,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   void _onSearchChanged(String query) {
     final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
-    final geoScores = ref.read(geoScoresProvider).value;
+    final geoScores = ref.read(rawGeoScoresProvider).value;
     setState(() {
       if (query.trim().isEmpty) {
         _results = [];

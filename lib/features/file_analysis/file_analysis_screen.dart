@@ -48,6 +48,7 @@ import '../../shared/utils/app_icons.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/species_ignore_filter.dart';
 import '../live/live_providers.dart';
 import '../settings/settings_screen.dart';
 import 'file_analysis_controller.dart';
@@ -325,19 +326,46 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     // Fetch geo-model scores if location is available and filter is active.
     Map<String, double>? geoScores;
     Set<String>? geoSpeciesNames;
+    var ignoredSpeciesNames = <String>{};
+    final ignoreSettings = ref.read(speciesIgnoreSettingsProvider);
     if (_latitude != null && _longitude != null) {
       try {
         final geoModel = await ref.read(geoModelProvider.future);
         geoSpeciesNames = (await ref.read(geoModelSpeciesNamesProvider.future));
         final refDate = _recordingDate ?? DateTime.now();
         final week = _weekNumber(refDate);
-        geoScores = await geoModel.predict(
+        final rawGeoScores = await geoModel.predict(
           latitude: _latitude!,
           longitude: _longitude!,
           week: week,
         );
+        final classes = await ref.read(audioLabelClassesProvider.future);
+        ignoredSpeciesNames = SpeciesIgnoreFilter.ignoredScientificNames(
+          classByScientificName: classes,
+          settings: ignoreSettings,
+          geoScores: rawGeoScores,
+        );
+        geoScores = SpeciesIgnoreFilter.applyToGeoScores(
+          rawGeoScores,
+          ignoredSpeciesNames,
+        );
       } catch (_) {
         // Geo-model unavailable — proceed without.
+      }
+    }
+
+    if (ignoredSpeciesNames.isEmpty) {
+      final classes = await ref.read(audioLabelClassesProvider.future);
+      ignoredSpeciesNames = SpeciesIgnoreFilter.ignoredScientificNames(
+        classByScientificName: classes,
+        settings: ignoreSettings,
+        geoScores: geoScores,
+      );
+      if (geoScores != null) {
+        geoScores = SpeciesIgnoreFilter.applyToGeoScores(
+          geoScores,
+          ignoredSpeciesNames,
+        );
       }
     }
 
@@ -356,6 +384,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       maxPoolWindows: maxPoolWindows,
       poolingMaxAgeSeconds: poolingMaxAgeSeconds,
       advancedPooling: ref.read(advancedPoolingParamsProvider),
+      ignoreSettings: ignoreSettings,
+      ignoredSpeciesNames: ignoredSpeciesNames,
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,

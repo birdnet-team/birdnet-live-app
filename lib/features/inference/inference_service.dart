@@ -42,6 +42,7 @@ import 'models/detection.dart';
 import 'models/species.dart';
 import 'post_processor.dart';
 import 'score_blacklist.dart';
+import 'species_ignore_filter.dart';
 
 /// High-level inference coordinator.
 ///
@@ -215,6 +216,25 @@ class InferenceService {
     _confirmedDetectionIndexes.clear();
   }
 
+  Set<String> _ignoredSpeciesNames = const <String>{};
+
+  /// Replace the binary species mask applied to every sigmoid-activated score
+  /// vector before temporal pooling. The rolling buffer can stay intact: raw
+  /// probabilities are stored there and the current mask is reapplied when
+  /// each window participates in the next pooled result.
+  void setIgnoredSpeciesNames(Set<String> scientificNames) {
+    _ignoredSpeciesNames = Set<String>.unmodifiable(scientificNames);
+    _confirmedDetectionIndexes.clear();
+  }
+
+  List<double> _applySpeciesIgnoreFilter(List<double> scores) {
+    return SpeciesIgnoreFilter.applyToAudioScores(
+      scores: scores,
+      labels: _labels,
+      ignoredScientificNames: _ignoredSpeciesNames,
+    );
+  }
+
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
@@ -259,6 +279,7 @@ class InferenceService {
     _config = null;
     _recentScores.clear();
     _confirmedDetectionIndexes.clear();
+    _ignoredSpeciesNames = const <String>{};
   }
 
   // ---------------------------------------------------------------------------
@@ -325,7 +346,9 @@ class InferenceService {
     // operate on the adjusted curve. The rolling buffer stores raw
     // probabilities so a sensitivity change hot-applies consistently to every
     // recent window used by the next pooled result.
-    final currentScores = PostProcessor.applySensitivityAll(rawProbs, sens);
+    final currentScores = _applySpeciesIgnoreFilter(
+      PostProcessor.applySensitivityAll(rawProbs, sens),
+    );
 
     // Temporal pooling (optional).
     //
@@ -360,7 +383,9 @@ class InferenceService {
               .map(
                 (ts) => _TimestampedScores(
                   ts.timestamp,
-                  PostProcessor.applySensitivityAll(ts.scores, sens),
+                  _applySpeciesIgnoreFilter(
+                    PostProcessor.applySensitivityAll(ts.scores, sens),
+                  ),
                 ),
               )
               .toList();

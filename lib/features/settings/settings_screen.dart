@@ -407,6 +407,15 @@ class SettingsScreen extends ConsumerWidget {
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
               ),
+              ListTile(
+                title: _TitleWithHelp(
+                  title: l10n.settingsIgnoreSpecies,
+                  helpBody: l10n.settingsHelpIgnoreSpecies,
+                ),
+                subtitle: Text(l10n.settingsIgnoreSpeciesDescription),
+                trailing: const Icon(AppIcons.chevronRight),
+                onTap: () => showIgnoreSpeciesSettingsSheet(context, ref),
+              ),
               if (_showAdvancedInferenceSettings)
                 const _AdvancedInferenceTuning(),
               const Divider(),
@@ -1015,6 +1024,151 @@ class SettingsScreen extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// Open the inference-time species filters in the same modal overlay style as
+/// the other multi-control settings pickers.
+Future<void> showIgnoreSpeciesSettingsSheet(
+  BuildContext context,
+  WidgetRef ref,
+) {
+  // Count against a fresh current position each time the overlay opens. The
+  // resulting raw geo scores stay cached while the user adjusts the controls.
+  ref.invalidate(currentLocationProvider);
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (_) => const _IgnoreSpeciesSettingsSheet(),
+  );
+}
+
+class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
+  const _IgnoreSpeciesSettingsSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final ignoredSpeciesNames = ref.watch(ignoredSpeciesNamesProvider);
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  l10n.settingsIgnoreSpecies,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                child: Text(
+                  l10n.settingsIgnoreSpeciesDescription,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                child: Row(
+                  children: [
+                    const Icon(AppIcons.filterList, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ignoredSpeciesNames.when(
+                        data:
+                            (names) => Text(
+                              l10n.settingsIgnoredSpeciesCount(names.length),
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                        loading:
+                            () => Text(l10n.settingsIgnoredSpeciesCountLoading),
+                        error:
+                            (_, _) => Text(
+                              l10n.settingsIgnoredSpeciesCountUnavailable,
+                            ),
+                      ),
+                    ),
+                    if (ignoredSpeciesNames.isLoading)
+                      const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                  ],
+                ),
+              ),
+              CheckboxListTile(
+                title: Text(l10n.taxonGroupAves),
+                value: ref.watch(ignoreBirdsProvider),
+                onChanged:
+                    (value) => ref
+                        .read(ignoreBirdsProvider.notifier)
+                        .set(value ?? false),
+              ),
+              CheckboxListTile(
+                title: Text(l10n.taxonGroupMammalia),
+                value: ref.watch(ignoreMammalsProvider),
+                onChanged:
+                    (value) => ref
+                        .read(ignoreMammalsProvider.notifier)
+                        .set(value ?? false),
+              ),
+              CheckboxListTile(
+                title: Text(l10n.taxonGroupAmphibia),
+                value: ref.watch(ignoreAmphibiansProvider),
+                onChanged:
+                    (value) => ref
+                        .read(ignoreAmphibiansProvider.notifier)
+                        .set(value ?? false),
+              ),
+              CheckboxListTile(
+                title: Text(l10n.taxonGroupInsecta),
+                value: ref.watch(ignoreInsectsProvider),
+                onChanged:
+                    (value) => ref
+                        .read(ignoreInsectsProvider.notifier)
+                        .set(value ?? false),
+              ),
+              const Divider(),
+              _SliderTile(
+                title: l10n.settingsIgnoreCommonSpecies,
+                helpBody: l10n.settingsHelpIgnoreCommonSpecies,
+                value: ref.watch(ignoreCommonGeoScoreCutoffProvider),
+                min: 0.8,
+                max: 1.0,
+                divisions: 20,
+                format: (value) => '${(value * 100).round()}%',
+                onChanged:
+                    (value) => ref
+                        .read(ignoreCommonGeoScoreCutoffProvider.notifier)
+                        .set(value),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Text(
+                  l10n.settingsIgnoreCommonSpeciesDescription,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

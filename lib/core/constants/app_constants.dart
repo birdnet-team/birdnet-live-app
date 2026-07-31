@@ -107,6 +107,12 @@ abstract final class PrefKeys {
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
+  static const String ignoreBirds = 'ignore_species_birds';
+  static const String ignoreMammals = 'ignore_species_mammals';
+  static const String ignoreAmphibians = 'ignore_species_amphibians';
+  static const String ignoreInsects = 'ignore_species_insects';
+  static const String ignoreCommonGeoScoreCutoff =
+      'ignore_common_geo_score_cutoff';
   static const String showAllDetectedSpecies = 'show_all_detected_species';
   static const String detectedSpeciesSortMode = 'detected_species_sort_mode';
   static const String scorePooling = 'score_pooling';

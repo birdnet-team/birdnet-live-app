@@ -106,6 +106,14 @@ An x-axis offset applied to the model's raw probability scores before score pool
 
 Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
 
+### Ignore species
+
+Opens an overlay with binary inference filters. Check **Birds**, **Mammals**, **Amphibians**, or **Insects** to suppress that entire taxonomic class. All four checkboxes are off by default.
+
+The **Ignore common species above** slider runs from **80–100%** and suppresses species whose current geo-model score is strictly above the selected cutoff. It defaults to **100%**, which ignores no species by commonness; lowering it ignores progressively more common species. The overlay runs the geo model once for the current location and shows the resulting total number of ignored species. Moving the slider or changing a checkbox reuses that cached prediction instead of running inference again. The common-species rule needs a location-based geo-model result, while taxonomic-group filtering works without a location.
+
+The filter is applied to both geo-model and audio-model probabilities immediately after sigmoid activation. Ignored scores become exactly zero before temporal pooling, so they cannot contribute to a later pooled result or become a displayed, saved, announced, or exported detection. Changes made during an active Live Mode, Point Count, Survey, or ARU Session apply to the next inference window; File Analysis uses the values selected when analysis starts.
+
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
 the default uses an adaptive pooling mode with five recent windows and a
