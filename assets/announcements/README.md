@@ -26,10 +26,10 @@ sounds natural in English rarely maps word for word.
 
 ## Files
 
-One file per locale, `templates_<locale>.json`. All eleven shipped locales must
+One file per locale, `templates_<locale>.json`. All 12 shipped locales must
 be present and complete:
 
-`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `pl` · `ru` · `zh`
+`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `nb` · `pl` · `ru` · `zh`
 
 Loaded by
 [`TemplateLibrary`](../../lib/features/announcements/phrasing/template_library.dart),

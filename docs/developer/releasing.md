@@ -93,6 +93,7 @@ release/0.15.2/
     fr-FR.txt
     it-IT.txt
     nl-NL.txt
+    nb-NO.txt
     pl-PL.txt
     pt-PT.txt
     ru-RU.txt
@@ -107,8 +108,8 @@ that matters.
 
 Each `release-notes/<locale>.txt` is plain text, max ~500 chars (the Play
 Store limit). Mirror the CHANGELOG entry, but write it for users rather than
-developers. Cover all 10 locales the app ships in: en-US, de-DE, cs-CZ,
-es-ES, fr-FR, it-IT, nl-NL, pl-PL, pt-PT, ru-RU. Any locale missing on Play
+developers. Cover all 11 locales the app ships in: en-US, de-DE, cs-CZ,
+es-ES, fr-FR, it-IT, nl-NL, nb-NO, pl-PL, pt-PT, ru-RU. Any locale missing on Play
 Console falls back to en-US.
 
 ## 6. Upload to Play Console
