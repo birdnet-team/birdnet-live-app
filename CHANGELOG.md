@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Species descriptions and Wikipedia links now resolve for regional species-language settings. Tags carrying a region (`zh-CN`, `es_ES`, `pt_PT`) missed the bundled files, which are keyed by bare language code, and silently fell back to English.
+- Dates and newly resolved place names now follow the app language. Session cards separate the localized date and time with a dash instead of the hardcoded English word "at." A resolved place label remains attached to its Session and is not queried again after a language change.
+- Wind-direction abbreviations now follow the app language in weather cards and dialogs, while stored bearings and export metadata remain language-neutral or English. JSON and GPX exports now localize species common names like the existing Raven, CSV, and HTML exports.
 
 ## [1.0.0] - 2026-07-30
 

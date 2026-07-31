@@ -56,7 +56,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,6 +72,7 @@ import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
+import '../../shared/utils/locale_time_format.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
@@ -1246,13 +1246,18 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final lon = widget.session.longitude;
     if (lat == null || lon == null) return;
 
-    // Use cached name if already resolved.
+    // A resolved name belongs to the session and stays unchanged even if the
+    // app or phone locale changes later.
     if (widget.session.locationName != null) {
       setState(() => _locationName = widget.session.locationName);
       return;
     }
 
-    final name = await reverseGeocode(latitude: lat, longitude: lon);
+    final name = await reverseGeocode(
+      latitude: lat,
+      longitude: lon,
+      localeName: ref.read(effectiveAppLocaleProvider),
+    );
     if (name != null && mounted) {
       setState(() => _locationName = name);
       // Keep the resolved name in memory so a later explicit save includes it.

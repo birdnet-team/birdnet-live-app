@@ -12,6 +12,7 @@ import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
+import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
@@ -60,6 +61,13 @@ DetectionRecord _det(
   );
 }
 
+TaxonomyService _localizedTaxonomy() {
+  return TaxonomyService()..loadFromCsv(
+    'scientific_name,common_name,common_name_de\n'
+    'Turdus merula,Eurasian Blackbird,Amsel',
+  );
+}
+
 /// The expected BirdNET_Live export prefix for the test session
 /// (2025-06-15 08:00:00 UTC, no session number). Built from local time so
 /// the test stays timezone-agnostic â€” export filenames are always rendered
@@ -68,6 +76,44 @@ final _prefix =
     'BirdNET_Live_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.utc(2025, 6, 15, 8, 0, 0).toLocal())}';
 
 void main() {
+  test('common names are localized consistently in every export format', () {
+    final start = DateTime.utc(2025, 6, 15, 8);
+    final session = _makeSession(
+      detections: [
+        DetectionRecord(
+          scientificName: 'Turdus merula',
+          commonName: 'Eurasian Blackbird',
+          confidence: 0.9,
+          timestamp: start,
+          latitude: 52.52,
+          longitude: 13.405,
+        ),
+      ],
+    );
+    final taxonomy = _localizedTaxonomy();
+
+    expect(
+      buildRavenSelectionTable(
+        session,
+        taxonomy: taxonomy,
+        speciesLocale: 'de',
+      ),
+      contains('Amsel'),
+    );
+    expect(
+      buildCsvExport(session, taxonomy: taxonomy, speciesLocale: 'de'),
+      contains('Amsel'),
+    );
+    expect(
+      buildJsonExport(session, taxonomy: taxonomy, speciesLocale: 'de'),
+      contains('"commonName": "Amsel"'),
+    );
+    expect(
+      buildGpxExport(session, taxonomy: taxonomy, speciesLocale: 'de'),
+      contains('<name>Amsel</name>'),
+    );
+  });
+
   group('buildRavenSelectionTable', () {
     test('header row has correct columns including Begin File', () {
       final session = _makeSession();

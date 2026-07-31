@@ -1186,6 +1186,22 @@
   "@weatherCodeUnknown": {
     "description": "Fallback when the WMO weather code is missing or unrecognized"
   },
+  "windDirectionNorth": "N",
+  "windDirectionNorthEast": "NE",
+  "windDirectionEast": "E",
+  "windDirectionSouthEast": "SE",
+  "windDirectionSouth": "S",
+  "windDirectionSouthWest": "SW",
+  "windDirectionWest": "W",
+  "windDirectionNorthWest": "NW",
+  "@windDirectionNorth": {"description": "Localized compass abbreviation for north"},
+  "@windDirectionNorthEast": {"description": "Localized compass abbreviation for northeast"},
+  "@windDirectionEast": {"description": "Localized compass abbreviation for east"},
+  "@windDirectionSouthEast": {"description": "Localized compass abbreviation for southeast"},
+  "@windDirectionSouth": {"description": "Localized compass abbreviation for south"},
+  "@windDirectionSouthWest": {"description": "Localized compass abbreviation for southwest"},
+  "@windDirectionWest": {"description": "Localized compass abbreviation for west"},
+  "@windDirectionNorthWest": {"description": "Localized compass abbreviation for northwest"},
   "sessionShare": "Share",
   "@sessionShare": {
     "description": "Share session button label"

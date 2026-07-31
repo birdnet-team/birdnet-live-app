@@ -779,6 +779,7 @@ String buildJsonExport(
   LiveSession session, {
   Map<String, dynamic>? metadata,
   TaxonomyService? taxonomy,
+  String speciesLocale = 'en',
 }) {
   final map = {
     if (metadata != null) 'meta': metadata,
@@ -825,7 +826,11 @@ String buildJsonExport(
           return {
             'timestamp': d.timestamp.toUtc().toIso8601String(),
             'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
-            'commonName': d.commonName,
+            'commonName': _localizedCommon(
+              d,
+              taxonomy: taxonomy,
+              speciesLocale: speciesLocale,
+            ),
             'scientificName': _displaySci(d, taxonomy: taxonomy),
             'confidence': num.parse(d.confidence.toStringAsFixed(4)),
             if (d.latitude != null) 'latitude': d.latitude,
@@ -1133,13 +1138,18 @@ Future<String?> buildSessionExport(
             session,
             metadata: exportMetadata,
             taxonomy: taxonomy,
+            speciesLocale: speciesLocale,
           ),
         );
         break;
       case 'gpx':
         docs[fmt] = (
           extension: '.gpx',
-          content: buildGpxExport(session, taxonomy: taxonomy),
+          content: buildGpxExport(
+            session,
+            taxonomy: taxonomy,
+            speciesLocale: speciesLocale,
+          ),
         );
         break;
       case 'raven':
@@ -1357,7 +1367,11 @@ Future<String?> buildSessionExport(
     if (session.type == SessionType.survey &&
         !selected.contains('gpx') &&
         docs.isNotEmpty) {
-      final gpxContent = buildGpxExport(session, taxonomy: taxonomy);
+      final gpxContent = buildGpxExport(
+        session,
+        taxonomy: taxonomy,
+        speciesLocale: speciesLocale,
+      );
       final gpxBytes = Uint8List.fromList(utf8.encode(gpxContent));
       archive.addFile(ArchiveFile('$prefix.gpx', gpxBytes.length, gpxBytes));
     }
@@ -1469,7 +1483,11 @@ String _buildAnnotationsText(LiveSession session) {
 /// Contains:
 ///   • `<trk>` with `<trkseg>` of GPS track points
 ///   • `<wpt>` for each detection with lat/lon coordinates
-String buildGpxExport(LiveSession session, {TaxonomyService? taxonomy}) {
+String buildGpxExport(
+  LiveSession session, {
+  TaxonomyService? taxonomy,
+  String speciesLocale = 'en',
+}) {
   final buf = StringBuffer();
 
   buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
@@ -1499,7 +1517,12 @@ String buildGpxExport(LiveSession session, {TaxonomyService? taxonomy}) {
     if (d.latitude == null || d.longitude == null) continue;
     buf.writeln('  <wpt lat="${d.latitude}" lon="${d.longitude}">');
     buf.writeln('    <time>${d.timestamp.toUtc().toIso8601String()}</time>');
-    buf.writeln('    <name>${_xmlEscape(d.commonName)}</name>');
+    final commonName = _localizedCommon(
+      d,
+      taxonomy: taxonomy,
+      speciesLocale: speciesLocale,
+    );
+    buf.writeln('    <name>${_xmlEscape(commonName)}</name>');
     buf.writeln(
       '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
     );

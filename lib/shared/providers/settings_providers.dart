@@ -635,6 +635,10 @@ final platformLocalesProvider = Provider<List<Locale>>((ref) {
       : <Locale>[PlatformDispatcher.instance.locale];
 });
 
+/// Resolved app-interface locale tag, including the supported-locale fallback
+/// used by [AppLocalizations].
+final effectiveAppLocaleProvider = Provider<String>(_effectiveAppLocaleTag);
+
 /// Resolved species locale code (never 'system').
 ///
 /// Resolves 'system' to the phone locale and 'app' to the app interface locale.
