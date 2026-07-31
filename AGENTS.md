@@ -25,7 +25,7 @@ This file is for coding agents working in this repository.
 
 - lib/core: app-wide constants, services, theme, and infrastructure.
 - lib/shared: shared models, providers, utilities, and widgets.
-- lib/features: feature modules (live, point_count, survey, file_analysis, history, settings, home, about, explore).
+- lib/features: feature modules (about, announcements, aru, audio, explore, file_analysis, history, home, inference, live, onboarding, point_count, recording, settings, spectrogram, survey).
 - lib/l10n: ARB localization source files and generated localization outputs.
 - docs: user/developer documentation.
 - dev and tools: maintenance scripts, model pipelines, and release helpers.
@@ -42,6 +42,7 @@ This file is for coding agents working in this repository.
   - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `dev/build_species_bundle.py`. After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; `dev/birdnet_taxonomy_*.json` already carries the URLs.
   - the app-language dropdown in `lib/features/settings/settings_screen.dart`
   - `AppConstants.policyDocsLocales` + `docs/privacy.<loc>.md` + `docs/acceptable-use.<loc>.md` + the `mkdocs.yml` locale block
+  - `docs/index.<loc>.md` + `docs/user/*.<loc>.md` (the MkDocs user guide) + the locale's `nav_translations` block in `mkdocs.yml`. The Developer Guide and API Reference stay English.
   - `dev/store/store-desc.md` (all five sections: both subtitles, promo text, short description, keywords)
   - `dev/mockups/`: slide titles/subtitles belong in `mockups.copy.md` (then run `node sync-copy.js`), not inline in `mockups.config.js` — copy.md is the source of truth and only overlays languages it defines. In `mockups.config.js` add the language's `name` plus an entry in both `featureGraphic.taglines` and `featureGraphicHomeSubtitles`; the feature graphic falls back to English silently when either is missing. Render with `node render-mockups.js --lang <loc>`, then again with `--ipad`, then `--feature-graphic --lang <loc>` (13 images per locale).
   - the locale list in `dev/build_release.dart` so stubbed Play/App Store release notes include it

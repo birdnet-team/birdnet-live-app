@@ -148,11 +148,11 @@ einen Detektionsmarker, um den Clip-Player mit Bestätigen, Teilen und Löschen 
 einzelner Clips eine durchgehende WAV-Aufnahme gewählt haben – das passende
 Audiofenster wird dabei direkt aus der laufenden Aufnahme herausgeschnitten. Weitere
 Details finden Sie unter
-[Session-Übersicht → Eine einzelne Detektion teilen](session-review.md#sharing-a-single-detection).
+[Session-Übersicht → Eine einzelne Detektion teilen](session-review.md#eine-einzelne-detektion-teilen).
 
 ### Eine Beobachtung erfassen
 
-Die Schaltfläche :material-plus-circle-outline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie [Session Review](session-review.md#arten-manuell-hinzufugen) — Wählen Sie eine Art, setzen Sie im Bestätigungsfenster :material-ear-hearing: **Gehört** und/oder :material-eye: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte — mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
+Die Schaltfläche :material-plus-circle-outline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie [Session Review](session-review.md#arten-manuell-hinzufügen) — Wählen Sie eine Art, setzen Sie im Bestätigungsfenster :material-ear-hearing: **Gehört** und/oder :material-eye: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte — mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
 
 Sprachmemos fehlen hier bewusst: Das Mikrofon ist mit der Aufnahme des Surveys belegt. Hängen Sie sie nach dem Ende des Surveys in Session Review an.
 

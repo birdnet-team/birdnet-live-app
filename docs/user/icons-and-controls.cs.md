@@ -62,7 +62,7 @@ Tato stránka vysvětluje opakující se ovládací prvky a symboly používané
 
 ## Akce u jednotlivých detekcí
 
-Tyto ovládací prvky se objevují u každého řádku detekce v celé aplikaci — v seznamu druhů v Přehledu Session, v panelu přehrávače klipu, v živém seznamu detekcí Survey a u značek na mapě Survey. Úplné chování popisuje [Přehled Session → Akce u jednotlivých detekcí](session-review.md#akce-u-jednotlivych-detekci).
+Tyto ovládací prvky se objevují u každého řádku detekce v celé aplikaci — v seznamu druhů v Přehledu Session, v panelu přehrávače klipu, v živém seznamu detekcí Survey a u značek na mapě Survey. Úplné chování popisuje [Přehled Session → Akce u jednotlivých detekcí](session-review.md#akce-u-jednotlivých-detekcí).
 
 | Ovládací prvek | Význam |
 |---|---|

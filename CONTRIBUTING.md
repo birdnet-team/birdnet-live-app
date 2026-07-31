@@ -6,7 +6,8 @@ Thank you for your interest in contributing to BirdNET Live! This guide will hel
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+ with Dart 3.7+)
+- [Git LFS](https://git-lfs.com/) for the large ONNX model files
 - [Android Studio](https://developer.android.com/studio) (for Android SDK & emulator)
 - [Xcode](https://developer.apple.com/xcode/) (macOS only, for iOS development)
 
@@ -16,6 +17,10 @@ Thank you for your interest in contributing to BirdNET Live! This guide will hel
 # Clone the repository
 git clone https://github.com/birdnet-team/birdnet-live-app.git
 cd birdnet-live-app
+
+# Fetch the ONNX model files (do not skip on a fresh clone)
+git lfs install
+git lfs pull
 
 # Install dependencies
 flutter pub get
@@ -84,6 +89,7 @@ BirdNET Live has **two translation surfaces**, and both require complete coverag
 - `nl`
 - `pl`
 - `ru`
+- `zh` (Simplified Chinese)
 
 ### Translation Rules (UI strings)
 

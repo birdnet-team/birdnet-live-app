@@ -62,7 +62,7 @@ Esta página explica los controles y símbolos recurrentes que se usan en todo B
 
 ## Acciones por detección
 
-Estos controles aparecen en cada fila de detección de toda la app: la lista de especies del Resumen de la Session, la hoja del reproductor de clips, la lista de detecciones del Survey en vivo y los marcadores del mapa del Survey. Consulta [Resumen de la Session → Acciones por detección](session-review.md#acciones-por-deteccion) para conocer todo su comportamiento.
+Estos controles aparecen en cada fila de detección de toda la app: la lista de especies del Resumen de la Session, la hoja del reproductor de clips, la lista de detecciones del Survey en vivo y los marcadores del mapa del Survey. Consulta [Resumen de la Session → Acciones por detección](session-review.md#acciones-por-detección) para conocer todo su comportamiento.
 
 | Control | Significado |
 |---|---|

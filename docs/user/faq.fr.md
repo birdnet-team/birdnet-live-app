@@ -1,14 +1,14 @@
-#FAQ
+# FAQ
 
 Questions fréquemment posées.
 
 ## Général
 
 **Q : BirdNET Live nécessite-t-il une connexion Internet ?**
-R : Non. Toutes les inférences s'exécutent sur l'appareil à l'aide du modèle ONNX. Les seules fonctionnalités du réseau sont les recherches d'images/descriptions d'espèces à partir de l'API de taxonomie, qui sont facultatives.
+R : Non. Toutes les inférences s'exécutent sur l'appareil à l'aide du modèle ONNX. Les seules fonctionnalités réseau sont facultatives et désactivées par défaut : les tuiles de carte et la recherche de noms de lieux via OpenStreetMap, les relevés météo via Open-Meteo, ainsi que les recherches d'images et de descriptions d'espèces à partir de l'API de taxonomie. Voir [Paramètres → Confidentialité](settings.md#confidentialité).
 
 **Q : Combien d'espèces peut-il identifier ?**
-R : Le modèle BirdNET+ V3.0 identifie 10 208 espèces dans le monde — oiseaux, amphibiens, mammifères et insectes (l'intersection élaguée du classificateur audio et du géomodèle).
+R : Le modèle BirdNET+ V3.0 identifie 9 789 espèces dans le monde — oiseaux, amphibiens, mammifères et insectes (l'intersection élaguée du classificateur audio et du géomodèle).
 
 **Q : Quelles plates-formes sont prises en charge ?**
 R : Android (8.0+), iOS (15.0+) et Windows (expérimental).
@@ -27,12 +27,12 @@ R : La précision dépend de la qualité de l’enregistrement, de la distance,
 ## Enregistrement
 
 **Q : Où sont sauvegardés les enregistrements ?**
-R : Dans le répertoire des documents de l'application sous `recordings/<session-id>/`. Les enregistrements complets sont enregistrés sous forme de fichiers WAV.
+R : Dans le répertoire des documents de l'application sous `recordings/<session-id>/`. Au format WAV ou FLAC selon **Paramètres → Enregistrement → Format**.
 
 **Q : Puis-je analyser des enregistrements existants ?**
 R : Oui. Ouvrez File Analysis depuis l'écran d'accueil, choisissez un fichier audio, définissez l'emplacement et les paramètres, puis appuyez sur Analyser. Les formats pris en charge incluent WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA et AMR.
 
-## Nombre de points
+## Point Count
 
 **Q : Qu'est-ce que le mode comptage de points ?**
 R : Un mode chronométré pour les observations formelles de points d'écoute des oiseaux. Vous définissez une durée fixe (3 à 20 minutes) et un emplacement, puis l'application s'exécute en continu et s'arrête automatiquement lorsque la minuterie atteint zéro.

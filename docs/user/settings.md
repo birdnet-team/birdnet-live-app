@@ -60,14 +60,6 @@ Storage and exports always use UTC instants regardless of this setting, so the c
 
 These controls appear in audio-driven live workflows.
 
-### Gain
-
-Linear amplifier applied to incoming audio before it reaches the spectrogram and the classifier. Leave at **1.0×** unless your input is consistently too quiet — for example a high-impedance lavalier mic on a phone, or a USB interface whose preamp is set too low. Pushing gain above 1.0 will not magically reveal calls that the mic never captured; it just rescales whatever the mic delivered, so loud nearby sounds may clip. Below 1.0 is useful in the rare case where a hot input is saturating the spectrogram.
-
-### High-pass filter (Hz)
-
-Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
-
 ### Audio source
 
 One sheet with two independent controls: **Microphone** — which input to record from — and **Processing** — how much the phone is allowed to alter the signal on the way in. They combine freely, so a USB microphone recorded *unprocessed* is a perfectly valid setup. Your selection is remembered across app launches, and the same picker appears on the Survey, Point Count, and ARU setup screens. Changes take effect immediately — even mid-recording, the app swaps the microphone under the running session rather than waiting for the next one.
@@ -87,6 +79,14 @@ One sheet with two independent controls: **Microphone** — which input to recor
 Expect the unprocessed options to sound **quieter** — that is the automatic gain being gone, not a fault. Raise **Gain** to compensate if the level meter looks low.
 
 **On iOS** the Processing control is hidden and the sheet is simply a microphone list. iOS already hands the app essentially unprocessed audio, so there is nothing equivalent to choose.
+
+### Gain
+
+Linear amplifier applied to incoming audio before it reaches the spectrogram and the classifier. Leave at **1.0×** unless your input is consistently too quiet — for example a high-impedance lavalier mic on a phone, or a USB interface whose preamp is set too low. Pushing gain above 1.0 will not magically reveal calls that the mic never captured; it just rescales whatever the mic delivered, so loud nearby sounds may clip. Below 1.0 is useful in the rare case where a hot input is saturating the spectrogram.
+
+### High-pass filter (Hz)
+
+Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
 
 ## Inference
 
@@ -265,6 +265,10 @@ The intuition: many workflows need more than one format at the same time — a C
 ### Include audio files
 
 Include saved audio alongside the exported tables or metadata when supported by the export workflow.
+
+### Always share audio as WAV
+
+Shown only when **Include audio files** is on. When enabled, FLAC recordings are converted to WAV before sharing or exporting. WAV is universally compatible but significantly larger than FLAC, so leave this off unless the tool on the receiving end cannot read FLAC — some older desktop analysis software and a few upload forms still can't.
 
 ### Include app metadata
 

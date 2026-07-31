@@ -74,7 +74,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **On-device inference** — BirdNET+ model (9,789 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — UI translations and spoken announcement phrasing for: English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, and Russian
+- **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, Russian, and Simplified Chinese
 
 ## Install on Android
 
@@ -194,8 +194,9 @@ Then open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 lib/
   core/           # Constants, theme, utilities, extensions
   features/       # Feature modules (live, point_count, survey, file_analysis,
-                  #   audio, inference, explore, history, settings, home, about)
-   l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt, nl, nb, pl, ru)
+                  #   aru, audio, recording, spectrogram, inference, explore,
+                  #   announcements, history, settings, home, onboarding, about)
+  l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh)
   shared/         # Shared models, providers, services, widgets
                   #   (e.g. ContentWidthConstraint for tablet max-width)
 

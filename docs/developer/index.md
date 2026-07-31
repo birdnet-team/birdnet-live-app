@@ -7,7 +7,7 @@ A guide for contributing to BirdNET Live.
 | Component | Technology |
 |-----------|-----------|
 | **Framework** | Flutter 3.27+ / Dart 3.7+ |
-| **State Management** | flutter_riverpod 3.3.1 |
+| **State Management** | flutter_riverpod 3.4.2+ |
 | **Inference** | flutter_onnxruntime 1.7.0 (on-device ONNX) |
 | **Location** | geolocator 14.0.2 |
 | **Audio** | record, just_audio, fftea, flutter_tts |
@@ -26,7 +26,9 @@ lib/
     point_count/ # Timed point-count survey mode
     survey/      # Long-running transect survey mode
     file_analysis/ # Offline file analysis wizard
+    aru/         # Scheduled acoustic recording unit deployments
     explore/     # Species exploration by location
+    announcements/ # Spoken detection announcements (TTS)
     inference/   # ONNX model wrappers (classifier, geo-model)
     audio/       # Audio capture, ring buffer
     recording/   # WAV/FLAC writing (full + detection clips)
@@ -36,7 +38,7 @@ lib/
     home/        # Home screen / main menu
     onboarding/  # Intro carousel + acceptable-use gate
     about/       # Credits, links, legal
-  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt, nl, pl, ru)
+  l10n/          # ARB localization files (en, de, cs, es, fr, it, pt, nl, pl, ru, zh)
 ```
 
 ## Getting Started

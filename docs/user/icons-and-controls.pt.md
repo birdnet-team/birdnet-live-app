@@ -62,7 +62,7 @@ Esta página explica os controles e símbolos recorrentes usados em todo o BirdN
 
 ## Ações por detecção
 
-Estes controles aparecem em todas as linhas de detecção do app — a lista de espécies do Resumo da Session, o painel do reprodutor de clipe, a lista de detecções do Survey ao vivo e os marcadores no mapa do Survey. Consulte [Resumo da Session → Ações por detecção](session-review.md#acoes-por-deteccao) para o comportamento completo.
+Estes controles aparecem em todas as linhas de detecção do app — a lista de espécies do Resumo da Session, o painel do reprodutor de clipe, a lista de detecções do Survey ao vivo e os marcadores no mapa do Survey. Consulte [Resumo da Session → Ações por detecção](session-review.md#ações-por-detecção) para o comportamento completo.
 
 | Controle | Significado |
 |---|---|

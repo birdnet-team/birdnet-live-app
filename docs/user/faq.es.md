@@ -5,10 +5,10 @@ Preguntas frecuentes.
 ## General
 
 **P: ¿BirdNET Live requiere una conexión a Internet?**
-R: No. Toda la inferencia se ejecuta en el dispositivo utilizando el modelo ONNX. Las únicas características de la red son las búsquedas de imágenes/descripciones de especies desde la API de taxonomía, que son opcionales.
+R: No. Toda la inferencia se ejecuta en el dispositivo utilizando el modelo ONNX. Las únicas funciones de red son opcionales y están desactivadas de forma predeterminada: los mosaicos de mapa y la búsqueda de nombres de lugares de OpenStreetMap, las instantáneas meteorológicas de Open-Meteo y la consulta de imágenes y descripciones de especies desde la API de taxonomía. Consulta [Ajustes → Privacidad](settings.md#privacidad).
 
 **P: ¿Cuántas especies puede identificar?**
-R: El modelo BirdNET+ V3.0 identifica 10 208 especies en todo el mundo: aves, anfibios, mamíferos e insectos (la intersección podada del clasificador de audio y el modelo geográfico).
+R: El modelo BirdNET+ V3.0 identifica 9789 especies en todo el mundo: aves, anfibios, mamíferos e insectos (la intersección podada del clasificador de audio y el modelo geográfico).
 
 **P: ¿Qué plataformas son compatibles?**
 R: Android (8.0+), iOS (15.0+) y Windows (experimental).
@@ -27,7 +27,7 @@ R: La precisión depende de la calidad de la grabación, la distancia, el ruido 
 ## Grabación
 
 **P: ¿Dónde se guardan las grabaciones?**
-R: En el directorio de documentos de la aplicación en `grabaciones/<id-de sesión>/`. Las grabaciones completas se guardan como archivos WAV.
+R: En el directorio de documentos de la aplicación, en `recordings/<session-id>/`, en formato WAV o FLAC según **Ajustes → Grabación → Formato**.
 
 **P: ¿Puedo analizar grabaciones existentes?**
 R: Sí. Abra Análisis de archivos desde la pantalla de inicio, elija un archivo de audio, establezca la ubicación y los parámetros y toque Analizar. Los formatos admitidos incluyen WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA y AMR.
