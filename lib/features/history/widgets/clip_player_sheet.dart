@@ -24,13 +24,13 @@ import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
+import '../../../shared/utils/locale_time_format.dart';
 import '../../../shared/widgets/detection_evidence_badge.dart';
 import '../../explore/explore_providers.dart';
 import '../../explore/widgets/species_info_overlay.dart';
@@ -449,10 +449,16 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
     // nothing here implies it is the length of the audio below.
     final detStart = det.timestamp.toLocal();
     final detEnd = det.endTimestamp?.toLocal();
-    final startStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(detStart);
+    final alwaysUse24HourFormat = MediaQuery.of(context).alwaysUse24HourFormat;
+    final startStr = formatLocaleDateTime(
+      detStart,
+      l10n.localeName,
+      showSeconds: true,
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+    );
     final timeStr =
         detEnd != null && detEnd.isAfter(detStart)
-            ? '$startStr – ${DateFormat('HH:mm:ss').format(detEnd)}'
+            ? '$startStr – ${formatLocaleTime(detEnd, l10n.localeName, showSeconds: true, alwaysUse24HourFormat: alwaysUse24HourFormat)}'
             : startStr;
     // Use the unified [ScoreColors] CVD-safe ramp so the avatar border on
     // this sheet matches the same detection's marker on the survey map and

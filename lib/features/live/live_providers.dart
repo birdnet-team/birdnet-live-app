@@ -132,10 +132,8 @@ final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
 ///
 /// Side-effect: any session that has GPS coordinates but no resolved
 /// `locationName` is silently backfilled from the persistent reverse-
-/// geocode cache (no network call). This makes labels resolved in one
-/// session "stick" to every other nearby session in the library, and
-/// promotes the cached label to a permanent per-session field so the
-/// next list load doesn't repeat the lookup.
+/// geocode cache (no network call). Once resolved, a session keeps that label
+/// even if the app or phone locale changes later.
 final sessionListProvider = FutureProvider<List<LiveSession>>((ref) async {
   final repo = ref.watch(sessionRepositoryProvider);
   final sessions = await repo.listAll();

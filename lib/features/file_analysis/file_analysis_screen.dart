@@ -248,6 +248,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         _locationName = await reverseGeocode(
           latitude: location.latitude,
           longitude: location.longitude,
+          localeName: ref.read(effectiveAppLocaleProvider),
         );
       }
     } catch (_) {

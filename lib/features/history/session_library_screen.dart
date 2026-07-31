@@ -1052,8 +1052,7 @@ class _SessionTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
-    final dateStr = DateFormat.yMMMd().format(session.startTime.toLocal());
-    final timeStr = formatLocaleTime(
+    final dateTimeStr = formatLocaleDateTime(
       session.startTime,
       l10n.localeName,
       alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
@@ -1129,7 +1128,7 @@ class _SessionTile extends ConsumerWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '$dateStr at $timeStr',
+                              dateTimeStr,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -1284,7 +1283,7 @@ class _CompactSessionTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final dateStr = DateFormat.yMMMd().format(session.startTime.toLocal());
+    final dateStr = formatLocaleDate(session.startTime, l10n.localeName);
 
     final duration = session.duration;
     final speciesCount = session.uniqueSpeciesCount;
@@ -1549,7 +1548,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
-                  DateFormat.yMMMd().format(session.startTime.toLocal()),
+                  formatLocaleDate(session.startTime, l10n.localeName),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

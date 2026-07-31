@@ -165,7 +165,7 @@ class _WeatherSetupCardState extends ConsumerState<WeatherSetupCard> {
             color: onSurfaceVariant,
           ),
           title: Text(
-            formatWeatherCompactStats(weather),
+            formatWeatherCompactStats(weather, l10n: l10n),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

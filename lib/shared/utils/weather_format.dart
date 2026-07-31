@@ -20,6 +20,7 @@
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../models/weather_snapshot.dart';
 
 /// Symbolic keys for WMO weather code groups. The caller is expected to
@@ -89,6 +90,25 @@ String compassFromBearing(double? deg) {
   return sectors[idx];
 }
 
+/// Localized 8-point compass abbreviation for user-facing weather labels.
+/// Stored bearings and export/metadata formatting continue to use
+/// [compassFromBearing] so their representation remains stable English.
+String localizedCompassFromBearing(double? deg, AppLocalizations l10n) {
+  if (deg == null) return '';
+  final normalized = ((deg % 360) + 360) % 360;
+  final idx = ((normalized + 22.5) / 45).floor() % 8;
+  return switch (idx) {
+    0 => l10n.windDirectionNorth,
+    1 => l10n.windDirectionNorthEast,
+    2 => l10n.windDirectionEast,
+    3 => l10n.windDirectionSouthEast,
+    4 => l10n.windDirectionSouth,
+    5 => l10n.windDirectionSouthWest,
+    6 => l10n.windDirectionWest,
+    _ => l10n.windDirectionNorthWest,
+  };
+}
+
 /// Short label like "20.1 °C" / "—" when missing.
 String formatTemperature(double? celsius) {
   if (celsius == null) return '—';
@@ -96,9 +116,16 @@ String formatTemperature(double? celsius) {
 }
 
 /// "3.2 m/s SW" / "3.2 m/s" / "—".
-String formatWind(double? speedMs, double? bearingDeg) {
+String formatWind(
+  double? speedMs,
+  double? bearingDeg, {
+  AppLocalizations? l10n,
+}) {
   if (speedMs == null) return '—';
-  final compass = compassFromBearing(bearingDeg);
+  final compass =
+      l10n == null
+          ? compassFromBearing(bearingDeg)
+          : localizedCompassFromBearing(bearingDeg, l10n);
   final base = '${speedMs.toStringAsFixed(1)} m/s';
   return compass.isEmpty ? base : '$base $compass';
 }
@@ -119,11 +146,11 @@ String formatCloudCover(int? percent) {
 ///
 /// The condition is represented by [weatherConditionIcon] in the UI so this
 /// string deliberately keeps only numeric field data: temperature + wind.
-String formatWeatherCompactStats(WeatherSnapshot w) {
+String formatWeatherCompactStats(WeatherSnapshot w, {AppLocalizations? l10n}) {
   final parts = <String>[];
   if (w.temperatureC != null) parts.add(formatTemperature(w.temperatureC));
   if (w.windSpeedMs != null) {
-    parts.add(formatWind(w.windSpeedMs, w.windDirectionDeg));
+    parts.add(formatWind(w.windSpeedMs, w.windDirectionDeg, l10n: l10n));
   }
   return parts.isEmpty ? '—' : parts.join(' · ');
 }
@@ -134,12 +161,16 @@ typedef WeatherLabelLookup = String Function(WeatherCondition);
 
 /// One-line "20.1 °C · Light rain · Wind 3 m/s SW" used as a quick summary.
 /// The condition label is resolved via [labelFor].
-String formatWeatherOneLine(WeatherSnapshot w, WeatherLabelLookup labelFor) {
+String formatWeatherOneLine(
+  WeatherSnapshot w,
+  WeatherLabelLookup labelFor, {
+  AppLocalizations? l10n,
+}) {
   final parts = <String>[];
   if (w.temperatureC != null) parts.add(formatTemperature(w.temperatureC));
   parts.add(labelFor(weatherConditionFromCode(w.weatherCode)));
   if (w.windSpeedMs != null) {
-    parts.add(formatWind(w.windSpeedMs, w.windDirectionDeg));
+    parts.add(formatWind(w.windSpeedMs, w.windDirectionDeg, l10n: l10n));
   }
   return parts.join(' · ');
 }

@@ -1133,6 +1133,7 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
     final name = await reverseGeocode(
       latitude: loc.latitude,
       longitude: loc.longitude,
+      localeName: ref.read(effectiveAppLocaleProvider),
     );
     if (mounted && name != null) {
       setState(() => _locationName = name);

@@ -26,6 +26,22 @@ String formatLocaleTime(
   }
 }
 
+String formatLocaleDate(
+  DateTime dateTime,
+  String localeName, {
+  bool longMonth = false,
+}) {
+  final local = dateTime.toLocal();
+  try {
+    return (longMonth
+            ? DateFormat.yMMMMd(localeName)
+            : DateFormat.yMMMd(localeName))
+        .format(local);
+  } catch (_) {
+    return (longMonth ? DateFormat.yMMMMd() : DateFormat.yMMMd()).format(local);
+  }
+}
+
 String _fallbackTime(
   DateTime local, {
   required bool showSeconds,
@@ -49,19 +65,9 @@ String formatLocaleDateTime(
   DateTime dateTime,
   String localeName, {
   bool longMonth = false,
+  bool showSeconds = false,
   bool alwaysUse24HourFormat = false,
 }) {
-  final local = dateTime.toLocal();
-  String dateText;
-  try {
-    final dateFormatter =
-        longMonth
-            ? DateFormat.yMMMMd(localeName)
-            : DateFormat.yMMMd(localeName);
-    dateText = dateFormatter.format(local);
-  } catch (_) {
-    final dateFormatter = longMonth ? DateFormat.yMMMMd() : DateFormat.yMMMd();
-    dateText = dateFormatter.format(local);
-  }
-  return '$dateText ${formatLocaleTime(local, localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
+  return '${formatLocaleDate(dateTime, localeName, longMonth: longMonth)} - '
+      '${formatLocaleTime(dateTime, localeName, showSeconds: showSeconds, alwaysUse24HourFormat: alwaysUse24HourFormat)}';
 }

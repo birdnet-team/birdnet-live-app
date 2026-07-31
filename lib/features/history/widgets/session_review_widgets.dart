@@ -104,8 +104,10 @@ class _SummaryHeader extends ConsumerWidget {
     final duration = session.duration;
     final species =
         session.detections.map((d) => d.scientificName).toSet().length;
-    final dateStr = DateFormat.yMMMd().add_Hm().format(
-      session.startTime.toLocal(),
+    final dateStr = formatLocaleDateTime(
+      session.startTime,
+      l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
 
     return Container(
@@ -405,7 +407,7 @@ class _WeatherRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final cond = weatherConditionFromCode(weather.weatherCode);
-    final inlineLabel = formatWeatherCompactStats(weather);
+    final inlineLabel = formatWeatherCompactStats(weather, l10n: l10n);
 
     return InkWell(
       onTap: () => _showDetails(context, l10n, cond),
@@ -461,7 +463,11 @@ class _WeatherRow extends StatelessWidget {
                 ),
                 _kv(
                   l10n.sessionWeatherWind,
-                  formatWind(weather.windSpeedMs, weather.windDirectionDeg),
+                  formatWind(
+                    weather.windSpeedMs,
+                    weather.windDirectionDeg,
+                    l10n: l10n,
+                  ),
                 ),
                 _kv(
                   l10n.sessionWeatherPrecipitation,
