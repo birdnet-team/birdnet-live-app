@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../features/inference/advanced_pooling_params.dart';
+import '../../features/inference/species_ignore_filter.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_providers.dart';
 
@@ -76,6 +77,52 @@ final sensitivityProvider =
       final prefs = ref.watch(sharedPreferencesProvider);
       return DoubleSettingNotifier(prefs, PrefKeys.sensitivity, 1.0);
     });
+
+/// Taxonomic groups excluded by the inference-time binary score mask.
+final ignoreBirdsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
+  ref,
+) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.ignoreBirds, false);
+});
+
+final ignoreMammalsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
+  ref,
+) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.ignoreMammals, false);
+});
+
+final ignoreAmphibiansProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.ignoreAmphibians, false);
+    });
+
+final ignoreInsectsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
+  ref,
+) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return BoolSettingNotifier(prefs, PrefKeys.ignoreInsects, false);
+});
+
+/// Geo-model score at or above which a species is ignored as common.
+final ignoreCommonGeoScoreCutoffProvider =
+    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return CommonGeoScoreCutoffSettingNotifier(prefs);
+    });
+
+/// Composed snapshot used by geo and audio inference.
+final speciesIgnoreSettingsProvider = Provider<SpeciesIgnoreSettings>((ref) {
+  return SpeciesIgnoreSettings(
+    ignoreBirds: ref.watch(ignoreBirdsProvider),
+    ignoreMammals: ref.watch(ignoreMammalsProvider),
+    ignoreAmphibians: ref.watch(ignoreAmphibiansProvider),
+    ignoreInsects: ref.watch(ignoreInsectsProvider),
+    commonGeoScoreCutoff: ref.watch(ignoreCommonGeoScoreCutoffProvider),
+  );
+});
 
 /// Show every species detected in the current Live or Point Count session
 /// instead of only species present in the latest inference cycle.
@@ -979,6 +1026,29 @@ class InferenceRateSettingNotifier extends DoubleSettingNotifier {
     final maxTick = (inferenceRateHzValues.last * 10).round();
     final tick = (value * 10).round().clamp(minTick, maxTick);
     return tick / 10.0;
+  }
+
+  @override
+  Future<void> set(double value) => super.set(_sanitize(value));
+}
+
+/// Keeps the common-species cutoff on the user-visible 80–100% grid and
+/// migrates values saved by earlier builds that exposed a wider range.
+class CommonGeoScoreCutoffSettingNotifier extends DoubleSettingNotifier {
+  CommonGeoScoreCutoffSettingNotifier(this._cutoffPrefs)
+    : super(_cutoffPrefs, PrefKeys.ignoreCommonGeoScoreCutoff, 1.0) {
+    final sanitized = _sanitize(state);
+    if (sanitized != state) {
+      state = sanitized;
+      _cutoffPrefs.setDouble(PrefKeys.ignoreCommonGeoScoreCutoff, sanitized);
+    }
+  }
+
+  final SharedPreferences _cutoffPrefs;
+
+  static double _sanitize(double value) {
+    final percentage = (value * 100).round().clamp(80, 100);
+    return percentage / 100.0;
   }
 
   @override

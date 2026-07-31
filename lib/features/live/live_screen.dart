@@ -351,6 +351,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         ref.invalidate(currentLocationProvider);
       }
       final geoScores = await ref.read(geoScoresProvider.future);
+      final ignoredSpeciesNames = await ref.read(
+        ignoredSpeciesNamesProvider.future,
+      );
       final geoSpeciesNames = await ref.read(
         geoModelSpeciesNamesProvider.future,
       );
@@ -402,6 +405,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         poolingMaxAgeSeconds: poolingMaxAgeSeconds,
         advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: sensitivity,
+        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
         latitude: startLat,
@@ -706,6 +711,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);
+    });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(liveControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

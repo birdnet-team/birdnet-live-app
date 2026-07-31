@@ -39,6 +39,11 @@ class SessionSettings {
     this.alertMaxPerMinute = 3,
     this.alertCoalesce = true,
     this.sensitivity,
+    this.ignoreBirds,
+    this.ignoreMammals,
+    this.ignoreAmphibians,
+    this.ignoreInsects,
+    this.ignoreCommonGeoScoreCutoff,
     this.poolingMode,
     this.poolingWindows,
     this.poolingMaxAgeSeconds,
@@ -124,6 +129,13 @@ class SessionSettings {
   /// Sensitivity offset applied to model probabilities in logit space
   /// (1.0 = neutral).
   final double? sensitivity;
+
+  /// Inference-time binary species mask captured at session start.
+  final bool? ignoreBirds;
+  final bool? ignoreMammals;
+  final bool? ignoreAmphibians;
+  final bool? ignoreInsects;
+  final double? ignoreCommonGeoScoreCutoff;
 
   /// Score pooling mode (`avg`, `max`, `lme`, `adaptive_lme_peak`, etc.)
   /// applied to the rolling
@@ -211,6 +223,12 @@ class SessionSettings {
       alertMaxPerMinute: json['alertMaxPerMinute'] as int? ?? 3,
       alertCoalesce: json['alertCoalesce'] as bool? ?? true,
       sensitivity: (json['sensitivity'] as num?)?.toDouble(),
+      ignoreBirds: json['ignoreBirds'] as bool?,
+      ignoreMammals: json['ignoreMammals'] as bool?,
+      ignoreAmphibians: json['ignoreAmphibians'] as bool?,
+      ignoreInsects: json['ignoreInsects'] as bool?,
+      ignoreCommonGeoScoreCutoff:
+          (json['ignoreCommonGeoScoreCutoff'] as num?)?.toDouble(),
       poolingMode: json['poolingMode'] as String?,
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
       poolingMaxAgeSeconds: (json['poolingMaxAgeSeconds'] as num?)?.toDouble(),
@@ -253,6 +271,12 @@ class SessionSettings {
     'alertMaxPerMinute': alertMaxPerMinute,
     'alertCoalesce': alertCoalesce,
     if (sensitivity != null) 'sensitivity': sensitivity,
+    if (ignoreBirds != null) 'ignoreBirds': ignoreBirds,
+    if (ignoreMammals != null) 'ignoreMammals': ignoreMammals,
+    if (ignoreAmphibians != null) 'ignoreAmphibians': ignoreAmphibians,
+    if (ignoreInsects != null) 'ignoreInsects': ignoreInsects,
+    if (ignoreCommonGeoScoreCutoff != null)
+      'ignoreCommonGeoScoreCutoff': ignoreCommonGeoScoreCutoff,
     if (poolingMode != null) 'poolingMode': poolingMode,
     if (poolingWindows != null) 'poolingWindows': poolingWindows,
     if (poolingMaxAgeSeconds != null)

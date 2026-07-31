@@ -196,6 +196,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final geoScores = await ref.read(geoScoresProvider.future);
+    final ignoredSpeciesNames = await ref.read(
+      ignoredSpeciesNamesProvider.future,
+    );
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
 
     double? startLat = widget.latitude;
@@ -225,6 +228,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
       advancedPooling: ref.read(advancedPoolingParamsProvider),
       sensitivity: sensitivity,
+      ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+      ignoredSpeciesNames: ignoredSpeciesNames,
       targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
       longitude: startLon,
@@ -468,6 +473,13 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);
+    });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(liveControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

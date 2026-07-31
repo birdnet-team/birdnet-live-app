@@ -53,6 +53,11 @@ void main() {
         'targetDurationSeconds': 600,
         'autoStopBatteryPercent': 25,
         'backgroundGps': true,
+        'ignoreBirds': true,
+        'ignoreMammals': false,
+        'ignoreAmphibians': true,
+        'ignoreInsects': false,
+        'ignoreCommonGeoScoreCutoff': 0.95,
       };
       final settings = SessionSettings.fromJson(json);
 
@@ -69,6 +74,11 @@ void main() {
       expect(settings.targetDurationSeconds, 600);
       expect(settings.autoStopBatteryPercent, 25);
       expect(settings.backgroundGps, isTrue);
+      expect(settings.ignoreBirds, isTrue);
+      expect(settings.ignoreMammals, isFalse);
+      expect(settings.ignoreAmphibians, isTrue);
+      expect(settings.ignoreInsects, isFalse);
+      expect(settings.ignoreCommonGeoScoreCutoff, 0.95);
     });
 
     test('fromJson uses defaults for missing fields', () {
@@ -95,6 +105,11 @@ void main() {
         targetDurationSeconds: 300,
         autoStopBatteryPercent: 10,
         backgroundGps: false,
+        ignoreBirds: true,
+        ignoreMammals: false,
+        ignoreAmphibians: true,
+        ignoreInsects: false,
+        ignoreCommonGeoScoreCutoff: 0.9,
       );
       final json = settings.toJson();
       final roundTripped = SessionSettings.fromJson(json);
@@ -112,6 +127,11 @@ void main() {
       expect(roundTripped.targetDurationSeconds, 300);
       expect(roundTripped.autoStopBatteryPercent, 10);
       expect(roundTripped.backgroundGps, isFalse);
+      expect(roundTripped.ignoreBirds, isTrue);
+      expect(roundTripped.ignoreMammals, isFalse);
+      expect(roundTripped.ignoreAmphibians, isTrue);
+      expect(roundTripped.ignoreInsects, isFalse);
+      expect(roundTripped.ignoreCommonGeoScoreCutoff, 0.9);
     });
   });
 

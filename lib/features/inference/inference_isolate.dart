@@ -165,4 +165,9 @@ class InferenceIsolate {
   void applyAdvancedPoolingParams(AdvancedPoolingParams params) {
     _service?.applyAdvancedPoolingParams(params);
   }
+
+  /// Replace the scientific-name mask applied before score pooling.
+  void setIgnoredSpeciesNames(Set<String> scientificNames) {
+    _service?.setIgnoredSpeciesNames(scientificNames);
+  }
 }

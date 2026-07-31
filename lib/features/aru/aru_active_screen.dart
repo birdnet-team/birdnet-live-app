@@ -216,6 +216,13 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);
     });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(liveControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
+    });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);
     });

@@ -49,6 +49,7 @@ import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
+import '../inference/species_ignore_filter.dart';
 import '../recording/recording_service.dart';
 import 'live_session.dart';
 
@@ -399,6 +400,8 @@ class LiveController {
     double? poolingMaxAgeSeconds,
     AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
+    SpeciesIgnoreSettings ignoreSettings = const SpeciesIgnoreSettings(),
+    Set<String> ignoredSpeciesNames = const <String>{},
     double? gainLinear,
     double? highPassHz,
     int? targetDurationSeconds,
@@ -421,6 +424,11 @@ class LiveController {
         inferenceRate: inferenceRate,
         speciesFilterMode: speciesFilterMode,
         sensitivity: sensitivity,
+        ignoreBirds: ignoreSettings.ignoreBirds,
+        ignoreMammals: ignoreSettings.ignoreMammals,
+        ignoreAmphibians: ignoreSettings.ignoreAmphibians,
+        ignoreInsects: ignoreSettings.ignoreInsects,
+        ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
         poolingMode: poolingMode,
         poolingWindows: poolingWindows,
         poolingMaxAgeSeconds: poolingMaxAgeSeconds,
@@ -452,6 +460,7 @@ class LiveController {
     _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
     _isolate.setPoolingMode(poolingMode);
     _isolate.applyAdvancedPoolingParams(advancedPooling);
+    _isolate.setIgnoredSpeciesNames(ignoredSpeciesNames);
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
     if (clearRingBuffer) {
@@ -660,6 +669,16 @@ class LiveController {
   /// preserved in `SessionSettings` for context.
   void setSensitivity(double value) {
     _sensitivity = value;
+  }
+
+  /// Hot-apply the inference-time species mask to the next audio window and
+  /// every raw window already waiting in the temporal pooling buffer.
+  void setSpeciesIgnoreFilter({
+    required Set<String> scientificNames,
+    required Map<String, double>? geoScores,
+  }) {
+    _isolate.setIgnoredSpeciesNames(scientificNames);
+    _geoScores = geoScores;
   }
 
   /// Update the score-pooling window count and forward to the inference

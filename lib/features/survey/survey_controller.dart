@@ -49,6 +49,7 @@ import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
+import '../inference/species_ignore_filter.dart';
 import '../recording/recording_service.dart';
 import 'detection_sampler.dart';
 import 'survey_gps_tracker.dart';
@@ -392,6 +393,8 @@ class SurveyController {
     double? poolingMaxAgeSeconds,
     AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
+    SpeciesIgnoreSettings ignoreSettings = const SpeciesIgnoreSettings(),
+    Set<String> ignoredSpeciesNames = const <String>{},
     double? gainLinear,
     double? highPassHz,
   }) async {
@@ -421,6 +424,11 @@ class SurveyController {
               speciesFilterMode: speciesFilterMode,
               clipContextSeconds: clipContextSeconds,
               sensitivity: sensitivity,
+              ignoreBirds: ignoreSettings.ignoreBirds,
+              ignoreMammals: ignoreSettings.ignoreMammals,
+              ignoreAmphibians: ignoreSettings.ignoreAmphibians,
+              ignoreInsects: ignoreSettings.ignoreInsects,
+              ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
               poolingMode: poolingMode,
               poolingWindows: poolingWindows,
               poolingMaxAgeSeconds: poolingMaxAgeSeconds,
@@ -464,6 +472,7 @@ class SurveyController {
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.applyAdvancedPoolingParams(advancedPooling);
+      _isolate.setIgnoredSpeciesNames(ignoredSpeciesNames);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -592,6 +601,8 @@ class SurveyController {
     double? poolingMaxAgeSeconds,
     AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
+    SpeciesIgnoreSettings ignoreSettings = const SpeciesIgnoreSettings(),
+    Set<String> ignoredSpeciesNames = const <String>{},
   }) async {
     if (_state == SurveyState.active) return;
     _state = SurveyState.starting;
@@ -619,6 +630,7 @@ class SurveyController {
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.setPoolingMode(poolingMode);
       _isolate.applyAdvancedPoolingParams(advancedPooling);
+      _isolate.setIgnoredSpeciesNames(ignoredSpeciesNames);
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
@@ -974,6 +986,15 @@ class SurveyController {
   /// effect on the next cycle.
   void setSensitivity(double value) {
     _sensitivity = value;
+  }
+
+  /// Hot-apply the inference-time species mask before temporal pooling.
+  void setSpeciesIgnoreFilter({
+    required Set<String> scientificNames,
+    required Map<String, double>? geoScores,
+  }) {
+    _isolate.setIgnoredSpeciesNames(scientificNames);
+    _geoScores = geoScores;
   }
 
   /// Update the score-pooling window count and forward to the inference

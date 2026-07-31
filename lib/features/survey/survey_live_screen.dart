@@ -619,6 +619,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    final ignoredSpeciesNames = await ref.read(
+      ignoredSpeciesNamesProvider.future,
+    );
 
     // Build the species-alert pipeline before starting the controller so
     // the very first detection can fire a notification. If the user
@@ -674,6 +677,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
+        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
       );
     } else {
       await controller.startSurvey(
@@ -704,6 +709,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
+        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
       );
@@ -895,6 +902,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(surveyControllerProvider).setSensitivity(next);
+    });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(surveyControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

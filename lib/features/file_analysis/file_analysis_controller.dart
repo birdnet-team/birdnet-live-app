@@ -42,6 +42,7 @@ import '../inference/advanced_pooling_params.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/species_filter.dart';
+import '../inference/species_ignore_filter.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
@@ -325,6 +326,8 @@ class FileAnalysisController {
     int maxPoolWindows = 5,
     double? poolingMaxAgeSeconds,
     AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
+    SpeciesIgnoreSettings ignoreSettings = const SpeciesIgnoreSettings(),
+    Set<String> ignoredSpeciesNames = const <String>{},
     Map<String, double>? geoScores,
     double geoThreshold = 0.03,
     Set<String>? geoModelSpeciesNames,
@@ -427,6 +430,11 @@ class FileAnalysisController {
           inferenceRate: 0, // Not applicable for file analysis.
           speciesFilterMode: speciesFilterMode,
           sensitivity: sensitivity,
+          ignoreBirds: ignoreSettings.ignoreBirds,
+          ignoreMammals: ignoreSettings.ignoreMammals,
+          ignoreAmphibians: ignoreSettings.ignoreAmphibians,
+          ignoreInsects: ignoreSettings.ignoreInsects,
+          ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
           poolingMode: poolingMode,
           poolingWindows: maxPoolWindows,
           poolingMaxAgeSeconds: poolingMaxAgeSeconds,
@@ -456,6 +464,7 @@ class FileAnalysisController {
       _isolate.setMaxPoolWindows(maxPoolWindows);
       _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
       _isolate.applyAdvancedPoolingParams(advancedPooling);
+      _isolate.setIgnoredSpeciesNames(ignoredSpeciesNames);
       _isolate.resetPooling();
 
       final allDetections = <DetectionRecord>[];

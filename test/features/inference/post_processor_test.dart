@@ -179,8 +179,8 @@ void main() {
         threshold: 0.0,
       );
 
-      // Only exactly 0.0 is filtered (>= 0.0 passes all).
-      expect(results.length, 3);
+      // A binary ignore mask writes exact zeros, which must never surface.
+      expect(results.length, 2);
     });
 
     test('attaches timestamp to detections', () {
