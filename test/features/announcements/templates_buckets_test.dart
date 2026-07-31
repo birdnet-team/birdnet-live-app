@@ -35,6 +35,7 @@ void main() {
     'pt',
     'cs',
     'nl',
+    'nb',
     'pl',
     'ru',
     'zh',

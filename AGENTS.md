@@ -32,7 +32,7 @@ This file is for coding agents working in this repository.
 
 ## Core Rules
 
-- Always keep user-facing strings translated in all 11 locales: en, de, cs, es, fr, it, pt, nl, pl, ru, zh (Simplified Chinese).
+- Always keep user-facing strings translated in all 12 locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh (Simplified Chinese).
 - After ARB edits, run flutter gen-l10n and verify no missing keys.
 - Use l10n keys in UI; do not hardcode user-facing text.
 - Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
@@ -110,7 +110,7 @@ This file is for coding agents working in this repository.
 ## Version Bumping Checklist
 
 - Update version in pubspec.yaml as patch+build (example: 0.16.10+178 -> 0.16.11+179).
-- Add/update release notes in CHANGELOG.md under the matching version header and prepare Play/App Store release notes for all 11 app locales: en, de, cs, es, fr, it, pt, nl, pl, ru, zh. Release notes are UTF-8 with `<xx-XX>` tags — write zh-CN in Simplified Chinese characters, never pinyin.
+- Add/update release notes in CHANGELOG.md under the matching version header and prepare Play/App Store release notes for all 12 app locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh. Release notes are UTF-8 with `<xx-XX>` tags — write zh-CN in Simplified Chinese characters, never pinyin.
 - Run dart dev/sync_version.dart to sync README/docs version badges.
 - If strings changed, run flutter gen-l10n and verify locale completeness.
 - Run flutter analyze (and flutter test when relevant) before committing.

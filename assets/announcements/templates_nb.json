@@ -1,0 +1,238 @@
+{
+  "locale": "nb",
+  "version": 4,
+  "_comment": [
+    "Setningsmaler for opplesing av artsnavn.",
+    "Hver gruppe har en `balanced`-liste som alltid brukes ved balansert",
+    "detaljnivå, og eventuelt en `chatty`-liste med lengre og mer",
+    "utfyllende varianter. Ved minimalt detaljnivå hopper appen over",
+    "malene og leser bare opp `{name}.`. Oversettelser skal høres naturlige",
+    "ut på norsk og trenger ikke følge den engelske ordlyden.",
+    "",
+    "VIKTIG OM GRAMMATISK KJØNN:",
+    "  Artsnavn har ulikt grammatisk kjønn, og appen kjenner ikke kjønnet.",
+    "  Sett derfor aldri `en`, `ei`, `et`, `den` eller `det` rett foran",
+    "  {name}, {name1}, {name2} eller {name3}. Trygge formuleringer er:",
+    "    - navn etter kolon: `Jeg hører: {name}.`",
+    "    - navn først: `{name}, klart og tydelig.`",
+    "    - uten artikkel: `Det høres ut som {name}.`",
+    "",
+    "Tone: som en turkamerat i felt, ikke som en klassifiseringsmodell.",
+    "Unngå tekniske formuleringer om treff, signaler og modellverdier.",
+    "Pratsomme varianter kan være varme og uformelle, men ikke overdrevne."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "Der hører jeg {name}.",
+        "Det er {name}.",
+        "Hører du? {name}.",
+        "Nå hører jeg {name}.",
+        "{name} i nærheten.",
+        "Der synger {name}.",
+        "{name}, rett der.",
+        "{name}, klart og tydelig."
+      ],
+      "chatty": [
+        "Jeg hører {name} rett i nærheten.",
+        "Det er {name}! Fint å høre.",
+        "Hører du? Helt klart {name}.",
+        "Der synger {name}.",
+        "Det er {name}. Ingen tvil.",
+        "{name} har satt i gang.",
+        "{name} er i full sang.",
+        "{name}, klart og tydelig."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "{name} er tilbake.",
+        "Der er {name} igjen.",
+        "{name} igjen.",
+        "Igjen hører jeg {name}."
+      ],
+      "chatty": [
+        "Nå er {name} tilbake.",
+        "Der er {name} nok en gang.",
+        "Der er {name} igjen. Fint å høre.",
+        "{name} igjen, klart og tydelig."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name} holder det gående.",
+        "{name} fortsetter.",
+        "Fortsatt {name}.",
+        "{name} gir seg ikke.",
+        "{name} synger videre."
+      ],
+      "chatty": [
+        "{name} synger fortsatt.",
+        "{name} fortsetter som før.",
+        "Fortsatt {name} i full sang.",
+        "{name} holder det gående ennå."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "Det høres ut som {name}.",
+        "Det er nok {name}, tror jeg.",
+        "Sannsynligvis {name}.",
+        "Jeg vil si {name}.",
+        "Godt mulig: {name}.",
+        "{name}, tror jeg.",
+        "Det minner om {name}."
+      ],
+      "chatty": [
+        "For meg høres det ut som {name}.",
+        "Det minner mye om {name}.",
+        "Jeg tror det er {name}.",
+        "Jeg heller mot {name} denne gangen."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "Kanskje {name} igjen.",
+        "Det høres ut som {name} er tilbake.",
+        "Kan være {name} nok en gang.",
+        "{name} igjen, tror jeg.",
+        "Jeg tror {name} er tilbake."
+      ],
+      "chatty": [
+        "Det høres ut som {name} har kommet tilbake.",
+        "Jeg tror det er {name} igjen.",
+        "Jeg heller mot {name} igjen.",
+        "Det er nok {name} igjen."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "Kanskje {name}?",
+        "Kan være {name}.",
+        "Muligens {name}.",
+        "Det høres litt ut som {name}.",
+        "{name}, kanskje.",
+        "Det kan være {name}.",
+        "Vanskelig å si. Kanskje {name}."
+      ],
+      "chatty": [
+        "Kan være {name}, men det er vanskelig å si.",
+        "Det høres litt ut som {name}. Verdt å lytte en gang til.",
+        "Lytt nøye: kanskje {name}.",
+        "Jeg vil gjette på {name}, men jeg er ikke sikker.",
+        "Det kan være {name}. Vanskelig å avgjøre.",
+        "Jeg heller mot {name}, men er langt fra sikker."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "Kanskje {name} igjen?",
+        "Kan være {name} nok en gang.",
+        "Kanskje {name} er tilbake.",
+        "Muligens {name} igjen.",
+        "Vanskelig å si. Kanskje {name} igjen."
+      ],
+      "chatty": [
+        "Kanskje {name} igjen. Vanskelig å være sikker.",
+        "Kan være {name} igjen, men vanskelig å si.",
+        "Kanskje {name} nok en gang, men jeg er ikke sikker.",
+        "{name} igjen, kanskje. Jeg er ikke helt sikker."
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "To nå: {name1} og {name2}.",
+        "To samtidig: {name1} og {name2}.",
+        "{name1} og {name2} samtidig.",
+        "To på én gang: {name1} og {name2}.",
+        "Både {name1} og {name2}."
+      ],
+      "chatty": [
+        "En liten duett: {name1} og {name2}.",
+        "To stemmer nå: {name1} og {name2}.",
+        "Jeg hører både {name1} og {name2}.",
+        "Akkurat nå hører jeg {name1} og {name2}."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "Tre nå: {name1}, {name2} og {name3}.",
+        "Jeg hører {name1}, {name2} og {name3}.",
+        "Flere sammen: {name1}, {name2} og {name3}.",
+        "{name1}, {name2} og {name3} samtidig."
+      ],
+      "chatty": [
+        "Tre stemmer nå: {name1}, {name2} og {name3}.",
+        "Tre samtidig: {name1}, {name2} og {name3}.",
+        "Det er livlig nå: {name1}, {name2} og {name3}.",
+        "Et lite kor: {name1}, {name2} og {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "Mye å høre nå: {name1}, {name2}, {name3} og flere.",
+        "Mye på gang: {name1}, {name2}, {name3} og flere til.",
+        "Her er det mye liv: {name1}, {name2}, {name3} og noen til."
+      ],
+      "chatty": [
+        "Mye å høre nå: {name1}, {name2}, {name3} og enda flere.",
+        "Et skikkelig kor: {name1}, {name2}, {name3} og flere til.",
+        "For et lydbilde: {name1}, {name2}, {name3} og noen til.",
+        "Mange på én gang: {name1}, {name2}, {name3} og flere som stemmer i."
+      ]
+    }
+  },
+  "_commonnessComment": [
+    "Korte tillegg som bare brukes ved pratsomt detaljnivå første gang",
+    "en art leses opp i en økt. Nivået er det samme relative nivået som",
+    "vises på artskortet i Utforsk. Sesongtillegget brukes bare når arten",
+    "forekommer sjeldnere nå enn på sitt årlige toppunkt på dette stedet."
+  ],
+  "commonness": {
+    "abundant": [
+      "Denne arten er svært vanlig her.",
+      "Denne får du nok høre ofte.",
+      "Denne er det mye av her.",
+      "En fast del av lydbildet her."
+    ],
+    "common": [
+      "En vanlig art i dette området.",
+      "Ganske vanlig her.",
+      "En av de vanlige artene i disse traktene.",
+      "Typisk for dette området."
+    ],
+    "uncommon": [
+      "Ikke en art du hører hver dag her.",
+      "Litt mindre vanlig i dette området.",
+      "Ikke blant de vanligste i området.",
+      "Litt uvanlig for dette stedet."
+    ],
+    "frequent": [
+      "En gjenganger her.",
+      "Denne hører du med jevne mellomrom.",
+      "Dukker jevnlig opp her.",
+      "Denne får du høre jevnlig."
+    ],
+    "scarce": [
+      "Det er ikke mange av denne arten her.",
+      "Ikke ofte å høre i dette området.",
+      "Ganske fåtallig her.",
+      "Denne hører du sjelden i området.",
+      "Arten er fåtallig i dette området."
+    ],
+    "rare": [
+      "Virkelig sjelden her. Flott funn!",
+      "Uvanlig for dette området.",
+      "Svært sjelden i disse traktene.",
+      "En å huske: sjelden i disse traktene.",
+      "Et spesielt funn for området."
+    ],
+    "seasonalAddendum": [
+      "Arten er også litt utenfor sesongen.",
+      "Vanligvis ikke her på denne tiden av året.",
+      "Litt tidlig eller sent på året for denne.",
+      "Ikke helt riktig tid på året for denne.",
+      "Denne hører du vanligvis på en annen tid av året."
+    ]
+  }
+}
