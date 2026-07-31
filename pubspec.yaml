@@ -13,7 +13,10 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.3.1
+  # 3.4.2+ required: earlier versions throw "markNeedsBuild called during
+  # build" when a dirty provider chain is first flushed from a widget build
+  # (e.g. Explore mounting after a location/language change).
+  flutter_riverpod: ^3.4.2
 
   # Storage
   shared_preferences: ^2.3.4

@@ -47,6 +47,11 @@ markdown_extensions:
 - tables
 - toc:
     permalink: true
+    # Unicode-aware slugs so headings in ru/zh/pl/cs (and accented fr/de/es/pt)
+    # produce usable anchors instead of being stripped to empty strings.
+    # ASCII headings slugify identically to the MkDocs default, so existing
+    # English anchors and inbound links stay stable.
+    slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
 
 plugins:
 - search
@@ -289,26 +294,154 @@ plugins:
       name: Nederlands
       build: true
       nav_translations:
+        API Integration: API-integratie
+        API Reference: API-referentie
+        Architecture: Architectuur
+        Audio Pipeline: Audiopijplijn
+        Building: Bouwen
+        Code Style: Codestijl
+        Developer Guide: Developer Guide
+        Explore: Verkennen
+        FAQ: Veelgestelde vragen
+        Batch Analysis: Batchanalyse
+        ARU Mode: ARU-modus
+        File Analysis: Bestandsanalyse
+        Getting Started: Aan de slag
+        Home: Start
+        Icons & Controls: Pictogrammen en bediening
+        Inference Engine: Inferentie-engine
+        Live Mode: Live-modus
+        Localization: Lokalisatie
+        Overview: Overzicht
+        Point Count Mode: Point Count-modus
         Privacy Policy: Privacybeleid
+        Releasing: Releasen
+        Session Library: Session-bibliotheek
+        Session Review: Session-overzicht
+        Settings: Instellingen
+        Species Bundle: Soortenpakket
+        Spectrogram: Spectrogram
+        State Management: Statusbeheer
+        Storage: Opslag
+        Survey Mode: Survey-modus
+        Taxonomy & Sync API: Taxonomie- en synchronisatie-API
         Acceptable Use Policy: Beleid voor aanvaardbaar gebruik
+        Testing: Testen
+        User Guide: Gebruikershandleiding
     - locale: pl
       name: Polski
       build: true
       nav_translations:
+        API Integration: Integracja API
+        API Reference: Dokumentacja API
+        Architecture: Architektura
+        Audio Pipeline: Potok audio
+        Building: Budowanie
+        Code Style: Styl kodu
+        Developer Guide: Developer Guide
+        Explore: Przeglądaj
+        FAQ: Najczęstsze pytania
+        Batch Analysis: Analiza wsadowa
+        ARU Mode: Tryb ARU
+        File Analysis: Analiza plików
+        Getting Started: Pierwsze kroki
+        Home: Strona główna
+        Icons & Controls: Ikony i elementy sterujące
+        Inference Engine: Silnik wnioskowania
+        Live Mode: Tryb Live
+        Localization: Lokalizacja
+        Overview: Przegląd
+        Point Count Mode: Tryb Point Count
         Privacy Policy: Polityka prywatności
+        Releasing: Wydawanie
+        Session Library: Biblioteka Sessions
+        Session Review: Przegląd Session
+        Settings: Ustawienia
+        Species Bundle: Pakiet gatunków
+        Spectrogram: Spektrogram
+        State Management: Zarządzanie stanem
+        Storage: Przechowywanie danych
+        Survey Mode: Tryb Survey
+        Taxonomy & Sync API: API taksonomii i synchronizacji
         Acceptable Use Policy: Polityka dopuszczalnego użycia
+        Testing: Testowanie
+        User Guide: Podręcznik użytkownika
     - locale: ru
       name: Русский
       build: true
       nav_translations:
+        API Integration: Интеграция с API
+        API Reference: Справочник API
+        Architecture: Архитектура
+        Audio Pipeline: Аудиоконвейер
+        Building: Сборка
+        Code Style: Стиль кода
+        Developer Guide: Developer Guide
+        Explore: Обзор
+        FAQ: Частые вопросы
+        Batch Analysis: Пакетный анализ
+        ARU Mode: Режим ARU
+        File Analysis: Анализ файлов
+        Getting Started: Начало работы
+        Home: Главная
+        Icons & Controls: Значки и элементы управления
+        Inference Engine: Движок вычислений
+        Live Mode: Режим Live
+        Localization: Локализация
+        Overview: Обзор раздела
+        Point Count Mode: Режим Point Count
         Privacy Policy: Политика конфиденциальности
+        Releasing: Выпуск версий
+        Session Library: Библиотека Sessions
+        Session Review: Просмотр Session
+        Settings: Настройки
+        Species Bundle: Пакет видов
+        Spectrogram: Спектрограмма
+        State Management: Управление состоянием
+        Storage: Хранилище
+        Survey Mode: Режим Survey
+        Taxonomy & Sync API: API таксономии и синхронизации
         Acceptable Use Policy: Политика допустимого использования
+        Testing: Тестирование
+        User Guide: Руководство пользователя
     - locale: zh
       name: 简体中文
       build: true
       nav_translations:
+        API Integration: API 集成
+        API Reference: API 参考
+        Architecture: 架构
+        Audio Pipeline: 音频流水线
+        Building: 构建
+        Code Style: 代码风格
+        Developer Guide: Developer Guide
+        Explore: 探索
+        FAQ: 常见问题
+        Batch Analysis: 批量分析
+        ARU Mode: ARU 模式
+        File Analysis: 文件分析
+        Getting Started: 入门
+        Home: 主页
+        Icons & Controls: 图标与控件
+        Inference Engine: 推理引擎
+        Live Mode: Live 模式
+        Localization: 本地化
+        Overview: 概览
+        Point Count Mode: Point Count 模式
         Privacy Policy: 隐私政策
+        Releasing: 发布
+        Session Library: Session 库
+        Session Review: Session 回顾
+        Settings: 设置
+        Species Bundle: 物种资源包
+        Spectrogram: 语谱图
+        State Management: 状态管理
+        Storage: 存储
+        Survey Mode: Survey 模式
+        Taxonomy & Sync API: 分类学与同步 API
         Acceptable Use Policy: 使用规范
+        Testing: 测试
+        User Guide: 用户指南
 nav:
 - Home: index.md
 - User Guide:

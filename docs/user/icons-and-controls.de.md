@@ -62,7 +62,7 @@ Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläuter
 
 ## Aktionen je Erkennung
 
-Diese Steuerelemente erscheinen in jeder Erkennungszeile der App – in der Artenliste der Session-Übersicht, im Clip-Player-Blatt, in der Erkennungsliste des laufenden Survey und an den Survey-Kartenmarkierungen. Das vollständige Verhalten finden Sie unter [Session-Übersicht → Aktionen je Erkennung](session-review.md#per-detection-actions).
+Diese Steuerelemente erscheinen in jeder Erkennungszeile der App – in der Artenliste der Session-Übersicht, im Clip-Player-Blatt, in der Erkennungsliste des laufenden Survey und an den Survey-Kartenmarkierungen. Das vollständige Verhalten finden Sie unter [Session-Übersicht → Aktionen je Erkennung](session-review.md#aktionen-je-detektion).
 
 | Steuerelement | Bedeutung |
 |---|---|

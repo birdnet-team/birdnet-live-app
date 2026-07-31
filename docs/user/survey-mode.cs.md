@@ -94,11 +94,11 @@ Pod obsahem karty zobrazuje panel Survey lištu statistik a seznam nedávných d
 
 Každý řádek detekce také nabízí stejné akce u jednotlivých detekcí jako [Přehled Session](session-review.md): zaškrtnutí :material-check: **Potvrdit** jedním klepnutím a nabídku dalších akcí :material-dots-vertical: **Více** s položkami **Sdílet detekci** a **Smazat detekci** (s vrácením přes SnackBar) — takže můžete hlučnou detekci ověřit, sdílet nebo odebrat už během snímání, místo abyste čekali na kontrolu po session.
 
-Stejné akce jsou dostupné z **živé mapy trasy**: klepnutím na značku detekce otevřete panel přehrávače klipu s potvrzením, sdílením a smazáním. Sdílení během survey funguje i tehdy, když jste zvolili jedno souvislé nahrávání WAV místo klipů u jednotlivých detekcí — příslušné zvukové okno se za běhu vyřízne z právě nahrávaného souboru. Podrobnosti viz [Přehled Session → Sdílení jedné detekce](session-review.md#sdileni-jedne-detekce).
+Stejné akce jsou dostupné z **živé mapy trasy**: klepnutím na značku detekce otevřete panel přehrávače klipu s potvrzením, sdílením a smazáním. Sdílení během survey funguje i tehdy, když jste zvolili jedno souvislé nahrávání WAV místo klipů u jednotlivých detekcí — příslušné zvukové okno se za běhu vyřízne z právě nahrávaného souboru. Podrobnosti viz [Přehled Session → Sdílení jedné detekce](session-review.md#sdílení-jedné-detekce).
 
 ### Zaznamenání pozorování
 
-Tlačítko :material-plus-circle-outline: v živém Survey otevře malou nabídku s položkami **Přidat druh** a **Přidat poznámku**. **Přidat druh** otevře stejné vyhledávání jako [Session Review](session-review.md#rucni-pridani-druhu), vyberte druh, poté v potvrzovacím panelu zaškrtněte :material-ear-hearing: **Slyšeno** a/nebo :material-eye: **Viděno** a klepněte na **Přidat**. Záznam dostane časové razítko daného okamžiku, aktuální GPS pozici a ihned se objeví v seznamu detekcí i na mapě trasy s odznakem ručního zadání a odpovídajícími ikonami ucha / oka.
+Tlačítko :material-plus-circle-outline: v živém Survey otevře malou nabídku s položkami **Přidat druh** a **Přidat poznámku**. **Přidat druh** otevře stejné vyhledávání jako [Session Review](session-review.md#ruční-přidání-druhu), vyberte druh, poté v potvrzovacím panelu zaškrtněte :material-ear-hearing: **Slyšeno** a/nebo :material-eye: **Viděno** a klepněte na **Přidat**. Záznam dostane časové razítko daného okamžiku, aktuální GPS pozici a ihned se objeví v seznamu detekcí i na mapě trasy s odznakem ručního zadání a odpovídajícími ikonami ucha / oka.
 
 Hlasové poznámky zde záměrně chybí: mikrofon je zaneprázdněn vlastním nahráváním Survey. Připojte je v Session Review po skončení Survey.
 

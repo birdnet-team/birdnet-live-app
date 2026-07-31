@@ -13,7 +13,9 @@ BirdNET Live está disponible para Android, iOS y Windows.
 
 ### Descarga
 
-*Los enlaces de distribución se añadirán cuando estén disponibles.*
+- **Android**: [Google Play](https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live), o instala manualmente el APK firmado desde la [página de versiones de GitHub](https://github.com/birdnet-team/birdnet-live-app/releases/latest).
+- **iOS**: [App Store](https://apps.apple.com/us/app/birdnet-live/id6776168518).
+- **Windows**: compila desde el código fuente; consulta la [Guía para desarrolladores](../developer/building.md).
 
 ## Primer uso de la app
 

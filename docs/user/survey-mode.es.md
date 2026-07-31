@@ -101,7 +101,7 @@ Debajo del contenido de la pestaña, el panel del survey muestra una barra de es
 
 Cada fila de detección también ofrece las mismas acciones por detección que se usan en el [Resumen de la Session](session-review.md): una marca de verificación :material-check: **Confirmar** de un toque y un menú adicional :material-dots-vertical: **Más** con **Compartir detección** y **Eliminar detección** (con deshacer en SnackBar), para que puedas validar, compartir o eliminar una detección ruidosa durante la captura en lugar de esperar al resumen posterior a la sesión.
 
-Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Resumen de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-deteccion) para más detalles.
+Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Resumen de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-detección) para más detalles.
 
 ### Registrar una observación
 

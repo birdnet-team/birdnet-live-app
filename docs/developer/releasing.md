@@ -107,9 +107,10 @@ that matters.
 
 Each `release-notes/<locale>.txt` is plain text, max ~500 chars (the Play
 Store limit). Mirror the CHANGELOG entry, but write it for users rather than
-developers. Cover all 10 locales the app ships in: en-US, de-DE, cs-CZ,
-es-ES, fr-FR, it-IT, nl-NL, pl-PL, pt-PT, ru-RU. Any locale missing on Play
-Console falls back to en-US.
+developers. Cover all 11 locales the app ships in: en-US, de-DE, cs-CZ,
+es-ES, fr-FR, it-IT, nl-NL, pl-PL, pt-PT, ru-RU, zh-CN. Any locale missing on
+Play Console falls back to en-US. Write zh-CN in Simplified Chinese
+characters, never pinyin.
 
 ## 6. Upload to Play Console
 

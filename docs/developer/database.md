@@ -1,4 +1,4 @@
-﻿# Database
+# Database
 
 Persistence and data storage.
 

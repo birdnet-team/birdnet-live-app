@@ -16,13 +16,15 @@ O BirdNET Live é um aplicativo Flutter desenvolvido para pesquisadores de campo
 - **Modo Point Count** - Sessões cronometradas com contagem regressiva e metadados da estação
 - **Modo Survey** - Surveys de transectos de longa duração com rastreamento GPS, monitoramento em segundo plano e amostragem de detecções
 - **Modo Análise de arquivos** - Análise offline de gravações existentes (WAV, FLAC, MP3, OGG e mais)
+- **Modo ARU** - Transforme o dispositivo em uma unidade de gravação acústica para implantações de vários dias
 - **Explorar** - Veja as espécies esperadas na sua localização usando o geomodelo do BirdNET
 - **Sessões** - Revise, edite e exporte sessões anteriores com reprodução de áudio
 - **Exportação** - Formatos Raven Pro, CSV, JSON, GPX e pacote ZIP com metadados de proveniência
-- **Inferência no dispositivo** - Cobertura do modelo BirdNET+ para 5.250 espécies, sem necessidade de Internet
+- **Inferência no dispositivo** - Cobertura do modelo BirdNET+ para 9789 espécies, sem necessidade de Internet
 - **Gravação em FLAC** - Captura de áudio comprimido com arquivos menores para Surveys longos
 - **Acessibilidade** - Rótulos para leitores de tela, dicas de ferramenta e anúncios falados opcionais das detecções
 - **Layouts responsivos** - Interfaces adaptáveis para celular, tablet, retrato e paisagem
+- **Localização** - Interface e anúncios falados em 11 idiomas
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -35,6 +37,8 @@ O BirdNET Live é um aplicativo Flutter desenvolvido para pesquisadores de campo
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live"><b>Google Play</b></a>
   &nbsp;·&nbsp;
+  <a href="https://apps.apple.com/us/app/birdnet-live/id6776168518"><b>App Store</b></a>
+  &nbsp;·&nbsp;
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases/latest"><b>Download APK</b></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/birdnet-team/birdnet-live-app"><b>GitHub</b></a>
@@ -46,11 +50,13 @@ O BirdNET Live é um aplicativo Flutter desenvolvido para pesquisadores de campo
 
 Consulte o [Guia do Usuário](user/index.md) para uma visão geral e, em seguida, abra [Primeiros passos](user/getting-started.md) para instalar e executar o BirdNET Live.
 
-## Instalação no Android
+## Instalação
 
-O BirdNET Live está disponível como um APK assinado para instalação manual. Baixe a versão mais recente na [página de releases do GitHub](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfira o arquivo `.apk` para o celular e abra-o para instalar. Talvez seja necessário permitir antes a instalação de fontes desconhecidas nas configurações do dispositivo.
+O BirdNET Live está disponível na [Google Play](https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live) e na [App Store](https://apps.apple.com/us/app/birdnet-live/id6776168518).
 
-> **Nota:** o APK tem cerca de 253 MB porque inclui os recursos do modelo BirdNET+ para inferência offline.
+No Android também é possível instalá-lo manualmente como APK assinado: baixe a versão mais recente na [página de releases do GitHub](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfira o arquivo `.apk` para o celular e abra-o para instalar. Talvez seja necessário permitir antes a instalação de fontes desconhecidas nas configurações do dispositivo.
+
+> **Nota:** o APK tem cerca de 260 MB porque inclui os recursos do modelo BirdNET+ e todas as imagens de espécies para uso offline.
 
 ## Para desenvolvedores
 
