@@ -91,10 +91,20 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     WidgetsBinding.instance.addObserver(this);
     _observerController.text = ref.read(lastObserverProvider);
     _transectController.text = ref.read(surveyLastTransectIdProvider);
-    // Reuse a recent fix if one is still warm — closing and reopening the
-    // wizard within a couple of minutes shouldn't burn another 10s on the
-    // same fix.
-    _fetchGpsLocation();
+    if (ref.read(useGpsProvider)) {
+      // Reuse a recent fix if one is still warm — closing and reopening the
+      // wizard within a couple of minutes shouldn't burn another 10s on the
+      // same fix.
+      _fetchGpsLocation();
+    } else {
+      // GPS is off app-wide: start on the manual tab seeded with the
+      // coordinates from Settings rather than presenting them as a fix.
+      _locationChoice = _LocationChoice.manual;
+      _latitude = ref.read(manualLatitudeProvider);
+      _longitude = ref.read(manualLongitudeProvider);
+      _latController.text = _latitude!.toStringAsFixed(5);
+      _lonController.text = _longitude!.toStringAsFixed(5);
+    }
     _checkBackgroundPermission();
   }
 
@@ -206,6 +216,10 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   }
 
   Future<void> _checkBackgroundPermission() async {
+    if (!ref.read(useGpsProvider)) {
+      if (mounted) setState(() => _hasBackgroundGps = false);
+      return;
+    }
     final permission = await Geolocator.checkPermission();
     if (mounted) {
       setState(() {
@@ -215,6 +229,9 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   }
 
   Future<void> _requestBackgroundPermission() async {
+    // "Use GPS" off — never prompt for location, in any form.
+    if (!ref.read(useGpsProvider)) return;
+
     var permission = await Geolocator.checkPermission();
 
     // First ensure we have at least whileInUse.
@@ -479,6 +496,7 @@ class _DetailsStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final useGps = ref.watch(useGpsProvider);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -524,6 +542,7 @@ class _DetailsStep extends ConsumerWidget {
             ButtonSegment(
               value: _LocationChoice.gps,
               label: Text(l10n.surveyLocationGps),
+              enabled: useGps,
             ),
             ButtonSegment(
               value: _LocationChoice.manual,
@@ -859,7 +878,10 @@ class _ParametersStep extends ConsumerWidget {
           ),
         ),
 
-        // Clip context (visible only when recording mode = detections)
+        // Clip context and detection sampling only exist for per-detection
+        // clips. Full-audio keeps one continuous file and Off keeps nothing,
+        // so in both cases there is nothing for the sampler to thin out —
+        // asking would imply a choice that has no effect.
         if (recordingMode == 'detections') ...[
           ListTile(
             leading: const Icon(AppIcons.timerOutlined),
@@ -880,53 +902,56 @@ class _ParametersStep extends ConsumerWidget {
                       .set(v.round()),
             ),
           ),
-        ],
 
-        // Detection sampling
-        ListTile(
-          leading: const Icon(AppIcons.filterAltRounded),
-          title: Text(l10n.surveyDetectionSampling),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SegmentedButton<String>(
-            segments: [
-              ButtonSegment(value: 'all', label: Text(l10n.surveySamplingAll)),
-              ButtonSegment(
-                value: 'topN',
-                label: Text(l10n.surveySamplingTopN),
-              ),
-              ButtonSegment(
-                value: 'smart',
-                label: Text(l10n.surveySamplingSmart),
-              ),
-            ],
-            selected: {sampling},
-            onSelectionChanged: (s) {
-              HapticFeedback.selectionClick();
-              ref.read(surveyDetectionSamplingProvider.notifier).set(s.first);
-            },
-          ),
-        ),
-
-        // Top N (visible only when sampling = topN or smart)
-        if (sampling != 'all') ...[
+          // Detection sampling
           ListTile(
-            leading: const Icon(AppIcons.formatListNumberedRounded),
-            title: Text(l10n.surveyTopNPerSpecies),
-            subtitle: Text('$topN'),
+            leading: const Icon(AppIcons.filterAltRounded),
+            title: Text(l10n.surveyDetectionSampling),
           ),
-          Slider(
-            value: topN.toDouble(),
-            min: 1,
-            max: 50,
-            divisions: 49,
-            label: '$topN',
-            onChanged:
-                (v) => ref
-                    .read(surveyTopNPerSpeciesProvider.notifier)
-                    .set(v.round()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                  value: 'all',
+                  label: Text(l10n.surveySamplingAll),
+                ),
+                ButtonSegment(
+                  value: 'topN',
+                  label: Text(l10n.surveySamplingTopN),
+                ),
+                ButtonSegment(
+                  value: 'smart',
+                  label: Text(l10n.surveySamplingSmart),
+                ),
+              ],
+              selected: {sampling},
+              onSelectionChanged: (s) {
+                HapticFeedback.selectionClick();
+                ref.read(surveyDetectionSamplingProvider.notifier).set(s.first);
+              },
+            ),
           ),
+
+          // Top N (visible only when sampling = topN or smart)
+          if (sampling != 'all') ...[
+            ListTile(
+              leading: const Icon(AppIcons.formatListNumberedRounded),
+              title: Text(l10n.surveyTopNPerSpecies),
+              subtitle: Text('$topN'),
+            ),
+            Slider(
+              value: topN.toDouble(),
+              min: 1,
+              max: 50,
+              divisions: 49,
+              label: '$topN',
+              onChanged:
+                  (v) => ref
+                      .read(surveyTopNPerSpeciesProvider.notifier)
+                      .set(v.round()),
+            ),
+          ],
         ],
       ],
     );
@@ -2013,6 +2038,7 @@ class _ReadyStep extends ConsumerWidget {
     final maxDuration = ref.watch(surveyMaxDurationProvider);
     final sampling = ref.watch(surveyDetectionSamplingProvider);
     final recordingMode = ref.watch(surveyRecordingModeProvider);
+    final useGps = ref.watch(useGpsProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -2038,26 +2064,29 @@ class _ReadyStep extends ConsumerWidget {
                     l10n.surveyInferenceRate,
                     '${inferenceRate.toStringAsFixed(2)} Hz',
                   ),
-                  _SummaryRow(
-                    AppIcons.myLocation,
-                    l10n.surveyGpsInterval,
-                    '${gpsInterval}s',
-                  ),
+                  if (useGps)
+                    _SummaryRow(
+                      AppIcons.myLocation,
+                      l10n.surveyGpsInterval,
+                      '${gpsInterval}s',
+                    ),
                   _SummaryRow(
                     AppIcons.timerRounded,
                     l10n.surveyMaxDuration,
                     '$maxDuration ${l10n.surveyHours}',
                   ),
                   _SummaryRow(
-                    AppIcons.filterAltRounded,
-                    l10n.surveyDetectionSampling,
-                    sampling,
-                  ),
-                  _SummaryRow(
                     AppIcons.fiberManualRecordRounded,
                     l10n.surveyRecordingMode,
                     recordingMode,
                   ),
+                  // Sampling only applies to per-detection clips.
+                  if (recordingMode == 'detections')
+                    _SummaryRow(
+                      AppIcons.filterAltRounded,
+                      l10n.surveyDetectionSampling,
+                      sampling,
+                    ),
                 ],
               ),
             ),
@@ -2082,7 +2111,7 @@ class _ReadyStep extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // Warnings
-          if (!hasBackgroundGps)
+          if (useGps && !hasBackgroundGps)
             Card(
               color: theme.colorScheme.tertiaryContainer,
               child: Padding(

@@ -289,6 +289,9 @@ class AruRunner {
       if (!_running) return;
 
       final geoScores = await _ref.read(geoScoresProvider.future);
+      final ignoredSpeciesNames = await _ref.read(
+        ignoredSpeciesNamesProvider.future,
+      );
       final geoThreshold = _ref.read(geoThresholdProvider);
       final geoModelSpeciesNames = await _ref.read(
         geoModelSpeciesNamesProvider.future,
@@ -317,6 +320,8 @@ class AruRunner {
               session.settings.poolingVeryHighImmediateThreshold,
         ),
         sensitivity: session.settings.sensitivity ?? 1.0,
+        ignoreSettings: _ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
         gainLinear: session.settings.gainLinear,
         highPassHz: session.settings.highPassHz,
         latitude: session.latitude,

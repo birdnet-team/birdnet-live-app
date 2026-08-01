@@ -17,6 +17,8 @@
 // ```
 // =============================================================================
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -58,6 +60,7 @@ final surveyControllerProvider = Provider<SurveyController>((ref) {
   final controller = SurveyController(
     ringBuffer: ringBuffer,
     recordingService: recordingService,
+    gpsEnabled: () => ref.read(useGpsProvider),
   );
 
   // Announcements wiring (Phase 4): the per-mode "fresh detection"
@@ -67,6 +70,13 @@ final surveyControllerProvider = Provider<SurveyController>((ref) {
   final announcementsSink = ref.read(announcementsAlertSinkProvider);
   controller.onFreshDetections = announcementsSink.submit;
   controller.onSessionStarted = announcementsSink.resetSession;
+
+  // A survey can remain active while the user visits Settings. Stop an
+  // existing stream immediately when "Use GPS" is switched off; controller
+  // lifecycle methods also guard against restarting it while disabled.
+  ref.listen(useGpsProvider, (_, useGps) {
+    if (!useGps) unawaited(controller.stopGpsTracking());
+  });
 
   ref.onDispose(() => controller.dispose());
   return controller;

@@ -34,6 +34,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/quick_action_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -98,6 +99,8 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
 
 class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
+  final Object _quickListenSafetyOwner = Object();
+
   /// Remaining time in the countdown (updated every second).
   late final ValueNotifier<Duration> _remainingNotifier;
 
@@ -113,6 +116,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   @override
   void initState() {
     super.initState();
+    QuickListenSafety.registerIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+      QuickListenSessionOwner.pointCount,
+    );
     WidgetsBinding.instance.addObserver(this);
     _remainingNotifier = ValueNotifier(
       Duration(minutes: widget.durationMinutes),
@@ -189,6 +196,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final geoScores = await ref.read(geoScoresProvider.future);
+    final ignoredSpeciesNames = await ref.read(
+      ignoredSpeciesNamesProvider.future,
+    );
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
 
     double? startLat = widget.latitude;
@@ -218,6 +228,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
       advancedPooling: ref.read(advancedPoolingParamsProvider),
       sensitivity: sensitivity,
+      ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+      ignoredSpeciesNames: ignoredSpeciesNames,
       targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
       longitude: startLon,
@@ -380,6 +392,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
   @override
   void dispose() {
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     _remainingNotifier.dispose();
@@ -458,6 +473,13 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(liveControllerProvider).setSensitivity(next);
+    });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(liveControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);
@@ -878,10 +900,6 @@ class _PointCountSpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000;
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isCapturing,
@@ -889,7 +907,7 @@ class _PointCountSpectrogram extends ConsumerWidget {
       colorMapName: colorMap,
       dbFloor: dbFloor,
       dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
+      displaySeconds: durationSec.toDouble(),
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,

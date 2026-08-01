@@ -101,7 +101,13 @@ Debajo del contenido de la pestaña, el panel del survey muestra una barra de es
 
 Cada fila de detección también ofrece las mismas acciones por detección que se usan en el [Resumen de la Session](session-review.md): una marca de verificación :material-check: **Confirmar** de un toque y un menú adicional :material-dots-vertical: **Más** con **Compartir detección** y **Eliminar detección** (con deshacer en SnackBar), para que puedas validar, compartir o eliminar una detección ruidosa durante la captura en lugar de esperar al resumen posterior a la sesión.
 
-Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Resumen de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-deteccion) para más detalles.
+Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Resumen de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-detección) para más detalles.
+
+### Registrar una observación
+
+El botón :material-plus-circle-outline: del survey en vivo abre un pequeño menú con **Agregar especie** y **Agregar nota**. **Agregar especie** abre el mismo buscador que [Session Review](session-review.md#agregar-una-especie-a-mano), elige una especie, luego marca :material-ear-hearing: **Oída** o :material-eye: **Vista** en la hoja de confirmación y toca **Agregar**. La entrada recibe la marca de tiempo de ese momento y la posición GPS actual, y aparece de inmediato en la lista de detecciones y en el mapa de la ruta con la insignia manual y los iconos de oído / ojo correspondientes.
+
+Las notas de voz no están disponibles aquí a propósito: el micrófono está ocupado con la grabación del propio survey. Agrégalas en Session Review cuando termine.
 
 ## Funcionamiento en segundo plano
 

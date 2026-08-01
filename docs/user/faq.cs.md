@@ -5,10 +5,10 @@
 ## Generál
 
 **Otázka: Vyžaduje BirdNET Live připojení k internetu?**
-Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jedinými funkcemi sítě jsou vyhledávání obrázků/popisů druhů z API taxonomie, které jsou volitelné.
+Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jediné síťové funkce jsou volitelné a ve výchozím nastavení vypnuté: mapové dlaždice a vyhledávání názvů míst z OpenStreetMap, snímky počasí z Open-Meteo a načítání obrázků a popisů druhů z API taxonomie. Viz [Nastavení → Soukromí](settings.md#soukromí).
 
 **Otázka: Kolik druhů dokáže identifikovat?**
-Odpověď: Model BirdNET+ V3.0 identifikuje 10 208 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu).
+Odpověď: Model BirdNET+ V3.0 identifikuje 9 789 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu).
 
 **Otázka: Jaké platformy jsou podporovány?**
 Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).
@@ -27,7 +27,7 @@ Odpověď: Přesnost závisí na kvalitě záznamu, vzdálenosti, šumu v pozad�
 ## Nahrávání
 
 **Otázka: Kde se ukládají nahrávky?**
-Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Úplné nahrávky se ukládají jako soubory WAV.
+Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Nahrávání → Formát**.
 
 **Otázka: Mohu analyzovat existující nahrávky?**
 A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soubor, nastavte umístění a parametry a klepněte na Analyzovat. Mezi podporované formáty patří WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA a AMR.

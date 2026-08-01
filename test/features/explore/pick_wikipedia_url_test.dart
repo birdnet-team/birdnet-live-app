@@ -15,6 +15,46 @@ void main() {
       expect(url, 'https://de.wikipedia.org/wiki/Kohlmeise');
     });
 
+    // `wikipedia_url_*` columns are keyed by bare language code, but the
+    // effective species locale carries a region for Chinese and for the
+    // regional picker entries.
+    test('falls back to the language subtag for regional tags', () {
+      const urls = {
+        'en': 'https://en.wikipedia.org/wiki/Great_tit',
+        'zh': 'https://zh.wikipedia.org/wiki/%E5%A4%A7%E5%B1%B1%E9%9B%80',
+        'pt': 'https://pt.wikipedia.org/wiki/Chapim-real',
+      };
+      expect(
+        pickWikipediaUrl(
+          scientificName: 'Parus major',
+          bundledUrls: urls,
+          locale: 'zh-CN',
+        ),
+        urls['zh'],
+      );
+      expect(
+        pickWikipediaUrl(
+          scientificName: 'Parus major',
+          bundledUrls: urls,
+          locale: 'pt_PT',
+        ),
+        urls['pt'],
+      );
+    });
+
+    test('prefers an exact regional match over the language subtag', () {
+      final url = pickWikipediaUrl(
+        scientificName: 'Parus major',
+        bundledUrls: const {
+          'en': 'https://en.wikipedia.org/wiki/Great_tit',
+          'pt': 'https://pt.wikipedia.org/wiki/Chapim-real',
+          'pt-BR': 'https://pt.wikipedia.org/wiki/Chapim-real-BR',
+        },
+        locale: 'pt-BR',
+      );
+      expect(url, 'https://pt.wikipedia.org/wiki/Chapim-real-BR');
+    });
+
     test('falls back to English when locale missing', () {
       final url = pickWikipediaUrl(
         scientificName: 'Parus major',

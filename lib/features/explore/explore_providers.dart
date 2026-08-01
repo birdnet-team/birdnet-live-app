@@ -41,6 +41,7 @@ import '../../shared/services/species_description_service.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../core/services/location_service.dart';
 import '../inference/geo_model.dart';
+import '../inference/species_ignore_filter.dart';
 import 'explore_tier.dart';
 
 // ---------------------------------------------------------------------------
@@ -53,7 +54,9 @@ import 'explore_tier.dart';
 /// with the geo-model species list so that:
 ///   - Explore only shows species the audio model can also detect.
 ///   - Live only shows detections for species the geo-model also knows.
-final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
+final audioLabelClassesProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
   final configJson = await rootBundle.loadString(
     AppConstants.modelConfigAssetPath,
   );
@@ -66,6 +69,7 @@ final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
   final delimiter = labelsConfig['delimiter'] as String? ?? ';';
   final cols = labelsConfig['columns'] as Map<String, dynamic>? ?? const {};
   final sciNameColHeader = cols['scientificName'] as String? ?? 'sci_name';
+  final classColHeader = cols['className'] as String? ?? 'class';
 
   final csvText = await rootBundle.loadString(
     '${AppConstants.modelAssetsDir}/$file',
@@ -76,20 +80,28 @@ final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
           .map((l) => l.trim())
           .where((l) => l.isNotEmpty)
           .toList();
-  if (lines.isEmpty) return {};
+  if (lines.isEmpty) return const <String, String>{};
 
   final headers = lines.first.split(delimiter).map((h) => h.trim()).toList();
   final sciIdx = headers.indexOf(sciNameColHeader);
-  if (sciIdx < 0) return {};
+  final classIdx = headers.indexOf(classColHeader);
+  if (sciIdx < 0) return const <String, String>{};
 
-  return lines
-      .skip(1)
-      .map((l) {
-        final parts = l.split(delimiter);
-        return sciIdx < parts.length ? parts[sciIdx].trim() : '';
-      })
-      .where((s) => s.isNotEmpty)
-      .toSet();
+  final result = <String, String>{};
+  for (final line in lines.skip(1)) {
+    final parts = line.split(delimiter);
+    if (sciIdx >= parts.length) continue;
+    final scientificName = parts[sciIdx].trim();
+    if (scientificName.isEmpty) continue;
+    result[scientificName] =
+        classIdx >= 0 && classIdx < parts.length ? parts[classIdx].trim() : '';
+  }
+  return result;
+});
+
+final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
+  final classes = await ref.watch(audioLabelClassesProvider.future);
+  return classes.keys.toSet();
 });
 
 // ---------------------------------------------------------------------------
@@ -97,22 +109,43 @@ final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
 // ---------------------------------------------------------------------------
 
 /// Singleton [LocationService] instance.
+///
+/// The service reads "Use GPS" and the manual coordinates through these
+/// callbacks on every call, so the setting is enforced inside the service —
+/// every feature that fetches a location honours it, not just the ones that
+/// remember to check [useGpsProvider] first.
 final locationServiceProvider = Provider<LocationService>((ref) {
-  return LocationService();
+  return LocationService(
+    gpsEnabled: () => ref.read(useGpsProvider),
+    manualLocation:
+        () => AppLocation(
+          latitude: ref.read(manualLatitudeProvider),
+          longitude: ref.read(manualLongitudeProvider),
+        ),
+  );
 });
 
 /// Current device location — refreshed on demand via [ref.invalidate].
 ///
-/// Falls back to manual coordinates when GPS is disabled.
+/// Falls back to manual coordinates when GPS is disabled; that is enforced
+/// inside [LocationService], and the watches here only decide *when* this
+/// provider recomputes.
+///
+/// Keep the manual-coordinate watches inside the `!useGps` branch. Widening
+/// them adds ways for this provider to be dirty, and every extra invalidation
+/// is a chance to hit a Riverpod "setState during build": a widget whose first
+/// build flushes this provider (the GPS tile in Settings, built lazily by a
+/// ListView) makes the `.future` proxy notify mid-build, and the providers
+/// that `watch(currentLocationProvider.future)` then invalidate themselves
+/// while the frame is still building.
 final currentLocationProvider = FutureProvider<AppLocation?>((ref) async {
   final useGps = ref.watch(useGpsProvider);
-  final service = ref.watch(locationServiceProvider);
-
   if (!useGps) {
-    final lat = ref.watch(manualLatitudeProvider);
-    final lon = ref.watch(manualLongitudeProvider);
-    return AppLocation(latitude: lat, longitude: lon);
+    ref
+      ..watch(manualLatitudeProvider)
+      ..watch(manualLongitudeProvider);
   }
+  final service = ref.watch(locationServiceProvider);
 
   return service.getCurrentLocation();
 });
@@ -122,12 +155,19 @@ final currentLocationProvider = FutureProvider<AppLocation?>((ref) async {
 // ---------------------------------------------------------------------------
 
 /// Singleton [TaxonomyService] loaded from the bundled CSV.
+///
+/// Loaded as bytes rather than via `loadString`: the decode *and* the parse
+/// then happen together on one background isolate, and the ~11 MB string never
+/// has to exist on the main isolate — where `CachingAssetBundle` would also
+/// hold on to it for the rest of the process.
 final taxonomyServiceProvider = FutureProvider<TaxonomyService>((ref) async {
   final service = TaxonomyService();
-  final csvContent = await rootBundle.loadString(
+  final csvBytes = await rootBundle.load(
     '${AppConstants.modelAssetsDir}/taxonomy.csv',
   );
-  service.loadFromCsv(csvContent);
+  await service.loadFromCsvBytes(
+    csvBytes.buffer.asUint8List(csvBytes.offsetInBytes, csvBytes.lengthInBytes),
+  );
   return service;
 });
 
@@ -324,11 +364,13 @@ final exploreSpeciesProvider = FutureProvider<List<ExploreSpecies>>((
   return results;
 });
 
-/// Geo-model scores as a `Map<scientificName, score>` for use by the
-/// species filter in live mode.
+/// Raw geo-model scores before the user's inference-time ignore mask.
 ///
 /// Returns null if no location is available or the model isn't loaded yet.
-final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
+/// This provider deliberately has no dependency on ignore settings, so opening
+/// their overlay runs the geo model at most once for the cached current
+/// location. Slider and checkbox changes only rebuild the cheap name mask.
+final rawGeoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
   final location = await ref.watch(currentLocationProvider.future);
   final geoModel = await ref.watch(geoModelProvider.future);
 
@@ -340,6 +382,27 @@ final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
     longitude: location.longitude,
     week: week,
   );
+});
+
+/// Scientific names suppressed by the current taxon/commonness settings.
+final ignoredSpeciesNamesProvider = FutureProvider<Set<String>>((ref) async {
+  final classes = await ref.watch(audioLabelClassesProvider.future);
+  final rawGeoScores = await ref.watch(rawGeoScoresProvider.future);
+  final settings = ref.watch(speciesIgnoreSettingsProvider);
+  return SpeciesIgnoreFilter.ignoredScientificNames(
+    classByScientificName: classes,
+    settings: settings,
+    geoScores: rawGeoScores,
+  );
+});
+
+/// Geo-model scores with ignored species set to zero immediately after model
+/// inference. These filtered scores feed detection-time geographic filtering.
+final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
+  final rawScores = await ref.watch(rawGeoScoresProvider.future);
+  if (rawScores == null) return null;
+  final ignoredNames = await ref.watch(ignoredSpeciesNamesProvider.future);
+  return SpeciesIgnoreFilter.applyToGeoScores(rawScores, ignoredNames);
 });
 
 // ---------------------------------------------------------------------------

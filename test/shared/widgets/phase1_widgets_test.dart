@@ -12,15 +12,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.light(),
+  darkTheme: AppTheme.dark(),
+  home: Scaffold(body: child),
+);
 
 void main() {
   group('LoadingView', () {
-    testWidgets('renders spinner without label when label is null',
-        (tester) async {
+    testWidgets('renders spinner without label when label is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(const LoadingView()));
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.byType(Text), findsNothing);
@@ -41,34 +42,42 @@ void main() {
 
   group('EmptyView', () {
     testWidgets('renders icon and title', (tester) async {
-      await tester.pumpWidget(_wrap(const EmptyView(
-        icon: Icons.search_off,
-        title: 'Nothing here',
-      )));
+      await tester.pumpWidget(
+        _wrap(const EmptyView(icon: Icons.search_off, title: 'Nothing here')),
+      );
       expect(find.byIcon(Icons.search_off), findsOneWidget);
       expect(find.text('Nothing here'), findsOneWidget);
     });
 
-    testWidgets('shows action when both label and callback provided',
-        (tester) async {
+    testWidgets('shows action when both label and callback provided', (
+      tester,
+    ) async {
       var tapped = false;
-      await tester.pumpWidget(_wrap(EmptyView(
-        icon: Icons.search_off,
-        title: 'Nothing here',
-        actionLabel: 'Refresh',
-        onAction: () => tapped = true,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          EmptyView(
+            icon: Icons.search_off,
+            title: 'Nothing here',
+            actionLabel: 'Refresh',
+            onAction: () => tapped = true,
+          ),
+        ),
+      );
       expect(find.text('Refresh'), findsOneWidget);
       await tester.tap(find.text('Refresh'));
       expect(tapped, isTrue);
     });
 
     testWidgets('hides action when callback is null', (tester) async {
-      await tester.pumpWidget(_wrap(const EmptyView(
-        icon: Icons.search_off,
-        title: 'Nothing here',
-        actionLabel: 'Refresh',
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          const EmptyView(
+            icon: Icons.search_off,
+            title: 'Nothing here',
+            actionLabel: 'Refresh',
+          ),
+        ),
+      );
       expect(find.text('Refresh'), findsNothing);
     });
   });
@@ -80,20 +89,24 @@ void main() {
       expect(find.text('Oh no'), findsOneWidget);
     });
 
-    testWidgets('shows retry only when both label and callback provided',
-        (tester) async {
-      await tester.pumpWidget(_wrap(const ErrorView(
-        title: 'Oh no',
-        retryLabel: 'Retry',
-      )));
+    testWidgets('shows retry only when both label and callback provided', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const ErrorView(title: 'Oh no', retryLabel: 'Retry')),
+      );
       expect(find.text('Retry'), findsNothing);
 
       var retried = false;
-      await tester.pumpWidget(_wrap(ErrorView(
-        title: 'Oh no',
-        retryLabel: 'Retry',
-        onRetry: () => retried = true,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          ErrorView(
+            title: 'Oh no',
+            retryLabel: 'Retry',
+            onRetry: () => retried = true,
+          ),
+        ),
+      );
       await tester.tap(find.text('Retry'));
       expect(retried, isTrue);
     });
@@ -102,22 +115,28 @@ void main() {
   group('confirmDestructive', () {
     testWidgets('returns true when confirm tapped', (tester) async {
       late Future<bool> future;
-      await tester.pumpWidget(_wrap(Builder(builder: (context) {
-        return Center(
-          child: ElevatedButton(
-            onPressed: () {
-              future = confirmDestructive(
-                context,
-                title: 'Stop?',
-                body: 'This will end the session.',
-                confirmLabel: 'Stop',
-                cancelLabel: 'Cancel',
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              return Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    future = confirmDestructive(
+                      context,
+                      title: 'Stop?',
+                      body: 'This will end the session.',
+                      confirmLabel: 'Stop',
+                      cancelLabel: 'Cancel',
+                    );
+                  },
+                  child: const Text('open'),
+                ),
               );
             },
-            child: const Text('open'),
           ),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Stop'));
@@ -127,22 +146,28 @@ void main() {
 
     testWidgets('returns false when cancel tapped', (tester) async {
       late Future<bool> future;
-      await tester.pumpWidget(_wrap(Builder(builder: (context) {
-        return Center(
-          child: ElevatedButton(
-            onPressed: () {
-              future = confirmDestructive(
-                context,
-                title: 'Stop?',
-                body: 'This will end the session.',
-                confirmLabel: 'Stop',
-                cancelLabel: 'Cancel',
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              return Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    future = confirmDestructive(
+                      context,
+                      title: 'Stop?',
+                      body: 'This will end the session.',
+                      confirmLabel: 'Stop',
+                      cancelLabel: 'Cancel',
+                    );
+                  },
+                  child: const Text('open'),
+                ),
               );
             },
-            child: const Text('open'),
           ),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Cancel'));
@@ -152,22 +177,28 @@ void main() {
 
     testWidgets('returns false when dismissed via tap-outside', (tester) async {
       late Future<bool> future;
-      await tester.pumpWidget(_wrap(Builder(builder: (context) {
-        return Center(
-          child: ElevatedButton(
-            onPressed: () {
-              future = confirmDestructive(
-                context,
-                title: 'Stop?',
-                body: 'This will end the session.',
-                confirmLabel: 'Stop',
-                cancelLabel: 'Cancel',
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) {
+              return Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    future = confirmDestructive(
+                      context,
+                      title: 'Stop?',
+                      body: 'This will end the session.',
+                      confirmLabel: 'Stop',
+                      cancelLabel: 'Cancel',
+                    );
+                  },
+                  child: const Text('open'),
+                ),
               );
             },
-            child: const Text('open'),
           ),
-        );
-      })));
+        ),
+      );
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
       // Tap outside the dialog (top-left corner of the barrier).
@@ -179,32 +210,41 @@ void main() {
 
   group('StatChip', () {
     testWidgets('chip variant renders icon + value inline', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const StatChip(icon: Icons.timer_outlined, value: '2:34'),
-      ));
+      await tester.pumpWidget(
+        _wrap(const StatChip(icon: Icons.timer_outlined, value: '2:34')),
+      );
       expect(find.byIcon(Icons.timer_outlined), findsOneWidget);
       expect(find.text('2:34'), findsOneWidget);
       expect(find.byType(Card), findsNothing);
     });
 
     testWidgets('badge variant uses bold weight', (tester) async {
-      await tester.pumpWidget(_wrap(const StatChip(
-        icon: Icons.timer_outlined,
-        value: '2:34',
-        variant: StatChipVariant.badge,
-      )));
+      await tester.pumpWidget(
+        _wrap(
+          const StatChip(
+            icon: Icons.timer_outlined,
+            value: '2:34',
+            variant: StatChipVariant.badge,
+          ),
+        ),
+      );
       final text = tester.widget<Text>(find.text('2:34'));
       expect(text.style?.fontWeight, FontWeight.w600);
     });
 
-    testWidgets('card variant renders boxed Card with optional label',
-        (tester) async {
-      await tester.pumpWidget(_wrap(const StatChip(
-        icon: Icons.bar_chart,
-        value: '142',
-        label: 'Detections',
-        variant: StatChipVariant.card,
-      )));
+    testWidgets('card variant renders boxed Card with optional label', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const StatChip(
+            icon: Icons.bar_chart,
+            value: '142',
+            label: 'Detections',
+            variant: StatChipVariant.card,
+          ),
+        ),
+      );
       expect(find.byType(Card), findsOneWidget);
       expect(find.text('142'), findsOneWidget);
       expect(find.text('Detections'), findsOneWidget);
@@ -234,27 +274,35 @@ void main() {
     });
 
     testWidgets('is registered on AppTheme.light', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.light(),
-        home: Builder(builder: (context) {
-          final ext = Theme.of(context).extension<ScoreColors>();
-          expect(ext, isNotNull);
-          expect(ext!.low, ScoreColors.light.low);
-          return const SizedBox.shrink();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: Builder(
+            builder: (context) {
+              final ext = Theme.of(context).extension<ScoreColors>();
+              expect(ext, isNotNull);
+              expect(ext!.low, ScoreColors.light.low);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
     });
 
     testWidgets('is registered on AppTheme.dark', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        theme: AppTheme.dark(),
-        home: Builder(builder: (context) {
-          final ext = Theme.of(context).extension<ScoreColors>();
-          expect(ext, isNotNull);
-          expect(ext!.low, ScoreColors.dark.low);
-          return const SizedBox.shrink();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          home: Builder(
+            builder: (context) {
+              final ext = Theme.of(context).extension<ScoreColors>();
+              expect(ext, isNotNull);
+              expect(ext!.low, ScoreColors.dark.low);
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
     });
   });
 }

@@ -60,14 +60,6 @@ Storage and exports always use UTC instants regardless of this setting, so the c
 
 These controls appear in audio-driven live workflows.
 
-### Gain
-
-Linear amplifier applied to incoming audio before it reaches the spectrogram and the classifier. Leave at **1.0×** unless your input is consistently too quiet — for example a high-impedance lavalier mic on a phone, or a USB interface whose preamp is set too low. Pushing gain above 1.0 will not magically reveal calls that the mic never captured; it just rescales whatever the mic delivered, so loud nearby sounds may clip. Below 1.0 is useful in the rare case where a hot input is saturating the spectrogram.
-
-### High-pass filter (Hz)
-
-Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
-
 ### Audio source
 
 One sheet with two independent controls: **Microphone** — which input to record from — and **Processing** — how much the phone is allowed to alter the signal on the way in. They combine freely, so a USB microphone recorded *unprocessed* is a perfectly valid setup. Your selection is remembered across app launches, and the same picker appears on the Survey, Point Count, and ARU setup screens. Changes take effect immediately — even mid-recording, the app swaps the microphone under the running session rather than waiting for the next one.
@@ -88,6 +80,14 @@ Expect the unprocessed options to sound **quieter** — that is the automatic ga
 
 **On iOS** the Processing control is hidden and the sheet is simply a microphone list. iOS already hands the app essentially unprocessed audio, so there is nothing equivalent to choose.
 
+### Gain
+
+Linear amplifier applied to incoming audio before it reaches the spectrogram and the classifier. Leave at **1.0×** unless your input is consistently too quiet — for example a high-impedance lavalier mic on a phone, or a USB interface whose preamp is set too low. Pushing gain above 1.0 will not magically reveal calls that the mic never captured; it just rescales whatever the mic delivered, so loud nearby sounds may clip. Below 1.0 is useful in the rare case where a hot input is saturating the spectrogram.
+
+### High-pass filter (Hz)
+
+Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
+
 ## Inference
 
 ### Window duration
@@ -105,6 +105,14 @@ An x-axis offset applied to the model's raw probability scores before score pool
 ### Inference rate
 
 Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
+
+### Ignore species
+
+Opens an overlay with binary inference filters. Check **Birds**, **Mammals**, **Amphibians**, or **Insects** to suppress that entire taxonomic class. All four checkboxes are off by default.
+
+The **Ignore common species above** slider runs from **80–100%** and suppresses species whose current geo-model score is strictly above the selected cutoff. It defaults to **100%**, which ignores no species by commonness; lowering it ignores progressively more common species. The overlay runs the geo model once for the current location and shows the resulting total number of ignored species. Moving the slider or changing a checkbox reuses that cached prediction instead of running inference again. The common-species rule needs a location-based geo-model result, while taxonomic-group filtering works without a location.
+
+The filter is applied to both geo-model and audio-model probabilities immediately after sigmoid activation. Ignored scores become exactly zero before temporal pooling, so they cannot contribute to a later pooled result or become a displayed, saved, announced, or exported detection. Changes made during an active Live Mode, Point Count, Survey, or ARU Session apply to the next inference window; File Analysis uses the values selected when analysis starts.
 
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
@@ -195,6 +203,8 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
+This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) starts listening when tapped, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
+
 ### Save sessions automatically (Live and Point Count)
 
 When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
@@ -217,7 +227,13 @@ Shown only when **Auto-play voice memos** is enabled. Controls how much the main
 
 ### Use GPS
 
-Use device GPS instead of manual coordinates.
+Use device GPS instead of manual coordinates. On Android, fixes come from the
+platform location provider rather than Google Play Services, so the app does
+not trigger Google's location-accuracy resolution dialog. With this off, the
+app never reads the GPS or asks for location permission on its own: the
+Survey, Point Count and ARU setup wizards open on manual entry with your saved
+coordinates, survey GPS tracking does not run, and offline map preparation
+centres on those coordinates too.
 
 ### Manual coordinates
 
@@ -258,13 +274,17 @@ The intuition: many workflows need more than one format at the same time — a C
 
 Include saved audio alongside the exported tables or metadata when supported by the export workflow.
 
+### Always share audio as WAV
+
+Shown only when **Include audio files** is on. When enabled, FLAC recordings are converted to WAV before sharing or exporting. WAV is universally compatible but significantly larger than FLAC, so leave this off unless the tool on the receiving end cannot read FLAC — some older desktop analysis software and a few upload forms still can't.
+
 ### Include app metadata
 
 When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, the weather snapshot captured at session start, and any audio integrity warnings detected during recording. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
 
 ### Include HTML report
 
-When on, every export ZIP also contains a `report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
+When on, every export ZIP also contains a `<session>_report.html` file alongside the table, audio clips, and GPX. Open it in any web browser and you get a print-ready summary of the session: header card with date, location, observer, and totals; an interactive map of the GPS track and detection markers; a card per detection with the Cornell taxonomy thumbnail, names, score pill, your confirmation, any note you typed, and the original audio clip inline as a player; and the analysis settings used. The intuition: a CSV is great for analysis pipelines but useless for sharing with a non-technical collaborator or printing a quick field summary — the HTML report fills that gap with one tap. Species thumbnails and map tiles need a connection the first time the file is opened (they're fetched live from the BirdNET taxonomy API and OpenStreetMap), but everything else — text, layout, audio playback, links — works fully offline. Turn this off if you only need the raw data and want to keep the ZIP a few KB smaller.
 
 ### Audio-only sharing
 

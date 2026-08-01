@@ -38,6 +38,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/quick_action_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
@@ -47,6 +48,7 @@ import '../../shared/utils/app_icons.dart';
 import '../explore/explore_providers.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
+import '../inference/species_ignore_filter.dart';
 import '../live/live_providers.dart';
 import '../settings/settings_screen.dart';
 import 'file_analysis_controller.dart';
@@ -62,6 +64,7 @@ class FileAnalysisScreen extends ConsumerStatefulWidget {
 
 class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   final PageController _pageController = PageController();
+  final Object _quickListenSafetyOwner = Object();
   int _currentStep = 0;
 
   // ── Step 1: File ──────────────────────────────────────────────────────
@@ -88,6 +91,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   // ── Step 4: Analysis ──────────────────────────────────────────────────
   bool _modelLoaded = false;
+  bool _analysisLaunchInProgress = false;
 
   void _showHelp() {
     final l10n = AppLocalizations.of(context)!;
@@ -141,6 +145,9 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   @override
   void dispose() {
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     _pageController.dispose();
     _latController.dispose();
     _lonController.dispose();
@@ -242,6 +249,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         _locationName = await reverseGeocode(
           latitude: location.latitude,
           longitude: location.longitude,
+          localeName: ref.read(effectiveAppLocaleProvider),
         );
       }
     } catch (_) {
@@ -263,6 +271,23 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   // ── Analysis ──────────────────────────────────────────────────────────
 
   Future<void> _startAnalysis() async {
+    if (_analysisLaunchInProgress) return;
+    _analysisLaunchInProgress = true;
+    QuickListenSafety.registerIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+      QuickListenSessionOwner.fileAnalysis,
+    );
+    try {
+      await _runAnalysis();
+    } finally {
+      QuickListenSafety.unregisterIncompatibleSessionOwner(
+        _quickListenSafetyOwner,
+      );
+      _analysisLaunchInProgress = false;
+    }
+  }
+
+  Future<void> _runAnalysis() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = ref.read(fileAnalysisControllerProvider);
 
@@ -301,19 +326,46 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     // Fetch geo-model scores if location is available and filter is active.
     Map<String, double>? geoScores;
     Set<String>? geoSpeciesNames;
+    var ignoredSpeciesNames = <String>{};
+    final ignoreSettings = ref.read(speciesIgnoreSettingsProvider);
     if (_latitude != null && _longitude != null) {
       try {
         final geoModel = await ref.read(geoModelProvider.future);
         geoSpeciesNames = (await ref.read(geoModelSpeciesNamesProvider.future));
         final refDate = _recordingDate ?? DateTime.now();
         final week = _weekNumber(refDate);
-        geoScores = await geoModel.predict(
+        final rawGeoScores = await geoModel.predict(
           latitude: _latitude!,
           longitude: _longitude!,
           week: week,
         );
+        final classes = await ref.read(audioLabelClassesProvider.future);
+        ignoredSpeciesNames = SpeciesIgnoreFilter.ignoredScientificNames(
+          classByScientificName: classes,
+          settings: ignoreSettings,
+          geoScores: rawGeoScores,
+        );
+        geoScores = SpeciesIgnoreFilter.applyToGeoScores(
+          rawGeoScores,
+          ignoredSpeciesNames,
+        );
       } catch (_) {
         // Geo-model unavailable — proceed without.
+      }
+    }
+
+    if (ignoredSpeciesNames.isEmpty) {
+      final classes = await ref.read(audioLabelClassesProvider.future);
+      ignoredSpeciesNames = SpeciesIgnoreFilter.ignoredScientificNames(
+        classByScientificName: classes,
+        settings: ignoreSettings,
+        geoScores: geoScores,
+      );
+      if (geoScores != null) {
+        geoScores = SpeciesIgnoreFilter.applyToGeoScores(
+          geoScores,
+          ignoredSpeciesNames,
+        );
       }
     }
 
@@ -332,6 +384,8 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       maxPoolWindows: maxPoolWindows,
       poolingMaxAgeSeconds: poolingMaxAgeSeconds,
       advancedPooling: ref.read(advancedPoolingParamsProvider),
+      ignoreSettings: ignoreSettings,
+      ignoredSpeciesNames: ignoredSpeciesNames,
       geoScores: geoScores,
       geoThreshold: ref.read(geoThresholdProvider),
       geoModelSpeciesNames: geoSpeciesNames,

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick Listen, 2x1: accent icon tile + label, on a rounded surface panel.
+     Same composition as the app's Live Mode card on the home screen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:padding="10dp"
+    android:background="@drawable/widget_background"
+    android:contentDescription="@string/quick_listen_widget_button">
+
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/widget_icon_container">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_notification"
+            android:tint="@color/widget_accent"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/quick_listen_widget_button"
+        android:textColor="@color/widget_on_surface"
+        android:textSize="14sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:importantForAccessibility="no" />
+</LinearLayout>

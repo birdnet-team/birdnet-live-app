@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_listen_widget_label">Lytt nå</string>
+    <string name="quick_listen_widget_description">Gå rett til Direkte-modus og begynn å lytte.</string>
+    <string name="quick_listen_widget_button">Begynn å lytte</string>
+    <string name="quick_listen_widget_1x1_label">Lytt nå (kompakt)</string>
+    <string name="quick_listen_widget_1x1_description">Liten rute med bare et ikon. Trykk for å gå rett til Direkte-modus og begynne å lytte.</string>
+</resources>

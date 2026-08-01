@@ -30,6 +30,12 @@ Desktop.ini
 # Miscellaneous
 *.class
 *.lock
+# pubspec.lock IS tracked. This is an app, not a library, so releases must be
+# reproducible. Leaving it ignored let flutter_onnxruntime drift 1.7.1 -> 1.8.3
+# between v1.0.1 and v1.0.2, silently swapping the bundled ONNX Runtime native
+# library (1.22.0 -> 1.23.0) and shipping an inference crash with no reviewable
+# diff. See docs/developer/onnxruntime-pin.md.
+!pubspec.lock
 *.log
 *.pyc
 *.swp

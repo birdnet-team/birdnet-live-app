@@ -104,6 +104,20 @@
   "@done": {
     "description": "Done button label"
   },
+  "quickListenBlockedTitle": "Finish the current Session first",
+  "@quickListenBlockedTitle": {
+    "description": "Title shown after a Quick Listen widget tap is blocked by another recording mode"
+  },
+  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then tap the widget again.",
+  "@quickListenBlockedMessage": {
+    "description": "Explains that Quick Listen will not replace another active recording mode",
+    "placeholders": {
+      "mode": {
+        "type": "String",
+        "example": "Survey"
+      }
+    }
+  },
   "termsOfUseTitle": "Acceptable Use Policy",
   "@termsOfUseTitle": {
     "description": "Acceptable use policy dialog title"
@@ -1172,6 +1186,22 @@
   "@weatherCodeUnknown": {
     "description": "Fallback when the WMO weather code is missing or unrecognized"
   },
+  "windDirectionNorth": "N",
+  "windDirectionNorthEast": "NE",
+  "windDirectionEast": "E",
+  "windDirectionSouthEast": "SE",
+  "windDirectionSouth": "S",
+  "windDirectionSouthWest": "SW",
+  "windDirectionWest": "W",
+  "windDirectionNorthWest": "NW",
+  "@windDirectionNorth": {"description": "Localized compass abbreviation for north"},
+  "@windDirectionNorthEast": {"description": "Localized compass abbreviation for northeast"},
+  "@windDirectionEast": {"description": "Localized compass abbreviation for east"},
+  "@windDirectionSouthEast": {"description": "Localized compass abbreviation for southeast"},
+  "@windDirectionSouth": {"description": "Localized compass abbreviation for south"},
+  "@windDirectionSouthWest": {"description": "Localized compass abbreviation for southwest"},
+  "@windDirectionWest": {"description": "Localized compass abbreviation for west"},
+  "@windDirectionNorthWest": {"description": "Localized compass abbreviation for northwest"},
   "sessionShare": "Share",
   "@sessionShare": {
     "description": "Share session button label"
@@ -1525,6 +1555,26 @@
   "@sessionTrimWarning": {
     "description": "Warning shown when applying a trim that removes detections"
   },
+  "sessionTrimCommitTitle": "Trim recording permanently?",
+  "@sessionTrimCommitTitle": {
+    "description": "Title of the dialog confirming that saving will permanently cut the recording to the trimmed range"
+  },
+  "sessionTrimCommitMessage": "Saving deletes the audio outside the trimmed range from this recording. This cannot be undone.",
+  "@sessionTrimCommitMessage": {
+    "description": "Body of the dialog confirming that saving will permanently cut the recording to the trimmed range"
+  },
+  "sessionTrimCommitConfirm": "Trim and Save",
+  "@sessionTrimCommitConfirm": {
+    "description": "Confirm button label for the destructive trim dialog"
+  },
+  "sessionTrimCommitFailed": "The recording could not be trimmed. The session was saved and the trim still applies to playback and exports.",
+  "@sessionTrimCommitFailed": {
+    "description": "Snack bar shown when the recording file could not be cut, so the trim stays as an editable range"
+  },
+  "sessionTrimExportFailed": "The trimmed audio could not be prepared for sharing.",
+  "@sessionTrimExportFailed": {
+    "description": "Snack bar shown when a trimmed recording cannot be materialized for export"
+  },
   "sessionHelpTitle": "Session Review Help",
   "@sessionHelpTitle": {
     "description": "Title for the session review help dialog"
@@ -1533,7 +1583,7 @@
   "@sessionHelpOverview": {
     "description": "Overview section of the session review help"
   },
-  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. Use \"Unknown / Other\" for unidentified calls.",
+  "sessionHelpAddSpecies": "Add Species: Tap the + button to manually add a species. You can insert it globally (for the entire session), at the current playback position, or replace an existing detection. After picking a species, a confirmation sheet lets you tick Heard and/or Seen before the entry is added. Use \"Unknown / Other\" for unidentified calls.",
   "@sessionHelpAddSpecies": {
     "description": "Help text explaining the add species feature"
   },
@@ -1541,7 +1591,7 @@
   "@sessionHelpAnnotations": {
     "description": "Help text explaining annotations"
   },
-  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim.",
+  "sessionHelpTrimming": "Trim Recording: Drag the left and right handles on the spectrogram to trim the recording. Detections outside the trimmed range are removed when you apply the trim. Saving the session then cuts the audio outside that range from the recording for good.",
   "@sessionHelpTrimming": {
     "description": "Help text explaining recording trimming"
   },
@@ -1858,6 +1908,24 @@
   "@speciesListenOnEbird": {
     "description": "Tappable link opening the eBird/Macaulay Library audio catalog for the species"
   },
+  "settingsIgnoreSpecies": "Ignore species",
+  "@settingsIgnoreSpecies": {"description": "Title for inference-time species ignore settings"},
+  "settingsIgnoreSpeciesDescription": "Select taxonomic groups to suppress and set the geo-model score above which very common species are ignored.",
+  "@settingsIgnoreSpeciesDescription": {"description": "Description of species ignore settings"},
+  "settingsHelpIgnoreSpecies": "Selected species are assigned a score of zero before temporal pooling, so they cannot become displayed or saved detections.",
+  "@settingsHelpIgnoreSpecies": {"description": "Help text for species ignore settings"},
+  "settingsIgnoreCommonSpecies": "Ignore common species above",
+  "@settingsIgnoreCommonSpecies": {"description": "Label for common-species geo-score cutoff"},
+  "settingsIgnoreCommonSpeciesDescription": "Species with a geo-model score above this cutoff are ignored. The default is 100%, which ignores none by commonness.",
+  "@settingsIgnoreCommonSpeciesDescription": {"description": "Description of common-species cutoff"},
+  "settingsHelpIgnoreCommonSpecies": "Requires a location-based geo-model score. Lowering the cutoff ignores more common species; raising it ignores fewer.",
+  "@settingsHelpIgnoreCommonSpecies": {"description": "Help text for common-species cutoff"},
+  "settingsIgnoredSpeciesCount": "{count} species ignored",
+  "@settingsIgnoredSpeciesCount": {"description": "Number of species suppressed by the current ignore settings", "placeholders": {"count": {"type": "int"}}},
+  "settingsIgnoredSpeciesCountLoading": "Calculating for the current location…",
+  "@settingsIgnoredSpeciesCountLoading": {"description": "Loading label while the ignored-species count is calculated"},
+  "settingsIgnoredSpeciesCountUnavailable": "Ignored-species count unavailable",
+  "@settingsIgnoredSpeciesCountUnavailable": {"description": "Fallback when the ignored-species count cannot be calculated"},
   "settingsSensitivity": "Sensitivity",
   "@settingsSensitivity": {
     "description": "Sensitivity setting label"
@@ -2313,7 +2381,7 @@
   "@settingsHelpIncludeAudioFiles": {
     "description": "Help text for include audio files setting"
   },
-  "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained `report.html`. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
+  "settingsHelpExportHtmlReport": "When enabled, the export ZIP also contains a self-contained HTML report named after the session (`<session>_report.html`), so reports from several exports never overwrite each other. Open it in any browser to see a styled session summary with map, per-detection cards, and inline audio players. Species images are loaded from the BirdNET taxonomy service when online.",
   "@settingsHelpExportHtmlReport": {
     "description": "Help text for export HTML report setting"
   },
@@ -3081,6 +3149,34 @@
   "@detectionSourceManual": {
     "description": "Short label/badge shown on a detection that was entered manually by the user (not produced by the model)."
   },
+  "detectionEvidenceLabel": "Observation type",
+  "@detectionEvidenceLabel": {
+    "description": "Label above the heard/seen checkboxes in the confirm sheet shown after picking a species."
+  },
+  "detectionEvidenceHint": "Optional — leave both unticked to record no observation type.",
+  "@detectionEvidenceHint": {
+    "description": "Helper text below the heard/seen checkboxes explaining that the choice is optional."
+  },
+  "sessionAddSpeciesConfirm": "Add",
+  "@sessionAddSpeciesConfirm": {
+    "description": "Confirm button in the sheet that inserts the picked species into the session."
+  },
+  "sessionReplaceSpeciesConfirm": "Replace",
+  "@sessionReplaceSpeciesConfirm": {
+    "description": "Confirm button in the same sheet when the picked species replaces an existing detection."
+  },
+  "detectionEvidenceHeard": "Heard",
+  "@detectionEvidenceHeard": {
+    "description": "Checkbox label / badge tooltip: the user heard the bird but did not see it."
+  },
+  "detectionEvidenceSeen": "Seen",
+  "@detectionEvidenceSeen": {
+    "description": "Checkbox label / badge tooltip: the user saw the bird but did not hear it."
+  },
+  "detectionEvidenceHeardAndSeen": "Heard and seen",
+  "@detectionEvidenceHeardAndSeen": {
+    "description": "Badge tooltip shown when the user ticked both the heard and the seen checkbox for a manual detection."
+  },
   "detectionSeekToPosition": "Jump to position",
   "@detectionSeekToPosition": {
     "description": "Tooltip on the seek button for a manually-added detection — tapping scrolls the audio player to that entry's timestamp."
@@ -3196,6 +3292,14 @@
   "surveyMapFilterTooltip": "Filter map markers",
   "@surveyMapFilterTooltip": {
     "description": "Tooltip for the survey map filter button"
+  },
+  "surveyMapFullscreen": "Full screen map",
+  "@surveyMapFullscreen": {
+    "description": "Tooltip for the button that opens the survey map full screen"
+  },
+  "surveyMapRecenter": "Center on current position",
+  "@surveyMapRecenter": {
+    "description": "Tooltip for the button that recenters the full screen live survey map on the current GPS position"
   },
   "surveyMapFilterChipAll": "All detections",
   "@surveyMapFilterChipAll": {
@@ -3783,8 +3887,6 @@
   "@settingsHelpAnnouncementsVoice": {"description": "Long-form help for the voice picker"},
   "settingsAnnouncementsPreview": "Speak a sample",
   "@settingsAnnouncementsPreview": {"description": "Button: speak a sample utterance with current settings"},
-  "settingsAnnouncementsRunSetupWizard": "Run setup again",
-  "@settingsAnnouncementsRunSetupWizard": {"description": "Button: re-run the announcements setup wizard"},
   "settingsAnnouncementsAdvanced": "Advanced",
   "@settingsAnnouncementsAdvanced": {"description": "Disclosure heading for advanced numeric settings"},
   "settingsAnnouncementsSpeakerOutputAllowed": "Allow phone speaker",

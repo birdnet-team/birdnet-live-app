@@ -113,6 +113,37 @@ class AudioMetadata {
   int get decodedPcmBytes => totalSamples * 2;
 }
 
+/// Byte layout of a WAV file's PCM payload, as reported by
+/// [AudioDecoder.inspectWavLayout].
+class WavLayout {
+  const WavLayout({
+    required this.audioFormat,
+    required this.sampleRate,
+    required this.bitsPerSample,
+    required this.channels,
+    required this.dataOffset,
+    required this.dataSize,
+  });
+
+  /// WAVE format tag: 1 = integer PCM, 3 = IEEE float.
+  final int audioFormat;
+  final int sampleRate;
+  final int bitsPerSample;
+  final int channels;
+
+  /// Byte offset of the first sample frame in the file.
+  final int dataOffset;
+
+  /// Length of the PCM payload in bytes.
+  final int dataSize;
+
+  /// Bytes per sample frame (all channels).
+  int get frameSize => channels * (bitsPerSample ~/ 8);
+
+  /// Number of complete sample frames in the payload.
+  int get totalFrames => frameSize <= 0 ? 0 : dataSize ~/ frameSize;
+}
+
 /// Decodes audio files to raw PCM samples.
 class AudioDecoder {
   AudioDecoder._();
@@ -229,6 +260,47 @@ class AudioDecoder {
     }
 
     throw FormatException('Unknown audio format (not WAV or FLAC): $path');
+  }
+
+  /// Read a WAV file's PCM payload layout without decoding any audio.
+  ///
+  /// Lets callers copy raw sample frames between files (trimming a
+  /// recording) without going through Int16 conversion, so the copy keeps
+  /// the source's channel count and bit depth exactly.
+  ///
+  /// Tolerant of files written by the streaming [WavWriter]: when the
+  /// `data` chunk size is still a placeholder the payload is taken to run
+  /// to the end of the file.
+  static Future<WavLayout> inspectWavLayout(String path) async {
+    final file = File(path);
+    final info = await _readWavInfo(file);
+    if (info.audioFormat != 1 && info.audioFormat != 3) {
+      throw FormatException(
+        'Unsupported WAV format tag for raw copying: ${info.audioFormat}',
+      );
+    }
+    if (info.channels <= 0 || info.bitsPerSample % 8 != 0) {
+      throw FormatException(
+        'Unsupported WAV sample layout: '
+        '${info.channels} channels, ${info.bitsPerSample}-bit',
+      );
+    }
+    final frameSize = info.channels * (info.bitsPerSample ~/ 8);
+    if (frameSize <= 0) {
+      throw FormatException('Unsupported WAV bit depth: ${info.bitsPerSample}');
+    }
+    var dataSize = info.dataSize;
+    if (dataSize <= 0) {
+      dataSize = await file.length() - info.dataOffset;
+    }
+    return WavLayout(
+      audioFormat: info.audioFormat,
+      sampleRate: info.sampleRate,
+      bitsPerSample: info.bitsPerSample,
+      channels: info.channels,
+      dataOffset: info.dataOffset,
+      dataSize: dataSize < 0 ? 0 : dataSize,
+    );
   }
 
   /// Decode a bounded sample range from a WAV/FLAC file.
@@ -569,6 +641,83 @@ class AudioDecoder {
     }
   }
 
+  /// Decode a FLAC file sequentially, handing each frame to [onFrame] as it
+  /// is decoded.
+  ///
+  /// One pass over the file, one frame (a few thousand samples) resident at
+  /// a time — the right shape for copying a bounded sample range out of an
+  /// arbitrarily long recording. [decodeFlacRange] allocates the whole range
+  /// up front and [decodeFlacWindows] silently drops the trailing partial
+  /// window, so neither can trim an hour-long file exactly.
+  ///
+  /// [onFrame] receives the frame's absolute start sample and its samples,
+  /// and returns `false` to stop decoding early (e.g. once the requested
+  /// range has been consumed). The `Int16List` it receives is not reused
+  /// between callbacks, so it is safe to retain.
+  ///
+  /// Tolerates an unfinalized STREAMINFO (`totalSamples == 0`): the frame
+  /// loop terminates on EOF instead of trusting the header.
+  ///
+  /// Throws a [FormatException] for anything outside the mono 16-bit subset
+  /// [_decodeFrame] understands. The channel check matters: [_decodeFrame]
+  /// decodes a single subframe per frame and ignores the frame header's
+  /// channel assignment, so a stereo stream would yield plausible-looking
+  /// nonsense rather than failing. Callers that *write* what they decode
+  /// (trimming a recording in place) would turn that into silent corruption.
+  static Future<void> decodeFlacFrames(
+    String path, {
+    required Future<bool> Function(int startSample, Int16List samples) onFrame,
+  }) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final info = await _readFlacStreamInfo(raf, path);
+      if (info.bitsPerSample != 16) {
+        throw FormatException(
+          'Only 16-bit FLAC supported, got ${info.bitsPerSample}-bit',
+        );
+      }
+      if (info.channels != 1) {
+        throw FormatException(
+          'Only mono FLAC supported, got ${info.channels} channels',
+        );
+      }
+      final reader = _StreamingBitReader(
+        file: raf,
+        fileLength: await raf.length(),
+        startByte: info.firstFrameOffset,
+      );
+      final hasKnownTotal = info.totalSamples > 0;
+      var decodedSamples = 0;
+      while (reader.bytesRemaining > 2) {
+        if (hasKnownTotal && decodedSamples >= info.totalSamples) break;
+        final frame = _decodeFrame(
+          reader,
+          info.maxBlockSize,
+          info.bitsPerSample,
+        );
+        if (frame == null) break;
+        final keepGoing = await onFrame(decodedSamples, frame);
+        decodedSamples += frame.length;
+        if (!keepGoing) return;
+      }
+    } finally {
+      await raf.close();
+    }
+  }
+
+  /// Sample rate declared in a FLAC file's STREAMINFO block.
+  static Future<int> flacSampleRate(String path) async {
+    final file = File(path);
+    final raf = await file.open();
+    try {
+      final info = await _readFlacStreamInfo(raf, path);
+      return info.sampleRate;
+    } finally {
+      await raf.close();
+    }
+  }
+
   /// Decode a FLAC file sequentially and emit fixed-size analysis windows.
   ///
   /// Unlike [decodeFlacRange], this walks the FLAC frames only once. It is the
@@ -705,6 +854,7 @@ class AudioDecoder {
     final si = ByteData.sublistView(body, 0, 34);
     final maxBlock = si.getUint16(2, Endian.big);
     final sampleRate = (body[10] << 12) | (body[11] << 4) | (body[12] >> 4);
+    final channels = ((body[12] >> 1) & 0x07) + 1;
     final bps = ((body[12] & 0x01) << 4) | (body[13] >> 4);
     final bitsPerSample = bps + 1;
     final totalHigh = body[13] & 0x0F;
@@ -717,6 +867,7 @@ class AudioDecoder {
       maxBlockSize: maxBlock,
       sampleRate: sampleRate,
       bitsPerSample: bitsPerSample,
+      channels: channels,
       totalSamples: (totalHigh << 32) | totalLow,
       firstFrameOffset: firstFrameOffset,
     );
@@ -1271,6 +1422,7 @@ class _FlacStreamInfo {
     required this.maxBlockSize,
     required this.sampleRate,
     required this.bitsPerSample,
+    required this.channels,
     required this.totalSamples,
     required this.firstFrameOffset,
   });
@@ -1278,6 +1430,10 @@ class _FlacStreamInfo {
   final int maxBlockSize;
   final int sampleRate;
   final int bitsPerSample;
+
+  /// Channel count declared in STREAMINFO. The frame decoder only handles
+  /// mono; see [AudioDecoder.decodeFlacFrames].
+  final int channels;
   final int totalSamples;
   final int firstFrameOffset;
 
@@ -1285,6 +1441,7 @@ class _FlacStreamInfo {
     maxBlockSize: maxBlockSize,
     sampleRate: sampleRate,
     bitsPerSample: bitsPerSample,
+    channels: channels,
     totalSamples: totalSamples,
     firstFrameOffset: firstFrameOffset ?? this.firstFrameOffset,
   );

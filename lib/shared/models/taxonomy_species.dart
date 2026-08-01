@@ -185,6 +185,12 @@ class TaxonomySpecies {
       if (parts.first == 'zh' && country == 'CN') yield 'zh-CN';
       yield parts.first;
     }
+
+    // The bundle carries Chinese common names under `zh-CN` only, so every
+    // Chinese variant has to land there — a bare `zh` (what the Simplified
+    // Chinese app locale produces) or a Traditional tag would otherwise miss
+    // every column and fall back to the English common name.
+    if (parts.first == 'zh') yield 'zh-CN';
   }
 
   // ---------------------------------------------------------------------------

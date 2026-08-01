@@ -39,6 +39,19 @@ import 'help_screen.dart';
 // Tapping Live pushes a full-screen [LiveScreen] for maximum real estate.
 // =============================================================================
 
+/// The app logo, decoded to the largest size it is ever drawn at (160 logical
+/// px on a tablet, ×3 for common high-density screens) instead of its full
+/// 891×891 source, reducing decode work and the image-cache footprint.
+///
+/// Shared by the header and by the warm-up's precache so both resolve to the
+/// same image-cache entry; `ResizeImage` is part of the cache key, so a plain
+/// `AssetImage` here would miss.
+const ImageProvider _appLogoImage = ResizeImage(
+  AssetImage('assets/images/app-icon.png'),
+  width: 480,
+  height: 480,
+);
+
 /// Main menu screen — entry point after onboarding.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -52,12 +65,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _warmUpApp();
+      if (mounted) unawaited(_warmUpApp());
     });
   }
 
-  void _warmUpApp() {
-    // Start the expensive dependencies only after the main menu's first frame.
+  Future<void> _warmUpApp() async {
+    // Let the logo finish decoding before any of this starts. The first frame
+    // paints without it — an asset image is never ready that early — and its
+    // decode finishes on a *later* main-isolate turn, so a warm-up that grabs
+    // the isolate first leaves the header visibly logo-less for as long as it
+    // holds on. Nothing below is on the critical path for what the user sees.
+    await _precacheLogo();
+    if (!mounted) return;
+
     // Riverpod caches these results, so opening Live Mode (or another feature)
     // reuses work that has already completed instead of redoing it — and
     // nothing here is awaited, so the menu stays interactive throughout.
@@ -71,6 +91,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _preload(ref.read(audioLabelsSetProvider.future), 'audio labels');
     _preload(ref.read(geoModelProvider.future), 'geo model');
     unawaited(_warmUpLocation());
+  }
+
+  /// Decode the logo into the image cache, so the header can paint it on the
+  /// next frame.
+  ///
+  /// Bounded, and failures are swallowed: this gates every other warm-up, and
+  /// a logo that never resolves must not be able to leave the model unloaded.
+  Future<void> _precacheLogo() async {
+    try {
+      await precacheImage(
+        _appLogoImage,
+        context,
+      ).timeout(const Duration(seconds: 2));
+    } catch (error) {
+      debugPrint('[HomeScreen] logo precache failed: $error');
+    }
   }
 
   /// Warm the location up only when doing so is free.
@@ -263,8 +299,8 @@ class _LogoHeader extends ConsumerWidget {
         ],
       ),
       child: ClipOval(
-        child: Image.asset(
-          'assets/images/app-icon.png',
+        child: Image(
+          image: _appLogoImage,
           width: logoSize,
           height: logoSize,
           fit: BoxFit.cover,

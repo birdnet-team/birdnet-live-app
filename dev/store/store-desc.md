@@ -26,6 +26,8 @@ BirdNET Live
 
 **ru:** Профессиональная биоакустика в вашем кармане.
 
+**zh:** 把专业生物声学装进口袋。
+
 ## Subtitle App Store
 
 **cs:** Bioakustika ve vaší kapse.
@@ -48,6 +50,8 @@ BirdNET Live
 
 **ru:** Биоакустика в вашем кармане.
 
+**zh:** 把生物声学装进口袋。
+
 ## Promo text App Store
 
 **cs:** BirdNET Live spouští náš nejvyspělejší akustický model přímo ve vašem zařízení – zcela bez nutnosti připojení k internetu.
@@ -69,6 +73,8 @@ BirdNET Live
 **pl:** BirdNET Live uruchamia nasz najbardziej zaawansowany model rozpoznawania dźwięku bezpośrednio na Twoim urządzeniu — bez połączenia z internetem.
 
 **ru:** BirdNET Live запускает нашу самую продвинутую модель распознавания звуков прямо на вашем устройстве — подключение к интернету не требуется.
+
+**zh:** BirdNET Live 把我们最先进的声音识别模型直接运行在您的设备上——完全无需联网。
 
 
 ## Short description
@@ -301,6 +307,29 @@ BirdNET Live создан для исследователей и citizen scienti
 
 Подробнее см. в нашем онлайн-руководстве пользователя: https://birdnet-team.github.io/birdnet-live-app/user/
 
+### zh
+
+BirdNET Live 把我们最先进的声音识别模型直接运行在您的设备上——完全无需联网。
+
+观看实时滚动的声谱图，实时查看物种检测结果，并直接在手机上管理不断增长的动物声音资料库。
+
+BirdNET Live 通过多种工作流程支持生物声学研究和结构化的声学调查：
+
+- Live Mode — 实时物种检测，配实时声谱图
+- Point Count — 结构化的计时 Session，实时显示检测结果
+- Survey — 记录较长的样线，并沿途追踪检测结果
+- File Analysis — 分析本地存储中的音频文件
+- Batch Analysis — 批量处理多个音频文件
+- ARU Mode — 安排较长期的声学记录仪部署
+
+BirdNET Live 同时面向研究人员和公民科学家，提供丰富的配置选项和检测结果复核功能。
+
+本应用由康奈尔 K. Lisa Yang 保护生物声学中心与开姆尼茨工业大学联合开发，并与柏林自然博物馆合作完成。
+
+本应用的开发由德国联邦环境基金会（Deutsche Bundesstiftung Umwelt）资助。
+
+更多信息请参阅我们的在线用户指南：https://birdnet-team.github.io/birdnet-live-app/user/
+
 ## Keywords
 
 **cs:** BirdNET, Bioakustika, AI, Rozpoznávání ptáků, Rozpoznávání zvuků, Ptačí zpěv
@@ -322,3 +351,5 @@ BirdNET Live создан для исследователей и citizen scienti
 **pl:** BirdNET, Bioakustyka, AI, Rozpoznawanie ptaków, Rozpoznawanie dźwięków, Śpiew ptaków
 
 **ru:** BirdNET, Биоакустика, ИИ, Распознавание птиц, Распознавание звуков, Пение птиц
+
+**zh:** BirdNET, 生物声学, AI, 鸟类识别, 声音识别, 鸟鸣

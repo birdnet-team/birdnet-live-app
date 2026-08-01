@@ -79,10 +79,7 @@ void main() {
       final clock = _FakeClock(start);
       final t = makeThrottler(clock: clock);
       clock.advance(const Duration(seconds: 5));
-      expect(
-        t.admit(_candidate(reason: AlertReason.rare)),
-        isA<DeliverNow>(),
-      );
+      expect(t.admit(_candidate(reason: AlertReason.rare)), isA<DeliverNow>());
     });
 
     test('watchlist bypasses grace', () {

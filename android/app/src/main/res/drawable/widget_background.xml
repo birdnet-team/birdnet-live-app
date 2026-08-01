@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick Listen widget surface. Mirrors the app's mode cards (see
+     _ModeCard in lib/features/home/home_screen.dart): a rounded
+     surfaceContainerHighest panel, radius 20. Android 12+ overrides the
+     radius with the launcher's own in drawable-v31/. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/widget_surface" />
+    <corners android:radius="20dp" />
+</shape>

@@ -42,6 +42,14 @@ void main() {
       expect(container.read(inferenceRateProvider), 1.0);
     });
 
+    test('species ignore settings use safe defaults', () {
+      expect(container.read(ignoreBirdsProvider), isFalse);
+      expect(container.read(ignoreMammalsProvider), isFalse);
+      expect(container.read(ignoreAmphibiansProvider), isFalse);
+      expect(container.read(ignoreInsectsProvider), isFalse);
+      expect(container.read(ignoreCommonGeoScoreCutoffProvider), 1.0);
+    });
+
     test('showAllDetectedSpecies defaults to false', () {
       expect(container.read(showAllDetectedSpeciesProvider), false);
     });
@@ -362,6 +370,42 @@ void main() {
         prefs.getString(PrefKeys.detectedSpeciesSortMode),
         DetectedSpeciesSortMode.occurrences,
       );
+    });
+
+    test('species ignore settings persist', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(ignoreAmphibiansProvider.notifier).set(true);
+      await container
+          .read(ignoreCommonGeoScoreCutoffProvider.notifier)
+          .set(0.85);
+
+      expect(prefs.getBool(PrefKeys.ignoreAmphibians), isTrue);
+      expect(prefs.getDouble(PrefKeys.ignoreCommonGeoScoreCutoff), 0.85);
+    });
+
+    test('common-species cutoff clamps legacy values to 80 percent', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.ignoreCommonGeoScoreCutoff: 0.5,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(ignoreCommonGeoScoreCutoffProvider), 0.8);
+      expect(prefs.getDouble(PrefKeys.ignoreCommonGeoScoreCutoff), 0.8);
+
+      await container
+          .read(ignoreCommonGeoScoreCutoffProvider.notifier)
+          .set(1.5);
+      expect(container.read(ignoreCommonGeoScoreCutoffProvider), 1.0);
     });
 
     test(

@@ -1,5 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/models/weather_snapshot.dart';
 import 'package:birdnet_live/shared/utils/weather_format.dart';
 
@@ -33,6 +35,17 @@ void main() {
       expect(compassFromBearing(180), 'S');
       expect(compassFromBearing(270), 'W');
     });
+
+    test(
+      'localizes UI labels while technical formatting stays English',
+      () async {
+        final de = await AppLocalizations.delegate.load(const Locale('de'));
+
+        expect(localizedCompassFromBearing(90, de), 'O');
+        expect(formatWind(3.25, 90, l10n: de), '3.3 m/s O');
+        expect(formatWind(3.25, 90), '3.3 m/s E');
+      },
+    );
   });
 
   group('format helpers', () {

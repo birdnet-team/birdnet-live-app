@@ -62,7 +62,8 @@ String? cachedReverseGeocode({
   return (v != null && v.isNotEmpty) ? v : null;
 }
 
-/// Attempts to reverse-geocode [latitude]/[longitude] into a short place name.
+/// Attempts to reverse-geocode [latitude]/[longitude] into a short place name
+/// localized for [localeName].
 ///
 /// Returns a human-readable string (e.g. "Berlin, Germany") or `null` when
 /// the cell isn't cached AND (the user has not consented to OpenStreetMap
@@ -75,6 +76,7 @@ String? cachedReverseGeocode({
 Future<String?> reverseGeocode({
   required double latitude,
   required double longitude,
+  required String localeName,
 }) async {
   final prefs = await SharedPreferences.getInstance();
 
@@ -100,6 +102,7 @@ Future<String?> reverseGeocode({
     'format': 'json',
     'zoom': '10',
     'addressdetails': '1',
+    'accept-language': localeName.replaceAll('_', '-'),
   });
 
   try {

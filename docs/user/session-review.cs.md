@@ -36,6 +36,17 @@ Vyhledávací pole nad seznamem filtruje druhy podle běžného nebo vědeckého
 
 Zvolené řazení se zachová napříč sessions.
 
+### Ruční přidání druhu
+
+Tlačítko :material-plus-circle-outline: na panelu nástrojů otevře vyhledávání druhů pro ptáky, které BirdNET nezachytil. Klepnutí na výsledek druh hned nevloží — nejprve vyjede potvrzovací panel s vybraným druhem a dvěma zaškrtávacími políčky:
+
+- :material-ear-hearing: **Slyšeno** — ptáka jste slyšeli.
+- :material-eye: **Viděno** — ptáka jste viděli.
+
+Zaškrtněte jedno, obě, nebo žádné a poté klepněte na **Přidat**. Tlačítko **Zrušit** (nebo přejetí dolů) vás vrátí zpět do vyhledávání, takže omyl nic nestojí. **Slyšeno** je zaškrtnuto ve výchozím stavu a volba se přenese i na další přidávaný druh — sérii jen viděných ptáků tak zaškrtnete jednou. Necháte-li obě prázdná, záznam se uloží bez typu pozorování — nikoli jako „ani jedno“.
+
+Volba se uloží k detekci a zobrazí se jako malá ikona ucha a/nebo oka vedle odznaku ručního zadání všude, kde se detekce objeví: v hlavičkách druhů, v řádcích clusterů, v přehrávači klipů i v seznamu živého Survey. Putuje také do exportů: sloupec `Evidence` v CSV a v tabulkách Raven, pole `evidence` v JSON a štítek v HTML reportu. Stejný panel se zobrazí i u akce **Nahradit druh**, předvyplněný podle toho, co záznam už nesl.
+
 ### Akce u jednotlivých detekcí
 
 Všude, kde se detekce objeví — v seznamu druhů, v panelu přehrávače klipu, v živém seznamu Survey i u značek na mapě Survey — se používá stejná sada akcí:

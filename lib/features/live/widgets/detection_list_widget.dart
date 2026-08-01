@@ -21,6 +21,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/services/taxonomy_service.dart';
+import '../../../shared/widgets/detection_evidence_badge.dart';
 import '../../ebird/ebird_life_list.dart';
 import '../../explore/explore_providers.dart';
 import '../../history/widgets/detection_actions.dart';
@@ -282,6 +283,12 @@ class DetectionTile extends ConsumerWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          if (detection.evidence != null) ...[
+                            const SizedBox(width: 4),
+                            DetectionEvidenceBadge(
+                              evidence: detection.evidence,
+                            ),
+                          ],
                           const SizedBox(width: 6),
                         ],
                         if (showSciNames)

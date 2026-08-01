@@ -84,7 +84,17 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     _observerController.text = ref.read(lastObserverProvider);
     _stationController.text = ref.read(aruLastStationIdProvider);
     _scheduleEnd = _defaultScheduleEnd();
-    _fetchGpsLocation();
+    if (ref.read(useGpsProvider)) {
+      _fetchGpsLocation();
+    } else {
+      // GPS is off app-wide: start on the manual tab seeded with the
+      // coordinates from Settings rather than presenting them as a fix.
+      _locationChoice = _LocationChoice.manual;
+      _latitude = ref.read(manualLatitudeProvider);
+      _longitude = ref.read(manualLongitudeProvider);
+      _latController.text = _latitude!.toStringAsFixed(6);
+      _lonController.text = _longitude!.toStringAsFixed(6);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _restoreActiveDeployment();
@@ -344,6 +354,11 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       speciesFilterMode: ref.read(speciesFilterModeProvider),
       clipContextSeconds: ref.read(clipContextProvider),
       sensitivity: ref.read(sensitivityProvider),
+      ignoreBirds: ref.read(ignoreBirdsProvider),
+      ignoreMammals: ref.read(ignoreMammalsProvider),
+      ignoreAmphibians: ref.read(ignoreAmphibiansProvider),
+      ignoreInsects: ref.read(ignoreInsectsProvider),
+      ignoreCommonGeoScoreCutoff: ref.read(ignoreCommonGeoScoreCutoffProvider),
       poolingMode: ref.read(scorePoolingProvider),
       poolingWindows: ref.read(scorePoolingWindowsProvider),
       poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
@@ -645,6 +660,7 @@ class _DetailsStep extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final useGps = ref.watch(useGpsProvider);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -689,6 +705,7 @@ class _DetailsStep extends ConsumerWidget {
               value: _LocationChoice.gps,
               label: Text(l10n.surveyLocationGps),
               icon: const Icon(AppIcons.myLocation, size: 18),
+              enabled: useGps,
             ),
             ButtonSegment(
               value: _LocationChoice.manual,

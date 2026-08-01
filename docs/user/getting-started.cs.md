@@ -13,7 +13,9 @@ BirdNET Live je k dispozici pro Android, iOS a Windows.
 
 ### Stažení
 
-*Odkazy ke stažení budou doplněny, jakmile budou k dispozici.*
+- **Android** – [Obchod Google Play](https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live), nebo si stáhněte podepsaný APK ze [stránky GitHub Releases](https://github.com/birdnet-team/birdnet-live-app/releases/latest).
+- **iOS** – [App Store](https://apps.apple.com/us/app/birdnet-live/id6776168518).
+- **Windows** – sestavte ze zdrojového kódu; viz [Příručka pro vývojáře](../developer/building.md).
 
 ## První spuštění aplikace
 

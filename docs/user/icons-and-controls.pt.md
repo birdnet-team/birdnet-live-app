@@ -62,7 +62,7 @@ Esta página explica os controles e símbolos recorrentes usados em todo o BirdN
 
 ## Ações por detecção
 
-Estes controles aparecem em todas as linhas de detecção do app — a lista de espécies do Resumo da Session, o painel do reprodutor de clipe, a lista de detecções do Survey ao vivo e os marcadores no mapa do Survey. Consulte [Resumo da Session → Ações por detecção](session-review.md#acoes-por-deteccao) para o comportamento completo.
+Estes controles aparecem em todas as linhas de detecção do app — a lista de espécies do Resumo da Session, o painel do reprodutor de clipe, a lista de detecções do Survey ao vivo e os marcadores no mapa do Survey. Consulte [Resumo da Session → Ações por detecção](session-review.md#ações-por-detecção) para o comportamento completo.
 
 | Controle | Significado |
 |---|---|
@@ -72,6 +72,8 @@ Estes controles aparecem em todas as linhas de detecção do app — a lista de 
 | :material-swap-horizontal: **Substituir espécie** | Escolhe outra espécie para esta detecção. Também abre ao deslizar uma linha de revisão para a esquerda. |
 | :material-delete-outline: **Excluir detecção** | Remove a linha imediatamente. Uma SnackBar de desfazer aparece por alguns segundos. Também acionada ao deslizar uma linha de revisão para a direita. |
 | :material-delete-sweep-outline: **Excluir espécie** | Remove de uma só vez todas as detecções dessa espécie da Session, com a mesma SnackBar de desfazer. |
+| :material-ear-hearing: **Ouvida** | Em uma detecção adicionada manualmente: você ouviu a ave. Definido pela caixa da folha de confirmação exibida após escolher a espécie. |
+| :material-eye: **Vista** | Em uma detecção adicionada manualmente: você viu a ave. Os dois ícones juntos significam ouvida *e* vista. |
 
 ## Barra de ferramentas do Resumo da Session
 

@@ -25,7 +25,7 @@ abstract final class AppConstants {
       'https://birdnet-team.github.io/birdnet-live-app';
 
   /// UI locales that have the full translated user guide on the docs site.
-  /// Other UI locales (e.g. nl, pl, ru) fall back to the English guide.
+  /// Other UI locales (e.g. nl, pl, ru, zh) fall back to the English guide.
   static const Set<String> docsLocales = {'de', 'cs', 'es', 'fr', 'it', 'pt'};
 
   /// UI locales that have a translated Privacy Policy and Acceptable Use
@@ -41,6 +41,7 @@ abstract final class AppConstants {
     'nl',
     'pl',
     'ru',
+    'zh',
   };
 
   /// Docs-site path prefix for [languageCode] (e.g. `/de`), or an empty
@@ -106,6 +107,12 @@ abstract final class PrefKeys {
   static const String inferenceRate = 'inference_rate';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
+  static const String ignoreBirds = 'ignore_species_birds';
+  static const String ignoreMammals = 'ignore_species_mammals';
+  static const String ignoreAmphibians = 'ignore_species_amphibians';
+  static const String ignoreInsects = 'ignore_species_insects';
+  static const String ignoreCommonGeoScoreCutoff =
+      'ignore_common_geo_score_cutoff';
   static const String showAllDetectedSpecies = 'show_all_detected_species';
   static const String detectedSpeciesSortMode = 'detected_species_sort_mode';
   static const String scorePooling = 'score_pooling';
@@ -114,6 +121,10 @@ abstract final class PrefKeys {
       'score_pooling_max_age_seconds';
   static const String scorePoolingDefaultMigration =
       'score_pooling_default_migration_v1';
+
+  /// One-shot flag for deleting the pre-0.19.4 `flutter_cache_manager` tile
+  /// store, which flutter_map's built-in tile cache replaced.
+  static const String legacyTileCachePurge = 'legacy_tile_cache_purge_v1';
 
   // Advanced temporal-pooling knobs (LME alpha + support gate). Normally
   // baked into the model config; exposed as overridable settings so they can

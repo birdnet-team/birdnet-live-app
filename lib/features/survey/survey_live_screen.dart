@@ -21,6 +21,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +29,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/quick_action_service.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -91,10 +93,21 @@ class SurveyLiveScreen extends ConsumerStatefulWidget {
 
 class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final Object _quickListenSafetyOwner = Object();
+
   bool _started = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
   bool _foregroundGpsStream = false;
+
+  /// Whether the app has genuinely been backgrounded since the last resume.
+  ///
+  /// A bare `resumed` does not mean the user went away and came back: the
+  /// rotation transition under auto-rotate delivers `inactive` → `resumed`
+  /// without ever reaching `paused`. Work that belongs to "the user returned"
+  /// is keyed off this instead of off `resumed` alone.
+  bool _wasBackgrounded = false;
+
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
@@ -102,6 +115,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void initState() {
     super.initState();
+    QuickListenSafety.registerIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+      QuickListenSessionOwner.survey,
+    );
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
@@ -186,13 +203,51 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     });
   }
 
+  /// Center used before the first GPS fix lands, so the map isn't stranded
+  /// over the default world view while the survey warms up.
+  LatLng? get _mapFallbackCenter =>
+      widget.startLatitude != null && widget.startLongitude != null
+          ? LatLng(widget.startLatitude!, widget.startLongitude!)
+          : null;
+
+  /// Open the clip player for a live detection marker. Shared by the inline
+  /// map tab and the fullscreen map so both surfaces behave identically.
+  /// Returns the sheet's future so callers can refresh once it closes.
+  Future<void> _openLiveClipPlayer(DetectionRecord detection) {
+    return showClipPlayerSheet(
+      context,
+      detection: detection,
+      session: ref.read(surveySessionProvider),
+      onConfirmChanged: () {
+        if (mounted) setState(() {});
+      },
+      onDelete: () => _deleteLiveDetectionWithUndo(detection),
+    );
+  }
+
+  /// Push the fullscreen live map. Unlike the inline map it does not
+  /// auto-follow the GPS position — the user pans and zooms freely for
+  /// navigation and taps the recenter button to jump back.
+  void _openFullscreenLiveMap() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (_) => _FullscreenLiveSurveyMapScreen(
+              fallbackCenter: _mapFallbackCenter,
+              onMarkerTap: _openLiveClipPlayer,
+            ),
+      ),
+    );
+  }
+
   /// Open the species picker and, on confirm, log a manual observation.
   ///
   /// Manual entries get [DetectionSource.manual], a 1.0 confidence, the
-  /// current GPS fix (if available), and "now" as their timestamp. They
-  /// surface immediately in the live detection list and on the map, and are
-  /// visually distinguished by a small `edit_note` chip + "manual" badge
-  /// everywhere a [DetectionRecord] is rendered.
+  /// current GPS fix (if available), "now" as their timestamp, and whichever
+  /// heard / seen evidence the user ticked in the picker. They surface
+  /// immediately in the live detection list and on the map, and are visually
+  /// distinguished by a small `edit_note` chip + "manual" badge (plus the
+  /// hearing / visibility glyphs) everywhere a [DetectionRecord] is rendered.
   Future<void> _addManualObservation() async {
     if (!mounted) return;
     final controller = ref.read(surveyControllerProvider);
@@ -222,6 +277,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final record = await controller.addManualDetection(
       scientificName: result.scientificName,
       commonName: result.commonName,
+      evidence: result.evidence,
+      userSpecified: result.userSpecified,
     );
     if (record == null || !mounted) return;
     setState(() {});
@@ -542,9 +599,23 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final inferenceRate = ref.read(surveyInferenceRateProvider);
     final confidenceThreshold = ref.read(confidenceThresholdProvider);
     final filterMode = ref.read(speciesFilterModeProvider);
-    final recordingModeStr = ref.read(surveyRecordingModeProvider);
+    // When resuming, keep the session's *original* recording mode and format
+    // rather than the current global setting. This preserves continuity (a
+    // clip-subsampling session stays clips) and guarantees a resumed session
+    // never switches into full-audio recording — which can't be safely
+    // concatenated across a resume, and is why the Continue button is hidden
+    // for full-audio sessions in the first place.
+    final resumeSettings = widget.resumeSession?.settings;
+    var recordingModeStr = ref.read(surveyRecordingModeProvider);
+    var recordingFormat = ref.read(recordingFormatProvider);
+    if (widget.resumeSession != null) {
+      // Legacy resumable sessions have no recording snapshot and no audio
+      // path. Keep them audio-free instead of inheriting a newer global
+      // setting that could create a partial full-session recording.
+      recordingModeStr = resumeSettings?.recordingMode ?? 'off';
+      recordingFormat = resumeSettings?.recordingFormat ?? recordingFormat;
+    }
     final recordingMode = recordingModeFromString(recordingModeStr);
-    final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final gpsInterval = ref.read(surveyGpsIntervalProvider);
     final maxDuration = ref.read(surveyMaxDurationProvider);
@@ -556,6 +627,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     final geoScores = await ref.read(geoScoresProvider.future);
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    final ignoredSpeciesNames = await ref.read(
+      ignoredSpeciesNamesProvider.future,
+    );
 
     // Build the species-alert pipeline before starting the controller so
     // the very first detection can fire a notification. If the user
@@ -580,7 +654,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     // With whileInUse permission, use the GPS stream while in the foreground.
     // The screen's lifecycle handler will stop/restart it as the app is
     // backgrounded and foregrounded.
-    if (!widget.backgroundGps) {
+    if (!widget.backgroundGps && ref.read(useGpsProvider)) {
       final permission = await Geolocator.checkPermission();
       _foregroundGpsStream =
           permission == LocationPermission.whileInUse ||
@@ -611,6 +685,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
+        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
       );
     } else {
       await controller.startSurvey(
@@ -641,6 +717,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
         advancedPooling: ref.read(advancedPoolingParamsProvider),
         sensitivity: ref.read(sensitivityProvider),
+        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+        ignoredSpeciesNames: ignoredSpeciesNames,
         gainLinear: ref.read(audioGainProvider),
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
       );
@@ -744,23 +822,45 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final controller = ref.read(surveyControllerProvider);
+
+    // Read before the flag is updated below, so a `resumed` still sees whether
+    // it is closing a real backgrounding or just a rotation.
+    final returnedFromBackground =
+        state == AppLifecycleState.resumed && _wasBackgrounded;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _wasBackgrounded = true;
+    } else if (state == AppLifecycleState.resumed) {
+      _wasBackgrounded = false;
+    }
+
     if (_foregroundGpsStream && !widget.backgroundGps) {
       // Foreground-only GPS: stop the stream when backgrounded so the OS
       // doesn't revoke whileInUse location access, and restart it when the
-      // user brings the app back to the front.
+      // user brings the app back to the front. Safe to call on a rotation's
+      // `resumed` too — [SurveyGpsTracker.startTracking] is a no-op while the
+      // stream is still running.
       if (state == AppLifecycleState.paused) {
-        controller.gpsTracker?.stopTracking();
+        controller.stopGpsTracking();
       } else if (state == AppLifecycleState.resumed) {
-        controller.gpsTracker?.startTracking();
+        controller.startGpsTracking();
       }
-    } else if (state == AppLifecycleState.resumed && !widget.backgroundGps) {
-      // Manual GPS mode: capture a single fix when the user returns.
+    } else if (returnedFromBackground &&
+        !widget.backgroundGps &&
+        ref.read(useGpsProvider)) {
+      // Manual GPS mode: capture a single fix when the user returns. Gated on
+      // an actual backgrounding rather than a bare `resumed` — otherwise every
+      // rotation of the phone spins the GPS radio up for a fix nobody asked
+      // for, which adds up over a multi-hour survey.
       controller.captureGpsFix();
     }
   }
 
   @override
   void dispose() {
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     if (_surveyController.onStateChanged == _onControllerStateChanged) {
       _surveyController.onStateChanged = null;
     }
@@ -810,6 +910,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     });
     ref.listen<double>(sensitivityProvider, (_, next) {
       ref.read(surveyControllerProvider).setSensitivity(next);
+    });
+    ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
+      final names = await ref.read(ignoredSpeciesNamesProvider.future);
+      final geoScores = await ref.read(geoScoresProvider.future);
+      ref
+          .read(surveyControllerProvider)
+          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);
@@ -898,27 +1005,47 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       controller: _tabController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        SurveyMapWidget(
-          gpsTrack: controller.gpsTracker?.track ?? [],
-          detections: session?.detections ?? [],
-          initialCenter:
-              widget.startLatitude != null && widget.startLongitude != null
-                  ? LatLng(widget.startLatitude!, widget.startLongitude!)
-                  : null,
-          // Tapping a marker that has a kept clip opens the same
-          // player sheet as the post-session map - so the live and
-          // review surfaces feel like one continuous experience.
-          onMarkerTap: (detection) {
-            showClipPlayerSheet(
-              context,
-              detection: detection,
-              session: session,
-              onConfirmChanged: () {
-                if (mounted) setState(() {});
-              },
-              onDelete: () => _deleteLiveDetectionWithUndo(detection),
-            );
-          },
+        Stack(
+          children: [
+            Positioned.fill(
+              child: SurveyMapWidget(
+                gpsTrack: controller.gpsTracker?.track ?? [],
+                detections: session?.detections ?? [],
+                initialCenter: _mapFallbackCenter,
+                // Tapping a marker that has a kept clip opens the same
+                // player sheet as the post-session map - so the live and
+                // review surfaces feel like one continuous experience.
+                onMarkerTap: (detection) => _openLiveClipPlayer(detection),
+              ),
+            ),
+            // Expand affordance mirroring Session Review's inline map: the
+            // minimized map keeps auto-following the current position, the
+            // fullscreen one hands panning and zooming to the user.
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Material(
+                color: theme.colorScheme.surface.withValues(alpha: 0.8),
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _openFullscreenLiveMap,
+                  child: Tooltip(
+                    message: l10n.surveyMapFullscreen,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        AppIcons.fullscreen,
+                        size: 20,
+                        color: theme.colorScheme.onSurface,
+                        semanticLabel: l10n.surveyMapFullscreen,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
         _SurveySummaryTab(session: session),
@@ -1015,6 +1142,106 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Fullscreen Live Survey Map
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Fullscreen version of the live survey map.
+///
+/// The inline map tab keeps the camera pinned to the latest GPS fix, which is
+/// what you want in a glanceable strip but makes the map useless for looking
+/// ahead. This screen turns auto-follow off so the map behaves like a normal
+/// navigation map — pan and zoom stay exactly where the user put them, no
+/// matter how many GPS points arrive — with a recenter button to jump back to
+/// the current position on demand.
+class _FullscreenLiveSurveyMapScreen extends ConsumerStatefulWidget {
+  const _FullscreenLiveSurveyMapScreen({
+    required this.onMarkerTap,
+    this.fallbackCenter,
+  });
+
+  /// Opens the clip player for a tapped detection. Owned by the live screen
+  /// so deletes and confirmations mutate the one running session.
+  final Future<void> Function(DetectionRecord detection) onMarkerTap;
+
+  /// Where to center before the first GPS fix arrives.
+  final LatLng? fallbackCenter;
+
+  @override
+  ConsumerState<_FullscreenLiveSurveyMapScreen> createState() =>
+      _FullscreenLiveSurveyMapScreenState();
+}
+
+class _FullscreenLiveSurveyMapScreenState
+    extends ConsumerState<_FullscreenLiveSurveyMapScreen> {
+  /// Owned here (rather than inside [SurveyMapWidget]) so the recenter
+  /// button can drive the camera.
+  final MapController _mapController = MapController();
+
+  /// Set once the map has been laid out at least once — [MapController]
+  /// throws when used before that.
+  bool _mapReady = false;
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  void _recenter() {
+    if (!_mapReady) return;
+    final track = ref.read(surveyControllerProvider).gpsTracker?.track;
+    final target =
+        track != null && track.isNotEmpty
+            ? LatLng(track.last.latitude, track.last.longitude)
+            : widget.fallbackCenter;
+    if (target == null) return;
+    // Keep the user's zoom when they're already close in; only pull in when
+    // they've zoomed out far enough that the position marker would be lost.
+    final zoom = _mapController.camera.zoom;
+    _mapController.move(target, zoom < 16 ? 17 : zoom);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // Same rebuild signal the live dashboard uses: the session object is
+    // mutated in place, so the per-cycle detections provider is what tells us
+    // new markers and GPS points have landed.
+    ref.watch(surveyDetectionsProvider);
+    final session = ref.watch(surveySessionProvider);
+    final controller = ref.read(surveyControllerProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.surveyTrackMap)),
+      body: SurveyMapWidget(
+        mapController: _mapController,
+        gpsTrack: controller.gpsTracker?.track ?? const [],
+        detections: session?.detections ?? const [],
+        // Free navigation: never yank the camera back to the latest fix.
+        autoFollow: false,
+        initialCenter: widget.fallbackCenter,
+        onMarkerTap: (detection) async {
+          await widget.onMarkerTap(detection);
+          // The sheet can delete the detection; rebuild so its marker goes.
+          if (mounted) setState(() {});
+        },
+        onCameraMove: (_) {
+          if (!_mapReady) _mapReady = true;
+        },
+      ),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: _recenter,
+        tooltip: l10n.surveyMapRecenter,
+        child: const Icon(AppIcons.myLocation),
+      ),
+      // Bottom-left: the OpenStreetMap attribution badge owns the
+      // bottom-right corner of every map in the app.
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Survey App Bar
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1057,6 +1284,12 @@ class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
   }
 
   void _startTimer() {
+    // Reflect the current elapsed immediately so a resumed session shows its
+    // accumulated total right away instead of flashing 00:00:00 until the
+    // first tick fires. Assigning without setState is safe here: _startTimer
+    // is only called from initState / didUpdateWidget, both already inside a
+    // build cycle that will render this value.
+    _elapsed = ref.read(surveyControllerProvider).elapsed;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         setState(() {
@@ -1239,6 +1472,9 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
     final controller = ref.read(surveyControllerProvider);
     final session = ref.watch(surveySessionProvider);
     final ringBuffer = ref.read(ringBufferProvider);
+    // Polled on the 1 s stats-bar timer — no stream subscription needed here;
+    // the audio service flips this the moment the mic is lost or regained.
+    final micLost = ref.read(audioCaptureServiceProvider).isMicContested;
 
     return SurveyStatsBar(
       distanceMeters: controller.gpsTracker?.distanceMeters ?? 0,
@@ -1246,6 +1482,7 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
       speciesCount: session?.uniqueSpeciesCount ?? 0,
       audioLevel: ringBuffer.rmsLevel(),
       peakLevel: ringBuffer.peakLevel(),
+      micLost: micLost,
     );
   }
 }
@@ -1271,10 +1508,6 @@ class _SurveySpectrogram extends ConsumerWidget {
     final logAmplitude = ref.watch(logAmplitudeProvider);
     final quality = ref.watch(spectrogramQualityProvider);
 
-    final hopSize = fftSize ~/ 2;
-    const sampleRate = 32000;
-    final maxColumns = (durationSec * sampleRate / hopSize).round();
-
     return SpectrogramWidget(
       ringBuffer: ringBuffer,
       isActive: isActive,
@@ -1282,7 +1515,7 @@ class _SurveySpectrogram extends ConsumerWidget {
       colorMapName: colorMap,
       dbFloor: dbFloor,
       dbCeiling: dbCeiling,
-      maxColumns: maxColumns,
+      displaySeconds: durationSec.toDouble(),
       showFrequencyAxis: false,
       showTimeAxis: false,
       maxDisplayFrequency: maxFreq,
@@ -1348,11 +1581,15 @@ class _SurveySummaryTab extends ConsumerWidget {
           return b.bestConfidence.compareTo(a.bestConfidence);
         });
 
-    final elapsed = DateTime.now().difference(session!.startTime);
+    // Rate is per minute of *active recording* time, not wall-clock since
+    // start — otherwise a resumed session dilutes the rate with the entire
+    // stopped gap. [LiveSession.duration] already excludes pause/resume gaps
+    // and matches the on-screen elapsed timer.
+    final elapsed = session!.duration;
+    final activeMinutes = elapsed.inMilliseconds / 60000.0;
     final rate =
-        elapsed.inSeconds > 0
-            ? (detections.length / (elapsed.inMinutes.clamp(1, 999999)))
-                .toStringAsFixed(1)
+        activeMinutes > 0
+            ? (detections.length / activeMinutes).toStringAsFixed(1)
             : '0';
 
     return ListView(

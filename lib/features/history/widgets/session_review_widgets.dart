@@ -17,20 +17,21 @@ Color _reviewPrimary(ThemeData theme, int alpha) {
 // ═════════════════════════════════════════════════════════════════════════════
 
 /// Snapshot of mutable review state for undo/redo.
+///
+/// The trim is stored as the applied range only; restoring it is enough for
+/// the screen to re-derive the player clip and the spectrogram crop.
 class _ReviewSnapshot {
   _ReviewSnapshot({
     required this.detections,
     required this.annotations,
     required this.trimStartSec,
     required this.trimEndSec,
-    required this.clipOffsetSec,
   });
 
   final List<DetectionRecord> detections;
   final List<SessionAnnotation> annotations;
   final double? trimStartSec;
   final double? trimEndSec;
-  final double clipOffsetSec;
 }
 
 /// A cluster of consecutive detections of the same species.
@@ -103,8 +104,10 @@ class _SummaryHeader extends ConsumerWidget {
     final duration = session.duration;
     final species =
         session.detections.map((d) => d.scientificName).toSet().length;
-    final dateStr = DateFormat.yMMMd().add_Hm().format(
-      session.startTime.toLocal(),
+    final dateStr = formatLocaleDateTime(
+      session.startTime,
+      l10n.localeName,
+      alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
 
     return Container(
@@ -404,7 +407,7 @@ class _WeatherRow extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final cond = weatherConditionFromCode(weather.weatherCode);
-    final inlineLabel = formatWeatherCompactStats(weather);
+    final inlineLabel = formatWeatherCompactStats(weather, l10n: l10n);
 
     return InkWell(
       onTap: () => _showDetails(context, l10n, cond),
@@ -460,7 +463,11 @@ class _WeatherRow extends StatelessWidget {
                 ),
                 _kv(
                   l10n.sessionWeatherWind,
-                  formatWind(weather.windSpeedMs, weather.windDirectionDeg),
+                  formatWind(
+                    weather.windSpeedMs,
+                    weather.windDirectionDeg,
+                    l10n: l10n,
+                  ),
                 ),
                 _kv(
                   l10n.sessionWeatherPrecipitation,
@@ -506,6 +513,124 @@ class _WeatherRow extends StatelessWidget {
           Expanded(child: Text(value)),
         ],
       ),
+    );
+  }
+}
+
+/// Height of every full-width media panel in the review header — the
+/// spectrogram strip, the trim editor, and the map when it shares a
+/// [_MediaTabPanel] with them.
+const double _kReviewStripHeight = 150;
+
+/// Puts the survey map and the spectrogram behind tabs in the one session
+/// type that has both (a survey recorded with full audio).
+///
+/// Sessions with only one of the two never reach this widget, so the tab bar
+/// is never shown as a single-choice control. Both panels stay mounted in an
+/// [IndexedStack] so switching tabs preserves the map camera and the
+/// spectrogram's zoom/scroll position rather than resetting them.
+class _MediaTabPanel extends StatefulWidget {
+  const _MediaTabPanel({
+    required this.map,
+    required this.spectrogram,
+    required this.trimming,
+  });
+
+  final Widget map;
+  final Widget spectrogram;
+
+  /// Whether trim editing is active. Trimming happens on the spectrogram, so
+  /// starting it selects that tab; the user stays free to switch back.
+  final bool trimming;
+
+  @override
+  State<_MediaTabPanel> createState() => _MediaTabPanelState();
+}
+
+class _MediaTabPanelState extends State<_MediaTabPanel>
+    with SingleTickerProviderStateMixin {
+  static const int _mapIndex = 0;
+  static const int _spectrogramIndex = 1;
+
+  late int _index = widget.trimming ? _spectrogramIndex : _mapIndex;
+
+  late final TabController _controller = TabController(
+    length: 2,
+    initialIndex: _index,
+    vsync: this,
+  );
+
+  @override
+  void didUpdateWidget(_MediaTabPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.trimming && !oldWidget.trimming) {
+      _selectTab(_spectrogramIndex);
+    }
+  }
+
+  /// Drives both the indicator and the [IndexedStack]. Kept as our own field
+  /// rather than read off the controller so the panel swaps the moment a tab
+  /// is tapped, instead of waiting out the indicator's slide animation.
+  void _selectTab(int index) {
+    if (_index == index) return;
+    setState(() => _index = index);
+    _controller.animateTo(index);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  static Tab _mediaTab(IconData icon, String label) {
+    return Tab(
+      height: 40,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16),
+          const SizedBox(width: 6),
+          Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // A TabBarView would swipe between panels, and a horizontal swipe is
+        // already how the user pans the map and scrubs the spectrogram — so
+        // the tab bar only drives an IndexedStack.
+        TabBar(
+          controller: _controller,
+          onTap: _selectTab,
+          // Icons sit beside the label rather than above it: the default
+          // icon-over-text tab is 72 dp tall, which would cost half the
+          // height of the panel it labels.
+          tabs: [
+            _mediaTab(AppIcons.map, l10n.surveyTabMap),
+            _mediaTab(AppIcons.graphicEq, l10n.surveyTabSpectrogram),
+          ],
+          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+          indicatorWeight: 2,
+          labelStyle: theme.textTheme.labelSmall,
+        ),
+        SizedBox(
+          height: _kReviewStripHeight,
+          child: IndexedStack(
+            index: _index,
+            sizing: StackFit.expand,
+            children: [widget.map, widget.spectrogram],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -733,7 +858,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
         widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
     if (!hasSpectrogram) {
       return Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child:
             widget.decoding
@@ -753,7 +878,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       onScaleStart: _handleScaleStart,
       onScaleUpdate: _handleScaleUpdate,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: Stack(
           children: [
@@ -775,7 +900,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
                   ref.watch(timestampDisplayModeProvider),
                 ),
               ),
-              size: const Size(double.infinity, 150),
+              size: const Size(double.infinity, _kReviewStripHeight),
             ),
             if (widget.decoding)
               Positioned(
@@ -1444,6 +1569,10 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       localeName: l10n.localeName,
       alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
+    // Union of the heard / seen flags across every record under this
+    // species, so the header summarizes the group the same way the ×N
+    // count and the manual glyph already do.
+    final groupEvidence = aggregateEvidence(widget.group.allRecords);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 400),
@@ -1606,6 +1735,14 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                       size: 16,
                                       color: theme.colorScheme.primary,
                                     ),
+                                  ),
+                                ),
+                              if (groupEvidence != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 4),
+                                  child: DetectionEvidenceBadge(
+                                    evidence: groupEvidence,
+                                    size: 16,
                                   ),
                                 ),
                               if (widget.group.allRecords.any(
@@ -1965,6 +2102,43 @@ class _ClusterRow extends ConsumerWidget {
   final bool audioAvailable;
   final VoidCallback? onShowOnMap;
 
+  /// Wall-clock span of this cluster's detection clip, or null when the row
+  /// should show the detection span instead.
+  ///
+  /// Returns null for sessions with a full recording (where the detection
+  /// span lines up with audio the user can actually scrub) and for clusters
+  /// with no clip of their own.
+  ///
+  /// The span is `clipContext + windowDuration + clipContext` around the
+  /// analysis window the clip was cut from, so it matches the file byte for
+  /// byte. Records saved before clips followed the confidence peak have no
+  /// [DetectionRecord.clipTimestamp]; those clips were cut on arrival, so
+  /// the detection start is their correct anchor.
+  (DateTime, DateTime)? _clipTimeRange(WidgetRef ref) {
+    if (audioAvailable) return null;
+    final clipRecord =
+        cluster.records
+            .where((r) => (r.audioClipPath ?? '').isNotEmpty)
+            .firstOrNull;
+    if (clipRecord == null) return null;
+
+    // Mirrors the export path: a session with clips but no recorded context
+    // value predates the setting, so fall back to the current preference
+    // rather than claiming zero padding.
+    final recorded = session.settings.clipContextSeconds;
+    final context =
+        recorded == 0 && clipRecord.clipTimestamp == null
+            ? ref.watch(surveyClipContextProvider)
+            : recorded;
+
+    final windowStart = clipRecord.clipTimestamp ?? clipRecord.timestamp;
+    final clipStart = windowStart.subtract(Duration(seconds: context));
+    return (
+      clipStart,
+      clipStart.add(Duration(seconds: context * 2 + windowSec)),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -1981,12 +2155,24 @@ class _ClusterRow extends ConsumerWidget {
     final lastEnd =
         lastRecord.endTimestamp ??
         lastRecord.timestamp.add(Duration(seconds: windowSec));
+
+    // When the only audio is per-detection clips, the row's range has to
+    // describe the *clip*, not the detection. A detection can run for
+    // half a minute while its clip holds one analysis window plus padding,
+    // cut wherever the detection peaked — so a detection span here would
+    // advertise audio the file does not contain. [_clipTimeRange] returns
+    // null for full-recording sessions and for clusters without a clip,
+    // where the detection span is the honest answer.
+    final clipRange = _clipTimeRange(ref);
+    final rangeStart = clipRange?.$1 ?? cluster.firstTimestamp;
+    final rangeEnd = clipRange?.$2 ?? lastEnd;
+
     // Always show the full span (start – end) so users can see the
     // duration of continuous detections at a glance. For very short
     // detections where the formatted strings would be identical, fall
     // back to a single timestamp to keep the row compact.
     final startStr = formatDetectionTime(
-      cluster.firstTimestamp,
+      rangeStart,
       session.startTime,
       tsMode,
       absoluteToRelative: session.absoluteToRelative,
@@ -1996,7 +2182,7 @@ class _ClusterRow extends ConsumerWidget {
       alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
     );
     final endStr = formatDetectionTime(
-      lastEnd,
+      rangeEnd,
       session.startTime,
       tsMode,
       absoluteToRelative: session.absoluteToRelative,
@@ -2017,6 +2203,10 @@ class _ClusterRow extends ConsumerWidget {
           r.source == DetectionSource.manualGlobal ||
           r.source == DetectionSource.userSpecified,
     );
+    // Heard / seen the user recorded when adding these entries by hand.
+    // Null on model detections, so the glyphs only ever appear on rows
+    // that actually carry the field.
+    final clusterEvidence = aggregateEvidence(cluster.records);
 
     final row = AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -2094,6 +2284,14 @@ class _ClusterRow extends ConsumerWidget {
                     size: 16,
                     color: theme.colorScheme.primary,
                   ),
+                ),
+              ),
+            if (clusterEvidence != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: DetectionEvidenceBadge(
+                  evidence: clusterEvidence,
+                  size: 16,
                 ),
               ),
             if (cluster.count > 1)
@@ -2322,12 +2520,18 @@ class AddSpeciesResult {
     required this.mode,
     this.replaceRecord,
     this.userSpecified = false,
+    this.evidence,
   });
 
   final String scientificName;
   final String commonName;
   final AddSpeciesInsertMode mode;
   final DetectionRecord? replaceRecord;
+
+  /// Heard / seen state of the checkboxes at the moment the user picked the
+  /// species. Null when neither box was ticked — callers store it verbatim
+  /// on [DetectionRecord.evidence], where null means "not specified".
+  final DetectionEvidence? evidence;
 
   /// True when the user typed a free-text label via the "Other
   /// (specify)" entry instead of picking a species from the taxonomy.
@@ -2341,6 +2545,15 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   List<TaxonomySpecies> _results = [];
   late AddSpeciesInsertMode _mode;
   DetectionRecord? _replaceTarget;
+
+  /// Heard / seen checkbox state. Kept as two independent booleans so both
+  /// can be ticked, and collapsed into a [DetectionEvidence] only on
+  /// confirm. Defaults to "heard" — the app's detections are acoustic by
+  /// nature, so that is the state a user who ignores the control expects.
+  /// A locked replace seeds from the target so re-identifying a record
+  /// never silently drops the evidence already on it.
+  late bool _heard;
+  late bool _seen;
 
   /// True when entered from "Replace this detection" on a specific cluster.
   /// In this case the mode and target are locked and the mode selector is
@@ -2358,7 +2571,14 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     super.initState();
     _mode = widget.initialMode ?? AddSpeciesInsertMode.atTimestamp;
     _replaceTarget = widget.initialReplaceTarget;
+    final seed = widget.initialReplaceTarget?.evidence;
+    _heard = seed?.includesHeard ?? true;
+    _seen = seed?.includesSeen ?? false;
   }
+
+  /// The two checkboxes collapsed into the persisted value.
+  DetectionEvidence? get _evidence =>
+      DetectionEvidence.fromFlags(heard: _heard, seen: _seen);
 
   @override
   void dispose() {
@@ -2369,7 +2589,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   void _onSearchChanged(String query) {
     final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
-    final geoScores = ref.read(geoScoresProvider).value;
+    final geoScores = ref.read(rawGeoScoresProvider).value;
     setState(() {
       if (query.trim().isEmpty) {
         _results = [];
@@ -2401,7 +2621,15 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     });
   }
 
-  void _selectSpecies(String sciName, String comName) {
+  /// Tapping a search result opens the confirm sheet rather than inserting
+  /// straight away, so the user gets a chance to set heard / seen (and to
+  /// back out of a mistap) before the record is created.
+  Future<void> _selectSpecies(String sciName, String comName) async {
+    final confirmed = await _confirmSelection(
+      scientificName: sciName,
+      commonName: comName,
+    );
+    if (!confirmed || !mounted) return;
     Navigator.of(context).pop(
       AddSpeciesResult(
         scientificName: sciName,
@@ -2409,13 +2637,61 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
         mode: _mode,
         replaceRecord:
             _mode == AddSpeciesInsertMode.replace ? _replaceTarget : null,
+        evidence: _evidence,
       ),
     );
   }
 
-  /// Open a small text-entry dialog for the "Other (specify)" entry
-  /// in the empty-state, then pop with [AddSpeciesResult.userSpecified]
-  /// set so the host marks the new record's source accordingly.
+  /// Bottom sheet shown between picking a species and inserting it.
+  ///
+  /// Holds the heard / seen checkboxes plus a preview of what is about to be
+  /// added. The checkbox state lives on the overlay (not the sheet) so it
+  /// survives a cancel and carries over to the next species — logging three
+  /// birds you only saw shouldn't mean ticking "Seen" three times.
+  ///
+  /// Returns true when the user confirms.
+  Future<bool> _confirmSelection({
+    required String scientificName,
+    required String commonName,
+  }) async {
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    final taxonomy = ref.read(taxonomyServiceProvider).value;
+    final species =
+        scientificName.isEmpty ? null : taxonomy?.lookup(scientificName);
+    final displayName =
+        species?.commonNameForLocale(speciesLocale).isNotEmpty == true
+            ? species!.commonNameForLocale(speciesLocale)
+            : commonName;
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder:
+          (sheetContext) => _ConfirmSpeciesSheet(
+            displayName: displayName,
+            scientificName: species?.displayScientificName ?? scientificName,
+            imagePath: species?.assetImagePath,
+            isReplace: _mode == AddSpeciesInsertMode.replace,
+            heard: _heard,
+            seen: _seen,
+            onEvidenceChanged: (heard, seen) {
+              // Mirror into the overlay so the choice sticks for the next
+              // species even if this sheet is dismissed.
+              setState(() {
+                _heard = heard;
+                _seen = seen;
+              });
+            },
+          ),
+    );
+    return result ?? false;
+  }
+
+  /// Open a small text-entry dialog for the "Other (specify)" entry in the
+  /// empty-state, run the typed label through the same confirm sheet as a
+  /// picked species, then pop with [AddSpeciesResult.userSpecified] set so
+  /// the host marks the new record's source accordingly.
   Future<void> _pickOther() async {
     final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
@@ -2448,6 +2724,11 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     if (typed == null || !mounted) return;
     final trimmed = typed.trim();
     if (trimmed.isEmpty) return;
+    final confirmed = await _confirmSelection(
+      scientificName: '',
+      commonName: trimmed,
+    );
+    if (!confirmed || !mounted) return;
     Navigator.of(context).pop(
       AddSpeciesResult(
         scientificName: '',
@@ -2456,6 +2737,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
         replaceRecord:
             _mode == AddSpeciesInsertMode.replace ? _replaceTarget : null,
         userSpecified: true,
+        evidence: _evidence,
       ),
     );
   }
@@ -2580,6 +2862,263 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                     ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Confirmation step between picking a species and inserting it.
+///
+/// Shows what is about to be added and the heard / seen checkboxes, so the
+/// evidence is set *after* the species is known rather than guessed before
+/// it. Pops `true` on confirm, `false`/null on cancel or a swipe-down.
+///
+/// The checkbox state is owned by the overlay and pushed back through
+/// [onEvidenceChanged] on every toggle; the sheet keeps a local copy only so
+/// it can repaint without rebuilding the route beneath it.
+class _ConfirmSpeciesSheet extends StatefulWidget {
+  const _ConfirmSpeciesSheet({
+    required this.displayName,
+    required this.scientificName,
+    required this.imagePath,
+    required this.isReplace,
+    required this.heard,
+    required this.seen,
+    required this.onEvidenceChanged,
+  });
+
+  final String displayName;
+
+  /// Empty for free-text "Other (specify)" labels, which have no taxonomy
+  /// entry — the row then shows only the typed name.
+  final String scientificName;
+
+  /// Bundled thumbnail, or null to fall back to the placeholder image.
+  final String? imagePath;
+
+  /// Swaps the confirm button from "Add" to "Replace".
+  final bool isReplace;
+
+  final bool heard;
+  final bool seen;
+  final void Function(bool heard, bool seen) onEvidenceChanged;
+
+  @override
+  State<_ConfirmSpeciesSheet> createState() => _ConfirmSpeciesSheetState();
+}
+
+class _ConfirmSpeciesSheetState extends State<_ConfirmSpeciesSheet> {
+  late bool _heard = widget.heard;
+  late bool _seen = widget.seen;
+
+  void _set({bool? heard, bool? seen}) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _heard = heard ?? _heard;
+      _seen = seen ?? _seen;
+    });
+    widget.onEvidenceChanged(_heard, _seen);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    // `useSafeArea` on showModalBottomSheet only guards the top and sides,
+    // so the sheet has to keep its own actions clear of the gesture bar /
+    // navigation bar — otherwise Add sits underneath it and can't be tapped.
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle — the sheet is dismissible, and cancelling by
+            // swiping down must read as available at a glance.
+            Center(
+              child: Container(
+                width: 32,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onSurfaceVariant.withAlpha(70),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // ── What is about to be added ──────────────────────
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    widget.imagePath ?? 'assets/images/dummy_species.png',
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (a, b, c) => Container(
+                          width: 56,
+                          height: 56,
+                          color: theme.colorScheme.surfaceContainerHigh,
+                        ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.displayName,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (widget.scientificName.isNotEmpty)
+                        Text(
+                          widget.scientificName,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontStyle: FontStyle.italic,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // ── Heard / seen ───────────────────────────────────
+            Text(
+              l10n.detectionEvidenceLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                _EvidenceCheckbox(
+                  icon: AppIcons.hearing,
+                  label: l10n.detectionEvidenceHeard,
+                  value: _heard,
+                  onChanged: (v) => _set(heard: v),
+                ),
+                const SizedBox(width: 8),
+                _EvidenceCheckbox(
+                  icon: AppIcons.visibility,
+                  label: l10n.detectionEvidenceSeen,
+                  value: _seen,
+                  onChanged: (v) => _set(seen: v),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.detectionEvidenceHint,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ── Actions ────────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(l10n.cancel),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  icon: Icon(
+                    widget.isReplace
+                        ? AppIcons.swapHoriz
+                        : AppIcons.addCircleOutline,
+                    size: 18,
+                  ),
+                  label: Text(
+                    widget.isReplace
+                        ? l10n.sessionReplaceSpeciesConfirm
+                        : l10n.sessionAddSpeciesConfirm,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One heard / seen checkbox in the add-species overlay.
+///
+/// A checkbox plus the same glyph the detection rows use for that evidence,
+/// wrapped in an [InkWell] so the whole thing is one comfortably-sized tap
+/// target rather than the checkbox's own small hit box.
+class _EvidenceCheckbox extends StatelessWidget {
+  const _EvidenceCheckbox({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color =
+        value ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+
+    return Semantics(
+      checked: value,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: value,
+                onChanged: (v) => onChanged(v ?? false),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              const SizedBox(width: 4),
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: color,
+                  fontWeight: value ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -3228,13 +3767,21 @@ class _TrimOverlayState extends State<_TrimOverlay> {
             setState(() {
               final frac = (d.localPosition.dx / w).clamp(0.0, 1.0);
               if (_draggingStart) {
-                _startFrac = math.min(frac, _endFrac - 0.01);
+                _startFrac = math.max(0.0, math.min(frac, _endFrac - 0.01));
               } else if (_draggingEnd) {
-                _endFrac = math.max(frac, _startFrac + 0.01);
+                _endFrac = math.min(1.0, math.max(frac, _startFrac + 0.01));
               }
             });
+            // Report continuously so the applied range always matches what
+            // is drawn, even when the gesture ends in a cancel.
+            _reportChange();
           },
           onHorizontalDragEnd: (_) {
+            _draggingStart = false;
+            _draggingEnd = false;
+            _reportChange();
+          },
+          onHorizontalDragCancel: () {
             _draggingStart = false;
             _draggingEnd = false;
             _reportChange();
@@ -3379,11 +3926,55 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
   late double _endSec;
   String? _activeDrag; // 'start', 'end', or null for zoom/pan
 
+  /// Shortest selection the handles may produce, in seconds.
+  static const double _minSelectionSec = 0.5;
+
   @override
   void initState() {
     super.initState();
     _startSec = widget.initialStartSec;
     _endSec = widget.initialEndSec;
+    _normalizeHandles();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrimSpectrogramView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Never fight a live drag; the local values are authoritative then.
+    if (_activeDrag != null) return;
+
+    // Adopt handle positions the *parent* changed. The common case is a
+    // recording whose true length only arrived after the editor opened
+    // (just_audio can publish the duration asynchronously), which would
+    // otherwise leave the end handle pinned to a stale duration.
+    if (widget.initialStartSec != oldWidget.initialStartSec) {
+      _startSec = widget.initialStartSec;
+    }
+    if (widget.initialEndSec != oldWidget.initialEndSec) {
+      _endSec = widget.initialEndSec;
+    }
+    if (widget.durationSec != oldWidget.durationSec) {
+      _clampScroll();
+    }
+    _normalizeHandles();
+  }
+
+  /// Clamps both handles into `[0, durationSec]` and keeps them at least
+  /// [_minSelectionSec] apart, so no code path can hand the caller an
+  /// inverted or zero-length range.
+  void _normalizeHandles() {
+    final total = widget.durationSec;
+    if (total <= 0) return;
+    _startSec = _startSec.clamp(0.0, total);
+    _endSec = _endSec.clamp(0.0, total);
+    if (_endSec - _startSec < _minSelectionSec) {
+      if (_startSec + _minSelectionSec <= total) {
+        _endSec = _startSec + _minSelectionSec;
+      } else {
+        _endSec = total;
+        _startSec = math.max(0.0, total - _minSelectionSec);
+      }
+    }
   }
 
   double get _viewDurationSec => widget.durationSec / _zoom;
@@ -3435,11 +4026,17 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       ).clamp(0.0, widget.durationSec);
       setState(() {
         if (_activeDrag == 'start') {
-          _startSec = math.min(sec, _endSec - 0.5);
+          _startSec = math.max(0.0, math.min(sec, _endSec - _minSelectionSec));
         } else {
-          _endSec = math.max(sec, _startSec + 0.5);
+          _endSec = math.min(
+            widget.durationSec,
+            math.max(sec, _startSec + _minSelectionSec),
+          );
         }
       });
+      // Report continuously so the applied range always matches what is
+      // drawn, even if the gesture ends in a cancel rather than an end.
+      widget.onChanged(_startSec, _endSec);
     } else {
       setState(() {
         _zoom = (_baseZoom * details.scale).clamp(1.0, 20.0);
@@ -3456,6 +4053,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
 
   void _onScaleEnd(ScaleEndDetails details) {
     if (_activeDrag != null) {
+      _normalizeHandles();
       widget.onChanged(_startSec, _endSec);
     }
     _activeDrag = null;
@@ -3470,7 +4068,7 @@ class _TrimSpectrogramViewState extends State<_TrimSpectrogramView> {
       onScaleUpdate: _onScaleUpdate,
       onScaleEnd: _onScaleEnd,
       child: Container(
-        height: 150,
+        height: _kReviewStripHeight,
         color: Colors.black,
         child: CustomPaint(
           painter: _TrimSpectrogramPainter(

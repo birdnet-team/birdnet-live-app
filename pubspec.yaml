@@ -1,7 +1,7 @@
 name: birdnet_live
 description: "Real-time bird species identification using on-device ONNX inference"
 publish_to: 'none'
-version: 0.18.9+206
+version: 1.0.3+217
 
 environment:
   sdk: ^3.7.0
@@ -13,7 +13,10 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.3.1
+  # 3.4.2+ required: earlier versions throw "markNeedsBuild called during
+  # build" when a dirty provider chain is first flushed from a widget build
+  # (e.g. Explore mounting after a location/language change).
+  flutter_riverpod: ^3.4.2
 
   # Storage
   shared_preferences: ^2.3.4
@@ -29,7 +32,14 @@ dependencies:
   flutter_tts: ^4.2.0
   audio_session: ^0.2.3
   # Inference
-  flutter_onnxruntime: ^1.7.0
+  #
+  # PINNED — do not widen to a caret range without re-testing on-device.
+  # 1.8.x bumps the Android native runtime from ONNX Runtime 1.22.0 to 1.23.0,
+  # which routes fp32 GEMM through Arm KleidiAI (`ArmKleidiAI::MlasGemmBatch`,
+  # SME/SME2 kernels). That path segfaults inside `OrtSession.run` on arm64 and
+  # shipped as the v1.0.2 "crashes when starting a recording" bug.
+  # See docs/developer/onnxruntime-pin.md before changing this line.
+  flutter_onnxruntime: 1.7.1
 
   # UI & UX
   url_launcher: ^6.3.1
@@ -46,7 +56,7 @@ dependencies:
   just_audio_windows: ^0.2.3
 
   # Background service
-  flutter_foreground_task: ^9.2.2
+  flutter_foreground_task: ^10.0.0
   battery_plus: ^7.0.0
 
   # Notifications (heads-up species alerts during surveys)
@@ -70,7 +80,6 @@ dependencies:
   path: ^1.9.0
   file_picker: ^12.0.0-beta.5
   flutter_map_marker_cluster: ^8.2.2
-  flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   flutter_test:

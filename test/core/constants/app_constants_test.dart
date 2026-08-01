@@ -17,7 +17,7 @@ void main() {
     });
 
     test('falls back to English for locales without a translated guide', () {
-      for (final loc in ['en', 'nl', 'pl', 'ru', 'zz']) {
+      for (final loc in ['en', 'nl', 'pl', 'ru', 'zh', 'zz']) {
         expect(AppConstants.docsLocalePrefix(loc), '');
       }
     });
@@ -25,7 +25,18 @@ void main() {
 
   group('policyDocsLocalePrefix (privacy / acceptable use)', () {
     test('returns a prefix for every locale with a translated policy', () {
-      for (final loc in ['de', 'cs', 'es', 'fr', 'it', 'pt', 'nl', 'pl', 'ru']) {
+      for (final loc in [
+        'de',
+        'cs',
+        'es',
+        'fr',
+        'it',
+        'pt',
+        'nl',
+        'pl',
+        'ru',
+        'zh',
+      ]) {
         expect(AppConstants.policyDocsLocalePrefix(loc), '/$loc');
       }
     });

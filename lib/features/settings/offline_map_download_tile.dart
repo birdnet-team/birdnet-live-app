@@ -31,9 +31,10 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
+import '../../core/services/location_service.dart';
+import '../../features/explore/explore_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
 
@@ -75,10 +76,13 @@ class OfflineMapDownloadTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     // Always grab a fresh GPS fix (the cached one in
-    // currentLocationProvider may be stale, sometimes by miles).
-    Position? pos;
+    // currentLocationProvider may be stale, sometimes by miles). Routed
+    // through LocationService so the "Use GPS" setting is honoured.
+    AppLocation? pos;
     try {
-      pos = await Geolocator.getCurrentPosition();
+      pos = await ref
+          .read(locationServiceProvider)
+          .getCurrentLocation(maxAge: Duration.zero);
     } catch (_) {
       pos = null;
     }

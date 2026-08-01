@@ -102,6 +102,12 @@ Each detection row also exposes the same per-detection actions used in [Session 
 
 The same actions are available from the **live route map**: tap a detection marker to open the clip player sheet with confirm, share, and delete. Sharing during a survey works even when you've opted for one continuous WAV recording instead of per-detection clips — the relevant audio window is sliced out of the in-progress file on the fly. See [Session Review → Sharing a single detection](session-review.md#sharing-a-single-detection) for details.
 
+### Logging an observation
+
+The :material-plus-circle-outline: button on the live survey opens a small menu with **Add Species** and **Add note**. **Add Species** opens the same picker used in [Session Review](session-review.md#adding-a-species-by-hand), choose a species, then tick :material-ear-hearing: **Heard** and/or :material-eye: **Seen** on the confirmation sheet and tap **Add**. The entry is timestamped to that moment, tagged with the current GPS fix, and appears immediately in the detection list and on the route map with the manual badge and the matching ear / eye glyphs.
+
+Voice memos are deliberately absent here: the microphone is busy with the survey's own capture. Attach them in Session Review after the survey ends.
+
 ## Background Operation
 
 Survey Mode keeps a persistent foreground notification visible while recording so Android won't suspend the audio pipeline. The notification expands to show:

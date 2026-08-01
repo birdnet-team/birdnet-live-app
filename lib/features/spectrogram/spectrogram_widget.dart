@@ -28,6 +28,24 @@ import 'spectrogram_painter.dart';
 // The Ticker is started / stopped together with the [isActive] flag so no
 // CPU is wasted when capture is paused.
 //
+// ### Time base — columns are paced by duration, not by FFT size
+//
+// The visible window always spans [displaySeconds], whatever [fftSize] is
+// selected.  The column rate is a fixed function of the quality preset
+// (see [SpectrogramTimebase]) so that it always stays well below the ~60 Hz
+// vsync ceiling — a Ticker can emit at most one column per frame, so a rate
+// above that silently drops columns and stretches the visible window.
+//
+// [fftSize] therefore controls *frequency* resolution only.  The column
+// buffer is rendered at 1:1 into an image [SpectrogramTimebase.columnCount]
+// wide and GPU-interpolated up to the widget's pixel width, so a coarse
+// column grid still fills the display smoothly.
+//
+// This is a **display path only**.  Each column samples one FFT window at
+// the moment it is emitted; audio falling between two columns is simply not
+// drawn.  Detection is unaffected — the inference scheduler reads the same
+// [RingBuffer] independently and sees every sample.
+//
 // ### Widget tree
 //
 // ```
@@ -54,9 +72,8 @@ import 'spectrogram_painter.dart';
 /// * [fftSize] — FFT window size (power of two, default 2048).
 /// * [colorMapName] — color palette (see [SpectrogramColorMap.names]).
 /// * [dbFloor] / [dbCeiling] — dynamic range in dB.
-/// * [maxColumns] — number of FFT columns visible (scrolling width).
-/// * [hopSize] — samples between successive FFT frames.  Smaller = smoother
-///   but more CPU.  Default is `fftSize ~/ 2` (50 % overlap).
+/// * [displaySeconds] — length of the visible time window in seconds.
+/// * [quality] — column rate / bin count / GPU filter preset.
 class SpectrogramWidget extends StatefulWidget {
   const SpectrogramWidget({
     super.key,
@@ -66,8 +83,7 @@ class SpectrogramWidget extends StatefulWidget {
     this.colorMapName = 'viridis',
     this.dbFloor = -80.0,
     this.dbCeiling = 0.0,
-    this.maxColumns = 600,
-    this.hopSize,
+    this.displaySeconds = 20.0,
     this.showFrequencyAxis = true,
     this.showTimeAxis = true,
     this.maxDisplayFrequency = 0,
@@ -96,14 +112,11 @@ class SpectrogramWidget extends StatefulWidget {
   /// Upper dB bound (maps to the brightest color).
   final double dbCeiling;
 
-  /// Maximum number of visible columns (determines scrolling width).
-  /// More columns = longer visible duration but more memory.
-  final int maxColumns;
-
-  /// Number of new samples between successive FFT frames.
+  /// Length of the visible time window, in seconds.
   ///
-  /// Defaults dynamically based on [quality] when `null`.
-  final int? hopSize;
+  /// The spectrogram always scrolls so that exactly this much audio is on
+  /// screen, independently of [fftSize] and [quality].
+  final double displaySeconds;
 
   /// Whether to draw frequency axis labels on the left edge.
   final bool showFrequencyAxis;
@@ -150,6 +163,79 @@ FilterQuality spectrogramFilterQualityFromString(String value) {
   }
 }
 
+/// Maps the user's duration + quality settings onto the spectrogram's
+/// column grid.
+///
+/// The single invariant this type exists to guarantee:
+///
+/// ```
+/// columnCount * columnDuration == displaySeconds
+/// ```
+///
+/// for **every** FFT size.  The FFT size only sets frequency resolution;
+/// it must not influence how fast the display scrolls.
+@immutable
+class SpectrogramTimebase {
+  const SpectrogramTimebase({
+    required this.displaySeconds,
+    required this.fftSize,
+    this.quality = 'medium',
+    this.sampleRate = AppConstants.sampleRate,
+  });
+
+  /// Length of the visible time window in seconds.
+  final double displaySeconds;
+
+  /// FFT window size in samples (frequency resolution only).
+  final int fftSize;
+
+  /// Quality preset: `'low'` | `'medium'` | `'high'`.
+  final String quality;
+
+  /// Audio sample rate in Hz.
+  final int sampleRate;
+
+  /// Number of spectrogram columns produced per second of audio.
+  ///
+  /// Deliberately **independent of [fftSize]**.  A [Ticker] emits at most
+  /// one column per vsync (~60/s), so a rate derived from the FFT hop
+  /// (`sampleRate / (fftSize / 2)` — 125/s at fftSize 512) cannot be
+  /// sustained: columns are dropped and the visible window silently
+  /// stretches to two or three times [displaySeconds].  A fixed rate per
+  /// quality preset keeps the scroll speed matched to the setting.
+  double get columnsPerSecond {
+    switch (quality.toLowerCase()) {
+      case 'low':
+        return 20.0;
+      case 'high':
+        return 45.0;
+      default:
+        return 30.0;
+    }
+  }
+
+  /// Column buffer size covering the full [displaySeconds] window.
+  ///
+  /// This is also the pixel width of the internal spectrogram image, which
+  /// the painter interpolates up to the on-screen width — so a coarse grid
+  /// still fills the display.
+  int get columnCount =>
+      math.max(2, (displaySeconds * columnsPerSecond).round());
+
+  /// Wall-clock duration one column represents.
+  Duration get columnDuration =>
+      Duration(microseconds: (1000000 / columnsPerSecond).round());
+
+  /// Audio advanced between two consecutive columns, in samples.
+  ///
+  /// When this exceeds [fftSize] the audio between two columns is only
+  /// partly drawn.  That is fine — the spectrogram is a display, not an
+  /// analysis path; the detector reads the ring buffer on its own schedule
+  /// and never skips a sample.
+  int get columnHopSamples =>
+      math.max(1, (sampleRate / columnsPerSecond).round());
+}
+
 class _SpectrogramWidgetState extends State<SpectrogramWidget>
     with SingleTickerProviderStateMixin {
   // ---------------------------------------------------------------------------
@@ -189,39 +275,17 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
   /// Recreated lazily when [fftSize] changes.
   late Float32List _readBuffer = Float32List(widget.fftSize);
 
-  /// Effective hop size based on quality preset or user-supplied override.
-  int get _hopSize {
-    if (widget.hopSize != null) return widget.hopSize!;
-    switch (widget.quality.toLowerCase()) {
-      case 'low':
-        // 0% overlap, 2x fewer FFTs/columns, roughly 50% CPU savings.
-        return widget.fftSize;
-      case 'medium':
-        // 50% overlap, standard behavior.
-        return widget.fftSize ~/ 2;
-      case 'high':
-        // 75% overlap, smoother scrolling, more CPU.
-        return widget.fftSize ~/ 4;
-      default:
-        return widget.fftSize ~/ 2;
-    }
-  }
-
-  /// Adjust the column count so that the horizontal duration on screen
-  /// matches the user's duration settings, compensating for varying hopSize.
-  int get _effectiveMaxColumns {
-    final standardHop = widget.fftSize ~/ 2;
-    return (widget.maxColumns * standardHop) ~/ _hopSize;
-  }
+  /// Column grid derived from the current duration / quality settings.
+  SpectrogramTimebase get _timebase => SpectrogramTimebase(
+    displaySeconds: widget.displaySeconds,
+    fftSize: widget.fftSize,
+    quality: widget.quality,
+  );
 
   /// Resolves the GPU scaling quality filter.
   FilterQuality get _effectiveFilterQuality =>
       widget.filterQuality ??
       spectrogramFilterQualityFromString(widget.quality);
-
-  /// Duration each column represents — used for time axis labels.
-  Duration get _hopDuration =>
-      Duration(microseconds: (_hopSize * 1000000 ~/ AppConstants.sampleRate));
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -244,7 +308,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
         oldWidget.dbFloor != widget.dbFloor ||
         oldWidget.dbCeiling != widget.dbCeiling ||
         oldWidget.colorMapName != widget.colorMapName ||
-        oldWidget.maxColumns != widget.maxColumns ||
+        oldWidget.displaySeconds != widget.displaySeconds ||
         oldWidget.maxDisplayFrequency != widget.maxDisplayFrequency ||
         oldWidget.logAmplitude != widget.logAmplitude ||
         oldWidget.filterQuality != widget.filterQuality ||
@@ -287,8 +351,10 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
       dbCeiling: widget.dbCeiling,
     );
 
+    final timebase = _timebase;
+
     _painter = SpectrogramPainter(
-      maxColumns: _effectiveMaxColumns,
+      maxColumns: timebase.columnCount,
       binCount: _fft.binCount,
       colorMapName: widget.colorMapName,
       sampleRate: AppConstants.sampleRate,
@@ -296,7 +362,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
       showFrequencyAxis: widget.showFrequencyAxis,
       showTimeAxis: widget.showTimeAxis,
       maxDisplayFrequency: widget.maxDisplayFrequency,
-      hopDuration: _hopDuration,
+      hopDuration: timebase.columnDuration,
       filterQuality: _effectiveFilterQuality,
       repaint: _repaintNotifier,
       quality: widget.quality,
@@ -324,7 +390,7 @@ class _SpectrogramWidgetState extends State<SpectrogramWidget>
     // Don't process until we have at least one FFT window of audio.
     if (widget.ringBuffer.totalWritten < widget.fftSize) return;
 
-    final hopUs = _hopDuration.inMicroseconds;
+    final hopUs = _timebase.columnDuration.inMicroseconds;
     if (hopUs <= 0) return;
 
     // How many columns should have been emitted by this point in time?

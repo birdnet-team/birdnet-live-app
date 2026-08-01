@@ -103,10 +103,11 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
             IconButton(
               icon: const Icon(AppIcons.openInNew),
               tooltip: l10n.openInAppleMaps,
-              onPressed: () => openExternalUrl(
-                context,
-                'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
-              ),
+              onPressed:
+                  () => openExternalUrl(
+                    context,
+                    'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
+                  ),
             ),
         ],
       ),

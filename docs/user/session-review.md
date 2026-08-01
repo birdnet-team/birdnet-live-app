@@ -36,6 +36,17 @@ A search field above the list filters species by common or scientific name, so f
 
 The chosen sort persists across sessions.
 
+### Adding a species by hand
+
+The :material-plus-circle-outline: toolbar button opens the species picker for birds BirdNET missed. Picking a search result does not insert it straight away — a confirmation sheet slides up first, showing the species you chose and two checkboxes:
+
+- :material-ear-hearing: **Heard** — you heard the bird.
+- :material-eye: **Seen** — you saw the bird.
+
+Tick either, both, or neither, then tap **Add**. **Cancel** — or a swipe down — returns you to the search, so a mistap costs nothing. **Heard** is ticked by default, and your choice carries over to the next species you add, so logging a run of birds you only saw means ticking **Seen** once. Leaving both unticked saves the entry with no observation type rather than with "neither".
+
+The choice is stored on the detection and shown as a small ear and/or eye glyph next to the manual badge everywhere that detection appears — species headers, cluster rows, the clip player sheet, and the live survey list. It also travels into exports: an `Evidence` column in CSV and Raven selection tables, an `evidence` field in JSON, and a pill in the HTML report. The same sheet appears when you **Replace species**, pre-filled from whatever that record already carried.
+
 ### Per-detection actions
 
 Every place a detection appears — the species list, the clip player sheet, the live survey list, and the survey map markers — uses the same set of actions:

@@ -100,6 +100,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       final name = await reverseGeocode(
         latitude: widget.latitude,
         longitude: widget.longitude,
+        localeName: ref.read(effectiveAppLocaleProvider),
       );
       if (!mounted) return;
       setState(() {
@@ -207,7 +208,7 @@ class _SiteContextCardState extends ConsumerState<SiteContextCard> {
       final cond = weatherConditionFromCode(_weather!.weatherCode);
       // Show temperature + wind side by side; the condition itself is
       // represented by the icon to keep this row compact.
-      final compactStats = formatWeatherCompactStats(_weather!);
+      final compactStats = formatWeatherCompactStats(_weather!, l10n: l10n);
       if (compactStats != '—') {
         rows.add(
           _ContextRow(

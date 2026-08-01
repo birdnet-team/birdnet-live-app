@@ -36,6 +36,17 @@ Un campo di ricerca sopra l'elenco filtra le specie per nome comune o scientific
 
 L'ordinamento scelto viene mantenuto tra le Sessions.
 
+### Aggiungere una specie a mano
+
+Il pulsante :material-plus-circle-outline: nella barra degli strumenti apre il selettore di specie per gli uccelli che BirdNET non ha rilevato. Toccare un risultato non lo inserisce subito: prima compare un pannello di conferma con la specie scelta e due caselle:
+
+- :material-ear-hearing: **Sentito** — hai sentito l'uccello.
+- :material-eye: **Visto** — hai visto l'uccello.
+
+Seleziona una, entrambe o nessuna, poi tocca **Aggiungi**. **Annulla** — o uno scorrimento verso il basso — ti riporta alla ricerca, quindi un tocco sbagliato non costa nulla. **Sentito** è selezionato per impostazione predefinita e la tua scelta resta valida per la specie successiva: per una serie di uccelli solo visti basta selezionare **Visto** una volta. Lasciandole entrambe vuote la voce viene salvata senza tipo di osservazione, non come "nessuno dei due".
+
+La scelta viene memorizzata sulla rilevazione e mostrata come una piccola icona di orecchio e/o occhio accanto al badge manuale ovunque compaia quella rilevazione: intestazioni di specie, righe di cluster, lettore di clip e lista del survey dal vivo. Finisce anche negli export: una colonna `Evidence` in CSV e nelle tabelle Raven, un campo `evidence` in JSON e un'etichetta nel report HTML. Lo stesso pannello compare anche con **Sostituisci specie**, precompilato con ciò che il record già conteneva.
+
 ### Azioni per ogni rilevazione
 
 Ovunque compaia una rilevazione — l'elenco delle specie, il pannello del lettore dei clip, l'elenco del Survey in tempo reale e i marcatori sulla mappa del Survey — si usa lo stesso insieme di azioni:

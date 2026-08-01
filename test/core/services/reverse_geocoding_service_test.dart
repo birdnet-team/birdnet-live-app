@@ -46,9 +46,20 @@ void main() {
         PrefKeys.privacyAllowReverseGeocoding: false,
       });
 
-      final result = await reverseGeocode(latitude: 10.0, longitude: 20.1);
+      final result = await reverseGeocode(
+        latitude: 10.0,
+        longitude: 20.1,
+        localeName: 'de',
+      );
 
       expect(result, 'Cached Place');
+
+      final afterLocaleChange = await reverseGeocode(
+        latitude: 10.0,
+        longitude: 20.1,
+        localeName: 'en',
+      );
+      expect(afterLocaleChange, 'Cached Place');
     });
 
     test('returns null when uncached and consent is false', () async {
@@ -56,7 +67,11 @@ void main() {
         PrefKeys.privacyAllowReverseGeocoding: false,
       });
 
-      final result = await reverseGeocode(latitude: 50.0, longitude: 8.0);
+      final result = await reverseGeocode(
+        latitude: 50.0,
+        longitude: 8.0,
+        localeName: 'de',
+      );
 
       expect(result, isNull);
     });

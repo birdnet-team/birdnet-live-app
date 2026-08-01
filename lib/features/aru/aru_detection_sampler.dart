@@ -151,6 +151,9 @@ class AruDetectionSampler {
   Future<void> _evictClip(DetectionRecord record) async {
     final path = record.audioClipPath;
     record.audioClipPath = null;
+    // The window the clip was cut from describes a file that no longer
+    // exists; clearing it keeps the record from advertising audio it lost.
+    record.clipTimestamp = null;
     _droppedClipCount++;
     await deleteDetectionClipFile(path, logTag: 'AruDetectionSampler');
   }

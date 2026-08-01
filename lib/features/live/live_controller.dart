@@ -49,6 +49,7 @@ import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
+import '../inference/species_ignore_filter.dart';
 import '../recording/recording_service.dart';
 import 'live_session.dart';
 
@@ -177,6 +178,13 @@ class LiveController {
   /// but [endTimestamp] still marks when the species stopped being actively
   /// detected.
   final Map<String, DetectionRecord> _activeCardSpecies = {};
+
+  /// Confidence of the audio window currently saved for each active species.
+  ///
+  /// This deliberately differs from [DetectionRecord.confidence], which is the
+  /// running maximum and advances even when an improvement is below the clip
+  /// rewrite threshold.
+  final DetectionClipPeakTracker _clipPeakTracker = DetectionClipPeakTracker();
 
   /// Maximum number of in-memory detections (older entries are still
   /// persisted in the [LiveSession] object).
@@ -392,6 +400,8 @@ class LiveController {
     double? poolingMaxAgeSeconds,
     AdvancedPoolingParams advancedPooling = AdvancedPoolingParams.none,
     double sensitivity = 1.0,
+    SpeciesIgnoreSettings ignoreSettings = const SpeciesIgnoreSettings(),
+    Set<String> ignoredSpeciesNames = const <String>{},
     double? gainLinear,
     double? highPassHz,
     int? targetDurationSeconds,
@@ -414,6 +424,11 @@ class LiveController {
         inferenceRate: inferenceRate,
         speciesFilterMode: speciesFilterMode,
         sensitivity: sensitivity,
+        ignoreBirds: ignoreSettings.ignoreBirds,
+        ignoreMammals: ignoreSettings.ignoreMammals,
+        ignoreAmphibians: ignoreSettings.ignoreAmphibians,
+        ignoreInsects: ignoreSettings.ignoreInsects,
+        ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
         poolingMode: poolingMode,
         poolingWindows: poolingWindows,
         poolingMaxAgeSeconds: poolingMaxAgeSeconds,
@@ -437,6 +452,7 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _clipPeakTracker.clear();
     _sessionGeneration++;
     _confidenceThreshold = confidenceThreshold;
     _sensitivity = sensitivity;
@@ -444,6 +460,7 @@ class LiveController {
     _isolate.setMaxPoolAgeSeconds(poolingMaxAgeSeconds);
     _isolate.setPoolingMode(poolingMode);
     _isolate.applyAdvancedPoolingParams(advancedPooling);
+    _isolate.setIgnoredSpeciesNames(ignoredSpeciesNames);
     _isolate.resetPooling();
     _inferenceCycleCount = 0;
     if (clearRingBuffer) {
@@ -604,6 +621,7 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _clipPeakTracker.clear();
 
     _state = LiveState.ready;
     _notifyListeners();
@@ -651,6 +669,16 @@ class LiveController {
   /// preserved in `SessionSettings` for context.
   void setSensitivity(double value) {
     _sensitivity = value;
+  }
+
+  /// Hot-apply the inference-time species mask to the next audio window and
+  /// every raw window already waiting in the temporal pooling buffer.
+  void setSpeciesIgnoreFilter({
+    required Set<String> scientificNames,
+    required Map<String, double>? geoScores,
+  }) {
+    _isolate.setIgnoredSpeciesNames(scientificNames);
+    _geoScores = geoScores;
   }
 
   /// Update the score-pooling window count and forward to the inference
@@ -799,6 +827,7 @@ class LiveController {
         final now = DateTime.now();
         for (final name in disappeared) {
           final existing = _activeCardSpecies.remove(name);
+          _clipPeakTracker.forget(name);
           if (existing == null) continue;
           final closed = _recordWithEnd(existing, now);
           final sessionIdx = _sessionDetections.indexOf(existing);
@@ -807,14 +836,33 @@ class LiveController {
           if (lsIdx != -1) _session!.detections[lsIdx] = closed;
         }
 
-        // Save detection clip if user requested per-detection clips
-        // and there are new species appearing.
-        String? clipPath;
-        if (_saveDetectionClips && appeared.isNotEmpty) {
-          final clipName = 'clip_${DateTime.now().millisecondsSinceEpoch}';
-          clipPath = await recordingService.saveDetectionClip(
-            clipName: clipName,
-          );
+        // Save detection clips if the user requested per-detection clips.
+        //
+        // A clip is cut for a species that just appeared, and re-cut whenever
+        // an ongoing detection reaches a new confidence peak. A merged
+        // detection can span many windows, but a clip only holds one — so the
+        // one we keep must be the strongest window, not the first. Species
+        // entering at the confidence floor and peaking a few cycles later is
+        // the common case, which is exactly what the first window gets wrong.
+        //
+        // All clips for this cycle are cut from a single ring-buffer read, so
+        // a busy cycle costs one post-roll wait rather than one per species.
+        final clipPaths = await _saveCycleClips(
+          filteredDetections,
+          appeared: appeared,
+        );
+
+        // The post-roll wait inside the clip save is the one point in a cycle
+        // where the session can be torn down underneath us: finalize, pause
+        // and reset all bump the generation before their own awaits. Without
+        // this check the records below would be attached to a session that is
+        // already closed, and a re-cut would delete a clip that the session's
+        // now-closed record still points at.
+        if (generation != _sessionGeneration || _session == null) {
+          for (final path in clipPaths.values) {
+            await recordingService.deleteClip(path);
+          }
+          return;
         }
 
         for (final detection in filteredDetections) {
@@ -822,27 +870,50 @@ class LiveController {
 
           if (appeared.contains(name)) {
             // New detection — species just appeared in inference.
+            //
+            // Every clip in this cycle came from one ring-buffer read, so
+            // they all hold the window that just ran: `windowTimestamp` dates
+            // the audio for all of them.
             final record = DetectionRecord.fromDetection(
               detection,
-              audioClipPath: clipPath,
+              audioClipPath: clipPaths[name],
+              clipTimestamp: windowTimestamp,
             );
             _session!.addDetection(record);
             _sessionDetections.insert(0, record);
             _activeCardSpecies[name] = record;
+            if (record.audioClipPath != null) {
+              _clipPeakTracker.recordSaved(name, detection.confidence);
+            }
           } else if (_activeCardSpecies.containsKey(name)) {
             // Ongoing — update confidence if higher (same detection).
             final existing = _activeCardSpecies[name]!;
             if (detection.confidence > existing.confidence) {
+              final freshClip = clipPaths[name];
               final updated = _recordWithConfidence(
                 existing,
                 detection.confidence,
-                audioClipPath: existing.audioClipPath ?? clipPath,
+                audioClipPath: freshClip ?? existing.audioClipPath,
+                // A re-cut moves the audio to this cycle's window; keeping
+                // the old clip keeps the window it was cut from.
+                clipTimestamp:
+                    freshClip == null
+                        ? existing.clipTimestamp
+                        : windowTimestamp,
               );
               final sessionIdx = _sessionDetections.indexOf(existing);
               if (sessionIdx != -1) _sessionDetections[sessionIdx] = updated;
               final lsIdx = _session!.detections.indexOf(existing);
               if (lsIdx != -1) _session!.detections[lsIdx] = updated;
               _activeCardSpecies[name] = updated;
+
+              if (freshClip != null) {
+                // Publish the replacement before the first await. Otherwise
+                // pause/finalize can persist the old path after its file has
+                // already been deleted.
+                _clipPeakTracker.recordSaved(name, detection.confidence);
+                await recordingService.deleteClip(existing.audioClipPath);
+              }
             }
           }
         }
@@ -905,6 +976,42 @@ class LiveController {
     _segmentStart = null;
   }
 
+  /// Cut this cycle's detection clips, returning scientific name → clip path.
+  ///
+  /// Which species need one is [DetectionClipPeakTracker.needsClip]'s call —
+  /// the same rule Survey and ARU apply — and they are all cut from a single
+  /// ring-buffer read so the whole cycle costs one post-roll wait.
+  Future<Map<String, String>> _saveCycleClips(
+    List<Detection> detections, {
+    required Set<String> appeared,
+  }) async {
+    if (!_saveDetectionClips) return const {};
+
+    final needsClip = <String>[];
+    for (final detection in detections) {
+      final name = detection.species.scientificName;
+      final isNew = appeared.contains(name);
+      final existing = _activeCardSpecies[name];
+      if (!isNew && existing == null) continue;
+
+      if (_clipPeakTracker.needsClip(
+        key: name,
+        candidateConfidence: detection.confidence,
+        currentConfidence: existing?.confidence ?? detection.confidence,
+        hasClip: existing?.audioClipPath != null,
+        isNew: isNew,
+      )) {
+        needsClip.add(name);
+      }
+    }
+
+    return saveDetectionClipsFor<String>(
+      recordingService: recordingService,
+      items: needsClip,
+      speciesOf: (name) => name,
+    );
+  }
+
   DetectionRecord _recordWithEnd(DetectionRecord existing, DateTime end) {
     return DetectionRecord(
       scientificName: existing.scientificName,
@@ -913,6 +1020,7 @@ class LiveController {
       timestamp: existing.timestamp,
       endTimestamp: end,
       audioClipPath: existing.audioClipPath,
+      clipTimestamp: existing.clipTimestamp,
       source: existing.source,
       latitude: existing.latitude,
       longitude: existing.longitude,
@@ -926,6 +1034,7 @@ class LiveController {
     DetectionRecord existing,
     double confidence, {
     String? audioClipPath,
+    DateTime? clipTimestamp,
   }) {
     return DetectionRecord(
       scientificName: existing.scientificName,
@@ -934,6 +1043,7 @@ class LiveController {
       timestamp: existing.timestamp,
       endTimestamp: existing.endTimestamp,
       audioClipPath: audioClipPath,
+      clipTimestamp: audioClipPath == null ? null : clipTimestamp,
       source: existing.source,
       latitude: existing.latitude,
       longitude: existing.longitude,
@@ -953,6 +1063,7 @@ class LiveController {
     _latestDetections = const [];
     _currentLiveDetections = const [];
     _activeCardSpecies.clear();
+    _clipPeakTracker.clear();
     _notifyListeners();
   }
 

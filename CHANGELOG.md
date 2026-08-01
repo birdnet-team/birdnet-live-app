@@ -7,6 +7,128 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-08-01
+
+### Fixed
+
+- Fixed the crash that closed the app as soon as a recording started. A dependency update had silently swapped the bundled ONNX Runtime for a build that faults during inference on arm64 devices; the inference runtime is now pinned to the version that shipped in 1.0.1.
+- The HTML report no longer looks broken when its map cannot load. It now always offers a "View on OpenStreetMap" link, and explains the problem if the browser blocks the map tiles — which mainly affected reports opened straight from disk in Firefox.
+- The HTML report now explains why audio will not play when the report is opened from inside the export ZIP, instead of showing a player that silently does nothing.
+
+## [1.0.2] - 2026-07-31
+
+### Added
+
+- Added **Ignore species** under Settings → Inference. Users can suppress birds, mammals, amphibians, or insects and ignore very common species with an 80–100% geo-model cutoff (100% by default). The overlay shows how many species are currently ignored from one cached geo-model prediction for the current location. The binary mask zeros geo-model and audio-model scores before temporal pooling, applies across Live Mode, Point Count, Survey, ARU Mode, and File Analysis, and is recorded in Session metadata.
+
+## [1.0.1] - 2026-07-30
+
+### Added
+
+- Simplified Chinese (简体中文) is now a full app language: UI strings, spoken announcements, and offline species descriptions for 3,641 species. Chinese species common names were already bundled and now resolve for the Chinese app locale. Not yet verified on the Windows desktop build — see `dev/windows.md`.
+
+### Fixed
+
+- Species descriptions and Wikipedia links now resolve for regional species-language settings. Tags carrying a region (`zh-CN`, `es_ES`, `pt_PT`) missed the bundled files, which are keyed by bare language code, and silently fell back to English.
+- Dates and newly resolved place names now follow the app language. Session cards separate the localized date and time with a dash instead of the hardcoded English word "at." A resolved place label remains attached to its Session and is not queried again after a language change.
+- Wind-direction abbreviations now follow the app language in weather cards and dialogs, while stored bearings and export metadata remain language-neutral or English. JSON and GPX exports now localize species common names like the existing Raven, CSV, and HTML exports.
+
+## [1.0.0] - 2026-07-30
+
+### Added
+
+- Manually added species can now record whether you **heard** or **saw** the bird. After picking a species, a confirmation sheet lets you tick Heard and/or Seen before the entry is added. This applies everywhere you add a species by hand: Session Review, the replace-species flow, and the live Survey. The choice shows as ear/eye glyphs on detection rows and ships in CSV, Raven, JSON, and HTML exports.
+
+### Changed
+
+- The HTML report in an export ZIP is now named after the Session (`<session>_report.html`) instead of `report.html`, so extracting several exports into the same folder no longer overwrites earlier reports.
+- Species photo credits no longer show the image license in brackets, just the photographer and the source.
+- Reduced scores for Black-crowned Night Heron detections through the model-specific score blacklist.
+
+### Fixed
+
+- The main menu logo no longer appears a beat after the rest of the screen. The background warm-up that prepares Live Mode was parsing the 11 MB taxonomy file on the main thread and holding up the logo behind it; that parse now runs off it.
+
+## [0.20.0] - 2026-07-30
+
+### Added
+
+- Added a "Quick Listen" home-screen widget (Android), in 2x1 and 1x1 sizes, that jumps straight into Live Mode and starts listening. It reuses an already-open Live Mode screen without restarting its Session. If Point Count, Survey, File Analysis, or ARU Mode is running or starting, the app preserves that Session and asks the user to stop it first instead of replacing its screen.
+
+## [0.19.5] - 2026-07-29
+
+### Fixed
+
+- The app no longer triggers Google's "turn on location services" dialog. Location fixes now come from Android's own location provider instead of the Play Services one, which pops that dialog on every request when you have declined Google Location Accuracy — a system dialog the app cannot suppress. GPS may take a little longer to get a first fix indoors; outdoors it is unchanged.
+- Turning off **Use GPS** in Settings now stops all location access, not just some of it. Survey GPS tracking ran regardless of the setting, and the Survey, Point Count and ARU setup wizards still asked for a fix and could prompt for permission. All location access now goes through one place that honours the setting, and the setup wizards start on manual entry with your saved coordinates.
+- Rotating the phone during a Live recording no longer stops it. The moment of lost focus while the screen turns was being treated as the app going to the background, and a quick turn could leave the session paused for good with no way to resume it. Surveys, point counts and ARU deployments were never affected.
+- A Survey with GPS set to manual no longer takes a fresh location fix every time you rotate the phone. Only actually leaving the app and coming back records a fix now, which saves battery over a long survey. Recorded tracks are unchanged — the stray fixes were already being discarded as GPS jitter.
+
+## [0.19.4] - 2026-07-29
+
+### Changed
+
+- Translation docs now cover both places strings live: the ARB files and the spoken announcement templates in `assets/announcements/`. A missing template file falls back to English silently, so an ARB-only translation pass left the app speaking English. Added a contributor guide next to the templates and a test that every language defines all ten phrasing buckets.
+
+### Removed
+
+- Unused `settingsAnnouncementsRunSetupWizard` string, a label for a setup wizard that was never built.
+
+### Fixed
+
+- Map tiles you have already loaded now keep showing when the signal drops. The app was caching tiles to disk but still asking the tile server whether each one was current before drawing it, and OpenStreetMap marks tiles as needing a re-check after a day or so — so a survey area you had mapped the week before came up blank the moment you were out of coverage, which is exactly when an offline map matters. Tiles on disk are now drawn straight away. Maps also load noticeably faster on a slow connection, use less data while you pan and zoom (tiles that scroll out of view mid-download are now cancelled instead of downloaded for nothing), and no longer blank out on a single dropped request. The tile cache is now capped by actual size rather than by tile count, and the old cache left behind by earlier versions is deleted once on first launch to reclaim the space.
+- The Summary tab of an active ARU deployment now lists every species detected, not just the 24 most frequent. The species count above the list already reported the true total, so a busy deployment looked like it was miscounting.
+
+## [0.19.3] - 2026-07-29
+
+### Added
+
+- The map during an active survey can now be opened full screen, from the expand button in its top-right corner. The small map keeps following your position as before; the full screen one hands the camera to you, so panning and zooming to look ahead along a transect no longer gets undone by the next GPS fix. A button in the bottom-left corner recenters on your current position when you want it back.
+
+### Fixed
+
+- Detections without an audio clip no longer draw a larger pin on the survey map than the ones with a clip. Their marker was being stretched to fill the space reserved for the largest possible pin, which made a silent detection the most prominent thing on the map. Silent markers now render at their intended size, slightly smaller than a marker with a clip so the play badge on the latter doesn't make it look bigger — the two read as the same size, and audio still stands out through color rather than size.
+- Playing a detection from the full screen survey map in Session Review now keeps its marker in view. The map centered on the detection and the player sheet then covered it; the map now offsets the marker above center, so you can see which detection you are listening to.
+- Detection clips now come from the strongest part of a detection instead of its first moment. A detection lasts as long as the species keeps being heard — often many analysis windows — but a clip holds one window, and the app was always keeping the first one. Since birds typically enter just above the confidence threshold and peak a few seconds later, the saved audio was usually the weakest evidence of the detection and did not match the confidence shown next to it. The clip is now re-cut whenever a detection reaches a noticeably higher score, so what you end up with is the best window the app heard. This also makes **Top N** and **Smart** clip subsampling keep the right clips, since they rank detections by that peak score. Use the clip padding setting to keep more audio around the window. Live, Survey and ARU deployments all follow the same rule, and when several species peak in the same moment their clips are now all cut from that moment instead of drifting later one by one — which is what ARU deployments used to do on a busy dawn chorus.
+- Session Review now shows the right times for clip-only sessions. A detection can run for half a minute while the clip saved for it holds a single analysis window plus your clip padding — so the start-to-end time on each row was describing the bird, not the audio, and the two no longer lined up once clips started following the strongest moment. Rows in sessions without a full recording now show the span the clip actually covers, and the full time the species was heard moved to the detection's player sheet, where it can't be mistaken for the clip length. Sessions with a full recording are unchanged. This also corrects the detection offsets written into Raven and CSV exports for clip-only sessions, which had been pointing at the moment the bird was first heard rather than the moment the clip was cut. Older clips without peak metadata stay anchored to the first detection window.
+- Every detection now owns its own clip file. When several species appeared in the same moment they used to share a single file, so **Top N** and **Smart** subsampling could delete a clip that another detection still pointed at, leaving that detection with a broken play button. A species that was already being heard could also pick up a clip that had been cut for a different species entirely. Both are fixed. The trade-off is more audio on disk when many species are heard at once — subsampling still trims it back at the end of a detection.
+
+## [0.19.2] - 2026-07-28
+
+### Changed
+
+- Trimming a recording in Session Review is now permanent once you save. **Apply Trim** still only stages the cut — undo, redo and **Reset Trim** all work as before — but saving the session removes the audio outside the trimmed range from the recording and reclaims the storage, after a confirmation prompt. The session's own start time and its detection timestamps are unchanged; only the audio and the offsets into it move. Sessions whose recording is in a format the app can't cut keep the trim as an editable range, and their exports still honour it.
+
+### Fixed
+
+- The live spectrogram now always shows the time span set under **Spectrogram duration**, whatever **FFT size** is selected. Smaller FFT sizes used to demand more columns per second than the display could produce, so columns were dropped: at 512 a "15 second" window really scrolled over roughly 30 seconds, and the smaller the FFT size the slower it crept. The scroll speed is now fixed by the duration setting alone, and the FFT size again only changes frequency resolution — finer detail vertically, same speed horizontally. Detection is unaffected either way; the spectrogram is only a display.
+- Exporting a trimmed session now actually ships the trimmed audio, with every time column (Raven, CSV, JSON, HTML report) measured from the start of that audio rather than the original recording. Previously the full untrimmed file was exported, so the audio didn't match what was reviewed and the detection offsets pointed at the wrong place. When the recording's format can't be cut, the export now fails visibly — from Session Review and the session library alike — instead of quietly shipping a mismatch.
+- Saving a trim can no longer damage a recording. The cut is written to the session the moment the audio changes, so an interrupted save can't leave a session that trims its already-shortened recording a second time when reopened; an interrupted cut restores the original; formats the built-in decoder can't safely handle (anything but mono 16-bit FLAC, which File Analysis can import) are refused rather than replaced by a corrupt decode of themselves; and a session whose recording is missing or still loading keeps its stored trim instead of silently losing it.
+- Trimming a resumed survey now keeps the right detections. Trim boundaries are compared against the recorded audio timeline with the stopped gaps removed, so they match the position the handles were dragged to instead of drifting by the length of the pause. Detections that cross a cut boundary keep their real capture times, and those whose audio was removed are dropped rather than collapsing onto the start of the recording.
+- Applying a trim no longer leaves the spectrogram and the player out of sync with each other. The screen was mistaking the trimmed clip's length for the length of the whole recording, which broke the spectrogram crop, the trim editor when reopened, and the range restored by undo, redo or **Reset**.
+- Timed annotations and voice memos now stay aligned when reviewing, saving, or exporting a trimmed recording. Notes whose referenced audio is removed become session-global instead of pointing at unrelated audio.
+- The trim editor is now harder to trigger by accident. Leaving trim mode discards handle positions that were never confirmed with **Apply**, the handles stay inside the recording and at least half a second apart, and Save, Share, Undo and Redo are disabled until the selection is applied or cancelled. Trim mode also gained a **Cancel** action and a warning that detections outside the range will be removed.
+
+## [0.19.1] - 2026-07-28
+
+### Changed
+
+- Survey setup no longer asks about clip subsampling when the recording mode is **Full audio** or **Off**. Detection sampling (and the clip padding slider) only decides which per-detection clips are kept, so it had no effect in those modes; the controls and the setup summary row now appear only for **Detections**, matching the ARU setup screen.
+- Session Review now shows the survey map and the spectrogram as tabs rather than stacking them, for surveys recorded with full audio — the only sessions that have both. Each view gets the full panel height instead of half, and switching tabs keeps the map position and the spectrogram's zoom. Starting a trim selects the spectrogram tab, since that is where trimming happens. Sessions with only a map or only a spectrogram are unchanged.
+
+## [0.19.0] - 2026-07-27
+
+### Fixed
+
+- Fixed a serious problem where another app taking the microphone during a survey (for example, opening the camera to shoot a video) could leave the phone unable to record audio in any app until it was rebooted. The app no longer keeps re-grabbing a microphone it can't have while running in the background, which was what wedged the device audio system. Losing the microphone is now handled gracefully: the survey signal meter shows a crossed-out mic, the ongoing notification explains that another app is using the microphone, and audio recording resumes automatically as soon as you return to the app.
+- Resuming a survey from Session Review now keeps the elapsed timer running correctly. Previously the counter froze shortly after resuming and the saved duration came out too short; the timer now continues from where it left off and counts only time the survey is actively recording, excluding the gap while it was stopped. The live detections-per-minute rate is likewise now based on active recording time rather than wall-clock time since the survey first started.
+- Detection timestamps in exports (Raven selection tables, CSV, and JSON) now line up with the audio for resumed survey sessions. Offsets are measured against the actual recorded audio with the stopped gap removed, matching in-app playback, instead of counting the pause as if it were recorded.
+- The "recording shorter than session" warning in Session Review and exports now measures the expected audio length the same way (gap-removed), so resumed sessions are no longer falsely flagged as truncated.
+
+### Changed
+
+- The **Continue Survey** button in Session Review is now hidden for sessions that recorded full audio, because a continuous audio file can't be safely extended across a stop-and-resume. Surveys recorded with clip subsampling (or no audio) can still be resumed as before, and a resumed survey now keeps its original recording mode.
+
 ## [0.18.9] - 2026-07-11
 
 ### Added
