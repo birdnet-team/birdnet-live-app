@@ -71,6 +71,13 @@ String buildHtmlReport(
   final hasMap = hasGps || hasMarkers;
   final hasDetections = detections.isNotEmpty;
 
+  // Escape hatch for the map card. Leaflet and the OSM tile service are both
+  // remote, and a report opened from `file://` can lose either one (Firefox
+  // gets 403s from tile.openstreetmap.org where Chromium does not, and a
+  // blocked CDN kills Leaflet outright). This link is plain HTML, so it works
+  // no matter what the browser refuses to fetch.
+  final osmLinkHtml = hasMap ? _buildOsmLinkHtml(_sessionCenter(session)) : '';
+
   // Quick stats for the header bar.
   final speciesSet = detections.map((d) => d.scientificName).toSet();
   final speciesCount = speciesSet.length;
@@ -271,6 +278,30 @@ section.card h2 {
   border-radius: 8px;
   border: 1px dashed var(--border);
 }
+.map-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.map-head h2 { margin: 0; }
+/* Escape hatch that never depends on tiles loading. */
+.map-osm-link { font-size: 13px; white-space: nowrap; }
+/* Shown only when tiles actually fail; see initMap(). */
+.notice {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.notice.show { display: block; }
+.notice b { color: var(--text); }
 
 /* -- Timeline chart ----------------------------------------- */
 #timeline-canvas { display: block; width: 100%; border-radius: 6px; }
@@ -652,6 +683,8 @@ footer a { color: var(--primary); text-decoration: none; }
   section.card, header.report, .detection { box-shadow: none !important; }
   #map, .map-fallback, #timeline-section { display: none !important; }
   audio, .toolbar { display: none !important; }
+  /* Browser-specific troubleshooting hints are meaningless on paper. */
+  .notice { display: none !important; }
   .detection.collapsed .det-body { display: block !important; }
 }
 
@@ -683,18 +716,24 @@ ${hasDetections ? '''<section class="card" id="timeline-section">
 </section>''' : ''}
 
 ${hasMap ? '''<section class="card">
-  <h2>Map</h2>
+  <div class="map-head">
+    <h2>Map</h2>
+    $osmLinkHtml
+  </div>
   <div id="map"></div>
+  <div class="notice" id="map-notice"></div>
   <noscript><div class="map-fallback">Enable JavaScript to view the interactive map.</div></noscript>
 </section>''' : ''}
 
 ${audioFileName != null ? '''<section class="card">
   <h2>Full recording</h2>
   ${_buildAudioPlayer(Uri.encodeComponent(audioFileName))}
+  <div class="notice audio-notice"></div>
 </section>''' : ''}
 
 <section class="card">
   <h2>Detections <span class="section-badge">${detections.length} total &middot; $speciesCount species</span></h2>
+  <div class="notice audio-notice"></div>
   ${detections.isEmpty ? '<div class="empty">No detections recorded.</div>' : '''<div class="toolbar">
     <div class="toolbar-search">
       <svg class="search-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -814,18 +853,52 @@ function initTimeline() {
 }
 
 /* -- Map (Leaflet) ----------------------------------------------- */
+function showMapNotice(html) {
+  var n = document.getElementById('map-notice');
+  if (!n || n.classList.contains('show')) return;
+  n.innerHTML = html;
+  n.classList.add('show');
+}
+
 function initMap() {
+  /* Leaflet is loaded from a CDN. Offline, or behind a network that blocks
+     unpkg, it simply never defines L — degrade to a message plus the static
+     OpenStreetMap link that sits next to the heading. */
   if (typeof L === 'undefined') {
     var el = document.getElementById('map');
-    if (el) el.outerHTML = '<div class="map-fallback">Map needs an internet connection to load tiles.</div>';
+    if (el) el.outerHTML = '<div class="map-fallback">The interactive map could not be loaded (no internet connection, or the map library was blocked).</div>';
+    showMapNotice('<b>Map unavailable.</b> Use the &ldquo;View on OpenStreetMap&rdquo; link above to see this location in your browser.');
     return;
   }
   var data = window.SESSION_DATA;
   var map = L.map('map', { zoomControl: true });
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
+    /* Opened from file:// there is no meaningful referrer to send, and
+       browsers disagree on what they invent instead — Firefox has been seen
+       taking 403s from the tile server where Chromium is served normally.
+       Declaring no-referrer makes the request identical everywhere, so the
+       report behaves the same in every browser. */
+    referrerPolicy: 'no-referrer',
     attribution: '\xa9 OpenStreetMap contributors'
   }).addTo(map);
+
+  /* Tiles are fetched per-viewport, so a block shows up as repeated tileerror
+     events rather than one failure. A couple of errors is normal at the edge
+     of the world or on a flaky connection; a run of them means the tile
+     service is genuinely unreachable and the user needs a way out. */
+  var tileErrors = 0;
+  tiles.on('tileerror', function() {
+    tileErrors++;
+    if (tileErrors < 4) return;
+    showMapNotice(
+      '<b>Map tiles could not be loaded.</b> The pins and track below are still ' +
+      'positioned correctly, but the background imagery was blocked. This ' +
+      'usually happens when the report is opened directly from a file — try a ' +
+      'different browser, or use the &ldquo;View on OpenStreetMap&rdquo; link above.');
+  });
+  tiles.on('load', function() { tileErrors = 0; });
+
   var bounds = L.latLngBounds([]);
   if (data.track && data.track.length) {
     var poly = L.polyline(data.track.map(function(p) { return [p[0], p[1]]; }),
@@ -937,6 +1010,28 @@ function sortDetections(by) {
 }
 
 /* ---- Audio players ------------------------------------------------------- */
+/* The report references its audio by relative filename, so playback only works
+   when the sibling files are actually on disk next to it. The common failure is
+   opening report.html straight out of the .zip: Windows Explorer (and most
+   archive viewers) extract only the file you double-clicked to a temp folder
+   and leave the audio behind, so every src 404s with no explanation. Rather
+   than warn everybody up front, watch for the first real load error and explain
+   it then — the message is only shown to people who actually hit it. */
+function showAudioNotice() {
+  var html =
+    '<b>Audio files could not be found.</b> If you opened this report from ' +
+    'inside a .zip archive, extract the whole archive to a folder first and ' +
+    'then open the report again &mdash; the recordings have to sit next to ' +
+    'the report file for playback to work.';
+  /* One notice per audio-bearing card (full recording, detection clips), so the
+     explanation appears wherever the user pressed Play. */
+  document.querySelectorAll('.audio-notice').forEach(function(n) {
+    if (n.classList.contains('show')) return;
+    n.innerHTML = html;
+    n.classList.add('show');
+  });
+}
+
 function initAudioPlayers() {
   document.querySelectorAll('.audio-player').forEach(function(player) {
     var audio = player.querySelector('audio');
@@ -973,6 +1068,16 @@ function initAudioPlayers() {
 
     audio.addEventListener('loadedmetadata', update);
     audio.addEventListener('timeupdate', update);
+    /* Fires when the source is missing or undecodable. Because the players use
+       preload="none", this only happens once the user actually presses Play,
+       which is exactly the moment the explanation is useful. */
+    audio.addEventListener('error', function() {
+      btn.textContent = 'Play';
+      btn.setAttribute('aria-pressed', 'false');
+      btn.disabled = true;
+      time.textContent = 'Unavailable';
+      showAudioNotice();
+    });
     audio.addEventListener('play', function() {
       btn.textContent = 'Pause';
       btn.setAttribute('aria-pressed', 'true');
@@ -1549,6 +1654,20 @@ String _renderMetaRows(List<(String, String)> rows) {
 }
 
 // -- Helpers ------------------------------------------------------------------
+
+/// Builds the "View on OpenStreetMap" link shown beside the Map heading.
+///
+/// Deliberately a static `<a>` rather than something rendered by the map
+/// script: its whole job is to still work when Leaflet or the tile service
+/// does not. Returns an empty string when the session has no usable position.
+String _buildOsmLinkHtml((double, double)? center) {
+  if (center == null) return '';
+  final lat = center.$1.toStringAsFixed(5);
+  final lon = center.$2.toStringAsFixed(5);
+  final url = 'https://www.openstreetmap.org/?mlat=$lat&mlon=$lon#map=14/$lat/$lon';
+  return '<a class="map-osm-link" href="${_esc(url)}" target="_blank" '
+      'rel="noopener">View on OpenStreetMap &rarr;</a>';
+}
 
 (double, double)? _sessionCenter(LiveSession session) {
   if (session.latitude != null && session.longitude != null) {

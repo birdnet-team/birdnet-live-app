@@ -8,7 +8,7 @@ A guide for contributing to BirdNET Live.
 |-----------|-----------|
 | **Framework** | Flutter 3.27+ / Dart 3.7+ |
 | **State Management** | flutter_riverpod 3.4.2+ |
-| **Inference** | flutter_onnxruntime 1.7.0 (on-device ONNX) |
+| **Inference** | flutter_onnxruntime 1.7.1, pinned (on-device ONNX) — see [ONNX Runtime Pin](onnxruntime-pin.md) |
 | **Location** | geolocator 14.0.2 |
 | **Audio** | record, just_audio, fftea, flutter_tts |
 | **Persistence** | shared_preferences, JSON session files |
@@ -51,6 +51,7 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 - [State Management](state-management.md) — Riverpod providers and notifiers
 - [Audio Pipeline](audio-pipeline.md) — Capture, ring buffer, and processing
 - [Inference Engine](inference-engine.md) — ONNX model loading and classification
+- [ONNX Runtime Pin](onnxruntime-pin.md) — why `flutter_onnxruntime` is pinned, and when to re-check
 - [Spectrogram](spectrogram.md) — FFT processing and rendering
 - [Session Review](session-review.md) — Post-session editing, playback, and export
 - [Localization](localization.md) — ARB files, adding strings, translation conventions
