@@ -218,5 +218,55 @@ void main() {
       expect(html, contains('No detections recorded.'));
       expect(html, isNot(contains('id="map"')));
     });
+
+    // The report is opened from disk far more often than it is served, so the
+    // remote pieces (Leaflet, OSM tiles) have to be able to fail without
+    // leaving the reader stuck. See the v1.0.2 bug reports.
+    group('degrades gracefully when remote resources are blocked', () {
+      test('map card carries a static OpenStreetMap link and notice slot', () {
+        final html = buildHtmlReport(_sessionWithDetections());
+
+        // Plain anchor: must not depend on Leaflet or the tile service.
+        expect(html, contains('class="map-osm-link"'));
+        expect(html, contains('openstreetmap.org/?mlat=50.12340&amp;mlon=8.56780'));
+        expect(html, contains('id="map-notice"'));
+        // Tile requests are made identical across browsers.
+        expect(html, contains("referrerPolicy: 'no-referrer'"));
+        expect(html, contains("tiles.on('tileerror'"));
+      });
+
+      test('omits the OpenStreetMap link when the session has no position', () {
+        final session = LiveSession(
+          id: 'no-gps',
+          startTime: DateTime.utc(2026, 5, 28, 10, 0, 0),
+          endTime: DateTime.utc(2026, 5, 28, 10, 1, 0),
+          settings: const SessionSettings(
+            windowDuration: 3,
+            confidenceThreshold: 25,
+            inferenceRate: 1.0,
+            speciesFilterMode: 'off',
+          ),
+        );
+
+        final html = buildHtmlReport(session);
+
+        expect(html, isNot(contains('class="map-osm-link"')));
+      });
+
+      test('audio cards carry a notice slot for missing files', () {
+        final html = buildHtmlReport(
+          _sessionWithDetections(),
+          audioFileName: 'full.wav',
+        );
+
+        // One beside the full recording, one in the detections card.
+        expect(
+          RegExp('class="notice audio-notice"').allMatches(html).length,
+          2,
+        );
+        expect(html, contains("audio.addEventListener('error'"));
+        expect(html, contains('extract the whole archive'));
+      });
+    });
   });
 }

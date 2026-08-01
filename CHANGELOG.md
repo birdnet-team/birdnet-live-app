@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-08-01
+
+### Fixed
+
+- Fixed the crash that closed the app as soon as a recording started. A dependency update had silently swapped the bundled ONNX Runtime for a build that faults during inference on arm64 devices; the inference runtime is now pinned to the version that shipped in 1.0.1.
+- The HTML report no longer looks broken when its map cannot load. It now always offers a "View on OpenStreetMap" link, and explains the problem if the browser blocks the map tiles — which mainly affected reports opened straight from disk in Firefox.
+- The HTML report now explains why audio will not play when the report is opened from inside the export ZIP, instead of showing a player that silently does nothing.
+
 ## [1.0.2] - 2026-07-31
 
 ### Added

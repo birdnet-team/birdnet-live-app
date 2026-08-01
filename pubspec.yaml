@@ -1,7 +1,7 @@
 name: birdnet_live
 description: "Real-time bird species identification using on-device ONNX inference"
 publish_to: 'none'
-version: 1.0.2+216
+version: 1.0.3+217
 
 environment:
   sdk: ^3.7.0
@@ -32,7 +32,14 @@ dependencies:
   flutter_tts: ^4.2.0
   audio_session: ^0.2.3
   # Inference
-  flutter_onnxruntime: ^1.7.0
+  #
+  # PINNED — do not widen to a caret range without re-testing on-device.
+  # 1.8.x bumps the Android native runtime from ONNX Runtime 1.22.0 to 1.23.0,
+  # which routes fp32 GEMM through Arm KleidiAI (`ArmKleidiAI::MlasGemmBatch`,
+  # SME/SME2 kernels). That path segfaults inside `OrtSession.run` on arm64 and
+  # shipped as the v1.0.2 "crashes when starting a recording" bug.
+  # See docs/developer/onnxruntime-pin.md before changing this line.
+  flutter_onnxruntime: 1.7.1
 
   # UI & UX
   url_launcher: ^6.3.1
