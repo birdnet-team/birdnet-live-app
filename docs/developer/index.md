@@ -52,6 +52,7 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 - [Audio Pipeline](audio-pipeline.md) — Capture, ring buffer, and processing
 - [Inference Engine](inference-engine.md) — ONNX model loading and classification
 - [ONNX Runtime Pin](onnxruntime-pin.md) — why `flutter_onnxruntime` is pinned, and when to re-check
+- [Play Console Recommendations](play-console-recommendations.md) — already-investigated Play warnings and their verdicts
 - [Spectrogram](spectrogram.md) — FFT processing and rendering
 - [Session Review](session-review.md) — Post-session editing, playback, and export
 - [Localization](localization.md) — ARB files, adding strings, translation conventions
@@ -60,4 +61,5 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 - [Code Style](code-style.md) — Conventions and standards
 - [Species Bundle](species-bundle.md) — Rebuild bundled species images and metadata
 - [Building](building.md) — Build commands and release notes
+- [Build Performance](build-performance.md) — why Windows builds are slow, what helped, what not to touch
 - [Releasing](releasing.md) — Version bumping and release process
