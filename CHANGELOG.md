@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-08-03
+
 ### Changed
 
 - Upgraded the Android build toolchain to AGP 9.0.1, Gradle 9.1.0, and Kotlin 2.3.20, which enables R8 optimized resource shrinking and trims the app bundle slightly. Needs on-device testing before release.
+- File Analysis now sends up to four audio windows through each model call and uses five inference threads on Android, substantially improving offline-analysis throughput while preserving per-window timestamps, temporal pooling, and bounded-memory decoding.
+- File Analysis now reads WAV files in bounded chunks, overlaps decoding with inference, and uses two concurrent Android decoders for compressed audio. A 31.5-minute MP3 decoded 2.17x faster on a Pixel 10 Pro while keeping memory bounded.
 
 ## [1.0.3] - 2026-08-01
 
