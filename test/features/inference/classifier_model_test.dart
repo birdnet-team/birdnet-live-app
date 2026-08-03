@@ -34,6 +34,25 @@ void main() {
       );
     });
 
+    test('predictBatch rejects an empty batch', () {
+      final model = ClassifierModel();
+      expect(
+        () => model.predictBatch(const [], windowSamples: 96000),
+        throwsArgumentError,
+      );
+    });
+
+    test('predictBatch checks model state for a non-empty batch', () {
+      final model = ClassifierModel();
+      expect(
+        () => model.predictBatch([
+          Float32List(96000),
+          Float32List(96000),
+        ], windowSamples: 96000),
+        throwsA(isA<StateError>()),
+      );
+    });
+
     test('loadModelFromFile throws on missing file', () {
       final model = ClassifierModel();
       expect(
@@ -54,6 +73,36 @@ void main() {
       final output = ModelOutput(predictions: [0.1], embeddings: [0.5, 0.6]);
       expect(output.embeddings, isNotNull);
       expect(output.embeddings!.length, 2);
+    });
+
+    test('splits flattened batch outputs in input order', () {
+      final outputs = ModelOutput.splitBatch(
+        predictions: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+        embeddings: [1, 2, 3, 4],
+        batchSize: 2,
+      );
+
+      expect(outputs, hasLength(2));
+      expect(outputs[0].predictions, [0.1, 0.2, 0.3]);
+      expect(outputs[1].predictions, [0.4, 0.5, 0.6]);
+      expect(outputs[0].embeddings, [1, 2]);
+      expect(outputs[1].embeddings, [3, 4]);
+    });
+
+    test('rejects malformed flattened batch outputs', () {
+      expect(
+        () =>
+            ModelOutput.splitBatch(predictions: [0.1, 0.2, 0.3], batchSize: 2),
+        throwsStateError,
+      );
+      expect(
+        () => ModelOutput.splitBatch(
+          predictions: [0.1, 0.2, 0.3, 0.4],
+          embeddings: [1, 2, 3],
+          batchSize: 2,
+        ),
+        throwsStateError,
+      );
     });
   });
 }

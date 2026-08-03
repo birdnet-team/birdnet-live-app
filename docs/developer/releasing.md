@@ -58,9 +58,36 @@ The Play Store expects an `.aab`, not an APK. App Bundles deliver only the
 target device's ABI and resources, which trims our ~253 MB APK to ~221 MB on
 device.
 
+Use the helper script — it builds, verifies, stages every artifact into
+`release/V<version>/`, and prepares the notes:
+
 ```pwsh
-flutter build appbundle --release
+dart dev/build_release.dart --since <last-play-version>
 ```
+
+`--since` is **required**: it is the version currently live on Google Play.
+See [Release notes](#release-notes) for why.
+
+| Flag | Purpose |
+| ---- | ------- |
+| `--since <version>` | Version currently live on Play, e.g. `1.0.1`. Required. |
+| `--notes-only` | Regenerate the notes files without rebuilding the bundle. |
+
+The Flutter SDK must be on `PATH` — `flutter --version` has to work in the same
+shell. The script shells out to `flutter.bat` on Windows and will stop with a
+clear error if it cannot find it.
+
+Under the hood it runs:
+
+```pwsh
+flutter build appbundle --release `
+  --obfuscate --split-debug-info=build/symbols/V<version>
+```
+
+Windows quirk: the Java toolchain prints obsolete-options warnings that make
+`javac` return a non-zero exit code even when Gradle succeeded. The script
+therefore verifies the AAB on disk rather than trusting the exit code — do the
+same if you build by hand.
 
 Output:
 
@@ -77,27 +104,19 @@ the field.
 
 ## 5. Stage the release artifacts
 
-Copy everything for the release into a versioned folder under `release/`
-(also gitignored except for `.gitignore` itself):
+`dev/build_release.dart` does this for you. The result lives in a versioned
+folder under `release/` (gitignored except for `.gitignore` itself):
 
 ```
-release/0.15.2/
-  app-release.aab
-  app-release.apk          # optional, for direct sideload
+release/V1.0.3/
+  BirdNET_Live_V1.0.3.aab
   mapping.txt
-  release-notes/
-    en-US.txt
-    de-DE.txt
-    cs-CZ.txt
-    es-ES.txt
-    fr-FR.txt
-    it-IT.txt
-    nl-NL.txt
-    nb-NO.txt
-    pl-PL.txt
-    pt-PT.txt
-    ru-RU.txt
-    zh-CN.txt
+  release_notes.txt          # the deliverable — one block per locale
+  release_notes.source.txt   # reference digest, never uploaded
+  symbols/
+    app.android-arm.symbols
+    app.android-arm64.symbols
+    app.android-x64.symbols
 ```
 
 Keep this folder around — it is the canonical record of what was uploaded.
@@ -107,22 +126,56 @@ that matters.
 
 ### Release notes
 
-Each `release-notes/<locale>.txt` is plain text, max ~500 chars (the Play
-Store limit). Mirror the CHANGELOG entry, but write it for users rather than
-developers. Cover all 12 locales the app ships in: en-US, de-DE, cs-CZ,
-es-ES, fr-FR, it-IT, nl-NL, nb-NO, pl-PL, pt-PT, ru-RU, zh-CN. Any locale
-missing on Play Console falls back to en-US. Write zh-CN in Simplified Chinese
-characters, never pinyin.
+**We do not ship every tagged version to Play.** Uploads go out roughly weekly,
+so one Play release usually covers several CHANGELOG entries. That is why
+`--since` exists and why it cannot be inferred: the repo has no record of which
+version is actually live on the store, so whoever cuts the release has to say.
+
+Check the live version in Play Console → Production → Releases before running
+the script. Getting it wrong doesn't break the build, it just means the notes
+describe the wrong span of work.
+
+Two files are produced:
+
+- **`release_notes.source.txt`** — every CHANGELOG bullet between `--since` and
+  the current version, grouped by version. Regenerated on every run. Reference
+  only; never paste it into Play Console.
+- **`release_notes.txt`** — the deliverable. Only created when absent, so your
+  edits and translations survive a rebuild.
+
+Write the `<en-US>` block as **a single high-level line** covering everything
+since the last Play release — not a bullet dump, and not a per-version
+changelog. Store visitors want "what is different for me", so summarise:
+
+```
+<en-US>
+Adds a way to ignore species you don't want reported, and fixes a crash when starting a recording.
+</en-US>
+```
+
+Then translate that one line into the other 11 locales. Max ~500 characters per
+locale (the Play limit); the script's budget is 480 to leave room for
+translations that run longer than the English. All 12 locales the app ships in
+get a block: en-US, de-DE, cs-CZ, es-ES, fr-FR, it-IT, nl-NL, nb-NO, pl-PL,
+pt-PT, ru-RU, zh-CN. Any locale missing on Play Console falls back to en-US.
+Write zh-CN in Simplified Chinese characters, never pinyin.
+
+Resist auto-generating this text. An earlier version of the script filled the
+en-US block from the changelog and, because of a parsing bug, silently shipped
+"Stability and polish improvements." on every release for months.
 
 ## 6. Upload to Play Console
 
 1. Open Play Console → Internal testing (or Closed testing / Production).
-2. Create a new release.
-3. Upload `app-release.aab`.
-4. Upload `mapping.txt` under "App bundles → ⋮ → Upload deobfuscation
-   file".
-5. Paste each `release-notes/<locale>.txt` into the matching language slot.
-6. Review → roll out.
+2. Note the version currently live — that is the `--since` value for the *next*
+   release.
+3. Create a new release.
+4. Upload `release/V<version>/BirdNET_Live_V<version>.aab`.
+5. Upload `release/V<version>/mapping.txt` under "App bundles → ⋮ → Upload
+   deobfuscation file".
+6. Paste each block from `release_notes.txt` into the matching language slot.
+   Every `TODO:` must be gone first.
+7. Review → roll out.
 
 For first-time upload to a new track, expect a 1–2 hour review delay.
 

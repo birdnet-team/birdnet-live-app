@@ -161,15 +161,22 @@ class NativeAudioDecoder {
   }
 
   /// Decode a range of samples from [path] to mono 16-bit PCM.
+  ///
+  /// [allowConcurrent] lets bounded File Analysis read-ahead keep more than
+  /// one Android decoder active. Leave it disabled for ordinary random-access
+  /// reads, where starting a new decode retains the historical cancellation
+  /// behavior.
   static Future<DecodedAudio> decodeRange(
     String path, {
     required int startSample,
     required int count,
+    bool allowConcurrent = false,
   }) async {
     final result = await decodeRangeWithStatus(
       path,
       startSample: startSample,
       count: count,
+      allowConcurrent: allowConcurrent,
     );
     return result.audio;
   }
@@ -179,11 +186,15 @@ class NativeAudioDecoder {
     String path, {
     required int startSample,
     required int count,
+    bool allowConcurrent = false,
   }) async {
-    final result = await _channel.invokeMapMethod<String, dynamic>(
-      'decodeRange',
-      {'path': path, 'startSample': startSample, 'count': count},
-    );
+    final result = await _channel
+        .invokeMapMethod<String, dynamic>('decodeRange', {
+          'path': path,
+          'startSample': startSample,
+          'count': count,
+          'allowConcurrent': allowConcurrent,
+        });
 
     if (result == null) {
       throw const FormatException('Native audio range decoder returned null');

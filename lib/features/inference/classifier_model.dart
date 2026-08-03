@@ -94,6 +94,7 @@ class ClassifierModel {
     String inputName = 'input',
     String predictionsName = 'predictions',
     String? embeddingsName = 'embeddings',
+    int? intraOpNumThreads,
   }) async {
     final modelFile = File(modelPath);
     if (!modelFile.existsSync()) {
@@ -111,11 +112,22 @@ class ClassifierModel {
       await old.close();
     }
 
-    _session = await _ort.createSession(modelPath);
+    _session = await _ort.createSession(
+      modelPath,
+      options:
+          intraOpNumThreads == null
+              ? null
+              : OrtSessionOptions(
+                intraOpNumThreads: intraOpNumThreads,
+                interOpNumThreads: 1,
+                useArena: true,
+              ),
+    );
 
     debugPrint(
       '[ClassifierModel] loaded — inputs: ${_session!.inputNames} '
-      'outputs: ${_session!.outputNames}',
+      'outputs: ${_session!.outputNames} '
+      'intra-op threads: ${intraOpNumThreads ?? 'auto'}',
     );
   }
 
@@ -134,16 +146,65 @@ class ClassifierModel {
     Float32List audioSamples, {
     required int windowSamples,
   }) async {
+    final outputs = await _predictBatchInput(
+      _prepareInput(audioSamples, windowSamples),
+      batchSize: 1,
+      windowSamples: windowSamples,
+    );
+    return outputs.single;
+  }
+
+  /// Run one native inference call for multiple equally sized audio windows.
+  ///
+  /// Windows remain independent along the model's batch dimension. Short
+  /// inputs are padded and long inputs are truncated exactly like [predict].
+  Future<List<ModelOutput>> predictBatch(
+    List<Float32List> audioWindows, {
+    required int windowSamples,
+  }) async {
+    if (audioWindows.isEmpty) {
+      throw ArgumentError.value(
+        audioWindows,
+        'audioWindows',
+        'At least one audio window is required',
+      );
+    }
+
+    if (audioWindows.length == 1) {
+      return [await predict(audioWindows.single, windowSamples: windowSamples)];
+    }
+
+    final batchInput = Float32List(audioWindows.length * windowSamples);
+    for (var batchIndex = 0; batchIndex < audioWindows.length; batchIndex++) {
+      final window = _prepareInput(audioWindows[batchIndex], windowSamples);
+      batchInput.setRange(
+        batchIndex * windowSamples,
+        (batchIndex + 1) * windowSamples,
+        window,
+      );
+    }
+
+    return _predictBatchInput(
+      batchInput,
+      batchSize: audioWindows.length,
+      windowSamples: windowSamples,
+    );
+  }
+
+  Future<List<ModelOutput>> _predictBatchInput(
+    Float32List input, {
+    required int batchSize,
+    required int windowSamples,
+  }) async {
     final session = _session;
     if (session == null) {
       throw StateError('Model not loaded. Call loadModelFromFile() first.');
     }
 
-    // Prepare input: pad or truncate to exactly [windowSamples].
-    final input = _prepareInput(audioSamples, windowSamples);
-
-    // Create input tensor: shape [1, windowSamples].
-    final inputTensor = await OrtValue.fromList(input, [1, windowSamples]);
+    final inputTensor = await OrtValue.fromList(input, [
+      batchSize,
+      windowSamples,
+    ]);
 
     Map<String, OrtValue>? outputs;
     try {
@@ -167,7 +228,11 @@ class ClassifierModel {
         embeddings = await _toDoubleList(outputs[embName]!);
       }
 
-      return ModelOutput(predictions: predictions, embeddings: embeddings);
+      return ModelOutput.splitBatch(
+        predictions: predictions,
+        embeddings: embeddings,
+        batchSize: batchSize,
+      );
     } finally {
       // Release native resources.
       await inputTensor.dispose();
@@ -237,6 +302,43 @@ class ClassifierModel {
 class ModelOutput {
   /// Creates a model output container.
   const ModelOutput({required this.predictions, this.embeddings});
+
+  /// Split flattened batched outputs into one result per input window.
+  static List<ModelOutput> splitBatch({
+    required List<double> predictions,
+    required int batchSize,
+    List<double>? embeddings,
+  }) {
+    if (batchSize < 1 || predictions.length % batchSize != 0) {
+      throw StateError(
+        'Prediction output length ${predictions.length} cannot be split into '
+        '$batchSize batches',
+      );
+    }
+    if (embeddings != null && embeddings.length % batchSize != 0) {
+      throw StateError(
+        'Embedding output length ${embeddings.length} cannot be split into '
+        '$batchSize batches',
+      );
+    }
+
+    final predictionsPerBatch = predictions.length ~/ batchSize;
+    final embeddingsPerBatch =
+        embeddings == null ? 0 : embeddings.length ~/ batchSize;
+    return [
+      for (var index = 0; index < batchSize; index++)
+        ModelOutput(
+          predictions: predictions.sublist(
+            index * predictionsPerBatch,
+            (index + 1) * predictionsPerBatch,
+          ),
+          embeddings: embeddings?.sublist(
+            index * embeddingsPerBatch,
+            (index + 1) * embeddingsPerBatch,
+          ),
+        ),
+    ];
+  }
 
   /// Model scores for each species class.
   ///
