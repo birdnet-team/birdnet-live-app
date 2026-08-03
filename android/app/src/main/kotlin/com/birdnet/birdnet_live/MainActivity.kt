@@ -15,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileNotFoundException
+import java.util.Collections
 
 class MainActivity: FlutterActivity() {
     private val WAKELOCK_CHANNEL = "com.birdnet/wakelock"
@@ -25,7 +26,7 @@ class MainActivity: FlutterActivity() {
     private val ARU_NOTIFICATION_ACTION_EXTRA = "com.birdnet.aru_notification_action"
     private val QUICK_ACTION_INTENTS_CHANNEL = "com.birdnet/quick_action_intents"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private var activeDecodeJob: Job? = null
+    private val activeDecodeJobs = Collections.synchronizedSet(mutableSetOf<Job>())
     private var pendingAruNotificationAction: String? = null
     private var aruNotificationIntentChannel: MethodChannel? = null
     private var pendingQuickAction: String? = null
@@ -159,8 +160,7 @@ class MainActivity: FlutterActivity() {
                         result.error("INVALID_ARG", "Missing 'path' or 'tempPcmPath' argument", null)
                         return@setMethodCallHandler
                     }
-                    activeDecodeJob?.cancel()
-                    activeDecodeJob = scope.launch {
+                    launchDecode(allowConcurrent = false) {
                         try {
                             val decoded = NativeAudioDecoder.decode(path, tempPcmPath) {
                                 !coroutineContext.isActive
@@ -183,12 +183,12 @@ class MainActivity: FlutterActivity() {
                     val path = call.argument<String>("path")
                     val startSample = call.argument<Number>("startSample")?.toLong()
                     val count = call.argument<Number>("count")?.toInt()
+                    val allowConcurrent = call.argument<Boolean>("allowConcurrent") ?: false
                     if (path == null || startSample == null || count == null) {
                         result.error("INVALID_ARG", "Missing 'path', 'startSample', or 'count' argument", null)
                         return@setMethodCallHandler
                     }
-                    activeDecodeJob?.cancel()
-                    activeDecodeJob = scope.launch {
+                    launchDecode(allowConcurrent = allowConcurrent) {
                         try {
                             val decoded = NativeAudioDecoder.decodeRange(path, startSample, count) {
                                 !coroutineContext.isActive
@@ -208,8 +208,7 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 "cancelDecode" -> {
-                    activeDecodeJob?.cancel()
-                    activeDecodeJob = null
+                    cancelActiveDecodes()
                     result.success(null)
                 }
                 else -> result.notImplemented()
@@ -325,6 +324,26 @@ class MainActivity: FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    private fun launchDecode(
+        allowConcurrent: Boolean,
+        block: suspend CoroutineScope.() -> Unit,
+    ) {
+        if (!allowConcurrent) {
+            cancelActiveDecodes()
+        }
+        lateinit var job: Job
+        job = scope.launch(start = CoroutineStart.LAZY, block = block)
+        activeDecodeJobs.add(job)
+        job.invokeOnCompletion { activeDecodeJobs.remove(job) }
+        job.start()
+    }
+
+    private fun cancelActiveDecodes() {
+        val jobs = synchronized(activeDecodeJobs) { activeDecodeJobs.toList() }
+        jobs.forEach { it.cancel() }
+        activeDecodeJobs.clear()
     }
 
     override fun onDestroy() {

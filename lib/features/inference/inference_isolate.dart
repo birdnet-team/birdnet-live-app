@@ -55,6 +55,7 @@ class InferenceIsolate {
     required String labelsCsv,
     required ModelConfig config,
     String? scoreBlacklistJson,
+    int? intraOpNumThreads,
   }) async {
     if (isRunning) return;
 
@@ -69,6 +70,7 @@ class InferenceIsolate {
       labelsCsv: labelsCsv,
       config: config,
       scoreBlacklistJson: scoreBlacklistJson,
+      intraOpNumThreads: intraOpNumThreads,
     );
     _service = svc;
     debugPrint('[InferenceIsolate] model ready');
@@ -128,6 +130,47 @@ class InferenceIsolate {
         topK: topK,
         useTemporalPooling: useTemporalPooling,
         timestamp: timestamp,
+      );
+    } finally {
+      completer.complete();
+    }
+  }
+
+  /// Run multiple independent audio windows in one native model call.
+  ///
+  /// The batch is serialized with single-window calls, and its outputs are
+  /// post-processed in input order by [InferenceService].
+  Future<List<List<Detection>>> inferBatch(
+    List<Float32List> audioWindows, {
+    int? windowSeconds,
+    double? sensitivity,
+    double? confidenceThreshold,
+    int? topK,
+    bool useTemporalPooling = true,
+    List<DateTime>? timestamps,
+  }) async {
+    final svc = _service;
+    if (svc == null) {
+      throw StateError('Inference service not started. Call start() first.');
+    }
+
+    final previous = _pendingInfer;
+    final completer = Completer<void>();
+    _pendingInfer = completer.future;
+    try {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {}
+      }
+      return await svc.inferBatch(
+        audioWindows,
+        windowSeconds: windowSeconds,
+        sensitivity: sensitivity,
+        confidenceThreshold: confidenceThreshold,
+        topK: topK,
+        useTemporalPooling: useTemporalPooling,
+        timestamps: timestamps,
       );
     } finally {
       completer.complete();

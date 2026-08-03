@@ -41,6 +41,7 @@ import '../../core/services/asset_pack_service.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
+import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
 import '../inference/species_ignore_filter.dart';
 import '../live/live_session.dart';
@@ -162,6 +163,38 @@ class AudioFileInfo {
   }
 }
 
+class _PendingAnalysisWindow {
+  const _PendingAnalysisWindow({
+    required this.index,
+    required this.startSample,
+    required this.audio,
+  });
+
+  final int index;
+  final int startSample;
+  final Float32List audio;
+}
+
+class _DecodeChunkOutcome {
+  const _DecodeChunkOutcome.success(this.chunk)
+    : error = null,
+      stackTrace = null;
+
+  const _DecodeChunkOutcome.failure(this.error, this.stackTrace) : chunk = null;
+
+  final DecodedAudio? chunk;
+  final Object? error;
+  final StackTrace? stackTrace;
+
+  DecodedAudio unwrap() {
+    final failure = error;
+    if (failure != null) {
+      Error.throwWithStackTrace(failure, stackTrace!);
+    }
+    return chunk!;
+  }
+}
+
 // =============================================================================
 // Controller
 // =============================================================================
@@ -173,7 +206,33 @@ class FileAnalysisController {
   /// Number of seconds decoded at once for native compressed analysis.
   /// A chunk also includes one extra analysis window so all windows that
   /// start inside the chunk can be served without re-decoding.
-  static const int _nativeAnalysisChunkSeconds = 120;
+  static const int _analysisChunkSeconds = 120;
+
+  /// Upper bound for each decoded PCM16 chunk. Android keeps up to three
+  /// chunks resident while two decoders run ahead of inference.
+  static const int _maxDecodedChunkBytes = 16 * 1024 * 1024;
+
+  /// Four 3-second windows gave the best measured throughput/memory balance.
+  /// Keep longer-window batches within the same 12 seconds of source audio so
+  /// 5- and 10-second modes do not multiply activation memory unexpectedly.
+  static const int _maxInferenceBatchSize = 4;
+  static const int _maxBatchedAudioSeconds = 12;
+
+  /// Android offline analysis favors throughput over Live Mode's power needs.
+  /// Five threads measured best on a Pixel 10 Pro; clamp to the actual core
+  /// count so smaller devices do not oversubscribe their CPUs.
+  static const int _androidOfflineInferenceThreads = 5;
+
+  static int? get _offlineInferenceThreads =>
+      Platform.isAndroid
+          ? math.max(
+            1,
+            math.min(
+              _androidOfflineInferenceThreads,
+              Platform.numberOfProcessors,
+            ),
+          )
+          : null;
 
   // ── Internal state ────────────────────────────────────────────────────
 
@@ -242,6 +301,7 @@ class FileAnalysisController {
         labelsCsv: labelsCsv,
         config: _config!,
         scoreBlacklistJson: scoreBlacklistJson,
+        intraOpNumThreads: _offlineInferenceThreads,
       );
 
       _state = FileAnalysisState.ready;
@@ -478,27 +538,20 @@ class FileAnalysisController {
       // detect species that dropped out so we stop extending their record.
       var previousWindowNames = <String>{};
 
-      Future<void> processWindow(
-        int w,
-        int startSample,
-        Float32List audioChunk,
-      ) async {
+      DateTime timestampFor(int startSample) {
         // Timestamp relative to audio file start.
         final windowOffsetSec = startSample / sourceSampleRate;
-        final windowTimestamp = fileStartTime.add(
+        return fileStartTime.add(
           Duration(milliseconds: (windowOffsetSec * 1000).round()),
         );
+      }
 
-        // Run inference.
-        final detections = await _isolate.infer(
-          audioChunk,
-          windowSeconds: windowDuration,
-          sensitivity: sensitivity,
-          confidenceThreshold: confidenceThreshold / 100.0,
-          useTemporalPooling: poolingMode != 'off',
-          timestamp: windowTimestamp,
-        );
-
+      void processDetections(
+        _PendingAnalysisWindow window,
+        List<Detection> detections, {
+        required bool notify,
+      }) {
+        final windowTimestamp = timestampFor(window.startSample);
         // Apply species filter.
         var filtered = SpeciesFilter.apply(
           detections: detections,
@@ -570,12 +623,73 @@ class FileAnalysisController {
 
         // Update progress.
         _progress = AnalysisProgress(
-          currentWindow: w + 1,
+          currentWindow: window.index + 1,
           totalWindows: totalWindows,
           detectionsFound: allDetections.length,
           speciesFound: speciesSet.length,
         );
-        _notifyListeners();
+        if (notify) {
+          _notifyListeners();
+        }
+      }
+
+      final pendingWindows = <_PendingAnalysisWindow>[];
+      final inferenceBatchSize = math.min(
+        _maxInferenceBatchSize,
+        math.max(1, _maxBatchedAudioSeconds ~/ windowDuration),
+      );
+
+      Future<void> flushInferenceBatch() async {
+        if (pendingWindows.isEmpty) return;
+        if (_cancelRequested) {
+          pendingWindows.clear();
+          return;
+        }
+
+        final batch = List<_PendingAnalysisWindow>.of(pendingWindows);
+        pendingWindows.clear();
+        final detectionBatches = await _isolate.inferBatch(
+          [for (final window in batch) window.audio],
+          windowSeconds: windowDuration,
+          sensitivity: sensitivity,
+          confidenceThreshold: confidenceThreshold / 100.0,
+          useTemporalPooling: poolingMode != 'off',
+          timestamps: [
+            for (final window in batch) timestampFor(window.startSample),
+          ],
+        );
+
+        if (_cancelRequested) return;
+        if (detectionBatches.length != batch.length) {
+          throw StateError(
+            'Inference returned ${detectionBatches.length} result batches for '
+            '${batch.length} input windows',
+          );
+        }
+        for (var index = 0; index < batch.length; index++) {
+          processDetections(
+            batch[index],
+            detectionBatches[index],
+            notify: index == batch.length - 1,
+          );
+        }
+      }
+
+      Future<void> enqueueWindow(
+        int index,
+        int startSample,
+        Float32List audio,
+      ) async {
+        pendingWindows.add(
+          _PendingAnalysisWindow(
+            index: index,
+            startSample: startSample,
+            audio: audio,
+          ),
+        );
+        if (pendingWindows.length >= inferenceBatchSize) {
+          await flushInferenceBatch();
+        }
       }
 
       // 4. Slide over windows. FLAC is decoded sequentially so long files do
@@ -596,94 +710,202 @@ class FileAnalysisController {
                     ? sourceChunk.resampleTo(modelSampleRate)
                     : sourceChunk;
             final audioChunk = modelChunk.readFloat32(0, modelWindowSamples);
-            await processWindow(w, startSample, audioChunk);
+            await enqueueWindow(w, startSample, audioChunk);
             return !_cancelRequested;
           },
         );
-      } else if (canDart) {
-        for (var w = 0; w < totalWindows; w++) {
-          if (_cancelRequested) {
-            debugPrint('[FileAnalysis] canceled at window $w/$totalWindows');
-            break;
-          }
-
-          final startSample = w * stepSamples;
-          final sourceChunk = await AudioDecoder.decodeRange(
-            filePath,
-            startSample: startSample,
-            count: sourceWindowSamples,
-          );
-          final modelChunk =
-              sourceChunk.sampleRate != modelSampleRate
-                  ? sourceChunk.resampleTo(modelSampleRate)
-                  : sourceChunk;
-          final audioChunk = modelChunk.readFloat32(0, modelWindowSamples);
-          await processWindow(w, startSample, audioChunk);
-        }
       } else {
-        // Native compressed formats: decode bounded chunks instead of
-        // expanding the whole file into memory. Each chunk includes one
-        // extra analysis window so windows starting near the chunk end have
-        // enough post-roll samples available.
-        final chunkSamples = _nativeAnalysisChunkSeconds * sourceSampleRate;
+        // WAV and native compressed formats use bounded chunks. Decode the
+        // next chunk while batched model inference consumes the current one;
+        // this overlaps the two dominant stages without expanding the whole
+        // file into memory. Each chunk includes enough post-roll for every
+        // window assigned to it.
+        final maxChunkStartSpan = math.max(
+          1,
+          _maxDecodedChunkBytes ~/ 2 - sourceWindowSamples,
+        );
+        final chunkSamples = math.min(
+          _analysisChunkSeconds * sourceSampleRate,
+          maxChunkStartSpan,
+        );
 
-        int currentChunkStart = -1;
-        DecodedAudio? currentChunkAudio;
-        int decodedChunkSamples = 0;
-
-        for (var w = 0; w < totalWindows; w++) {
-          if (_cancelRequested) {
-            debugPrint('[FileAnalysis] canceled at window $w/$totalWindows');
-            break;
+        ({int firstWindow, int endWindow, int startSample, int count})
+        planChunk(int firstWindow) {
+          final startSample = firstWindow * stepSamples;
+          var endWindow = firstWindow + 1;
+          final chunkEndSample = startSample + chunkSamples;
+          while (endWindow < totalWindows &&
+              endWindow * stepSamples < chunkEndSample) {
+            endWindow++;
           }
+          final lastWindowStart = (endWindow - 1) * stepSamples;
+          final requiredSamples =
+              lastWindowStart + sourceWindowSamples - startSample;
+          return (
+            firstWindow: firstWindow,
+            endWindow: endWindow,
+            startSample: startSample,
+            count: math.min(requiredSamples, sourceTotalSamples - startSample),
+          );
+        }
 
-          final startSample = w * stepSamples;
-
-          // Check if we need to load a new chunk.
-          if (currentChunkAudio == null ||
-              startSample < currentChunkStart ||
-              (startSample + sourceWindowSamples) >
-                  (currentChunkStart + decodedChunkSamples)) {
-            currentChunkStart = startSample;
-            final countToDecode = math.min(
-              chunkSamples + sourceWindowSamples,
-              sourceTotalSamples - currentChunkStart,
-            );
-
+        Future<_DecodeChunkOutcome> requestChunk(
+          ({int firstWindow, int endWindow, int startSample, int count}) plan,
+        ) async {
+          try {
             debugPrint(
-              '[FileAnalysis] loading native chunk starting at $currentChunkStart, count $countToDecode',
+              '[FileAnalysis] decoding chunk at ${plan.startSample}, '
+              'count ${plan.count}',
             );
-
-            final decodedChunk = await NativeAudioDecoder.decodeRange(
-              filePath,
-              startSample: currentChunkStart,
-              count: countToDecode,
-            );
-
-            decodedChunkSamples = decodedChunk.totalSamples;
-            if (decodedChunkSamples == 0) {
-              break;
+            if (canDart) {
+              return _DecodeChunkOutcome.success(
+                await AudioDecoder.decodeRange(
+                  filePath,
+                  startSample: plan.startSample,
+                  count: plan.count,
+                ),
+              );
             }
 
-            currentChunkAudio =
-                decodedChunk.sampleRate != modelSampleRate
-                    ? decodedChunk.resampleTo(modelSampleRate)
-                    : decodedChunk;
+            return _DecodeChunkOutcome.success(
+              await NativeAudioDecoder.decodeRange(
+                filePath,
+                startSample: plan.startSample,
+                count: plan.count,
+                allowConcurrent: Platform.isAndroid,
+              ),
+            );
+          } catch (error, stackTrace) {
+            return _DecodeChunkOutcome.failure(error, stackTrace);
           }
+        }
 
-          // Read the sub-segment from the current chunk.
-          final offsetInChunk = startSample - currentChunkStart;
-          final mappedOffset =
-              (offsetInChunk * modelSampleRate / sourceSampleRate).round();
+        final plans =
+            <({int firstWindow, int endWindow, int startSample, int count})>[];
+        for (var firstWindow = 0; firstWindow < totalWindows;) {
+          final plan = planChunk(firstWindow);
+          plans.add(plan);
+          firstWindow = plan.endWindow;
+        }
 
-          final audioChunk = currentChunkAudio.readFloat32(
-            mappedOffset,
-            modelWindowSamples,
-          );
+        // Two Android MediaCodec sessions decoded the 31.5-minute benchmark
+        // MP3 2.17x faster than one. Other platforms keep one decoder until
+        // their native stacks have the same device coverage.
+        final decodeReadAhead = !canDart && Platform.isAndroid ? 2 : 1;
+        final pendingChunks =
+            <
+              ({
+                ({int firstWindow, int endWindow, int startSample, int count})
+                plan,
+                Future<_DecodeChunkOutcome> outcome,
+              })
+            >[];
+        var nextPlanIndex = 0;
 
-          await processWindow(w, startSample, audioChunk);
+        void fillDecodeQueue() {
+          while (!_cancelRequested &&
+              pendingChunks.length < decodeReadAhead &&
+              nextPlanIndex < plans.length) {
+            final nextPlan = plans[nextPlanIndex++];
+            pendingChunks.add((
+              plan: nextPlan,
+              outcome: requestChunk(nextPlan),
+            ));
+          }
+        }
+
+        fillDecodeQueue();
+        // A chunk that decodes short is not proof the file ended: container
+        // durations are estimates and native decoders occasionally return
+        // less than requested mid-file. Skip only the windows that chunk
+        // cannot serve and keep going. Chunks are planned from absolute
+        // sample offsets, so later chunks stay correct regardless. Give up
+        // only after consecutive chunks decode nothing at all, which is what
+        // a genuinely over-reported duration looks like.
+        const maxEmptyChunksBeforeStop = 2;
+        var consecutiveEmptyChunks = 0;
+        var skippedWindows = 0;
+        try {
+          while (!_cancelRequested && pendingChunks.isNotEmpty) {
+            final pending = pendingChunks.removeAt(0);
+            final decoded = (await pending.outcome).unwrap();
+            if (_cancelRequested) break;
+
+            // Maintain read-ahead before resampling/inference so decoding can
+            // overlap all CPU and native model work for this chunk.
+            fillDecodeQueue();
+
+            final plan = pending.plan;
+            if (decoded.totalSamples == 0) {
+              consecutiveEmptyChunks++;
+              skippedWindows += plan.endWindow - plan.firstWindow;
+              debugPrint(
+                '[FileAnalysis] chunk at ${plan.startSample} decoded no '
+                'samples (${plan.endWindow - plan.firstWindow} windows '
+                'skipped)',
+              );
+              if (consecutiveEmptyChunks >= maxEmptyChunksBeforeStop) {
+                debugPrint(
+                  '[FileAnalysis] stopping after $consecutiveEmptyChunks '
+                  'empty chunks; file ended before its reported duration',
+                );
+                break;
+              }
+              continue;
+            }
+            consecutiveEmptyChunks = 0;
+
+            final modelChunk =
+                decoded.sampleRate != modelSampleRate
+                    ? decoded.resampleTo(modelSampleRate)
+                    : decoded;
+            for (var w = plan.firstWindow; w < plan.endWindow; w++) {
+              if (_cancelRequested) {
+                debugPrint(
+                  '[FileAnalysis] canceled at window $w/$totalWindows',
+                );
+                break;
+              }
+
+              final startSample = w * stepSamples;
+              final offsetInChunk = startSample - plan.startSample;
+              // Decoders may return slightly fewer samples than the metadata
+              // duration promises, especially for the file tail. Analyze every
+              // window that still starts inside the decoded audio and let
+              // readFloat32 zero-fill the remainder, as the pre-batching
+              // per-window path did.
+              if (offsetInChunk >= decoded.totalSamples) {
+                skippedWindows += plan.endWindow - w;
+                debugPrint(
+                  '[FileAnalysis] chunk at ${plan.startSample} decoded '
+                  '${decoded.totalSamples}/${plan.count} samples '
+                  '(${plan.endWindow - w} windows skipped)',
+                );
+                break;
+              }
+              final mappedOffset =
+                  (offsetInChunk * modelSampleRate / sourceSampleRate).round();
+              final audioChunk = modelChunk.readFloat32(
+                mappedOffset,
+                modelWindowSamples,
+              );
+              await enqueueWindow(w, startSample, audioChunk);
+            }
+          }
+          if (skippedWindows > 0) {
+            debugPrint(
+              '[FileAnalysis] $skippedWindows/$totalWindows windows were not '
+              'analyzed because the audio ended early or decoded short',
+            );
+          }
+        } finally {
+          if (!canDart && pendingChunks.isNotEmpty) {
+            await NativeAudioDecoder.cancelDecode();
+          }
         }
       }
+
+      await flushInferenceBatch();
 
       // 5. Finalize session.
       session.detections.addAll(allDetections);

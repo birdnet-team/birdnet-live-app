@@ -211,6 +211,52 @@ void main() {
     expect(output.embeddings!.length, equals(1280));
   });
 
+  testWidgets(
+    'Batched predictions match repeated single-window inference',
+    (tester) async {
+      final count = fixtureWindows.length < 4 ? fixtureWindows.length : 4;
+      final chunks = <Float32List>[
+        for (var index = 0; index < count; index++)
+          Float32List.sublistView(
+            allAudioSamples,
+            (fixtureWindows[index]['fixtureIndex'] as int) * windowSamples,
+            ((fixtureWindows[index]['fixtureIndex'] as int) + 1) *
+                windowSamples,
+          ),
+      ];
+
+      final batched = await model.predictBatch(
+        chunks,
+        windowSamples: windowSamples,
+      );
+      expect(batched, hasLength(chunks.length));
+
+      for (var batchIndex = 0; batchIndex < chunks.length; batchIndex++) {
+        final single = await model.predict(
+          chunks[batchIndex],
+          windowSamples: windowSamples,
+        );
+        expect(batched[batchIndex].predictions, hasLength(labels.length));
+        var maxPredictionDifference = 0.0;
+        for (var index = 0; index < labels.length; index++) {
+          final difference =
+              (batched[batchIndex].predictions[index] -
+                      single.predictions[index])
+                  .abs();
+          if (difference > maxPredictionDifference) {
+            maxPredictionDifference = difference;
+          }
+        }
+        expect(
+          maxPredictionDifference,
+          lessThan(0.005),
+          reason: 'Batch $batchIndex changed model probabilities',
+        );
+      }
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
+
   testWidgets('All model output values are valid probabilities', (
     tester,
   ) async {
