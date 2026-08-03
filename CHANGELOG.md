@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded the Android build toolchain to AGP 9.0.1, Gradle 9.1.0, and Kotlin 2.3.20, which enables R8 optimized resource shrinking and trims the app bundle slightly. Needs on-device testing before release.
+
 ## [1.0.3] - 2026-08-01
 
 ### Fixed
