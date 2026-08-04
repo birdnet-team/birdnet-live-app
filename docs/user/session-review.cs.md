@@ -71,13 +71,13 @@ Přejetí řádku **záhlaví druhu** (doleva nebo doprava) smaže všechny dete
 
 ### Sdílení jedné detekce
 
-Položka :material-share-variant: **Sdílet detekci** otevře systémový panel sdílení se stručným obsahem vhodným pro terénní nástroje — běžný a vědecký název, konfidence, časová značka v UTC podle ISO 8601 a `geo:` URI, má-li detekce GPS — a připojí zvukový klip, kdykoli je k dispozici. Sdílený soubor se jmenuje `BirdNET_Live_<timestamp>_<species>.<ext>`, aby odpovídal schématu exportu do ZIP.
+Položka :material-share-variant: **Sdílet detekci** používá stejné volby jako **Nastavení → Export a synchronizace**. Exportuje pouze tuto detekci ve zvolených artefaktech Raven, CSV, JSON, GPX, HTML a metadatech aplikace. Když je zapnuté **Zahrnout zvukové soubory**, balíček obsahuje i zvuk detekce; volba **Vždy sdílet zvuk jako WAV** je dodržena. Když jsou všechny doprovodné formáty, HTML i metadata aplikace vypnuté, systémový panel sdílení dostane nezabalený zvukový klip místo ZIP.
 
 Zvuková příloha se vyhledává v tomto pořadí:
 
-1. Vlastní klip detekce uložený na disku.
-2. **U sessions nahrávajících jeden souvislý soubor**: příslušné zvukové okno se za běhu vyřízne z nahrávky. Podporovány jsou souvislé nahrávky ve WAV i FLAC a výřez se posílá ve stejném kontejneru jako zdroj (WAV dovnitř → WAV ven, FLAC dovnitř → FLAC ven).
-3. Pokud není dostupné ani jedno, sdílení je pouze textové — poloha a časová značka se do obsahu dostanou i tak.
+1. **U sessions nahrávajících jeden souvislý soubor**: z nahrávky se za běhu vyřízne zvuk od počáteční po koncovou časovou značku detekce. Podporovány jsou souvislé nahrávky WAV i FLAC; komprimované zdroje z File Analysis se dekódují jako WAV.
+2. Jinak se použije vlastní uložený klip detekce, pokud je na disku.
+3. Pokud není dostupný žádný zdroj zvuku a není vybrán žádný exportní artefakt, sdílení přejde na stručný text s druhem, jistotou, časovou značkou UTC a polohou.
 
 ### Hlasové poznámky
 

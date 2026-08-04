@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Sharing now works on iPad. Every share button passes the anchor rectangle iPadOS requires for the share popover, which previously made the buttons do nothing. A share the system refuses now reports an error instead of failing silently.
+- Sharing one detection from a full-audio Session now includes an exact start-to-end audio clip and honors the saved export format, include-audio, WAV conversion, HTML report, and app-metadata settings instead of falling back to text-only sharing.
 
 ## [1.0.4] - 2026-08-03
 

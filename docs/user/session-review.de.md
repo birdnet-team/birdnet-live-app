@@ -71,13 +71,13 @@ Das Wischen einer **Artenkopfzeile** (nach links oder rechts) löscht alle Detek
 
 ### Eine einzelne Detektion teilen
 
-Der Eintrag :material-share-variant: **Detektion teilen** öffnet das Teilen-Menü der Plattform mit einer knappen, feldtauglichen Nutzlast – gebräuchlicher und wissenschaftlicher Name, Konfidenz, Zeitstempel in ISO 8601 (UTC) sowie eine `geo:`-URI, wenn die Detektion über GPS verfügt – und hängt nach Möglichkeit den Audioclip an. Die geteilte Datei heißt `BirdNET_Live_<timestamp>_<species>.<ext>`, passend zum Schema des ZIP-Exports.
+Der Eintrag :material-share-variant: **Detektion teilen** verwendet dieselben Optionen wie **Einstellungen → Export & Synchronisierung**. Er exportiert nur diese Detektion in den ausgewählten Raven-, CSV-, JSON-, GPX-, HTML- und App-Metadaten-Artefakten. Ist **Audiodateien einbeziehen** aktiviert, enthält das Paket auch den Detektions-Audioinhalt; **Audio immer als WAV teilen** wird beachtet. Sind alle Begleitformate, HTML und App-Metadaten deaktiviert, erhält das Teilen-Menü den unverpackten Audioclip statt einer ZIP-Datei.
 
 Der Audio-Anhang wird in dieser Reihenfolge ermittelt:
 
-1. Der eigene Clip der Detektion auf dem Speicher.
-2. **Bei Sessions, die eine durchgehende Datei aufzeichnen:** Das passende Audiofenster wird im laufenden Betrieb aus der Aufnahme herausgeschnitten. Sowohl durchgehende WAV- als auch FLAC-Aufnahmen werden unterstützt, und der Ausschnitt wird im selben Container wie die Quelle ausgegeben (WAV rein → WAV raus, FLAC rein → FLAC raus).
-3. Ist keines von beiden verfügbar, erfolgt die Freigabe nur als Text – Standort und Zeitstempel landen weiterhin in der Nutzlast.
+1. **Bei Sessions, die eine durchgehende Datei aufzeichnen:** Audio vom Start- bis zum Endzeitstempel der Detektion wird direkt aus der Aufnahme geschnitten. Durchgehende WAV- und FLAC-Aufnahmen werden unterstützt; komprimierte File-Analysis-Quellen werden als WAV dekodiert.
+2. Andernfalls wird der gespeicherte eigene Clip der Detektion verwendet, wenn er auf dem Speicher liegt.
+3. Ist keine Audioquelle verfügbar und kein Export-Artefakt ausgewählt, fällt das Teilen auf einen kurzen Text mit Art, Konfidenz, UTC-Zeitstempel und Standort zurück.
 
 ### Sprachmemos
 

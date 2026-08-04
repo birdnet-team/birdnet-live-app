@@ -71,13 +71,13 @@ Faire glisser une ligne d'**en-tête d'espèce** (vers la gauche ou la droite) s
 
 ### Partage d'une seule détection
 
-L'entrée :material-share-variant: **Partager la détection** ouvre la feuille de partage du système avec un contenu concis et adapté au travail de terrain — nom commun et scientifique, confiance, horodatage UTC au format ISO 8601, et une URI `geo:` lorsque la détection possède des coordonnées GPS — et joint le clip audio dès qu'il est disponible. Le fichier partagé est nommé `BirdNET_Live_<timestamp>_<species>.<ext>` pour correspondre au schéma de l'export ZIP.
+L'entrée :material-share-variant: **Partager la détection** utilise les mêmes choix que **Paramètres → Exporter et synchroniser**. Elle exporte uniquement cette détection dans les artefacts Raven, CSV, JSON, GPX, HTML et métadonnées de l'application sélectionnés. Lorsque **Inclure les fichiers audio** est activé, le paquet contient aussi l'audio de la détection ; **Toujours partager l'audio en WAV** est respecté. Avec tous les formats compagnons, HTML et métadonnées de l'application désactivés, la feuille de partage reçoit le clip audio brut plutôt qu'une archive ZIP.
 
 La pièce jointe audio est résolue dans cet ordre :
 
-1. Le clip propre à la détection présent sur le disque.
-2. **Pour les sessions enregistrant un seul fichier continu** : la fenêtre audio correspondante est extraite de l'enregistrement à la volée. Les enregistrements continus WAV et FLAC sont pris en charge, et l'extrait est livré dans le même conteneur que la source (WAV en entrée → WAV en sortie, FLAC en entrée → FLAC en sortie).
-3. Si aucun n'est disponible, le partage est en texte seul — la localisation et l'horodatage figurent tout de même dans le contenu.
+1. **Pour les sessions enregistrant un seul fichier continu** : l'audio compris entre les horodatages de début et de fin de la détection est extrait directement de l'enregistrement. Les enregistrements continus WAV et FLAC sont pris en charge ; les sources File Analysis compressées sont décodées en WAV.
+2. Sinon, le clip propre à la détection est utilisé lorsqu'il est présent sur le disque.
+3. Sans source audio ni artefact d'export sélectionné, le partage revient à un court texte avec l'espèce, la confiance, l'horodatage UTC et la position.
 
 ### Mémos vocaux
 

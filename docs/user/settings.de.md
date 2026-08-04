@@ -267,7 +267,7 @@ Die Intuition dahinter: Viele Arbeitsabläufe brauchen mehr als ein Format gleic
 
 ### Audiodateien einschließen
 
-Gespeichertes Audio zusammen mit den exportierten Tabellen oder Metadaten einschließen, sofern der Exportablauf das unterstützt.
+Gespeichertes Audio zusammen mit den exportierten Tabellen oder Metadaten einschließen, sofern der Exportablauf das unterstützt. Auch das Teilen einer einzelnen Detektion folgt dieser Einstellung: Eine vollständige Session-Aufnahme wird auf die exakten Start- und Endzeitstempel der Detektion geschnitten, während eine Session nur mit Detektionsclips ihren gespeicherten Clip verwendet.
 
 ### Audio immer als WAV teilen
 
@@ -283,7 +283,7 @@ Wenn aktiviert, enthält jedes Export-ZIP zusätzlich eine Datei `<session>_repo
 
 ### Nur Audio teilen
 
-Nehmen Sie den Haken bei jedem Format **und** beim HTML-Bericht **und** beim Feld für die App-Metadaten weg, sodass nur **Audiodateien einschließen** bleibt: Dann übergibt „Teilen“ dem Systemdialog die reine Aufnahme (z. B. `BirdNET_Live_…flac`) statt eines ZIP. Das ist der reibungsarme Weg, eine Session direkt an iNaturalist, eBird oder jede andere App zu senden, die eine unverpackte Audiodatei erwartet. Sessions, die aus Detektionsclips bestehen (ohne vollständige Aufnahme), erzeugen weiterhin ein ZIP, weil es dann mehr als eine Datei zu teilen gibt.
+Nehmen Sie den Haken bei jedem Format **und** beim HTML-Bericht **und** beim Feld für die App-Metadaten weg, sodass nur **Audiodateien einschließen** bleibt: Dann übergibt „Teilen“ dem Systemdialog die reine Aufnahme (z. B. `BirdNET_Live_…flac`) statt eines ZIP. Das ist der reibungsarme Weg, eine Session direkt an iNaturalist, eBird oder jede andere App zu senden, die eine unverpackte Audiodatei erwartet. Sessions mit mehreren Detektionsclips erzeugen weiterhin ein ZIP; beim Teilen einer einzelnen Detektion wird deren einzelner roher Clip übergeben.
 
 ## Datenschutz
 

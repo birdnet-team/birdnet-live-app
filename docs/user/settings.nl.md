@@ -267,7 +267,7 @@ De gedachte erachter: veel workflows hebben tegelijk meer dan één formaat nodi
 
 ### Audiobestanden meesturen
 
-Neem de opgeslagen audio mee naast de geëxporteerde tabellen of metadata wanneer de exportworkflow dat ondersteunt.
+Neem de opgeslagen audio mee naast de geëxporteerde tabellen of metadata wanneer de exportworkflow dat ondersteunt. Het delen van één detectie volgt deze instelling ook: een volledige Session-opname wordt op de exacte begin- en eindtijdstempels van die detectie gesneden, terwijl een Session met alleen detecties het bewaarde fragment gebruikt.
 
 ### Audio altijd als WAV delen
 
@@ -283,7 +283,7 @@ Staat die aan, dan bevat elke export-ZIP ook een bestand `<session>_report.html`
 
 ### Alleen audio delen
 
-Haal het vinkje weg bij elk formaat **én** bij het HTML-rapport **én** bij het vakje voor app-metadata, zodat alleen **Audiobestanden meesturen** overblijft: dan geeft Delen de kale opname (bijvoorbeeld `BirdNET_Live_…flac`) aan het systeemvenster in plaats van een ZIP. Dat is de eenvoudigste route om een Session rechtstreeks naar iNaturalist, eBird of een andere app te sturen die een onverpakt audiobestand verwacht. Sessions die uit detectiefragmenten bestaan (zonder volledige opname) leveren nog steeds een ZIP op, omdat er dan meer dan één bestand te delen is.
+Haal het vinkje weg bij elk formaat **én** bij het HTML-rapport **én** bij het vakje voor app-metadata, zodat alleen **Audiobestanden meesturen** overblijft: dan geeft Delen de kale opname (bijvoorbeeld `BirdNET_Live_…flac`) aan het systeemvenster in plaats van een ZIP. Dat is de eenvoudigste route om een Session rechtstreeks naar iNaturalist, eBird of een andere app te sturen die een onverpakt audiobestand verwacht. Sessions met meerdere detectiefragmenten leveren nog steeds een ZIP op; bij het delen van één detectie wordt dat ene kale fragment overgedragen.
 
 ## Privacy
 

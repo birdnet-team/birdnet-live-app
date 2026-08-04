@@ -266,7 +266,7 @@ Intuice: mnoho pracovních postupů potřebuje více formátů najednou – CSV 
 
 ### Zahrnout zvukové soubory
 
-Zahrnout uložený zvuk vedle exportovaných tabulek nebo metadat, pokud to daný postup exportu podporuje.
+Zahrnout uložený zvuk vedle exportovaných tabulek nebo metadat, pokud to daný postup exportu podporuje. Sdílení jedné detekce se také řídí tímto nastavením: úplná nahrávka Session se ořízne na přesné počáteční a koncové časové značky detekce, zatímco Session pouze s detekcemi použije její uložený klip.
 
 ### Zvuk vždy sdílet jako WAV
 
@@ -282,7 +282,7 @@ Po zapnutí obsahuje každý exportní ZIP navíc soubor `<session>_report.html`
 
 ### Sdílení pouze zvuku
 
-Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z úseků detekcí (bez úplné nahrávky) stále vytvoří ZIP, protože je pak ke sdílení více než jeden soubor.
+Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z více úseků detekcí stále vytvoří ZIP; při sdílení jedné detekce se předá její jediný surový klip.
 
 ## Soukromí
 
