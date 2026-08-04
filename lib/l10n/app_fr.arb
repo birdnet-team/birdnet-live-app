@@ -350,6 +350,7 @@
   "sessionTrimCommitConfirm": "Rogner et enregistrer",
   "sessionTrimCommitFailed": "Impossible de rogner l'enregistrement. La session a été sauvegardée et le rognage s'applique toujours à la lecture et aux exports.",
   "sessionTrimExportFailed": "Impossible de préparer l'audio rogné pour le partage.",
+  "shareSheetFailed": "Le menu de partage n'a pas pu être ouvert.",
   "sessionHelpTitle": "Aide du résumé de session",
   "sessionHelpOverview": "Le résumé de session vous permet d'examiner, modifier et exporter votre session de détection. Appuyez sur les lignes d'espèces pour voir les détections individuelles. Utilisez le spectrogramme pour naviguer dans l'enregistrement.",
   "sessionHelpAddSpecies": "Ajouter une espèce : Appuyez sur le bouton + pour ajouter manuellement une espèce. Vous pouvez l'insérer globalement (pour toute la session), à la position de lecture actuelle, ou en remplacement d'une détection existante. Après avoir choisi une espèce, une fiche de confirmation vous permet de cocher 'Entendu' et/ou 'Vu' avant l'ajout. Utilisez 'Inconnu / Autre' pour les appels non identifiés.",

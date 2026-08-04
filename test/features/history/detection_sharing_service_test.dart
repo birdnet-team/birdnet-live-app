@@ -12,6 +12,7 @@
 
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' show Rect;
 
 import 'package:birdnet_live/features/history/services/detection_sharing_service.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
@@ -242,6 +243,61 @@ void main() {
 
       final decoded = await AudioDecoder.decodeFile(params.files!.single.path);
       expect(_peak(decoded.samples), greaterThan(0.9));
+    });
+
+    // Regression guard for issue #203: iPad presents the share sheet as a
+    // popover and the iOS plugin refuses to show it without an anchor
+    // rect, so sharePositionOrigin has to survive every branch of the
+    // cascade — saved clip, slice extracted from the full recording, and
+    // the text-only fallback.
+    group('sharePositionOrigin', () {
+      const origin = Rect.fromLTWH(12, 34, 56, 78);
+
+      test('is forwarded when sharing a saved clip', () async {
+        final clip = File(p.join(tmp.path, 'anchored_clip.wav'));
+        await WavWriter.writeFile(
+          filePath: clip.path,
+          samples: _pcmLikeFloatSamples(32000),
+        );
+        final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0))
+          ..audioClipPath = clip.path;
+
+        await shareDetection(detection, sharePositionOrigin: origin);
+
+        final params = fakeSharePlatform.lastParams;
+        expect(params!.files, hasLength(1));
+        expect(params.sharePositionOrigin, origin);
+      });
+
+      test('is forwarded when slicing the full recording', () async {
+        final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
+        final sessionDir =
+            await Directory(p.join(tmp.path, 'rec_anchored')).create();
+        await _writeFakeWav(sessionDir, 10.0);
+        final session = _session(recordingPath: sessionDir.path, start: start);
+        final detection = _det(start.add(const Duration(seconds: 4)));
+
+        await shareDetection(
+          detection,
+          session: session,
+          sharePositionOrigin: origin,
+        );
+
+        final params = fakeSharePlatform.lastParams;
+        expect(params!.files, hasLength(1));
+        expect(params.sharePositionOrigin, origin);
+      });
+
+      test('is forwarded on the text-only fallback', () async {
+        final detection = _det(DateTime.utc(2026, 5, 11, 10, 0, 0));
+
+        await shareDetection(detection, sharePositionOrigin: origin);
+
+        final params = fakeSharePlatform.lastParams;
+        expect(params!.files, anyOf(isNull, isEmpty));
+        expect(params.text, isNotNull);
+        expect(params.sharePositionOrigin, origin);
+      });
     });
   });
 

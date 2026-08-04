@@ -374,6 +374,7 @@
   "sessionTrimCommitConfirm": "Bijsnijden en opslaan",
   "sessionTrimCommitFailed": "De opname kon niet worden bijgesneden. De session is opgeslagen en het bijsnijden geldt nog steeds voor afspelen en exporteren.",
   "sessionTrimExportFailed": "De bijgesneden audio kon niet worden voorbereid om te delen.",
+  "shareSheetFailed": "Het deelmenu kon niet worden geopend.",
   "sessionHelpTitle": "Hulp bij Session-overzicht",
   "sessionHelpOverview": "In het sessieoverzicht kun je je detectiesessie bekijken, bewerken en exporteren. Tik op een soortregel om de losse detecties te zien. Gebruik het spectrogram om door de opname te navigeren.",
   "sessionHelpAddSpecies": "Soort toevoegen: tik op de +-knop om handmatig een soort toe te voegen. Je kunt die globaal invoegen (voor de hele sessie), op de huidige afspeelpositie, of een bestaande detectie vervangen. Na het kiezen van een soort verschijnt een bevestigingsvenster waarin je 'Gehoord' en/of 'Gezien' kunt aanvinken voordat de soort wordt toegevoegd. Gebruik 'Onbekend / Anders' voor niet-geïdentificeerde roepjes.",

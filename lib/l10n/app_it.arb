@@ -350,6 +350,7 @@
   "sessionTrimCommitConfirm": "Ritaglia e salva",
   "sessionTrimCommitFailed": "Non è stato possibile ritagliare la registrazione. La session è stata salvata e il ritaglio viene comunque applicato alla riproduzione e alle esportazioni.",
   "sessionTrimExportFailed": "Non è stato possibile preparare l'audio ritagliato per la condivisione.",
+  "shareSheetFailed": "Non è stato possibile aprire il menu di condivisione.",
   "sessionHelpTitle": "Guida al riepilogo Session",
   "sessionHelpOverview": "Il riepilogo Session consente di esaminare, modificare ed esportare la Session di rilevazione. Tocca le righe delle specie per visualizzare le singole rilevazioni. Usa lo spettrogramma per navigare nella registrazione.",
   "sessionHelpAddSpecies": "Aggiungi specie: Tocca il pulsante + per aggiungere manualmente una specie. Puoi inserirla globalmente (per l'intera Session), alla posizione di riproduzione corrente o in sostituzione di una rilevazione esistente. Dopo aver scelto una specie, un pannello di conferma ti permette di selezionare 'Sentito' e/o 'Visto' prima dell'inserimento. Usa 'Sconosciuto / Altro' per richiami non identificati.",

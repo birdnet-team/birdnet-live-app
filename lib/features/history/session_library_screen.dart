@@ -26,6 +26,7 @@ import '../../shared/services/taxonomy_service.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/utils/session_type_visuals.dart';
+import '../../shared/utils/share_sheet.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/content_width_constraint.dart';
@@ -512,10 +513,25 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                       });
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(AppIcons.share),
-                    tooltip: l10n.sessionLibraryRowShare,
-                    onPressed: () => _exportSelected(filtered),
+                  // Builder so the share popover anchors on this button's
+                  // own box rather than the whole screen (iPad needs a
+                  // source rect).
+                  Builder(
+                    builder:
+                        (buttonContext) => IconButton(
+                          icon: const Icon(AppIcons.share),
+                          tooltip: l10n.sessionLibraryRowShare,
+                          onPressed:
+                              () => unawaited(
+                                reportShareFailure(
+                                  context,
+                                  _exportSelected(
+                                    filtered,
+                                    shareOriginFrom(buttonContext),
+                                  ),
+                                ),
+                              ),
+                        ),
                   ),
                   IconButton(
                     icon: Icon(
@@ -634,7 +650,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                               _openReview(session);
                             }
                           },
-                          onShare: () => _shareSession(session),
+                          onShare:
+                              (origin) => unawaited(
+                                reportShareFailure(
+                                  context,
+                                  _shareSession(session, origin),
+                                ),
+                              ),
                           onDelete: () => _confirmDelete(session),
                           onLongPress: () {
                             setState(() {
@@ -661,7 +683,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                               _openReview(session);
                             }
                           },
-                          onShare: () => _shareSession(session),
+                          onShare:
+                              (origin) => unawaited(
+                                reportShareFailure(
+                                  context,
+                                  _shareSession(session, origin),
+                                ),
+                              ),
                           onDelete: () => _confirmDelete(session),
                           onLongPress: () {
                             setState(() {
@@ -855,7 +883,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
   /// audio-only export of a metadata-only session) — except for a trimmed
   /// recording the app can't cut, which is reported so the share button
   /// doesn't just appear to do nothing.
-  Future<void> _shareSession(LiveSession session) async {
+  Future<void> _shareSession(LiveSession session, Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
     final exportFormats = ref.read(exportSelectionProvider);
     final includeAudio = ref.read(includeAudioProvider);
@@ -890,7 +918,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       }
       return;
     }
-    await SharePlus.instance.share(shareParamsForFile(exportPath));
+    await SharePlus.instance.share(
+      shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
+    );
   }
 
   /// Toggles whether a compact-view row is expanded to show the full
@@ -932,7 +962,10 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     ref.invalidate(sessionListProvider);
   }
 
-  Future<void> _exportSelected(List<LiveSession> filtered) async {
+  Future<void> _exportSelected(
+    List<LiveSession> filtered,
+    Rect shareOrigin,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
     final selectedList =
         filtered.where((s) => _selectedSessions.contains(s.id)).toList();
@@ -988,7 +1021,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         return;
       }
 
-      await SharePlus.instance.share(shareParamsForFile(zipPath));
+      await SharePlus.instance.share(
+        shareParamsForFile(zipPath, sharePositionOrigin: shareOrigin),
+      );
       if (mounted) {
         _clearSelection();
       }
@@ -1034,7 +1069,7 @@ class _SessionTile extends ConsumerWidget {
 
   final LiveSession session;
   final VoidCallback onTap;
-  final VoidCallback onShare;
+  final ShareFromOriginCallback onShare;
   final VoidCallback onDelete;
   final VoidCallback onLongPress;
   final bool isSelected;
@@ -1272,7 +1307,7 @@ class _CompactSessionTile extends ConsumerWidget {
   final LiveSession session;
   final bool expanded;
   final VoidCallback onTap;
-  final VoidCallback onShare;
+  final ShareFromOriginCallback onShare;
   final VoidCallback onDelete;
   final VoidCallback onLongPress;
   final VoidCallback onToggleExpanded;
@@ -1938,7 +1973,7 @@ class _SessionRowMenu extends StatelessWidget {
   });
 
   final VoidCallback onOpen;
-  final VoidCallback onShare;
+  final ShareFromOriginCallback onShare;
   final VoidCallback onDelete;
 
   @override
@@ -1954,7 +1989,10 @@ class _SessionRowMenu extends StatelessWidget {
           case _SessionRowAction.open:
             onOpen();
           case _SessionRowAction.share:
-            onShare();
+            // Anchor the iPad share popover on the overflow button — the
+            // menu has already popped, so this is the last control the
+            // user touched.
+            onShare(shareOriginFrom(context));
           case _SessionRowAction.delete:
             onDelete();
         }

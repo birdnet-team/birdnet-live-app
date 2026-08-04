@@ -37,6 +37,7 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:ui' show Rect;
 
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
@@ -61,12 +62,18 @@ import 'share_file_params.dart';
 /// the same container as the source. Falls back to text-only sharing
 /// when no audio is available.
 ///
+/// [sharePositionOrigin] anchors the iPad popover; without it the iOS
+/// plugin refuses to present the sheet. Callers should pass the rect of the
+/// widget the user tapped — see `shareOriginFrom` in
+/// `shared/utils/share_origin.dart`.
+///
 /// Returns the [ShareResult] from `share_plus` so callers can react to
 /// dismissal vs. successful share if they want — most callers can ignore it.
 Future<ShareResult> shareDetection(
   DetectionRecord detection, {
   LiveSession? session,
   bool shareAudioAsWav = false,
+  Rect? sharePositionOrigin,
 }) async {
   final body = _buildBody(detection);
   final subject = _buildSubject(detection);
@@ -80,7 +87,9 @@ Future<ShareResult> shareDetection(
       detection,
       shareAudioAsWav: shareAudioAsWav,
     );
-    return SharePlus.instance.share(_shareParamsForAudioFile(staged));
+    return SharePlus.instance.share(
+      _shareParamsForAudioFile(staged, sharePositionOrigin),
+    );
   }
 
   // 2) Try to slice from the session's full recording. Both WAV and
@@ -93,17 +102,25 @@ Future<ShareResult> shareDetection(
       shareAudioAsWav: shareAudioAsWav,
     );
     if (extracted != null) {
-      return SharePlus.instance.share(_shareParamsForAudioFile(extracted));
+      return SharePlus.instance.share(
+        _shareParamsForAudioFile(extracted, sharePositionOrigin),
+      );
     }
   }
 
   // 3) No audio available — share text only. The body still carries
   //    location + timestamp so the recipient gets the full picture.
-  return SharePlus.instance.share(ShareParams(text: body, subject: subject));
+  return SharePlus.instance.share(
+    ShareParams(
+      text: body,
+      subject: subject,
+      sharePositionOrigin: sharePositionOrigin,
+    ),
+  );
 }
 
-ShareParams _shareParamsForAudioFile(File file) =>
-    shareParamsForFile(file.path);
+ShareParams _shareParamsForAudioFile(File file, Rect? sharePositionOrigin) =>
+    shareParamsForFile(file.path, sharePositionOrigin: sharePositionOrigin);
 
 /// Copies [clip] into the temp dir under the export-style filename so the
 /// share sheet exposes a friendly name. Reuses an existing staged file when
