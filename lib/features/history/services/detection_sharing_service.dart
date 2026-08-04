@@ -16,27 +16,25 @@
 //
 // Audio attachment cascade (best → worst):
 //
-//   1. The detection has a kept per-detection clip on disk — stage and ship.
-//   2. The host passed an in-progress [LiveSession] with a full recording
-//      — slice the detection's full timestamp span, including configured
-//      context padding, out of the file and ship that. Both WAV and FLAC full
-//      recordings are supported; the slice is shipped in the same container as
-//      the source (WAV in, WAV out; FLAC in, FLAC out) so the recipient gets a
-//      file whose extension matches its bytes. This is what makes "share" work
-//      mid-survey when the user opted for a single continuous recording instead
-//      of per-detection clips.
-//   3. No audio at all (recording mode = off, or the full recording is in
-//      a container we don't know how to slice) — share text only. Location
-//      + timestamp still land in the payload via [_buildBody].
+//   1. The host passed a [LiveSession] with a full recording — slice the
+//      detection's exact start-to-end timestamp span out of the file. WAV and
+//      FLAC recordings are sliced in Dart. Compressed File Analysis sources
+//      are range-decoded by the platform and shared as WAV.
+//   2. The detection has a kept per-detection clip on disk — stage and ship.
+//   3. No audio at all (recording mode = off) — share text only. Location +
+//      timestamp still land in the payload via [_buildBody].
 //
-// Both audio paths use the same human-readable subject so threaded chat apps
-// group them sensibly.
+// When export companions are selected, the regular session export pipeline
+// bundles only this detection's selected formats, HTML, app metadata, and
+// audio. Audio-only settings still hand the raw clip to the share sheet.
 //
 // This is a thin wrapper, not a stateful service — exposed as a top-level
 // function so callers don't need a provider just to share one detection.
 // =============================================================================
 
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:ui' show Rect;
 
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
@@ -44,66 +42,220 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../shared/services/taxonomy_service.dart';
 import '../../live/live_session.dart';
 import '../../recording/audio_decoder.dart';
 import '../../recording/flac_encoder.dart';
+import '../../recording/native_audio_decoder.dart';
 import '../../recording/wav_writer.dart';
+import '../export_metadata_helper.dart';
+import '../session_export.dart';
 import 'audio_export_normalizer.dart';
 import 'audio_share_extension.dart';
 import 'detection_audio_window.dart';
+import 'session_audio_trim.dart';
 import 'share_file_params.dart';
 
 /// Share a single [detection] using the platform share sheet.
 ///
-/// When [session] is provided and the detection has no per-detection clip
-/// of its own, the function will try to slice the relevant audio window
-/// out of the session's full recording (WAV or FLAC). The slice ships in
-/// the same container as the source. Falls back to text-only sharing
-/// when no audio is available.
+/// When [session] has a full recording, the function slices the detection's
+/// exact start-to-end interval from it. Compressed File Analysis sources are
+/// range-decoded as WAV. A retained detection clip is the fallback for
+/// detection-only recording mode.
+///
+/// [formats], [includeAudio], [includeHtmlReport], and [includeAppMetadata]
+/// mirror the app's export settings. Selected companion artifacts contain
+/// only this detection and are packaged through [buildSessionExport].
+///
+/// [sharePositionOrigin] anchors the iPad popover; without it the iOS
+/// plugin refuses to present the sheet. Callers should pass the rect of the
+/// widget the user tapped — see `shareOriginFrom` in
+/// `shared/utils/share_origin.dart`.
 ///
 /// Returns the [ShareResult] from `share_plus` so callers can react to
 /// dismissal vs. successful share if they want — most callers can ignore it.
 Future<ShareResult> shareDetection(
   DetectionRecord detection, {
   LiveSession? session,
+  Set<String> formats = const {},
+  bool includeAudio = true,
   bool shareAudioAsWav = false,
+  bool includeHtmlReport = false,
+  bool includeAppMetadata = false,
+  TaxonomyService? taxonomy,
+  String speciesLocale = 'en',
+  bool useAbsoluteSurveyTime = false,
+  Rect? sharePositionOrigin,
 }) async {
   final body = _buildBody(detection);
   final subject = _buildSubject(detection);
+  File? audioFile;
+  var audioIsFullDetectionSpan = false;
 
-  // 1) Per-detection clip wins when present — it was recorded with the
-  //    correct context padding at the moment of detection.
-  final clipPath = detection.audioClipPath;
-  if (clipPath != null && File(clipPath).existsSync()) {
-    final staged = await _stageClipForShare(
-      File(clipPath),
-      detection,
-      shareAudioAsWav: shareAudioAsWav,
+  if (includeAudio && session != null) {
+    final fullRecordingPath = await resolveSessionRecordingFile(
+      session.recordingPath,
     );
-    return SharePlus.instance.share(_shareParamsForAudioFile(staged));
-  }
-
-  // 2) Try to slice from the session's full recording. Both WAV and
-  //    FLAC continuous recordings are supported; the slice ships in
-  //    the same container as the source (or WAV if shareAudioAsWav).
-  if (session != null) {
-    final extracted = await _extractClipFromFullAudio(
-      session,
-      detection,
-      shareAudioAsWav: shareAudioAsWav,
-    );
-    if (extracted != null) {
-      return SharePlus.instance.share(_shareParamsForAudioFile(extracted));
+    // The continuous recording can cover the detection's whole start-to-end
+    // span. Do not add per-clip context: this share is the exact interval.
+    if (fullRecordingPath != null) {
+      audioFile = await _extractClipFromFullAudio(
+        session,
+        detection,
+        shareAudioAsWav: shareAudioAsWav,
+        clipContextSeconds: 0,
+      );
+      if (audioFile == null) {
+        throw StateError('Could not extract the detection audio interval.');
+      }
+      audioIsFullDetectionSpan = true;
+    } else if (session.settings.recordingMode == 'full' ||
+        (session.settings.recordingMode == null &&
+            session.recordingPath != null &&
+            detection.audioClipPath == null)) {
+      throw StateError('The Session full recording could not be found.');
     }
   }
 
-  // 3) No audio available — share text only. The body still carries
-  //    location + timestamp so the recipient gets the full picture.
-  return SharePlus.instance.share(ShareParams(text: body, subject: subject));
+  // Detection-only recording mode has no continuous source to slice. Its
+  // retained analysis-window clip is the best available audio.
+  if (includeAudio && audioFile == null) {
+    final clipPath = detection.audioClipPath;
+    if (clipPath != null && File(clipPath).existsSync()) {
+      audioFile = await _stageClipForShare(
+        File(clipPath),
+        detection,
+        shareAudioAsWav: shareAudioAsWav,
+      );
+    }
+  }
+
+  final hasCompanion =
+      formats.isNotEmpty || includeHtmlReport || includeAppMetadata;
+
+  // Preserve the audio-only setting: with every companion disabled, hand
+  // the clip itself to the platform instead of wrapping it in a ZIP.
+  if (audioFile != null && !hasCompanion) {
+    return SharePlus.instance.share(
+      _shareParamsForAudioFile(audioFile, sharePositionOrigin),
+    );
+  }
+
+  // Use the regular export pipeline for the selected formats and metadata.
+  // The synthetic session contains only this detection, so unrelated session
+  // detections, annotations, track points, and audio cannot enter the bundle.
+  if (session != null || formats.isNotEmpty || includeHtmlReport) {
+    final exportSession = _singleDetectionSession(
+      source: session,
+      detection: detection,
+      audioFile: audioFile,
+      audioIsFullDetectionSpan: audioIsFullDetectionSpan,
+    );
+    final metadata = await buildSessionExportMetadata(
+      exportSession,
+      speciesLocale: speciesLocale,
+    );
+    final exportPath = await buildSessionExport(
+      exportSession,
+      formats: formats,
+      includeAudio: includeAudio,
+      shareAudioAsWav: shareAudioAsWav,
+      taxonomy: taxonomy,
+      speciesLocale: speciesLocale,
+      metadata: metadata,
+      useAbsoluteSurveyTime: useAbsoluteSurveyTime,
+      includeHtmlReport: includeHtmlReport,
+      includeAppMetadata: includeAppMetadata,
+    );
+    if (exportPath != null) {
+      return SharePlus.instance.share(
+        shareParamsForFile(
+          exportPath,
+          sharePositionOrigin: sharePositionOrigin,
+        ),
+      );
+    }
+  }
+
+  // No requested file could be built. Recording-off sessions still share a
+  // useful text payload with species, time, and location.
+  return SharePlus.instance.share(
+    ShareParams(
+      text: body,
+      subject: subject,
+      sharePositionOrigin: sharePositionOrigin,
+    ),
+  );
 }
 
-ShareParams _shareParamsForAudioFile(File file) =>
-    shareParamsForFile(file.path);
+LiveSession _singleDetectionSession({
+  required LiveSession? source,
+  required DetectionRecord detection,
+  required File? audioFile,
+  required bool audioIsFullDetectionSpan,
+}) {
+  final settings =
+      source?.settings ??
+      const SessionSettings(
+        windowDuration: 3,
+        confidenceThreshold: 25,
+        inferenceRate: 1,
+        speciesFilterMode: 'off',
+      );
+  final end =
+      detection.endTimestamp != null &&
+              detection.endTimestamp!.isAfter(detection.timestamp)
+          ? detection.endTimestamp!
+          : detection.timestamp.add(Duration(seconds: settings.windowDuration));
+  final exportDetection = _copyDetection(
+    detection,
+    audioClipPath:
+        audioFile != null && !audioIsFullDetectionSpan ? audioFile.path : null,
+  );
+
+  return LiveSession(
+    id: source?.id ?? 'detection-${detection.timestamp.microsecondsSinceEpoch}',
+    startTime: detection.timestamp,
+    endTime: end,
+    type: source?.type ?? SessionType.live,
+    customName:
+        detection.commonName.trim().isNotEmpty
+            ? detection.commonName
+            : detection.scientificName,
+    detections: [exportDetection],
+    recordingPath:
+        audioFile != null && audioIsFullDetectionSpan ? audioFile.path : null,
+    settings: settings,
+    latitude: detection.latitude ?? source?.latitude,
+    longitude: detection.longitude ?? source?.longitude,
+    locationName: source?.locationName,
+    observerName: source?.observerName,
+    weather: source?.weather,
+  );
+}
+
+DetectionRecord _copyDetection(
+  DetectionRecord source, {
+  required String? audioClipPath,
+}) => DetectionRecord(
+  scientificName: source.scientificName,
+  commonName: source.commonName,
+  confidence: source.confidence,
+  timestamp: source.timestamp,
+  endTimestamp: source.endTimestamp,
+  audioClipPath: audioClipPath,
+  clipTimestamp: audioClipPath == null ? null : source.clipTimestamp,
+  source: source.source,
+  evidence: source.evidence,
+  latitude: source.latitude,
+  longitude: source.longitude,
+  confirmedAt: source.confirmedAt,
+  note: source.note,
+  voiceMemoPath: source.voiceMemoPath,
+);
+
+ShareParams _shareParamsForAudioFile(File file, Rect? sharePositionOrigin) =>
+    shareParamsForFile(file.path, sharePositionOrigin: sharePositionOrigin);
 
 /// Copies [clip] into the temp dir under the export-style filename so the
 /// share sheet exposes a friendly name. Reuses an existing staged file when
@@ -165,14 +317,13 @@ String _sanitizeFilename(String input) {
 /// Locates the full-audio file for [session] and slices the audio window
 /// around [detection] into a fresh file in temp storage.
 ///
-/// Returns `null` when no usable full recording is found (no
-/// `recordingPath`, missing file, unsupported container) so the caller
-/// can fall back to text sharing. Both WAV and FLAC full recordings are
-/// supported, and the output container matches the source so the
-/// recipient gets a file whose extension matches its bytes. The slice spans
+/// Returns `null` when no usable full recording is found or decoded. WAV and
+/// FLAC slices preserve their source container unless WAV export is selected;
+/// compressed File Analysis sources are range-decoded to WAV. The slice spans
 /// [DetectionRecord.timestamp] to [DetectionRecord.endTimestamp] when present
-/// and falls back to one inference window for legacy records, with the
-/// session's configured pre/post context added around that span.
+/// and falls back to one inference window for legacy records. Direct callers
+/// use the session's configured pre/post context; [shareDetection] overrides
+/// that context to zero so the shared full-recording slice is exact.
 @visibleForTesting
 Future<File?> extractClipFromFullAudio(
   LiveSession session,
@@ -188,8 +339,9 @@ Future<File?> _extractClipFromFullAudio(
   LiveSession session,
   DetectionRecord detection, {
   bool shareAudioAsWav = false,
+  double? clipContextSeconds,
 }) async {
-  final fullPath = await _resolveFullAudioPath(session.recordingPath);
+  final fullPath = await resolveSessionRecordingFile(session.recordingPath);
   if (fullPath == null) return null;
   final src = File(fullPath);
   if (!src.existsSync()) return null;
@@ -200,78 +352,166 @@ Future<File?> _extractClipFromFullAudio(
   final timing = detectionAudioWindow(
     session,
     detection,
-    clipContextSeconds: session.settings.clipContextSeconds.toDouble(),
+    clipContextSeconds:
+        clipContextSeconds ?? session.settings.clipContextSeconds.toDouble(),
     referencesDetectionClip: false,
   );
+  var sliceStartSec = timing.clipStartSec;
+  var sliceEndSec = timing.clipStartSec + timing.clipDurationSec;
 
-  final ext = await sourceAudioExtensionForFile(src);
-  if (ext != '.wav' && ext != '.flac') return null;
+  // The recorder begins asynchronously after the Session clock starts and
+  // flushes its final samples just before the Session clock stops. On real
+  // devices those clocks can differ by a few seconds, which can otherwise put
+  // a valid detection just beyond EOF. Playback already clamps such seeks;
+  // sharing additionally end-aligns the interval when the discrepancy is
+  // within the same five-second recorder-tail tolerance used by integrity
+  // checks.
+  final canDecodeDart = await AudioDecoder.canDecodeDart(fullPath);
+  AudioMetadata? sourceMetadata;
+  try {
+    sourceMetadata =
+        canDecodeDart
+            ? await AudioDecoder.inspectFile(fullPath)
+            : await NativeAudioDecoder.inspectFile(
+              fullPath,
+              _audioFormatLabel(fullPath),
+            );
+    final sourceDurationSec = sourceMetadata.duration.inMicroseconds / 1e6;
+    if (sourceDurationSec > 0) {
+      final expectedDurationSec = session.expectedRecordedAudioSeconds;
+      final clockDriftSec = expectedDurationSec - sourceDurationSec;
+      if (clockDriftSec > 0 && clockDriftSec <= 5) {
+        sliceStartSec = math.max(0, sliceStartSec - clockDriftSec);
+        sliceEndSec = math.max(sliceStartSec, sliceEndSec - clockDriftSec);
+      }
+      if (sliceEndSec > sourceDurationSec) {
+        final overflow = sliceEndSec - sourceDurationSec;
+        if (sliceStartSec >= sourceDurationSec && overflow <= 5) {
+          sliceStartSec = math.max(0, sliceStartSec - overflow);
+        }
+        sliceEndSec = sourceDurationSec;
+      }
+    }
+  } catch (_) {
+    // An active FLAC may not have final duration metadata yet. The streaming
+    // slicer below still walks every available frame and clamps at EOF.
+  }
 
-  final outExt = sharedAudioExtensionForSource(
-    ext,
-    shareAudioAsWav: shareAudioAsWav,
-  );
+  final ext =
+      canDecodeDart
+          ? (await AudioDecoder.isWav(fullPath) ? '.wav' : '.flac')
+          : p.extension(fullPath).toLowerCase();
+  // Native compressed formats are decoded only for the requested range and
+  // written as WAV. Re-encoding MP3/AAC/OGG would require a second platform
+  // encoder and would introduce another lossy generation.
+  final outExt =
+      canDecodeDart
+          ? sharedAudioExtensionForSource(ext, shareAudioAsWav: shareAudioAsWav)
+          : '.wav';
   final tmp = await getTemporaryDirectory();
   final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
   if (!shareDir.existsSync()) shareDir.createSync(recursive: true);
-  final target = File(
-    p.join(shareDir.path, _exportClipName(detection, outExt)),
-  );
+  final targetPath = p.join(shareDir.path, _exportClipName(detection, outExt));
 
+  if (!canDecodeDart) {
+    try {
+      sourceMetadata ??= await NativeAudioDecoder.inspectFile(
+        fullPath,
+        _audioFormatLabel(fullPath),
+      );
+      final sampleRate = sourceMetadata.sampleRate;
+      final startSample = math.max(0, (sliceStartSec * sampleRate).floor());
+      final sampleCount = math.max(
+        0,
+        ((sliceEndSec - sliceStartSec) * sampleRate).ceil(),
+      );
+      if (sampleRate <= 0 || sampleCount <= 0) return null;
+      final decoded = await NativeAudioDecoder.decodeRange(
+        fullPath,
+        startSample: startSample,
+        count: sampleCount,
+        allowConcurrent: Platform.isAndroid,
+      );
+      if (decoded.totalSamples <= 0) return null;
+      final target = File(targetPath);
+      await WavWriter.writePcm16File(
+        filePath: target.path,
+        samples: decoded.samples,
+        sampleRate: decoded.sampleRate,
+      );
+      await AudioExportNormalizer.normalizeFileInPlace(target, outExt);
+      return target;
+    } catch (error, stackTrace) {
+      debugPrint(
+        '[DetectionShare] native range extraction failed for $fullPath: '
+        '$error\n$stackTrace',
+      );
+      return null;
+    }
+  }
+
+  final written = await writeTrimmedAudioFile(
+    sourcePath: fullPath,
+    destPath: targetPath,
+    startSec: sliceStartSec,
+    endSec: sliceEndSec,
+    asWav: outExt == '.wav',
+  );
+  if (written != null && await written.file.exists()) {
+    await AudioExportNormalizer.normalizeFileInPlace(written.file, outExt);
+    return written.file;
+  }
+
+  // Keep the original narrow slicer as a second chance for partially flushed
+  // live recordings. Completed recordings should normally take the shared,
+  // streaming trim path above.
+  final target = File(targetPath);
   try {
     if (ext == '.wav') {
-      final sliceBytes = await _sliceWav(
+      final bytes = await _sliceWav(
         src,
-        startSec: timing.clipStartSec,
-        durationSec: timing.clipDurationSec,
+        startSec: sliceStartSec,
+        durationSec: sliceEndSec - sliceStartSec,
       );
-      if (sliceBytes == null || sliceBytes.isEmpty) return null;
-      await target.writeAsBytes(sliceBytes, flush: true);
+      if (bytes == null || bytes.isEmpty) return null;
+      await target.writeAsBytes(bytes, flush: true);
     } else if (shareAudioAsWav) {
-      final wrote = await _sliceFlacToWavFile(
+      if (!await _sliceFlacToWavFile(
         src,
         target,
-        startSec: timing.clipStartSec,
-        durationSec: timing.clipDurationSec,
-      );
-      if (!wrote) return null;
-    } else {
-      final wrote = await _sliceFlacToFile(
-        src,
-        target,
-        startSec: timing.clipStartSec,
-        durationSec: timing.clipDurationSec,
-      );
-      if (!wrote) return null;
+        startSec: sliceStartSec,
+        durationSec: sliceEndSec - sliceStartSec,
+      )) {
+        return null;
+      }
+    } else if (!await _sliceFlacToFile(
+      src,
+      target,
+      startSec: sliceStartSec,
+      durationSec: sliceEndSec - sliceStartSec,
+    )) {
+      return null;
     }
     await AudioExportNormalizer.normalizeFileInPlace(target, outExt);
+    return target;
   } on FormatException {
-    // Header truncated or unsupported — caller falls back to text.
     return null;
   }
-  return target;
 }
 
-/// Resolves [recordingPath] to a full-recording file on disk, or returns
-/// `null` when none is reachable. Handles both shapes set by the
-/// recording service: a session directory (live, mid-recording) or a
-/// finalized file path (post-stop). WAV and FLAC are both supported.
-Future<String?> _resolveFullAudioPath(String? recordingPath) async {
-  if (recordingPath == null) return null;
-  // Direct file reference (post-stop in full mode).
-  if (FileSystemEntity.isFileSync(recordingPath)) {
-    final ext = await sourceAudioExtensionForFile(File(recordingPath));
-    return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
-  }
-  // Directory reference (live mode while recording is in progress).
-  if (FileSystemEntity.isDirectorySync(recordingPath)) {
-    final wav = File(p.join(recordingPath, 'full.wav'));
-    if (wav.existsSync()) return wav.path;
-    final flac = File(p.join(recordingPath, 'full.flac'));
-    if (flac.existsSync()) return flac.path;
-  }
-  return null;
-}
+String _audioFormatLabel(String path) => switch (p
+    .extension(path)
+    .toLowerCase()) {
+  '.wav' || '.wave' => 'WAV',
+  '.flac' => 'FLAC',
+  '.mp3' => 'MP3',
+  '.ogg' || '.oga' => 'OGG',
+  '.m4a' || '.aac' || '.mp4' => 'AAC',
+  '.opus' => 'OPUS',
+  '.wma' => 'WMA',
+  '.amr' => 'AMR',
+  final ext => ext.replaceFirst('.', '').toUpperCase(),
+};
 
 /// Slices `[startSec, startSec+durationSec)` out of [src] (a 16-bit PCM
 /// WAV) and returns a self-contained WAV file as bytes.

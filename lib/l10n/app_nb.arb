@@ -374,6 +374,7 @@
   "sessionTrimCommitConfirm": "Beskjær og lagre",
   "sessionTrimCommitFailed": "Opptaket kunne ikke beskjæres. Økten ble lagret, og beskjæringen gjelder fortsatt for avspilling og eksport.",
   "sessionTrimExportFailed": "Den beskårne lyden kunne ikke klargjøres for deling.",
+  "shareSheetFailed": "Delingsmenyen kunne ikke åpnes.",
   "sessionHelpTitle": "Hjelp til Øktgjennomgang",
   "sessionHelpOverview": "I Øktgjennomgang kan du undersøke, redigere og eksportere økten og deteksjonene. Trykk på en artsrad for å se de enkelte deteksjonene. Bruk spektrogrammet til å navigere i opptaket.",
   "sessionHelpAddSpecies": "Legg til art: Trykk på plussknappen for å legge til en art manuelt. Du kan legge den til i hele økten, ved gjeldende avspillingsposisjon eller erstatte en eksisterende deteksjon. Når du har valgt en art, kan du merke den som «Hørt», «Sett» eller begge deler før du legger den til. Bruk «Ukjent / annet» for uidentifiserte lyder.",

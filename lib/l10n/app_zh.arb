@@ -374,6 +374,7 @@
   "sessionTrimCommitConfirm": "裁剪并保存",
   "sessionTrimCommitFailed": "录音裁剪失败。Session 已保存，裁剪范围仍会作用于播放和导出。",
   "sessionTrimExportFailed": "无法准备裁剪后的音频用于分享。",
+  "shareSheetFailed": "无法打开分享菜单。",
   "sessionHelpTitle": "Session 回顾帮助",
   "sessionHelpOverview": "Session 回顾用于查看、编辑和导出您的检测 Session。点击物种行可查看单条检测。使用声谱图可在录音中定位。",
   "sessionHelpAddSpecies": "添加物种：点击 + 按钮手动添加物种。您可以全局插入（作用于整个 Session）、插入到当前播放位置，或替换现有的检测。选定物种后，会弹出确认面板，可在添加前勾选“听到”和/或“看到”。无法确定的鸣声请使用“未知 / 其他”。",

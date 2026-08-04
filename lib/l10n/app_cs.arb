@@ -350,6 +350,7 @@
   "sessionTrimCommitConfirm": "Oříznout a uložit",
   "sessionTrimCommitFailed": "Nahrávku se nepodařilo oříznout. Session byla uložena a oříznutí se stále používá při přehrávání a exportu.",
   "sessionTrimExportFailed": "Oříznutý zvuk se nepodařilo připravit ke sdílení.",
+  "shareSheetFailed": "Nabídku sdílení se nepodařilo otevřít.",
   "sessionHelpTitle": "Nápověda k přehledu Session",
   "sessionHelpOverview": "Přehled Session umožňuje prozkoumat, upravit a exportovat vaši Session detekce. Klepněte na řádky druhů pro zobrazení jednotlivých detekcí. Použijte spektrogram pro navigaci v nahrávce.",
   "sessionHelpAddSpecies": "Přidat druh: Klepněte na tlačítko + pro ruční přidání druhu. Můžete ho vložit globálně (pro celou Session), na aktuální pozici přehrávání nebo jako náhradu za existující detekci. Po výběru druhu se zobrazí potvrzovací panel, kde můžete před přidáním zaškrtnout 'Slyšeno' a/nebo 'Viděno'. Použijte 'Neznámý / Jiný' pro neidentifikované hlasy.",

@@ -268,7 +268,7 @@ La intuición: muchos flujos de trabajo necesitan más de un formato a la vez �
 
 ### Incluir archivos de audio
 
-Incluir el audio guardado junto a las tablas o metadatos exportados cuando el flujo de exportación lo admita.
+Incluir el audio guardado junto a las tablas o metadatos exportados cuando el flujo de exportación lo admita. Compartir una sola detección también sigue este ajuste: una grabación completa de la Session se recorta a las marcas de inicio y fin exactas de esa detección, mientras que una Session solo de detecciones usa su clip conservado.
 
 ### Compartir siempre el audio como WAV
 
@@ -284,7 +284,7 @@ Al activarlo, cada ZIP de exportación contiene además un archivo `<session>_re
 
 ### Compartir solo el audio
 
-Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las sesiones formadas por fragmentos de detección (sin grabación completa) siguen produciendo un ZIP, porque entonces hay más de un archivo que compartir.
+Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las Sessions con varios fragmentos de detección siguen produciendo un ZIP; al compartir una sola detección se entrega ese único clip en bruto.
 
 ## Privacidad
 

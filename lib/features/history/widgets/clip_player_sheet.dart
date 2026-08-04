@@ -31,6 +31,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/score_colors.dart';
 import '../../../shared/providers/settings_providers.dart';
 import '../../../shared/utils/locale_time_format.dart';
+import '../../../shared/utils/share_sheet.dart';
 import '../../../shared/widgets/detection_evidence_badge.dart';
 import '../../explore/explore_providers.dart';
 import '../../explore/widgets/species_info_overlay.dart';
@@ -600,10 +601,31 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                 DetectionActionsOverflow(
                   actions: DetectionActions(
                     onShare:
-                        () => shareDetection(
-                          widget.detection,
-                          session: widget.session,
-                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                        (origin) => unawaited(
+                          reportShareFailure(
+                            context,
+                            shareDetection(
+                              widget.detection,
+                              session: widget.session,
+                              formats: ref.read(exportSelectionProvider),
+                              includeAudio: ref.read(includeAudioProvider),
+                              shareAudioAsWav: ref.read(
+                                shareAudioAsWavProvider,
+                              ),
+                              includeHtmlReport: ref.read(
+                                exportHtmlReportProvider,
+                              ),
+                              includeAppMetadata: ref.read(
+                                includeAppMetadataProvider,
+                              ),
+                              taxonomy: taxonomyAsync.value,
+                              speciesLocale: speciesLocale,
+                              useAbsoluteSurveyTime:
+                                  ref.read(timestampDisplayModeProvider) ==
+                                  'absolute',
+                              sharePositionOrigin: origin,
+                            ),
+                          ),
                         ),
                     onDelete:
                         widget.onDelete == null

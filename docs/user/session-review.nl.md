@@ -71,13 +71,13 @@ Veeg je een rij met een **soortkop** (naar links of rechts), dan worden alle det
 
 ### Eén detectie delen
 
-Het item :material-share-variant: **Detectie delen** opent het deelvenster van het systeem met een beknopte lading die geschikt is voor veldgereedschap — Nederlandse en wetenschappelijke naam, betrouwbaarheid, tijdstempel in ISO 8601 UTC en een `geo:`-URI wanneer de detectie een GPS-positie heeft — en voegt het audiofragment toe wanneer dat beschikbaar is. Het gedeelde bestand heet `BirdNET_Live_<timestamp>_<species>.<ext>`, in lijn met de naamgeving van de ZIP-export.
+Het item :material-share-variant: **Detectie delen** gebruikt dezelfde keuzes als **Instellingen → Exporteren en synchroniseren**. Alleen deze detectie wordt geëxporteerd in de geselecteerde Raven-, CSV-, JSON-, GPX-, HTML- en app-metadata-artefacten. Wanneer **Audiobestanden opnemen** aanstaat, bevat het pakket ook de audio van de detectie; **Audio altijd als WAV delen** wordt gevolgd. Als alle begeleidende formaten, HTML en app-metadata uitstaan, ontvangt het systeemdeelvenster het onbewerkte audiofragment in plaats van een ZIP-bestand.
 
 De audiobijlage wordt in deze volgorde bepaald:
 
-1. Het eigen fragment van de detectie op schijf.
-2. **Bij Sessions die één doorlopend bestand opnemen**: het relevante audiovenster wordt ter plekke uit de opname gesneden. Zowel doorlopende WAV- als FLAC-opnamen worden ondersteund, en het uitgesneden deel komt in dezelfde container als de bron (WAV in → WAV uit, FLAC in → FLAC uit).
-3. Is geen van beide beschikbaar, dan is het delen alleen tekst — locatie en tijdstempel komen nog steeds in de lading terecht.
+1. **Bij Sessions die één doorlopend bestand opnemen**: audio van de begin- tot de eindtijdstempel van de detectie wordt rechtstreeks uit de opname gesneden. Doorlopende WAV- en FLAC-opnamen worden ondersteund; gecomprimeerde File Analysis-bronnen worden als WAV gedecodeerd.
+2. Anders wordt het opgeslagen eigen fragment van de detectie gebruikt wanneer dit op schijf staat.
+3. Als geen audiobron beschikbaar is en geen export-artefact is geselecteerd, valt delen terug op een korte tekst met soort, betrouwbaarheid, UTC-tijdstempel en locatie.
 
 ### Spraaknotities
 

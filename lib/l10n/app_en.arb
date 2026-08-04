@@ -1575,6 +1575,10 @@
   "@sessionTrimExportFailed": {
     "description": "Snack bar shown when a trimmed recording cannot be materialized for export"
   },
+  "shareSheetFailed": "The share sheet could not be opened.",
+  "@shareSheetFailed": {
+    "description": "Snack bar shown when the platform share sheet fails to open"
+  },
   "sessionHelpTitle": "Session Review Help",
   "@sessionHelpTitle": {
     "description": "Title for the session review help dialog"

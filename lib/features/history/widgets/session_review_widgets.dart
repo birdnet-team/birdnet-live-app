@@ -1307,8 +1307,9 @@ class _SpeciesTile extends ConsumerStatefulWidget {
 
   /// Share the first record of a cluster via the platform share sheet.
   /// Wired up from the cluster row's long-press context menu (and any
-  /// future per-detection share entry points).
-  final ValueChanged<_DetectionCluster> onShareCluster;
+  /// future per-detection share entry points). The [Rect] is the anchor
+  /// for the iPad share popover.
+  final void Function(_DetectionCluster cluster, Rect origin) onShareCluster;
 
   /// Open the note editor for a cluster (edits the cluster's first
   /// record, since a cluster represents one continuous detection of
@@ -1906,7 +1907,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       onDeleteSpecies: widget.onDeleteSpecies,
       onReplace: () => widget.onReplaceCluster(cluster),
       onToggleConfirm: () => widget.onToggleConfirmCluster(cluster),
-      onShare: () => widget.onShareCluster(cluster),
+      onShare: (origin) => widget.onShareCluster(cluster, origin),
       onEditNote: () => widget.onEditNoteCluster(cluster),
       onEditVoiceMemo: () => widget.onEditVoiceMemoCluster(cluster),
       onDeleteVoiceMemo: () => widget.onDeleteVoiceMemoCluster(cluster),
@@ -2028,7 +2029,8 @@ class _ClusterRow extends ConsumerWidget {
   /// Shares this cluster's representative detection via the platform
   /// share sheet. Surfaced through a long-press context menu on the row
   /// so we don't add yet another inline icon to the trailing strip.
-  final VoidCallback onShare;
+  /// Receives the anchor rect for the iPad share popover.
+  final ShareFromOriginCallback onShare;
 
   /// Opens the note editor for this cluster's first record.
   final VoidCallback onEditNote;

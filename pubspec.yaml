@@ -1,7 +1,7 @@
 name: birdnet_live
 description: "Real-time bird species identification using on-device ONNX inference"
 publish_to: 'none'
-version: 1.0.4+218
+version: 1.0.5+219
 
 environment:
   sdk: ^3.7.0
@@ -43,7 +43,10 @@ dependencies:
 
   # UI & UX
   url_launcher: ^6.3.1
-  share_plus: ^13.1.0
+  # >=13.3.0 keeps the plugin's own iPad fallback (centre-of-screen anchor)
+  # as a backstop; before that, a missing sharePositionOrigin made the
+  # native share sheet refuse to present at all. See issue #203.
+  share_plus: ^13.3.0
   package_info_plus: ^10.1.0
 
   # Export

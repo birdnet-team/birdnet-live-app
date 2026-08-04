@@ -374,6 +374,7 @@
   "sessionTrimCommitConfirm": "Zuschneiden und speichern",
   "sessionTrimCommitFailed": "Die Aufnahme konnte nicht zugeschnitten werden. Die Session wurde gespeichert, der Zuschnitt gilt weiterhin für Wiedergabe und Export.",
   "sessionTrimExportFailed": "Das zugeschnittene Audio konnte nicht zum Teilen vorbereitet werden.",
+  "shareSheetFailed": "Das Teilen-Menü konnte nicht geöffnet werden.",
   "sessionHelpTitle": "Hilfe zur Session-Übersicht",
   "sessionHelpOverview": "Die Session-Übersicht ermöglicht es Ihnen, Ihre Detektions-Session zu untersuchen, zu bearbeiten und zu exportieren. Tippen Sie auf Artenzeilen, um einzelne Detektionen zu sehen. Verwenden Sie das Spektrogramm zur Navigation in der Aufnahme.",
   "sessionHelpAddSpecies": "Art hinzufügen: Tippen Sie auf die +-Taste, um manuell eine Art hinzuzufügen. Sie können sie global (für die gesamte Session), an der aktuellen Wiedergabeposition oder als Ersatz für eine bestehende Detektion einfügen. Nach der Auswahl einer Art erscheint ein Bestätigungsfenster, in dem Sie vor dem Hinzufügen 'Gehört' und/oder 'Gesehen' auswählen können. Verwenden Sie 'Unbekannt / Andere' für nicht identifizierte Rufe.",

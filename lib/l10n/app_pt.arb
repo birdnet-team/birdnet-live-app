@@ -350,6 +350,7 @@
   "sessionTrimCommitConfirm": "Recortar e salvar",
   "sessionTrimCommitFailed": "Não foi possível recortar a gravação. A session foi salva e o recorte continua sendo aplicado à reprodução e às exportações.",
   "sessionTrimExportFailed": "Não foi possível preparar o áudio recortado para compartilhamento.",
+  "shareSheetFailed": "Não foi possível abrir o menu de compartilhamento.",
   "sessionHelpTitle": "Ajuda do resumo de Session",
   "sessionHelpOverview": "O resumo da Session permite examinar, editar e exportar sua Session de detecção. Toque nas linhas de espécies para ver detecções individuais. Use o espectrograma para navegar pela gravação.",
   "sessionHelpAddSpecies": "Adicionar espécie: Toque no botão + para adicionar manualmente uma espécie. Você pode inseri-la globalmente (para toda a Session), na posição de reprodução atual ou como substituição de uma detecção existente. Depois de escolher uma espécie, uma folha de confirmação permite marcar 'Ouvida' e/ou 'Vista' antes de adicioná-la. Use 'Desconhecido / Outro' para chamados não identificados.",

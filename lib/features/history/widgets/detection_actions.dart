@@ -29,6 +29,7 @@ import 'package:flutter/material.dart';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
+import 'package:birdnet_live/shared/utils/share_sheet.dart';
 
 /// Bundle of optional per-detection action callbacks.
 ///
@@ -65,7 +66,11 @@ class DetectionActions {
   /// Shares the detection's representative payload via the platform
   /// share sheet. Wired to [shareDetection] at every call site so the
   /// emitted text and attached audio clip stay consistent.
-  final VoidCallback? onShare;
+  ///
+  /// Receives the global rect of the control the user tapped, which has to
+  /// be forwarded as `sharePositionOrigin` — iPad anchors the share popover
+  /// to it and refuses to present the sheet without one.
+  final ShareFromOriginCallback? onShare;
 
   /// Removes the detection. Row-level callers should pair this with a
   /// `Dismissible` swipe + SnackBar undo so misfires are recoverable
@@ -171,7 +176,10 @@ class DetectionActionsOverflow extends StatelessWidget {
       onSelected: (a) {
         switch (a) {
           case _OverflowAction.share:
-            actions.onShare?.call();
+            // Anchor the iPad share popover on the overflow button itself —
+            // the menu has already popped by the time this runs, so this
+            // widget's own box is the control the user last touched.
+            actions.onShare?.call(shareOriginFrom(context));
           case _OverflowAction.replace:
             actions.onReplace?.call();
           case _OverflowAction.editNote:

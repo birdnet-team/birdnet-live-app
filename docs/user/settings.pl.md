@@ -267,7 +267,7 @@ Intuicja: wiele sposobów pracy wymaga jednocześnie więcej niż jednego format
 
 ### Dołącz pliki dźwiękowe
 
-Dołącz zapisany dźwięk obok eksportowanych tabel lub metadanych, jeśli dany sposób eksportu to obsługuje.
+Dołącz zapisany dźwięk obok eksportowanych tabel lub metadanych, jeśli dany sposób eksportu to obsługuje. Udostępnianie pojedynczego wykrycia także korzysta z tego ustawienia: pełne nagranie Session jest przycinane do dokładnych znaczników początku i końca tego wykrycia, a Session zawierająca tylko wykrycia używa zachowanego fragmentu.
 
 ### Zawsze udostępniaj dźwięk jako WAV
 
@@ -283,7 +283,7 @@ Po włączeniu każdy plik ZIP eksportu zawiera dodatkowo plik `<session>_report
 
 ### Udostępnianie samego dźwięku
 
-Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions złożone z fragmentów wykryć (bez pełnego nagrania) nadal dają plik ZIP, bo jest wtedy więcej niż jeden plik do udostępnienia.
+Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions z wieloma fragmentami wykryć nadal dają ZIP; przy udostępnianiu pojedynczego wykrycia przekazywany jest ten jeden surowy fragment.
 
 ## Prywatność
 

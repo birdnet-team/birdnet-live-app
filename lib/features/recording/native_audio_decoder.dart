@@ -14,6 +14,7 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -96,11 +97,7 @@ class NativeAudioDecoder {
     try {
       final pcmBytes = await tempFile.readAsBytes();
 
-      // Zero-copy convert little-endian byte pairs to Int16List.
-      final samples = pcmBytes.buffer.asInt16List(
-        pcmBytes.offsetInBytes,
-        pcmBytes.lengthInBytes ~/ 2,
-      );
+      final samples = _pcm16Samples(pcmBytes);
 
       return DecodedAudio(samples: samples, sampleRate: decoded.sampleRate);
     } finally {
@@ -204,15 +201,22 @@ class NativeAudioDecoder {
     final pcmBytes = result['samples'] as Uint8List;
     final reachedEnd = result['reachedEnd'] as bool? ?? false;
 
-    // Zero-copy convert little-endian byte pairs to Int16List.
-    final samples = pcmBytes.buffer.asInt16List(
-      pcmBytes.offsetInBytes,
-      pcmBytes.lengthInBytes ~/ 2,
-    );
+    final samples = _pcm16Samples(pcmBytes);
 
     return NativeDecodeRangeResult(
       audio: DecodedAudio(samples: samples, sampleRate: sampleRate),
       reachedEnd: reachedEnd,
+    );
+  }
+
+  /// Views PCM16 bytes as samples, copying only when the platform channel
+  /// returns a Uint8List whose buffer offset is not 16-bit aligned.
+  static Int16List _pcm16Samples(Uint8List bytes) {
+    final alignedBytes =
+        bytes.offsetInBytes.isEven ? bytes : Uint8List.fromList(bytes);
+    return alignedBytes.buffer.asInt16List(
+      alignedBytes.offsetInBytes,
+      alignedBytes.lengthInBytes ~/ 2,
     );
   }
 }

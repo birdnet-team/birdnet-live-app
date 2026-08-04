@@ -31,6 +31,7 @@ import '../../core/theme/score_colors.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/quick_action_service.dart';
 import '../../shared/utils/app_icons.dart';
+import '../../shared/utils/share_sheet.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -1075,10 +1076,29 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                   });
                 },
                 onShare:
-                    () => shareDetection(
-                      detection,
-                      session: session,
-                      shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                    (origin) => unawaited(
+                      reportShareFailure(
+                        context,
+                        shareDetection(
+                          detection,
+                          session: session,
+                          formats: ref.read(exportSelectionProvider),
+                          includeAudio: ref.read(includeAudioProvider),
+                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                          includeHtmlReport: ref.read(exportHtmlReportProvider),
+                          includeAppMetadata: ref.read(
+                            includeAppMetadataProvider,
+                          ),
+                          taxonomy: ref.read(taxonomyServiceProvider).value,
+                          speciesLocale: ref.read(
+                            effectiveSpeciesLocaleProvider,
+                          ),
+                          useAbsoluteSurveyTime:
+                              ref.read(timestampDisplayModeProvider) ==
+                              'absolute',
+                          sharePositionOrigin: origin,
+                        ),
+                      ),
                     ),
                 onDelete: () => _deleteLiveDetectionWithUndo(detection),
               ),

@@ -272,7 +272,7 @@ The intuition: many workflows need more than one format at the same time — a C
 
 ### Include audio files
 
-Include saved audio alongside the exported tables or metadata when supported by the export workflow.
+Include saved audio alongside the exported tables or metadata when supported by the export workflow. Sharing one detection follows this setting too: a full-session recording is cut to that detection's exact start-to-end timestamps, while a detection-only session uses its retained clip.
 
 ### Always share audio as WAV
 
@@ -288,7 +288,7 @@ When on, every export ZIP also contains a `<session>_report.html` file alongside
 
 ### Audio-only sharing
 
-Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of detection clips (no full recording) still produce a ZIP because there is more than one file to share.
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip.
 
 ## Privacy
 

@@ -71,13 +71,13 @@ Deslizar uma linha de **cabeçalho de espécie** (para a esquerda ou para a dire
 
 ### Compartilhar uma única detecção
 
-A opção :material-share-variant: **Compartilhar detecção** abre o menu de compartilhamento da plataforma com um conteúdo conciso e adequado a ferramentas de campo — nome comum e científico, confiança, carimbo de data/hora UTC em ISO 8601 e uma URI `geo:` quando a detecção tem GPS — e anexa o clipe de áudio sempre que houver um disponível. O arquivo compartilhado é nomeado `BirdNET_Live_<timestamp>_<species>.<ext>` para corresponder ao esquema da exportação ZIP.
+A opção :material-share-variant: **Compartilhar detecção** usa as mesmas opções de **Configurações → Exportar e sincronizar**. Ela exporta apenas esta detecção nos artefatos Raven, CSV, JSON, GPX, HTML e metadados do aplicativo selecionados. Quando **Incluir arquivos de áudio** está ativado, o pacote também contém o áudio da detecção; **Sempre compartilhar áudio como WAV** é respeitado. Com todos os formatos complementares, HTML e metadados do aplicativo desativados, o menu de compartilhamento recebe o clipe de áudio bruto em vez de um ZIP.
 
 O anexo de áudio é resolvido nesta ordem:
 
-1. O clipe próprio da detecção armazenado no disco.
-2. **Para Sessions que gravam um único arquivo contínuo**: a janela de áudio relevante é recortada da gravação em tempo real. Há suporte para gravações contínuas tanto em WAV quanto em FLAC, e o trecho é entregue no mesmo contêiner da fonte (WAV de entrada → WAV de saída, FLAC de entrada → FLAC de saída).
-3. Se nenhum estiver disponível, o compartilhamento é apenas de texto — a localização e o carimbo de data/hora ainda fazem parte do conteúdo.
+1. **Para Sessions que gravam um único arquivo contínuo**: o áudio entre os carimbos de início e fim da detecção é recortado diretamente da gravação. Há suporte para gravações contínuas WAV e FLAC; fontes comprimidas de File Analysis são decodificadas como WAV.
+2. Caso contrário, é usado o clipe próprio salvo da detecção quando ele existe no disco.
+3. Sem fonte de áudio e sem artefato de exportação selecionado, o compartilhamento volta a um texto curto com espécie, confiança, carimbo UTC e localização.
 
 ### Memos de voz
 

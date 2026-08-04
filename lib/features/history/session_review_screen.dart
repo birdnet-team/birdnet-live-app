@@ -73,6 +73,7 @@ import '../../shared/services/taxonomy_service.dart';
 import '../../shared/services/link_launcher.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
+import '../../shared/utils/share_sheet.dart';
 import '../../shared/utils/timestamp_format.dart';
 import '../../shared/utils/weather_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
@@ -2242,7 +2243,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
   }
 
-  Future<void> _share() async {
+  /// Wraps a share future so a platform rejection surfaces as a snack bar
+  /// instead of an unhandled async error nobody sees.
+  void _reportShareFailure(Future<Object?> share) {
+    unawaited(reportShareFailure(context, share));
+  }
+
+  Future<void> _share(Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
     // Save pending changes before sharing so the export is up to date. This
     // also persists a not-yet-saved session — exporting implies keeping it.
@@ -2299,7 +2306,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
       return;
     }
-    await SharePlus.instance.share(shareParamsForFile(exportPath));
+    await SharePlus.instance.share(
+      shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
+    );
   }
 
   void _done() {
@@ -3902,10 +3911,20 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             tooltip: l10n.sessionSave,
             onPressed: !_trimMode && _hasUnsavedWork ? _save : null,
           ),
-          IconButton(
-            icon: const Icon(AppIcons.share),
-            tooltip: l10n.sessionShare,
-            onPressed: _trimMode ? null : _share,
+          // Builder so the share popover can anchor on this button's own
+          // box rather than the whole screen — iPad needs a source rect.
+          Builder(
+            builder:
+                (buttonContext) => IconButton(
+                  icon: const Icon(AppIcons.share),
+                  tooltip: l10n.sessionShare,
+                  onPressed:
+                      _trimMode
+                          ? null
+                          : () => _reportShareFailure(
+                            _share(shareOriginFrom(buttonContext)),
+                          ),
+                ),
           ),
           IconButton(
             icon: const Icon(AppIcons.deleteOutline),
@@ -4366,10 +4385,21 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             onReplaceCluster: _replaceDetection,
             onToggleConfirmCluster: _toggleClusterConfirmation,
             onShareCluster:
-                (cluster) => shareDetection(
-                  cluster.records.first,
-                  session: widget.session,
-                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                (cluster, origin) => _reportShareFailure(
+                  shareDetection(
+                    cluster.records.first,
+                    session: widget.session,
+                    formats: ref.read(exportSelectionProvider),
+                    includeAudio: ref.read(includeAudioProvider),
+                    shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                    includeHtmlReport: ref.read(exportHtmlReportProvider),
+                    includeAppMetadata: ref.read(includeAppMetadataProvider),
+                    taxonomy: taxonomy,
+                    speciesLocale: speciesLocale,
+                    useAbsoluteSurveyTime:
+                        ref.read(timestampDisplayModeProvider) == 'absolute',
+                    sharePositionOrigin: origin,
+                  ),
                 ),
             onEditNoteCluster: _editClusterNote,
             onEditVoiceMemoCluster: _editClusterVoiceMemo,

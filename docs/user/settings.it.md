@@ -268,7 +268,7 @@ L'intuizione: molti flussi di lavoro richiedono più di un formato alla volta �
 
 ### Includi i file audio
 
-Includi l'audio salvato accanto alle tabelle o ai metadati esportati, quando il flusso di esportazione lo supporta.
+Includi l'audio salvato accanto alle tabelle o ai metadati esportati, quando il flusso di esportazione lo supporta. Anche la condivisione di una singola rilevazione segue questa impostazione: una registrazione Session completa viene ritagliata alle marche temporali esatte di inizio e fine della rilevazione, mentre una Session con sole rilevazioni usa il suo clip conservato.
 
 ### Condividi sempre l'audio come WAV
 
@@ -284,7 +284,7 @@ Una volta attivo, ogni ZIP di esportazione contiene anche un file `<session>_rep
 
 ### Condivisione del solo audio
 
-Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions composte da spezzoni di rilevazione (senza registrazione completa) producono comunque uno ZIP, perché in quel caso i file da condividere sono più di uno.
+Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions con più spezzoni di rilevazione producono comunque uno ZIP; condividendo una sola rilevazione viene consegnato quell'unico clip grezzo.
 
 ## Privacy
 
