@@ -52,7 +52,7 @@ upload key. **Never commit `key.properties` or the `.jks` file.**
 If you ever lose the upload key, you can request a key reset from Play
 Console (Google holds the actual app-signing key in Play App Signing).
 
-## 4. Build the App Bundle
+## 4. Build Android Artifacts
 
 The Play Store expects an `.aab`, not an APK. App Bundles deliver only the
 target device's ABI and resources, which trims our ~253 MB APK to ~221 MB on
@@ -77,11 +77,12 @@ The Flutter SDK must be on `PATH` — `flutter --version` has to work in the sam
 shell. The script shells out to `flutter.bat` on Windows and will stop with a
 clear error if it cannot find it.
 
-Under the hood it runs:
+Under the hood it runs these signed builds:
 
 ```pwsh
 flutter build appbundle --release `
   --obfuscate --split-debug-info=build/symbols/V<version>
+flutter build apk --release
 ```
 
 Windows quirk: the Java toolchain prints obsolete-options warnings that make
@@ -92,15 +93,15 @@ same if you build by hand.
 Output:
 
 - Bundle: `build/app/outputs/bundle/release/app-release.aab`
+- APK: `build/app/outputs/flutter-apk/app-release.apk`
 - ProGuard / R8 mapping: `build/app/outputs/mapping/release/mapping.txt`
 
 The mapping file is critical: without it, Play Console cannot de-obfuscate
 stack traces from crash reports, leaving you unable to tell what's broken in
 the field.
 
-(If you also need a sideloadable APK for testers, run
-`flutter build apk --release` — output at
-`build/app/outputs/flutter-apk/app-release.apk`.)
+The helper also creates a square 512 x 512 PNG from the launcher artwork for
+Huawei AppGallery.
 
 ## 5. Stage the release artifacts
 
@@ -110,6 +111,8 @@ folder under `release/` (gitignored except for `.gitignore` itself):
 ```
 release/V1.0.3/
   BirdNET_Live_V1.0.3.aab
+  BirdNET_Live_V1.0.3.apk
+  BirdNET_Live_V1.0.3_icon_512.png
   mapping.txt
   release_notes.txt          # the deliverable — one block per locale
   release_notes.source.txt   # reference digest, never uploaded
@@ -179,7 +182,15 @@ en-US block from the changelog and, because of a parsing bug, silently shipped
 
 For first-time upload to a new track, expect a 1–2 hour review delay.
 
-## 7. Tag and push
+## 7. Upload to Huawei AppGallery
+
+1. Create a new AppGallery release and upload
+  `release/V<version>/BirdNET_Live_V<version>.apk`.
+2. Upload `release/V<version>/BirdNET_Live_V<version>_icon_512.png` as the
+  512 x 512 app icon.
+3. Use the same reviewed user-facing release notes as the Play release.
+
+## 8. Tag and push
 
 After the release is live (or queued for review), tag the commit:
 
@@ -191,7 +202,7 @@ git push origin v0.15.2
 Tags are the easiest way to map a Play Console version code back to its exact
 source commit.
 
-## 8. Post-release
+## 9. Post-release
 
 - Watch the Play Console **Vitals** tab for the first 24–48 h. ANRs and
   native crashes show up here first.
