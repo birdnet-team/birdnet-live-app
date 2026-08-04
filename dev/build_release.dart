@@ -20,12 +20,12 @@
 // What it does:
 //   1. Reads the current version from `pubspec.yaml` (the single source
 //      of truth).
-//   2. Runs `flutter build appbundle --release --obfuscate
-//      --split-debug-info=build/symbols/V<version>`.
-//   3. Verifies the AAB exists on disk (the javac obsolete-options
-//      warning makes the exit code unreliable on Windows).
-//   4. Copies the AAB, the ProGuard mapping file, and the obfuscation
-//      symbols folder into `release/V<version>/`.
+//   2. Runs signed AAB and APK release builds using the configured Android
+//      keystore; the AAB is obfuscated and writes split debug symbols.
+//   3. Verifies both artifacts exist (the javac obsolete-options warning
+//      makes the exit code unreliable on Windows).
+//   4. Copies the AAB, APK, 512 px AppGallery icon, ProGuard mapping file,
+//      and obfuscation symbols folder into `release/V<version>/`.
 //   5. Writes two notes files into `release/V<version>/`:
 //        • `release_notes.txt`        — the deliverable, one short block per
 //          locale, for pasting into Play Console.
@@ -96,7 +96,13 @@ Future<void> main(List<String> args) async {
   if (!outDir.existsSync()) outDir.createSync(recursive: true);
 
   if (!notesOnly) {
-    await _runFlutterBuild(version);
+    await _runFlutterBuild([
+      'build',
+      'appbundle',
+      '--release',
+      '--obfuscate',
+      '--split-debug-info=build/symbols/V$version',
+    ]);
 
     final aabSrc = File(
       '${root.path}/build/app/outputs/bundle/release/app-release.aab',
@@ -114,6 +120,23 @@ Future<void> main(List<String> args) async {
     final aabDst = File('${outDir.path}/BirdNET_Live_V$version.aab');
     aabSrc.copySync(aabDst.path);
     stdout.writeln('Copied AAB → ${aabDst.path}');
+
+    await _runFlutterBuild(['build', 'apk', '--release']);
+
+    final apkSrc = File(
+      '${root.path}/build/app/outputs/flutter-apk/app-release.apk',
+    );
+    if (!apkSrc.existsSync()) {
+      stderr.writeln('ERROR: APK not found at ${apkSrc.path}');
+      exit(2);
+    }
+    final apkDst = File('${outDir.path}/BirdNET_Live_V$version.apk');
+    apkSrc.copySync(apkDst.path);
+    stdout.writeln('Copied APK → ${apkDst.path}');
+
+    final iconDst = File('${outDir.path}/BirdNET_Live_V${version}_icon_512.png');
+    await _createAppGalleryIcon(root, iconDst);
+    stdout.writeln('Created 512 px AppGallery icon → ${iconDst.path}');
 
     final mappingSrc = File(
       '${root.path}/build/app/outputs/mapping/release/mapping.txt',
@@ -333,14 +356,7 @@ String _stubReleaseNotes(String since, String current) {
   return stub.toString();
 }
 
-Future<void> _runFlutterBuild(String version) async {
-  final args = [
-    'build',
-    'appbundle',
-    '--release',
-    '--obfuscate',
-    '--split-debug-info=build/symbols/V$version',
-  ];
+Future<void> _runFlutterBuild(List<String> args) async {
   stdout.writeln('Running: flutter ${args.join(' ')}');
   // Inherit stdio so the user sees progress live. Don't trust exit code
   // — javac's obsolete-options warnings make it unreliable on Windows.
@@ -363,10 +379,47 @@ Future<void> _runFlutterBuild(String version) async {
   final code = await process.exitCode;
   if (code != 0) {
     stdout.writeln(
-      '`flutter build appbundle` exited with code $code — checking '
-      'whether the AAB landed anyway (javac warnings can poison the '
-      'exit code on Windows even when the bundle was built).',
+      '`flutter ${args.join(' ')}` exited with code $code — checking '
+      'whether the expected artifact landed anyway (javac warnings can '
+      'poison the exit code on Windows even when the build succeeded).',
     );
+  }
+}
+
+Future<void> _createAppGalleryIcon(Directory root, File destination) async {
+  final background = File('${root.path}/assets/images/app-icon-background.png');
+  final foreground = File('${root.path}/assets/images/app-icon-foreground.png');
+  if (!background.existsSync() || !foreground.existsSync()) {
+    stderr.writeln('ERROR: AppGallery icon source layers are missing.');
+    exit(2);
+  }
+
+  if (!Platform.isWindows) {
+    stderr.writeln('ERROR: AppGallery icon generation currently requires Windows.');
+    exit(2);
+  }
+
+  final result = await Process.run('powershell.exe', [
+    '-NoProfile',
+    '-Command',
+    r'Add-Type -AssemblyName System.Drawing; '
+        r'$background = [System.Drawing.Image]::FromFile($args[0]); '
+        r'$foreground = [System.Drawing.Image]::FromFile($args[1]); '
+        r'$icon = New-Object System.Drawing.Bitmap 512, 512; '
+        r'$graphics = [System.Drawing.Graphics]::FromImage($icon); '
+        r'$graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; '
+        r'$graphics.DrawImage($background, 0, 0, 512, 512); '
+        r'$graphics.DrawImage($foreground, 0, 0, 512, 512); '
+        r'$icon.Save($args[2], [System.Drawing.Imaging.ImageFormat]::Png); '
+        r'$graphics.Dispose(); $icon.Dispose(); $foreground.Dispose(); $background.Dispose()',
+    background.path,
+    foreground.path,
+    destination.path,
+  ]);
+  if (result.exitCode != 0 || !destination.existsSync()) {
+    stderr.writeln('ERROR: could not create 512 px AppGallery icon.');
+    if (result.stderr.toString().isNotEmpty) stderr.writeln(result.stderr);
+    exit(2);
   }
 }
 
