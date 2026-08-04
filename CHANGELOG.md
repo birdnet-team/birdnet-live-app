@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-08-04
+
+### Fixed
+
+- Sharing now works on iPad. Every share button passes the anchor rectangle iPadOS requires for the share popover, which previously made the buttons do nothing. A share the system refuses now reports an error instead of failing silently.
+
 ## [1.0.4] - 2026-08-03
 
 ### Changed
