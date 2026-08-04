@@ -10,15 +10,17 @@
 // staged file.
 // =============================================================================
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' show Rect;
 
+import 'package:archive/archive.dart';
 import 'package:birdnet_live/features/history/services/detection_sharing_service.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 // ignore: depend_on_referenced_packages
@@ -116,6 +118,21 @@ Future<File> _writeQuietWav(Directory dir, double seconds) async {
     sampleRate: sampleRate,
   );
   return File(path);
+}
+
+Future<File> _writeWavWithJunkChunk(Directory dir, double seconds) async {
+  final canonical = await _writeFakeWav(dir, seconds);
+  final source = await canonical.readAsBytes();
+  final expanded = Uint8List(source.length + 12);
+  expanded.setRange(0, 36, source);
+  expanded.setRange(36, 40, 'JUNK'.codeUnits);
+  ByteData.sublistView(expanded).setUint32(40, 4, Endian.little);
+  expanded.setRange(48, expanded.length, source.sublist(36));
+  ByteData.sublistView(
+    expanded,
+  ).setUint32(4, expanded.length - 8, Endian.little);
+  await canonical.writeAsBytes(expanded, flush: true);
+  return canonical;
 }
 
 void main() {
@@ -245,6 +262,229 @@ void main() {
       expect(_peak(decoded.samples), greaterThan(0.9));
     });
 
+    test('applies selected formats and metadata to one detection', () async {
+      final start = DateTime.utc(2026, 5, 11, 10);
+      final sessionDir =
+          await Directory(p.join(tmp.path, 'rec_detection_bundle')).create();
+      await FlacEncoder.writeFile(
+        filePath: p.join(sessionDir.path, 'full.flac'),
+        samples: _pcmLikeFloatSamples(30 * 32000),
+      );
+      final session = _session(
+        recordingPath: sessionDir.path,
+        start: start,
+        clipContextSeconds: 2,
+      );
+      final detection = _det(
+        start.add(const Duration(seconds: 5)),
+        endTimestamp: start.add(const Duration(seconds: 19)),
+      );
+
+      await shareDetection(
+        detection,
+        session: session,
+        formats: const {'csv', 'json'},
+        includeAudio: true,
+        includeAppMetadata: true,
+      );
+
+      final params = fakeSharePlatform.lastParams!;
+      expect(params.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.zip'));
+      final archive = ZipDecoder().decodeBytes(
+        await File(params.files!.single.path).readAsBytes(),
+      );
+      final names = archive.files.map((file) => file.name).toList();
+      expect(names.where((name) => name.endsWith('.flac')), hasLength(1));
+      expect(names.where((name) => name.endsWith('.csv')), hasLength(1));
+      expect(names.where((name) => name.endsWith('.json')), hasLength(2));
+      expect(
+        names.where((name) => name.endsWith('.metadata.json')),
+        hasLength(1),
+      );
+
+      final audio = archive.files.singleWhere(
+        (file) => file.name.endsWith('.flac'),
+      );
+      final audioPath = p.join(tmp.path, 'shared_detection.flac');
+      await File(audioPath).writeAsBytes(audio.content as List<int>);
+      final decoded = await AudioDecoder.decodeFile(audioPath);
+      expect(decoded.totalSamples, 14 * 32000);
+
+      final jsonFile = archive.files.singleWhere(
+        (file) =>
+            file.name.endsWith('.json') &&
+            !file.name.endsWith('.metadata.json'),
+      );
+      final jsonMap =
+          jsonDecode(utf8.decode(jsonFile.content as List<int>))
+              as Map<String, dynamic>;
+      expect(jsonMap['detections'], hasLength(1));
+      expect(
+        (jsonMap['detections'] as List).single['scientificName'],
+        'Troglodytes troglodytes',
+      );
+    });
+
+    test('packages audio from a WAV with noncanonical chunks', () async {
+      final start = DateTime.utc(2026, 5, 11, 10);
+      final sessionDir =
+          await Directory(p.join(tmp.path, 'rec_chunked_wav')).create();
+      await _writeWavWithJunkChunk(sessionDir, 20);
+      final session = _session(recordingPath: sessionDir.path, start: start);
+      final detection = _det(
+        start.add(const Duration(seconds: 4)),
+        endTimestamp: start.add(const Duration(seconds: 12)),
+      );
+
+      await shareDetection(
+        detection,
+        session: session,
+        formats: const {'raven'},
+        includeAudio: true,
+        includeAppMetadata: true,
+      );
+
+      final archive = ZipDecoder().decodeBytes(
+        await File(
+          fakeSharePlatform.lastParams!.files!.single.path,
+        ).readAsBytes(),
+      );
+      expect(
+        archive.files.where((file) => file.name.endsWith('.wav')),
+        hasLength(1),
+      );
+    });
+
+    test(
+      'slices compressed File Analysis audio with the native decoder',
+      () async {
+        const channel = MethodChannel('com.birdnet/audio_decoder');
+        var allowConcurrent = false;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (call) async {
+              switch (call.method) {
+                case 'inspect':
+                  return <String, dynamic>{
+                    'sampleRate': 32000,
+                    'totalSamples': 20 * 32000,
+                  };
+                case 'decodeRange':
+                  final args = Map<String, dynamic>.from(call.arguments as Map);
+                  final count = args['count'] as int;
+                  allowConcurrent = args['allowConcurrent'] as bool? ?? false;
+                  return <String, dynamic>{
+                    'sampleRate': 32000,
+                    'samples': Uint8List(count * 2),
+                    'reachedEnd': false,
+                  };
+              }
+              return null;
+            });
+        addTearDown(
+          () => TestDefaultBinaryMessengerBinding
+              .instance
+              .defaultBinaryMessenger
+              .setMockMethodCallHandler(channel, null),
+        );
+
+        final start = DateTime.utc(2026, 5, 11, 10);
+        final mp3 = File(p.join(tmp.path, 'full.mp3'));
+        await mp3.writeAsBytes([0x49, 0x44, 0x33, 0x04]);
+        final session = _session(recordingPath: mp3.path, start: start)
+          ..type = SessionType.fileUpload;
+
+        await shareDetection(
+          _det(
+            start.add(const Duration(seconds: 4)),
+            endTimestamp: start.add(const Duration(seconds: 12)),
+          ),
+          session: session,
+          formats: const {'raven'},
+          includeAudio: true,
+          includeAppMetadata: true,
+        );
+
+        final archive = ZipDecoder().decodeBytes(
+          await File(
+            fakeSharePlatform.lastParams!.files!.single.path,
+          ).readAsBytes(),
+        );
+        final audio = archive.files.singleWhere(
+          (file) => file.name.endsWith('.wav'),
+        );
+        final audioPath = p.join(tmp.path, 'file_analysis_detection.wav');
+        await File(audioPath).writeAsBytes(audio.content as List<int>);
+        final decoded = await AudioDecoder.decodeFile(audioPath);
+        expect(decoded.totalSamples, 8 * 32000);
+        expect(allowConcurrent, Platform.isAndroid);
+      },
+    );
+
+    test(
+      'does not silently share documents when full-audio slicing fails',
+      () async {
+        final start = DateTime.utc(2026, 5, 11, 10);
+        final malformed = File(p.join(tmp.path, 'malformed.flac'));
+        await malformed.writeAsBytes('fLaC'.codeUnits);
+        final session = _session(recordingPath: malformed.path, start: start);
+
+        await expectLater(
+          shareDetection(
+            _det(start.add(const Duration(seconds: 3))),
+            session: session,
+            formats: const {'raven'},
+            includeAudio: true,
+            includeAppMetadata: true,
+          ),
+          throwsA(isA<StateError>()),
+        );
+        expect(fakeSharePlatform.lastParams, isNull);
+      },
+    );
+
+    test('honors the include-audio setting for a detection export', () async {
+      final start = DateTime.utc(2026, 5, 11, 10);
+      final sessionDir =
+          await Directory(p.join(tmp.path, 'rec_no_detection_audio')).create();
+      await _writeFakeWav(sessionDir, 10);
+      final session = _session(recordingPath: sessionDir.path, start: start);
+
+      await shareDetection(
+        _det(start.add(const Duration(seconds: 3))),
+        session: session,
+        formats: const {'csv'},
+        includeAudio: false,
+      );
+
+      final params = fakeSharePlatform.lastParams!;
+      expect(params.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.csv'));
+      expect(params.files!.single.mimeType, 'text/csv');
+    });
+
+    test('can share only the selected app metadata', () async {
+      final start = DateTime.utc(2026, 5, 11, 10);
+      final session = _session(recordingPath: '', start: start);
+      session.recordingPath = null;
+
+      await shareDetection(
+        _det(start.add(const Duration(seconds: 3))),
+        session: session,
+        includeAudio: false,
+        includeAppMetadata: true,
+      );
+
+      final params = fakeSharePlatform.lastParams!;
+      expect(params.files, hasLength(1));
+      expect(params.files!.single.name, endsWith('.zip'));
+      final archive = ZipDecoder().decodeBytes(
+        await File(params.files!.single.path).readAsBytes(),
+      );
+      expect(archive.files, hasLength(1));
+      expect(archive.files.single.name, endsWith('.metadata.json'));
+    });
+
     // Regression guard for issue #203: iPad presents the share sheet as a
     // popover and the iOS plugin refuses to show it without an anchor
     // rect, so sharePositionOrigin has to survive every branch of the
@@ -356,7 +596,7 @@ void main() {
           recordingPath: sessionDir.path,
           start: start,
           windowDuration: 3,
-          clipContextSeconds: 0,
+          clipContextSeconds: 2,
         );
         final detection = _det(
           start.add(const Duration(seconds: 5)),
@@ -374,6 +614,8 @@ void main() {
           params.files!.single.path,
         );
         expect(decoded.sampleRate, 32000);
+        // Single-detection shares use the exact start/end interval even when
+        // the session's retained-clip setting includes surrounding context.
         expect(decoded.totalSamples, 32000 * 14);
       },
     );

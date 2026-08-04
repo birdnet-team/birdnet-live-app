@@ -1190,7 +1190,7 @@ Future<String?> buildSessionExport(
       (includeAudio && hasFullRecording && hasCompanion) ||
       docs.length > 1 ||
       includeHtmlReport ||
-      (docs.isNotEmpty && includeAppMetadata && exportMetadata != null) ||
+      (includeAppMetadata && exportMetadata != null) ||
       // Session annotations and detection voice memos each produce companion
       // files (annotations.txt, memos/) that only exist inside a ZIP bundle.
       // Force ZIP whenever either is present alongside at least one document

@@ -1082,7 +1082,20 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                         shareDetection(
                           detection,
                           session: session,
+                          formats: ref.read(exportSelectionProvider),
+                          includeAudio: ref.read(includeAudioProvider),
                           shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                          includeHtmlReport: ref.read(exportHtmlReportProvider),
+                          includeAppMetadata: ref.read(
+                            includeAppMetadataProvider,
+                          ),
+                          taxonomy: ref.read(taxonomyServiceProvider).value,
+                          speciesLocale: ref.read(
+                            effectiveSpeciesLocaleProvider,
+                          ),
+                          useAbsoluteSurveyTime:
+                              ref.read(timestampDisplayModeProvider) ==
+                              'absolute',
                           sharePositionOrigin: origin,
                         ),
                       ),

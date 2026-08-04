@@ -607,9 +607,22 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                             shareDetection(
                               widget.detection,
                               session: widget.session,
+                              formats: ref.read(exportSelectionProvider),
+                              includeAudio: ref.read(includeAudioProvider),
                               shareAudioAsWav: ref.read(
                                 shareAudioAsWavProvider,
                               ),
+                              includeHtmlReport: ref.read(
+                                exportHtmlReportProvider,
+                              ),
+                              includeAppMetadata: ref.read(
+                                includeAppMetadataProvider,
+                              ),
+                              taxonomy: taxonomyAsync.value,
+                              speciesLocale: speciesLocale,
+                              useAbsoluteSurveyTime:
+                                  ref.read(timestampDisplayModeProvider) ==
+                                  'absolute',
                               sharePositionOrigin: origin,
                             ),
                           ),

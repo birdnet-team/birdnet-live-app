@@ -4389,7 +4389,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                   shareDetection(
                     cluster.records.first,
                     session: widget.session,
+                    formats: ref.read(exportSelectionProvider),
+                    includeAudio: ref.read(includeAudioProvider),
                     shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                    includeHtmlReport: ref.read(exportHtmlReportProvider),
+                    includeAppMetadata: ref.read(includeAppMetadataProvider),
+                    taxonomy: taxonomy,
+                    speciesLocale: speciesLocale,
+                    useAbsoluteSurveyTime:
+                        ref.read(timestampDisplayModeProvider) == 'absolute',
                     sharePositionOrigin: origin,
                   ),
                 ),

@@ -171,8 +171,8 @@ double _absoluteToTrimRelative(
 /// Resolves a session's `recordingPath` to the continuous recording file on
 /// disk, or null when there isn't one.
 ///
-/// Handles both shapes the recording service sets: a finalized file path
-/// (after stop) or a session directory holding `full.flac` / `full.wav`.
+/// Handles both shapes used by the app: a finalized file path (including a
+/// compressed File Analysis source) or a session directory holding `full.*`.
 Future<String?> resolveSessionRecordingFile(String? recordingPath) async {
   if (recordingPath == null || recordingPath.isEmpty) return null;
 
@@ -181,17 +181,33 @@ Future<String?> resolveSessionRecordingFile(String? recordingPath) async {
     await _restoreInterruptedSwap(recordingPath);
   }
   if (FileSystemEntity.isFileSync(recordingPath)) {
-    final ext = await sourceAudioExtensionForFile(File(recordingPath));
-    return (ext == '.wav' || ext == '.flac') ? recordingPath : null;
+    return recordingPath;
   }
 
   if (FileSystemEntity.isDirectorySync(recordingPath)) {
-    final flac = File(p.join(recordingPath, 'full.flac'));
-    if (!flac.existsSync()) await _restoreInterruptedSwap(flac.path);
-    if (flac.existsSync()) return flac.path;
-    final wav = File(p.join(recordingPath, 'full.wav'));
-    if (!wav.existsSync()) await _restoreInterruptedSwap(wav.path);
-    if (wav.existsSync()) return wav.path;
+    const fullRecordingNames = [
+      'full.flac',
+      'full.wav',
+      'full.wave',
+      'full.mp3',
+      'full.ogg',
+      'full.oga',
+      'full.opus',
+      'full.m4a',
+      'full.aac',
+      'full.mp4',
+      'full.wma',
+      'full.amr',
+    ];
+    for (final name in fullRecordingNames) {
+      final candidate = File(p.join(recordingPath, name));
+      if (name == 'full.flac' || name == 'full.wav') {
+        if (!candidate.existsSync()) {
+          await _restoreInterruptedSwap(candidate.path);
+        }
+      }
+      if (candidate.existsSync()) return candidate.path;
+    }
   }
   return null;
 }
