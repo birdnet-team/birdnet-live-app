@@ -639,6 +639,45 @@ class _MediaTabPanelState extends State<_MediaTabPanel>
 ///
 /// The painter derives pixels-per-second from image width / player duration,
 /// ensuring perfect alignment regardless of sample rate discrepancies.
+/// A request to narrow the spectrogram strip's visible window.
+///
+/// Tapping a detection in a long recording should show the call, not the ten
+/// minutes around it — and a narrow window is also far cheaper to render,
+/// because tile cost scales with how much audio the window spans.
+class SpectrogramFocusRequest {
+  const SpectrogramFocusRequest({
+    required this.viewSeconds,
+    required this.token,
+  });
+
+  /// Target width of the visible window, in seconds of audio.
+  final double viewSeconds;
+
+  /// Distinguishes consecutive requests for the same width.
+  final int token;
+
+  /// The width the strip should adopt, or null to leave the zoom alone.
+  ///
+  /// Focusing only ever narrows. Someone who has pinched in past their
+  /// preferred width is looking at something deliberately, and yanking them
+  /// back out on every detection tap would fight them. Requests wider than
+  /// the recording, or below the strip's zoom floor, are clamped rather than
+  /// rejected.
+  double? resolve({
+    required double currentViewSeconds,
+    required double totalSeconds,
+    required double minViewSeconds,
+    required double maxViewSeconds,
+  }) {
+    if (viewSeconds <= 0) return null;
+    var target = viewSeconds;
+    if (totalSeconds > 0) target = math.min(target, totalSeconds);
+    target = target.clamp(minViewSeconds, maxViewSeconds).toDouble();
+    if (target >= currentViewSeconds) return null;
+    return target;
+  }
+}
+
 class _SpectrogramStrip extends ConsumerStatefulWidget {
   const _SpectrogramStrip({
     required this.session,
@@ -653,10 +692,16 @@ class _SpectrogramStrip extends ConsumerStatefulWidget {
     required this.onPause,
     required this.isPlaying,
     required this.userDefaultViewSeconds,
+    this.focusRequests,
     this.quality = 'medium',
   });
 
   final LiveSession session;
+
+  /// Requests to zoom the strip in on the playhead, raised when the user taps
+  /// a detection. Carries a token so tapping the same detection twice still
+  /// re-applies.
+  final ValueListenable<SpectrogramFocusRequest?>? focusRequests;
 
   /// Initial / preferred view width for short clips, sourced from the
   /// user's live-spectrogram duration setting. Long files override this
@@ -759,6 +804,41 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       }
     });
     _ticker.start();
+    widget.focusRequests?.addListener(_onFocusRequested);
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _requestVisibleSpectrogram(force: true);
+    });
+  }
+
+  int? _appliedFocusToken;
+
+  /// Narrow the window onto the playhead when a detection is tapped.
+  ///
+  /// Only ever zooms *in*: if the user is already looking at a window at or
+  /// below the requested width, their zoom is left alone. Panning is released
+  /// so the view snaps back to following the playhead, which the caller has
+  /// just seeked onto the detection.
+  void _onFocusRequested() {
+    final request = widget.focusRequests?.value;
+    if (request == null || request.token == _appliedFocusToken) return;
+    _appliedFocusToken = request.token;
+
+    final target = request.resolve(
+      currentViewSeconds: _viewSeconds,
+      totalSeconds: widget.duration.inMicroseconds / 1000000.0,
+      minViewSeconds: _minViewSeconds,
+      maxViewSeconds: _maxInitialViewSeconds,
+    );
+    if (target == null && _pannedCenterSec == null) return;
+
+    setState(() {
+      if (target != null) _viewSeconds = target;
+      _pannedCenterSec = null;
+      // A deliberate zoom, so don't let the duration-aware default undo it.
+      _appliedDurationAwareDefault = true;
+      _scaleStartViewSeconds = null;
+      _scaleStartCenterSec = null;
+    });
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) _requestVisibleSpectrogram(force: true);
     });
@@ -772,6 +852,11 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       oldWidget.positionNotifier.removeListener(_onPositionChanged);
       widget.positionNotifier.addListener(_onPositionChanged);
       _onPositionChanged();
+    }
+
+    if (widget.focusRequests != oldWidget.focusRequests) {
+      oldWidget.focusRequests?.removeListener(_onFocusRequested);
+      widget.focusRequests?.addListener(_onFocusRequested);
     }
 
     // First time we learn the true clip length, snap the view to a
@@ -819,6 +904,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
   @override
   void dispose() {
     widget.positionNotifier.removeListener(_onPositionChanged);
+    widget.focusRequests?.removeListener(_onFocusRequested);
     _ticker.dispose();
     super.dispose();
   }

@@ -48,7 +48,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:audio_session/audio_session.dart';
-import 'package:fftea/fftea.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -67,6 +67,7 @@ import '../../core/theme/score_colors.dart';
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/models/weather_snapshot.dart';
+import 'services/spectrogram_renderer.dart';
 import '../../shared/services/weather_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
@@ -87,7 +88,6 @@ import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/playback_normalizer.dart';
-import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
@@ -383,19 +383,7 @@ class _SpectrogramChunkRequest {
   final String colorMapName;
 }
 
-class _SpectrogramChunkPixels {
-  const _SpectrogramChunkPixels({
-    required this.pixels,
-    required this.width,
-    required this.height,
-  });
-
-  final Uint8List pixels;
-  final int width;
-  final int height;
-}
-
-Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
+Future<SpectrogramPixels?> _decodeAndRenderSpectrogramChunk(
   _SpectrogramChunkRequest req,
 ) async {
   final DecodedAudio audio;
@@ -420,9 +408,9 @@ Future<_SpectrogramChunkPixels?> _decodeAndRenderSpectrogramChunk(
       count: req.count,
     );
   }
-  final resampled = audio.resampleTo(req.targetSampleRate);
-  return _renderSpectrogramChunkPixels(
-    resampled,
+  return renderSpectrogram(
+    audio,
+    targetSampleRate: req.targetSampleRate,
     fftSize: req.fftSize,
     hop: req.hop,
     maxDisplayBins: req.maxDisplayBins,
@@ -463,85 +451,6 @@ Future<DecodedAudio> _decodePcm16Range(
   return DecodedAudio(samples: output, sampleRate: sampleRate);
 }
 
-_SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
-  DecodedAudio audio, {
-  required int fftSize,
-  required int hop,
-  required int maxDisplayBins,
-  required String colorMapName,
-}) {
-  const maxFreqHz = 16000;
-  const dbFloor = -80.0;
-  const dbCeiling = 0.0;
-
-  if (audio.totalSamples < fftSize) return null;
-
-  final numCols = (audio.totalSamples - fftSize) ~/ hop + 1;
-  if (numCols <= 0) return null;
-
-  final nyquist = audio.sampleRate / 2;
-  final binCount = fftSize ~/ 2 + 1;
-  final visibleBins = (maxFreqHz / nyquist * binCount).round().clamp(
-    1,
-    binCount,
-  );
-  // Down-sample bins when there are more frequency rows than the
-  // spectrogram strip can paint as distinct pixels. Each output row
-  // averages `binStride` adjacent FFT bins, giving a smoother (and much
-  // cheaper) look on phone-sized strips.
-  final binStride = math.max(1, (visibleBins / maxDisplayBins).ceil());
-  final displayBins = (visibleBins / binStride).ceil();
-
-  final lut = SpectrogramColorMap.lut(colorMapName);
-  final pixels = Uint8List(numCols * displayBins * 4);
-
-  final hann = Float64List(fftSize);
-  final hannFactor = 2.0 * math.pi / fftSize;
-  for (var i = 0; i < fftSize; i++) {
-    hann[i] = 0.5 * (1.0 - math.cos(hannFactor * i));
-  }
-  final fft = FFT(fftSize);
-
-  for (var c = 0; c < numCols; c++) {
-    final colSample = c * hop;
-    final chunk = audio.readFloat32(colSample, fftSize);
-    final input = Float64List(fftSize);
-    for (var i = 0; i < fftSize; i++) {
-      input[i] = chunk[i] * hann[i];
-    }
-    final spectrum = fft.realFft(input);
-
-    for (var row = 0; row < displayBins; row++) {
-      final binStart = row * binStride;
-      final binEnd = math.min(binStart + binStride, visibleBins);
-      var power = 0.0;
-      for (var bin = binStart; bin < binEnd; bin++) {
-        final re = spectrum[bin].x;
-        final im = spectrum[bin].y;
-        power += re * re + im * im;
-      }
-      power /= (binEnd - binStart);
-      final db = 10 * math.log(power + 1e-10) / math.ln10;
-      final norm = ((db - dbFloor) / (dbCeiling - dbFloor)).clamp(0.0, 1.0);
-
-      final y = displayBins - 1 - row;
-      final pxOffset = (y * numCols + c) * 4;
-      final lutIdx = (norm * 255).round().clamp(0, 255);
-      final color = lut[lutIdx];
-      pixels[pxOffset] = (color >> 16) & 0xFF;
-      pixels[pxOffset + 1] = (color >> 8) & 0xFF;
-      pixels[pxOffset + 2] = color & 0xFF;
-      pixels[pxOffset + 3] = (color >> 24) & 0xFF;
-    }
-  }
-
-  return _SpectrogramChunkPixels(
-    pixels: pixels,
-    width: numCols,
-    height: displayBins,
-  );
-}
-
 /// Run the FLAC→WAV transcode in a fresh background isolate.
 ///
 /// Lives at top level on purpose: when the closure passed to
@@ -557,7 +466,7 @@ _SpectrogramChunkPixels? _renderSpectrogramChunkPixels(
 /// Top-level closures constructed inside a `State` method capture `this`,
 /// which pulls in just_audio's [AudioPlayer] → rxdart `BehaviorSubject`
 /// (unsendable) and aborts the spawn with "object is unsendable".
-Future<_SpectrogramChunkPixels?> _runSpectrogramChunkIsolate(
+Future<SpectrogramPixels?> _runSpectrogramChunkIsolate(
   _SpectrogramChunkRequest request,
 ) {
   final token = RootIsolateToken.instance;
@@ -612,7 +521,7 @@ class _FullSpectrogramRequest {
 /// Only used for the trim editor, which needs a single image spanning the
 /// entire file. The main strip uses [_decodeAndRenderSpectrogramChunk]
 /// instead — tiled, so nothing ever holds the full PCM.
-Future<_SpectrogramChunkPixels?> _decodeAndRenderFullSpectrogram(
+Future<SpectrogramPixels?> _decodeAndRenderFullSpectrogram(
   _FullSpectrogramRequest req,
 ) async {
   final DecodedAudio decoded;
@@ -621,17 +530,23 @@ Future<_SpectrogramChunkPixels?> _decodeAndRenderFullSpectrogram(
   } else {
     decoded = await NativeAudioDecoder.decodeFile(req.path);
   }
-  final audio = decoded.resampleTo(req.targetSampleRate);
-
   const fftSize = 2048;
-  if (audio.totalSamples < fftSize) return null;
+  // Column count is measured on the target grid the renderer will resample
+  // onto, without materializing it.
+  final ratio = decoded.sampleRate / req.targetSampleRate;
+  final targetTotal =
+      ratio == 1.0
+          ? decoded.totalSamples
+          : (decoded.totalSamples / ratio).floor();
+  if (targetTotal < fftSize) return null;
   // Stretch the hop rather than the column count so a long recording costs
   // the same as a short one to render.
-  final rawCols = (audio.totalSamples - fftSize) ~/ req.hop + 1;
+  final rawCols = (targetTotal - fftSize) ~/ req.hop + 1;
   final stride = math.max(1, (rawCols / req.maxColumns).ceil());
 
-  return _renderSpectrogramChunkPixels(
-    audio,
+  return renderSpectrogram(
+    decoded,
+    targetSampleRate: req.targetSampleRate,
     fftSize: fftSize,
     hop: req.hop * stride,
     maxDisplayBins: req.maxDisplayBins,
@@ -639,7 +554,7 @@ Future<_SpectrogramChunkPixels?> _decodeAndRenderFullSpectrogram(
   );
 }
 
-Future<_SpectrogramChunkPixels?> _runFullSpectrogramIsolate(
+Future<SpectrogramPixels?> _runFullSpectrogramIsolate(
   _FullSpectrogramRequest request,
 ) {
   final token = RootIsolateToken.instance;
@@ -888,6 +803,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// The window [_decodeAudioForSpectrogram] opened the strip on. Used as the
   /// refresh target until the strip reports a viewport of its own.
   double? _bootstrapViewSeconds;
+
+  /// Zoom requests handed to the strip when a detection is tapped.
+  final ValueNotifier<SpectrogramFocusRequest?> _spectrogramFocus =
+      ValueNotifier(null);
+  int _spectrogramFocusToken = 0;
 
   /// Whether the strip still owes the user pixels — tiles in flight, or a
   /// transcode that has not yet produced the audio they need. Drives the
@@ -2016,7 +1936,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       await Future.wait([
-        for (var i = 0; i < math.min(_maxConcurrentChunkLoads, queue.length); i++)
+        for (
+          var i = 0;
+          i < math.min(_maxConcurrentChunkLoads, queue.length);
+          i++
+        )
           worker(),
       ]);
 
@@ -2024,9 +1948,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         // Drop pending reservations so a follow-up request can retry.
         _loadingSpectrogramChunkIndexes.removeAll(reserved);
         if (mounted) {
-          setState(
-            () => _decoding = _isBusyDecoding,
-          );
+          setState(() => _decoding = _isBusyDecoding);
         }
         return;
       }
@@ -2228,6 +2150,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   @override
   void dispose() {
     _positionNotifier.dispose();
+    _spectrogramFocus.dispose();
+    _transcodeProgressTimer?.cancel();
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _playerStateSubscription?.cancel();
@@ -3302,6 +3226,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
       _player.seek(seekPos);
       _positionNotifier.value = seekPos;
+      _focusSpectrogramOnPlayhead();
       if (!_isPlaying) {
         _player.play();
       }
@@ -3341,6 +3266,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
     });
     _clipPlayer.play();
+  }
+
+  /// Ask the strip to narrow onto the playhead after jumping to a detection.
+  ///
+  /// Two things fall out of this. The user sees the call itself rather than
+  /// the ten minutes of context around it, and the tile the strip now has to
+  /// render covers seconds instead of minutes — which is the difference
+  /// between waiting on a 480 s tile and a 30 s one.
+  ///
+  /// The strip only ever narrows in response, so this is a no-op when the
+  /// user is already zoomed in further than their preference.
+  void _focusSpectrogramOnPlayhead() {
+    final preferred = ref.read(spectrogramDurationProvider).toDouble();
+    if (preferred <= 0) return;
+    _spectrogramFocus.value = SpectrogramFocusRequest(
+      viewSeconds: preferred,
+      token: ++_spectrogramFocusToken,
+    );
   }
 
   void _seekToPosition(Duration position) {
@@ -4478,6 +4421,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           isPlaying: _isPlaying,
           userDefaultViewSeconds:
               ref.watch(spectrogramDurationProvider).toDouble(),
+          focusRequests: _spectrogramFocus,
           quality: ref.watch(spectrogramQualityProvider),
         ),
         // Lazy trim editor: no full-file spectrogram thumbnail is
