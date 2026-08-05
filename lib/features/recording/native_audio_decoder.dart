@@ -201,10 +201,43 @@ class NativeAudioDecoder {
     );
   }
 
+  /// Files this old are certainly not owned by a live decode any more.
+  static const Duration _staleTranscodeAge = Duration(hours: 1);
+
   static Future<String> _newTempPcmPath() async {
     final tempDir = await getTemporaryDirectory();
+    unawaited(_sweepStaleTranscodes(tempDir));
     return '${tempDir.path}/temp_decoded_'
         '${DateTime.now().microsecondsSinceEpoch}.pcm';
+  }
+
+  /// Drop transcode caches left behind by a process that died mid-decode.
+  ///
+  /// These are hundreds of megabytes each — a one-hour recording decodes to
+  /// well over 200 MB — so a single crash or force-stop while Session Review
+  /// was open can strand more cache than the recordings themselves occupy.
+  /// The owner deletes its own file on completion or cancellation; this only
+  /// catches the ones nobody is coming back for.
+  static Future<void> _sweepStaleTranscodes(Directory tempDir) async {
+    try {
+      final cutoff = DateTime.now().subtract(_staleTranscodeAge);
+      await for (final entry in tempDir.list()) {
+        if (entry is! File) continue;
+        final name = entry.uri.pathSegments.last;
+        if (!name.startsWith('temp_decoded_') || !name.endsWith('.pcm')) {
+          continue;
+        }
+        try {
+          if ((await entry.stat()).modified.isBefore(cutoff)) {
+            await entry.delete();
+          }
+        } catch (_) {
+          // Another process may own it; leave it alone.
+        }
+      }
+    } catch (_) {
+      // Sweeping is best-effort and must never block a decode.
+    }
   }
 
   static Future<NativePcmFileDecodeResult> _decodeToPcmFile(

@@ -11,8 +11,8 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/recording/native_audio_decoder.dart';
@@ -139,6 +139,67 @@ void main() {
 
       // And it is still delivered to whoever does await it.
       await expectLater(transcode.completed, throwsStateError);
+    });
+
+    test('stale transcode caches are swept, live ones are not', () async {
+      // A crash or force-stop mid-decode strands the cache file, and each one
+      // is hundreds of megabytes.
+      final stale = File(pcmPath('temp_decoded_111.pcm'))
+        ..writeAsBytesSync(Uint8List(16));
+      final fresh = File(pcmPath('temp_decoded_222.pcm'))
+        ..writeAsBytesSync(Uint8List(16));
+      final unrelated = File(pcmPath('something_else.pcm'))
+        ..writeAsBytesSync(Uint8List(16));
+      stale.setLastModifiedSync(
+        DateTime.now().subtract(const Duration(hours: 6)),
+      );
+
+      // The sweep is fired from the temp-path allocation, so exercise it the
+      // way production does.
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('plugins.flutter.io/path_provider'),
+            (call) async =>
+                call.method == 'getTemporaryDirectory' ? tempDir.path : null,
+          );
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+              const MethodChannel('plugins.flutter.io/path_provider'),
+              null,
+            );
+      });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('com.birdnet/audio_decoder'),
+            (call) async => throw PlatformException(code: 'no decoder'),
+          );
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+              const MethodChannel('com.birdnet/audio_decoder'),
+              null,
+            );
+      });
+
+      final started = await NativeAudioDecoder.startDecodeToTempPcmFile(
+        'whatever.mp3',
+        sampleRate: 32000,
+        expectedTotalSamples: 32000,
+      );
+      await started.completed.catchError(
+        (Object _) => NativePcmFileDecodeResult(
+          pcmPath: '',
+          sampleRate: 0,
+          totalSamples: 0,
+        ),
+      );
+      // Give the fire-and-forget sweep a turn.
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(stale.existsSync(), isFalse, reason: 'old cache should be swept');
+      expect(fresh.existsSync(), isTrue, reason: 'recent cache is in use');
+      expect(unrelated.existsSync(), isTrue, reason: 'not ours to delete');
     });
 
     test('completion can report a count the header did not predict', () async {
