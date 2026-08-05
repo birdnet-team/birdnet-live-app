@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed a crash that could close the app when audio capture restarted after losing the microphone to another app. Capture start, stop, and source switches now run one at a time and always release the old recorder first.
+
 ## [1.0.5] - 2026-08-04
 
 ### Fixed
