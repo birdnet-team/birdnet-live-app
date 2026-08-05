@@ -13,6 +13,7 @@
 // [AudioDecoder].
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -46,6 +47,62 @@ class NativePcmFileDecodeResult {
   final String pcmPath;
   final int sampleRate;
   final int totalSamples;
+}
+
+/// A native transcode-to-PCM that is already running.
+///
+/// Both platform decoders append to [pcmPath] as they go — Android through a
+/// buffered stream, iOS through a `FileHandle` — so whatever has been written
+/// is readable before the decode finishes. That is what lets Session Review
+/// draw the beginning of a long compressed recording within a second or two
+/// instead of waiting minutes for the whole transcode.
+///
+/// [sampleRate] and [expectedTotalSamples] come from the container header, so
+/// they are available immediately; [completed] reports what the decoder
+/// actually produced.
+class NativePcmTranscode {
+  NativePcmTranscode({
+    required this.pcmPath,
+    required this.sampleRate,
+    required this.expectedTotalSamples,
+    required this.completed,
+  }) {
+    // Callers await [completed] on their own schedule; make sure a failure in
+    // the meantime is never reported as an unhandled async error.
+    unawaited(completed.catchError((Object _) => _failed));
+  }
+
+  static final NativePcmFileDecodeResult _failed = NativePcmFileDecodeResult(
+    pcmPath: '',
+    sampleRate: 0,
+    totalSamples: 0,
+  );
+
+  /// Where the decoder is writing. The caller owns this file and must delete
+  /// it when done, after cancelling or awaiting [completed].
+  final String pcmPath;
+
+  /// Output sample rate, as declared by the source container.
+  final int sampleRate;
+
+  /// Sample count implied by the container's duration. The true count is only
+  /// known when [completed] resolves, and can differ slightly.
+  final int expectedTotalSamples;
+
+  /// Resolves when the platform decoder finishes, or throws if it failed or
+  /// was cancelled.
+  final Future<NativePcmFileDecodeResult> completed;
+
+  /// Mono samples currently readable from [pcmPath].
+  ///
+  /// Returns 0 rather than throwing while the file is still being created.
+  Future<int> availableSamples() async {
+    try {
+      return await File(pcmPath).length() ~/ 2;
+    } catch (_) {
+      return 0;
+    }
+  }
 }
 
 /// Decodes audio files via the platform's native audio framework.
@@ -118,11 +175,76 @@ class NativeAudioDecoder {
   static Future<NativePcmFileDecodeResult> decodeToTempPcmFile(
     String path,
   ) async {
-    final tempDir = await getTemporaryDirectory();
-    final tempPcmPath =
-        '${tempDir.path}/temp_decoded_${DateTime.now().microsecondsSinceEpoch}.pcm';
-    final tempFile = File(tempPcmPath);
+    return _decodeToPcmFile(path, await _newTempPcmPath());
+  }
 
+  /// Start a transcode and return immediately, without waiting for it.
+  ///
+  /// Use this when the output can be consumed as it is produced — see
+  /// [NativePcmTranscode]. [sampleRate] and [expectedTotalSamples] should come
+  /// from [inspectFile] so the caller can lay out a timeline before any audio
+  /// has been decoded.
+  ///
+  /// The caller owns the resulting file: cancel with [cancelDecode] or await
+  /// [NativePcmTranscode.completed] before deleting it.
+  static Future<NativePcmTranscode> startDecodeToTempPcmFile(
+    String path, {
+    required int sampleRate,
+    required int expectedTotalSamples,
+  }) async {
+    final tempPcmPath = await _newTempPcmPath();
+    return NativePcmTranscode(
+      pcmPath: tempPcmPath,
+      sampleRate: sampleRate,
+      expectedTotalSamples: expectedTotalSamples,
+      completed: _decodeToPcmFile(path, tempPcmPath),
+    );
+  }
+
+  /// Files this old are certainly not owned by a live decode any more.
+  static const Duration _staleTranscodeAge = Duration(hours: 1);
+
+  static Future<String> _newTempPcmPath() async {
+    final tempDir = await getTemporaryDirectory();
+    unawaited(_sweepStaleTranscodes(tempDir));
+    return '${tempDir.path}/temp_decoded_'
+        '${DateTime.now().microsecondsSinceEpoch}.pcm';
+  }
+
+  /// Drop transcode caches left behind by a process that died mid-decode.
+  ///
+  /// These are hundreds of megabytes each — a one-hour recording decodes to
+  /// well over 200 MB — so a single crash or force-stop while Session Review
+  /// was open can strand more cache than the recordings themselves occupy.
+  /// The owner deletes its own file on completion or cancellation; this only
+  /// catches the ones nobody is coming back for.
+  static Future<void> _sweepStaleTranscodes(Directory tempDir) async {
+    try {
+      final cutoff = DateTime.now().subtract(_staleTranscodeAge);
+      await for (final entry in tempDir.list()) {
+        if (entry is! File) continue;
+        final name = entry.uri.pathSegments.last;
+        if (!name.startsWith('temp_decoded_') || !name.endsWith('.pcm')) {
+          continue;
+        }
+        try {
+          if ((await entry.stat()).modified.isBefore(cutoff)) {
+            await entry.delete();
+          }
+        } catch (_) {
+          // Another process may own it; leave it alone.
+        }
+      }
+    } catch (_) {
+      // Sweeping is best-effort and must never block a decode.
+    }
+  }
+
+  static Future<NativePcmFileDecodeResult> _decodeToPcmFile(
+    String path,
+    String tempPcmPath,
+  ) async {
+    final tempFile = File(tempPcmPath);
     try {
       final result = await _channel.invokeMapMethod<String, dynamic>('decode', {
         'path': path,

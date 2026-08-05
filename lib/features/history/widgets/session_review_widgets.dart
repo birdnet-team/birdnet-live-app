@@ -639,6 +639,144 @@ class _MediaTabPanelState extends State<_MediaTabPanel>
 ///
 /// The painter derives pixels-per-second from image width / player duration,
 /// ensuring perfect alignment regardless of sample rate discrepancies.
+/// A request to narrow the spectrogram strip's visible window.
+///
+/// Tapping a detection in a long recording should show the call, not the ten
+/// minutes around it — and a narrow window is also far cheaper to render,
+/// because tile cost scales with how much audio the window spans.
+class SpectrogramFocusRequest {
+  const SpectrogramFocusRequest({
+    required this.viewSeconds,
+    required this.token,
+  });
+
+  /// Target width of the visible window, in seconds of audio.
+  final double viewSeconds;
+
+  /// Distinguishes consecutive requests for the same width.
+  final int token;
+
+  /// The width the strip should adopt, or null to leave the zoom alone.
+  ///
+  /// Focusing only ever narrows. Someone who has pinched in past their
+  /// preferred width is looking at something deliberately, and yanking them
+  /// back out on every detection tap would fight them. Requests wider than
+  /// the recording, or below the strip's zoom floor, are clamped rather than
+  /// rejected.
+  double? resolve({
+    required double currentViewSeconds,
+    required double totalSeconds,
+    required double minViewSeconds,
+    required double maxViewSeconds,
+  }) {
+    if (viewSeconds <= 0) return null;
+    var target = viewSeconds;
+    if (totalSeconds > 0) target = math.min(target, totalSeconds);
+    target = target.clamp(minViewSeconds, maxViewSeconds).toDouble();
+    if (target >= currentViewSeconds) return null;
+    return target;
+  }
+}
+
+/// Which tiles the strip should hold for one zoom level.
+///
+/// The scheduler used to lay every recording out on the same grid, sized for
+/// the case that made tiling necessary in the first place — an hour of audio
+/// where only the visible minute can be afforded. A one-minute live session
+/// went through the same machinery and paid for all of it: a frame index it
+/// would never seek against, then a tile at a time around a viewport the
+/// strip had not reported yet, with a black strip until the first one landed.
+///
+/// So short recordings get a different rule. Below [shortRecordingSeconds]
+/// the file is drawn in a single sweep — every tile it needs scheduled at
+/// once, spanning as much audio as one texture will hold — and there is
+/// nothing left to fill in afterwards. Long recordings keep the window.
+class SpectrogramTileLayout {
+  const SpectrogramTileLayout({
+    required this.chunkSeconds,
+    required this.startSec,
+    required this.endSec,
+    required this.singleSweep,
+  });
+
+  /// A recording at or below this length is rendered in one sweep.
+  ///
+  /// Two minutes is a few megabytes to decode and at most a couple of tiles
+  /// to render, so the windowing that pays for itself on an hour is pure
+  /// latency here.
+  static const double shortRecordingSeconds = 120.0;
+
+  /// Widest tile handed to the GPU, in FFT columns.
+  ///
+  /// A whole-file tile is only a good idea while its texture stays inside
+  /// what a phone will hold. Past that the sweep splits into the fewest tiles
+  /// the budget allows — two, at the tightest zoom, for a two-minute file.
+  static const int maxTileColumns = 4096;
+
+  /// Longest recording one texture can hold at [hop] and [targetSampleRate].
+  static double maxTileSeconds({
+    required int hop,
+    required int targetSampleRate,
+  }) {
+    if (hop <= 0 || targetSampleRate <= 0) return 0.0;
+    return maxTileColumns * hop / targetSampleRate;
+  }
+
+  /// Seconds of audio per tile.
+  final double chunkSeconds;
+
+  /// Range of the recording to have on hand, in absolute seconds.
+  final double startSec;
+  final double endSec;
+
+  /// Whether this layout covers the whole recording rather than a window.
+  final bool singleSweep;
+
+  static SpectrogramTileLayout resolve({
+    required double totalSeconds,
+    required double absoluteCenterSec,
+    required double viewSeconds,
+    required double gridChunkSeconds,
+    required int hop,
+    required int targetSampleRate,
+  }) {
+    if (totalSeconds > 0 &&
+        totalSeconds <= shortRecordingSeconds &&
+        hop > 0 &&
+        targetSampleRate > 0) {
+      final tileSeconds = maxTileSeconds(
+        hop: hop,
+        targetSampleRate: targetSampleRate,
+      );
+      return SpectrogramTileLayout(
+        chunkSeconds: math.min(totalSeconds, tileSeconds),
+        startSec: 0.0,
+        endSec: totalSeconds,
+        singleSweep: true,
+      );
+    }
+
+    // Long recording: a window around the playhead, padded so a small scroll
+    // doesn't immediately need another tile.
+    final padding = math.min(
+      math.max(5.0, viewSeconds * 0.25),
+      gridChunkSeconds,
+    );
+    return SpectrogramTileLayout(
+      chunkSeconds: gridChunkSeconds,
+      startSec:
+          (absoluteCenterSec - viewSeconds / 2 - padding)
+              .clamp(0.0, totalSeconds)
+              .toDouble(),
+      endSec:
+          (absoluteCenterSec + viewSeconds / 2 + padding)
+              .clamp(0.0, totalSeconds)
+              .toDouble(),
+      singleSweep: false,
+    );
+  }
+}
+
 class _SpectrogramStrip extends ConsumerStatefulWidget {
   const _SpectrogramStrip({
     required this.session,
@@ -653,10 +791,17 @@ class _SpectrogramStrip extends ConsumerStatefulWidget {
     required this.onPause,
     required this.isPlaying,
     required this.userDefaultViewSeconds,
+    required this.singleSweep,
+    this.focusRequests,
     this.quality = 'medium',
   });
 
   final LiveSession session;
+
+  /// Requests to zoom the strip in on the playhead, raised when the user taps
+  /// a detection. Carries a token so tapping the same detection twice still
+  /// re-applies.
+  final ValueListenable<SpectrogramFocusRequest?>? focusRequests;
 
   /// Initial / preferred view width for short clips, sourced from the
   /// user's live-spectrogram duration setting. Long files override this
@@ -666,6 +811,11 @@ class _SpectrogramStrip extends ConsumerStatefulWidget {
 
   final ui.Image? spectrogramImage;
   final List<_SpectrogramChunk> spectrogramChunks;
+
+  /// Whether the strip fills in one sweep — see [SpectrogramTileLayout].
+  /// Only the empty-state backdrop depends on it.
+  final bool singleSweep;
+
   final bool decoding;
   final ValueNotifier<Duration> positionNotifier;
   final Duration duration;
@@ -759,6 +909,41 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       }
     });
     _ticker.start();
+    widget.focusRequests?.addListener(_onFocusRequested);
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _requestVisibleSpectrogram(force: true);
+    });
+  }
+
+  int? _appliedFocusToken;
+
+  /// Narrow the window onto the playhead when a detection is tapped.
+  ///
+  /// Only ever zooms *in*: if the user is already looking at a window at or
+  /// below the requested width, their zoom is left alone. Panning is released
+  /// so the view snaps back to following the playhead, which the caller has
+  /// just seeked onto the detection.
+  void _onFocusRequested() {
+    final request = widget.focusRequests?.value;
+    if (request == null || request.token == _appliedFocusToken) return;
+    _appliedFocusToken = request.token;
+
+    final target = request.resolve(
+      currentViewSeconds: _viewSeconds,
+      totalSeconds: widget.duration.inMicroseconds / 1000000.0,
+      minViewSeconds: _minViewSeconds,
+      maxViewSeconds: _maxInitialViewSeconds,
+    );
+    if (target == null && _pannedCenterSec == null) return;
+
+    setState(() {
+      if (target != null) _viewSeconds = target;
+      _pannedCenterSec = null;
+      // A deliberate zoom, so don't let the duration-aware default undo it.
+      _appliedDurationAwareDefault = true;
+      _scaleStartViewSeconds = null;
+      _scaleStartCenterSec = null;
+    });
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (mounted) _requestVisibleSpectrogram(force: true);
     });
@@ -772,6 +957,11 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       oldWidget.positionNotifier.removeListener(_onPositionChanged);
       widget.positionNotifier.addListener(_onPositionChanged);
       _onPositionChanged();
+    }
+
+    if (widget.focusRequests != oldWidget.focusRequests) {
+      oldWidget.focusRequests?.removeListener(_onFocusRequested);
+      widget.focusRequests?.addListener(_onFocusRequested);
     }
 
     // First time we learn the true clip length, snap the view to a
@@ -819,6 +1009,7 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
   @override
   void dispose() {
     widget.positionNotifier.removeListener(_onPositionChanged);
+    widget.focusRequests?.removeListener(_onFocusRequested);
     _ticker.dispose();
     super.dispose();
   }
@@ -857,9 +1048,17 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
     final hasSpectrogram =
         widget.spectrogramImage != null || widget.spectrogramChunks.isNotEmpty;
     if (!hasSpectrogram) {
+      // A long recording is legitimately empty here for a while, and black is
+      // the right backdrop for it: it is the strip's own background, so tiles
+      // land into it rather than onto a second surface. A short recording
+      // fills in one sweep, which makes the same backdrop a flash — and a
+      // black flash reads as something broken, not as something loading.
       return Container(
         height: _kReviewStripHeight,
-        color: Colors.black,
+        color:
+            widget.singleSweep
+                ? theme.colorScheme.surfaceContainerLow
+                : Colors.black,
         child:
             widget.decoding
                 ? const Center(

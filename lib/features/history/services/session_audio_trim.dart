@@ -561,11 +561,23 @@ Future<TrimmedAudioFile?> _trimFlac({
       asWav ? null : FlacEncoder(filePath: dest.path, sampleRate: sampleRate);
   await (wavWriter?.open() ?? flacEncoder!.open());
 
+  // A trim that starts well into the recording would otherwise bit-decode
+  // everything before it just to throw it away — ~19 s for a cut an hour in.
+  // The index costs one linear scan (~0.6 s for an hour), so only reach for
+  // it when there is meaningfully more than that to skip; exports that start
+  // at zero, which is most of them, take the untouched path.
+  final seekIndex =
+      startSample > sampleRate * 60
+          ? await AudioDecoder.buildFlacSeekIndex(sourcePath)
+          : null;
+
   var written = 0;
   var failed = false;
   try {
     await AudioDecoder.decodeFlacFrames(
       sourcePath,
+      seekIndex: seekIndex,
+      fromSample: startSample,
       onFrame: (frameStart, samples) async {
         final frameEnd = frameStart + samples.length;
         if (frameEnd <= startSample) return true; // Before the range.

@@ -138,7 +138,43 @@ class AudioCaptureService with WidgetsBindingObserver {
   AudioSourceSelection _currentSource = AudioSourceSelection.systemDefault;
   DateTime _lastDataTime = DateTime.now();
 
-  bool _isRestarting = false;
+  // ── Lifecycle serialization ─────────────────────────────────────────────
+  //
+  // start / stop / switchSource and the watchdog's restarts arrive from
+  // independent callers (screens, the 2 s watchdog timer, lifecycle
+  // callbacks), and all of them are async. Left unserialized, two of them
+  // interleave inside each other's `await` gaps and a second
+  // `startStream()` reaches the platform while the native recorder is still
+  // running. `record` handles that by stopping the live recording and
+  // restarting it from inside the stop callback — and when the fresh
+  // AudioRecord then fails to initialize (the common case, since the reason
+  // we were restarting is usually a contested mic) the plugin answers the
+  // same method call twice and the Flutter engine aborts the app with
+  // `IllegalStateException: Reply already submitted`.
+  //
+  // Two rules keep us off that path: every lifecycle operation runs to
+  // completion before the next one starts, and [_startLocked] always
+  // disposes the previous recorder first, so the plugin only ever sees a
+  // freshly created recorder that is not recording yet.
+  Future<void> _lifecycleQueue = Future<void>.value();
+  bool _lifecycleBusy = false;
+
+  /// Run [op] after every previously queued lifecycle operation has finished.
+  ///
+  /// The returned future carries [op]'s error to its caller; the queue itself
+  /// swallows it so one failed start can't poison every later operation.
+  Future<void> _serialize(Future<void> Function() op) {
+    final next = _lifecycleQueue.then((_) async {
+      _lifecycleBusy = true;
+      try {
+        await op();
+      } finally {
+        _lifecycleBusy = false;
+      }
+    });
+    _lifecycleQueue = next.catchError((_) {});
+    return next;
+  }
 
   /// Whether the app is currently in the foreground. Kept up to date by the
   /// [WidgetsBindingObserver] hook. We only fight to reclaim a lost mic while
@@ -269,6 +305,10 @@ class AudioCaptureService with WidgetsBindingObserver {
   /// slow chunk doesn't trip it.
   static const Duration _stallTimeout = Duration(seconds: 3);
 
+  /// How long to wait for the platform to acknowledge a stop/dispose before
+  /// abandoning the recorder (see [_teardownCapture]).
+  static const Duration _teardownTimeout = Duration(seconds: 2);
+
   Duration _retryBackoff = _minRetryBackoff;
   DateTime? _nextRetryAt;
   bool _micContested = false;
@@ -314,7 +354,7 @@ class AudioCaptureService with WidgetsBindingObserver {
   }
 
   void _checkWatchdog() {
-    if (!_shouldBeCapturing || _isRestarting) return;
+    if (!_shouldBeCapturing || _lifecycleBusy) return;
 
     final now = DateTime.now();
 
@@ -383,31 +423,28 @@ class AudioCaptureService with WidgetsBindingObserver {
 
   /// Fully tear down capture and release the native recorder while keeping
   /// [_shouldBeCapturing] set, so we resume automatically once foregrounded.
-  Future<void> _releaseForContention() async {
-    if (_isRestarting) return;
-    _isRestarting = true;
+  Future<void> _releaseForContention() => _serialize(() async {
     try {
       await _teardownCapture();
-    } catch (_) {
-    } finally {
-      _isRestarting = false;
-    }
-  }
+    } catch (_) {}
+  });
 
-  Future<void> _restart() async {
-    if (_isRestarting) return;
-    _isRestarting = true;
+  /// Queue a restart. Errors are swallowed — callers fire this from timers and
+  /// lifecycle callbacks without awaiting it.
+  Future<void> _restart() => _serialize(_restartLocked);
+
+  /// Restart body. Assumes the lifecycle queue is already held.
+  Future<void> _restartLocked() async {
     try {
       // Fully dispose the old recorder, not just stop it: a recorder that
       // lost the mic can stay wedged and never deliver audio again, so a
-      // reliable reclaim needs a fresh AudioRecord instance.
+      // reliable reclaim needs a fresh AudioRecord instance. This also moves
+      // [_state] off `capturing` so [_startLocked] doesn't take its
+      // already-running early return.
       await _teardownCapture();
       _shouldBeCapturing = true;
-      await start(source: _currentSource);
-    } catch (_) {
-    } finally {
-      _isRestarting = false;
-    }
+      await _startLocked(source: _currentSource);
+    } catch (_) {}
   }
 
   /// Switch to a different [source] without ending the session.
@@ -420,7 +457,11 @@ class AudioCaptureService with WidgetsBindingObserver {
   ///
   /// When capture isn't running this only records the choice; the next [start]
   /// picks it up.
-  Future<void> switchSource(AudioSourceSelection source) async {
+  Future<void> switchSource(AudioSourceSelection source) =>
+      _serialize(() => _switchSourceLocked(source));
+
+  /// [switchSource] body. Assumes the lifecycle queue is already held.
+  Future<void> _switchSourceLocked(AudioSourceSelection source) async {
     if (source == _currentSource) return;
 
     if (_state != CaptureState.capturing) {
@@ -430,7 +471,7 @@ class AudioCaptureService with WidgetsBindingObserver {
 
     debugPrint('Switching audio source to $source');
     _currentSource = source;
-    await _restart();
+    await _restartLocked();
   }
 
   // ---------------------------------------------------------------------------
@@ -471,7 +512,11 @@ class AudioCaptureService with WidgetsBindingObserver {
   /// [source] — which input device to record from and how much OS processing
   /// to allow. Omit it to reuse the last source, which is what makes a
   /// [switchSource] performed while stopped survive until the next start.
-  Future<void> start({AudioSourceSelection? source}) async {
+  Future<void> start({AudioSourceSelection? source}) =>
+      _serialize(() => _startLocked(source: source));
+
+  /// [start] body. Assumes the lifecycle queue is already held.
+  Future<void> _startLocked({AudioSourceSelection? source}) async {
     _shouldBeCapturing = true;
     _lastDataTime = DateTime.now();
 
@@ -480,11 +525,19 @@ class AudioCaptureService with WidgetsBindingObserver {
     // merely updating `_currentSource` here would make the UI claim a source
     // that the running AudioRecord was not actually using.
     if (_state == CaptureState.capturing) {
-      if (source != null) await switchSource(source);
+      if (source != null) await _switchSourceLocked(source);
       return;
     }
 
     if (source != null) _currentSource = source;
+
+    // Never hand a second `startStream()` to a recorder the platform already
+    // owns. `_state` alone can't tell us that: a stream error or a failed
+    // start leaves us at `error`/`stopped` while the native recorder is still
+    // very much alive, and starting on top of it is what triggers the
+    // plugin's double-reply crash. Disposing first costs one channel round
+    // trip and guarantees a clean recorder.
+    await _teardownCapture();
 
     try {
       final hasPermission = await _rec.hasPermission();
@@ -544,11 +597,11 @@ class AudioCaptureService with WidgetsBindingObserver {
   }
 
   /// Stop capturing audio (user- or session-initiated).
-  Future<void> stop() async {
+  Future<void> stop() => _serialize(() async {
     _shouldBeCapturing = false;
     await _teardownCapture();
     debugPrint('Audio capture stopped');
-  }
+  });
 
   /// Cancel the level timer + audio stream and fully release the native
   /// recorder, leaving [_state] at [CaptureState.stopped].
@@ -568,13 +621,19 @@ class AudioCaptureService with WidgetsBindingObserver {
     final rec = _recorder;
     _recorder = null;
     if (rec != null) {
+      // Both calls are bounded: `record` only completes `stop()` from its
+      // recording thread's stop callback, and a recorder whose AudioRecord
+      // died before it ever reached the recording state never fires that
+      // callback. Waiting forever there would wedge the whole lifecycle
+      // queue, so abandon the recorder instead — `dispose()` on the platform
+      // side tears it down regardless.
       try {
-        await rec.stop();
+        await rec.stop().timeout(_teardownTimeout);
       } catch (_) {
         // Recorder may already be stopped or wedged; ignore.
       }
       try {
-        await rec.dispose();
+        await rec.dispose().timeout(_teardownTimeout);
       } catch (_) {
         // Best-effort native release.
       }

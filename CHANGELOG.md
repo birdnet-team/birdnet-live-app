@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-08-05
+
+### Changed
+
+- Session Review now draws the spectrogram in tiles for every recording, so a long session opens as quickly as a short one and never loads the whole file into memory. The full-recording view used for trimming is built when you open the trim editor instead of on every open.
+- Reviewing an imported MP3, M4A, or other compressed recording no longer waits for the whole file to be decoded first. The spectrogram appears within seconds and fills in as decoding proceeds; a 44-minute MP3 went from about 3.5 minutes of blank strip to under 15 seconds. Leaving the screen now stops the decode instead of letting it run on.
+- Tapping a detection in a long recording now zooms the spectrogram to the duration set under Settings → Spectrogram and draws just that window, so the call appears and plays right away instead of waiting on a view spanning several minutes.
+- Spectrogram drawing is substantially faster, most noticeably when zoomed out and on imported recordings that are not already at 32 kHz — a wide tile went from 657 ms to 47 ms. Drawing now costs the same whatever span the view covers.
+- Transcode caches left behind by a crash while reviewing a compressed recording are now cleaned up; each one could be several hundred megabytes.
+
+### Fixed
+
+- Short recordings no longer flash a black spectrogram while opening. Sessions up to two minutes schedule the whole recording in one sweep, while recordings that fit one tile skip the FLAC frame index they never seek against.
+- Pinch-zooming the spectrogram no longer blanks the strip. The tiles you are looking at stay on screen until their replacements arrive.
+- Fixed a crash that could close the app when audio capture restarted after losing the microphone to another app. Capture start, stop, and source switches now run one at a time and always release the old recorder first.
+- Scrubbing and jumping to detections late in a long FLAC recording is no longer slow. Every spectrogram tile used to decode the recording from the beginning — about 19 seconds per tile an hour in — so Session Review now builds a frame index once when the session opens.
+- Trimming a recording or sharing a detection from late in a FLAC session uses the same index instead of re-decoding everything before the cut.
+- Opening a recording no longer freezes the interface while checking whether it needs a playback loudness boost; that decode moved to the background.
+
 ## [1.0.5] - 2026-08-04
 
 ### Fixed
