@@ -1445,8 +1445,19 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       // re-decode the stream from byte zero — ~19 s per tile an hour into a
       // recording. Building the index is one linear scan (~0.6 s for an hour)
       // and makes every later tile constant-cost.
+      //
+      // A recording that fits one finest-resolution tile never seeks: it is
+      // drawn from the head, so the scan would be an isolate spawn and a full
+      // read for a lookup nothing performs. Longer short recordings can split
+      // into multiple tiles at high quality and still benefit from the index.
       FlacSeekIndex? seekIndex;
-      if (sourceMetadata.format == 'FLAC') {
+      final sourceSeconds = sourceMetadata.duration.inMicroseconds / 1e6;
+      final unindexedFlacSeconds = SpectrogramTileLayout.maxTileSeconds(
+        hop: 512,
+        targetSampleRate: AppConstants.sampleRate,
+      );
+      if (sourceMetadata.format == 'FLAC' &&
+          sourceSeconds > unindexedFlacSeconds) {
         seekIndex = await _runFlacSeekIndexIsolate(sourcePath);
         if (!mounted || generation != _spectrogramGeneration) return;
       }
@@ -1633,6 +1644,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// memory and core contention on a phone.
   static const int _maxConcurrentChunkLoads = 3;
 
+  /// Whether this recording is short enough to be drawn in one sweep, so the
+  /// strip is never waiting on a tile the user can see the absence of.
+  bool get _isShortRecording {
+    final totalSec = _sourceDurationSec;
+    return totalSec > 0 &&
+        totalSec <= SpectrogramTileLayout.shortRecordingSeconds;
+  }
+
   /// Whether this recording is small enough for the dedicated trim view.
   bool get _canBuildFullSpectrogram {
     final metadata = _spectrogramAudioMetadata;
@@ -1790,37 +1809,22 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     final totalSec = durationSec / 1000000.0;
     // Define zoom levels, dynamic chunk seconds, hop multipliers, and cache sizes.
-    final double chunkSeconds;
+    final double gridChunkSeconds;
     final int hopMultiplier;
     final int maxCachedChunks;
     if (viewSeconds <= 20.0) {
-      chunkSeconds = 30.0;
+      gridChunkSeconds = 30.0;
       hopMultiplier = 1;
       maxCachedChunks = 16;
     } else if (viewSeconds <= 60.0) {
-      chunkSeconds = 120.0;
+      gridChunkSeconds = 120.0;
       hopMultiplier = 4;
       maxCachedChunks = 16;
     } else {
-      chunkSeconds = 480.0;
+      gridChunkSeconds = 480.0;
       hopMultiplier = 16;
       maxCachedChunks = 16;
     }
-
-    final padding = math.min(math.max(5.0, viewSeconds * 0.25), chunkSeconds);
-    final startSec = (absoluteCenterSec - viewSeconds / 2 - padding).clamp(
-      0.0,
-      totalSec,
-    );
-    final endSec = (absoluteCenterSec + viewSeconds / 2 + padding).clamp(
-      0.0,
-      totalSec,
-    );
-    final firstIndex = (startSec / chunkSeconds).floor();
-    final lastIndex = math.max(
-      firstIndex,
-      ((endSec - 0.000001) / chunkSeconds).floor(),
-    );
 
     // Determine the base hop to compute target hop
     final String quality = ref.read(spectrogramQualityProvider);
@@ -1840,7 +1844,34 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     final targetHop = baseHop * hopMultiplier;
 
-    // Clear pending load indexes when transition between zoom levels occurs.
+    // The hop decides how much audio one texture can carry, so it has to be
+    // known before the tiles are laid out — a short recording sizes its tiles
+    // to the whole file rather than to the zoom grid.
+    final layout = SpectrogramTileLayout.resolve(
+      totalSeconds: totalSec,
+      absoluteCenterSec: absoluteCenterSec,
+      viewSeconds: viewSeconds,
+      gridChunkSeconds: gridChunkSeconds,
+      hop: targetHop,
+      targetSampleRate: AppConstants.sampleRate,
+    );
+    final chunkSeconds = layout.chunkSeconds;
+    if (chunkSeconds <= 0) return;
+    final firstIndex = (layout.startSec / chunkSeconds).floor();
+    final lastIndex = math.max(
+      firstIndex,
+      ((layout.endSec - 0.000001) / chunkSeconds).floor(),
+    );
+
+    // Retire in-flight loads when the zoom level changes: they were rendered
+    // at the previous hop and would land on a strip that has moved on.
+    //
+    // The tiles already on screen stay. Dropping them here was what made a
+    // pinch blank the strip — the user was left looking at black until the
+    // replacements arrived, when the image they had was perfectly readable,
+    // just rendered at a different hop. Each new tile evicts whatever it
+    // covers as it lands (see [_loadSpectrogramChunk]), so the strip crosses
+    // zoom levels without ever being empty.
     var activeGeneration = generation;
     if (_lastLoadedTargetHop != targetHop ||
         _lastLoadedChunkSeconds != chunkSeconds) {
@@ -1849,7 +1880,6 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       _spectrogramGeneration++;
       activeGeneration = _spectrogramGeneration;
       _loadingSpectrogramChunkIndexes.clear();
-      _clearSpectrogramChunks();
     }
 
     // Collect candidate indexes that don't have a chunk with the targetHop covering the required range.
@@ -2062,11 +2092,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       }
 
       setState(() {
+        // Whatever this tile fully covers is now redundant, at any hop: the
+        // arriving tile is the current zoom level's rendering of that span,
+        // and leaving a stale one underneath would paint a band at a visibly
+        // different resolution. Tiles that only *overlap* survive — that is
+        // how the previous zoom level keeps the rest of the strip painted
+        // until its own replacements land.
         for (var i = _spectrogramChunks.length - 1; i >= 0; i--) {
           final chunk = _spectrogramChunks[i];
           if (chunk.startSec >= chunkStartSec - 0.001 &&
-              chunk.endSec <= chunkEndSec + 0.001 &&
-              chunk.hop >= hop) {
+              chunk.endSec <= chunkEndSec + 0.001) {
             _spectrogramChunks.removeAt(i).dispose();
           }
         }
@@ -2079,7 +2114,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             hop: hop,
           ),
         );
-        _spectrogramChunks.sort((a, b) => a.startSec.compareTo(b.startSec));
+        // Painted in list order, so the sort is what decides which tile wins
+        // where two zoom levels overlap: coarser first, finer over the top.
+        _spectrogramChunks.sort((a, b) {
+          final byStart = a.startSec.compareTo(b.startSec);
+          if (byStart != 0) return byStart;
+          return b.hop.compareTo(a.hop);
+        });
         while (_spectrogramChunks.length > maxCachedChunks) {
           var farthestIndex = 0;
           var farthestDistance = -1.0;
@@ -4421,6 +4462,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           isPlaying: _isPlaying,
           userDefaultViewSeconds:
               ref.watch(spectrogramDurationProvider).toDouble(),
+          singleSweep: _isShortRecording,
           focusRequests: _spectrogramFocus,
           quality: ref.watch(spectrogramQualityProvider),
         ),
