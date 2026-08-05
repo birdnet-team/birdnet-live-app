@@ -333,7 +333,14 @@ object NativeAudioDecoder {
             32000
         }
 
-        val outputStream = BufferedOutputStream(tempFile.outputStream(), 1024 * 1024)
+        // A modest buffer on purpose: Session Review reads this file while it
+        // is still being written so it can draw the decoded prefix instead of
+        // waiting for a long recording to finish transcoding. Every flush is
+        // another slice that becomes visible, so a smaller buffer means the
+        // spectrogram fills in more smoothly. 256 KiB is ~3 s of 44.1 kHz mono
+        // audio — fine-grained enough to look continuous, still large enough
+        // that the write syscalls are irrelevant next to the decode itself.
+        val outputStream = BufferedOutputStream(tempFile.outputStream(), 256 * 1024)
         try {
             while (true) {
                 if (isCancelled()) {

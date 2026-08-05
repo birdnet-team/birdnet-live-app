@@ -606,6 +606,7 @@ Future<bool> _sliceFlacToFile(
     src.path,
     startSample: startSample,
     count: count,
+    seekIndex: await _seekIndexIfWorthwhile(src.path, startSample, assumedRate),
   );
   if (decoded.totalSamples == 0) return false;
 
@@ -624,6 +625,22 @@ Future<bool> _sliceFlacToFile(
   return true;
 }
 
+/// A frame index for [path], but only when the slice starts far enough in to
+/// pay for building one.
+///
+/// Without it, slicing a detection an hour into a FLAC bit-decodes the whole
+/// hour first (~19 s). The index is one linear scan (~0.6 s for an hour), so
+/// it wins everywhere except near the head of the file, where the walk is
+/// already short.
+Future<FlacSeekIndex?> _seekIndexIfWorthwhile(
+  String path,
+  int startSample,
+  int sampleRate,
+) async {
+  if (startSample <= sampleRate * 60) return null;
+  return AudioDecoder.buildFlacSeekIndex(path);
+}
+
 /// Like [_sliceFlacToFile] but writes the decoded PCM as WAV instead of FLAC.
 Future<bool> _sliceFlacToWavFile(
   File src,
@@ -640,6 +657,7 @@ Future<bool> _sliceFlacToWavFile(
     src.path,
     startSample: startSample,
     count: count,
+    seekIndex: await _seekIndexIfWorthwhile(src.path, startSample, assumedRate),
   );
   if (decoded.totalSamples == 0) return false;
 
