@@ -1,8 +1,18 @@
-# Política de Privacidad
+# Política de Privacidad de BirdNET Live
 
-**Última actualización:** Julio 2026
+**Última actualización:** 6 de agosto de 2026
 
-BirdNET Live respeta su privacidad. Este documento explica cómo la aplicación maneja sus datos.
+Esta Política de Privacidad se aplica a **BirdNET Live** (la **app**). La app es desarrollada y ofrecida por **BirdNET-Team** (el **desarrollador**, **nosotros** o **nuestro**).
+
+## Identidad de la app y del desarrollador
+
+| | |
+|---|---|
+| **Nombre de la app** | BirdNET Live |
+| **Nombre del desarrollador** | BirdNET-Team |
+| **Contacto de privacidad** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team proporciona esta política en su propio nombre. En ella se explica cómo BirdNET Live protege y trata la información personal.
 
 ## Procesamiento en el dispositivo
 
@@ -13,9 +23,9 @@ Todo el análisis de audio y la identificación de especies de aves ocurren **co
 
 Ningún dato de audio se transmite jamás a servidores externos.
 
-## Recopilación de datos
+## Tratamiento de información personal
 
-BirdNET Live **no** recopila, transmite ni comparte ningún dato personal. No hay analítica, ni seguimiento, ni telemetría.
+BirdNET-Team no opera un backend para la app y no recibe a través de BirdNET Live sus grabaciones, ubicación, datos de Session ni otra información personal. La app no tiene cuentas de usuario, publicidad, analítica, seguimiento ni telemetría. Sí procesa audio y ubicación en su dispositivo y, solo cuando usted activa una función de red opcional, envía la información descrita en **Recursos Externos** directamente al proveedor externo indicado.
 
 ### Datos almacenados localmente en su dispositivo:
 
@@ -38,17 +48,17 @@ La app puede acceder a los siguientes recursos externos. Cada recurso está cont
 
 | Recurso | Propósito | Controlado por | Enviado en cada solicitud |
 |---------|-----------|----------------|---------------------------|
-| Mosaicos de mapa (OpenStreetMap) | Mapa base para el selector de ubicación, el mapa en vivo de Survey y el mapa de la sesión | **Ajustes → Privacidad → Permitir mosaicos de mapa** | Coordenadas de mosaico `(z, x, y)` y el user-agent de BirdNET Live — sin PII |
-| Geocodificación inversa (OpenStreetMap Nominatim) | Resolver coordenadas GPS en un nombre de lugar legible (p. ej. “Madrid, España”) para mostrar en la sesión | **Ajustes → Privacidad → Permitir búsqueda de nombre de lugar** | La latitud/longitud de la sesión, más el user-agent de BirdNET Live |
-| Instantánea meteorológica (Open-Meteo) | Captura puntual de las condiciones locales (temperatura, precipitación, viento, nubosidad, código WMO) en las coordenadas de grabación y la hora de fin | **Ajustes → Privacidad → Permitir consulta meteorológica** | La latitud/longitud de la sesión y la marca temporal de fin, más el user-agent de BirdNET Live |
+| Mosaicos de mapa (OpenStreetMap Foundation) | Mapa base para el selector de ubicación, el mapa en vivo de Survey y el mapa de la Session | **Ajustes → Privacidad → Permitir mosaicos de mapa** | Coordenadas de mosaico `(z, x, y)`, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
+| Geocodificación inversa (Nominatim de OpenStreetMap Foundation) | Resolver coordenadas GPS en un nombre de lugar legible (p. ej. “Madrid, España”) para mostrar en la Session | **Ajustes → Privacidad → Permitir búsqueda de nombre de lugar** | La latitud/longitud de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
+| Instantánea meteorológica (OpenMeteo GmbH) | Captura puntual de las condiciones locales (temperatura, precipitación, viento, nubosidad, código WMO) en las coordenadas de grabación y la hora de fin | **Ajustes → Privacidad → Permitir consulta meteorológica** | La latitud/longitud y hora de fin de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
 
-Las solicitudes de mosaicos de mapa son solicitudes HTTPS GET estándar a `tile.openstreetmap.org` con el user-agent de BirdNET Live. Solo se envían las coordenadas del mosaico — sin información de identificación personal.
+Las solicitudes de mosaicos de mapa son solicitudes HTTPS GET a `tile.openstreetmap.org`. Las coordenadas identifican la zona del mapa visualizada. Como cualquier solicitud directa por Internet, también exponen su dirección IP al proveedor.
 
 Las solicitudes de geocodificación inversa envían la latitud y longitud de la sesión a `nominatim.openstreetmap.org` por HTTPS, junto con el user-agent de BirdNET Live tal como exige la [Política de uso de Nominatim](https://operations.osmfoundation.org/policies/nominatim/). El nombre de lugar resuelto se almacena localmente con la sesión, de modo que una sesión solo se geocodifica una vez. No se realiza ninguna solicitud si la sesión no tiene coordenadas GPS o el dispositivo está sin conexión.
 
 Las solicitudes meteorológicas envían la latitud/longitud de la sesión y la marca temporal de fin a `api.open-meteo.com` por HTTPS, junto con el user-agent de BirdNET Live. [Open-Meteo](https://open-meteo.com/) es un servicio gratuito y no requiere ni cuenta ni clave API. La instantánea meteorológica devuelta se almacena localmente con la sesión y también se escribe en la exportación JSON, en el bloque `metadata.json` por sesión y en el informe HTML.
 
-**Retención:** ninguno de los servicios de terceros anteriores es contactado para *subir* o *almacenar* datos del usuario. Los valores devueltos (nombre del lugar, instantánea meteorológica) viven solo dentro del registro local de la sesión en su dispositivo, y solo viajan a los archivos de exportación que usted produzca explícitamente.
+**Tratamiento y retención por terceros:** BirdNET-Team no opera estos servicios ni recibe los datos de sus solicitudes. OpenStreetMap Foundation puede tratar datos de acceso a la red y detalles de las solicitudes conforme a su [Política de Privacidad](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo indica que los registros de su API gratuita pueden contener direcciones IP y coordenadas geográficas y que se eliminan tras 90 días; consulte sus [Términos y Privacidad](https://open-meteo.com/en/terms). Estos proveedores pueden tratar datos en otros países. Los valores devueltos se guardan localmente en la Session y solo se incluyen en una exportación cuando usted la crea.
 
 **Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Los nombres de lugar e instantáneas meteorológicas ya almacenados localmente permanecen adjuntos a las sesiones donde se capturaron; elimine esas sesiones desde Session Library o use **Ajustes → Zona de peligro → Borrar todos los datos** para eliminar esos datos históricos.
 

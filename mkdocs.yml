@@ -366,6 +366,44 @@ plugins:
         Acceptable Use Policy: Polityka dopuszczalnego użycia
         Testing: Testowanie
         User Guide: Podręcznik użytkownika
+    - locale: nb
+      name: Norsk bokmål
+      build: true
+      nav_translations:
+        API Integration: API-integrasjon
+        API Reference: API-referanse
+        Architecture: Arkitektur
+        Audio Pipeline: Lydbehandling
+        Building: Bygging
+        Code Style: Kodestil
+        Developer Guide: Utviklerveiledning
+        Explore: Utforsk
+        FAQ: Vanlige spørsmål
+        Batch Analysis: Batch Analysis
+        ARU Mode: ARU Mode
+        File Analysis: File Analysis
+        Getting Started: Kom i gang
+        Home: Hjem
+        Icons & Controls: Ikoner og kontroller
+        Inference Engine: Inferensmotor
+        Live Mode: Live Mode
+        Localization: Lokalisering
+        Overview: Oversikt
+        Point Count Mode: Point Count-modus
+        Privacy Policy: Personvernerklæring
+        Releasing: Publisering
+        Session Library: Session-bibliotek
+        Session Review: Session-gjennomgang
+        Settings: Innstillinger
+        Species Bundle: Artspakke
+        Spectrogram: Spektrogram
+        State Management: Tilstandshåndtering
+        Storage: Lagring
+        Survey Mode: Survey-modus
+        Taxonomy & Sync API: Taksonomi- og synkroniserings-API
+        Acceptable Use Policy: Retningslinjer for akseptabel bruk
+        Testing: Testing
+        User Guide: Brukerveiledning
     - locale: ru
       name: Русский
       build: true

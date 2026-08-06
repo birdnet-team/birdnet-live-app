@@ -1,8 +1,18 @@
-# Politique de Confidentialité
+# Politique de Confidentialité de BirdNET Live
 
-**Dernière mise à jour :** Juillet 2026
+**Dernière mise à jour :** 6 août 2026
 
-BirdNET Live respecte votre vie privée. Ce document explique comment l'application traite vos données.
+La présente Politique de Confidentialité s'applique à **BirdNET Live** (l'**application**). L'application est développée et proposée par **BirdNET-Team** (le **développeur**, **nous** ou **notre**).
+
+## Identité de l'application et du développeur
+
+| | |
+|---|---|
+| **Nom de l'application** | BirdNET Live |
+| **Nom du développeur** | BirdNET-Team |
+| **Contact confidentialité** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team fournit cette politique en son propre nom. Elle explique comment BirdNET Live protège et traite les informations personnelles.
 
 ## Traitement sur l'Appareil
 
@@ -13,9 +23,9 @@ Toute l'analyse audio et l'identification des espèces d'oiseaux s'effectuent **
 
 Aucune donnée audio n'est jamais transmise à des serveurs externes.
 
-## Collecte de Données
+## Traitement des informations personnelles
 
-BirdNET Live **ne** collecte, ne transmet ni ne partage **aucune** donnée personnelle. Il n'y a ni analyse, ni suivi, ni télémétrie.
+BirdNET-Team n'exploite aucun serveur applicatif et ne reçoit par BirdNET Live ni vos enregistrements, ni votre position, ni vos données de Session, ni aucune autre information personnelle. L'application ne comporte aucun compte utilisateur, publicité, outil d'analyse, suivi ou télémétrie. Elle traite toutefois l'audio et la position sur votre appareil et, uniquement lorsque vous activez une fonction réseau facultative, envoie directement les informations décrites sous **Ressources Externes** au fournisseur tiers indiqué.
 
 ### Données stockées localement sur votre appareil :
 
@@ -38,17 +48,17 @@ L'application peut accéder aux ressources externes ci-dessous. Chacune est cont
 
 | Ressource | Objectif | Contrôlé par | Envoyé à chaque requête |
 |-----------|----------|--------------|--------------------------|
-| Tuiles de carte (OpenStreetMap) | Carte de base pour le sélecteur de position, la carte en direct du Relevé et la carte de la session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)` et user-agent BirdNET Live — pas de PII |
-| Géocodage inverse (OpenStreetMap Nominatim) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. «Paris, France») pour l'affichage de la session | **Paramètres → Confidentialité → Autoriser la recherche de nom de lieu** | La latitude/longitude de la session, plus le user-agent BirdNET Live |
-| Instantané météo (Open-Meteo) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la requête météo** | La latitude/longitude de la session et l'horodatage de fin, plus le user-agent BirdNET Live |
+| Tuiles de carte (OpenStreetMap Foundation) | Carte de base pour le sélecteur de position, la carte en direct du Survey et la carte de la Session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)`, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
+| Géocodage inverse (Nominatim d'OpenStreetMap Foundation) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. « Paris, France ») pour l'affichage de la Session | **Paramètres → Confidentialité → Autoriser la recherche de nom de lieu** | Latitude/longitude de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
+| Instantané météo (OpenMeteo GmbH) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la requête météo** | Latitude/longitude et heure de fin de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
 
-Les requêtes de tuiles de carte sont des requêtes HTTPS GET standard vers `tile.openstreetmap.org` avec le user-agent BirdNET Live. Seules les coordonnées de tuile sont envoyées — aucune information personnelle identifiable.
+Les requêtes de tuiles de carte sont des requêtes HTTPS GET vers `tile.openstreetmap.org`. Les coordonnées identifient la zone de carte affichée. Comme toute requête Internet directe, elles exposent également votre adresse IP au fournisseur.
 
 Les requêtes de géocodage inverse envoient la latitude et la longitude de la session à `nominatim.openstreetmap.org` par HTTPS, avec le user-agent BirdNET Live comme l'exige la [Politique d'usage Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Le nom de lieu résolu est stocké localement avec la session, de sorte qu'une session n'est géocodée qu'une seule fois. Aucune requête n'est effectuée si la session n'a pas de coordonnées GPS ou si l'appareil est hors ligne.
 
 Les requêtes météo envoient la latitude/longitude de la session et l'horodatage de fin à `api.open-meteo.com` par HTTPS, avec le user-agent BirdNET Live. [Open-Meteo](https://open-meteo.com/) est un service gratuit qui n'exige ni compte ni clé API. L'instantané météo renvoyé est stocké localement avec la session et également écrit dans l'export JSON, dans le bloc `metadata.json` de la session et dans le rapport HTML.
 
-**Rétention :** aucun des services tiers ci-dessus n'est contacté pour *téléverser* ou *stocker* des données utilisateur. Les valeurs renvoyées (nom de lieu, instantané météo) ne vivent que dans l'enregistrement local de la session sur votre appareil, et ne voyagent que dans les fichiers d'export que vous produisez explicitement.
+**Traitement et conservation par des tiers :** BirdNET-Team n'exploite pas ces services et ne reçoit pas les données de leurs requêtes. OpenStreetMap Foundation peut traiter les données d'accès réseau et les détails des requêtes conformément à sa [Politique de Confidentialité](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo indique que les journaux de son API gratuite peuvent contenir des adresses IP et des coordonnées géographiques et sont supprimés après 90 jours ; consultez ses [Conditions et règles de confidentialité](https://open-meteo.com/en/terms). Ces fournisseurs peuvent traiter les données dans d'autres pays. Les valeurs renvoyées sont stockées localement dans la Session et n'entrent dans un export que lorsque vous le créez.
 
 **Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Paramètres → Confidentialité**. Les noms de lieu et instantanés météo déjà stockés localement restent attachés aux sessions où ils ont été capturés ; supprimez ces sessions depuis Session Library ou utilisez **Paramètres → Zone dangereuse → Effacer toutes les données** pour retirer ces données historiques.
 

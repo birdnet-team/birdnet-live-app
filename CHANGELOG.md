@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - File Analysis now shows a concise, actionable message when it cannot process an imported recording instead of exposing a raw filesystem exception.
+- The Privacy Policy now identifies the app as BirdNET Live and the AppGallery developer as BirdNET-Team, and more precisely explains local personal-information processing and the data sent to optional map, place-name, and weather providers.
 
 ## [1.0.6] - 2026-08-05
 

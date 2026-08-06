@@ -1,8 +1,18 @@
-# 隐私政策
+# BirdNET Live 隐私政策
 
-**最后更新：** 2026 年 7 月
+**最后更新：** 2026 年 8 月 6 日
 
-BirdNET Live 尊重您的隐私。本文档说明本应用如何处理您的数据。
+本隐私政策适用于 **BirdNET Live**（以下简称“**本应用**”）。本应用由 **BirdNET-Team**（以下简称“**开发者**”或“**我们**”）开发并提供。
+
+## 应用与开发者信息
+
+| | |
+|---|---|
+| **应用名称** | BirdNET Live |
+| **开发者名称** | BirdNET-Team |
+| **隐私问题联系方式** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+本政策由 BirdNET-Team 以自身名义发布，说明 BirdNET Live 如何保护和处理个人信息。
 
 ## 设备端处理
 
@@ -13,9 +23,9 @@ BirdNET Live 尊重您的隐私。本文档说明本应用如何处理您的数�
 
 任何音频数据都不会被传输到外部服务器。
 
-## 数据收集
+## 个人信息处理
 
-BirdNET Live **不会**收集、传输或共享任何个人数据。没有分析统计，没有追踪，也没有遥测。
+BirdNET-Team 不运营本应用的后端服务器，也不会通过 BirdNET Live 接收您的录音、位置、Session 数据或其他个人信息。本应用不设用户账号，不含广告、分析统计、追踪或遥测。但本应用会在您的设备上处理音频和位置；仅当您开启可选的联网功能时，才会将**外部资源**一节所述信息直接发送给列明的第三方服务提供商。
 
 ### 存储在您设备本地的数据：
 
@@ -38,17 +48,17 @@ BirdNET Live **不会**收集、传输或共享任何个人数据。没有分析
 
 | 资源 | 用途 | 由何控制 | 每次请求发送的内容 |
 |----------|---------|----------|----------------------|
-| 地图瓦片（OpenStreetMap） | 位置选择器、Survey 实时地图和 Session 地图的底图 | **设置 → 隐私 → 允许地图瓦片** | 瓦片坐标 `(z, x, y)` 和 BirdNET Live 的 user-agent 字符串 —— 不含个人身份信息 |
-| 反向地理编码（OpenStreetMap Nominatim） | 将 GPS 坐标解析为可读地名（例如“德国柏林”）以便在 Session 中显示 | **设置 → 隐私 → 允许地名查询** | 该 Session 的经纬度，以及 BirdNET Live 的 user-agent 字符串 |
-| 天气快照（Open-Meteo） | 一次性获取录音坐标和结束时间处的当地天气状况（气温、降水、风力、云量、WMO 天气代码） | **设置 → 隐私 → 允许天气查询** | 该 Session 的经纬度和结束时间戳，以及 BirdNET Live 的 user-agent 字符串 |
+| 地图瓦片（OpenStreetMap Foundation） | 位置选择器、Survey 实时地图和 Session 地图的底图 | **设置 → 隐私 → 允许地图瓦片** | 瓦片坐标 `(z, x, y)`、联网过程中产生的您的 IP 地址，以及 BirdNET Live 的 user-agent 字符串 |
+| 反向地理编码（OpenStreetMap Foundation 的 Nominatim） | 将 GPS 坐标解析为可读地名（例如“德国柏林”）以便在 Session 中显示 | **设置 → 隐私 → 允许地名查询** | 该 Session 的经纬度、联网过程中产生的您的 IP 地址，以及 BirdNET Live 的 user-agent 字符串 |
+| 天气快照（OpenMeteo GmbH） | 一次性获取录音坐标和结束时间处的当地天气状况（气温、降水、风力、云量、WMO 天气代码） | **设置 → 隐私 → 允许天气查询** | 该 Session 的经纬度和结束时间、联网过程中产生的您的 IP 地址，以及 BirdNET Live 的 user-agent 字符串 |
 
-地图瓦片请求是向 `tile.openstreetmap.org` 发起的标准 HTTPS GET 请求，附带 BirdNET Live 的 user-agent 字符串。只发送瓦片坐标 —— 不含任何可识别个人身份的信息。
+地图瓦片请求是向 `tile.openstreetmap.org` 发起的 HTTPS GET 请求。瓦片坐标可表明您查看的地图区域。与任何直接联网请求一样，该请求也会向服务提供商暴露您的 IP 地址。
 
 反向地理编码请求会通过 HTTPS 将该 Session 的经纬度发送至 `nominatim.openstreetmap.org`，并按 [Nominatim 使用政策](https://operations.osmfoundation.org/policies/nominatim/)的要求附带 BirdNET Live 的 user-agent 字符串。解析出的地名会与该 Session 一起保存在本地，因此每个 Session 只会进行一次地理编码。若 Session 没有 GPS 坐标或设备处于离线状态，则不会发起请求。
 
 天气请求会通过 HTTPS 将该 Session 的经纬度和结束时间戳发送至 `api.open-meteo.com`，并附带 BirdNET Live 的 user-agent 字符串。[Open-Meteo](https://open-meteo.com/) 是免费服务，无需账号或 API 密钥。返回的天气快照会与该 Session 一起保存在本地，同时也会写入 JSON 导出文件、每个 Session 的 `metadata.json` 区块以及 HTML 报告。
 
-**数据留存：** 上述第三方服务均不会被用于*上传*或*存储*用户数据。返回的值（地名、天气快照）仅存在于您设备上的本地 Session 记录中，并且只会进入您主动生成的导出文件。
+**第三方处理与留存：** BirdNET-Team 不运营这些服务，也不会接收相关请求数据。OpenStreetMap Foundation 可依据其[隐私政策](https://osmfoundation.org/wiki/Privacy_Policy)处理网络访问数据和请求详情。Open-Meteo 表示，其免费 API 的服务器日志可能包含 IP 地址和地理坐标，并会在 90 天后删除；请参阅其[条款与隐私说明](https://open-meteo.com/en/terms)。这些提供商可能在您所在国家或地区以外处理数据。返回的地名和天气快照保存在设备本地的 Session 记录中，只有在您主动创建导出文件时才会进入导出内容。
 
 **撤销授权：** 您可以随时在**设置 → 隐私**中停用这三项服务中的任意一项。已保存在本地的地名和天气快照仍会附着在采集它们的 Session 上；如需删除这些历史数据，请在 Session 列表中删除相应 Session，或使用**设置 → 危险操作 → 清除所有数据**。
 
