@@ -495,6 +495,7 @@
   "fileAnalysisDetections": "Rilevazioni",
   "fileAnalysisSpecies": "Specie",
   "fileAnalysisError": "Errore di analisi",
+  "fileAnalysisCouldNotProcessFile": "Non è stato possibile elaborare questo file. Verifica che utilizzi un formato audio supportato e abbia l’estensione corretta, quindi riprova.",
   "fileAnalysisBack": "Indietro",
   "wizardStepLabel": "Passo {current} di {total}",
   "a11yLiveCaptureStart": "Avvia registrazione",

@@ -518,6 +518,7 @@
   "fileAnalysisDetections": "Deteksjoner",
   "fileAnalysisSpecies": "Arter",
   "fileAnalysisError": "Analysefeil",
+  "fileAnalysisCouldNotProcessFile": "Vi kunne ikke behandle denne filen. Kontroller at den bruker et støttet lydformat og har riktig filendelse, og prøv på nytt.",
   "fileAnalysisBack": "Tilbake",
   "wizardStepLabel": "Trinn {current} av {total}",
   "a11yLiveCaptureStart": "Start opptak",
