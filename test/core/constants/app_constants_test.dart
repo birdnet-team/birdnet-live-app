@@ -33,6 +33,7 @@ void main() {
         'it',
         'pt',
         'nl',
+        'nb',
         'pl',
         'ru',
         'zh',

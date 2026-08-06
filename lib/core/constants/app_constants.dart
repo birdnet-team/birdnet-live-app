@@ -39,6 +39,7 @@ abstract final class AppConstants {
     'it',
     'pt',
     'nl',
+    'nb',
     'pl',
     'ru',
     'zh',

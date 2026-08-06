@@ -1,8 +1,18 @@
-# Privacy Policy
+# Privacy Policy for BirdNET Live
 
-**Last updated:** July 2026
+**Last updated:** August 6, 2026
 
-BirdNET Live respects your privacy. This document explains how the app handles your data.
+This Privacy Policy applies to **BirdNET Live** (the **app**). The app is developed and offered by **BirdNET-Team** (the **developer**, **we**, or **us**).
+
+## App and Developer Identity
+
+| | |
+|---|---|
+| **App name** | BirdNET Live |
+| **Developer name** | BirdNET-Team |
+| **Privacy contact** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+This policy is provided by BirdNET-Team in its own name and explains how BirdNET Live protects and handles personal information.
 
 ## On-Device Processing
 
@@ -13,9 +23,9 @@ All audio analysis and bird species identification happen **entirely on your dev
 
 No audio data is ever transmitted to external servers.
 
-## Data Collection
+## Personal Information Handling
 
-BirdNET Live does **not** collect, transmit, or share any personal data. There is no analytics, no tracking, and no telemetry.
+BirdNET-Team does **not** operate an app backend and does not receive your recordings, location, Session data, or other personal information through BirdNET Live. The app has no user accounts, advertising, analytics, tracking, or telemetry. The app does process audio and location on your device and, only when you enable an optional network feature, sends the information described under **External Resources** directly to the named third-party provider.
 
 ### Data stored locally on your device:
 
@@ -38,21 +48,21 @@ The app may access the following external resources. Each resource is gated by a
 
 | Resource | Purpose | Gated by | Sent on each request |
 |----------|---------|----------|----------------------|
-| Map tiles (OpenStreetMap) | Base map for the location picker, the Survey live map, and the session map | **Settings → Privacy → Allow map tiles** | Tile coordinates `(z, x, y)` and the BirdNET Live user-agent string — no PII |
-| Reverse geocoding (OpenStreetMap Nominatim) | Resolving GPS coordinates into a human-readable place name (e.g. "Berlin, Germany") for session display | **Settings → Privacy → Allow place name lookup** | The session's latitude / longitude, plus the BirdNET Live user-agent string |
-| Weather snapshot (Open-Meteo) | One-shot capture of local conditions (temperature, precipitation, wind, cloud cover, WMO weather code) at the recording coordinates and end time | **Settings → Privacy → Allow weather lookup** | The session's latitude / longitude and end timestamp, plus the BirdNET Live user-agent string |
+| Map tiles (OpenStreetMap Foundation) | Base map for the location picker, the Survey live map, and the Session map | **Settings → Privacy → Allow map tiles** | Tile coordinates `(z, x, y)`, your IP address as part of the network connection, and the BirdNET Live user-agent string |
+| Reverse geocoding (OpenStreetMap Foundation Nominatim) | Resolving GPS coordinates into a human-readable place name (e.g. "Berlin, Germany") for Session display | **Settings → Privacy → Allow place name lookup** | The Session's latitude / longitude, your IP address as part of the network connection, and the BirdNET Live user-agent string |
+| Weather snapshot (OpenMeteo GmbH) | One-shot capture of local conditions (temperature, precipitation, wind, cloud cover, WMO weather code) at the recording coordinates and end time | **Settings → Privacy → Allow weather lookup** | The Session's latitude / longitude and end timestamp, your IP address as part of the network connection, and the BirdNET Live user-agent string |
 
-Map tile requests are standard HTTPS GET requests to `tile.openstreetmap.org` with a BirdNET Live user-agent string. Only tile coordinates are sent — no personally identifiable information.
+Map tile requests are HTTPS GET requests to `tile.openstreetmap.org`. The tile coordinates identify the area of the map being viewed. Like any direct Internet request, the request also exposes your IP address to the service provider.
 
 Reverse-geocoding requests send the session's latitude and longitude to `nominatim.openstreetmap.org` over HTTPS, together with the BirdNET Live user-agent string as required by the [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/). The resolved place name is stored locally with the session so a session is only geocoded once. No request is made if the session has no GPS coordinates or the device is offline.
 
 Weather requests send the session's latitude / longitude and end timestamp to `api.open-meteo.com` over HTTPS, together with the BirdNET Live user-agent string. [Open-Meteo](https://open-meteo.com/) is a free service and requires neither an account nor an API key. The returned weather snapshot is stored locally with the session and is also written into the JSON export, the per-session `metadata.json` block, and the HTML report.
 
-**Retention:** none of the third-party services above is contacted to *upload* or *store* user data. Returned values (place name, weather snapshot) live only inside the local session record on your device, and travel only into export files you explicitly produce.
+**Third-party processing and retention:** BirdNET-Team does not operate these services and does not receive their request data. The OpenStreetMap Foundation may process network access data and request details under its [Privacy Policy](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo states that its free API web-server logs may contain IP addresses and geographic coordinates and are deleted after 90 days; see its [Terms & Privacy](https://open-meteo.com/en/terms). These providers may process data in countries other than yours. Returned values (place name and weather snapshot) are stored in the local Session record on your device and enter an export only when you create one.
 
 **Revocation:** you can disable any of the three services at any time under **Settings → Privacy**. Existing locally-stored place names and weather snapshots remain attached to the sessions where they were captured; delete those sessions from Session Library or use **Settings → Danger Zone → Clear All Data** to remove that historical data.
 
-**No other network requests are made.** The app functions fully offline.
+**No other network requests are initiated by the app itself.** The app functions fully offline. Separately, content you deliberately open in your browser, including external links and exported HTML reports, may make browser requests as described below.
 
 ## External Links
 
