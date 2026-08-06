@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- File Analysis now shows a concise, actionable message when it cannot process an imported recording instead of exposing a raw filesystem exception.
+
 ## [1.0.6] - 2026-08-05
 
 ### Changed

@@ -519,6 +519,7 @@
   "fileAnalysisDetections": "Detektionen",
   "fileAnalysisSpecies": "Arten",
   "fileAnalysisError": "Analysefehler",
+  "fileAnalysisCouldNotProcessFile": "Wir konnten diese Datei nicht verarbeiten. Prüfe, ob sie ein unterstütztes Audioformat und die richtige Dateiendung verwendet, und versuche es erneut.",
   "fileAnalysisBack": "Zurück",
   "wizardStepLabel": "Schritt {current} von {total}",
   "a11yLiveCaptureStart": "Aufnahme starten",

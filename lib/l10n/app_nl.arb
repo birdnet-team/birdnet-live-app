@@ -518,6 +518,7 @@
   "fileAnalysisDetections": "detecties",
   "fileAnalysisSpecies": "Soort",
   "fileAnalysisError": "Analysefout",
+  "fileAnalysisCouldNotProcessFile": "We konden dit bestand niet verwerken. Controleer of het een ondersteund audioformaat en de juiste bestandsextensie gebruikt en probeer het opnieuw.",
   "fileAnalysisBack": "Terug",
   "wizardStepLabel": "Stap {current} van {total}",
   "a11yLiveCaptureStart": "Begin met opnemen",

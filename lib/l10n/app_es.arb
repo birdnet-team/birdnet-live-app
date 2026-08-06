@@ -495,6 +495,7 @@
   "fileAnalysisDetections": "Detecciones",
   "fileAnalysisSpecies": "Especies",
   "fileAnalysisError": "Error de análisis",
+  "fileAnalysisCouldNotProcessFile": "No pudimos procesar este archivo. Comprueba que use un formato de audio compatible y tenga la extensión correcta, e inténtalo de nuevo.",
   "fileAnalysisBack": "Atrás",
   "wizardStepLabel": "Paso {current} de {total}",
   "a11yLiveCaptureStart": "Iniciar grabación",

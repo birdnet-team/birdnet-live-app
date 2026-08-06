@@ -2164,6 +2164,10 @@
   "@fileAnalysisError": {
     "description": "Error card title"
   },
+  "fileAnalysisCouldNotProcessFile": "We couldn't process this file. Check that it uses a supported audio format and has the correct file extension, then try again.",
+  "@fileAnalysisCouldNotProcessFile": {
+    "description": "Friendly message shown when File Analysis cannot inspect or process a selected file"
+  },
 
   "fileAnalysisBack": "Back",
   "@fileAnalysisBack": {

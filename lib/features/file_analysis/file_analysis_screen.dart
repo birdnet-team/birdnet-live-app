@@ -227,10 +227,11 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         });
       }
     } catch (e) {
+      debugPrint('[FileAnalysis] file inspection failed: $e');
       if (mounted) {
         setState(() => _isInspecting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.fileAnalysisReadFailed(e.toString()))),
+          SnackBar(content: Text(l10n.fileAnalysisCouldNotProcessFile)),
         );
       }
     }
@@ -1491,7 +1492,7 @@ class _AnalysisStepState extends State<_AnalysisStep> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      errorMessage ?? '',
+                      errorMessage ?? l10n.fileAnalysisCouldNotProcessFile,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onErrorContainer,
                       ),

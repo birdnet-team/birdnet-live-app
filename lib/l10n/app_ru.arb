@@ -518,6 +518,7 @@
   "fileAnalysisDetections": "Обнаружения",
   "fileAnalysisSpecies": "Виды",
   "fileAnalysisError": "Ошибка анализа",
+  "fileAnalysisCouldNotProcessFile": "Не удалось обработать этот файл. Проверьте, что он имеет поддерживаемый аудиоформат и правильное расширение, затем повторите попытку.",
   "fileAnalysisBack": "Назад",
   "wizardStepLabel": "Шаг {current} из {total}",
   "a11yLiveCaptureStart": "Начать запись",

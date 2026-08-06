@@ -518,6 +518,7 @@
   "fileAnalysisDetections": "检测",
   "fileAnalysisSpecies": "物种",
   "fileAnalysisError": "分析出错",
+  "fileAnalysisCouldNotProcessFile": "无法处理此文件。请检查文件是否为受支持的音频格式且扩展名正确，然后重试。",
   "fileAnalysisBack": "返回",
   "wizardStepLabel": "第 {current} / {total} 步",
   "a11yLiveCaptureStart": "开始录音",

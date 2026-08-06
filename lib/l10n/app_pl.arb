@@ -518,6 +518,7 @@
   "fileAnalysisDetections": "Wykrycia",
   "fileAnalysisSpecies": "Gatunki",
   "fileAnalysisError": "Błąd analizy",
+  "fileAnalysisCouldNotProcessFile": "Nie udało się przetworzyć tego pliku. Sprawdź, czy ma obsługiwany format audio i prawidłowe rozszerzenie, a następnie spróbuj ponownie.",
   "fileAnalysisBack": "Wstecz",
   "wizardStepLabel": "Krok {current} z {total}",
   "a11yLiveCaptureStart": "Rozpocznij nagrywanie",

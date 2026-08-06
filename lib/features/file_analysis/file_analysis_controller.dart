@@ -308,7 +308,7 @@ class FileAnalysisController {
     } catch (e, st) {
       debugPrint('[FileAnalysisController] loadModel error: $e\n$st');
       _state = FileAnalysisState.error;
-      _errorMessage = e.toString();
+      _errorMessage = null;
     }
 
     _notifyListeners();
@@ -948,7 +948,7 @@ class FileAnalysisController {
       }
       debugPrint('[FileAnalysis] error: $e\n$st');
       _state = FileAnalysisState.error;
-      _errorMessage = e.toString();
+      _errorMessage = null;
       _notifyListeners();
       return null;
     }
