@@ -35,6 +35,15 @@ Tento krok obsahuje parametry specifické pro Survey, například:
 - režim vzorkování detekcí
 - limit Top N na druh, je-li vzorkování omezené
 
+Nová nastavení Survey používají ve výchozím stavu odvozování **0,70 Hz**.
+Zachová se tak více krátkých hlasových projevů než při nižších úsporných
+volbách, a přesto model běží méně často než při 1,00 Hz. Survey a režim Live
+sdílejí jeden plán odvozování a jednu definici detekce, takže při shodném
+nastavení odvozování obě hlásí pro tentýž zvuk stejné druhy, skóre i rozsahy
+detekcí. Nižší frekvence záměrně ponechávají mezi překrývajícími se
+analytickými okny širší mezery, a mohou tak přeslechnout krátké zvuky;
+0,30 Hz zůstává k dispozici, když je prioritou výdrž baterie.
+
 #### Vzorkování detekcí
 
 Dlouhá survey může vytvořit tisíce detekcí a uložení zvukového klipu ke každé z nich rychle zaplní úložiště. Vzorkování detekcí řídí, **které klipy se uchovají na disku** — *samotné záznamy detekcí se uchovávají vždy*, takže váš úplný protokol session zůstane nedotčený bez ohledu na režim. Záznamy, jejichž zvuk byl zahozen, prostě nemají v Přehledu Session přehratelný klip.

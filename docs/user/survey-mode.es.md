@@ -42,6 +42,17 @@ Este paso contiene parámetros específicos del Survey, como:
 - modo de Muestreo de detecciones
 - límite de Top N por especie cuando el muestreo es limitado
 
+Los nuevos ajustes de Survey usan **0,70 Hz** de inferencia de forma
+predeterminada. Así se conservan más vocalizaciones breves que con las
+opciones de menor frecuencia para ahorrar batería, y aun así el modelo se
+ejecuta menos que a 1,00 Hz. Survey y el modo Live comparten una misma
+planificación de inferencia y una misma definición de detección, por lo que
+con los mismos ajustes de inferencia ambos informan de las mismas especies,
+puntuaciones y duraciones de detección para el mismo sonido. Las frecuencias
+más bajas dejan intencionadamente huecos más amplios entre ventanas de
+análisis solapadas y por tanto pueden perder sonidos breves; 0,30 Hz sigue
+disponible cuando la autonomía es la prioridad.
+
 #### Muestreo de detecciones
 
 Un survey largo puede producir miles de detecciones, y guardar un clip de audio para cada una de ellas llena rápidamente el almacenamiento. El Muestreo de detecciones controla **qué clips se conservan en el disco**: *los registros de detección en sí siempre se conservan*, por lo que el registro completo de tu Session permanece intacto sea cual sea el modo. Los registros cuyo audio se descartó simplemente no tienen un clip reproducible en el Resumen de la Session.

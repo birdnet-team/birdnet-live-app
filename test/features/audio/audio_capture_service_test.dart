@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:record/record.dart';
 
+import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:birdnet_live/features/audio/audio_capture_service.dart';
 import 'package:birdnet_live/features/audio/audio_providers.dart';
 import 'package:birdnet_live/features/audio/ring_buffer.dart';
@@ -27,9 +28,30 @@ class _FakeRecordPlatform extends RecordPlatform {
   final _streams = <String, StreamController<Uint8List>>{};
   final _recording = <String>{};
 
+  /// Config-changed handlers registered per recorder, so tests can replay what
+  /// the platform does when it could not honour the requested format.
+  final _configChangedHandlers =
+      <String, void Function(RecordConfig config)?>{};
+
+  /// The last config each recorder was asked to start with.
+  final List<RecordConfig> startedConfigs = [];
+
   void emitStreamError(Object error) {
     for (final ctrl in _streams.values) {
       ctrl.addError(error);
+    }
+  }
+
+  void emitAudio(Uint8List bytes) {
+    for (final ctrl in _streams.values) {
+      ctrl.add(bytes);
+    }
+  }
+
+  /// Replay the platform telling us it opened a different format than asked.
+  void reportConfigChanged(RecordConfig config) {
+    for (final handler in _configChangedHandlers.values) {
+      handler?.call(config);
     }
   }
 
@@ -46,6 +68,7 @@ class _FakeRecordPlatform extends RecordPlatform {
     RecordConfig config,
   ) async {
     calls.add('startStream');
+    startedConfigs.add(config);
     if (!_recording.add(recorderId)) {
       sawStartWhileRecording = true;
       throw StateError('startStream on an already recording recorder');
@@ -107,17 +130,36 @@ class _FakeRecordPlatform extends RecordPlatform {
       Amplitude(current: -160, max: -160);
 
   @override
-  Future<bool> isEncoderSupported(String recorderId, AudioEncoder encoder) async =>
-      true;
+  Future<bool> isEncoderSupported(
+    String recorderId,
+    AudioEncoder encoder,
+  ) async => true;
 
   @override
-  Future<List<InputDevice>> listInputDevices(String recorderId) async => const [];
+  Future<List<InputDevice>> listInputDevices(String recorderId) async =>
+      const [];
 
   @override
   void setOnConfigChanged(
     String recorderId,
     void Function(RecordConfig config)? handler,
-  ) {}
+  ) {
+    calls.add('setOnConfigChanged');
+    _configChangedHandlers[recorderId] = handler;
+  }
+}
+
+/// Build interleaved PCM16 little-endian bytes from per-channel frames.
+Uint8List _interleavedPcm16(List<List<int>> frames) {
+  final bytes = ByteData(frames.expand((f) => f).length * 2);
+  var i = 0;
+  for (final frame in frames) {
+    for (final sample in frame) {
+      bytes.setInt16(i * 2, sample, Endian.little);
+      i++;
+    }
+  }
+  return bytes.buffer.asUint8List();
 }
 
 void main() {
@@ -293,6 +335,102 @@ void main() {
       });
     });
 
+    // Regression tests for external (USB-C) mics rendering as a spectrogram
+    // mirrored about its middle with wrong-sounding audio. `record` clamps
+    // `numChannels` to the channel counts the chosen input device advertises,
+    // and most USB mics advertise stereo only — so our mono request comes back
+    // as an interleaved stereo stream. Read as mono that is a 2x zero-order
+    // upsample: every frequency halves and a mirror image folds back down from
+    // Nyquist. The built-in mic advertises mono, which is why it was fine.
+    group('honours the channel count the platform actually opened', () {
+      late RecordPlatform original;
+      late _FakeRecordPlatform fake;
+      late AudioCaptureService service;
+      late RingBuffer ringBuffer;
+
+      setUp(() {
+        original = RecordPlatform.instance;
+        fake = _FakeRecordPlatform();
+        RecordPlatform.instance = fake;
+        ringBuffer = RingBuffer(capacity: 1000);
+        service = AudioCaptureService(ringBuffer: ringBuffer);
+      });
+
+      tearDown(() async {
+        await service.dispose();
+        RecordPlatform.instance = original;
+      });
+
+      test('requests mono and assumes mono until told otherwise', () async {
+        await service.start();
+
+        expect(fake.startedConfigs.single.numChannels, 1);
+        expect(service.captureChannels, 1);
+      });
+
+      test('registers the handler before the stream opens', () async {
+        await service.start();
+
+        // The platform reports the adjusted config right after `startStream`
+        // returns; registering afterwards can lose it behind the first chunk.
+        expect(
+          fake.calls,
+          containsAllInOrder(['setOnConfigChanged', 'startStream']),
+        );
+      });
+
+      test('down-mixes a stereo stream the platform forced on us', () async {
+        await service.start();
+        fake.reportConfigChanged(
+          const RecordConfig(
+            encoder: AudioEncoder.pcm16bits,
+            sampleRate: AppConstants.sampleRate,
+            numChannels: 2,
+          ),
+        );
+        expect(service.captureChannels, 2);
+
+        // A USB mic that duplicates one capsule across both channels.
+        fake.emitAudio(
+          _interleavedPcm16([
+            [16384, 16384],
+            [-16384, -16384],
+            [8192, 8192],
+          ]),
+        );
+        await pumpEventQueue();
+
+        // Three frames in, three samples out — not six, which is what produced
+        // the octave-down audio and the mirrored spectrogram.
+        expect(ringBuffer.totalWritten, 3);
+        expect(ringBuffer.readLast(3), [
+          closeTo(0.5, 1e-4),
+          closeTo(-0.5, 1e-4),
+          closeTo(0.25, 1e-4),
+        ]);
+      });
+
+      test('a restart re-assumes mono before the platform answers', () async {
+        await service.start();
+        fake.reportConfigChanged(
+          const RecordConfig(
+            encoder: AudioEncoder.pcm16bits,
+            sampleRate: AppConstants.sampleRate,
+            numChannels: 2,
+          ),
+        );
+        expect(service.captureChannels, 2);
+
+        // Switching back to the built-in mic must not keep down-mixing a
+        // stream that is mono again.
+        await service.switchSource(
+          const AudioSourceSelection(deviceId: 'builtin'),
+        );
+
+        expect(service.captureChannels, 1);
+      });
+    });
+
     test('switchSource to the current source is a no-op', () async {
       final service = AudioCaptureService();
 
@@ -302,6 +440,80 @@ void main() {
 
       expect(service.state, CaptureState.stopped);
       expect(service.lastError, isNull);
+    });
+  });
+
+  group('pcm16ToFloat32', () {
+    test('mono passes every sample through, normalized', () {
+      final samples = AudioCaptureService.pcm16ToFloat32(
+        _interleavedPcm16([
+          [0],
+          [16384],
+          [-32768],
+        ]),
+      );
+
+      expect(samples, hasLength(3));
+      expect(samples[0], closeTo(0.0, 1e-6));
+      expect(samples[1], closeTo(0.5, 1e-6));
+      expect(samples[2], closeTo(-1.0, 1e-6));
+    });
+
+    test('stereo averages the channels into one sample per frame', () {
+      final samples = AudioCaptureService.pcm16ToFloat32(
+        _interleavedPcm16([
+          [16384, 0],
+          [-32768, 32767],
+        ]),
+        channels: 2,
+      );
+
+      expect(samples, hasLength(2));
+      expect(samples[0], closeTo(0.25, 1e-4));
+      expect(samples[1], closeTo(0.0, 1e-4));
+    });
+
+    // The failure this whole path exists to prevent: interleaved frames read
+    // as consecutive mono samples are a 2x zero-order upsample, which halves
+    // every frequency and folds a mirrored copy of the spectrum back down.
+    test('a mono signal duplicated across channels survives intact', () {
+      const mono = [0, 23170, 32767, 23170, 0, -23170, -32767, -23170];
+      final asMono = AudioCaptureService.pcm16ToFloat32(
+        _interleavedPcm16([
+          for (final s in mono) [s],
+        ]),
+      );
+      final asStereo = AudioCaptureService.pcm16ToFloat32(
+        _interleavedPcm16([
+          for (final s in mono) [s, s],
+        ]),
+        channels: 2,
+      );
+
+      expect(asStereo, hasLength(asMono.length));
+      for (var i = 0; i < asMono.length; i++) {
+        expect(asStereo[i], closeTo(asMono[i], 1e-4));
+      }
+    });
+
+    test('drops a trailing partial frame instead of slipping a channel', () {
+      // 5 samples of a 2-channel stream: the last frame is half delivered.
+      final bytes = _interleavedPcm16([
+        [100, 200],
+        [300, 400],
+        [500],
+      ]);
+
+      final samples = AudioCaptureService.pcm16ToFloat32(bytes, channels: 2);
+
+      expect(samples, hasLength(2));
+    });
+
+    test('an empty chunk yields no samples', () {
+      expect(
+        AudioCaptureService.pcm16ToFloat32(Uint8List(0), channels: 2),
+        isEmpty,
+      );
     });
   });
 

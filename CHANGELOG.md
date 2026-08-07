@@ -5,12 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-07
 
 ### Changed
 
 - File Analysis now shows a concise, actionable message when it cannot process an imported recording instead of exposing a raw filesystem exception.
+- Live Mode, Point Count, and Survey now share one sample-aligned inference schedule, so matching inference settings produce matching windows, timestamps, peak scores, and detection spans across the three modes. File Analysis keeps its own overlap setting but applies the same detection rules.
+- New Surveys now default to 0.70 Hz inference, improving coverage of short vocalizations while retaining a meaningful reduction in model work compared with 1.00 Hz. The 0.30 Hz option remains available for maximum battery savings.
 - The Privacy Policy now identifies the app as BirdNET Live and the AppGallery developer as BirdNET-Team, and more precisely explains local personal-information processing and the data sent to optional map, place-name, and weather providers.
+
+### Fixed
+
+- Recording from an external USB-C microphone no longer produces distorted audio and a spectrogram mirrored across its middle. Such mics usually offer only stereo capture, and the second channel was being read as extra mono samples; both channels are now mixed down to mono as intended.
+- Live and Survey detections now appear as soon as inference finishes; saving or replacing a detection clip continues in the background and no longer delays the UI or shifts the next audio window.
+- Detection clips are now cut from the analysis window that produced the score, so a clip saved while the device is busy still contains the sound it was saved for.
+- Detection clips now cover the whole analysis window. With a 5- or 10-second window they previously held only its last 3 seconds.
+- Detection timestamps at the start of a session are no longer shifted by however long the microphone took to deliver its first audio.
+- A species that stops and is heard again shortly afterwards is now always kept as its own detection. Previously the second detection could take over the first one's audio clip and delete it.
+- Live Mode no longer smooths scores across a pause, which could date a detection heard after resuming inside the paused gap.
+- File Analysis no longer stops recording new detections after 10,000. That ceiling exists for the live modes, which run until you stop them, and should never have applied to a file of known length.
+- ARU cycles now analyze the audio captured while the model was loading instead of discarding it and waiting for a further full window.
+- The Survey notification now lists the species heard most recently, so a bird that is still calling stays visible instead of being pushed out by species that have already stopped.
+- User-guide links now open the existing Dutch, Polish, Russian, and Simplified Chinese translations instead of falling back to English.
 
 ## [1.0.6] - 2026-08-05
 

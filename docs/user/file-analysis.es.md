@@ -54,6 +54,19 @@ El asistente muestra:
 - umbral de confianza
 - modo de filtro de especies
 
+El solapamiento controla cuánto avanza cada ventana de análisis y es
+específico del análisis de archivos: el archivo completo siempre se examina, y
+más solapamiento simplemente lo examina con mayor detalle. Los modos en
+directo usan en su lugar una frecuencia de inferencia, porque deben decidir
+con qué frecuencia ejecutarse sobre el audio entrante y no con qué detalle
+cubrir una grabación fija.
+
+Sea cual sea la forma en que el análisis de archivos llega a sus ventanas, las
+convierte en detecciones con las mismas reglas que el modo Live, Point Count y
+Survey: una detección comienza en su ventana de apoyo más temprana, lleva la
+puntuación respaldada más alta y termina al final de la última ventana de
+apoyo.
+
 ### 4. Análisis
 
 La pantalla de progreso muestra:

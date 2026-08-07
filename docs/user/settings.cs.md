@@ -104,18 +104,27 @@ Posun na ose x aplikovaný na surové pravděpodobnostní skóre modelu před sd
 
 ### Frekvence odvozování
 
-Řídí, jak často BirdNET provádí odvozování. Posuvník používá stejné kroky **0,10–1,00 Hz** jako nastavení Survey a ARU.
+Řídí, jak často BirdNET provádí odvozování. Posuvník používá stejné kroky
+**0,10–1,00 Hz** jako nastavení Survey a ARU. Okna jsou ukotvena k
+zachyceným zvukovým vzorkům, nikoli k dokončení časovače, takže uložení
+ukázky ani dočasně pomalé volání modelu neposune následující okna. Při
+shodném nastavení odvozování analyzují režim Live, Point Count a Survey
+stejná okna a hlásí stejné detekce. Nižší frekvence snižují zátěž modelu i
+spotřebu baterie, ale ponechávají mezi okny širší mezery, takže velmi krátké
+hlasové projevy lze snáze přeslechnout. Nové průzkumy Survey mají ve výchozím
+stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou pro
+maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
+používá nastavení [překryvu](file-analysis.md).
 
 BirdNET Live interně vyhlazuje skóre napříč nedávnými okny odvozování, aby
 omezil jednorázové falešně pozitivní nálezy. Toto sdružování není dostupné
-jako uživatelské nastavení; ve výchozím stavu se používá adaptivní režim
-sdružování s pěti nedávnými okny a limitem stáří 10 sekund reálného času. Při
-vysoké frekvenci odvozování používá průměrové sdružování pro stabilní
-rozhodování v reálném čase; při pomalejším tempu Survey a ARU používá
-sdružování LME, aby udrželo vysokou přesnost i při delších bězích. Přijaté
-detekce zobrazují nejvyšší nedávnou podloženou spolehlivost modelu, takže
-zřetelné hlasové projevy mohou stále vykazovat vysokou spolehlivost, místo
-aby je vyhlazování srovnalo.
+jako uživatelské nastavení; ve výchozím stavu se používá adaptivní sdružování
+Log-Mean-Exp s pěti nedávnými okny a limitem stáří 10 sekund reálného času.
+Přijaté detekce zobrazují nejvyšší nedávnou podloženou spolehlivost modelu,
+takže zřetelné hlasové projevy mohou stále vykazovat vysokou spolehlivost,
+místo aby je vyhlazování srovnalo. Všechny režimy nyní převádějí výsledek
+sdružování na detekce stejně: detekce začíná v nejstarším podpůrném okně, nese
+nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
 

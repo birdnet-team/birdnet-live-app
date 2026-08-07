@@ -42,6 +42,15 @@ Deze stap bevat parameters die specifiek voor een Survey gelden, zoals:
 - steekproefmodus voor detecties
 - limiet van top-N per soort wanneer de steekproef beperkt is
 
+Nieuwe Survey-instellingen gebruiken standaard **0,70 Hz** inferentie. Dat
+behoudt meer korte geluiden dan de zuinigere keuzes met een lagere snelheid,
+terwijl het model nog steeds minder vaak draait dan bij 1,00 Hz. Survey en de
+Live-modus delen één inferentieplanning en één definitie van een detectie, dus
+met dezelfde inferentie-instellingen melden beide dezelfde soorten, scores en
+detectieduren voor hetzelfde geluid. Lagere snelheden laten met opzet grotere
+gaten tussen de overlappende analysevensters en kunnen daardoor korte geluiden
+missen; 0,30 Hz blijft beschikbaar wanneer batterijduur voorop staat.
+
 #### Steekproef van detecties
 
 Een lange Survey kan duizenden detecties opleveren, en voor elk daarvan een audiofragment bewaren vult de opslag snel. De steekproef van detecties bepaalt **welke fragmenten op schijf worden bewaard** — *de detectieregistraties zelf blijven altijd behouden*, dus je volledige Session-log blijft ongeacht de modus intact. Registraties waarvan de audio is weggelaten, hebben in het Session-overzicht simpelweg geen afspeelbaar fragment.

@@ -45,9 +45,11 @@ import '../announcements/announcements_controller.dart'
 import '../audio/ring_buffer.dart';
 import '../history/session_path_codec.dart';
 import '../inference/advanced_pooling_params.dart';
+import '../inference/detection_accumulator.dart';
+import '../inference/detection_clip_writer.dart';
 import '../inference/inference_isolate.dart';
+import '../inference/inference_window_driver.dart';
 import '../inference/model_config.dart';
-import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
 import '../inference/species_ignore_filter.dart';
 import '../recording/recording_service.dart';
@@ -92,7 +94,11 @@ class SurveyController {
   final InferenceIsolate _isolate = InferenceIsolate();
   ModelConfig? _config;
   LiveSession? _session;
-  Timer? _inferenceTimer;
+  late final InferenceWindowDriver _windowDriver = InferenceWindowDriver(
+    ringBuffer: ringBuffer,
+    debugLabel: 'SurveyController',
+  );
+  int _sessionGeneration = 0;
   Timer? _persistTimer;
   Timer? _notificationTimer;
   SurveyGpsTracker? _gpsTracker;
@@ -130,14 +136,26 @@ class SurveyController {
   /// [setSensitivity].
   double _sensitivity = 1.0;
 
-  /// Species currently shown as active detection cards.
-  final Map<String, DetectionRecord> _activeCardSpecies = {};
+  DetectionAccumulator? _accumulator;
 
-  /// Confidence of the audio window currently saved for each active species.
+  /// Clip writes run outside the inference critical path.
   ///
-  /// The detection record itself keeps advancing on every stronger score, even
-  /// when that gain is too small to re-cut immediately.
-  final DetectionClipPeakTracker _clipPeakTracker = DetectionClipPeakTracker();
+  /// Closed records reach the sampler through [onClipsSettled] rather than the
+  /// moment they close: the sampler may delete a clip and clear its path in
+  /// place, which must not happen while a write for that record is still in
+  /// flight.
+  late final DetectionClipWriter _clipWriter = DetectionClipWriter(
+    recordingService: recordingService,
+    debugLabel: 'SurveyController',
+    accumulatorOf: () => _accumulator,
+    isCurrentSession: () => _session != null,
+    onRecordsChanged: () {
+      _syncSessionDetections();
+      _notifyListeners();
+    },
+    onClipsSettled: _queueClosedForSampling,
+  );
+  Future<void> _samplerTail = Future<void>.value();
 
   /// Optional per-survey alert pipeline. `null` when alerts are disabled
   /// for the current survey (mode == off, or no notifier was configured).
@@ -399,6 +417,7 @@ class SurveyController {
     double? highPassHz,
   }) async {
     if (_state == SurveyState.active) return;
+    _sessionGeneration++;
     _state = SurveyState.starting;
     _notifyListeners();
 
@@ -464,8 +483,12 @@ class SurveyController {
       _sessionDetections.clear();
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
-      _activeCardSpecies.clear();
-      _clipPeakTracker.clear();
+      _accumulator = DetectionAccumulator(
+        sessionStart: _session!.startTime,
+        records: _session!.detections,
+      );
+      _clipWriter.reset();
+      _samplerTail = Future<void>.value();
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
@@ -476,6 +499,11 @@ class SurveyController {
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
+      _windowDriver.start(
+        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+        windowDurationSeconds: windowDuration,
+        inferenceRateHz: inferenceRate,
+      );
 
       if (kDebugMode) {
         MemoryMonitor.startPeriodic(intervalSeconds: 30);
@@ -498,6 +526,9 @@ class SurveyController {
 
       // Recording: respect the user’s choice (full / clips / off).
       _saveDetectionClips = recordingMode == RecordingMode.detectionsOnly;
+      // Clips cover the window the model scored, whichever length this survey
+      // analyzes with.
+      recordingService.setWindowSeconds(windowDuration);
       if (recordingMode != RecordingMode.off) {
         final dir = await recordingService.startRecording(
           sessionId: sessionId,
@@ -527,13 +558,6 @@ class SurveyController {
       _session!.startSegment();
       _segmentStart = DateTime.now();
 
-      // Start inference timer.
-      final intervalMs = (1000.0 / inferenceRate).round();
-      _inferenceTimer = Timer.periodic(
-        Duration(milliseconds: intervalMs),
-        (_) => _runInference(windowDuration: windowDuration),
-      );
-
       // Start incremental persistence timer.
       _persistTimer = Timer.periodic(
         const Duration(seconds: _persistIntervalSeconds),
@@ -557,6 +581,7 @@ class SurveyController {
       );
 
       _state = SurveyState.active;
+      _armNextInference();
       onSessionStarted?.call();
       _notifyListeners();
 
@@ -605,6 +630,7 @@ class SurveyController {
     Set<String> ignoredSpeciesNames = const <String>{},
   }) async {
     if (_state == SurveyState.active) return;
+    _sessionGeneration++;
     _state = SurveyState.starting;
     _notifyListeners();
 
@@ -622,8 +648,12 @@ class SurveyController {
       _sessionDetections.addAll(existingSession.detections.reversed);
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
-      _activeCardSpecies.clear();
-      _clipPeakTracker.clear();
+      _accumulator = DetectionAccumulator(
+        sessionStart: existingSession.startTime,
+        records: existingSession.detections,
+      );
+      _clipWriter.reset();
+      _samplerTail = Future<void>.value();
       _confidenceThreshold = confidenceThreshold;
       _sensitivity = sensitivity;
       _isolate.setMaxPoolWindows(poolingWindows);
@@ -634,6 +664,11 @@ class SurveyController {
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
+      _windowDriver.start(
+        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+        windowDurationSeconds: windowDuration,
+        inferenceRateHz: inferenceRate,
+      );
 
       if (kDebugMode) {
         MemoryMonitor.startPeriodic(intervalSeconds: 30);
@@ -654,6 +689,9 @@ class SurveyController {
 
       // Recording: respect the user’s choice (full / clips / off).
       _saveDetectionClips = recordingMode == RecordingMode.detectionsOnly;
+      // Clips cover the window the model scored, whichever length this survey
+      // analyzes with.
+      recordingService.setWindowSeconds(windowDuration);
       if (recordingMode != RecordingMode.off) {
         final dir = await recordingService.startRecording(
           sessionId: existingSession.id,
@@ -689,11 +727,6 @@ class SurveyController {
       _session!.resume();
       _segmentStart = DateTime.now();
 
-      final intervalMs = (1000.0 / inferenceRate).round();
-      _inferenceTimer = Timer.periodic(
-        Duration(milliseconds: intervalMs),
-        (_) => _runInference(windowDuration: windowDuration),
-      );
       _persistTimer = Timer.periodic(
         const Duration(seconds: _persistIntervalSeconds),
         (_) {
@@ -707,6 +740,7 @@ class SurveyController {
       );
 
       _state = SurveyState.active;
+      _armNextInference();
       _notifyListeners();
 
       debugPrint(
@@ -724,8 +758,7 @@ class SurveyController {
   }
 
   Future<void> _cleanupFailedStart() async {
-    _inferenceTimer?.cancel();
-    _inferenceTimer = null;
+    _windowDriver.stop();
     _persistTimer?.cancel();
     _persistTimer = null;
     _notificationTimer?.cancel();
@@ -750,20 +783,21 @@ class SurveyController {
     _sessionDetections.clear();
     _refreshRecentForNotification();
     _currentLiveDetections = const [];
-    _activeCardSpecies.clear();
-    _clipPeakTracker.clear();
+    _accumulator = null;
+    _clipWriter.reset();
+    _samplerTail = Future<void>.value();
   }
 
   /// Stop and finalize the survey.
   Future<LiveSession?> stopSurvey() async {
     if (_session == null) return null;
+    _sessionGeneration++;
     _state = SurveyState.stopping;
     _errorMessage = null;
     _notifyListeners();
 
     // Stop timers.
-    _inferenceTimer?.cancel();
-    _inferenceTimer = null;
+    _windowDriver.cancelPendingWakeup();
     _persistTimer?.cancel();
     _persistTimer = null;
     _notificationTimer?.cancel();
@@ -799,6 +833,9 @@ class SurveyController {
       }
     }
 
+    // Let post-roll jobs finish while capture and recording are still alive.
+    await _waitForClipTasks();
+
     // Stop recording.
     final recordingPath = await recordingService.stopRecording();
     if (recordingPath != null) {
@@ -811,31 +848,11 @@ class SurveyController {
       MemoryMonitor.stop();
     }
 
-    // Close any still-open detection windows so that long-running cards
-    // visible at survey end get a proper [endTimestamp]. Each closed
-    // record is then handed to the sampler, which may drop its clip.
-    if (_activeCardSpecies.isNotEmpty) {
-      final now = DateTime.now();
-      for (final existing in _activeCardSpecies.values.toList()) {
-        final closed = DetectionRecord(
-          scientificName: existing.scientificName,
-          commonName: existing.commonName,
-          confidence: existing.confidence,
-          timestamp: existing.timestamp,
-          endTimestamp: now,
-          audioClipPath: existing.audioClipPath,
-          clipTimestamp: existing.clipTimestamp,
-          source: existing.source,
-          latitude: existing.latitude,
-          longitude: existing.longitude,
-        );
-        final sIdx = _sessionDetections.indexOf(existing);
-        if (sIdx != -1) _sessionDetections[sIdx] = closed;
-        final lsIdx = _session!.detections.indexOf(existing);
-        if (lsIdx != -1) _session!.detections[lsIdx] = closed;
-        _refreshRecentForNotification();
-        await _sampler?.onRecordClosed(closed);
-      }
+    // Shared close semantics use the last supporting audio-window end.
+    final finalClosed = _accumulator?.closeAll() ?? const <DetectionRecord>[];
+    _syncSessionDetections();
+    for (final closed in finalClosed) {
+      await _sampler?.onRecordClosed(closed);
     }
 
     _session!.end();
@@ -864,8 +881,10 @@ class SurveyController {
       _sessionDetections.clear();
       _refreshRecentForNotification();
       _currentLiveDetections = const [];
-      _activeCardSpecies.clear();
-      _clipPeakTracker.clear();
+      _accumulator = null;
+      _windowDriver.stop();
+      _clipWriter.reset();
+      _samplerTail = Future<void>.value();
       _gpsTracker = null;
       _sampler = null;
 
@@ -916,7 +935,7 @@ class SurveyController {
   ///     back to the session's fixed coordinates when GPS is disabled.
   ///   - Skips the [DetectionSampler] (manuals are always kept) and the alert
   ///     coordinator (the user just typed it; alerting them again is noise).
-  ///   - Does NOT touch [_activeCardSpecies] \u2014 manuals are one-shot and
+  ///   - Does not touch the accumulator's active map; manuals are one-shot and
   ///     should not interfere with the auto card-visibility pipeline.
   ///
   /// Returns the newly-inserted record, or null if no session is active.
@@ -1023,7 +1042,7 @@ class SurveyController {
 
   /// Dispose of all resources.
   Future<void> dispose() async {
-    _inferenceTimer?.cancel();
+    _windowDriver.stop();
     _persistTimer?.cancel();
     _notificationTimer?.cancel();
     final coord = _alertCoordinator;
@@ -1049,7 +1068,7 @@ class SurveyController {
 
   // ── Inference ───────────────────────────────────────────────────────────
 
-  Future<void> _runInference({required int windowDuration}) async {
+  Future<void> _runInference() async {
     // Check auto-stop conditions.
     if (_maxEndTime != null && DateTime.now().isAfter(_maxEndTime!)) {
       _triggerAutoStop(
@@ -1064,6 +1083,10 @@ class SurveyController {
     }
 
     if (_inferring || !_isolate.isRunning) return;
+    final generation = _sessionGeneration;
+    final session = _session;
+    final window = _windowDriver.takeReadyWindow();
+    if (window == null) return;
     _inferring = true;
     _inferenceCycleCount++;
 
@@ -1073,15 +1096,10 @@ class SurveyController {
     final sensitivity = _sensitivity;
 
     try {
-      final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
-      final windowSamples = windowDuration * sampleRate;
-      // Dated at the read so a clip cut from this cycle knows which stretch
-      // of audio it holds. The samples just read end at "now", so the window
-      // they cover starts [windowDuration] earlier.
-      final windowTimestamp = DateTime.now().subtract(
-        Duration(seconds: windowDuration),
-      );
-      final audioSamples = ringBuffer.readLast(windowSamples);
+      final windowDuration = window.windowDurationSeconds;
+      final windowTimestamp = window.startTimestamp;
+      final windowEnd = window.endTimestamp;
+      final audioSamples = window.samples;
 
       if (kDebugMode && _inferenceCycleCount % 30 == 0) {
         MemoryMonitor.logOnce(tag: 'survey-cycle-$_inferenceCycleCount');
@@ -1092,7 +1110,14 @@ class SurveyController {
         windowSeconds: windowDuration,
         sensitivity: sensitivity,
         confidenceThreshold: confidenceThreshold / 100.0,
+        timestamp: windowTimestamp,
       );
+
+      if (generation != _sessionGeneration ||
+          _state != SurveyState.active ||
+          !identical(session, _session)) {
+        return;
+      }
 
       // Apply species filter.
       final speciesFiltered = SpeciesFilter.apply(
@@ -1116,54 +1141,7 @@ class SurveyController {
         for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
-      // Detection counting (card-visibility based, same as LiveController).
-      final session = _session;
-      if (session != null) {
-        final currentNames = <String>{
-          for (final d in filteredDetections) d.species.scientificName,
-        };
-
-        final appeared = currentNames.difference(
-          _activeCardSpecies.keys.toSet(),
-        );
-        // Species that disappeared → close their detection window so
-        // the review screen can highlight the full duration during
-        // which they were continuously above threshold.
-        final disappeared = _activeCardSpecies.keys.toSet().difference(
-          currentNames,
-        );
-        final closingNow = DateTime.now();
-        for (final name in disappeared) {
-          final existing = _activeCardSpecies.remove(name);
-          _clipPeakTracker.forget(name);
-          if (existing == null) continue;
-          // Mutate endTimestamp in place via list-replace (endTimestamp is
-          // a final field). The new record carries the same audioClipPath
-          // reference, which the sampler may then mutate to null in place.
-          final closed = DetectionRecord(
-            scientificName: existing.scientificName,
-            commonName: existing.commonName,
-            confidence: existing.confidence,
-            timestamp: existing.timestamp,
-            endTimestamp: closingNow,
-            audioClipPath: existing.audioClipPath,
-            clipTimestamp: existing.clipTimestamp,
-            source: existing.source,
-            latitude: existing.latitude,
-            longitude: existing.longitude,
-          );
-          final sIdx = _sessionDetections.indexOf(existing);
-          if (sIdx != -1) _sessionDetections[sIdx] = closed;
-          final lsIdx = _session!.detections.indexOf(existing);
-          if (lsIdx != -1) _session!.detections[lsIdx] = closed;
-          _refreshRecentForNotification();
-
-          // Hand the closed record to the sampler. The sampler may delete
-          // the clip file and clear `audioClipPath` on this record (or on
-          // a previously-kept record it's now evicting).
-          await _sampler?.onRecordClosed(closed);
-        }
-
+      if (session != null && _accumulator != null) {
         // Use the current GPS position for detection tagging. Before the first
         // fix, or when GPS is disabled, fall back to the session's fixed
         // coordinates from setup.
@@ -1171,112 +1149,39 @@ class SurveyController {
         final detectionLatitude = gpsPoint?.latitude ?? session.latitude;
         final detectionLongitude = gpsPoint?.longitude ?? session.longitude;
 
-        // Cut this cycle's clips: one for each newly appeared species, plus a
-        // re-cut for any ongoing detection that reached a new confidence
-        // peak. A merged detection can span far more windows than a clip
-        // holds, so the window we keep must be the strongest one — the first
-        // window is typically the weakest, since species enter near the
-        // confidence floor and peak a few cycles later. The sampler ranks
-        // clips by peak confidence, so this is also what makes its Top N
-        // choices reflect audio it actually kept.
-        final clipPaths = await _saveCycleClips(
-          filteredDetections,
-          appeared: appeared,
-        );
-
-        // The post-roll wait inside the clip save is the one point in a cycle
-        // where the survey can be torn down underneath us: `stopSurvey` flips
-        // to `stopping` and then closes every active record — handing it to
-        // the sampler — across several awaits of its own. Continuing here
-        // would attach records to a finished survey and, worse, let a re-cut
-        // delete the clip file a just-closed record still points at.
-        if (!identical(_session, session) || _state != SurveyState.active) {
-          for (final path in clipPaths.values) {
-            await recordingService.deleteClip(path);
-          }
-          return;
-        }
-
-        for (final detection in filteredDetections) {
-          final name = detection.species.scientificName;
-
-          if (appeared.contains(name)) {
-            // Every clip in this cycle came from one ring-buffer read, so
-            // they all hold the window that just ran: `windowTimestamp`
-            // dates the audio for all of them.
-            final record = DetectionRecord(
-              scientificName: detection.species.scientificName,
-              commonName: detection.species.commonName,
-              confidence: detection.confidence,
-              timestamp: detection.timestamp ?? DateTime.now(),
-              audioClipPath: clipPaths[name],
-              clipTimestamp: clipPaths[name] == null ? null : windowTimestamp,
-              latitude: detectionLatitude,
-              longitude: detectionLongitude,
-            );
-
-            // Records are always added to the session. Audio-clip retention
-            // is decided later, when the detection closes (see disappeared
-            // branch above and finalize), via [DetectionSampler].
-            _session!.addDetection(record);
-            _sessionDetections.insert(0, record);
-            _refreshRecentForNotification();
-            _activeCardSpecies[name] = record;
-            if (record.audioClipPath != null) {
-              _clipPeakTracker.recordSaved(name, detection.confidence);
-            }
-            // Feed the alert pipeline AFTER the record is durably tracked
-            // so a notification firing implies the detection was kept.
-            _alertCoordinator?.onDetection(record);
-          } else if (_activeCardSpecies.containsKey(name)) {
-            // Update confidence if higher — also move to end so it
-            // appears at the top of the recent detections list.
-            final existing = _activeCardSpecies[name]!;
-            if (detection.confidence > existing.confidence) {
-              final freshClip = clipPaths[name];
-              final clipPath = freshClip ?? existing.audioClipPath;
-              final updated = DetectionRecord(
-                scientificName: existing.scientificName,
-                commonName: existing.commonName,
+        final cycle = _accumulator!.processCycle(
+          detections: filteredDetections,
+          windowEnd: windowEnd,
+          createRecord:
+              (detection, timestamp) => DetectionRecord(
+                scientificName: detection.species.scientificName,
+                commonName: detection.species.commonName,
                 confidence: detection.confidence,
-                timestamp: existing.timestamp,
-                audioClipPath: clipPath,
-                // A re-cut moves the audio to this cycle's window; keeping
-                // the old clip keeps the window it was cut from.
-                clipTimestamp:
-                    clipPath == null
-                        ? null
-                        : (freshClip == null
-                            ? existing.clipTimestamp
-                            : windowTimestamp),
-                source: existing.source,
-                latitude: existing.latitude ?? detectionLatitude,
-                longitude: existing.longitude ?? detectionLongitude,
-              );
-              _sessionDetections.remove(existing);
-              _sessionDetections.add(updated);
-              final lsIdx = _session!.detections.indexOf(existing);
-              if (lsIdx != -1) _session!.detections[lsIdx] = updated;
-              _refreshRecentForNotification();
-              _activeCardSpecies[name] = updated;
-
-              if (freshClip != null) {
-                // Publish the replacement before the first await. Otherwise
-                // stopSurvey can persist the old path after its file has
-                // already been deleted.
-                _clipPeakTracker.recordSaved(name, detection.confidence);
-                await recordingService.deleteClip(existing.audioClipPath);
-              }
-            }
+                timestamp: timestamp,
+                latitude: detectionLatitude,
+                longitude: detectionLongitude,
+              ),
+        );
+        for (final closed in cycle.closedRecords) {
+          _clipWriter.forget(closed);
+          // A record with a clip write still in flight reaches the sampler
+          // from the writer instead, once nothing can replace it any more.
+          if (!_clipWriter.hasPendingWrite(closed)) {
+            _queueClosedForSampling(closed);
           }
         }
-
-        if (_sessionDetections.length > _maxInMemoryDetections) {
-          _sessionDetections.removeRange(
-            _maxInMemoryDetections,
-            _sessionDetections.length,
+        for (final change in cycle.changes) {
+          if (change.isNew) _alertCoordinator?.onDetection(change.record);
+        }
+        _syncSessionDetections();
+        // The clip is cut from this window's samples, so a late write still
+        // stores the audio `clipTimestamp` claims it holds.
+        if (_saveDetectionClips) {
+          _clipWriter.requestClips(
+            changes: cycle.changes,
+            clipTimestamp: windowTimestamp,
+            windowEndSample: window.windowEndSample,
           );
-          _refreshRecentForNotification();
         }
 
         // Hand the current cycle's detections to the Announcements
@@ -1315,40 +1220,44 @@ class SurveyController {
     }
   }
 
-  /// Cut this cycle's detection clips, returning scientific name → clip path.
-  ///
-  /// Which species need one is [DetectionClipPeakTracker.needsClip]'s call —
-  /// the same rule Live and ARU apply — and they are all cut from a single
-  /// ring-buffer read so the whole cycle costs one post-roll wait.
-  Future<Map<String, String>> _saveCycleClips(
-    List<Detection> detections, {
-    required Set<String> appeared,
-  }) async {
-    if (!_saveDetectionClips) return const {};
-
-    final needsClip = <String>[];
-    for (final detection in detections) {
-      final name = detection.species.scientificName;
-      final isNew = appeared.contains(name);
-      final existing = _activeCardSpecies[name];
-      if (!isNew && existing == null) continue;
-
-      if (_clipPeakTracker.needsClip(
-        key: name,
-        candidateConfidence: detection.confidence,
-        currentConfidence: existing?.confidence ?? detection.confidence,
-        hasClip: existing?.audioClipPath != null,
-        isNew: isNew,
-      )) {
-        needsClip.add(name);
-      }
-    }
-
-    return saveDetectionClipsFor<String>(
-      recordingService: recordingService,
-      items: needsClip,
-      speciesOf: (name) => name,
+  /// Arm a one-shot wakeup for the next complete sample-anchored window.
+  void _armNextInference() {
+    _windowDriver.arm(
+      isActive: () => _state == SurveyState.active,
+      runCycle: _runInference,
     );
+  }
+
+  /// Hand a closed record to the sampler, one at a time.
+  ///
+  /// The sampler may delete a clip and clear its path on the record it is
+  /// given, and may evict a previously-kept clip at the same time, so these
+  /// calls are serialized rather than overlapped.
+  void _queueClosedForSampling(DetectionRecord record) {
+    final previous = _samplerTail.catchError((_) {});
+    _samplerTail = previous
+        .then((_) async {
+          await _sampler?.onRecordClosed(record);
+          _syncSessionDetections();
+          _notifyListeners();
+        })
+        .catchError((error, stackTrace) {
+          debugPrint('[SurveyController] sampler error: $error\n$stackTrace');
+        });
+  }
+
+  /// Let outstanding clip writes — and the sampling they trigger — finish.
+  Future<void> _waitForClipTasks() async {
+    await _clipWriter.drain();
+    await _samplerTail;
+  }
+
+  void _syncSessionDetections() {
+    final records = _session?.detections ?? const <DetectionRecord>[];
+    _sessionDetections
+      ..clear()
+      ..addAll(records.reversed.take(_maxInMemoryDetections));
+    _refreshRecentForNotification();
   }
 
   // ── Persistence ─────────────────────────────────────────────────────────
@@ -1446,15 +1355,31 @@ class SurveyController {
       _recentForNotification = const <DetectionRecord>[];
       return;
     }
-    final seen = <String>{};
-    final next = <DetectionRecord>[];
+
+    // Rank by when each species was last heard rather than by when its record
+    // was created. A bird that has been calling for twenty minutes belongs on
+    // the lock screen ahead of three that started more recently and have
+    // already stopped. A detection with no end is still going, so it outranks
+    // every closed one; ties fall back to the later start.
+    final now = DateTime.now();
+    DateTime lastHeard(DetectionRecord r) => r.endTimestamp ?? now;
+
+    final bestByName = <String, DetectionRecord>{};
     for (final r in _sessionDetections) {
-      if (seen.add(r.scientificName)) {
-        next.add(r);
-        if (next.length == 3) break;
+      final existing = bestByName[r.scientificName];
+      if (existing == null || lastHeard(r).isAfter(lastHeard(existing))) {
+        bestByName[r.scientificName] = r;
       }
     }
-    _recentForNotification = List<DetectionRecord>.unmodifiable(next);
+
+    final ranked =
+        bestByName.values.toList()..sort((a, b) {
+          final byHeard = lastHeard(b).compareTo(lastHeard(a));
+          return byHeard != 0 ? byHeard : b.timestamp.compareTo(a.timestamp);
+        });
+    _recentForNotification = List<DetectionRecord>.unmodifiable(
+      ranked.take(3),
+    );
   }
 
   /// Build the notification body text with the three most recent

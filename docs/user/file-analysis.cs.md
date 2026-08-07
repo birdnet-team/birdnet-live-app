@@ -54,6 +54,17 @@ Průvodce odhalí:
 - práh spolehlivosti
 - režim filtrování druhů
 
+Překryv určuje, o kolik se posune každé analytické okno, a je specifický pro
+analýzu souborů: celý soubor se prochází vždy, více překryvu jej jen prochází
+jemněji. Živé režimy místo toho používají frekvenci odvozování, protože musí
+rozhodovat, jak často spouštět model na přicházející zvuk, nikoli jak jemně
+pokrýt hotovou nahrávku.
+
+Ať už analýza souborů dojde ke svým oknům jakkoli, převádí je na detekce
+stejnými pravidly jako režim Live, Point Count a Survey: detekce začíná v
+nejstarším podpůrném okně, nese nejvyšší podložené skóre a končí na konci
+posledního podpůrného okna.
+
 ### 4. Analyzujte
 
 Na obrazovce průběhu se zobrazí:

@@ -11,13 +11,24 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('docsLocalePrefix (user guide)', () {
     test('returns a prefix for locales with a translated guide', () {
-      for (final loc in ['de', 'cs', 'es', 'fr', 'it', 'pt']) {
+      for (final loc in [
+        'de',
+        'cs',
+        'es',
+        'fr',
+        'it',
+        'pt',
+        'nl',
+        'pl',
+        'ru',
+        'zh',
+      ]) {
         expect(AppConstants.docsLocalePrefix(loc), '/$loc');
       }
     });
 
     test('falls back to English for locales without a translated guide', () {
-      for (final loc in ['en', 'nl', 'pl', 'ru', 'zh', 'zz']) {
+      for (final loc in ['en', 'nb', 'zz']) {
         expect(AppConstants.docsLocalePrefix(loc), '');
       }
     });

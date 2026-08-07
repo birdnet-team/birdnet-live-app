@@ -25,8 +25,20 @@ abstract final class AppConstants {
       'https://birdnet-team.github.io/birdnet-live-app';
 
   /// UI locales that have the full translated user guide on the docs site.
-  /// Other UI locales (e.g. nl, pl, ru, zh) fall back to the English guide.
-  static const Set<String> docsLocales = {'de', 'cs', 'es', 'fr', 'it', 'pt'};
+  /// Norwegian Bokmål currently falls back to the English guide because only
+  /// its policy pages, not the complete user guide, have been translated.
+  static const Set<String> docsLocales = {
+    'de',
+    'cs',
+    'es',
+    'fr',
+    'it',
+    'pt',
+    'nl',
+    'pl',
+    'ru',
+    'zh',
+  };
 
   /// UI locales that have a translated Privacy Policy and Acceptable Use
   /// Policy on the docs site. Broader than [docsLocales]: the policies are

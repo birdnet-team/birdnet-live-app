@@ -791,14 +791,14 @@ String _legacyLastObserver(SharedPreferences prefs) {
 // Survey Mode
 // ---------------------------------------------------------------------------
 
-/// Survey inference rate in Hz (default 0.3).
+/// Survey inference rate in Hz (default 0.7).
 final surveyInferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return InferenceRateSettingNotifier(
         prefs,
         key: PrefKeys.surveyInferenceRate,
-        defaultValue: 0.3,
+        defaultValue: 0.7,
       );
     });
 

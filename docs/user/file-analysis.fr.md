@@ -54,6 +54,19 @@ L'assistant donne accès à :
 - le seuil de confiance
 - le mode de filtre d'espèces
 
+Le chevauchement détermine de combien avance chaque fenêtre d'analyse ; il est
+propre à l'analyse de fichiers : le fichier entier est toujours examiné, et
+davantage de chevauchement l'examine simplement plus finement. Les modes en
+direct utilisent plutôt une fréquence d'inférence, car ils doivent décider à
+quelle fréquence s'exécuter sur l'audio entrant, et non avec quelle finesse
+couvrir un enregistrement figé.
+
+Quelle que soit la façon dont l'analyse de fichiers obtient ses fenêtres, elle
+les transforme en détections avec les mêmes règles que le mode Live, Point
+Count et Survey : une détection commence à sa première fenêtre de soutien,
+porte le score étayé le plus fort et se termine à la fin de la dernière
+fenêtre de soutien.
+
 ### 4. Analyser
 
 L'écran de progression affiche :

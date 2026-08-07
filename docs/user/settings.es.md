@@ -104,19 +104,31 @@ Un desplazamiento en el eje x aplicado a las puntuaciones de probabilidad brutas
 
 ### Frecuencia de inferencia
 
-Controla con qué frecuencia BirdNET ejecuta la inferencia. El control deslizante usa los mismos pasos de **0,10–1,00 Hz** que la configuración de Survey y ARU.
+Controla con qué frecuencia BirdNET ejecuta la inferencia. El control
+deslizante usa los mismos pasos de **0,10–1,00 Hz** que la configuración de
+Survey y ARU. Las ventanas se anclan a las muestras de audio capturadas y no
+a la finalización de un temporizador, de modo que guardar un fragmento o una
+llamada al modelo temporalmente lenta no desplaza las ventanas posteriores.
+Con los mismos ajustes de inferencia, el modo Live, Point Count y Survey
+analizan las mismas ventanas y notifican las mismas detecciones. Las
+frecuencias más bajas reducen el trabajo del modelo y el consumo de batería,
+pero dejan huecos más amplios entre ventanas, por lo que es más fácil perder
+vocalizaciones muy breves. Los nuevos ajustes de Survey usan **0,70 Hz** de
+forma predeterminada como término medio; **0,30 Hz** sigue siendo la opción
+explícita de máxima autonomía. El análisis de archivos no tiene frecuencia de
+inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
 BirdNET Live suaviza internamente las puntuaciones a lo largo de las ventanas
 de inferencia recientes para reducir falsos positivos puntuales. Esta
-agrupación no se expone como ajuste de usuario; de forma predeterminada usa un
-modo de agrupación adaptativo con cinco ventanas recientes y un límite de
-antigüedad de 10 segundos en tiempo real. A frecuencias de inferencia altas
-usa agrupación por promedio para decisiones estables en directo; a los ritmos
-más lentos de Survey y ARU usa agrupación LME para mantener alta la precisión
-en ejecuciones largas. Las detecciones aceptadas muestran la mayor confianza
-reciente respaldada por el modelo, de modo que las vocalizaciones evidentes
-pueden seguir mostrando confianza alta en lugar de quedar aplanadas por el
-suavizado.
+agrupación no se expone como ajuste de usuario; de forma predeterminada usa
+agrupación adaptativa Log-Mean-Exp con cinco ventanas recientes y un límite de
+antigüedad de 10 segundos en tiempo real. Las detecciones aceptadas muestran la
+mayor confianza reciente respaldada por el modelo, de modo que las
+vocalizaciones evidentes pueden seguir mostrando confianza alta en lugar de
+quedar aplanadas por el suavizado. Todos los modos convierten ahora ese
+resultado de agrupación en detecciones de la misma manera: una detección
+comienza en su ventana de apoyo más temprana, lleva la puntuación respaldada
+más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
 

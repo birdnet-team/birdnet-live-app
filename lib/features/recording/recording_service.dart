@@ -163,12 +163,15 @@ String detectionClipName(
 /// many other species happened to peak alongside it.
 ///
 /// [speciesOf] supplies the scientific name that goes into each file name.
+/// [windowEndSample] anchors the clip to the analysis window that earned the
+/// score; see [RecordingService.saveDetectionClips].
 /// Returns the written path per item; items whose clip could not be written
 /// are absent from the map.
 Future<Map<T, String>> saveDetectionClipsFor<T>({
   required RecordingService recordingService,
   required List<T> items,
   required String Function(T item) speciesOf,
+  int? windowEndSample,
 }) async {
   if (items.isEmpty) return const {};
 
@@ -178,6 +181,7 @@ Future<Map<T, String>> saveDetectionClipsFor<T>({
   };
   final written = await recordingService.saveDetectionClips(
     clipNames: namesByItem.values.toList(),
+    windowEndSample: windowEndSample,
   );
 
   return {
@@ -210,8 +214,8 @@ class RecordingService {
     required this.ringBuffer,
     this.sampleRate = 32000,
     this.clipContextSeconds = 1,
-    this.windowSeconds = 3,
-  });
+    int windowSeconds = 3,
+  }) : _windowSeconds = windowSeconds;
 
   /// The shared ring buffer to read audio from.
   final RingBuffer ringBuffer;
@@ -228,8 +232,22 @@ class RecordingService {
   /// Length of the inference window in seconds (typically 3).
   ///
   /// Used together with [clipContextSeconds] to compute the total clip
-  /// length saved per detection.
-  final int windowSeconds;
+  /// length saved per detection, so a clip covers the whole window the model
+  /// scored rather than just its tail. Live, Point Count and Survey let the
+  /// user pick 3, 5 or 10 seconds per session, so this follows the session
+  /// (see [setWindowSeconds]) instead of being fixed at construction.
+  int get windowSeconds => _windowSeconds;
+  int _windowSeconds;
+
+  /// Match the clip length to the analysis window of the session starting now.
+  ///
+  /// Ignored while a recording is open: the clip length has to stay put for
+  /// the lifetime of a session, or clips cut before and after the change would
+  /// describe different spans of audio under the same [clipTimestamp] rule.
+  void setWindowSeconds(int value) {
+    if (_isRecording || value <= 0) return;
+    _windowSeconds = value;
+  }
 
   AudioFileWriter? _writer;
   Timer? _flushTimer;
@@ -331,10 +349,21 @@ class RecordingService {
   /// that one snapshot — keeps a busy cycle to a single
   /// [clipContextSeconds] delay instead of one per species.
   ///
+  /// [windowEndSample] is the analysis window's exclusive end on the ring
+  /// buffer's absolute sample timeline ([RingBuffer.totalWritten]). Passing it
+  /// pins the clip to the audio the model actually scored instead of to
+  /// whatever is newest when the write runs. The two coincide while inference
+  /// keeps up with capture; they diverge when it falls behind, and then only
+  /// the anchored read still holds the sound that earned the confidence.
+  /// Callers with no window to point at (ARU's end-of-cycle clip pass) omit it
+  /// and get the newest audio. An anchored read whose range has been
+  /// overwritten is skipped rather than mislabeled as the requested window.
+  ///
   /// Returns a map of clip name → written file path. Names whose clip could
   /// not be written (not recording, or silent audio) are absent from the map.
   Future<Map<String, String>> saveDetectionClips({
     required List<String> clipNames,
+    int? windowEndSample,
   }) async {
     if (clipNames.isEmpty) return const {};
     if (!_isRecording || _sessionDir == null) return const {};
@@ -354,7 +383,18 @@ class RecordingService {
     final format = _format;
     final totalSeconds = windowSeconds + 2 * clipContextSeconds;
     final totalSamples = totalSeconds * sampleRate;
-    final samples = ringBuffer.readLast(totalSamples);
+    final samples = _readClipAudio(totalSamples, windowEndSample);
+
+    // The anchored audio is gone, so no file here could hold what the caller
+    // is about to say it holds. The detection keeps its score and simply has
+    // no clip; a later, stronger window will ask again.
+    if (samples == null) {
+      debugPrint(
+        '[RecordingService] window ending at $windowEndSample is no longer '
+        'available; skipping ${clipNames.length} clip(s)',
+      );
+      return const {};
+    }
 
     // Skip silent clips (all zeros = no audio captured yet).
     if (_isAllSilent(samples)) return const {};
@@ -387,6 +427,46 @@ class RecordingService {
     }
 
     return written;
+  }
+
+  /// Read the [totalSamples] a clip should contain.
+  ///
+  /// With a [windowEndSample] the clip ends [clipContextSeconds] of post-roll
+  /// after the analysis window, which puts the same audio in the file whether
+  /// the write ran promptly or the buffer moved on in the meantime.
+  ///
+  /// Returns null when that audio can no longer be read — the post-roll has
+  /// not been captured (capture stalled, e.g. another app took the mic), or
+  /// the range has already been overwritten. Substituting the newest audio
+  /// there would write a file the caller then dates as the analysis window,
+  /// which is the mismatch the anchor exists to prevent.
+  ///
+  /// Without an anchor the newest audio *is* the answer: [saveDetectionClip]
+  /// and ARU's end-of-cycle pass have no particular window in mind.
+  Float32List? _readClipAudio(int totalSamples, int? windowEndSample) {
+    if (windowEndSample == null) return ringBuffer.readLast(totalSamples);
+
+    final endSample = windowEndSample + clipContextSeconds * sampleRate;
+    final startSample = endSample - totalSamples;
+    final oldestRetained = ringBuffer.totalWritten - ringBuffer.available;
+    if (endSample > ringBuffer.totalWritten) {
+      return null;
+    }
+
+    if (startSample < oldestRetained) {
+      // The first analysis window can legitimately ask for pre-roll before
+      // sample zero. That audio never existed, so zero-padding it preserves
+      // the complete analyzed window and post-roll without substituting any
+      // later sound. Once the buffer has wrapped, however, the missing prefix
+      // was overwritten and the requested clip must be skipped.
+      if (startSample >= 0 || oldestRetained != 0) return null;
+
+      final availableSamples = ringBuffer.readEndingAt(endSample, endSample);
+      final padded = Float32List(totalSamples);
+      padded.setRange(-startSample, totalSamples, availableSamples);
+      return padded;
+    }
+    return ringBuffer.readEndingAt(totalSamples, endSample);
   }
 
   /// Delete a detection clip file, swallowing and logging I/O errors.

@@ -53,11 +53,22 @@ class RingBuffer {
   /// Total number of samples written since creation / last reset.
   int _totalWritten = 0;
 
+  /// Monotonic token bumped whenever [clear] starts a new sample timeline.
+  int _resetGeneration = 0;
+
   /// Number of samples available for reading (capped at [capacity]).
   int get available => _totalWritten < capacity ? _totalWritten : capacity;
 
   /// Total samples written since creation.
   int get totalWritten => _totalWritten;
+
+  /// Identifies the current absolute-sample timeline.
+  ///
+  /// Consumers that retain absolute offsets can compare this value with the
+  /// one they started on. Unlike [totalWritten], it still exposes a reset if
+  /// enough new audio arrives for the counter to reach its old value before
+  /// the consumer next runs.
+  int get resetGeneration => _resetGeneration;
 
   /// Whether the buffer has been filled at least once.
   bool get isFull => _totalWritten >= capacity;
@@ -190,6 +201,55 @@ class RingBuffer {
     return result;
   }
 
+  /// Read [count] samples ending at the absolute write offset [endSample].
+  ///
+  /// Absolute offsets use the same timeline as [totalWritten]: an
+  /// [endSample] of `32000` addresses the first second of 32 kHz audio. This
+  /// lets inference consumers read sample-anchored overlapping windows even
+  /// when model execution finishes after newer audio has reached the buffer.
+  ///
+  /// The requested range must have been written and must still be retained by
+  /// the circular buffer. Unlike [readLast], this method never zero-pads;
+  /// callers use it only after a complete scheduled window is available.
+  Float32List readEndingAt(int count, int endSample) {
+    if (count < 0) {
+      throw ArgumentError.value(count, 'count', 'Must not be negative');
+    }
+    if (endSample < count || endSample > _totalWritten) {
+      throw RangeError(
+        'Requested samples ${endSample - count}..$endSample are outside '
+        'the written range 0..$_totalWritten',
+      );
+    }
+
+    final oldestRetained = _totalWritten - available;
+    final startSample = endSample - count;
+    if (startSample < oldestRetained) {
+      throw RangeError(
+        'Requested samples $startSample..$endSample were overwritten; '
+        'oldest retained sample is $oldestRetained',
+      );
+    }
+
+    final result = Float32List(count);
+    if (count == 0) return result;
+
+    // `_writePos` corresponds to `_totalWritten`, so walk backwards by the
+    // number of samples between the requested end and the current end.
+    final samplesAfterEnd = _totalWritten - endSample;
+    final endPos = (_writePos - samplesAfterEnd + capacity) % capacity;
+    final startPos = (endPos - count + capacity) % capacity;
+
+    if (startPos + count <= capacity) {
+      result.setRange(0, count, _buffer, startPos);
+    } else {
+      final firstChunk = capacity - startPos;
+      result.setRange(0, firstChunk, _buffer, startPos);
+      result.setRange(firstChunk, count, _buffer, 0);
+    }
+    return result;
+  }
+
   /// Read the most recent [count] samples into an existing [target] buffer.
   ///
   /// The [target] must have at least [count] elements.  Unlike [readLast]
@@ -231,6 +291,7 @@ class RingBuffer {
   void clear() {
     _writePos = 0;
     _totalWritten = 0;
+    _resetGeneration++;
     // The underlying memory is not zeroed for performance.
   }
 

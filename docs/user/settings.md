@@ -104,7 +104,16 @@ An x-axis offset applied to the model's raw probability scores before score pool
 
 ### Inference rate
 
-Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
+Controls how frequently BirdNET runs inference. The slider uses the same
+**0.10–1.00 Hz** steps as Survey and ARU setup. Windows are anchored to
+captured audio samples rather than timer completion, so recording a clip or a
+temporarily slow model call does not shift later windows. With matching
+inference settings, Live Mode, Point Count, and Survey analyze the same windows
+and report the same detections. Lower rates reduce model work and battery use
+but leave wider gaps between windows, so very brief vocalizations are easier to
+miss. New Surveys default to **0.70 Hz** as a middle ground; **0.30 Hz**
+remains an explicit maximum-battery option. File Analysis has no inference rate
+— it uses an [overlap](file-analysis.md) setting instead.
 
 ### Ignore species
 
@@ -116,12 +125,13 @@ The filter is applied to both geo-model and audio-model probabilities immediatel
 
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
-the default uses an adaptive pooling mode with five recent windows and a
-10-second real-time age cap. At high inference rates it uses average pooling
-for stable live decisions; at slower Survey and ARU cadences it uses LME
-pooling to keep precision high over longer runs. Accepted detections display
-the strongest recent supported model confidence, so obvious vocalizations can
-still show high confidence instead of being flattened by smoothing.
+the default uses adaptive Log-Mean-Exp pooling with five recent windows and a
+10-second real-time age cap. Accepted detections display the strongest recent
+supported model confidence, so obvious vocalizations can still show high
+confidence instead of being flattened by smoothing. Every mode now turns that
+pooling result into detections the same way: a detection starts at its earliest
+supporting window, carries the strongest supported score, and ends at the end
+of the last supporting window.
 
 ## Spectrogram
 

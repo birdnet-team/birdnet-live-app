@@ -45,7 +45,10 @@ import '../audio/ring_buffer.dart';
 import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
 import '../inference/advanced_pooling_params.dart';
+import '../inference/detection_accumulator.dart';
+import '../inference/detection_clip_writer.dart';
 import '../inference/inference_isolate.dart';
+import '../inference/inference_window_driver.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
 import '../inference/species_filter.dart';
@@ -102,7 +105,10 @@ class LiveController {
   final AudioPlayer _player = AudioPlayer();
   ModelConfig? _config;
   LiveSession? _session;
-  Timer? _inferenceTimer;
+  late final InferenceWindowDriver _windowDriver = InferenceWindowDriver(
+    ringBuffer: ringBuffer,
+    debugLabel: 'LiveController',
+  );
   LiveState _state = LiveState.idle;
   String? _errorMessage;
 
@@ -177,14 +183,19 @@ class LiveController {
   /// visibility. The optional all-species display can keep old rows visible,
   /// but [endTimestamp] still marks when the species stopped being actively
   /// detected.
-  final Map<String, DetectionRecord> _activeCardSpecies = {};
+  DetectionAccumulator? _accumulator;
 
-  /// Confidence of the audio window currently saved for each active species.
-  ///
-  /// This deliberately differs from [DetectionRecord.confidence], which is the
-  /// running maximum and advances even when an improvement is below the clip
-  /// rewrite threshold.
-  final DetectionClipPeakTracker _clipPeakTracker = DetectionClipPeakTracker();
+  /// Clip writes run outside the inference critical path.
+  late final DetectionClipWriter _clipWriter = DetectionClipWriter(
+    recordingService: recordingService,
+    debugLabel: 'LiveController',
+    accumulatorOf: () => _accumulator,
+    isCurrentSession: () => _session != null,
+    onRecordsChanged: () {
+      _syncSessionDetections();
+      _notifyListeners();
+    },
+  );
 
   /// Maximum number of in-memory detections (older entries are still
   /// persisted in the [LiveSession] object).
@@ -451,8 +462,11 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
-    _activeCardSpecies.clear();
-    _clipPeakTracker.clear();
+    _accumulator = DetectionAccumulator(
+      sessionStart: startingSession.startTime,
+      records: startingSession.detections,
+    );
+    _clipWriter.reset();
     _sessionGeneration++;
     _confidenceThreshold = confidenceThreshold;
     _sensitivity = sensitivity;
@@ -466,6 +480,15 @@ class LiveController {
     if (clearRingBuffer) {
       ringBuffer.clear();
     }
+    _windowDriver.start(
+      sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+      windowDurationSeconds: windowDuration,
+      inferenceRateHz: inferenceRate,
+      // A caller that kept the buffer (ARU, which starts capture itself and
+      // then loads the model) has been recording this session all along, so
+      // that audio is analyzed rather than skipped.
+      useBufferedAudio: !clearRingBuffer,
+    );
 
     _notifyListeners();
 
@@ -488,6 +511,9 @@ class LiveController {
 
     // Recording: respect the user’s choice (full / clips / off).
     _saveDetectionClips = recordingMode == RecordingMode.detectionsOnly;
+    // Clips cover the window the model scored, whichever length this session
+    // analyzes with.
+    recordingService.setWindowSeconds(windowDuration);
     if (recordingMode != RecordingMode.off) {
       final dir = await recordingService.startRecording(
         sessionId: sessionId,
@@ -516,13 +542,7 @@ class LiveController {
       'threshold=$confidenceThreshold)',
     );
 
-    // Start the inference timer.
-    final intervalMs = (1000.0 / inferenceRate).round();
-    debugPrint('[LiveController] inference timer interval: ${intervalMs}ms');
-    _inferenceTimer = Timer.periodic(
-      Duration(milliseconds: intervalMs),
-      (_) => _runInference(windowDuration: windowDuration),
-    );
+    _armNextInference();
   }
 
   /// Pause the current session.
@@ -534,10 +554,13 @@ class LiveController {
   Future<void> pauseSession() async {
     if (_state != LiveState.active || _session == null) return;
 
-    _inferenceTimer?.cancel();
-    _inferenceTimer = null;
+    _windowDriver.cancelPendingWakeup();
 
     _sessionGeneration++;
+    for (final closed in _accumulator?.closeAll() ?? const <DetectionRecord>[]) {
+      _clipWriter.forget(closed);
+    }
+    _syncSessionDetections();
     _closeRecordingSegment();
 
     _state = LiveState.paused;
@@ -564,12 +587,19 @@ class LiveController {
 
     debugPrint('[LiveController] session resumed');
 
-    // Restart the inference timer.
-    final intervalMs = (1000.0 / settings.inferenceRate).round();
-    _inferenceTimer = Timer.periodic(
-      Duration(milliseconds: intervalMs),
-      (_) => _runInference(windowDuration: settings.windowDuration),
+    // Audio is discontinuous across a pause, so the pooling buffer must not
+    // carry pre-pause windows into post-resume decisions: they would smooth
+    // scores across the gap and date a resumed detection inside it.
+    _isolate.resetPooling();
+
+    // Start a fresh audio schedule so paused audio is not drained as a
+    // backlog after resuming.
+    _windowDriver.start(
+      sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+      windowDurationSeconds: settings.windowDuration,
+      inferenceRateHz: settings.inferenceRate,
     );
+    _armNextInference();
   }
 
   /// Finalize and stop the current session completely.
@@ -579,12 +609,15 @@ class LiveController {
   Future<LiveSession?> finalizeSession() async {
     if (_session == null) return null;
 
-    // If still active, stop timer first.
-    _inferenceTimer?.cancel();
-    _inferenceTimer = null;
+    // If still active, stop the schedule first.
+    _windowDriver.cancelPendingWakeup();
 
     _sessionGeneration++;
     _closeRecordingSegment();
+
+    // Finish already-requested post-roll clips while capture and recording
+    // are still available. These tasks never block inference or UI updates.
+    await _clipWriter.drain();
 
     // Stop recording.
     final recordingPath = await recordingService.stopRecording();
@@ -599,18 +632,10 @@ class LiveController {
       MemoryMonitor.stop();
     }
 
-    // Close any still-open detection windows so active vocalizations at
-    // session end get a proper [endTimestamp].
-    if (_activeCardSpecies.isNotEmpty) {
-      final now = DateTime.now();
-      for (final existing in _activeCardSpecies.values) {
-        final closed = _recordWithEnd(existing, now);
-        final sessionIdx = _sessionDetections.indexOf(existing);
-        if (sessionIdx != -1) _sessionDetections[sessionIdx] = closed;
-        final lsIdx = _session!.detections.indexOf(existing);
-        if (lsIdx != -1) _session!.detections[lsIdx] = closed;
-      }
-    }
+    // The shared accumulator closes at the last supporting audio-window end,
+    // matching File Analysis rather than extending to wall-clock stop time.
+    _accumulator?.closeAll();
+    _syncSessionDetections();
 
     _session!.end();
     final completedSession = _session!;
@@ -620,8 +645,9 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
-    _activeCardSpecies.clear();
-    _clipPeakTracker.clear();
+    _accumulator = null;
+    _windowDriver.stop();
+    _clipWriter.reset();
 
     _state = LiveState.ready;
     _notifyListeners();
@@ -709,7 +735,7 @@ class LiveController {
 
   /// Dispose of all resources.
   Future<void> dispose() async {
-    _inferenceTimer?.cancel();
+    _windowDriver.stop();
     await _isolate.stop();
     await _player.dispose();
     recordingService.dispose();
@@ -718,7 +744,7 @@ class LiveController {
   // ── Private ───────────────────────────────────────────────────────────
 
   /// Run a single inference cycle.
-  Future<void> _runInference({required int windowDuration}) async {
+  Future<void> _runInference() async {
     if (_inferring || !_isolate.isRunning) {
       debugPrint(
         '[LiveController] _runInference skipped '
@@ -726,6 +752,9 @@ class LiveController {
       );
       return;
     }
+
+    final window = _windowDriver.takeReadyWindow();
+    if (window == null) return;
 
     _inferring = true;
     _inferenceCycleCount++;
@@ -737,13 +766,10 @@ class LiveController {
     final sensitivity = _sensitivity;
 
     try {
-      final sampleRate = _config?.audio.sampleRate ?? AppConstants.sampleRate;
-      final windowSamples = windowDuration * sampleRate;
-      final audioReadAt = DateTime.now();
-      final windowTimestamp = audioReadAt.subtract(
-        Duration(seconds: windowDuration),
-      );
-      final audioSamples = ringBuffer.readLast(windowSamples);
+      final windowDuration = window.windowDurationSeconds;
+      final audioReadAt = window.endTimestamp;
+      final windowTimestamp = window.startTimestamp;
+      final audioSamples = window.samples;
 
       // Log memory every 10 cycles (~10s at 1Hz) to track growth.
       if (kDebugMode && _inferenceCycleCount % 10 == 0) {
@@ -796,133 +822,26 @@ class LiveController {
         for (final d in filteredDetections) DetectionRecord.fromDetection(d),
       ];
 
-      // ── Detection counting: active-inference-window based ──────────
-      //
-      // A species counts as ONE detection for as long as it is continuously
-      // present in inference results. Only when it drops out and later
-      // reappears does it become a SECOND detection for session review.
-      //
-      // Do not base this on UI row visibility: the optional all-species view
-      // keeps old rows visible after vocalization ends, but the persisted
-      // [endTimestamp] must still represent the end of the active detection
-      // window.
-      if (_session != null) {
-        // Determine which species are present this cycle.
-        final currentNames = <String>{
-          for (final d in filteredDetections) d.species.scientificName,
-        };
-
-        // Species that just appeared (not currently tracked) → new detection.
-        final appeared = currentNames.difference(
-          _activeCardSpecies.keys.toSet(),
+      if (_session != null && _accumulator != null) {
+        final cycle = _accumulator!.processCycle(
+          detections: filteredDetections,
+          windowEnd: audioReadAt,
         );
-
-        // Species that disappeared → close the detection window and
-        // stop tracking. Stamping `endTimestamp` lets the review screen
-        // visualize the full duration during which the species was actively
-        // detected, instead of just the first inference window.
-        final disappeared = _activeCardSpecies.keys.toSet().difference(
-          currentNames,
-        );
-        final now = DateTime.now();
-        for (final name in disappeared) {
-          final existing = _activeCardSpecies.remove(name);
-          _clipPeakTracker.forget(name);
-          if (existing == null) continue;
-          final closed = _recordWithEnd(existing, now);
-          final sessionIdx = _sessionDetections.indexOf(existing);
-          if (sessionIdx != -1) _sessionDetections[sessionIdx] = closed;
-          final lsIdx = _session!.detections.indexOf(existing);
-          if (lsIdx != -1) _session!.detections[lsIdx] = closed;
+        for (final closed in cycle.closedRecords) {
+          _clipWriter.forget(closed);
         }
+        _syncSessionDetections();
 
-        // Save detection clips if the user requested per-detection clips.
-        //
-        // A clip is cut for a species that just appeared, and re-cut whenever
-        // an ongoing detection reaches a new confidence peak. A merged
-        // detection can span many windows, but a clip only holds one — so the
-        // one we keep must be the strongest window, not the first. Species
-        // entering at the confidence floor and peaking a few cycles later is
-        // the common case, which is exactly what the first window gets wrong.
-        //
-        // All clips for this cycle are cut from a single ring-buffer read, so
-        // a busy cycle costs one post-roll wait rather than one per species.
-        final clipPaths = await _saveCycleClips(
-          filteredDetections,
-          appeared: appeared,
-        );
-
-        // The post-roll wait inside the clip save is the one point in a cycle
-        // where the session can be torn down underneath us: finalize, pause
-        // and reset all bump the generation before their own awaits. Without
-        // this check the records below would be attached to a session that is
-        // already closed, and a re-cut would delete a clip that the session's
-        // now-closed record still points at.
-        if (generation != _sessionGeneration || _session == null) {
-          for (final path in clipPaths.values) {
-            await recordingService.deleteClip(path);
-          }
-          return;
-        }
-
-        for (final detection in filteredDetections) {
-          final name = detection.species.scientificName;
-
-          if (appeared.contains(name)) {
-            // New detection — species just appeared in inference.
-            //
-            // Every clip in this cycle came from one ring-buffer read, so
-            // they all hold the window that just ran: `windowTimestamp` dates
-            // the audio for all of them.
-            final record = DetectionRecord.fromDetection(
-              detection,
-              audioClipPath: clipPaths[name],
-              clipTimestamp: windowTimestamp,
-            );
-            _session!.addDetection(record);
-            _sessionDetections.insert(0, record);
-            _activeCardSpecies[name] = record;
-            if (record.audioClipPath != null) {
-              _clipPeakTracker.recordSaved(name, detection.confidence);
-            }
-          } else if (_activeCardSpecies.containsKey(name)) {
-            // Ongoing — update confidence if higher (same detection).
-            final existing = _activeCardSpecies[name]!;
-            if (detection.confidence > existing.confidence) {
-              final freshClip = clipPaths[name];
-              final updated = _recordWithConfidence(
-                existing,
-                detection.confidence,
-                audioClipPath: freshClip ?? existing.audioClipPath,
-                // A re-cut moves the audio to this cycle's window; keeping
-                // the old clip keeps the window it was cut from.
-                clipTimestamp:
-                    freshClip == null
-                        ? existing.clipTimestamp
-                        : windowTimestamp,
-              );
-              final sessionIdx = _sessionDetections.indexOf(existing);
-              if (sessionIdx != -1) _sessionDetections[sessionIdx] = updated;
-              final lsIdx = _session!.detections.indexOf(existing);
-              if (lsIdx != -1) _session!.detections[lsIdx] = updated;
-              _activeCardSpecies[name] = updated;
-
-              if (freshClip != null) {
-                // Publish the replacement before the first await. Otherwise
-                // pause/finalize can persist the old path after its file has
-                // already been deleted.
-                _clipPeakTracker.recordSaved(name, detection.confidence);
-                await recordingService.deleteClip(existing.audioClipPath);
-              }
-            }
-          }
-        }
-
-        // Cap in-memory list to avoid unbounded growth.
-        if (_sessionDetections.length > _maxInMemoryDetections) {
-          _sessionDetections.removeRange(
-            _maxInMemoryDetections,
-            _sessionDetections.length,
+        // Detection existence, score, and timestamps are now published before
+        // post-roll capture or file encoding begins. Recording can enrich the
+        // canonical record later but cannot alter inference cadence. The clip
+        // is cut from this window's samples, so a late write still stores the
+        // audio `clipTimestamp` claims it holds.
+        if (_saveDetectionClips) {
+          _clipWriter.requestClips(
+            changes: cycle.changes,
+            clipTimestamp: windowTimestamp,
+            windowEndSample: window.windowEndSample,
           );
         }
 
@@ -976,81 +895,19 @@ class LiveController {
     _segmentStart = null;
   }
 
-  /// Cut this cycle's detection clips, returning scientific name → clip path.
-  ///
-  /// Which species need one is [DetectionClipPeakTracker.needsClip]'s call —
-  /// the same rule Survey and ARU apply — and they are all cut from a single
-  /// ring-buffer read so the whole cycle costs one post-roll wait.
-  Future<Map<String, String>> _saveCycleClips(
-    List<Detection> detections, {
-    required Set<String> appeared,
-  }) async {
-    if (!_saveDetectionClips) return const {};
-
-    final needsClip = <String>[];
-    for (final detection in detections) {
-      final name = detection.species.scientificName;
-      final isNew = appeared.contains(name);
-      final existing = _activeCardSpecies[name];
-      if (!isNew && existing == null) continue;
-
-      if (_clipPeakTracker.needsClip(
-        key: name,
-        candidateConfidence: detection.confidence,
-        currentConfidence: existing?.confidence ?? detection.confidence,
-        hasClip: existing?.audioClipPath != null,
-        isNew: isNew,
-      )) {
-        needsClip.add(name);
-      }
-    }
-
-    return saveDetectionClipsFor<String>(
-      recordingService: recordingService,
-      items: needsClip,
-      speciesOf: (name) => name,
+  /// Arm a one-shot wakeup for the next complete sample-anchored window.
+  void _armNextInference() {
+    _windowDriver.arm(
+      isActive: () => _state == LiveState.active,
+      runCycle: _runInference,
     );
   }
 
-  DetectionRecord _recordWithEnd(DetectionRecord existing, DateTime end) {
-    return DetectionRecord(
-      scientificName: existing.scientificName,
-      commonName: existing.commonName,
-      confidence: existing.confidence,
-      timestamp: existing.timestamp,
-      endTimestamp: end,
-      audioClipPath: existing.audioClipPath,
-      clipTimestamp: existing.clipTimestamp,
-      source: existing.source,
-      latitude: existing.latitude,
-      longitude: existing.longitude,
-      confirmedAt: existing.confirmedAt,
-      note: existing.note,
-      voiceMemoPath: existing.voiceMemoPath,
-    );
-  }
-
-  DetectionRecord _recordWithConfidence(
-    DetectionRecord existing,
-    double confidence, {
-    String? audioClipPath,
-    DateTime? clipTimestamp,
-  }) {
-    return DetectionRecord(
-      scientificName: existing.scientificName,
-      commonName: existing.commonName,
-      confidence: confidence,
-      timestamp: existing.timestamp,
-      endTimestamp: existing.endTimestamp,
-      audioClipPath: audioClipPath,
-      clipTimestamp: audioClipPath == null ? null : clipTimestamp,
-      source: existing.source,
-      latitude: existing.latitude,
-      longitude: existing.longitude,
-      confirmedAt: existing.confirmedAt,
-      note: existing.note,
-      voiceMemoPath: existing.voiceMemoPath,
-    );
+  void _syncSessionDetections() {
+    final records = _session?.detections ?? const <DetectionRecord>[];
+    _sessionDetections
+      ..clear()
+      ..addAll(records.reversed.take(_maxInMemoryDetections));
   }
 
   /// Clear the session state to prepare for a fresh run.
@@ -1062,8 +919,9 @@ class LiveController {
     _sessionDetections.clear();
     _latestDetections = const [];
     _currentLiveDetections = const [];
-    _activeCardSpecies.clear();
-    _clipPeakTracker.clear();
+    _accumulator = null;
+    _windowDriver.stop();
+    _clipWriter.reset();
     _notifyListeners();
   }
 

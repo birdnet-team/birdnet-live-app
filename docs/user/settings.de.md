@@ -104,18 +104,30 @@ Ein Versatz auf der x-Achse, der auf die rohen Wahrscheinlichkeitswerte des Mode
 
 ### Inferenzrate
 
-Steuert, wie häufig BirdNET eine Inferenz durchführt. Der Schieberegler verwendet dieselben Stufen von **0,10–1,00 Hz** wie die Einrichtung von Survey und ARU.
+Steuert, wie häufig BirdNET eine Inferenz durchführt. Der Schieberegler
+verwendet dieselben Stufen von **0,10–1,00 Hz** wie die Einrichtung von Survey
+und ARU. Die Fenster sind an aufgezeichnete Audio-Samples gebunden und nicht
+an den Ablauf eines Timers, sodass das Speichern einer Aufnahme oder ein
+vorübergehend langsamer Modellaufruf spätere Fenster nicht verschiebt. Bei
+gleichen Inferenzeinstellungen analysieren Live-Modus, Point Count und Survey
+dieselben Fenster und melden dieselben Detektionen. Niedrigere Raten
+verringern die Modellarbeit und den Akkuverbrauch, lassen aber größere Lücken
+zwischen den Fenstern, sodass sehr kurze Lautäußerungen leichter übersehen
+werden. Neue Survey-Einstellungen verwenden standardmäßig **0,70 Hz** als
+Mittelweg; **0,30 Hz** bleibt die ausdrückliche Option für maximale
+Akkulaufzeit. Die Dateianalyse hat keine Inferenzrate — sie verwendet
+stattdessen eine [Überlappung](file-analysis.md).
 
 BirdNET Live glättet Scores intern über die jüngsten Inferenzfenster hinweg,
 um einmalige Falschpositive zu reduzieren. Dieses Pooling ist nicht als
-Benutzereinstellung verfügbar; standardmäßig wird ein adaptiver Pooling-Modus
-mit fünf jüngsten Fenstern und einer Echtzeit-Altersgrenze von 10 Sekunden
-verwendet. Bei hohen Inferenzraten nutzt es Average-Pooling für stabile
-Live-Entscheidungen; bei den langsameren Takten von Survey und ARU nutzt es
-LME-Pooling, um die Präzision über längere Läufe hoch zu halten. Akzeptierte
-Detektionen zeigen die stärkste kürzlich gestützte Modellkonfidenz, sodass
-eindeutige Lautäußerungen weiterhin hohe Konfidenz anzeigen können, statt von
-der Glättung eingeebnet zu werden.
+Benutzereinstellung verfügbar; standardmäßig wird adaptives
+Log-Mean-Exp-Pooling mit fünf jüngsten Fenstern und einer Echtzeit-Altersgrenze
+von 10 Sekunden verwendet. Akzeptierte Detektionen zeigen die stärkste kürzlich
+gestützte Modellkonfidenz, sodass eindeutige Lautäußerungen weiterhin hohe
+Konfidenz anzeigen können, statt von der Glättung eingeebnet zu werden. Alle
+Modi wandeln dieses Pooling-Ergebnis jetzt auf dieselbe Weise in Detektionen
+um: Eine Detektion beginnt bei ihrem frühesten stützenden Fenster, trägt den
+stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
 

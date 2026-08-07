@@ -54,6 +54,18 @@ De wizard biedt:
 - betrouwbaarheidsdrempel
 - modus van het soortenfilter
 
+Overlap bepaalt hoe ver elk analysevenster opschuift en is specifiek voor de
+bestandsanalyse: het hele bestand wordt altijd onderzocht, en meer overlap
+onderzoekt het alleen fijner. De live modi gebruiken in plaats daarvan een
+inferentiesnelheid, omdat die moeten bepalen hoe vaak ze op binnenkomende
+audio draaien en niet hoe fijn ze een vaststaande opname afdekken.
+
+Hoe de bestandsanalyse ook aan haar vensters komt, ze maakt er detecties van
+met dezelfde regels als de Live-modus, Point Count en Survey: een detectie
+begint bij haar vroegste ondersteunende venster, draagt de sterkste
+ondersteunde score en eindigt aan het einde van het laatste ondersteunende
+venster.
+
 ### 4. Analyseren
 
 Het voortgangsscherm toont:
