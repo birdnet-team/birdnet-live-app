@@ -104,19 +104,32 @@ Un décalage sur l'axe des x appliqué aux scores de probabilité bruts du modè
 
 ### Fréquence d'inférence
 
-Contrôle la fréquence à laquelle BirdNET exécute l'inférence. Le curseur utilise les mêmes paliers de **0,10–1,00 Hz** que la configuration Survey et ARU.
+Contrôle la fréquence à laquelle BirdNET exécute l'inférence. Le curseur
+utilise les mêmes paliers de **0,10–1,00 Hz** que la configuration Survey et
+ARU. Les fenêtres sont ancrées aux échantillons audio capturés et non à
+l'expiration d'un minuteur : enregistrer un extrait ou un appel au modèle
+temporairement lent ne décale donc pas les fenêtres suivantes. À réglages
+d'inférence identiques, le mode Live, Point Count et Survey analysent les
+mêmes fenêtres et signalent les mêmes détections. Les fréquences plus basses
+réduisent le travail du modèle et la consommation de batterie, mais laissent
+des écarts plus larges entre les fenêtres : les vocalisations très brèves sont
+donc plus faciles à manquer. Les nouveaux réglages Survey utilisent
+**0,70 Hz** par défaut comme compromis ; **0,30 Hz** reste l'option explicite
+pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
+d'inférence — elle utilise un réglage de
+[chevauchement](file-analysis.md) à la place.
 
 BirdNET Live lisse en interne les scores sur les fenêtres d'inférence récentes
 afin de réduire les faux positifs isolés. Cette mise en commun n'est pas
-exposée comme paramètre utilisateur ; par défaut, un mode adaptatif est
-utilisé, avec cinq fenêtres récentes et une limite d'ancienneté de 10 secondes
-en temps réel. Aux fréquences d'inférence élevées, il utilise une mise en
-commun par moyenne pour des décisions stables en direct ; aux cadences plus
-lentes de Survey et ARU, il utilise la mise en commun LME afin de maintenir
-une précision élevée sur les longues durées. Les détections acceptées
-affichent la plus forte confiance récente étayée par le modèle, de sorte que
-des vocalisations évidentes peuvent toujours afficher une confiance élevée au
-lieu d'être aplaties par le lissage.
+exposée comme paramètre utilisateur ; par défaut, une mise en commun adaptative
+Log-Mean-Exp est utilisée, avec cinq fenêtres récentes et une limite
+d'ancienneté de 10 secondes en temps réel. Les détections acceptées affichent
+la plus forte confiance récente étayée par le modèle, de sorte que des
+vocalisations évidentes peuvent toujours afficher une confiance élevée au lieu
+d'être aplaties par le lissage. Tous les modes transforment désormais ce
+résultat de la même façon en détections : une détection commence à sa première
+fenêtre de soutien, porte le score étayé le plus fort et se termine à la fin de
+la dernière fenêtre de soutien.
 
 ## Spectrogramme
 

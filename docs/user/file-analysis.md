@@ -54,6 +54,17 @@ The wizard exposes:
 - confidence threshold
 - species filter mode
 
+Overlap controls how far each analysis window advances, and is specific to
+File Analysis: the whole file is always examined, and more overlap simply
+examines it more finely. The live modes use an inference rate instead, because
+they have to decide how often to run against incoming audio rather than how
+finely to cover a fixed recording.
+
+However File Analysis reaches its windows, it turns them into detections with
+the same rules as Live Mode, Point Count, and Survey: a detection starts at its
+earliest supporting window, carries the strongest supported score, and ends at
+the end of the last supporting window.
+
 ### 4. Analyze
 
 The progress screen shows:

@@ -40,6 +40,15 @@ This step contains Survey-specific parameters such as:
 - detection sampling mode
 - top-N-per-species limit when sampling is limited
 
+New Survey settings default to **0.70 Hz** inference. This retains more short
+vocalizations than the lower-rate battery-saving choices while still running
+the model less often than 1.00 Hz. Survey and Live Mode share one inference
+schedule and one definition of a detection, so matching their inference
+settings makes the two report the same species, scores, and detection spans for
+the same sound. Lower rates intentionally leave wider gaps between overlapping
+analysis windows and can therefore miss brief sounds; 0.30 Hz remains available
+when battery life is the priority.
+
 #### Detection sampling
 
 A long survey can produce thousands of detections, and saving an audio clip for every one of them quickly fills up storage. Detection sampling controls **which clips are kept on disk** — *the detection records themselves are always kept*, so your full session log stays intact regardless of mode. Records whose audio was dropped simply have no playable clip in Session Review.

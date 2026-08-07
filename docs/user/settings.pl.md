@@ -104,18 +104,29 @@ Przesunięcie na osi x stosowane do surowych ocen prawdopodobieństwa modelu prz
 
 ### Częstość wnioskowania
 
-Steruje tym, jak często BirdNET wykonuje wnioskowanie. Suwak używa tych samych kroków **0,10–1,00 Hz** co konfiguracja Survey i ARU.
+Steruje tym, jak często BirdNET wykonuje wnioskowanie. Suwak używa tych samych
+kroków **0,10–1,00 Hz** co konfiguracja Survey i ARU. Okna są zakotwiczone w
+zarejestrowanych próbkach dźwięku, a nie w zakończeniu odliczania, więc
+zapisanie fragmentu ani chwilowo wolne wywołanie modelu nie przesuwa
+kolejnych okien. Przy tych samych ustawieniach wnioskowania tryb Live, Point
+Count i Survey analizują te same okna i zgłaszają te same wykrycia. Niższe
+częstości zmniejszają obciążenie modelu i zużycie baterii, ale zostawiają
+szersze przerwy między oknami, więc łatwiej przeoczyć bardzo krótkie odgłosy.
+Nowe ustawienia Survey domyślnie używają **0,70 Hz** jako rozwiązania
+pośredniego; **0,30 Hz** pozostaje wyraźnym wyborem na maksymalny czas pracy
+baterii. Analiza plików nie ma częstości wnioskowania — zamiast tego używa
+ustawienia [nakładania](file-analysis.md).
 
 BirdNET Live wewnętrznie wygładza oceny w ostatnich oknach wnioskowania, aby
 ograniczyć jednorazowe fałszywe trafienia. Ten pooling nie jest dostępny jako
-ustawienie użytkownika; domyślnie stosowany jest tryb adaptacyjny z pięcioma
-ostatnimi oknami i limitem wieku 10 sekund w czasie rzeczywistym. Przy dużych
-częstościach wnioskowania używa poolingu średniej, aby decyzje na żywo były
-stabilne; przy wolniejszym rytmie Survey i ARU używa poolingu LME, aby
-utrzymać wysoką precyzję przy dłuższych przebiegach. Zaakceptowane wykrycia
-pokazują najwyższą niedawną potwierdzoną pewność modelu, dzięki czemu wyraźne
-odgłosy mogą nadal osiągać wysoką pewność, zamiast zostać spłaszczone przez
-wygładzanie.
+ustawienie użytkownika; domyślnie stosowany jest adaptacyjny pooling
+Log-Mean-Exp z pięcioma ostatnimi oknami i limitem wieku 10 sekund w czasie
+rzeczywistym. Zaakceptowane wykrycia pokazują najwyższą niedawną potwierdzoną
+pewność modelu, dzięki czemu wyraźne odgłosy mogą nadal osiągać wysoką pewność,
+zamiast zostać spłaszczone przez wygładzanie. Wszystkie tryby zamieniają teraz
+ten wynik poolingu na wykrycia w ten sam sposób: wykrycie zaczyna się w
+najwcześniejszym oknie potwierdzającym, niesie najwyższą potwierdzoną ocenę i
+kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
 

@@ -54,6 +54,19 @@ La procedura guidata mostra:
 - soglia di confidenza
 - modalità del filtro specie
 
+La sovrapposizione controlla di quanto avanza ogni finestra di analisi ed è
+specifica dell'analisi file: l'intero file viene sempre esaminato, e più
+sovrapposizione lo esamina semplicemente in modo più fine. Le modalità dal
+vivo usano invece una frequenza di inferenza, perché devono decidere ogni
+quanto eseguire il modello sull'audio in arrivo e non quanto finemente coprire
+una registrazione già fissata.
+
+In qualunque modo l'analisi file arrivi alle sue finestre, le trasforma in
+rilevazioni con le stesse regole della modalità Live, di Point Count e di
+Survey: una rilevazione inizia alla sua prima finestra di supporto, porta il
+punteggio supportato più alto e termina alla fine dell'ultima finestra di
+supporto.
+
 ### 4. Analizza
 
 La schermata di avanzamento mostra:

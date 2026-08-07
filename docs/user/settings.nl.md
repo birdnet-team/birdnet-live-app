@@ -104,18 +104,31 @@ Een verschuiving op de x-as die op de ruwe waarschijnlijkheidsscores van het mod
 
 ### Inferentiesnelheid
 
-Bepaalt hoe vaak BirdNET inferentie uitvoert. De schuifregelaar gebruikt dezelfde stappen van **0,10–1,00 Hz** als het opzetten van Survey en ARU.
+Bepaalt hoe vaak BirdNET inferentie uitvoert. De schuifregelaar gebruikt
+dezelfde stappen van **0,10–1,00 Hz** als het opzetten van Survey en ARU. De
+vensters zijn verankerd aan opgenomen audiosamples en niet aan het aflopen van
+een timer, dus het opslaan van een fragment of een tijdelijk trage
+modelaanroep verschuift latere vensters niet. Met dezelfde
+inferentie-instellingen analyseren de Live-modus, Point Count en Survey
+dezelfde vensters en melden ze dezelfde detecties. Lagere snelheden
+verminderen het werk van het model en het batterijverbruik, maar laten
+grotere gaten tussen de vensters, waardoor je heel korte geluiden makkelijker
+mist. Nieuwe Survey-instellingen gebruiken standaard **0,70 Hz** als
+middenweg; **0,30 Hz** blijft de uitdrukkelijke keuze voor maximale
+batterijduur. De bestandsanalyse heeft geen inferentiesnelheid — die gebruikt
+in plaats daarvan een instelling voor [overlap](file-analysis.md).
 
 BirdNET Live effent scores intern uit over recente inferentievensters om
 eenmalige valse treffers te verminderen. Deze pooling is niet als
-gebruikersinstelling beschikbaar; standaard wordt een adaptieve poolingmodus
-gebruikt met vijf recente vensters en een realtime leeftijdsgrens van 10
-seconden. Bij hoge inferentiesnelheden gebruikt die average pooling voor
-stabiele live beslissingen; bij de tragere cadans van Survey en ARU gebruikt
-die LME-pooling om de precisie over langere runs hoog te houden. Geaccepteerde
-detecties tonen de sterkste recent ondersteunde modelbetrouwbaarheid, zodat
-duidelijke geluiden nog steeds een hoge betrouwbaarheid kunnen laten zien in
-plaats van door de uitvlakking te worden afgevlakt.
+gebruikersinstelling beschikbaar; standaard wordt adaptieve
+Log-Mean-Exp-pooling gebruikt met vijf recente vensters en een realtime
+leeftijdsgrens van 10 seconden. Geaccepteerde detecties tonen de sterkste
+recent ondersteunde modelbetrouwbaarheid, zodat duidelijke geluiden nog steeds
+een hoge betrouwbaarheid kunnen laten zien in plaats van door de uitvlakking te
+worden afgevlakt. Alle modi zetten dat poolingresultaat nu op dezelfde manier
+om in detecties: een detectie begint bij haar vroegste ondersteunende venster,
+draagt de sterkste ondersteunde score en eindigt aan het einde van het laatste
+ondersteunende venster.
 
 ## Spectrogram
 

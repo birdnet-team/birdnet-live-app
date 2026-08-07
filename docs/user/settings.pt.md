@@ -104,18 +104,30 @@ Um deslocamento no eixo x aplicado às pontuações de probabilidade brutas do m
 
 ### Taxa de inferência
 
-Controla com que frequência o BirdNET executa a inferência. O controle deslizante usa os mesmos passos de **0,10–1,00 Hz** da configuração de Survey e ARU.
+Controla com que frequência o BirdNET executa a inferência. O controle
+deslizante usa os mesmos passos de **0,10–1,00 Hz** da configuração de Survey
+e ARU. As janelas são ancoradas às amostras de áudio capturadas e não à
+conclusão de um temporizador, de modo que salvar um trecho ou uma chamada ao
+modelo temporariamente lenta não desloca as janelas seguintes. Com os mesmos
+ajustes de inferência, o modo Live, o Point Count e o Survey analisam as
+mesmas janelas e relatam as mesmas detecções. Taxas mais baixas reduzem o
+trabalho do modelo e o consumo de bateria, mas deixam intervalos maiores entre
+as janelas, por isso é mais fácil perder vocalizações muito breves. Novas
+configurações de Survey usam **0,70 Hz** por padrão como meio-termo;
+**0,30 Hz** continua sendo a opção explícita de máxima autonomia. A análise de
+arquivos não tem taxa de inferência — ela usa uma configuração de
+[sobreposição](file-analysis.md).
 
 O BirdNET Live suaviza internamente as pontuações ao longo das janelas de
 inferência recentes para reduzir falsos positivos isolados. Esse agrupamento
-não é exposto como configuração de usuário; por padrão usa um modo de
-agrupamento adaptativo com cinco janelas recentes e um limite de idade de 10
-segundos em tempo real. Em taxas de inferência altas usa agrupamento por
-média, para decisões estáveis ao vivo; nas cadências mais lentas de Survey e
-ARU usa agrupamento LME, para manter alta a precisão em execuções longas. As
-detecções aceitas exibem a maior confiança recente respaldada pelo modelo, de
-modo que vocalizações evidentes ainda podem apresentar confiança alta em vez
-de serem achatadas pela suavização.
+não é exposto como configuração de usuário; por padrão usa agrupamento
+adaptativo Log-Mean-Exp com cinco janelas recentes e um limite de idade de 10
+segundos em tempo real. As detecções aceitas exibem a maior confiança recente
+respaldada pelo modelo, de modo que vocalizações evidentes ainda podem
+apresentar confiança alta em vez de serem achatadas pela suavização. Todos os
+modos agora transformam esse resultado em detecções da mesma forma: uma
+detecção começa na sua janela de apoio mais antiga, carrega a maior pontuação
+respaldada e termina no fim da última janela de apoio.
 
 ## Espectrograma
 
