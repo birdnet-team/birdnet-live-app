@@ -39,6 +39,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
 import '../inference/advanced_pooling_params.dart';
+import '../inference/detection_accumulator.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
@@ -449,7 +450,13 @@ class FileAnalysisController {
       final modelSampleRate = _config!.audio.sampleRate;
       final sourceWindowSamples = windowDuration * sourceSampleRate;
       final modelWindowSamples = windowDuration * modelSampleRate;
-      final stepSamples = (sourceWindowSamples * (1.0 - overlap)).round();
+      // Offline analysis steps by a fraction of the window, so consecutive
+      // windows always touch and the whole file is examined. Clamping keeps a
+      // caller-supplied overlap of 1.0 (or above) from producing a zero step
+      // and an unbounded window loop.
+      final stepSamples = (sourceWindowSamples * (1.0 - overlap))
+          .round()
+          .clamp(1, sourceWindowSamples);
       final totalSamples = sourceTotalSamples;
 
       if (sourceTotalSamples == 0) {
@@ -528,15 +535,15 @@ class FileAnalysisController {
       _isolate.resetPooling();
 
       final allDetections = <DetectionRecord>[];
+      final accumulator = DetectionAccumulator(
+        sessionStart: fileStartTime,
+        records: allDetections,
+        // A file has a known end, and the user asked for its contents. The
+        // live modes' record ceiling exists because they run indefinitely;
+        // applying it here would quietly under-report a long recording.
+        maxRecords: null,
+      );
       final speciesSet = <String>{};
-      // Active species → index into [allDetections] of the in-progress
-      // record. While a species stays above threshold across consecutive
-      // windows, its single record's [endTimestamp] is extended; once it
-      // dips below (or analysis ends), the record is left closed.
-      final activeIndex = <String, int>{};
-      // Names that were above threshold in the previous window. Used to
-      // detect species that dropped out so we stop extending their record.
-      var previousWindowNames = <String>{};
 
       DateTime timestampFor(int startSample) {
         // Timestamp relative to audio file start.
@@ -572,54 +579,16 @@ class FileAnalysisController {
                   .toList();
         }
 
-        // Convert to detection records, merging consecutive windows of
-        // the same species into a single record whose [endTimestamp]
-        // grows as long as the species stays above threshold.
         final windowEnd = windowTimestamp.add(
           Duration(milliseconds: (windowDuration * 1000).round()),
         );
-        final currentNames = <String>{
-          for (final d in filtered) d.species.scientificName,
-        };
-        // Species that were active last window but not this one — stop
-        // extending them; their last [endTimestamp] is already correct.
-        for (final name in previousWindowNames.difference(currentNames)) {
-          activeIndex.remove(name);
+        final cycle = accumulator.processCycle(
+          detections: filtered,
+          windowEnd: windowEnd,
+        );
+        for (final change in cycle.changes) {
+          if (change.isNew) speciesSet.add(change.record.scientificName);
         }
-        for (final d in filtered) {
-          final name = d.species.scientificName;
-          final existingIdx = activeIndex[name];
-          if (existingIdx == null) {
-            // New continuous detection for this species.
-            final record = DetectionRecord(
-              scientificName: name,
-              commonName: d.species.commonName,
-              confidence: d.confidence,
-              timestamp: windowTimestamp,
-              endTimestamp: windowEnd,
-            );
-            allDetections.add(record);
-            activeIndex[name] = allDetections.length - 1;
-            speciesSet.add(name);
-          } else {
-            // Continuation — extend the existing record's window and
-            // bump confidence to the highest value seen so far.
-            final existing = allDetections[existingIdx];
-            allDetections[existingIdx] = DetectionRecord(
-              scientificName: existing.scientificName,
-              commonName: existing.commonName,
-              confidence: math.max(existing.confidence, d.confidence),
-              timestamp: existing.timestamp,
-              endTimestamp: windowEnd,
-              audioClipPath: existing.audioClipPath,
-              clipTimestamp: existing.clipTimestamp,
-              source: existing.source,
-              latitude: existing.latitude,
-              longitude: existing.longitude,
-            );
-          }
-        }
-        previousWindowNames = currentNames;
 
         // Update progress.
         _progress = AnalysisProgress(
@@ -908,6 +877,7 @@ class FileAnalysisController {
       await flushInferenceBatch();
 
       // 5. Finalize session.
+      accumulator.closeAll();
       session.detections.addAll(allDetections);
       // Set end time based on audio duration.
       session.endTime = fileStartTime.add(sourceDuration);
