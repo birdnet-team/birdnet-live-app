@@ -130,7 +130,7 @@ class SurveyAlertEngine {
   /// [firstInSession] tells the engine whether this is the first time
   /// the species has appeared in the *current* survey. The caller is
   /// responsible for the bookkeeping (typically a `Set<String>` updated
-  /// alongside the existing `_activeCardSpecies` map in `SurveyController`).
+  /// alongside the shared detection accumulator in `SurveyController`).
   AlertCandidate? evaluate(DetectionRecord d, {required bool firstInSession}) {
     if (mode == AlertMode.off) return null;
     if (d.confidence < minConfidence) return null;

@@ -42,6 +42,10 @@ void main() {
       expect(container.read(inferenceRateProvider), 1.0);
     });
 
+    test('surveyInferenceRate defaults to 0.7 Hz', () {
+      expect(container.read(surveyInferenceRateProvider), 0.7);
+    });
+
     test('species ignore settings use safe defaults', () {
       expect(container.read(ignoreBirdsProvider), isFalse);
       expect(container.read(ignoreMammalsProvider), isFalse);
