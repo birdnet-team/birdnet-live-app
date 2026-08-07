@@ -21,8 +21,8 @@ import 'ring_buffer.dart';
 //
 // ```
 // Microphone (Oboe / AVAudioEngine)
-//   → Uint8List (PCM16 little-endian, 32 kHz mono)
-//   → _pcm16ToFloat32 (normalized −1.0 … 1.0)
+//   → Uint8List (PCM16 little-endian, 32 kHz, 1–2 interleaved channels)
+//   → pcm16ToFloat32 (down-mixed to mono, normalized −1.0 … 1.0)
 //   → RingBuffer.write
 //   → downstream consumers (spectrogram, inference, recording)
 // ```
@@ -137,6 +137,31 @@ class AudioCaptureService with WidgetsBindingObserver {
   bool _shouldBeCapturing = false;
   AudioSourceSelection _currentSource = AudioSourceSelection.systemDefault;
   DateTime _lastDataTime = DateTime.now();
+
+  // ── Negotiated capture format ───────────────────────────────────────────
+  //
+  // We always ask for mono, but the platform is allowed to hand us something
+  // else and tell us afterwards (`AudioRecorder.setOnConfigChanged`). Android
+  // does exactly that for external mics: `record` clamps `numChannels` to the
+  // channel counts the selected `AudioDeviceInfo` advertises, and most USB-C
+  // mics advertise stereo only — so a mono request comes back as 2 channels
+  // and the byte stream is interleaved L,R,L,R.
+  //
+  // Reading that as mono is not a subtle error: it is a 2× zero-order upsample,
+  // which halves every frequency and folds a mirror image of the spectrum back
+  // down from Nyquist. That is the "spectrogram mirrored down the middle, audio
+  // sounds wrong" report — with the built-in mic (which advertises mono) the
+  // clamp is a no-op, which is why only external mics were affected.
+  //
+  // So we track what we actually got and down-mix in [pcm16ToFloat32].
+
+  /// Interleaved channel count the platform is actually delivering. Reset to
+  /// the requested mono on every start and corrected by [_onConfigChanged].
+  int _captureChannels = 1;
+
+  /// Interleaved channels in the incoming PCM stream (`1` unless the platform
+  /// overrode our mono request). Exposed for diagnostics and tests.
+  int get captureChannels => _captureChannels;
 
   // ── Lifecycle serialization ─────────────────────────────────────────────
   //
@@ -531,6 +556,10 @@ class AudioCaptureService with WidgetsBindingObserver {
 
     if (source != null) _currentSource = source;
 
+    // Assume the format we're about to request; [_onConfigChanged] corrects it
+    // if the platform disagrees.
+    _captureChannels = 1;
+
     // Never hand a second `startStream()` to a recorder the platform already
     // owns. `_state` alone can't tell us that: a stream error or a failed
     // start leaves us at `error`/`stopped` while the native recorder is still
@@ -566,6 +595,11 @@ class AudioCaptureService with WidgetsBindingObserver {
           audioSource: _androidAudioSource(_currentSource.profile),
         ),
       );
+
+      // Register before starting: the platform reports the adjusted config
+      // immediately after `startStream` returns, and on Android that can race
+      // the first audio chunk if we wire the handler up afterwards.
+      await _rec.setOnConfigChanged(_onConfigChanged);
 
       final stream = await _rec.startStream(config);
 
@@ -665,8 +699,8 @@ class AudioCaptureService with WidgetsBindingObserver {
     // foreground notification reflect the recovered mic.
     _onCaptureHealthy();
 
-    // Convert signed 16-bit PCM (little-endian) → float32 [-1.0, 1.0].
-    final samples = _pcm16ToFloat32(bytes);
+    // Convert signed 16-bit PCM (little-endian) → mono float32 [-1.0, 1.0].
+    final samples = pcm16ToFloat32(bytes, channels: _captureChannels);
     _applyDsp(samples);
     _ringBuffer.write(samples);
     _dataController.add(samples.length);
@@ -677,6 +711,32 @@ class AudioCaptureService with WidgetsBindingObserver {
         '[AudioCapture] chunk #$_audioChunkCount: '
         '${samples.length} samples, '
         'totalWritten=${_ringBuffer.totalWritten}',
+      );
+    }
+  }
+
+  /// The platform could not honour part of our [RecordConfig] and is telling
+  /// us what it actually opened.
+  ///
+  /// Only the channel count is actionable: we down-mix to mono in
+  /// [pcm16ToFloat32]. A different sample rate would misalign every timestamp
+  /// and every model window, and neither backend can produce one for a PCM16
+  /// stream (Android leaves the rate alone, iOS resamples in `AVAudioConverter`),
+  /// so we surface it loudly rather than silently drifting.
+  void _onConfigChanged(RecordConfig config) {
+    final channels = config.numChannels < 1 ? 1 : config.numChannels;
+    if (channels != _captureChannels) {
+      _captureChannels = channels;
+      debugPrint(
+        'AudioCapture: platform opened $channels channels instead of the '
+        'requested 1 — down-mixing to mono',
+      );
+    }
+
+    if (config.sampleRate != AppConstants.sampleRate) {
+      debugPrint(
+        'AudioCapture: platform opened ${config.sampleRate} Hz instead of the '
+        'requested ${AppConstants.sampleRate} Hz — audio will be off-pitch',
       );
     }
   }
@@ -700,15 +760,42 @@ class AudioCaptureService with WidgetsBindingObserver {
     _levelController.add(rms);
   }
 
-  /// Convert signed 16-bit little-endian PCM bytes to Float32List [-1, 1].
-  static Float32List _pcm16ToFloat32(Uint8List bytes) {
-    final sampleCount = bytes.length ~/ 2;
-    final result = Float32List(sampleCount);
+  /// Convert signed 16-bit little-endian PCM bytes to a mono Float32List
+  /// in [-1, 1].
+  ///
+  /// [channels] is the interleaved channel count of [bytes]. Anything above 1
+  /// is averaged down to mono — the whole pipeline below this point (ring
+  /// buffer, spectrogram, classifier, recordings) is single-channel. Averaging
+  /// rather than picking channel 0 keeps a genuinely stereo mic's full signal
+  /// and survives a mic that leaves one channel dead.
+  ///
+  /// A trailing partial frame (possible if a chunk boundary splits one) is
+  /// dropped. Averaging is symmetric in the channels, so the half-sample of
+  /// phase that costs on the following chunk changes nothing.
+  @visibleForTesting
+  static Float32List pcm16ToFloat32(Uint8List bytes, {int channels = 1}) {
     final byteData = ByteData.sublistView(bytes);
+    final totalSamples = bytes.length ~/ 2;
 
-    for (var i = 0; i < sampleCount; i++) {
-      final sample = byteData.getInt16(i * 2, Endian.little);
-      result[i] = sample / 32768.0;
+    if (channels <= 1) {
+      final result = Float32List(totalSamples);
+      for (var i = 0; i < totalSamples; i++) {
+        result[i] = byteData.getInt16(i * 2, Endian.little) / 32768.0;
+      }
+      return result;
+    }
+
+    final frames = totalSamples ~/ channels;
+    final result = Float32List(frames);
+    final scale = 1.0 / (32768.0 * channels);
+
+    for (var frame = 0; frame < frames; frame++) {
+      var sum = 0;
+      final base = frame * channels * 2;
+      for (var ch = 0; ch < channels; ch++) {
+        sum += byteData.getInt16(base + ch * 2, Endian.little);
+      }
+      result[frame] = sum * scale;
     }
 
     return result;
