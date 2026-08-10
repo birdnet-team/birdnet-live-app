@@ -257,11 +257,27 @@ Pobieranie map offline jest obecnie ukryte, dopóki BirdNET Live korzysta z publ
 
 - **Wyłączony** — bez filtrowania geograficznego
 - **Filtr lokalizacji** — wyklucza gatunki poniżej progu geograficznego
+- **Adaptacyjny filtr lokalizacji** — wymaga tym większej pewności, im rzadszy jest tu gatunek
 - **Ważenie lokalizacją** — używa geomodelu jako dodatkowego sygnału ważącego
 
 ### Próg filtra geograficznego
 
-Pojawia się, gdy aktywny jest tryb filtrowania oparty na lokalizacji.
+Pojawia się, gdy aktywny jest **Filtr lokalizacji** lub **Ważenie lokalizacją**. Filtr adaptacyjny wyznacza swoją granicę sam, na podstawie miejscowego składu gatunków, więc nie ma suwaka.
+
+### Jak decyduje filtr adaptacyjny
+
+Stopniuje wymagania według tego, jak pospolity jest gatunek w Twojej lokalizacji, korzystając z tych samych poziomów liczebności, które widzisz na ekranie **Odkrywaj**. Gatunki z poziomu *Liczny* nie są filtrowane nigdy; poniżej wymagany wynik wykrycia stale rośnie, a gatunki, których w ogóle nie ma na miejscowej liście, potrzebują około 0,92 lub więcej. Wszystko od 0,99 wzwyż zostaje niezależnie od tego, co mówi model lokalizacji.
+
+| Poziom w Twojej lokalizacji | Wymagany wynik wykrycia |
+|---|---|
+| Liczny | dowolny |
+| Pospolity | ~0,55–0,70 |
+| Częsty | ~0,70–0,82 |
+| Nieliczny | ~0,78–0,89 |
+| Skąpy / Rzadki | ~0,83–0,92 |
+| Spoza miejscowej listy | ~0,92–0,97 |
+
+Ponieważ poziomy opierają się na rankingu, działa to tak samo w bogatym gatunkowo lesie tropikalnym, jak i w Arktyce. Wykrycia, które przechodzą, zachowują pierwotny wynik — model lokalizacji decyduje wyłącznie o tym, czy je pokazać. Celem jest ograniczenie fałszywych trafień dla nielicznych gatunków bez utraty naprawdę wyraźnego nagrania takiego gatunku.
 
 ## Eksport i synchronizacja
 

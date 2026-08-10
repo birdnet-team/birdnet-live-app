@@ -74,7 +74,8 @@ class SessionSettings {
   /// Inference rate in Hz.
   final double inferenceRate;
 
-  /// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
+  /// Species filter mode ('off', 'geoExclude', 'geoAdaptive', 'geoMerge',
+  /// 'customList').
   final String speciesFilterMode;
 
   /// Seconds of audio captured before AND after each detection window when

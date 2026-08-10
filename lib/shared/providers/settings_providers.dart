@@ -272,7 +272,8 @@ final advancedPoolingParamsProvider = Provider<AdvancedPoolingParams>((ref) {
   );
 });
 
-/// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
+/// Species filter mode ('off', 'geoExclude', 'geoAdaptive', 'geoMerge',
+/// 'customList').
 final speciesFilterModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);

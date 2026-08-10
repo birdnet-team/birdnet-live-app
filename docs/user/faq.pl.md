@@ -19,7 +19,7 @@ O: Android (8.0+), iOS (15.0+) i Windows (eksperymentalnie).
 O: Obniż próg pewności w ustawieniach, aby zobaczyć więcej wykryć. Na dokładność wpływają hałas otoczenia, wiatr i odległość.
 
 **P: Co robi filtr gatunków?**
-O: Geomodel przewiduje, które gatunki są prawdopodobne w Twojej lokalizacji GPS i o danej porze roku. Włącz **Filtr lokalizacji**, aby ukryć mało prawdopodobne gatunki, albo **Ważenie lokalizacją**, aby ważyć wyniki prawdopodobieństwem geograficznym.
+O: Geomodel przewiduje, które gatunki są prawdopodobne w Twojej lokalizacji GPS i o danej porze roku. Włącz **Filtr lokalizacji**, aby ukryć mało prawdopodobne gatunki, **Adaptacyjny filtr lokalizacji**, aby ukryć spośród nich tylko te, co do których nie ma pewności także model dźwiękowy, albo **Ważenie lokalizacją**, aby ważyć wyniki prawdopodobieństwem geograficznym.
 
 **P: Jak dokładne jest rozpoznawanie?**
 O: Dokładność zależy od jakości nagrania, odległości, hałasu otoczenia i samego gatunku. Wykrycia o wysokiej pewności (>70%) są zwykle wiarygodne. Rzadkie gatunki zawsze potwierdzaj wzrokowo.

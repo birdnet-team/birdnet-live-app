@@ -261,11 +261,27 @@ Les téléchargements de cartes hors ligne sont masqués pour l'instant, tant qu
 
 - **Désactivé** — pas de filtrage géographique
 - **Filtre par position** — exclure les espèces sous le seuil géographique
+- **Filtre adaptatif par position** — exiger d'autant plus de certitude que l'espèce est peu commune ici
 - **Pondération par position** — utiliser le géo-modèle comme signal de pondération supplémentaire
 
 ### Seuil du géo-filtre
 
-Apparaît lorsqu'un mode de filtrage fondé sur la position est actif.
+Apparaît lorsque **Filtre par position** ou **Pondération par position** est actif. Le filtre adaptatif détermine lui-même son seuil à partir de la composition locale en espèces : il n'a donc pas de curseur.
+
+### Comment le filtre adaptatif décide
+
+Il module l'exigence selon la fréquence de l'espèce à votre position, en s'appuyant sur les mêmes niveaux d'abondance que l'écran **Explorer**. Les espèces du niveau *Abondante* ne sont jamais filtrées ; en dessous, le score de détection requis augmente régulièrement, et les espèces absentes de la liste locale demandent environ 0,92 ou plus. Tout ce qui atteint 0,99 est conservé, quoi qu'en dise le modèle de localisation.
+
+| Niveau à votre position | Score de détection requis |
+|---|---|
+| Abondante | quelconque |
+| Commune | ~0,55–0,70 |
+| Fréquente | ~0,70–0,82 |
+| Inhabituelle | ~0,78–0,89 |
+| Sporadique / Rare | ~0,83–0,92 |
+| Absente de la liste locale | ~0,92–0,97 |
+
+Comme les niveaux reposent sur un rang, cela se comporte de la même façon dans une forêt tropicale très riche que dans l'Arctique. Les détections conservées gardent leur score d'origine : le modèle de localisation ne fait que décider de leur affichage. L'objectif est de réduire les faux positifs sur les espèces peu communes sans perdre un enregistrement vraiment net de l'une d'elles.
 
 ## Export et synchronisation
 

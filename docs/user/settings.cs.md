@@ -254,11 +254,27 @@ Stahování offline map je momentálně skryté, dokud BirdNET Live používá v
 
 - **Vypnuto** – bez geografické filtrace
 - **Filtr podle polohy** – vyloučit druhy pod geografickým prahem
+- **Adaptivní filtr podle polohy** – vyžadovat tím vyšší jistotu, čím vzácnější druh zde je
 - **Vážení podle polohy** – použít geomodel jako doplňkový vážicí signál
 
 ### Práh geofiltru
 
-Objeví se, když je aktivní režim filtrace založený na poloze.
+Objeví se, když je aktivní **Filtr podle polohy** nebo **Vážení podle polohy**. Adaptivní filtr si hranici odvodí sám z místního složení druhů, a proto posuvník nemá.
+
+### Jak se adaptivní filtr rozhoduje
+
+Náročnost odstupňuje podle toho, jak hojný je druh ve vaší lokalitě, a používá stejné stupně hojnosti, jaké vidíte na obrazovce **Prozkoumat**. Druhy stupně *Hojný* se nefiltrují nikdy; níže potřebné skóre detekce plynule roste a druhy, které na místním seznamu vůbec nejsou, potřebují zhruba 0,92 a více. Cokoli se skóre 0,99 a výš zůstane bez ohledu na model polohy.
+
+| Stupeň ve vaší lokalitě | Potřebné skóre detekce |
+|---|---|
+| Hojný | jakékoli |
+| Běžný | ~0,55–0,70 |
+| Častý | ~0,70–0,82 |
+| Neobvyklý | ~0,78–0,89 |
+| Řídký / Vzácný | ~0,83–0,92 |
+| Není na místním seznamu | ~0,92–0,97 |
+
+Protože stupně vycházejí z pořadí, funguje to v druhově bohatém tropickém lese stejně jako v Arktidě. Detekce, které projdou, si ponechají původní skóre – model polohy rozhoduje jen o tom, zda se zobrazí. Cílem je omezit falešné nálezy u neobvyklých druhů, aniž byste přišli o skutečně jasnou nahrávku.
 
 ## Export a synchronizace
 
