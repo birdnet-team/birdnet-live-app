@@ -249,7 +249,8 @@ DetectionRecord _copyDetection(
   evidence: source.evidence,
   latitude: source.latitude,
   longitude: source.longitude,
-  confirmedAt: source.confirmedAt,
+  reviewStatus: source.reviewStatus,
+  reviewedAt: source.reviewedAt,
   note: source.note,
   voiceMemoPath: source.voiceMemoPath,
 );
@@ -738,6 +739,8 @@ String _buildBody(DetectionRecord d) {
   }
   if (d.isConfirmed) {
     lines.add('Confirmed');
+  } else if (d.isRejected) {
+    lines.add('Rejected');
   }
   return lines.join('\n');
 }

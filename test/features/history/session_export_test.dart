@@ -1571,14 +1571,15 @@ void main() {
 
   // â”€â”€ Confirmed-detection flag in exports (#33) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  group('confirmed-detection flag in exports', () {
-    DetectionRecord makeConfirmed(
+  group('review status in exports', () {
+    DetectionRecord makeReviewed(
       String sci,
       String common,
       double conf,
       Duration offset,
       DateTime start, {
-      DateTime? confirmedAt,
+      ReviewStatus reviewStatus = ReviewStatus.unreviewed,
+      DateTime? reviewedAt,
       double? lat,
       double? lon,
     }) {
@@ -1587,31 +1588,42 @@ void main() {
         commonName: common,
         confidence: conf,
         timestamp: start.add(offset),
-        confirmedAt: confirmedAt,
+        reviewStatus: reviewStatus,
+        reviewedAt: reviewedAt,
         latitude: lat,
         longitude: lon,
       );
     }
 
-    test('Raven table emits Confirmed columns and per-row values', () {
+    test('Raven table emits Review Status columns and per-row values', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
       final stamp = DateTime.utc(2025, 6, 15, 9, 30);
       final session = _makeSession(
         detections: [
-          makeConfirmed(
+          makeReviewed(
             'Turdus merula',
             'Eurasian Blackbird',
             0.91,
             const Duration(seconds: 5),
             start,
-            confirmedAt: stamp,
+            reviewStatus: ReviewStatus.confirmed,
+            reviewedAt: stamp,
           ),
-          makeConfirmed(
+          makeReviewed(
             'Erithacus rubecula',
             'European Robin',
             0.80,
             const Duration(seconds: 10),
             start,
+          ),
+          makeReviewed(
+            'Parus major',
+            'Great Tit',
+            0.75,
+            const Duration(seconds: 15),
+            start,
+            reviewStatus: ReviewStatus.rejected,
+            reviewedAt: stamp,
           ),
         ],
       );
@@ -1619,39 +1631,55 @@ void main() {
       final table = buildRavenSelectionTable(session);
       final lines = table.split('\n');
       final header = lines.first.split('\t');
-      expect(header, contains('Confirmed'));
-      expect(header, contains('Confirmed At (UTC)'));
-      final cIdx = header.indexOf('Confirmed');
-      final cAtIdx = header.indexOf('Confirmed At (UTC)');
+      expect(header, contains('Review Status'));
+      expect(header, contains('Reviewed At (UTC)'));
+      final cIdx = header.indexOf('Review Status');
+      final cAtIdx = header.indexOf('Reviewed At (UTC)');
 
       final row1 = lines[1].split('\t');
-      expect(row1[cIdx], 'true');
+      expect(row1[cIdx], 'confirmed');
       expect(row1[cAtIdx], '2025-06-15T09:30:00.000Z');
 
+      // The point of the whole exercise: a detection nobody reviewed says so,
+      // rather than reporting a verdict it never received.
       final row2 = lines[2].split('\t');
-      expect(row2[cIdx], 'false');
+      expect(row2[cIdx], 'unreviewed');
       expect(row2[cAtIdx], '');
+
+      final row3 = lines[3].split('\t');
+      expect(row3[cIdx], 'rejected');
+      expect(row3[cAtIdx], '2025-06-15T09:30:00.000Z');
     });
 
-    test('CSV emits Confirmed columns and per-row values', () {
+    test('CSV emits Review Status columns and per-row values', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
       final stamp = DateTime.utc(2025, 6, 15, 9, 30);
       final session = _makeSession(
         detections: [
-          makeConfirmed(
+          makeReviewed(
             'Turdus merula',
             'Eurasian Blackbird',
             0.91,
             const Duration(seconds: 5),
             start,
-            confirmedAt: stamp,
+            reviewStatus: ReviewStatus.confirmed,
+            reviewedAt: stamp,
           ),
-          makeConfirmed(
+          makeReviewed(
             'Erithacus rubecula',
             'European Robin',
             0.80,
             const Duration(seconds: 10),
             start,
+          ),
+          makeReviewed(
+            'Parus major',
+            'Great Tit',
+            0.75,
+            const Duration(seconds: 15),
+            start,
+            reviewStatus: ReviewStatus.rejected,
+            reviewedAt: stamp,
           ),
         ],
       );
@@ -1659,39 +1687,55 @@ void main() {
       final csv = buildCsvExport(session);
       final lines = csv.split('\n');
       final header = lines.first.split(',');
-      expect(header, contains('Confirmed'));
-      expect(header, contains('Confirmed At (UTC)'));
-      final cIdx = header.indexOf('Confirmed');
-      final cAtIdx = header.indexOf('Confirmed At (UTC)');
+      expect(header, contains('Review Status'));
+      expect(header, contains('Reviewed At (UTC)'));
+      final cIdx = header.indexOf('Review Status');
+      final cAtIdx = header.indexOf('Reviewed At (UTC)');
 
       final row1 = lines[1].split(',');
-      expect(row1[cIdx], 'true');
+      expect(row1[cIdx], 'confirmed');
       expect(row1[cAtIdx], '2025-06-15T09:30:00.000Z');
 
+      // The point of the whole exercise: a detection nobody reviewed says so,
+      // rather than reporting a verdict it never received.
       final row2 = lines[2].split(',');
-      expect(row2[cIdx], 'false');
+      expect(row2[cIdx], 'unreviewed');
       expect(row2[cAtIdx], '');
+
+      final row3 = lines[3].split(',');
+      expect(row3[cIdx], 'rejected');
+      expect(row3[cAtIdx], '2025-06-15T09:30:00.000Z');
     });
 
-    test('JSON emits confirmed (always) and confirmedAt (only when set)', () {
+    test('JSON emits reviewStatus (always) and reviewedAt (only when set)', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
       final stamp = DateTime.utc(2025, 6, 15, 9, 30);
       final session = _makeSession(
         detections: [
-          makeConfirmed(
+          makeReviewed(
             'Turdus merula',
             'Eurasian Blackbird',
             0.91,
             const Duration(seconds: 5),
             start,
-            confirmedAt: stamp,
+            reviewStatus: ReviewStatus.confirmed,
+            reviewedAt: stamp,
           ),
-          makeConfirmed(
+          makeReviewed(
             'Erithacus rubecula',
             'European Robin',
             0.80,
             const Duration(seconds: 10),
             start,
+          ),
+          makeReviewed(
+            'Parus major',
+            'Great Tit',
+            0.75,
+            const Duration(seconds: 15),
+            start,
+            reviewStatus: ReviewStatus.rejected,
+            reviewedAt: stamp,
           ),
         ],
       );
@@ -1700,10 +1744,16 @@ void main() {
       final dets = map['detections'] as List;
       final d0 = dets[0] as Map<String, dynamic>;
       final d1 = dets[1] as Map<String, dynamic>;
-      expect(d0['confirmed'], true);
-      expect(d0['confirmedAt'], '2025-06-15T09:30:00.000Z');
-      expect(d1['confirmed'], false);
-      expect(d1.containsKey('confirmedAt'), isFalse);
+      final d2 = dets[2] as Map<String, dynamic>;
+      expect(d0['reviewStatus'], 'confirmed');
+      expect(d0['reviewedAt'], '2025-06-15T09:30:00.000Z');
+      expect(d1['reviewStatus'], 'unreviewed');
+      expect(d1.containsKey('reviewedAt'), isFalse);
+      expect(d2['reviewStatus'], 'rejected');
+      expect(d2['reviewedAt'], '2025-06-15T09:30:00.000Z');
+      // The old boolean is gone; nothing should still be asserting a verdict
+      // about the unreviewed detection.
+      expect(d1.containsKey('confirmed'), isFalse);
     });
 
     test(
@@ -1714,17 +1764,18 @@ void main() {
         final session = _makeSession(
           type: SessionType.survey,
           detections: [
-            makeConfirmed(
+            makeReviewed(
               'Turdus merula',
               'Eurasian Blackbird',
               0.91,
               const Duration(seconds: 5),
               start,
-              confirmedAt: stamp,
+              reviewStatus: ReviewStatus.confirmed,
+              reviewedAt: stamp,
               lat: 52.52,
               lon: 13.40,
             ),
-            makeConfirmed(
+            makeReviewed(
               'Erithacus rubecula',
               'European Robin',
               0.80,
@@ -1748,6 +1799,43 @@ void main() {
         expect('<cmt>'.allMatches(gpx).length, 1);
       },
     );
+
+    test('GPX tags rejected waypoints distinctly from confirmed ones', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final stamp = DateTime.utc(2025, 6, 15, 9, 30);
+      final session = _makeSession(
+        type: SessionType.survey,
+        detections: [
+          makeReviewed(
+            'Parus major',
+            'Great Tit',
+            0.75,
+            const Duration(seconds: 15),
+            start,
+            reviewStatus: ReviewStatus.rejected,
+            reviewedAt: stamp,
+            lat: 52.54,
+            lon: 13.42,
+          ),
+          makeReviewed(
+            'Erithacus rubecula',
+            'European Robin',
+            0.80,
+            const Duration(seconds: 10),
+            start,
+            lat: 52.53,
+            lon: 13.41,
+          ),
+        ],
+      );
+
+      final gpx = buildGpxExport(session);
+      expect(gpx, contains('<sym>rejected</sym>'));
+      expect(gpx, contains('<cmt>Rejected at 2025-06-15T09:30:00.000Z</cmt>'));
+      expect(gpx, isNot(contains('<sym>confirmed</sym>')));
+      // The unreviewed waypoint stays untagged.
+      expect('<sym>'.allMatches(gpx).length, 1);
+    });
   });
 
   group('heard/seen evidence in exports', () {

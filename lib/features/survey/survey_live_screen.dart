@@ -1071,8 +1071,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 isConfirmed: detection.isConfirmed,
                 onToggleConfirm: () {
                   setState(() {
-                    detection.confirmedAt =
-                        detection.isConfirmed ? null : DateTime.now().toUtc();
+                    if (detection.isConfirmed) {
+                      detection.clearReview();
+                    } else {
+                      detection.markConfirmed();
+                    }
                   });
                 },
                 onShare:

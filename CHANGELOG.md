@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2026-08-10
 
+### Changed
+
+- Exports no longer report an unreviewed detection as if a reviewer had judged its identification wrong. The `Confirmed` (true/false) column in CSV and Raven exports is replaced by `Review Status`, carrying `confirmed`, `rejected` or `unreviewed`, and `Confirmed At (UTC)` becomes `Reviewed At (UTC)`. JSON detections swap the `confirmed` boolean for a `reviewStatus` string plus `reviewedAt`. Scripts that read the old column or key need updating.
+
 ### Added
 
 - New **Adaptive location filter** mode, alongside the existing Location filter and Location weighting. It asks for more confidence the less common a species is at your location, using the same abundance tiers as the Explore screen: abundant species are never filtered, while uncommon or unlisted ones need a high detection score before they show up. Detections that survive keep their original score, unlike Location weighting.

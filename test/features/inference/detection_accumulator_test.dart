@@ -155,7 +155,7 @@ void main() {
   });
 
   test('confidence and close replacements preserve review metadata', () {
-    final confirmedAt = start.add(const Duration(seconds: 1));
+    final reviewedAt = start.add(const Duration(seconds: 1));
     final records = <DetectionRecord>[];
     final accumulator = DetectionAccumulator(
       sessionStart: start,
@@ -170,7 +170,8 @@ void main() {
             commonName: detection.species.commonName,
             confidence: detection.confidence,
             timestamp: timestamp,
-            confirmedAt: confirmedAt,
+            reviewStatus: ReviewStatus.confirmed,
+            reviewedAt: reviewedAt,
             note: 'field note',
             voiceMemoPath: '/memo.m4a',
           ),
@@ -181,7 +182,8 @@ void main() {
     );
     accumulator.closeAll();
 
-    expect(records.single.confirmedAt, confirmedAt);
+    expect(records.single.reviewStatus, ReviewStatus.confirmed);
+    expect(records.single.reviewedAt, reviewedAt);
     expect(records.single.note, 'field note');
     expect(records.single.voiceMemoPath, '/memo.m4a');
   });
