@@ -259,11 +259,27 @@ Het downloaden van offline kaarten is momenteel verborgen zolang BirdNET Live de
 
 - **Uit** — geen geografische filtering
 - **Locatiefilter** — soorten uitsluiten die onder de geografische drempel vallen
+- **Adaptief locatiefilter** — meer zekerheid vragen naarmate een soort hier ongewoner is
 - **Locatieweging** — het geomodel als extra wegingssignaal gebruiken
 
 ### Drempel van het geofilter
 
-Verschijnt wanneer er een filtermodus op basis van locatie actief is.
+Verschijnt wanneer **Locatiefilter** of **Locatieweging** actief is. Het adaptieve filter leidt zijn eigen grens af uit de plaatselijke soortensamenstelling en heeft daarom geen schuifregelaar.
+
+### Hoe het adaptieve filter beslist
+
+Het schaalt de eis met hoe gewoon een soort op jouw locatie is, met dezelfde talrijkheidsniveaus als op het scherm **Ontdekken**. Soorten in het niveau *Talrijk* worden nooit gefilterd; daaronder loopt de vereiste detectiescore gestaag op, en soorten die helemaal niet op de plaatselijke lijst staan hebben ongeveer 0,92 of meer nodig. Alles vanaf 0,99 blijft staan, wat het locatiemodel er ook van vindt.
+
+| Niveau op jouw locatie | Vereiste detectiescore |
+|---|---|
+| Talrijk | elke |
+| Gewoon | ~0,55–0,70 |
+| Regelmatig | ~0,70–0,82 |
+| Ongewoon | ~0,78–0,89 |
+| Schaars / Zeldzaam | ~0,83–0,92 |
+| Niet op de plaatselijke lijst | ~0,92–0,97 |
+
+Omdat de niveaus op rangorde berusten, werkt dit in een soortenrijk tropisch bos net zo als in het Noordpoolgebied. Detecties die blijven staan houden hun oorspronkelijke score — het locatiemodel beslist alleen mee of ze getoond worden. Het doel is minder valse positieven bij ongewone soorten, zonder een echt heldere opname ervan kwijt te raken.
 
 ## Export & synchronisatie
 

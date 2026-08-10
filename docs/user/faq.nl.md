@@ -19,7 +19,7 @@ A: Android (8.0+), iOS (15.0+) en Windows (experimenteel).
 A: Verlaag de betrouwbaarheidsdrempel in de instellingen om meer detecties te zien. Achtergrondgeluid, wind en afstand beïnvloeden de nauwkeurigheid.
 
 **V: Wat doet het soortenfilter?**
-A: Het geomodel voorspelt welke soorten waarschijnlijk zijn op jouw GPS-locatie en in deze tijd van het jaar. Zet **Locatiefilter** aan om onwaarschijnlijke soorten te verbergen, of **Locatieweging** om resultaten te wegen op geografische waarschijnlijkheid.
+A: Het geomodel voorspelt welke soorten waarschijnlijk zijn op jouw GPS-locatie en in deze tijd van het jaar. Zet **Locatiefilter** aan om onwaarschijnlijke soorten te verbergen, **Adaptief locatiefilter** om daarvan alleen de soorten te verbergen waarover ook het audiomodel twijfelt, of **Locatieweging** om resultaten te wegen op geografische waarschijnlijkheid.
 
 **V: Hoe nauwkeurig is de herkenning?**
 A: De nauwkeurigheid hangt af van de opnamekwaliteit, de afstand, het achtergrondgeluid en de soort. Detecties met hoge betrouwbaarheid (>70%) zijn doorgaans betrouwbaar. Controleer zeldzame soorten altijd ook visueel.

@@ -521,6 +521,7 @@ class FileAnalysisController {
       // Parse filter mode.
       final filterMode = switch (speciesFilterMode) {
         'geoExclude' => SpeciesFilterMode.geoExclude,
+        'geoAdaptive' => SpeciesFilterMode.geoAdaptive,
         'geoMerge' => SpeciesFilterMode.geoMerge,
         'customList' => SpeciesFilterMode.customList,
         _ => SpeciesFilterMode.off,

@@ -259,11 +259,27 @@ Las descargas de mapas sin conexión están ocultas por ahora mientras BirdNET L
 
 - **Desactivado** — sin filtrado geográfico
 - **Filtro por ubicación** — excluir especies por debajo del umbral geográfico
+- **Filtro adaptativo por ubicación** — exigir más confianza cuanto menos común sea la especie aquí
 - **Ponderación por ubicación** — usar el geomodelo como señal de ponderación adicional
 
 ### Umbral del filtro geográfico
 
-Aparece cuando hay activo un modo de filtro basado en la ubicación.
+Aparece cuando está activo **Filtro por ubicación** o **Ponderación por ubicación**. El filtro adaptativo deduce su propio listón a partir de la mezcla local de especies, así que no tiene control deslizante.
+
+### Cómo decide el filtro adaptativo
+
+Gradúa la exigencia según lo común que sea una especie en tu ubicación, con los mismos niveles de abundancia que ves en la pantalla **Explorar**. Las especies del nivel *Abundante* no se filtran nunca; por debajo, la puntuación de detección necesaria sube de forma continua, y las especies que ni siquiera están en la lista local necesitan alrededor de 0,92 o más. Todo lo que puntúe 0,99 o más se conserva, diga lo que diga el modelo de ubicación.
+
+| Nivel en tu ubicación | Puntuación de detección necesaria |
+|---|---|
+| Abundante | cualquiera |
+| Común | ~0,55–0,70 |
+| Frecuente | ~0,70–0,82 |
+| Infrecuente | ~0,78–0,89 |
+| Escasa / Rara | ~0,83–0,92 |
+| Fuera de la lista local | ~0,92–0,97 |
+
+Como los niveles se basan en el orden, esto funciona igual en un bosque tropical muy diverso que en el Ártico. Las detecciones que sobreviven conservan su puntuación original: el modelo de ubicación solo decide si se muestran. El objetivo es reducir falsos positivos de especies infrecuentes sin perder una grabación realmente clara de una de ellas.
 
 ## Exportación y sincronización
 

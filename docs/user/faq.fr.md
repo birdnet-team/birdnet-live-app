@@ -19,7 +19,7 @@ R : Android (8.0+), iOS (15.0+) et Windows (expérimental).
 R : Réduisez le seuil de confiance dans les paramètres pour voir plus de détections. Le bruit de fond, le vent et la distance affectent la précision.
 
 **Q : À quoi sert le filtre d'espèces ?**
-R : Le géomodèle prédit quelles espèces sont probables à votre position GPS et à la période de l'année. Activez « Geo Exclusion » pour masquer les espèces improbables, ou « Geo Merge » pour pondérer les résultats par probabilité géographique.
+R : Le géomodèle prédit quelles espèces sont probables à votre position GPS et à la période de l'année. Activez **Filtre par position** pour masquer les espèces improbables, **Filtre adaptatif par position** pour ne masquer que celles dont le modèle audio n'est pas sûr non plus, ou **Pondération par position** pour pondérer les résultats par probabilité géographique.
 
 **Q : Quelle est la précision de l'identification ?**
 R : La précision dépend de la qualité de l’enregistrement, de la distance, du bruit de fond et de l’espèce. Les détections de confiance élevée (> 70 %) sont généralement fiables. Vérifiez toujours visuellement les espèces rares.

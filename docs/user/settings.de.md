@@ -258,11 +258,27 @@ Offline-Karten-Downloads sind derzeit ausgeblendet, solange BirdNET Live den öf
 
 - **Aus** – keine geografische Filterung
 - **Standortfilter** – Arten ausschließen, die unter dem geografischen Schwellenwert liegen
+- **Adaptiver Standortfilter** – umso mehr Sicherheit verlangen, je seltener eine Art hier ist
 - **Standortgewichtung** – das Geo-Modell als zusätzliches Gewichtungssignal verwenden
 
 ### Geofilter-Schwellenwert
 
-Erscheint, wenn ein standortbasierter Filtermodus aktiv ist.
+Erscheint, wenn **Standortfilter** oder **Standortgewichtung** aktiv ist. Der adaptive Filter ermittelt seine Grenze selbst aus der örtlichen Artenzusammensetzung und hat deshalb keinen Regler.
+
+### Wie der adaptive Filter entscheidet
+
+Er staffelt die Anforderung danach, wie häufig eine Art an Ihrem Standort ist, und nutzt dieselben Häufigkeitsstufen wie der **Entdecken**-Bildschirm. Arten der Stufe *Zahlreich* werden nie gefiltert; darunter steigt der nötige Detektions-Score stetig an, und Arten, die gar nicht auf der örtlichen Liste stehen, brauchen etwa 0,92 oder mehr. Alles ab 0,99 bleibt erhalten, ganz gleich was das Standortmodell sagt.
+
+| Stufe an Ihrem Standort | Nötiger Detektions-Score |
+|---|---|
+| Zahlreich | beliebig |
+| Häufig | ~0,55–0,70 |
+| Verbreitet | ~0,70–0,82 |
+| Mäßig | ~0,78–0,89 |
+| Selten / Rar | ~0,83–0,92 |
+| Nicht auf der örtlichen Liste | ~0,92–0,97 |
+
+Da die Stufen auf Rängen beruhen, verhält sich das im artenreichen Tropenwald genauso wie in der Arktis. Detektionen, die durchkommen, behalten ihren ursprünglichen Score – das Standortmodell entscheidet nur mit, ob sie angezeigt werden. Ziel ist, Falschmeldungen bei seltenen Arten zu verringern, ohne eine wirklich klare Aufnahme davon zu verlieren.
 
 ## Export & Sync
 

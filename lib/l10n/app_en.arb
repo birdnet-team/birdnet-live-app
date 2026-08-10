@@ -1051,6 +1051,10 @@
   "@settingsFilterGeoExclude": {
     "description": "Geo-exclude filter option"
   },
+  "settingsFilterGeoAdaptive": "Adaptive location filter",
+  "@settingsFilterGeoAdaptive": {
+    "description": "Adaptive geo filter option"
+  },
   "settingsFilterGeoMerge": "Location weighting",
   "@settingsFilterGeoMerge": {
     "description": "Geo-merge filter option"
@@ -2357,7 +2361,7 @@
   "@settingsHelpUseGps": {
     "description": "Help text for use GPS setting"
   },
-  "settingsHelpSpeciesFilter": "Restrict detections by geographic likelihood using the on-device location model. 'Location filter' hides species below the threshold; 'Location weighting' multiplies detection scores by the location prior.",
+  "settingsHelpSpeciesFilter": "Restrict detections by geographic likelihood using the on-device location model. 'Location filter' hides species below the threshold. 'Adaptive location filter' asks for more confidence the less common a species is here — abundant species are never filtered, uncommon ones need a high score — using the same abundance tiers as the Explore screen. 'Location weighting' multiplies detection scores by the location prior.",
   "@settingsHelpSpeciesFilter": {
     "description": "Help text for species filter setting"
   },

@@ -258,11 +258,27 @@ Os downloads de mapas offline estão ocultos por enquanto, enquanto o BirdNET Li
 
 - **Desativado** — sem filtragem geográfica
 - **Filtro por localização** — excluir espécies abaixo do limite geográfico
+- **Filtro adaptativo por localização** — exigir mais confiança quanto menos comum for a espécie aqui
 - **Ponderação por localização** — usar o geomodelo como sinal de ponderação adicional
 
 ### Limite do geofiltro
 
-Aparece quando um modo de filtro baseado em localização está ativo.
+Aparece quando **Filtro por localização** ou **Ponderação por localização** está ativo. O filtro adaptativo deduz o seu próprio limite a partir da composição local de espécies, pelo que não tem cursor.
+
+### Como o filtro adaptativo decide
+
+Gradua a exigência conforme a frequência de uma espécie na sua localização, usando os mesmos níveis de abundância que vê no ecrã **Explorar**. As espécies do nível *Abundante* nunca são filtradas; abaixo disso a pontuação de deteção necessária sobe de forma contínua, e as espécies que nem constam da lista local precisam de cerca de 0,92 ou mais. Tudo o que atinja 0,99 é mantido, diga o que disser o modelo de localização.
+
+| Nível na sua localização | Pontuação de deteção necessária |
+|---|---|
+| Abundante | qualquer |
+| Comum | ~0,55–0,70 |
+| Frequente | ~0,70–0,82 |
+| Incomum | ~0,78–0,89 |
+| Escassa / Rara | ~0,83–0,92 |
+| Fora da lista local | ~0,92–0,97 |
+
+Como os níveis assentam na ordenação, isto comporta-se da mesma forma numa floresta tropical rica em espécies e no Ártico. As deteções que sobrevivem mantêm a pontuação original — o modelo de localização apenas decide se são mostradas. O objetivo é reduzir falsos positivos de espécies incomuns sem perder uma gravação verdadeiramente nítida de uma delas.
 
 ## Exportação e sincronização
 

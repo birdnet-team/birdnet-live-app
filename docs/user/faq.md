@@ -19,7 +19,7 @@ A: Android (8.0+), iOS (15.0+), and Windows (experimental).
 A: Lower the confidence threshold in Settings to see more detections. Background noise, wind, and distance affect accuracy.
 
 **Q: What does the species filter do?**
-A: The geo-model predicts which species are likely at your GPS location and time of year. Enable **Location filter** to hide unlikely species, or **Location weighting** to weight results by geographic probability.
+A: The geo-model predicts which species are likely at your GPS location and time of year. Enable **Location filter** to hide unlikely species, **Adaptive location filter** to hide only the unlikely ones the audio model is also unsure about, or **Location weighting** to weight results by geographic probability.
 
 **Q: How accurate is the identification?**
 A: Accuracy depends on recording quality, distance, background noise, and the species. High-confidence detections (>70%) are generally reliable. Always verify rare species visually.

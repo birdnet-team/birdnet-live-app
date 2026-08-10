@@ -260,11 +260,27 @@ I download di mappe offline sono attualmente nascosti finché BirdNET Live usa i
 
 - **Disattivato** — nessun filtro geografico
 - **Filtro per posizione** — escludi le specie sotto la soglia geografica
+- **Filtro adattivo per posizione** — richiedere tanta più certezza quanto meno comune è la specie qui
 - **Ponderazione per posizione** — usa il geo-modello come segnale di ponderazione aggiuntivo
 
 ### Soglia del geo-filtro
 
-Compare quando è attiva una modalità di filtro basata sulla posizione.
+Compare quando è attivo **Filtro per posizione** o **Ponderazione per posizione**. Il filtro adattivo ricava da sé la propria soglia dalla composizione locale delle specie, quindi non ha un cursore.
+
+### Come decide il filtro adattivo
+
+Gradua la richiesta in base a quanto è comune una specie nella tua posizione, usando gli stessi livelli di abbondanza che vedi nella schermata **Esplora**. Le specie del livello *Abbondante* non vengono mai filtrate; sotto di esso il punteggio di rilevamento necessario sale progressivamente, e le specie che non figurano affatto nell'elenco locale richiedono circa 0,92 o più. Tutto ciò che raggiunge 0,99 viene mantenuto, qualunque cosa dica il modello di localizzazione.
+
+| Livello nella tua posizione | Punteggio di rilevamento necessario |
+|---|---|
+| Abbondante | qualsiasi |
+| Comune | ~0,55–0,70 |
+| Frequente | ~0,70–0,82 |
+| Insolita | ~0,78–0,89 |
+| Scarsa / Rara | ~0,83–0,92 |
+| Fuori dall'elenco locale | ~0,92–0,97 |
+
+Poiché i livelli si basano sulla posizione in classifica, il comportamento è lo stesso in una foresta tropicale ricchissima e nell'Artico. Le rilevazioni che sopravvivono conservano il punteggio originale: il modello di localizzazione decide solo se mostrarle. L'obiettivo è ridurre i falsi positivi sulle specie insolite senza perdere una registrazione davvero nitida di una di esse.
 
 ## Esportazione e sincronizzazione
 

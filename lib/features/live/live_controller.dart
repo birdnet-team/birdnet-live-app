@@ -504,6 +504,7 @@ class LiveController {
     _geoModelSpeciesNames = geoModelSpeciesNames;
     _filterMode = switch (speciesFilterMode) {
       'geoExclude' => SpeciesFilterMode.geoExclude,
+      'geoAdaptive' => SpeciesFilterMode.geoAdaptive,
       'geoMerge' => SpeciesFilterMode.geoMerge,
       'customList' => SpeciesFilterMode.customList,
       _ => SpeciesFilterMode.off,

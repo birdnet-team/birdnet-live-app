@@ -690,12 +690,16 @@ class SettingsScreen extends ConsumerWidget {
                 options: {
                   'off': l10n.settingsFilterOff,
                   'geoExclude': l10n.settingsFilterGeoExclude,
+                  'geoAdaptive': l10n.settingsFilterGeoAdaptive,
                   'geoMerge': l10n.settingsFilterGeoMerge,
                 },
                 onChanged:
                     (v) => ref.read(speciesFilterModeProvider.notifier).set(v),
               ),
-              if (ref.watch(speciesFilterModeProvider) != 'off')
+              // Adaptive mode derives its own bar from the local score
+              // distribution, so the manual threshold does not apply there.
+              if (ref.watch(speciesFilterModeProvider) != 'off' &&
+                  ref.watch(speciesFilterModeProvider) != 'geoAdaptive')
                 _SliderTile(
                   title: l10n.settingsGeoThreshold,
                   helpBody: l10n.settingsHelpGeoThreshold,
