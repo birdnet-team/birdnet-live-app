@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-08-10
+
+### Added
+
+- New **Adaptive location filter** mode, alongside the existing Location filter and Location weighting. It asks for more confidence the less common a species is at your location, using the same abundance tiers as the Explore screen: abundant species are never filtered, while uncommon or unlisted ones need a high detection score before they show up. Detections that survive keep their original score, unlike Location weighting.
+
 ## [1.1.0] - 2026-08-07
 
 ### Changed
