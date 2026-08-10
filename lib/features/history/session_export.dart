@@ -258,9 +258,9 @@ String buildRavenSelectionTable(
   // detections back to the survey timeline. We always emit it: when no clips
   // are involved it duplicates Begin Time, but having a stable column name
   // makes downstream tooling simpler than conditionally including it.
-  // 'Confirmed' / 'Confirmed At (UTC)' are likewise always emitted so the
-  // schema is stable regardless of whether the session has any confirmed
-  // detections; unconfirmed rows carry an empty 'Confirmed At'.
+  // 'Review Status' / 'Reviewed At (UTC)' are likewise always emitted so the
+  // schema is stable regardless of whether the session has any reviewed
+  // detections; unreviewed rows carry an empty 'Reviewed At'.
   final surveyTimeHeader =
       useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
   buf.writeln(
@@ -269,7 +269,7 @@ String buildRavenSelectionTable(
     'Low Freq (Hz)\tHigh Freq (Hz)\t'
     'Common Name\tScientific Name\tConfidence'
     '\t$surveyTimeHeader'
-    '\tConfirmed\tConfirmed At (UTC)'
+    '\tReview Status\tReviewed At (UTC)'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}'
     '${hasEvidence ? '\tEvidence' : ''}'
     '${hasNotes ? '\tNote' : ''}',
@@ -329,9 +329,9 @@ String buildRavenSelectionTable(
             ? d.timestamp.toUtc().toIso8601String()
             : surveySec.toStringAsFixed(3);
     final surveyTimeSuffix = '\t$surveyTimeValue';
-    final confirmedSuffix =
-        '\t${d.isConfirmed ? 'true' : 'false'}'
-        '\t${d.confirmedAt?.toUtc().toIso8601String() ?? ''}';
+    final reviewSuffix =
+        '\t${d.reviewStatus.name}'
+        '\t${d.reviewedAt?.toUtc().toIso8601String() ?? ''}';
     final coordSuffix =
         hasCoords
             ? '\t${d.latitude?.toStringAsFixed(6) ?? ''}'
@@ -360,7 +360,7 @@ String buildRavenSelectionTable(
       '${_displaySci(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
       '$surveyTimeSuffix'
-      '$confirmedSuffix'
+      '$reviewSuffix'
       '$coordSuffix'
       '$evidenceSuffix'
       '$noteSuffix',
@@ -407,9 +407,9 @@ String buildCsvExport(
   // Survey Time is always included (see [buildRavenSelectionTable] for the
   // rationale). When [useAbsoluteSurveyTime] is true the column becomes
   // 'Survey Time (UTC)' and carries an ISO-8601 wall-clock timestamp.
-  // 'Confirmed' / 'Confirmed At (UTC)' are always emitted so downstream
-  // pipelines see a stable schema; unconfirmed rows carry an empty
-  // 'Confirmed At'.
+  // 'Review Status' / 'Reviewed At (UTC)' are always emitted so downstream
+  // pipelines see a stable schema; unreviewed rows carry an empty
+  // 'Reviewed At'.
   final surveyTimeHeader =
       useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
   buf.writeln(
@@ -417,7 +417,7 @@ String buildCsvExport(
     'Common Name,Scientific Name,Confidence'
     '${hasFileRefs ? ',File' : ''}'
     ',$surveyTimeHeader'
-    ',Confirmed,Confirmed At (UTC)'
+    ',Review Status,Reviewed At (UTC)'
     '${hasCoords ? ',Latitude,Longitude' : ''}'
     '${hasEvidence ? ',Evidence' : ''}'
     '${hasNotes ? ',Note' : ''}'
@@ -478,9 +478,9 @@ String buildCsvExport(
             ? d.timestamp.toUtc().toIso8601String()
             : surveySec.toStringAsFixed(3);
     final surveyTimeRef = ',$surveyTimeValue';
-    final confirmedRef =
-        ',${d.isConfirmed ? 'true' : 'false'}'
-        ',${d.confirmedAt?.toUtc().toIso8601String() ?? ''}';
+    final reviewRef =
+        ',${d.reviewStatus.name}'
+        ',${d.reviewedAt?.toUtc().toIso8601String() ?? ''}';
     final coordRef =
         hasCoords
             ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
@@ -502,7 +502,7 @@ String buildCsvExport(
       '${d.confidence.toStringAsFixed(4)}'
       '$fileRef'
       '$surveyTimeRef'
-      '$confirmedRef'
+      '$reviewRef'
       '$coordRef'
       '$evidenceRef'
       '$noteRef'
@@ -837,9 +837,12 @@ String buildJsonExport(
             if (d.longitude != null) 'longitude': d.longitude,
             if (d.source != DetectionSource.auto) 'source': d.source.name,
             if (d.evidence != null) 'evidence': d.evidence!.name,
-            'confirmed': d.isConfirmed,
-            if (d.confirmedAt != null)
-              'confirmedAt': d.confirmedAt!.toUtc().toIso8601String(),
+            // Always emitted so the schema is stable, and three-valued so an
+            // untouched detection reads as 'unreviewed' rather than claiming
+            // a reviewer judged the identification wrong.
+            'reviewStatus': d.reviewStatus.name,
+            if (d.reviewedAt != null)
+              'reviewedAt': d.reviewedAt!.toUtc().toIso8601String(),
             if (d.hasNote) 'note': d.note,
             if (d.hasVoiceMemo)
               'voiceMemo': 'memos/${p.basename(d.voiceMemoPath!)}',
@@ -1526,16 +1529,21 @@ String buildGpxExport(
     buf.writeln(
       '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
     );
-    if (d.isConfirmed) {
+    if (d.isReviewed) {
       // GPX <sym> is a free-form symbol hint; downstream tools (QGIS,
       // GPSBabel, Garmin BaseCamp) treat unknown values as a tag rather
-      // than failing to load the waypoint, so 'confirmed' here doubles as
-      // a filterable attribute. The <cmt> note carries the confirmation
-      // timestamp so the audit trail survives the export.
-      buf.writeln('    <sym>confirmed</sym>');
-      buf.writeln(
-        '    <cmt>Confirmed at ${d.confirmedAt!.toUtc().toIso8601String()}</cmt>',
-      );
+      // than failing to load the waypoint, so the status here doubles as
+      // a filterable attribute. The <cmt> note carries the review
+      // timestamp so the audit trail survives the export. Unreviewed
+      // waypoints get neither tag — absence is the honest encoding of
+      // "nobody has judged this".
+      final verb = d.isConfirmed ? 'Confirmed' : 'Rejected';
+      buf.writeln('    <sym>${d.reviewStatus.name}</sym>');
+      if (d.reviewedAt != null) {
+        buf.writeln(
+          '    <cmt>$verb at ${d.reviewedAt!.toUtc().toIso8601String()}</cmt>',
+        );
+      }
     }
     buf.writeln('  </wpt>');
   }

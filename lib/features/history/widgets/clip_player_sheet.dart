@@ -290,7 +290,11 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
   void _toggleConfirm() {
     final det = widget.detection;
     setState(() {
-      det.confirmedAt = det.isConfirmed ? null : DateTime.now().toUtc();
+      if (det.isConfirmed) {
+        det.clearReview();
+      } else {
+        det.markConfirmed();
+      }
     });
     widget.onConfirmChanged?.call();
   }
