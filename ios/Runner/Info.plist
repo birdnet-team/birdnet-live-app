@@ -61,5 +61,36 @@
 		<string>audio</string>
 		<string>location</string>
 	</array>
+	<!-- Puts BirdNET Live in Files' "Open With" for audio recordings, and
+	     covers share sources that hand over a document rather than going
+	     through the extension. The document arrives as a
+	     copy in Documents/Inbox; AppDelegate moves it into the temporary
+	     directory and hands the path to File Analysis.
+	     LSSupportsOpeningDocumentsInPlace stays false: analysis reads the file
+	     repeatedly, so a copy we own is safer than a reference to a document
+	     the source app may move or delete mid-run. -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Audio Recording</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.audio</string>
+				<string>public.mp3</string>
+				<string>public.mpeg-4-audio</string>
+				<string>com.microsoft.waveform-audio</string>
+				<string>public.aifc-audio</string>
+				<string>org.xiph.flac</string>
+				<string>org.xiph.ogg</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

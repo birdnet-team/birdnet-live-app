@@ -511,6 +511,7 @@ nav:
   - Inference Engine: developer/inference-engine.md
   - Spectrogram: developer/spectrogram.md
   - Localization: developer/localization.md
+  - Share Targets: developer/share-targets.md
   - Storage: developer/database.md
   - API Integration: developer/api-integration.md
   - Releasing: developer/releasing.md

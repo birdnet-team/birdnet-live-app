@@ -6,6 +6,10 @@ L'Analyse de fichiers traite un enregistrement existant via le même pipeline Bi
 
 Depuis l'accueil, appuyez sur la carte **Analyse de fichiers** avec l'icône :material-file-music:.
 
+### Depuis une autre application
+
+Vous pouvez aussi transmettre un enregistrement depuis une autre application. Sur Android, partager un fichier audio avec **BirdNET Live** ou choisir **Ouvrir avec** ouvre immédiatement l'Analyse de fichiers. Sur iOS, **Ouvrir avec** est également immédiat ; après avoir utilisé la feuille de partage, ouvrez BirdNET Live ou revenez-y pour que l'enregistrement en attente soit sélectionné automatiquement. Avant l'analyse, l'application copie l'enregistrement dans son propre stockage temporaire.
+
 ## Barre supérieure
 
 - :material-tune: — ouvrir les paramètres de l'Analyse de fichiers

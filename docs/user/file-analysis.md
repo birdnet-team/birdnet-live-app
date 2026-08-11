@@ -6,6 +6,10 @@ File Analysis processes an existing recording through the same BirdNET pipeline 
 
 From Home, tap the **File Analysis** card with the :material-file-music: icon.
 
+### From another app
+
+You can also hand a recording to BirdNET Live from somewhere else. On Android, sharing an audio file with **BirdNET Live** or choosing **Open With** opens File Analysis immediately. On iOS, **Open With** is also immediate; after using the share sheet, open or return to BirdNET Live and the pending recording is selected automatically. The app copies the recording into its own temporary storage before analysis.
+
 ## App Bar
 
 - :material-tune: — open File Analysis settings

@@ -6,6 +6,10 @@ L'Analisi file elabora una registrazione esistente attraverso la stessa pipeline
 
 Dalla Home, tocca la scheda **Analisi file** con l'icona :material-file-music:.
 
+### Da un'altra app
+
+Puoi anche inviare una registrazione da un'altra app. Su Android, condividere un file audio con **BirdNET Live** o scegliere **Apri con** apre subito l'Analisi file. Su iOS, anche **Apri con** è immediato; dopo aver usato il menu di condivisione, apri BirdNET Live o torna all'app e la registrazione in attesa verrà selezionata automaticamente. Prima dell'analisi, l'app copia la registrazione nel proprio spazio di archiviazione temporaneo.
+
 ## Barra dell'app
 
 - :material-tune: — apre le impostazioni di Analisi file

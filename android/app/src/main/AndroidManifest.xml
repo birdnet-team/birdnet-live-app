@@ -38,9 +38,35 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Audio ACTION_VIEW intents are handled by MainActivity's
+                 shared-media channel, not Flutter's URL router. Without this,
+                 the embedding treats content:// audio URIs as named routes. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false"
+              />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- "Share with BirdNET Live" for audio files: the share sheet of a
+                 recorder, file manager, or messaging app hands us a content://
+                 URI, MainActivity copies it into the cache, and Dart opens File
+                 Analysis on it. Deliberately limited to audio/*: file managers
+                 that share every file as application/octet-stream would
+                 otherwise put us in the share sheet for PDFs and ZIPs too. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="audio/*"/>
+            </intent-filter>
+            <!-- "Open with BirdNET Live" from a file manager. Same handling as
+                 the share above. No BROWSABLE category: a web page must not be
+                 able to launch File Analysis. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="audio/*"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

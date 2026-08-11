@@ -6,6 +6,10 @@ Analýza souborů zpracovává existující nahrávku prostřednictvím stejnéh
 
 Na domovské stránce klepněte na kartu **Analýza souborů** s ikonou :material-file-music:.
 
+### Z jiné aplikace
+
+Nahrávku můžete předat i odjinud. V systému Android se po sdílení zvukového souboru s aplikací **BirdNET Live** nebo volbě **Otevřít v** ihned otevře Analýza souborů. V systému iOS funguje volba **Otevřít v** také okamžitě; po použití nabídky sdílení otevřete BirdNET Live nebo se do aplikace vraťte a čekající nahrávka se vybere automaticky. Před analýzou aplikace zkopíruje nahrávku do vlastního dočasného úložiště.
+
 ## Lišta aplikací
 
 - :material-tune: — otevřete nastavení analýzy souborů

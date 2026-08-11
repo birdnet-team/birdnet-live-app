@@ -11,6 +11,8 @@ import 'core/constants/app_constants.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/survey/survey_notification.dart';
 import 'shared/providers/app_providers.dart';
+import 'shared/services/quick_action_service.dart';
+import 'shared/services/shared_media_service.dart';
 import 'shared/widgets/open_street_map_tile_layer.dart';
 
 Future<void> main() async {
@@ -31,6 +33,14 @@ Future<void> main() async {
       systemNavigationBarContrastEnforced: false,
     ),
   );
+
+  // A share or a Quick Listen widget tap that launched the app is read before
+  // the first frame, so the app can open straight into the screen it is being
+  // sent to instead of painting Home and immediately navigating away from it.
+  // Started here and awaited just below so the channel round trips overlap the
+  // preference work.
+  final launchShareRead = _readLaunchShare();
+  final launchQuickActionRead = _readLaunchQuickAction();
 
   // Initialize SharedPreferences before running the app.
   final prefs = await SharedPreferences.getInstance();
@@ -79,10 +89,41 @@ Future<void> main() async {
     );
   }
 
+  final launchSharedFile = await launchShareRead;
+  final launchQuickAction = await launchQuickActionRead;
+
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const App(),
+      child: App(
+        launchSharedFile: launchSharedFile,
+        launchQuickAction: launchQuickAction,
+      ),
     ),
   );
+}
+
+/// Reads a share that launched the app, if there is one.
+///
+/// Never throws: a failure here only means the in-app listener delivers the
+/// file the ordinary way, one frame later, instead of the app opening on it.
+Future<SharedAudioFile?> _readLaunchShare() async {
+  try {
+    return await SharedMediaService.takePendingSharedFile();
+  } catch (error, stackTrace) {
+    debugPrint('Could not read the launch share: $error\n$stackTrace');
+    return null;
+  }
+}
+
+/// Reads a Quick Listen widget tap that launched the app, if there is one.
+///
+/// Never throws, for the same reason as [_readLaunchShare].
+Future<String?> _readLaunchQuickAction() async {
+  try {
+    return await QuickActionService.takePendingNativeAction();
+  } catch (error, stackTrace) {
+    debugPrint('Could not read the launch widget tap: $error\n$stackTrace');
+    return null;
+  }
 }

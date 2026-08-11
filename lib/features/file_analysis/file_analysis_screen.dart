@@ -39,6 +39,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/quick_action_service.dart';
+import '../../shared/services/shared_media_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/map_picker_screen.dart';
@@ -54,9 +55,34 @@ import '../settings/settings_screen.dart';
 import 'file_analysis_controller.dart';
 import 'file_analysis_providers.dart';
 
+/// Tracks mounted File Analysis routes so a shared audio file can replace the
+/// screen the user already has open instead of stacking another one on top.
+abstract final class FileAnalysisScreenPresence {
+  static final Set<Route<dynamic>> _routes = <Route<dynamic>>{};
+
+  /// Prefer the visible route, then the most recently mounted route.
+  static Route<dynamic>? get mountedRoute {
+    for (final route in _routes.toList().reversed) {
+      if (route.isCurrent) return route;
+    }
+    if (_routes.isEmpty) return null;
+    return _routes.last;
+  }
+
+  static void register(Route<dynamic> route) => _routes.add(route);
+
+  static void unregister(Route<dynamic> route) => _routes.remove(route);
+}
+
 /// File analysis wizard screen.
 class FileAnalysisScreen extends ConsumerStatefulWidget {
-  const FileAnalysisScreen({super.key});
+  const FileAnalysisScreen({super.key, this.sharedFile});
+
+  /// An audio file handed to the app from another app's share sheet.
+  ///
+  /// When set, the screen imports and inspects it on open so step 1 starts
+  /// filled in, instead of waiting for the user to pick a file.
+  final SharedAudioFile? sharedFile;
 
   @override
   ConsumerState<FileAnalysisScreen> createState() => _FileAnalysisScreenState();
@@ -65,6 +91,7 @@ class FileAnalysisScreen extends ConsumerStatefulWidget {
 class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   final PageController _pageController = PageController();
   final Object _quickListenSafetyOwner = Object();
+  Route<dynamic>? _presenceRoute;
   int _currentStep = 0;
 
   // ── Step 1: File ──────────────────────────────────────────────────────
@@ -141,10 +168,35 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     _sensitivity = 1.0;
     _confidenceThreshold = 35;
     _speciesFilterMode = 'off';
+
+    final sharedFile = widget.sharedFile;
+    if (sharedFile != null) {
+      _isInspecting = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_loadSharedFile(sharedFile));
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route == null || identical(route, _presenceRoute)) return;
+    final previousRoute = _presenceRoute;
+    if (previousRoute != null) {
+      FileAnalysisScreenPresence.unregister(previousRoute);
+    }
+    _presenceRoute = route;
+    FileAnalysisScreenPresence.register(route);
   }
 
   @override
   void dispose() {
+    final presenceRoute = _presenceRoute;
+    if (presenceRoute != null) {
+      FileAnalysisScreenPresence.unregister(presenceRoute);
+    }
     QuickListenSafety.unregisterIncompatibleSessionOwner(
       _quickListenSafetyOwner,
     );
@@ -204,28 +256,22 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       );
 
       if (result == null || result.files.isEmpty) {
-        setState(() => _isInspecting = false);
+        if (mounted) setState(() => _isInspecting = false);
         return;
       }
       final path = result.files.first.path;
       if (path == null) {
-        setState(() => _isInspecting = false);
+        if (mounted) setState(() => _isInspecting = false);
         return;
       }
+      if (!mounted) return;
 
       setState(() {
         _filePath = path;
         _fileInfo = null;
       });
 
-      final controller = ref.read(fileAnalysisControllerProvider);
-      final info = await controller.inspectFile(path);
-      if (mounted) {
-        setState(() {
-          _fileInfo = info;
-          _isInspecting = false;
-        });
-      }
+      await _inspect(path);
     } catch (e) {
       debugPrint('[FileAnalysis] file inspection failed: $e');
       if (mounted) {
@@ -235,6 +281,44 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         );
       }
     }
+  }
+
+  /// Imports a file another app shared with us, then inspects it like a
+  /// picked one. The copy runs here rather than during the hand-off so the
+  /// step-1 spinner covers it — a long recording takes seconds to import.
+  Future<void> _loadSharedFile(SharedAudioFile sharedFile) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final path = await SharedMediaService.importSharedFile(sharedFile);
+      if (!mounted) return;
+      setState(() {
+        _filePath = path;
+        _fileInfo = null;
+      });
+      await _inspect(path);
+    } catch (e) {
+      debugPrint('[FileAnalysis] shared file import failed: $e');
+      // A successful import releases the staging copy itself; a failed one has
+      // to, or the abandoned hand-off stays on disk with no way back to it.
+      unawaited(SharedMediaService.discardSharedFile(sharedFile));
+      if (mounted) {
+        setState(() => _isInspecting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.fileAnalysisCouldNotProcessFile)),
+        );
+      }
+    }
+  }
+
+  /// Reads metadata for [path] and finishes the step-1 loading state.
+  Future<void> _inspect(String path) async {
+    final controller = ref.read(fileAnalysisControllerProvider);
+    final info = await controller.inspectFile(path);
+    if (!mounted) return;
+    setState(() {
+      _fileInfo = info;
+      _isInspecting = false;
+    });
   }
 
   // ── Location ──────────────────────────────────────────────────────────
