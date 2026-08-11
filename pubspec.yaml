@@ -76,7 +76,7 @@ dependencies:
   material_symbols_icons: ^4.2928.1
 
   # Dynamic theming
-  dynamic_color: ^1.7.0
+  dynamic_color: ^1.9.0
 
   # Network & Images
   http: ^1.2.2
