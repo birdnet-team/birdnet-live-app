@@ -403,19 +403,20 @@ Future<void> _createAppGalleryIcon(Directory root, File destination) async {
     '-NoProfile',
     '-Command',
     r'Add-Type -AssemblyName System.Drawing; '
-        r'$background = [System.Drawing.Image]::FromFile($args[0]); '
-        r'$foreground = [System.Drawing.Image]::FromFile($args[1]); '
+        r'$background = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_BACKGROUND); '
+        r'$foreground = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_FOREGROUND); '
         r'$icon = New-Object System.Drawing.Bitmap 512, 512; '
         r'$graphics = [System.Drawing.Graphics]::FromImage($icon); '
         r'$graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; '
         r'$graphics.DrawImage($background, 0, 0, 512, 512); '
         r'$graphics.DrawImage($foreground, 0, 0, 512, 512); '
-        r'$icon.Save($args[2], [System.Drawing.Imaging.ImageFormat]::Png); '
+        r'$icon.Save($env:BIRDNET_ICON_DESTINATION, [System.Drawing.Imaging.ImageFormat]::Png); '
         r'$graphics.Dispose(); $icon.Dispose(); $foreground.Dispose(); $background.Dispose()',
-    background.path,
-    foreground.path,
-    destination.path,
-  ]);
+  ], environment: {
+    'BIRDNET_ICON_BACKGROUND': background.path,
+    'BIRDNET_ICON_FOREGROUND': foreground.path,
+    'BIRDNET_ICON_DESTINATION': destination.path,
+  });
   if (result.exitCode != 0 || !destination.existsSync()) {
     stderr.writeln('ERROR: could not create 512 px AppGallery icon.');
     if (result.stderr.toString().isNotEmpty) stderr.writeln(result.stderr);
