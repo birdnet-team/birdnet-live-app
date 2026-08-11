@@ -101,6 +101,14 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   final Object _quickListenSafetyOwner = Object();
 
+  /// The long-lived Live controller, resolved once in [initState].
+  ///
+  /// `ref` is unusable from [dispose] — Riverpod throws, because the element is
+  /// already deactivated by then — and the listener this screen installs has to
+  /// be cleared there. The provider is never invalidated, so the instance held
+  /// here cannot go stale.
+  late final LiveController _liveController;
+
   /// Remaining time in the countdown (updated every second).
   late final ValueNotifier<Duration> _remainingNotifier;
 
@@ -125,7 +133,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       Duration(minutes: widget.durationMinutes),
     );
 
-    final controller = ref.read(liveControllerProvider);
+    _liveController = ref.read(liveControllerProvider);
+    final controller = _liveController;
     controller.onStateChanged = _onControllerStateChanged;
 
     // Start session after the first frame.
@@ -401,9 +410,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
     // Clear the state-change callback on the long-lived controller to avoid calling
     // updates on a defunct/disposed widget state.
-    final controller = ref.read(liveControllerProvider);
-    if (controller.onStateChanged == _onControllerStateChanged) {
-      controller.onStateChanged = null;
+    if (_liveController.onStateChanged == _onControllerStateChanged) {
+      _liveController.onStateChanged = null;
     }
 
     WakelockService.disable();

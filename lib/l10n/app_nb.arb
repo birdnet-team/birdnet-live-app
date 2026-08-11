@@ -28,6 +28,8 @@
   "done": "Ferdig",
   "quickListenBlockedTitle": "Avslutt den aktive økten først",
   "quickListenBlockedMessage": "Du kan ikke bruke «Lytt nå» mens {mode} kjører eller starter. Stopp denne økten først, og trykk deretter på modulen på nytt.",
+  "sharedAudioBusyTitle": "Økten pågår",
+  "sharedAudioBusyMessage": "Vent til den pågående {mode}-økten er ferdig, og del opptaket på nytt.",
   "termsOfUseTitle": "Retningslinjer for akseptabel bruk",
   "privacyPolicyTitle": "Personvernerklæring",
   "acceptTerms": "Godta",

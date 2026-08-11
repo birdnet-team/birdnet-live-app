@@ -6,6 +6,10 @@ Die Dateianalyse verarbeitet eine vorhandene Aufnahme über dieselbe BirdNET-Pip
 
 Tippen Sie auf der Startseite auf die Karte **Dateianalyse** mit dem Symbol :material-file-music:.
 
+### Aus einer anderen App
+
+Sie können eine Aufnahme auch aus einer anderen App übergeben. Unter Android öffnet das Teilen einer Audiodatei mit **BirdNET Live** oder **Öffnen mit** sofort die Dateianalyse. Unter iOS funktioniert **Öffnen mit** ebenfalls sofort; öffnen Sie BirdNET Live nach dem Teilen-Menü oder kehren Sie dorthin zurück, damit die wartende Aufnahme automatisch ausgewählt wird. Vor der Analyse kopiert die App die Aufnahme in ihren eigenen temporären Speicher.
+
 ## App-Leiste
 
 - :material-tune: — Dateianalyse-Einstellungen öffnen

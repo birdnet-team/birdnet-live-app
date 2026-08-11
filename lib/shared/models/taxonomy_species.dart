@@ -191,6 +191,10 @@ class TaxonomySpecies {
     // Chinese app locale produces) or a Traditional tag would otherwise miss
     // every column and fall back to the English common name.
     if (parts.first == 'zh') yield 'zh-CN';
+
+    // Norwegian names live in `no`, but Bokmål is registered as `nb`
+    // and Nynorsk `nn`.
+    if (parts.first == 'nb' || parts.first == 'nn') yield 'no';
   }
 
   // ---------------------------------------------------------------------------
