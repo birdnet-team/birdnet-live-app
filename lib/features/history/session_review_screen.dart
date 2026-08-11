@@ -2672,7 +2672,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                         ? DetectionSource.userSpecified
                         : DetectionSource.manual,
                 evidence: result.evidence,
-                confirmedAt: result.replaceRecord!.confirmedAt,
+                reviewStatus: result.replaceRecord!.reviewStatus,
+                reviewedAt: result.replaceRecord!.reviewedAt,
                 note: result.replaceRecord!.note,
                 voiceMemoPath: result.replaceRecord!.voiceMemoPath,
                 latitude: result.replaceRecord!.latitude,
@@ -3055,10 +3056,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   /// timestamp so they group cleanly in exports.
   void _toggleClusterConfirmation(_DetectionCluster cluster) {
     final anyConfirmed = cluster.records.any((r) => r.isConfirmed);
-    final stamp = anyConfirmed ? null : DateTime.now().toUtc();
+    final stamp = DateTime.now().toUtc();
     setState(() {
       for (final r in cluster.records) {
-        r.confirmedAt = stamp;
+        if (anyConfirmed) {
+          r.clearReview();
+        } else {
+          r.markConfirmed(at: stamp);
+        }
       }
       _isDirty = true;
     });
@@ -3991,7 +3996,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     ? DetectionSource.userSpecified
                     : DetectionSource.manual,
             evidence: result.evidence,
-            confirmedAt: result.replaceRecord!.confirmedAt,
+            reviewStatus: result.replaceRecord!.reviewStatus,
+            reviewedAt: result.replaceRecord!.reviewedAt,
             note: result.replaceRecord!.note,
             voiceMemoPath: result.replaceRecord!.voiceMemoPath,
             latitude: result.replaceRecord!.latitude,

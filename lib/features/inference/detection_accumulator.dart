@@ -322,7 +322,8 @@ DetectionRecord copyDetectionRecord(
     evidence: existing.evidence,
     latitude: existing.latitude,
     longitude: existing.longitude,
-    confirmedAt: existing.confirmedAt,
+    reviewStatus: existing.reviewStatus,
+    reviewedAt: existing.reviewedAt,
     note: existing.note,
     voiceMemoPath: existing.voiceMemoPath,
   );

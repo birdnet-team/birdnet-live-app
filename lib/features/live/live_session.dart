@@ -410,6 +410,40 @@ enum DetectionEvidence {
   };
 }
 
+/// What a reviewer has decided about a detection's species identification.
+///
+/// Deliberately three-valued: "nobody has looked at this yet" is a different
+/// claim from "a reviewer looked and judged the ID wrong", and collapsing the
+/// two into a boolean makes every export assert the latter about detections
+/// that are merely untouched.
+enum ReviewStatus {
+  /// No reviewer has passed judgement. The default for every detection, and
+  /// the only honest answer for the vast majority of them.
+  unreviewed,
+
+  /// A reviewer confirmed the species identification, visually or
+  /// acoustically.
+  confirmed,
+
+  /// A reviewer judged the species identification to be wrong.
+  ///
+  /// Fully persisted and exported, but no UI currently produces it — the
+  /// review screen still toggles between [unreviewed] and [confirmed]. It
+  /// exists so the export schema does not have to change again when an
+  /// invalidate action lands.
+  rejected;
+
+  /// Parse a persisted [name], tolerating null / unknown values.
+  ///
+  /// Unknown values fall back to [unreviewed] rather than throwing, so a
+  /// session written by a future build with more states still loads.
+  static ReviewStatus fromName(String? name) => switch (name) {
+    'confirmed' => ReviewStatus.confirmed,
+    'rejected' => ReviewStatus.rejected,
+    _ => ReviewStatus.unreviewed,
+  };
+}
+
 /// A timestamped detection record for session persistence.
 ///
 /// Unlike [Detection] (which holds a full [Species] object), this stores
@@ -427,7 +461,8 @@ class DetectionRecord {
     this.evidence,
     this.latitude,
     this.longitude,
-    this.confirmedAt,
+    this.reviewStatus = ReviewStatus.unreviewed,
+    this.reviewedAt,
     this.note,
     this.voiceMemoPath,
   });
@@ -505,17 +540,54 @@ class DetectionRecord {
   /// GPS longitude at the time of detection (null if unavailable).
   final double? longitude;
 
-  /// UTC wall-clock time when a reviewer marked this detection as visually
-  /// or acoustically confirmed. `null` means the detection has not been
-  /// confirmed (the default state — confirmation is opt-in).
+  /// What a reviewer has decided about this detection's identification.
   ///
-  /// Mutable: toggled from the session-review UI. Persisted in JSON
-  /// sessions and propagated to all export formats so external pipelines
-  /// can filter on confirmed-only detections.
-  DateTime? confirmedAt;
+  /// Defaults to [ReviewStatus.unreviewed] — review is opt-in, and most
+  /// detections in a session are never touched. Consumers must not read
+  /// "not confirmed" as "judged incorrect"; only [ReviewStatus.rejected]
+  /// carries that claim.
+  ///
+  /// Mutable: set from the session-review UI via [markConfirmed],
+  /// [markRejected] and [clearReview]. Persisted in JSON sessions and
+  /// propagated to all export formats so external pipelines can filter on
+  /// review state.
+  ReviewStatus reviewStatus;
 
-  /// Convenience: whether this detection has been marked confirmed.
-  bool get isConfirmed => confirmedAt != null;
+  /// UTC wall-clock time when the reviewer made the decision recorded in
+  /// [reviewStatus]. `null` while [reviewStatus] is
+  /// [ReviewStatus.unreviewed].
+  DateTime? reviewedAt;
+
+  /// Convenience: whether a reviewer confirmed this identification.
+  bool get isConfirmed => reviewStatus == ReviewStatus.confirmed;
+
+  /// Convenience: whether a reviewer judged this identification wrong.
+  bool get isRejected => reviewStatus == ReviewStatus.rejected;
+
+  /// Convenience: whether any reviewer decision has been recorded.
+  bool get isReviewed => reviewStatus != ReviewStatus.unreviewed;
+
+  /// Record that a reviewer confirmed this identification.
+  ///
+  /// [at] defaults to now; callers pass it explicitly when stamping a whole
+  /// cluster so every record shares one timestamp.
+  void markConfirmed({DateTime? at}) {
+    reviewStatus = ReviewStatus.confirmed;
+    reviewedAt = (at ?? DateTime.now()).toUtc();
+  }
+
+  /// Record that a reviewer judged this identification wrong.
+  void markRejected({DateTime? at}) {
+    reviewStatus = ReviewStatus.rejected;
+    reviewedAt = (at ?? DateTime.now()).toUtc();
+  }
+
+  /// Drop any reviewer decision, returning the record to
+  /// [ReviewStatus.unreviewed].
+  void clearReview() {
+    reviewStatus = ReviewStatus.unreviewed;
+    reviewedAt = null;
+  }
 
   /// Free-form text note attached to this detection by the reviewer.
   ///
@@ -593,10 +665,20 @@ class DetectionRecord {
       evidence: DetectionEvidence.fromName(json['evidence'] as String?),
       latitude: (json['detLat'] as num?)?.toDouble(),
       longitude: (json['detLon'] as num?)?.toDouble(),
-      confirmedAt:
-          json['confirmedAt'] != null
-              ? DateTime.parse(json['confirmedAt'] as String)
-              : null,
+      // Sessions written before review became three-valued carry only
+      // `confirmedAt`, where a non-null value meant confirmed. Prefer the
+      // explicit status when present and fall back to that legacy shape so
+      // older sessions keep their confirmations.
+      reviewStatus:
+          json['reviewStatus'] != null
+              ? ReviewStatus.fromName(json['reviewStatus'] as String?)
+              : (json['confirmedAt'] != null
+                  ? ReviewStatus.confirmed
+                  : ReviewStatus.unreviewed),
+      reviewedAt: switch (json['reviewedAt'] ?? json['confirmedAt']) {
+        final String stamp => DateTime.parse(stamp),
+        _ => null,
+      },
       note: json['note'] as String?,
       voiceMemoPath: json['voiceMemoPath'] as String?,
     );
@@ -617,8 +699,14 @@ class DetectionRecord {
     if (evidence != null) 'evidence': evidence!.name,
     if (latitude != null) 'detLat': latitude,
     if (longitude != null) 'detLon': longitude,
-    if (confirmedAt != null)
-      'confirmedAt': confirmedAt!.toUtc().toIso8601String(),
+    if (isReviewed) 'reviewStatus': reviewStatus.name,
+    if (reviewedAt != null) 'reviewedAt': reviewedAt!.toUtc().toIso8601String(),
+    // Legacy mirror: a build older than the three-state change reads only
+    // `confirmedAt`, so keep writing it for confirmed records. Without this,
+    // rolling back to such a build silently drops every confirmation. Safe to
+    // remove a couple of releases after 1.1.1.
+    if (isConfirmed && reviewedAt != null)
+      'confirmedAt': reviewedAt!.toUtc().toIso8601String(),
     if (hasNote) 'note': note,
     if (hasVoiceMemo) 'voiceMemoPath': voiceMemoPath,
   };
@@ -1189,7 +1277,8 @@ class LiveSession {
       evidence: r.evidence,
       latitude: r.latitude,
       longitude: r.longitude,
-      confirmedAt: r.confirmedAt,
+      reviewStatus: r.reviewStatus,
+      reviewedAt: r.reviewedAt,
       note: r.note,
       voiceMemoPath: r.voiceMemoPath,
     );
