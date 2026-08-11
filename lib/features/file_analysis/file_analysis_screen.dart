@@ -94,6 +94,14 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   Route<dynamic>? _presenceRoute;
   int _currentStep = 0;
 
+  /// The long-lived analysis controller, resolved once in [initState].
+  ///
+  /// `ref` is unusable from [dispose] — Riverpod throws, because the element is
+  /// already deactivated by then — and the listener this screen installs has to
+  /// be cleared there. The provider is never invalidated, so the instance held
+  /// here cannot go stale.
+  late final FileAnalysisController _analysisController;
+
   // ── Step 1: File ──────────────────────────────────────────────────────
   String? _filePath;
   AudioFileInfo? _fileInfo;
@@ -151,6 +159,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   @override
   void initState() {
     super.initState();
+    _analysisController = ref.read(fileAnalysisControllerProvider);
     // Initialize parameters from global settings.
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -204,8 +213,15 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     _latController.dispose();
     _lonController.dispose();
 
-    // Clear state listener on the long-lived controller.
-    ref.read(fileAnalysisControllerProvider).onStateChanged = null;
+    // Clear the state listener on the long-lived controller, but only while it
+    // is still ours: sharing a second file replaces this screen, and the
+    // replacement may already have installed its own.
+    if (identical(
+      _analysisController.onStateChanged,
+      _onControllerStateChanged,
+    )) {
+      _analysisController.onStateChanged = null;
+    }
 
     super.dispose();
   }
@@ -312,7 +328,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
 
   /// Reads metadata for [path] and finishes the step-1 loading state.
   Future<void> _inspect(String path) async {
-    final controller = ref.read(fileAnalysisControllerProvider);
+    final controller = _analysisController;
     final info = await controller.inspectFile(path);
     if (!mounted) return;
     setState(() {
@@ -372,9 +388,22 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     }
   }
 
+  /// Mirrors the long-lived controller's progress into the reactive providers.
+  ///
+  /// A named method rather than a closure so [dispose] can tell whether the
+  /// listener still belongs to this screen before clearing it.
+  void _onControllerStateChanged() {
+    if (!mounted) return;
+    ref.read(fileAnalysisStateProvider.notifier).state =
+        _analysisController.state;
+    ref.read(fileAnalysisProgressProvider.notifier).state =
+        _analysisController.progress;
+    setState(() {});
+  }
+
   Future<void> _runAnalysis() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = ref.read(fileAnalysisControllerProvider);
+    final controller = _analysisController;
 
     // Load model if needed.
     if (!_modelLoaded) {
@@ -395,13 +424,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     }
 
     // Set up state change listener for progress updates.
-    controller.onStateChanged = () {
-      if (!mounted) return;
-      ref.read(fileAnalysisStateProvider.notifier).state = controller.state;
-      ref.read(fileAnalysisProgressProvider.notifier).state =
-          controller.progress;
-      setState(() {});
-    };
+    controller.onStateChanged = _onControllerStateChanged;
 
     // Resolve location-dependent data.
     if (_locationChoice == _LocationChoice.manual) {
@@ -531,7 +554,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       cancelLabel: l10n.fileAnalysisCancelKeep,
     );
     if (!confirmed || !mounted) return false;
-    ref.read(fileAnalysisControllerProvider).cancel();
+    _analysisController.cancel();
     return true;
   }
 
@@ -548,7 +571,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
         if (isAnalyzing) {
-          ref.read(fileAnalysisControllerProvider).cancel();
+          _analysisController.cancel();
         }
       },
       child: WizardScaffold(
@@ -645,8 +668,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
             _AnalysisStep(
               state: analysisState,
               progress: ref.watch(fileAnalysisProgressProvider),
-              errorMessage:
-                  ref.read(fileAnalysisControllerProvider).errorMessage,
+              errorMessage: _analysisController.errorMessage,
               fileInfo: _fileInfo,
               onCancel: _confirmCancel,
             ),

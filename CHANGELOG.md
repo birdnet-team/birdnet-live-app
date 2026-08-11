@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tapping the Quick Listen widget now opens Live Mode directly, instead of showing the home screen first.
 
+### Fixed
+
+- Leaving File Analysis or a Point Count session no longer throws while the screen is torn down, which could leave the widget tree half-disposed.
+
 ## [1.1.1] - 2026-08-10
 
 ### Changed
