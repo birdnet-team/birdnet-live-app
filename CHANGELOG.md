@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Norwegian Bokmål and Nynorsk users now see Norwegian species names instead of English names.
 - Leaving File Analysis or a Point Count session no longer throws while the screen is torn down, which could leave the widget tree half-disposed.
 
 ## [1.1.1] - 2026-08-10

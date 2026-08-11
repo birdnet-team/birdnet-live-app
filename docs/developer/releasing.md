@@ -22,6 +22,10 @@ dart dev/sync_version.dart
 
 ## 2. Pre-flight checklist
 
+Pull requests should add user-visible changes to the `Unreleased` section of
+`CHANGELOG.md`. When preparing a release, move those entries under the new
+version heading and group them into Added / Changed / Fixed.
+
 1. Update `CHANGELOG.md` — every user-visible change goes under the new
    version heading, grouped into Added / Changed / Fixed.
 2. Bump `pubspec.yaml` and run `dart dev/sync_version.dart`.
