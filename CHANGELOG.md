@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## [1.1.2] - 2026-08-11
+
+### Added
+
+- BirdNET Live now accepts audio files from the system share sheet and file managers. Android shares and "Open With" open File Analysis immediately. On iOS, "Open With" is immediate; Share-sheet files are staged safely and selected when BirdNET Live is next opened.
+
+### Changed
+
+- Tapping the Quick Listen widget now opens Live Mode directly, instead of showing the home screen first.
+
 ## [1.1.1] - 2026-08-10
 
 ### Changed
