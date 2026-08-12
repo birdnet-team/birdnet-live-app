@@ -307,6 +307,15 @@ abstract final class PrefKeys {
   static const String globalSpeciesHistorySeeded =
       'global_species_history_seeded';
 
+  // eBird life list
+  /// JSON-encoded list of scientific names imported from an eBird life
+  /// list CSV export.
+  static const String ebirdLifeList = 'ebird_life_list';
+
+  /// ISO-8601 timestamp of the last successful import, shown to the user
+  /// so they know how stale their imported list is.
+  static const String ebirdLifeListImportedAt = 'ebird_life_list_imported_at';
+
   /// Persisted view mode for the Session Library screen
   /// (one of `_ViewMode.name`: detailed, compact, bySpecies).
   static const String sessionLibraryViewMode = 'session_library_view_mode';

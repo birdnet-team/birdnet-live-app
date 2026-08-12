@@ -171,6 +171,7 @@ abstract final class AppIcons {
   static const IconData species = Symbols.graphic_eq;
   static const IconData speciesFallback = brokenImage;
   static const IconData speedRounded = Symbols.speed_rounded;
+  static const IconData starRounded = Symbols.star_rounded;
   static const IconData stickyNote2 = Symbols.sticky_note_2;
   static const IconData stop = Icons.stop;
   static const IconData stopCircle = Icons.stop_circle;

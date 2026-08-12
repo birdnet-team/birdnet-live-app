@@ -316,6 +316,10 @@ When on, every export ZIP also contains a `<session>_report.html` file alongside
 
 Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip.
 
+## eBird Life List
+
+Import your eBird life list via CSV export so BirdNET Live can flag species it hears that you haven't personally logged yet — a **lifer**. This is separate from the app's own detection history: a species can be a lifer here even if BirdNET Live has heard it before, as long as you've never logged it on eBird. Once imported, lifers get a star badge on Live detections and in Session Review, and the Survey **Species alerts** mode picker gains a matching **Lifer** option (see [Survey Mode](survey-mode.md)). Re-importing replaces the list entirely; there's no merge with a previous import.
+
 ## Privacy
 
 This section controls **which third-party services BirdNET Live may contact on your behalf**. Inference itself runs entirely on your device — these toggles only govern optional network features that enrich the experience. All three toggles are **off by default** on a fresh install; nothing reaches out until you say so. The intuition: each toggle is scoped to one concrete service and one concrete benefit, so you can opt into exactly what's useful to your workflow and nothing else.

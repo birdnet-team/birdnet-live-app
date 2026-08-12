@@ -61,10 +61,11 @@ class SummaryAlert {
   int get count => alerts.length;
 
   /// Reason used to color/icon the summary. Picks the most "important"
-  /// reason represented in the queue, with rare > watchlist > firstEver
-  /// > firstInSession.
+  /// reason represented in the queue, with lifer > rare > watchlist >
+  /// firstEver > firstInSession.
   AlertReason get primaryReason {
     const order = {
+      AlertReason.lifer: 4,
       AlertReason.rare: 3,
       AlertReason.watchlist: 2,
       AlertReason.firstEver: 1,

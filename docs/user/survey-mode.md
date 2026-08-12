@@ -71,9 +71,10 @@ Push-style notifications that fire mid-survey when something noteworthy is detec
 
 - **Off** — no alerts (default).
 - **First in session** — one alert the first time each species is heard during this survey.
-- **First ever** — alert only when the app encounters a species for the very first time across all your sessions (a "lifer" alert). Backed by a lifetime species history that is auto-populated from your existing sessions on first launch.
+- **First ever** — alert only when the app encounters a species for the very first time across all your sessions in the app. Backed by a lifetime species history that is auto-populated from your existing sessions on first launch.
 - **Rare for this location** — alert when the geo-model probability for the current location is below a configurable threshold. A live readout under the slider explains exactly what the current value will trigger on (e.g. *"Alerts on species with under 5 % likelihood at this location."*).
 - **Watchlist** — alert only on species you've added to a saved custom list. The wizard step itself lets you create new watchlists, edit existing ones in a dedicated full-screen editor with searchable taxonomy and *Import from file* (any plain `.txt`/`.csv` of scientific names), and delete lists you no longer need.
+- **Lifer** — alert when a species isn't on your imported eBird life list. Import the list from **Settings → eBird Life List**; until you do, this mode never fires.
 
 A *Minimum confidence* slider sits under the mode picker and is automatically floored to your session confidence threshold (alerts are never more sensitive than the detections themselves). An **Advanced** section exposes throttling controls — a startup grace window, a hard minimum interval between any two alerts, and a sliding per-minute cap with optional coalescing of over-cap alerts into a single summary notification — all with one-tap chip selectors. The first time you switch to a non-Off mode, the wizard requests Android notification permission for you.
 
@@ -125,7 +126,7 @@ Survey Mode keeps a persistent foreground notification visible while recording s
 
 The notification — title, recent detections, and stats footer — is fully translated into the app's selected language and uses the same species-locale and *Show scientific names* preferences as the in-app cards.
 
-Species alerts (when enabled) appear on a separate Android notification channel so you can mute alerts independently of the silent ongoing recording notification. The alert icon matches the foreground notification icon (a monochrome bird), and alert bodies show only the *reason* — *"First detection of this survey"*, *"On your watchlist"*, *"Detected at this location with under 4% likelihood"* — leaving the species name in the bold notification title where Android renders it largest.
+Species alerts (when enabled) appear on a separate Android notification channel so you can mute alerts independently of the silent ongoing recording notification. The alert icon matches the foreground notification icon (a monochrome bird), and alert bodies show only the *reason* — *"First detection of this survey"*, *"On your watchlist"*, *"Detected at this location with under 4% likelihood"*, *"New for your life list"* — leaving the species name in the bold notification title where Android renders it largest.
 
 When you **resume** an unfinished survey from Session Library, the alert pipeline is re-armed from your *current* notification preferences — not whatever you had configured the day you started the survey. Toggle alerts off (or change the mode, watchlist, or throttling) before tapping Resume and the resumed survey will respect the new settings immediately.
 

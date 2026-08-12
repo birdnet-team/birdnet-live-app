@@ -34,10 +34,24 @@ import '../../l10n/app_localizations.dart';
 /// the nearest [ScaffoldMessenger]. Pass [context] so we can surface that
 /// fallback; if the widget is unmounted by the time the launch fails the
 /// SnackBar is silently skipped.
-Future<void> openExternalUrl(BuildContext context, String url) async {
+///
+/// [inApp] opens the page in Chrome Custom Tabs (Android) / an
+/// SFSafariViewController sheet (iOS) instead of a separate browser app.
+/// Both share cookies/login state with the system browser, but stay in the
+/// caller's own task stack — so the back button or close control returns
+/// directly to this app. Defaults to false to preserve existing behavior at
+/// other call sites.
+Future<void> openExternalUrl(
+  BuildContext context,
+  String url, {
+  bool inApp = false,
+}) async {
   final uri = Uri.parse(url);
   try {
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final ok = await launchUrl(
+      uri,
+      mode: inApp ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication,
+    );
     if (ok) return;
     // launchUrl returned false — fall through to the failure path.
     throw PlatformException(
