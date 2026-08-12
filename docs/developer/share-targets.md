@@ -1,9 +1,8 @@
 # Share Targets
 
 BirdNET Live registers as a system share target for audio files on Android and
-iOS. Android shares and file-manager opens land immediately in File Analysis.
-On iOS, document opens are immediate; Share-extension files are selected the
-next time BirdNET Live becomes active.
+iOS. Shares and file-manager opens land immediately in File Analysis on both
+platforms.
 
 ## Shape of the feature
 
@@ -121,78 +120,63 @@ the shared-media channel can consume it.
 
 ## iOS
 
-iOS needs two mechanisms, because neither covers the whole surface on its own.
+One mechanism: `CFBundleDocumentTypes` in `Runner/Info.plist`. It covers both
+the system share sheet and Files' "Open With", and the app launches straight
+into File Analysis. The document arrives as a copy in `Documents/Inbox`, which
+`AppDelegate.application(_:open:)` queues and `importSharedFile` moves into the
+temporary directory.
 
-### Share extension (the main path)
-
-The `ShareExtension` target puts BirdNET Live in the share sheet itself. It has
-no UI: it copies the attachment into the shared App Group container and
-dismisses. The user then opens or returns to BirdNET Live; AppDelegate scans the
-staging directory on activation and queues the newest attachment.
-
-Notes on the pieces that are not obvious:
-
-- **App Group** — an extension cannot write into the host app's container, so
-  the App Group carries the attachment across the sandbox boundary.
-  `group.de.tu-chemnitz.mi.kahst.birdnet-live` is
-  declared in `Runner/Runner.entitlements` and
-  `ShareExtension/ShareExtension.entitlements`; all three strings must match.
-- **Host-app activation** — iOS Share extensions cannot open their containing
-  app; Apple's [`NSExtensionContext.open` documentation](<https://developer.apple.com/documentation/foundation/nsextensioncontext/open(_:completionhandler:)>)
-  lists only Today and iMessage as supported iOS extension points. Do not reach
-  `UIApplication` through the responder chain: it is an extension-unsafe
-  workaround and an App Store review risk. The app instead checks the App Group
-  during cold launch and every activation.
-- **Activation rule** — a `SUBQUERY` predicate over `public.audio`. The
-  count-based activation keys (`…SupportsFileWithMaxCount`) would also match
-  images and PDFs.
-- **No Flutter, no pods** — the extension links neither. It has a tight memory
-  budget, and the engine would risk the system killing it before the hand-off.
-- **Staging lifetime** — the App Group container is not a cache, so the system
-  never prunes it. The host app deletes the staged copy once it imports *or*
-  once it gives up on it (`discardSharedFile`), and the extension empties the
-  directory before each new share, so nothing survives an abandoned share.
-  `AppDelegate.removeStagedFile` is what both paths call, and it only touches
-  the two directories the app owns — anything else was handed to us by someone
-  who is still responsible for it. Staged
-  names carry a UUID prefix so repeated shares of the same source filename are
-  still distinct deliveries; File Analysis sees the original name. The
-  extension copies to a hidden temporary path and atomically publishes the
-  final file, so an extension timeout cannot expose a partial recording.
-- **Versions** — the extension's `CFBundleShortVersionString` and
-  `CFBundleVersion` must match the host app exactly or App Store validation
-  rejects the build. `Flutter/Generated.xcconfig` is the target's base
-  configuration, so `$(FLUTTER_BUILD_NAME)` and `$(FLUTTER_BUILD_NUMBER)`
-  resolve the same way they do for Runner. Nothing to bump by hand.
-
-### Document types (the fallback)
-
-`CFBundleDocumentTypes` in `Runner/Info.plist` covers Files' "Open With" and
-share sources that hand over a document rather than going through an extension.
 `LSSupportsOpeningDocumentsInPlace` stays `false`: analysis re-reads the file
 while drawing the spectrogram, so a copy we own is safer than a reference to a
 document the source app may move or delete mid-run. The cost of that choice is
-that iOS drops its copy into `Documents/Inbox`, which counts against the user's
-storage and is backed up — hence the discard path.
+that `Documents/Inbox` counts against the user's storage and is backed up —
+hence the discard path.
 
-Both paths converge on `pendingSharedFile` in `AppDelegate`.
+### Why there is no Share extension
+
+Version 1.1.2 shipped a `ShareExtension` target. It was removed in favor of the
+above, because the two cannot coexist usefully:
+
+- **A Share extension cannot open its containing app.** Apple's
+  [`NSExtensionContext.open` documentation](<https://developer.apple.com/documentation/foundation/nsextensioncontext/open(_:completionhandler:)>)
+  lists only Today and iMessage as eligible extension points, and DTS states
+  plainly that there is no supported way to launch the container app. The
+  extension could therefore only stage the file into an App Group and wait for
+  the user to switch to BirdNET Live by hand, which read as the share having
+  done nothing at all.
+- **Its mere presence suppressed the alternative.** Since iOS 16 an app with a
+  Share extension does not also get the "Open in app" entry that
+  `CFBundleDocumentTypes` contributes, and that entry *does* launch the app.
+  The extension was hiding the very behavior we wanted.
+- The unsupported workarounds — walking the responder chain to `UIApplication`,
+  or any private LaunchServices call — are not an option for an App Store
+  build. (For the record: iOS 18 force-fails the deprecated `openURL:` reached
+  that way, though the `options:completionHandler:` form still goes through.
+  Both are outside what Apple supports.)
+
+The trade-off accepted by removing it: a share source that hands over an
+in-memory attachment rather than a file URL no longer offers BirdNET Live at
+all. Every audio source checked in practice — Voice Memos, Files, Mail,
+messaging apps — hands over a file.
+
+### The App Group is legacy
+
+`group.de.tu-chemnitz.mi.kahst.birdnet-live` in `Runner/Runner.entitlements`,
+and everything in `AppDelegate` that reads it, exists only to drain a recording
+the 1.1.2 extension staged before the user updated. Nothing writes there any
+more; the container is not a cache, so an orphaned file would sit there
+untouched forever. Remove `queueStagedSharedFile`, `stagedAppGroupFile`,
+`stagedDisplayName`, the App Group branch of `removeStagedFile`, and the
+entitlement once an update has had time to reach those users.
 
 ## One-time provisioning setup
 
-The App Group is a capability, so it has to exist in the developer portal
-before a device build will sign:
-
-1. In the Apple Developer portal, register the App Group
-   `group.de.tu-chemnitz.mi.kahst.birdnet-live` if it does not exist.
-2. Register the extension's bundle ID,
-   `de.tu-chemnitz.mi.kahst.birdnet-live.ShareExtension`.
-3. Enable the **App Groups** capability on *both* that ID and
-   `de.tu-chemnitz.mi.kahst.birdnet-live`, and tick the group on each.
-4. Let Xcode regenerate the provisioning profiles (automatic signing handles
-   this once the capability is enabled on the IDs).
-
-A build that fails with "Provisioning profile doesn't include the
-com.apple.security.application-groups entitlement" means step 3 is incomplete.
+Nothing, as long as the App Group entitlement above is still in place — it is a
+capability, so `de.tu-chemnitz.mi.kahst.birdnet-live` must keep **App Groups**
+enabled in the developer portal with `group.de.tu-chemnitz.mi.kahst.birdnet-live`
+ticked, or a device build will not sign. A failure reading "Provisioning profile
+doesn't include the com.apple.security.application-groups entitlement" means the
+capability was turned off. When the legacy drain is deleted, this goes with it.
 
 ## Testing
 
@@ -208,10 +192,27 @@ On device, worth covering both entry states:
   by `_SharedAudioListener.initState`.
 - **Android warm** — leave the app running, then share. The native side notifies
   over the channel.
-- **iOS Share extension** — share from another app, then open or return to
-  BirdNET Live. AppDelegate discovers the staged item during activation.
-- **iOS Open With** — open an audio document with BirdNET Live and verify the
-  direct document URL is handled immediately.
+- **iOS share sheet** — share a recording from Voice Memos. BirdNET Live must
+  appear in the app row and open straight into File Analysis. If the entry is
+  missing, check that no Share extension has crept back into the build: one
+  suppresses it.
+- **iOS Open With** — open an audio document with BirdNET Live from Files and
+  verify the direct document URL is handled immediately.
+
+The receiving half can be driven without touching the screen, which is worth
+knowing when the share sheet itself is not what is under test:
+
+```
+xcrun devicectl device copy to --device <id> --domain-type appDataContainer \
+  --domain-identifier de.tu-chemnitz.mi.kahst.birdnet-live \
+  --source some.mp3 --destination Documents/some.mp3
+xcrun devicectl device process launch --device <id> --terminate-existing \
+  --payload-url "file:///…/Documents/some.mp3" de.tu-chemnitz.mi.kahst.birdnet-live
+```
+
+A copy appearing under `tmp/shared_audio/` in the app container means the whole
+chain ran: `application(_:open:)` queued it, Dart drained it, File Analysis
+imported it.
 
 Also worth a pass: sharing while a File Analysis run is in progress (expect the
 "Analysis in progress" dialog, and the running analysis untouched), and sharing
