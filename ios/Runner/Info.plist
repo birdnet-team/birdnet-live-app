@@ -61,9 +61,9 @@
 		<string>audio</string>
 		<string>location</string>
 	</array>
-	<!-- Puts BirdNET Live in Files' "Open With" for audio recordings, and
-	     covers share sources that hand over a document rather than going
-	     through the extension. The document arrives as a
+	<!-- The whole iOS share story. This is what puts BirdNET Live in Files'
+	     "Open With" *and* in the system share sheet, and unlike a Share
+	     extension it launches the app straight away. The document arrives as a
 	     copy in Documents/Inbox; AppDelegate moves it into the temporary
 	     directory and hands the path to File Analysis.
 	     LSSupportsOpeningDocumentsInPlace stays false: analysis reads the file

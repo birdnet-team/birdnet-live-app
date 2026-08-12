@@ -3,12 +3,13 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-  /// Directory name holding the most recent shared recording, both in the App
-  /// Group container the ShareExtension writes to and in this app's temporary
-  /// directory it is imported into.
+  /// Directory name holding the most recent shared recording, both in the
+  /// legacy App Group container and in this app's temporary directory it is
+  /// imported into.
   private static let sharedMediaDirName = "shared_audio"
 
-  /// Must match both entitlements files and `ShareViewController`.
+  /// Must match `Runner.entitlements`. Only reachable now through files the
+  /// 1.1.2 Share extension left behind — see `queueStagedSharedFile`.
   private static let appGroupIdentifier = "group.de.tu-chemnitz.mi.kahst.birdnet-live"
 
   /// A shared audio document waiting to be picked up by Dart. Set on both cold
@@ -104,8 +105,8 @@ import UIKit
       }
     }
 
-    // Shared-media channel — share-sheet and "Open With" hand-off. Fed by both
-    // the ShareExtension (via the App Group) and CFBundleDocumentTypes.
+    // Shared-media channel — share-sheet and "Open With" hand-off, both of
+    // which arrive as documents through CFBundleDocumentTypes.
     //
     // Split up on purpose: `takePendingSharedFile` answers immediately with the
     // URL so Dart can open File Analysis right away, `importSharedFile` does
@@ -180,8 +181,8 @@ import UIKit
 
   override func applicationDidBecomeActive(_ application: UIApplication) {
     super.applicationDidBecomeActive(application)
-    // Share extensions cannot launch their containing app. Pick up the staged
-    // file whenever the user next opens or returns to BirdNET Live instead.
+    // Nothing writes to the App Group any more; this only drains a file the
+    // 1.1.2 Share extension staged before the user updated.
     queueStagedSharedFile()
   }
 
@@ -211,6 +212,12 @@ import UIKit
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
   }
 
+  /// Picks up a recording the 1.1.2 Share extension left in the App Group.
+  ///
+  /// That target is gone — every share now arrives as a document — but a user
+  /// who shared just before updating would otherwise never see the file, and
+  /// nothing else prunes the App Group container. Remove this together with the
+  /// entitlement once an update has had time to reach those users.
   private func queueStagedSharedFile() {
     // Do not overwrite a document URL that was delivered during the same app
     // activation. It should be handled before any older abandoned share.
@@ -223,10 +230,10 @@ import UIKit
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
   }
 
-  /// The recording the ShareExtension left in the App Group container, if any.
+  /// The recording the 1.1.2 Share extension left in the App Group container.
   ///
-  /// The extension keeps exactly one file there, but a crash mid-copy could
-  /// leave more than one behind, so the newest wins.
+  /// It kept exactly one file there, but a crash mid-copy could leave more than
+  /// one behind, so the newest wins.
   private static func stagedAppGroupFile() -> [String: String]? {
     let fileManager = FileManager.default
     guard let container = fileManager.containerURL(
@@ -254,8 +261,8 @@ import UIKit
     return ["uri": url.absoluteString, "name": stagedDisplayName(url)]
   }
 
-  /// ShareExtension prefixes staged files with a UUID so two hand-offs never
-  /// reuse the same URI. Keep that implementation detail out of File Analysis.
+  /// The 1.1.2 Share extension prefixed staged files with a UUID so two
+  /// hand-offs never reused the same URI. Keep that out of File Analysis.
   private static func stagedDisplayName(_ url: URL) -> String {
     let name = url.lastPathComponent
     guard let separator = name.range(of: "--") else { return name }
@@ -311,8 +318,9 @@ import UIKit
   /// Called both after a successful import and when Dart gives up on a file it
   /// will not open, because neither staging area is pruned for us: documents
   /// handed over as a copy land in `Documents/Inbox`, which counts against the
-  /// user's storage and is backed up, and the ShareExtension's copy sits in
-  /// the App Group container, which the system never touches.
+  /// user's storage and is backed up, and a copy left by the 1.1.2 Share
+  /// extension sits in the App Group container, which the system never
+  /// touches.
   ///
   /// Anything outside those two directories is left alone — it belongs to
   /// whoever handed it to us.

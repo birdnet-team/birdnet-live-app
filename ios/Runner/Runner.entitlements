@@ -2,9 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Shared with the ShareExtension target so a shared audio file can cross
-	     the sandbox boundary. Must match ShareExtension.entitlements and the
-	     App Group registered for both bundle IDs in the developer portal. -->
+	<!-- Legacy. Version 1.1.2 shipped a Share extension that staged attachments
+	     here; that target is gone, and AppDelegate now only drains what it left
+	     behind. Keep until an update has reached the users who might still have
+	     a file waiting, then drop this and the App Group from the portal. -->
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.de.tu-chemnitz.mi.kahst.birdnet-live</string>
