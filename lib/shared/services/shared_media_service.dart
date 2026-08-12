@@ -7,10 +7,9 @@
 //   * Android — an ACTION_SEND (share sheet) or ACTION_VIEW ("open with")
 //     intent carrying an `audio/*` URI. See the intent filters in
 //     AndroidManifest.xml and `captureSharedMedia` in MainActivity.kt.
-//   * iOS — either the ShareExtension target, which stages the attachment in
-//     the shared App Group container for the app's next activation, or a
-//     document opened through CFBundleDocumentTypes. AppDelegate.swift queues
-//     both paths. See docs/developer/share-targets.md.
+//   * iOS — a document opened through CFBundleDocumentTypes, which covers both
+//     the share sheet and Files' "Open With". AppDelegate.swift queues it. See
+//     docs/developer/share-targets.md.
 //
 // Both platforms queue the incoming item natively and either forward it
 // immediately (app already running — "warm" case) or hold it for
@@ -102,9 +101,8 @@ abstract final class SharedMediaService {
   /// open, so a hand-off the user abandoned does not sit on disk forever.
   ///
   /// Only staging the app owns is removed. On iOS that is the document the
-  /// system copied into `Documents/Inbox` or the ShareExtension's App Group
-  /// copy — neither of which anything else prunes. Android has nothing to
-  /// release: the URI belongs to the app that shared it.
+  /// system copied into `Documents/Inbox`, which nothing else prunes. Android
+  /// has nothing to release: the URI belongs to the app that shared it.
   ///
   /// Best effort. A failure here only leaves a stale file behind, so it is
   /// logged rather than raised at a caller that is already giving up.

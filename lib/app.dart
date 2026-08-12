@@ -781,8 +781,8 @@ class _SharedAudioListenerState extends ConsumerState<_SharedAudioListener> {
 
   void _deferSharedFile(SharedAudioFile sharedFile) {
     // Keep the latest hand-off while onboarding/policy acceptance is visible.
-    // The native URI remains valid for this Activity, and iOS keeps its staged
-    // App Group copy until import succeeds.
+    // The native URI remains valid for this Activity, and iOS keeps its copy in
+    // Documents/Inbox until import succeeds.
     final previous = _deferredSharedFile;
     if (previous != null && !identical(previous, sharedFile)) {
       _discard(previous);
