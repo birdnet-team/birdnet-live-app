@@ -54,7 +54,7 @@ dependencies:
   crypto: ^3.0.3
 
   # Localization
-  intl: any
+  intl: 0.20.3
   just_audio: ^0.10.5
   just_audio_windows: ^0.2.3
 
