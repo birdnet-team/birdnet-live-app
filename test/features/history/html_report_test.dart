@@ -43,7 +43,8 @@ LiveSession _sessionWithDetections() {
         latitude: 50.1234,
         longitude: 8.5678,
         note: 'note with <b>tag</b> & symbols',
-        confirmedAt: DateTime.utc(2026, 5, 28, 10, 1, 30),
+        reviewStatus: ReviewStatus.confirmed,
+        reviewedAt: DateTime.utc(2026, 5, 28, 10, 1, 30),
       ),
     ],
   );
@@ -72,6 +73,26 @@ void main() {
       expect(html, contains('clip%20%231.wav'));
       expect(html, contains('Confirmed'));
       expect(html, contains('Recording settings'));
+    });
+
+    test('badges a rejected detection and leaves unreviewed ones bare', () {
+      // Match the rendered pill, not the class name — both CSS rules are in
+      // the stylesheet of every report regardless of review state.
+      const rejectedPill = '<span class="occ-rejected">Rejected</span>';
+      const confirmedPill = '<span class="occ-confirmed">Confirmed</span>';
+
+      final session = _sessionWithDetections();
+      session.detections.single.markRejected(
+        at: DateTime.utc(2026, 5, 28, 10, 1, 30),
+      );
+      final rejected = buildHtmlReport(session);
+      expect(rejected, contains(rejectedPill));
+      expect(rejected, isNot(contains(confirmedPill)));
+
+      session.detections.single.clearReview();
+      final bare = buildHtmlReport(session);
+      expect(bare, isNot(contains(rejectedPill)));
+      expect(bare, isNot(contains(confirmedPill)));
     });
 
     test('renders full recording player when audioFileName is provided', () {

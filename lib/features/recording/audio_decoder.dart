@@ -88,6 +88,114 @@ class DecodedAudio {
   }
 }
 
+/// CRC-8 lookup table (polynomial 0x07), mirroring the one `FlacEncoder`
+/// uses to write frame-header checksums.
+final List<int> _crc8Table = List<int>.generate(256, (i) {
+  var crc = i;
+  for (var bit = 0; bit < 8; bit++) {
+    crc = (crc & 0x80) != 0 ? ((crc << 1) ^ 0x07) & 0xFF : (crc << 1) & 0xFF;
+  }
+  return crc;
+});
+
+/// Sparse sample→byte map of a FLAC file's frame boundaries.
+///
+/// FLAC has no random access and our encoder writes no SEEKTABLE, so
+/// [AudioDecoder.decodeFlacRange] normally bit-decodes every frame from the
+/// start of the stream and discards everything before the requested range —
+/// making a range read cost O(offset). Measured on a 20-minute recording that
+/// is 336 ms at the head and 11 s at the 19-minute mark, which is what made
+/// scrubbing a long session review unusable.
+///
+/// Building one of these ([AudioDecoder.buildFlacSeekIndex]) costs a single
+/// linear byte scan — no residual decoding — after which a range read starts
+/// at the nearest indexed frame and only decodes forward from there.
+///
+/// Immutable and built from typed lists, so it can be handed to an
+/// `Isolate.run` closure as-is.
+class FlacSeekIndex {
+  const FlacSeekIndex({
+    required this.sampleOffsets,
+    required this.byteOffsets,
+    required this.totalSamples,
+  });
+
+  /// Empty index — every lookup falls back to decoding from the start.
+  static final FlacSeekIndex empty = FlacSeekIndex(
+    sampleOffsets: Int64List(0),
+    byteOffsets: Int64List(0),
+    totalSamples: 0,
+  );
+
+  /// Absolute sample position of each indexed frame, ascending.
+  final Int64List sampleOffsets;
+
+  /// Byte offset of the frame sync code for the matching entry in
+  /// [sampleOffsets].
+  final Int64List byteOffsets;
+
+  /// Total samples counted while scanning. Independent of STREAMINFO, so it
+  /// is also correct for a recording whose header was never finalized.
+  final int totalSamples;
+
+  bool get isEmpty => sampleOffsets.isEmpty;
+
+  int get entryCount => sampleOffsets.length;
+
+  /// The latest indexed frame starting at or before [sample], or `null` when
+  /// the index is empty (caller should decode from the first frame).
+  FlacSeekPoint? seekPointFor(int sample) {
+    if (sampleOffsets.isEmpty || sample < sampleOffsets[0]) return null;
+    // Binary search for the last entry <= sample.
+    var lo = 0;
+    var hi = sampleOffsets.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) >> 1;
+      if (sampleOffsets[mid] <= sample) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return FlacSeekPoint(
+      sampleOffset: sampleOffsets[lo],
+      byteOffset: byteOffsets[lo],
+    );
+  }
+}
+
+/// A single entry from a [FlacSeekIndex].
+class FlacSeekPoint {
+  const FlacSeekPoint({required this.sampleOffset, required this.byteOffset});
+
+  /// Absolute sample position of the frame that starts at [byteOffset].
+  final int sampleOffset;
+
+  /// Byte offset of that frame's sync code.
+  final int byteOffset;
+}
+
+/// Parsed FLAC frame header, as recovered by the seek-index scanner.
+class _FlacFrameHeader {
+  const _FlacFrameHeader({
+    required this.blockSize,
+    required this.codedNumber,
+    required this.variableBlocking,
+    required this.headerLength,
+  });
+
+  final int blockSize;
+
+  /// Frame number for fixed-blocksize streams, first sample number for
+  /// variable-blocksize streams.
+  final int codedNumber;
+
+  final bool variableBlocking;
+
+  /// Bytes from the sync code through the header CRC-8, inclusive.
+  final int headerLength;
+}
+
 /// Lightweight audio metadata that can be read without decoding full PCM.
 class AudioMetadata {
   const AudioMetadata({
@@ -306,10 +414,13 @@ class AudioDecoder {
   /// Decode a bounded sample range from a WAV/FLAC file.
   ///
   /// This avoids allocating full-file PCM for long File Analysis inputs.
+  /// [seekIndex] is only consulted for FLAC sources; WAV range reads are
+  /// already direct byte reads.
   static Future<DecodedAudio> decodeRange(
     String path, {
     required int startSample,
     required int count,
+    FlacSeekIndex? seekIndex,
   }) async {
     final file = File(path);
     final raf = await file.open();
@@ -328,7 +439,12 @@ class AudioDecoder {
           header[1] == 0x4C &&
           header[2] == 0x61 &&
           header[3] == 0x43) {
-        return decodeFlacRange(path, startSample: startSample, count: count);
+        return decodeFlacRange(
+          path,
+          startSample: startSample,
+          count: count,
+          seekIndex: seekIndex,
+        );
       }
     } finally {
       await raf.close();
@@ -616,29 +732,230 @@ class AudioDecoder {
   ///
   /// Tolerates an unfinalized STREAMINFO (`totalSamples == 0`) — the
   /// frame loop terminates on EOF instead of trusting the header.
+  /// Pass a [seekIndex] from [buildFlacSeekIndex] to skip straight to the
+  /// frame containing [startSample] instead of walking the whole stream —
+  /// that is what turns an O(offset) read into an O(count) one.
   static Future<DecodedAudio> decodeFlacRange(
     String path, {
     required int startSample,
     required int count,
+    FlacSeekIndex? seekIndex,
   }) async {
     final file = File(path);
     final raf = await file.open();
     try {
       final info = await _readFlacStreamInfo(raf, path);
+      final seekPoint = seekIndex?.seekPointFor(startSample);
       final reader = _StreamingBitReader(
         file: raf,
         fileLength: await raf.length(),
-        startByte: info.firstFrameOffset,
+        startByte: seekPoint?.byteOffset ?? info.firstFrameOffset,
       );
       return _decodeFlacFrames(
         reader,
         info,
         rangeStart: startSample,
         rangeCount: count,
+        initialSamplePos: seekPoint?.sampleOffset ?? 0,
       );
     } finally {
       await raf.close();
     }
+  }
+
+  /// Scan a FLAC file once and record where its frames start.
+  ///
+  /// Unlike a decode pass this never touches the residuals: it looks for the
+  /// 14-bit frame sync, parses the fixed-size frame header, and accepts a
+  /// candidate only when the header CRC-8 checks out *and* the frame's coded
+  /// number continues the sequence. Both conditions together make a false
+  /// positive inside compressed residual data effectively impossible, so the
+  /// scan is I/O bound rather than CPU bound.
+  ///
+  /// [sampleStride] sets the granularity: one entry roughly every that many
+  /// samples, so a seek lands at most that far before its target and the
+  /// decoder makes up the difference. Smaller means faster seeks and a bigger
+  /// index (each entry is 16 bytes).
+  ///
+  /// Returns [FlacSeekIndex.empty] rather than throwing when the file isn't
+  /// readable as FLAC — callers treat that as "decode from the start", which
+  /// is exactly the old behavior.
+  static Future<FlacSeekIndex> buildFlacSeekIndex(
+    String path, {
+    int sampleStride = 8 * 32000,
+  }) async {
+    // Longest possible frame header: 2 sync + 2 description + 7 UTF-8 coded
+    // number + 2 block size + 2 sample rate + 1 CRC-8.
+    const maxHeaderBytes = 16;
+    const windowBytes = 1 << 18;
+
+    final file = File(path);
+    RandomAccessFile? raf;
+    try {
+      raf = await file.open();
+      final info = await _readFlacStreamInfo(raf, path);
+      final fileLength = await raf.length();
+
+      final sampleOffsets = <int>[];
+      final byteOffsets = <int>[];
+
+      var pos = info.firstFrameOffset;
+      var bufferStart = pos;
+      var buffer = Uint8List(0);
+      var samplePos = 0;
+      var frameCount = 0;
+      var nextIndexSample = 0;
+
+      while (pos + 1 < fileLength) {
+        // Keep a full header's worth of lookahead resident, except at EOF
+        // where a short tail is all there is.
+        final needsRefill =
+            pos < bufferStart ||
+            pos + maxHeaderBytes > bufferStart + buffer.length;
+        if (needsRefill && bufferStart + buffer.length < fileLength) {
+          bufferStart = pos;
+          await raf.setPosition(bufferStart);
+          buffer = await raf.read(windowBytes);
+          if (buffer.isEmpty) break;
+        }
+
+        final i = pos - bufferStart;
+        if (i < 0 || i + 1 >= buffer.length) break;
+
+        if (buffer[i] != 0xFF || (buffer[i + 1] & 0xFC) != 0xF8) {
+          pos++;
+          continue;
+        }
+
+        final header = _parseFlacFrameHeader(buffer, i, info);
+        // A sync pattern that doesn't continue the frame sequence is residual
+        // data that happens to look like one.
+        final continuesStream =
+            header != null &&
+            (header.variableBlocking
+                ? header.codedNumber == samplePos
+                : header.codedNumber == frameCount);
+        if (!continuesStream) {
+          pos++;
+          continue;
+        }
+
+        if (samplePos >= nextIndexSample) {
+          sampleOffsets.add(samplePos);
+          byteOffsets.add(pos);
+          nextIndexSample = samplePos + sampleStride;
+        }
+        samplePos += header.blockSize;
+        frameCount++;
+        pos += header.headerLength;
+      }
+
+      return FlacSeekIndex(
+        sampleOffsets: Int64List.fromList(sampleOffsets),
+        byteOffsets: Int64List.fromList(byteOffsets),
+        totalSamples: samplePos,
+      );
+    } catch (_) {
+      return FlacSeekIndex.empty;
+    } finally {
+      await raf?.close();
+    }
+  }
+
+  /// Parse the frame header starting at [offset] in [buffer], or return null
+  /// when it is truncated, uses a reserved encoding, or fails its CRC-8.
+  static _FlacFrameHeader? _parseFlacFrameHeader(
+    Uint8List buffer,
+    int offset,
+    _FlacStreamInfo info,
+  ) {
+    if (offset + 4 > buffer.length) return null;
+    final variableBlocking = (buffer[offset + 1] & 0x01) != 0;
+    final blockSizeCode = buffer[offset + 2] >> 4;
+    final sampleRateCode = buffer[offset + 2] & 0x0F;
+    // 0 is reserved for block size; 0x0F is invalid for sample rate.
+    if (blockSizeCode == 0 || sampleRateCode == 0x0F) return null;
+
+    var p = offset + 4;
+
+    // Frame/sample number, FLAC's UTF-8-style variable-length coding.
+    if (p >= buffer.length) return null;
+    final first = buffer[p];
+    int extraBytes;
+    int codedNumber;
+    if (first < 0x80) {
+      extraBytes = 0;
+      codedNumber = first;
+    } else if (first < 0xC0) {
+      return null; // Continuation byte can't start the sequence.
+    } else if (first < 0xE0) {
+      extraBytes = 1;
+      codedNumber = first & 0x1F;
+    } else if (first < 0xF0) {
+      extraBytes = 2;
+      codedNumber = first & 0x0F;
+    } else if (first < 0xF8) {
+      extraBytes = 3;
+      codedNumber = first & 0x07;
+    } else if (first < 0xFC) {
+      extraBytes = 4;
+      codedNumber = first & 0x03;
+    } else if (first < 0xFE) {
+      extraBytes = 5;
+      codedNumber = first & 0x01;
+    } else {
+      extraBytes = 6;
+      codedNumber = 0;
+    }
+    p++;
+    if (p + extraBytes > buffer.length) return null;
+    for (var k = 0; k < extraBytes; k++) {
+      final b = buffer[p + k];
+      if ((b & 0xC0) != 0x80) return null;
+      codedNumber = (codedNumber << 6) | (b & 0x3F);
+    }
+    p += extraBytes;
+
+    int blockSize;
+    if (blockSizeCode == 0x06) {
+      if (p >= buffer.length) return null;
+      blockSize = buffer[p] + 1;
+      p += 1;
+    } else if (blockSizeCode == 0x07) {
+      if (p + 2 > buffer.length) return null;
+      blockSize = ((buffer[p] << 8) | buffer[p + 1]) + 1;
+      p += 2;
+    } else {
+      blockSize = _blockSizeFromCode(blockSizeCode);
+    }
+
+    if (sampleRateCode == 0x0C) {
+      p += 1;
+    } else if (sampleRateCode == 0x0D || sampleRateCode == 0x0E) {
+      p += 2;
+    }
+
+    if (p >= buffer.length) return null;
+    if (_flacCrc8(buffer, offset, p) != buffer[p]) return null;
+    // A frame can never be longer than STREAMINFO promised.
+    if (info.maxBlockSize > 0 && blockSize > info.maxBlockSize) return null;
+
+    return _FlacFrameHeader(
+      blockSize: blockSize,
+      codedNumber: codedNumber,
+      variableBlocking: variableBlocking,
+      headerLength: p + 1 - offset,
+    );
+  }
+
+  /// CRC-8 (polynomial 0x07, init 0) over `buffer[start, end)` — the same
+  /// checksum `FlacEncoder` writes at the end of every frame header.
+  static int _flacCrc8(Uint8List buffer, int start, int end) {
+    var crc = 0;
+    for (var i = start; i < end; i++) {
+      crc = _crc8Table[(crc ^ buffer[i]) & 0xFF];
+    }
+    return crc;
   }
 
   /// Decode a FLAC file sequentially, handing each frame to [onFrame] as it
@@ -664,9 +981,16 @@ class AudioDecoder {
   /// channel assignment, so a stereo stream would yield plausible-looking
   /// nonsense rather than failing. Callers that *write* what they decode
   /// (trimming a recording in place) would turn that into silent corruption.
+  /// Pass [fromSample] together with a [seekIndex] to start the walk near that
+  /// sample instead of at the head of the stream. Frames before the seek point
+  /// are never decoded and never reported; `onFrame` still receives absolute
+  /// sample positions, so callers that skip ahead themselves need no change
+  /// beyond handing over the index.
   static Future<void> decodeFlacFrames(
     String path, {
     required Future<bool> Function(int startSample, Int16List samples) onFrame,
+    FlacSeekIndex? seekIndex,
+    int fromSample = 0,
   }) async {
     final file = File(path);
     final raf = await file.open();
@@ -682,13 +1006,15 @@ class AudioDecoder {
           'Only mono FLAC supported, got ${info.channels} channels',
         );
       }
+      final seekPoint =
+          fromSample > 0 ? seekIndex?.seekPointFor(fromSample) : null;
       final reader = _StreamingBitReader(
         file: raf,
         fileLength: await raf.length(),
-        startByte: info.firstFrameOffset,
+        startByte: seekPoint?.byteOffset ?? info.firstFrameOffset,
       );
       final hasKnownTotal = info.totalSamples > 0;
-      var decodedSamples = 0;
+      var decodedSamples = seekPoint?.sampleOffset ?? 0;
       while (reader.bytesRemaining > 2) {
         if (hasKnownTotal && decodedSamples >= info.totalSamples) break;
         final frame = _decodeFrame(
@@ -892,6 +1218,11 @@ class AudioDecoder {
     _FlacStreamInfo info, {
     int? rangeStart,
     int? rangeCount,
+    /// Absolute sample position of the frame [reader] is parked on. Non-zero
+    /// only when a [FlacSeekIndex] let the caller skip forward, in which case
+    /// the frames before it were never decoded and must still be accounted
+    /// for when mapping frames onto the output window.
+    int initialSamplePos = 0,
   }) {
     if (info.bitsPerSample != 16) {
       throw FormatException(
@@ -914,7 +1245,7 @@ class AudioDecoder {
     final outEnd = outStart + outLen;
 
     // Decode audio frames.
-    var samplePos = 0;
+    var samplePos = initialSamplePos;
 
     while (reader.bytesRemaining > 2) {
       if (hasKnownTotal && samplePos >= info.totalSamples) break;

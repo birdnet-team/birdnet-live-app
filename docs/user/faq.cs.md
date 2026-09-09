@@ -19,7 +19,7 @@ Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).
 Odpověď: Snižte práh spolehlivosti v Nastavení, abyste viděli více detekcí. Šum na pozadí, vítr a vzdálenost ovlivňují přesnost.
 
 **Otázka: Co dělá druhový filtr?**
-Odpověď: Geografický model předpovídá, které druhy se pravděpodobně vyskytují ve vaší poloze GPS a ročním období. Chcete-li skrýt nepravděpodobné druhy, povolte možnost „Vyloučit zeměpisné oblasti“ nebo povolte možnost „Sloučit zeměpisné oblasti“ pro váhu výsledků podle zeměpisné pravděpodobnosti.
+Odpověď: Geografický model předpovídá, které druhy se pravděpodobně vyskytují ve vaší poloze GPS a ročním období. Zapněte **Filtr podle polohy**, chcete-li skrýt nepravděpodobné druhy, **Adaptivní filtr podle polohy**, chcete-li z nich skrýt jen ty, u kterých si není jistý ani zvukový model, nebo **Vážení podle polohy**, chcete-li vážit výsledky zeměpisnou pravděpodobností.
 
 **Otázka: Jak přesná je identifikace?**
 Odpověď: Přesnost závisí na kvalitě záznamu, vzdálenosti, šumu v pozadí a druhu. Detekce s vysokou spolehlivostí (>70 %) jsou obecně spolehlivé. Vzácné druhy vždy ověřujte vizuálně.

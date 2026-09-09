@@ -582,6 +582,21 @@ section.card h2 {
   background: var(--primary-dim);
   color: var(--primary);
 }
+/* Rejected pill. Same shape as .occ-confirmed but tinted with the low-score
+   red so a reviewer's "this ID is wrong" reads as the opposite verdict at a
+   glance. Unreviewed occurrences get no pill at all — silence is the honest
+   encoding for a detection nobody has judged. */
+.occ-rejected {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #cf222e22;
+  color: var(--score-low);
+}
 /* Heard / seen pill on manually-entered occurrences. Neutral surface
    rather than the primary tint used by .occ-confirmed, so provenance
    reads as secondary to the confirm state. */
@@ -1414,6 +1429,8 @@ String _buildDetectionsHtml(
       }
       if (d.isConfirmed) {
         buf.writeln('          <span class="occ-confirmed">Confirmed</span>');
+      } else if (d.isRejected) {
+        buf.writeln('          <span class="occ-rejected">Rejected</span>');
       }
       buf.writeln('        </div>');
       if (hasNote) {

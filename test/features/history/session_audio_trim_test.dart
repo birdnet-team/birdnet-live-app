@@ -766,6 +766,57 @@ void main() {
       expect(result!.durationSeconds, closeTo(1.5, 0.01));
     });
 
+    // A trim starting more than a minute in switches to the seek-index path
+    // so it stops bit-decoding everything ahead of the cut. This is the
+    // destructive commit's slicer, so the output has to stay bit-identical
+    // either side of that threshold.
+    test('a late start seeks and still cuts exactly', () async {
+      final source = await writeSourceFlac(_rate * 90);
+      final full = await AudioDecoder.decodeFile(source);
+
+      const startSample = 70 * _rate + 1234;
+      const endSample = 85 * _rate + 4321;
+      final result = await writeTrimmedAudioFile(
+        sourcePath: source,
+        destPath: '${tempDir.path}/late.flac',
+        startSec: startSample / _rate,
+        endSec: endSample / _rate,
+      );
+
+      expect(result, isNotNull);
+      final decoded = await AudioDecoder.decodeFile(result!.file.path);
+      expect(decoded.totalSamples, endSample - startSample);
+      for (var i = 0; i < decoded.totalSamples; i += 499) {
+        expect(
+          decoded.samples[i],
+          full.samples[startSample + i],
+          reason: 'sample $i',
+        );
+      }
+      // Including the very first and last sample, which is exactly what a
+      // seek landing on the wrong frame would shift.
+      expect(decoded.samples.first, full.samples[startSample]);
+      expect(decoded.samples.last, full.samples[endSample - 1]);
+    }, timeout: const Timeout(Duration(minutes: 3)));
+
+    test('a start just below the seek threshold is unaffected', () async {
+      final source = await writeSourceFlac(_rate * 90);
+      final full = await AudioDecoder.decodeFile(source);
+
+      const startSample = 55 * _rate + 777;
+      final result = await writeTrimmedAudioFile(
+        sourcePath: source,
+        destPath: '${tempDir.path}/early.flac',
+        startSec: startSample / _rate,
+        endSec: 60.0,
+      );
+
+      expect(result, isNotNull);
+      final decoded = await AudioDecoder.decodeFile(result!.file.path);
+      expect(decoded.samples.first, full.samples[startSample]);
+      expect(decoded.totalSamples, 60 * _rate - startSample);
+    }, timeout: const Timeout(Duration(minutes: 3)));
+
     test('slices that do not fall on frame boundaries stay exact', () async {
       final source = await writeSourceFlac(_rate * 4);
       final full = await AudioDecoder.decodeFile(source);

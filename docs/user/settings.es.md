@@ -104,19 +104,31 @@ Un desplazamiento en el eje x aplicado a las puntuaciones de probabilidad brutas
 
 ### Frecuencia de inferencia
 
-Controla con qué frecuencia BirdNET ejecuta la inferencia. El control deslizante usa los mismos pasos de **0,10–1,00 Hz** que la configuración de Survey y ARU.
+Controla con qué frecuencia BirdNET ejecuta la inferencia. El control
+deslizante usa los mismos pasos de **0,10–1,00 Hz** que la configuración de
+Survey y ARU. Las ventanas se anclan a las muestras de audio capturadas y no
+a la finalización de un temporizador, de modo que guardar un fragmento o una
+llamada al modelo temporalmente lenta no desplaza las ventanas posteriores.
+Con los mismos ajustes de inferencia, el modo Live, Point Count y Survey
+analizan las mismas ventanas y notifican las mismas detecciones. Las
+frecuencias más bajas reducen el trabajo del modelo y el consumo de batería,
+pero dejan huecos más amplios entre ventanas, por lo que es más fácil perder
+vocalizaciones muy breves. Los nuevos ajustes de Survey usan **0,70 Hz** de
+forma predeterminada como término medio; **0,30 Hz** sigue siendo la opción
+explícita de máxima autonomía. El análisis de archivos no tiene frecuencia de
+inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
 BirdNET Live suaviza internamente las puntuaciones a lo largo de las ventanas
 de inferencia recientes para reducir falsos positivos puntuales. Esta
-agrupación no se expone como ajuste de usuario; de forma predeterminada usa un
-modo de agrupación adaptativo con cinco ventanas recientes y un límite de
-antigüedad de 10 segundos en tiempo real. A frecuencias de inferencia altas
-usa agrupación por promedio para decisiones estables en directo; a los ritmos
-más lentos de Survey y ARU usa agrupación LME para mantener alta la precisión
-en ejecuciones largas. Las detecciones aceptadas muestran la mayor confianza
-reciente respaldada por el modelo, de modo que las vocalizaciones evidentes
-pueden seguir mostrando confianza alta en lugar de quedar aplanadas por el
-suavizado.
+agrupación no se expone como ajuste de usuario; de forma predeterminada usa
+agrupación adaptativa Log-Mean-Exp con cinco ventanas recientes y un límite de
+antigüedad de 10 segundos en tiempo real. Las detecciones aceptadas muestran la
+mayor confianza reciente respaldada por el modelo, de modo que las
+vocalizaciones evidentes pueden seguir mostrando confianza alta en lugar de
+quedar aplanadas por el suavizado. Todos los modos convierten ahora ese
+resultado de agrupación en detecciones de la misma manera: una detección
+comienza en su ventana de apoyo más temprana, lleva la puntuación respaldada
+más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
 
@@ -247,11 +259,27 @@ Las descargas de mapas sin conexión están ocultas por ahora mientras BirdNET L
 
 - **Desactivado** — sin filtrado geográfico
 - **Filtro por ubicación** — excluir especies por debajo del umbral geográfico
+- **Filtro adaptativo por ubicación** — exigir más confianza cuanto menos común sea la especie aquí
 - **Ponderación por ubicación** — usar el geomodelo como señal de ponderación adicional
 
 ### Umbral del filtro geográfico
 
-Aparece cuando hay activo un modo de filtro basado en la ubicación.
+Aparece cuando está activo **Filtro por ubicación** o **Ponderación por ubicación**. El filtro adaptativo deduce su propio listón a partir de la mezcla local de especies, así que no tiene control deslizante.
+
+### Cómo decide el filtro adaptativo
+
+Gradúa la exigencia según lo común que sea una especie en tu ubicación, con los mismos niveles de abundancia que ves en la pantalla **Explorar**. Las especies del nivel *Abundante* no se filtran nunca; por debajo, la puntuación de detección necesaria sube de forma continua, y las especies que ni siquiera están en la lista local necesitan alrededor de 0,92 o más. Todo lo que puntúe 0,99 o más se conserva, diga lo que diga el modelo de ubicación.
+
+| Nivel en tu ubicación | Puntuación de detección necesaria |
+|---|---|
+| Abundante | cualquiera |
+| Común | ~0,55–0,70 |
+| Frecuente | ~0,70–0,82 |
+| Infrecuente | ~0,78–0,89 |
+| Escasa / Rara | ~0,83–0,92 |
+| Fuera de la lista local | ~0,92–0,97 |
+
+Como los niveles se basan en el orden, esto funciona igual en un bosque tropical muy diverso que en el Ártico. Las detecciones que sobreviven conservan su puntuación original: el modelo de ubicación solo decide si se muestran. El objetivo es reducir falsos positivos de especies infrecuentes sin perder una grabación realmente clara de una de ellas.
 
 ## Exportación y sincronización
 
@@ -268,7 +296,7 @@ La intuición: muchos flujos de trabajo necesitan más de un formato a la vez �
 
 ### Incluir archivos de audio
 
-Incluir el audio guardado junto a las tablas o metadatos exportados cuando el flujo de exportación lo admita.
+Incluir el audio guardado junto a las tablas o metadatos exportados cuando el flujo de exportación lo admita. Compartir una sola detección también sigue este ajuste: una grabación completa de la Session se recorta a las marcas de inicio y fin exactas de esa detección, mientras que una Session solo de detecciones usa su clip conservado.
 
 ### Compartir siempre el audio como WAV
 
@@ -284,7 +312,7 @@ Al activarlo, cada ZIP de exportación contiene además un archivo `<session>_re
 
 ### Compartir solo el audio
 
-Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las sesiones formadas por fragmentos de detección (sin grabación completa) siguen produciendo un ZIP, porque entonces hay más de un archivo que compartir.
+Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las Sessions con varios fragmentos de detección siguen produciendo un ZIP; al compartir una sola detección se entrega ese único clip en bruto.
 
 ## Privacidad
 

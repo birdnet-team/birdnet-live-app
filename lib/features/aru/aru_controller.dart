@@ -412,7 +412,17 @@ class AruController {
       source: record.source,
       latitude: record.latitude ?? existing?.latitude,
       longitude: record.longitude ?? existing?.longitude,
-      confirmedAt: existing?.confirmedAt ?? record.confirmedAt,
+      // A reviewer decision on the record already in the session wins over
+      // whatever the incoming record carries; fall back to the incoming one
+      // only when the existing record is still unreviewed.
+      reviewStatus:
+          (existing != null && existing.isReviewed)
+              ? existing.reviewStatus
+              : record.reviewStatus,
+      reviewedAt:
+          (existing != null && existing.isReviewed)
+              ? existing.reviewedAt
+              : record.reviewedAt,
       note: existing?.note ?? record.note,
       voiceMemoPath: existing?.voiceMemoPath ?? record.voiceMemoPath,
     );
@@ -447,7 +457,8 @@ class AruController {
         a.clipTimestamp == b.clipTimestamp &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude &&
-        a.confirmedAt == b.confirmedAt &&
+        a.reviewStatus == b.reviewStatus &&
+        a.reviewedAt == b.reviewedAt &&
         a.note == b.note &&
         a.voiceMemoPath == b.voiceMemoPath;
   }

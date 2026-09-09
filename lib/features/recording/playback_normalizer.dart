@@ -32,6 +32,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -88,47 +89,44 @@ class PlaybackNormalizer {
       if (!await file.exists()) return originalPath;
 
       // Skip normalization for large source files — the full decode is
-      // far too expensive to run on the calling isolate, and quiet long
+      // far too expensive even in the background, and quiet long
       // recordings are rare in practice.
       if (decoded == null) {
         final size = await file.length();
         if (size > _maxNormalizeBytes) return originalPath;
       }
 
-      // Decode if the caller didn't hand us samples already.
-      DecodedAudio audio;
+      final cacheDir = await _ensureCacheDir();
+      final stat = await file.stat();
+      final key = _cacheKey(originalPath, stat.size, stat.modified);
+      final cachePath = p.join(cacheDir.path, '$key.wav');
+
+      // Reuse a previous normalized copy when stale-free. Checking this
+      // before decoding is what makes a reopened clip O(1).
+      if (await File(cachePath).exists()) {
+        return cachePath;
+      }
+
+      final bool wroteCache;
       if (decoded != null) {
-        audio = decoded;
+        // The caller already paid for the decode (it needed the samples for
+        // a spectrogram), so there is nothing heavy left to move off-thread.
+        wroteCache = await _writeNormalizedIfQuiet(decoded, cachePath);
       } else if (await AudioDecoder.canDecodeDart(originalPath)) {
-        audio = await AudioDecoder.decodeFile(originalPath);
+        // Decoding even a few megabytes takes hundreds of milliseconds and
+        // this runs while a screen is opening, so it goes to a background
+        // isolate. Only paths and primitives cross the boundary; the
+        // temp-directory lookup (a plugin call) already happened above.
+        wroteCache = await Isolate.run(
+          () => _decodeAndWriteNormalized(originalPath, cachePath),
+        );
       } else {
         // Native decoder path: we don't reach for it here. Without a
         // decoded buffer we can't compute the peak, so play untouched.
         return originalPath;
       }
 
-      final peak = _computePeak(audio.samples);
-      if (peak >= _quietThreshold || peak == 0.0) {
-        return originalPath;
-      }
-
-      final cacheDir = await _ensureCacheDir();
-      final stat = await file.stat();
-      final key = _cacheKey(originalPath, stat.size, stat.modified);
-      final cachePath = p.join(cacheDir.path, '$key.wav');
-      final cacheFile = File(cachePath);
-
-      // Reuse a previous normalized copy when stale-free.
-      if (await cacheFile.exists()) {
-        return cachePath;
-      }
-
-      final boosted = _normalizedFloat32(audio.samples, peak);
-      await WavWriter.writeFile(
-        filePath: cachePath,
-        samples: boosted,
-        sampleRate: audio.sampleRate,
-      );
+      if (!wroteCache) return originalPath;
 
       // Best-effort prune; never block on it.
       unawaited(_pruneCache(cacheDir));
@@ -144,6 +142,35 @@ class PlaybackNormalizer {
   // --------------------------------------------------------------------------
   // Internals
   // --------------------------------------------------------------------------
+
+  /// Decode [originalPath] and write a boosted copy to [cachePath] when it is
+  /// quiet enough to warrant one. Returns whether the cache file was written.
+  ///
+  /// Pure file I/O and arithmetic — no plugin channels — so it is safe to run
+  /// through [Isolate.run].
+  static Future<bool> _decodeAndWriteNormalized(
+    String originalPath,
+    String cachePath,
+  ) async {
+    final audio = await AudioDecoder.decodeFile(originalPath);
+    return _writeNormalizedIfQuiet(audio, cachePath);
+  }
+
+  static Future<bool> _writeNormalizedIfQuiet(
+    DecodedAudio audio,
+    String cachePath,
+  ) async {
+    final peak = _computePeak(audio.samples);
+    if (peak >= _quietThreshold || peak == 0.0) return false;
+
+    final boosted = _normalizedFloat32(audio.samples, peak);
+    await WavWriter.writeFile(
+      filePath: cachePath,
+      samples: boosted,
+      sampleRate: audio.sampleRate,
+    );
+    return true;
+  }
 
   static double _computePeak(Int16List samples) {
     var peak = 0;

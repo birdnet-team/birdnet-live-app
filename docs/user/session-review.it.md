@@ -71,13 +71,13 @@ Scorrendo la riga di un'**intestazione di specie** (a sinistra o a destra) si el
 
 ### Condivisione di una singola rilevazione
 
-La voce :material-share-variant: **Condividi rilevazione** apre il foglio di condivisione del sistema con un contenuto sintetico e adatto agli strumenti da campo — nome comune + scientifico, confidenza, marca temporale UTC in ISO 8601 e un URI `geo:` quando la rilevazione ha il GPS — e allega il clip audio quando disponibile. Il file condiviso si chiama `BirdNET_Live_<timestamp>_<species>.<ext>` per allinearsi allo schema di esportazione ZIP.
+La voce :material-share-variant: **Condividi rilevazione** usa le stesse opzioni di **Impostazioni → Esporta e sincronizza**. Esporta solo questa rilevazione negli artefatti Raven, CSV, JSON, GPX, HTML e metadati dell'app selezionati. Quando **Includi file audio** è attivo, il pacchetto contiene anche l'audio della rilevazione; viene rispettata l'opzione **Condividi sempre l'audio come WAV**. Con tutti i formati complementari, HTML e metadati dell'app disattivati, il foglio di condivisione riceve il clip audio non compresso in uno ZIP.
 
 L'allegato audio viene determinato in questo ordine:
 
-1. Il clip della singola rilevazione presente su disco.
-2. **Per le Sessions che registrano un unico file continuo**: la finestra audio pertinente viene estratta al volo dalla registrazione. Sono supportate registrazioni continue sia WAV sia FLAC e lo spezzone viene fornito nello stesso contenitore della sorgente (WAV in → WAV out, FLAC in → FLAC out).
-3. Se nessuno dei due è disponibile, la condivisione è di solo testo — posizione e marca temporale finiscono comunque nel contenuto.
+1. **Per le Sessions che registrano un unico file continuo**: l'audio fra le marche temporali di inizio e fine della rilevazione viene estratto direttamente dalla registrazione. Sono supportate registrazioni continue WAV e FLAC; le sorgenti compresse di File Analysis vengono decodificate come WAV.
+2. Altrimenti viene usato il clip salvato della rilevazione, se disponibile su disco.
+3. Se non è disponibile alcuna sorgente audio e non è stato selezionato alcun artefatto di esportazione, la condivisione torna a un testo breve con specie, confidenza, marca temporale UTC e posizione.
 
 ### Memo vocali
 

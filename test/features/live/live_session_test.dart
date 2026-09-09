@@ -289,37 +289,103 @@ void main() {
       expect(json.containsKey('audioClipPath'), isFalse);
     });
 
-    test('confirmedAt defaults to null and isConfirmed is false', () {
+    test('review defaults to unreviewed with no timestamp', () {
       final record = DetectionRecord(
         scientificName: 'Turdus merula',
         commonName: 'Eurasian Blackbird',
         confidence: 0.85,
         timestamp: DateTime.now(),
       );
-      expect(record.confirmedAt, isNull);
+      expect(record.reviewStatus, ReviewStatus.unreviewed);
+      expect(record.reviewedAt, isNull);
       expect(record.isConfirmed, isFalse);
-      expect(record.toJson().containsKey('confirmedAt'), isFalse);
+      expect(record.isRejected, isFalse);
+      expect(record.isReviewed, isFalse);
+      final json = record.toJson();
+      expect(json.containsKey('reviewStatus'), isFalse);
+      expect(json.containsKey('reviewedAt'), isFalse);
+      // An unreviewed record must never claim a verdict, including via the
+      // legacy key older builds read.
+      expect(json.containsKey('confirmedAt'), isFalse);
     });
 
-    test('confirmedAt round-trips as UTC ISO string', () {
-      final confirmed = DateTime.utc(2026, 5, 6, 12, 30, 45);
+    test('confirmed review round-trips as UTC ISO string', () {
+      final stamp = DateTime.utc(2026, 5, 6, 12, 30, 45);
       final record = DetectionRecord(
         scientificName: 'Turdus merula',
         commonName: 'Eurasian Blackbird',
         confidence: 0.85,
         timestamp: DateTime(2026, 5, 6, 12, 0, 0),
-        confirmedAt: confirmed,
+        reviewStatus: ReviewStatus.confirmed,
+        reviewedAt: stamp,
       );
 
       final json = record.toJson();
-      expect(json['confirmedAt'], endsWith('Z'));
+      expect(json['reviewStatus'], 'confirmed');
+      expect(json['reviewedAt'], endsWith('Z'));
 
       final roundTripped = DetectionRecord.fromJson(json);
+      expect(roundTripped.reviewStatus, ReviewStatus.confirmed);
       expect(roundTripped.isConfirmed, isTrue);
-      expect(roundTripped.confirmedAt!.isAtSameMomentAs(confirmed), isTrue);
+      expect(roundTripped.reviewedAt!.isAtSameMomentAs(stamp), isTrue);
     });
 
-    test('legacy JSON without confirmedAt deserializes with null', () {
+    test('rejected review round-trips', () {
+      final stamp = DateTime.utc(2026, 5, 6, 12, 30, 45);
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 5, 6, 12, 0, 0),
+        reviewStatus: ReviewStatus.rejected,
+        reviewedAt: stamp,
+      );
+
+      final json = record.toJson();
+      expect(json['reviewStatus'], 'rejected');
+      // The legacy mirror is confirmation-only: a build that predates
+      // rejection must not read a rejected record back as confirmed.
+      expect(json.containsKey('confirmedAt'), isFalse);
+
+      final roundTripped = DetectionRecord.fromJson(json);
+      expect(roundTripped.reviewStatus, ReviewStatus.rejected);
+      expect(roundTripped.isRejected, isTrue);
+      expect(roundTripped.isConfirmed, isFalse);
+      expect(roundTripped.reviewedAt!.isAtSameMomentAs(stamp), isTrue);
+    });
+
+    test('confirmed record writes the legacy confirmedAt mirror', () {
+      final stamp = DateTime.utc(2026, 5, 6, 12, 30, 45);
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime(2026, 5, 6, 12, 0, 0),
+        reviewStatus: ReviewStatus.confirmed,
+        reviewedAt: stamp,
+      );
+      expect(record.toJson()['confirmedAt'], record.toJson()['reviewedAt']);
+    });
+
+    test('legacy JSON with confirmedAt upgrades to confirmed', () {
+      final json = {
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': '2026-05-06T12:00:00.000Z',
+        'confirmedAt': '2026-05-06T12:30:45.000Z',
+      };
+      final record = DetectionRecord.fromJson(json);
+      expect(record.reviewStatus, ReviewStatus.confirmed);
+      expect(
+        record.reviewedAt!.isAtSameMomentAs(
+          DateTime.utc(2026, 5, 6, 12, 30, 45),
+        ),
+        isTrue,
+      );
+    });
+
+    test('legacy JSON without confirmedAt deserializes as unreviewed', () {
       final json = {
         'scientificName': 'Turdus merula',
         'commonName': 'Eurasian Blackbird',
@@ -327,8 +393,45 @@ void main() {
         'timestamp': '2026-05-06T12:00:00.000Z',
       };
       final record = DetectionRecord.fromJson(json);
-      expect(record.confirmedAt, isNull);
+      expect(record.reviewStatus, ReviewStatus.unreviewed);
+      expect(record.reviewedAt, isNull);
       expect(record.isConfirmed, isFalse);
+      expect(record.isRejected, isFalse);
+    });
+
+    test('unknown persisted review status falls back to unreviewed', () {
+      final json = {
+        'scientificName': 'Turdus merula',
+        'commonName': 'Eurasian Blackbird',
+        'confidence': 0.85,
+        'timestamp': '2026-05-06T12:00:00.000Z',
+        'reviewStatus': 'deferred',
+      };
+      expect(
+        DetectionRecord.fromJson(json).reviewStatus,
+        ReviewStatus.unreviewed,
+      );
+    });
+
+    test('markConfirmed / markRejected / clearReview move between states', () {
+      final record = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.85,
+        timestamp: DateTime.now(),
+      );
+
+      record.markConfirmed();
+      expect(record.isConfirmed, isTrue);
+      expect(record.reviewedAt!.isUtc, isTrue);
+
+      record.markRejected();
+      expect(record.isRejected, isTrue);
+      expect(record.isConfirmed, isFalse);
+
+      record.clearReview();
+      expect(record.reviewStatus, ReviewStatus.unreviewed);
+      expect(record.reviewedAt, isNull);
     });
 
     test('note defaults to null and hasNote is false', () {

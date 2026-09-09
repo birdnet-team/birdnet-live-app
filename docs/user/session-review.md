@@ -71,13 +71,13 @@ Swiping a **species header** row (left or right) deletes every detection of that
 
 ### Sharing a single detection
 
-The :material-share-variant: **Share detection** entry opens the platform share sheet with a terse, field-tool-friendly payload — common + scientific name, confidence, ISO 8601 UTC timestamp, and a `geo:` URI when the detection has GPS — and attaches the audio clip whenever one is available. The shared file is named `BirdNET_Live_<timestamp>_<species>.<ext>` to match the ZIP export scheme.
+The :material-share-variant: **Share detection** entry uses the same choices as **Settings → Export & Sync**. It exports only that detection in the selected Raven, CSV, JSON, GPX, HTML, and app-metadata artifacts. When **Include audio files** is on, the bundle also carries the detection audio; **Always share audio as WAV** is honored. With every companion format, HTML, and app-metadata option off, the platform share sheet receives the raw audio clip instead of a ZIP.
 
 The audio attachment is resolved in this order:
 
-1. The detection's own per-detection clip on disk.
-2. **For sessions recording one continuous file**: the relevant audio window is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
-3. If neither is available, the share is text-only — location and timestamp still land in the payload.
+1. **For sessions recording one continuous file**: audio from the detection's start timestamp through its end timestamp is sliced out of the recording on the fly. Both WAV and FLAC continuous recordings are supported, and the slice ships in the same container as the source (WAV in → WAV out, FLAC in → FLAC out).
+2. Otherwise, the detection's own retained clip is used when it is on disk.
+3. If neither audio source is available and no export artifact was selected, the share falls back to a short text payload with species, confidence, UTC timestamp, and location.
 
 ### Voice memos
 

@@ -71,13 +71,13 @@ Przesunięcie wiersza z **nagłówkiem gatunku** (w lewo lub w prawo) usuwa nara
 
 ### Udostępnianie pojedynczego wykrycia
 
-Pozycja :material-share-variant: **Udostępnij wykrycie** otwiera systemowy panel udostępniania ze zwięzłą treścią przystosowaną do narzędzi terenowych — nazwa zwyczajowa i naukowa, pewność, znacznik czasu ISO 8601 UTC oraz identyfikator `geo:`, gdy wykrycie ma pozycję GPS — i dołącza fragment dźwiękowy, jeśli jest dostępny. Udostępniany plik nosi nazwę `BirdNET_Live_<timestamp>_<species>.<ext>`, zgodnie ze schematem eksportu ZIP.
+Pozycja :material-share-variant: **Udostępnij wykrycie** używa tych samych opcji co **Ustawienia → Eksport i synchronizacja**. Eksportuje tylko to wykrycie w wybranych artefaktach Raven, CSV, JSON, GPX, HTML i metadanych aplikacji. Gdy włączona jest opcja **Dołącz pliki audio**, pakiet zawiera też dźwięk wykrycia; opcja **Zawsze udostępniaj dźwięk jako WAV** jest respektowana. Gdy wszystkie formaty towarzyszące, HTML i metadane aplikacji są wyłączone, systemowy panel udostępniania otrzymuje surowy fragment dźwięku zamiast ZIP.
 
 Załącznik dźwiękowy jest ustalany w tej kolejności:
 
-1. Własny fragment wykrycia zapisany na dysku.
-2. **Dla Sessions nagrywających jeden ciągły plik**: odpowiednie okno dźwiękowe jest wycinane z nagrania w locie. Obsługiwane są ciągłe nagrania WAV i FLAC, a wycinek zachowuje ten sam kontener co źródło (WAV na wejściu → WAV na wyjściu, FLAC → FLAC).
-3. Jeśli żadne z powyższych nie jest dostępne, udostępniany jest sam tekst — lokalizacja i znacznik czasu i tak trafiają do treści.
+1. **Dla Sessions nagrywających jeden ciągły plik**: dźwięk od znacznika początku do końca wykrycia jest wycinany bezpośrednio z nagrania. Obsługiwane są ciągłe nagrania WAV i FLAC; skompresowane źródła z File Analysis są dekodowane jako WAV.
+2. W przeciwnym razie używany jest zapisany własny fragment wykrycia, jeśli znajduje się na dysku.
+3. Jeśli nie ma źródła dźwięku ani wybranego artefaktu eksportu, udostępniany jest krótki tekst z gatunkiem, pewnością, znacznikiem czasu UTC i lokalizacją.
 
 ### Notatki głosowe
 

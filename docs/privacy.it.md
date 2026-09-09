@@ -1,8 +1,18 @@
-# Informativa sulla Privacy
+# Informativa sulla Privacy di BirdNET Live
 
-**Ultimo aggiornamento:** Luglio 2026
+**Ultimo aggiornamento:** 6 agosto 2026
 
-BirdNET Live rispetta la tua privacy. Questo documento spiega come l'app tratta i tuoi dati.
+Questa Informativa sulla Privacy si applica a **BirdNET Live** (l'**app**). L'app è sviluppata e offerta da **BirdNET-Team** (lo **sviluppatore**, **noi** o **nostro**).
+
+## Identità dell'app e dello sviluppatore
+
+| | |
+|---|---|
+| **Nome dell'app** | BirdNET Live |
+| **Nome dello sviluppatore** | BirdNET-Team |
+| **Contatto privacy** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team fornisce questa informativa a proprio nome. Essa spiega come BirdNET Live protegge e tratta le informazioni personali.
 
 ## Elaborazione sul Dispositivo
 
@@ -13,9 +23,9 @@ Tutta l'analisi audio e l'identificazione delle specie di uccelli avvengono **in
 
 Nessun dato audio viene mai trasmesso a server esterni.
 
-## Raccolta Dati
+## Trattamento delle informazioni personali
 
-BirdNET Live **non** raccoglie, trasmette né condivide alcun dato personale. Non c'è analisi, né tracciamento, né telemetria.
+BirdNET-Team non gestisce un backend dell'app e non riceve tramite BirdNET Live registrazioni, posizione, dati delle Session o altre informazioni personali. L'app non include account utente, pubblicità, analisi, tracciamento o telemetria. Elabora tuttavia audio e posizione sul dispositivo e, solo quando attivi una funzione di rete facoltativa, invia le informazioni descritte in **Servizi di Terze Parti** direttamente al fornitore indicato.
 
 ### Dati archiviati localmente sul tuo dispositivo:
 
@@ -38,17 +48,17 @@ L'app può accedere alle seguenti risorse esterne. Ciascuna è controllata da un
 
 | Risorsa | Scopo | Controllato da | Inviato per ogni richiesta |
 |---------|-------|----------------|----------------------------|
-| Tile della mappa (OpenStreetMap) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della sessione | **Impostazioni → Privacy → Consenti tile della mappa** | Coordinate del tile `(z, x, y)` e user-agent BirdNET Live — nessun PII |
-| Geocoding inverso (OpenStreetMap Nominatim) | Risolvere coordinate GPS in un nome di luogo leggibile (es. “Roma, Italia”) per la visualizzazione della sessione | **Impostazioni → Privacy → Consenti ricerca nome luogo** | La latitudine/longitudine della sessione, più lo user-agent BirdNET Live |
-| Snapshot meteo (Open-Meteo) | Cattura una tantum delle condizioni locali (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate di registrazione e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | La latitudine/longitudine della sessione e il timestamp di fine, più lo user-agent BirdNET Live |
+| Tile della mappa (OpenStreetMap Foundation) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della Session | **Impostazioni → Privacy → Consenti tile della mappa** | Coordinate del tile `(z, x, y)`, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
+| Geocoding inverso (Nominatim di OpenStreetMap Foundation) | Risolvere coordinate GPS in un nome di luogo leggibile (es. “Roma, Italia”) per la visualizzazione della Session | **Impostazioni → Privacy → Consenti ricerca nome luogo** | Latitudine/longitudine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
+| Snapshot meteo (OpenMeteo GmbH) | Cattura una tantum delle condizioni locali (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate di registrazione e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | Latitudine/longitudine e ora di fine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 
-Le richieste di tile della mappa sono richieste HTTPS GET standard verso `tile.openstreetmap.org` con lo user-agent BirdNET Live. Vengono inviate solo le coordinate del tile — nessuna informazione personale identificabile.
+Le richieste dei tile sono richieste HTTPS GET a `tile.openstreetmap.org`. Le coordinate identificano l'area della mappa visualizzata. Come ogni richiesta Internet diretta, espongono anche il tuo indirizzo IP al fornitore.
 
 Le richieste di geocoding inverso inviano la latitudine e la longitudine della sessione a `nominatim.openstreetmap.org` via HTTPS, insieme allo user-agent BirdNET Live come richiesto dalla [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/). Il nome di luogo risolto è archiviato localmente con la sessione, così una sessione viene geocodificata una sola volta. Nessuna richiesta viene effettuata se la sessione non ha coordinate GPS o il dispositivo è offline.
 
 Le richieste meteo inviano la latitudine/longitudine della sessione e il timestamp di fine a `api.open-meteo.com` via HTTPS, insieme allo user-agent BirdNET Live. [Open-Meteo](https://open-meteo.com/) è un servizio gratuito e non richiede né account né chiave API. Lo snapshot meteo restituito è archiviato localmente con la sessione ed è anche scritto nell'esportazione JSON, nel blocco `metadata.json` della sessione e nel report HTML.
 
-**Conservazione:** nessuno dei servizi di terze parti sopra elencati viene contattato per *caricare* o *conservare* dati utente. I valori restituiti (nome del luogo, snapshot meteo) vivono solo nel record locale della sessione sul tuo dispositivo, e viaggiano solo nei file di esportazione che produci esplicitamente.
+**Trattamento e conservazione da parte di terzi:** BirdNET-Team non gestisce questi servizi e non riceve i dati delle richieste. OpenStreetMap Foundation può trattare dati di accesso alla rete e dettagli delle richieste secondo la propria [Informativa sulla Privacy](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo dichiara che i log della sua API gratuita possono contenere indirizzi IP e coordinate geografiche e vengono eliminati dopo 90 giorni; consulta i suoi [Termini e Privacy](https://open-meteo.com/en/terms). I fornitori possono trattare i dati in altri Paesi. I valori restituiti vengono salvati localmente nella Session e inclusi in un'esportazione solo quando la crei.
 
 **Revoca:** puoi disattivare ciascuno dei tre servizi in qualsiasi momento da **Impostazioni → Privacy**. I nomi di luogo e gli snapshot meteo già archiviati localmente restano associati alle sessioni in cui sono stati acquisiti; elimina quelle sessioni dalla Libreria delle sessioni oppure usa **Impostazioni → Zona pericolosa → Cancella tutti i dati** per rimuovere quei dati storici.
 

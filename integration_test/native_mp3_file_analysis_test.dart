@@ -73,6 +73,55 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
+
+  testWidgets(
+    'concurrent MP3 ranges match sequential decoding',
+    (tester) async {
+      final fixture = File(_fixturePath);
+      expect(fixture.existsSync(), isTrue);
+
+      final metadata = await NativeAudioDecoder.inspectFile(
+        _fixturePath,
+        'MP3',
+      );
+      final count = metadata.sampleRate * 5;
+      final sequential = <DecodedAudio>[
+        await NativeAudioDecoder.decodeRange(
+          _fixturePath,
+          startSample: 0,
+          count: count,
+        ),
+        await NativeAudioDecoder.decodeRange(
+          _fixturePath,
+          startSample: count,
+          count: count,
+        ),
+      ];
+      final concurrent = await Future.wait([
+        NativeAudioDecoder.decodeRange(
+          _fixturePath,
+          startSample: 0,
+          count: count,
+          allowConcurrent: true,
+        ),
+        NativeAudioDecoder.decodeRange(
+          _fixturePath,
+          startSample: count,
+          count: count,
+          allowConcurrent: true,
+        ),
+      ]);
+
+      for (var index = 0; index < sequential.length; index++) {
+        expect(concurrent[index].sampleRate, sequential[index].sampleRate);
+        expect(
+          concurrent[index].samples,
+          orderedEquals(sequential[index].samples),
+        );
+      }
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 }
 
 Future<void> _expectNativeRangesReachEof({

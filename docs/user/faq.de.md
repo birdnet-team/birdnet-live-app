@@ -19,7 +19,7 @@ A: Android (8.0+), iOS (15.0+) und Windows (experimentell).
 A: Senken Sie den Konfidenzschwellenwert in den Einstellungen, um mehr Detektionen zu sehen. Hintergrundgeräusche, Wind und Entfernung beeinflussen die Genauigkeit.
 
 **F: Was macht der Artenfilter?**
-A: Das Geo-Modell sagt voraus, welche Arten an Ihrem GPS-Standort und zur jeweiligen Jahreszeit wahrscheinlich sind. Aktivieren Sie **Standortfilter**, um unwahrscheinliche Arten auszublenden, oder **Standortgewichtung**, um die Ergebnisse nach geografischer Wahrscheinlichkeit zu gewichten.
+A: Das Geo-Modell sagt voraus, welche Arten an Ihrem GPS-Standort und zur jeweiligen Jahreszeit wahrscheinlich sind. Aktivieren Sie **Standortfilter**, um unwahrscheinliche Arten auszublenden, **Adaptiver Standortfilter**, um davon nur die auszublenden, bei denen auch das Audiomodell unsicher ist, oder **Standortgewichtung**, um die Ergebnisse nach geografischer Wahrscheinlichkeit zu gewichten.
 
 **F: Wie genau ist die Bestimmung?**
 A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hintergrundgeräusch und der Art ab. Detektionen mit hoher Konfidenz (>70 %) sind im Allgemeinen verlässlich. Überprüfen Sie seltene Arten stets visuell.

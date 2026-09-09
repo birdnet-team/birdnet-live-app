@@ -13,7 +13,9 @@
 // [AudioDecoder].
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -45,6 +47,62 @@ class NativePcmFileDecodeResult {
   final String pcmPath;
   final int sampleRate;
   final int totalSamples;
+}
+
+/// A native transcode-to-PCM that is already running.
+///
+/// Both platform decoders append to [pcmPath] as they go — Android through a
+/// buffered stream, iOS through a `FileHandle` — so whatever has been written
+/// is readable before the decode finishes. That is what lets Session Review
+/// draw the beginning of a long compressed recording within a second or two
+/// instead of waiting minutes for the whole transcode.
+///
+/// [sampleRate] and [expectedTotalSamples] come from the container header, so
+/// they are available immediately; [completed] reports what the decoder
+/// actually produced.
+class NativePcmTranscode {
+  NativePcmTranscode({
+    required this.pcmPath,
+    required this.sampleRate,
+    required this.expectedTotalSamples,
+    required this.completed,
+  }) {
+    // Callers await [completed] on their own schedule; make sure a failure in
+    // the meantime is never reported as an unhandled async error.
+    unawaited(completed.catchError((Object _) => _failed));
+  }
+
+  static final NativePcmFileDecodeResult _failed = NativePcmFileDecodeResult(
+    pcmPath: '',
+    sampleRate: 0,
+    totalSamples: 0,
+  );
+
+  /// Where the decoder is writing. The caller owns this file and must delete
+  /// it when done, after cancelling or awaiting [completed].
+  final String pcmPath;
+
+  /// Output sample rate, as declared by the source container.
+  final int sampleRate;
+
+  /// Sample count implied by the container's duration. The true count is only
+  /// known when [completed] resolves, and can differ slightly.
+  final int expectedTotalSamples;
+
+  /// Resolves when the platform decoder finishes, or throws if it failed or
+  /// was cancelled.
+  final Future<NativePcmFileDecodeResult> completed;
+
+  /// Mono samples currently readable from [pcmPath].
+  ///
+  /// Returns 0 rather than throwing while the file is still being created.
+  Future<int> availableSamples() async {
+    try {
+      return await File(pcmPath).length() ~/ 2;
+    } catch (_) {
+      return 0;
+    }
+  }
 }
 
 /// Decodes audio files via the platform's native audio framework.
@@ -96,11 +154,7 @@ class NativeAudioDecoder {
     try {
       final pcmBytes = await tempFile.readAsBytes();
 
-      // Zero-copy convert little-endian byte pairs to Int16List.
-      final samples = pcmBytes.buffer.asInt16List(
-        pcmBytes.offsetInBytes,
-        pcmBytes.lengthInBytes ~/ 2,
-      );
+      final samples = _pcm16Samples(pcmBytes);
 
       return DecodedAudio(samples: samples, sampleRate: decoded.sampleRate);
     } finally {
@@ -121,11 +175,76 @@ class NativeAudioDecoder {
   static Future<NativePcmFileDecodeResult> decodeToTempPcmFile(
     String path,
   ) async {
-    final tempDir = await getTemporaryDirectory();
-    final tempPcmPath =
-        '${tempDir.path}/temp_decoded_${DateTime.now().microsecondsSinceEpoch}.pcm';
-    final tempFile = File(tempPcmPath);
+    return _decodeToPcmFile(path, await _newTempPcmPath());
+  }
 
+  /// Start a transcode and return immediately, without waiting for it.
+  ///
+  /// Use this when the output can be consumed as it is produced — see
+  /// [NativePcmTranscode]. [sampleRate] and [expectedTotalSamples] should come
+  /// from [inspectFile] so the caller can lay out a timeline before any audio
+  /// has been decoded.
+  ///
+  /// The caller owns the resulting file: cancel with [cancelDecode] or await
+  /// [NativePcmTranscode.completed] before deleting it.
+  static Future<NativePcmTranscode> startDecodeToTempPcmFile(
+    String path, {
+    required int sampleRate,
+    required int expectedTotalSamples,
+  }) async {
+    final tempPcmPath = await _newTempPcmPath();
+    return NativePcmTranscode(
+      pcmPath: tempPcmPath,
+      sampleRate: sampleRate,
+      expectedTotalSamples: expectedTotalSamples,
+      completed: _decodeToPcmFile(path, tempPcmPath),
+    );
+  }
+
+  /// Files this old are certainly not owned by a live decode any more.
+  static const Duration _staleTranscodeAge = Duration(hours: 1);
+
+  static Future<String> _newTempPcmPath() async {
+    final tempDir = await getTemporaryDirectory();
+    unawaited(_sweepStaleTranscodes(tempDir));
+    return '${tempDir.path}/temp_decoded_'
+        '${DateTime.now().microsecondsSinceEpoch}.pcm';
+  }
+
+  /// Drop transcode caches left behind by a process that died mid-decode.
+  ///
+  /// These are hundreds of megabytes each — a one-hour recording decodes to
+  /// well over 200 MB — so a single crash or force-stop while Session Review
+  /// was open can strand more cache than the recordings themselves occupy.
+  /// The owner deletes its own file on completion or cancellation; this only
+  /// catches the ones nobody is coming back for.
+  static Future<void> _sweepStaleTranscodes(Directory tempDir) async {
+    try {
+      final cutoff = DateTime.now().subtract(_staleTranscodeAge);
+      await for (final entry in tempDir.list()) {
+        if (entry is! File) continue;
+        final name = entry.uri.pathSegments.last;
+        if (!name.startsWith('temp_decoded_') || !name.endsWith('.pcm')) {
+          continue;
+        }
+        try {
+          if ((await entry.stat()).modified.isBefore(cutoff)) {
+            await entry.delete();
+          }
+        } catch (_) {
+          // Another process may own it; leave it alone.
+        }
+      }
+    } catch (_) {
+      // Sweeping is best-effort and must never block a decode.
+    }
+  }
+
+  static Future<NativePcmFileDecodeResult> _decodeToPcmFile(
+    String path,
+    String tempPcmPath,
+  ) async {
+    final tempFile = File(tempPcmPath);
     try {
       final result = await _channel.invokeMapMethod<String, dynamic>('decode', {
         'path': path,
@@ -161,15 +280,22 @@ class NativeAudioDecoder {
   }
 
   /// Decode a range of samples from [path] to mono 16-bit PCM.
+  ///
+  /// [allowConcurrent] lets bounded File Analysis read-ahead keep more than
+  /// one Android decoder active. Leave it disabled for ordinary random-access
+  /// reads, where starting a new decode retains the historical cancellation
+  /// behavior.
   static Future<DecodedAudio> decodeRange(
     String path, {
     required int startSample,
     required int count,
+    bool allowConcurrent = false,
   }) async {
     final result = await decodeRangeWithStatus(
       path,
       startSample: startSample,
       count: count,
+      allowConcurrent: allowConcurrent,
     );
     return result.audio;
   }
@@ -179,11 +305,15 @@ class NativeAudioDecoder {
     String path, {
     required int startSample,
     required int count,
+    bool allowConcurrent = false,
   }) async {
-    final result = await _channel.invokeMapMethod<String, dynamic>(
-      'decodeRange',
-      {'path': path, 'startSample': startSample, 'count': count},
-    );
+    final result = await _channel
+        .invokeMapMethod<String, dynamic>('decodeRange', {
+          'path': path,
+          'startSample': startSample,
+          'count': count,
+          'allowConcurrent': allowConcurrent,
+        });
 
     if (result == null) {
       throw const FormatException('Native audio range decoder returned null');
@@ -193,15 +323,22 @@ class NativeAudioDecoder {
     final pcmBytes = result['samples'] as Uint8List;
     final reachedEnd = result['reachedEnd'] as bool? ?? false;
 
-    // Zero-copy convert little-endian byte pairs to Int16List.
-    final samples = pcmBytes.buffer.asInt16List(
-      pcmBytes.offsetInBytes,
-      pcmBytes.lengthInBytes ~/ 2,
-    );
+    final samples = _pcm16Samples(pcmBytes);
 
     return NativeDecodeRangeResult(
       audio: DecodedAudio(samples: samples, sampleRate: sampleRate),
       reachedEnd: reachedEnd,
+    );
+  }
+
+  /// Views PCM16 bytes as samples, copying only when the platform channel
+  /// returns a Uint8List whose buffer offset is not 16-bit aligned.
+  static Int16List _pcm16Samples(Uint8List bytes) {
+    final alignedBytes =
+        bytes.offsetInBytes.isEven ? bytes : Uint8List.fromList(bytes);
+    return alignedBytes.buffer.asInt16List(
+      alignedBytes.offsetInBytes,
+      alignedBytes.lengthInBytes ~/ 2,
     );
   }
 }

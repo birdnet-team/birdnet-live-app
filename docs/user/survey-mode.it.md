@@ -42,6 +42,17 @@ Questo passaggio contiene parametri specifici del Survey, come:
 - modalità di campionamento delle rilevazioni
 - limite Top N per specie quando il campionamento è limitato
 
+Le nuove impostazioni di Survey usano un'inferenza di **0,70 Hz** come
+predefinita. In questo modo si conservano più vocalizzazioni brevi rispetto
+alle scelte a frequenza più bassa per il risparmio energetico, pur eseguendo
+il modello meno spesso che a 1,00 Hz. Survey e la modalità Live condividono
+una sola pianificazione dell'inferenza e una sola definizione di rilevazione:
+a parità di impostazioni di inferenza, entrambe segnalano le stesse specie,
+gli stessi punteggi e le stesse durate di rilevazione per lo stesso suono. Le
+frequenze più basse lasciano intenzionalmente spazi più ampi tra le finestre
+di analisi sovrapposte e possono quindi perdere suoni brevi; 0,30 Hz resta
+disponibile quando la durata della batteria è la priorità.
+
 #### Campionamento delle rilevazioni
 
 Un Survey lungo può produrre migliaia di rilevazioni, e salvare un clip audio per ognuna riempie rapidamente lo spazio di archiviazione. Il campionamento delle rilevazioni controlla **quali clip vengono conservati su disco** — *i record delle rilevazioni vengono sempre conservati*, quindi il registro completo della Session resta intatto a prescindere dalla modalità. I record il cui audio è stato scartato semplicemente non hanno un clip riproducibile nel Riepilogo sessione.

@@ -71,13 +71,13 @@ Al deslizar una fila de **encabezado de especie** (a izquierda o derecha) se eli
 
 ### Compartir una sola detección
 
-La opción :material-share-variant: **Compartir detección** abre la hoja de compartir del sistema con un contenido escueto y pensado para el trabajo de campo —nombre común y científico, confianza, marca de tiempo UTC en ISO 8601 y una URI `geo:` cuando la detección tiene GPS— y adjunta el clip de audio siempre que haya uno disponible. El archivo compartido se nombra `BirdNET_Live_<timestamp>_<species>.<ext>` para coincidir con el esquema de la exportación ZIP.
+La opción :material-share-variant: **Compartir detección** usa las mismas opciones que **Ajustes → Exportar y sincronizar**. Exporta solo esta detección en los artefactos Raven, CSV, JSON, GPX, HTML y metadatos de la app seleccionados. Cuando **Incluir archivos de audio** está activado, el paquete también contiene el audio de la detección; se respeta **Compartir siempre el audio como WAV**. Si se desactivan todos los formatos complementarios, HTML y los metadatos de la app, la hoja de compartir del sistema recibe el clip de audio sin ZIP.
 
 El audio adjunto se resuelve en este orden:
 
-1. El clip propio de la detección guardado en disco.
-2. **En Sessions que graban un único archivo continuo**: la ventana de audio correspondiente se extrae de la grabación al vuelo. Se admiten grabaciones continuas tanto en WAV como en FLAC, y el fragmento se entrega en el mismo contenedor que el original (WAV de entrada → WAV de salida, FLAC de entrada → FLAC de salida).
-3. Si no hay ninguno disponible, se comparte solo el texto: la ubicación y la marca de tiempo siguen incluyéndose en el contenido.
+1. **En Sessions que graban un único archivo continuo**: se extrae de la grabación el audio desde la marca de inicio hasta la de fin de la detección. Se admiten grabaciones continuas WAV y FLAC; las fuentes comprimidas de File Analysis se decodifican como WAV.
+2. De lo contrario, se usa el clip propio guardado de la detección cuando está disponible en disco.
+3. Si no hay ninguna fuente de audio y no se seleccionó ningún artefacto de exportación, se comparte un texto breve con la especie, la confianza, la marca de tiempo UTC y la ubicación.
 
 ### Notas de voz
 

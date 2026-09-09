@@ -505,6 +505,131 @@ void main() {
     });
   });
 
+  // ── Sample-anchored clips ──────────────────────────────────────────────
+
+  group('window-anchored clips', () {
+    late Directory tmp;
+
+    setUp(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      tmp = await Directory.systemTemp.createTemp('anchored_clip_test');
+      PathProviderPlatform.instance = _FakePathProvider(tmp.path);
+    });
+
+    tearDown(() async {
+      if (tmp.existsSync()) await tmp.delete(recursive: true);
+    });
+
+    Future<RecordingService> serviceFor(RingBuffer ringBuffer) async {
+      final service = RecordingService(
+        ringBuffer: ringBuffer,
+        sampleRate: 1000,
+        clipContextSeconds: 0,
+        windowSeconds: 1,
+      );
+      await service.startRecording(
+        sessionId: 'anchored',
+        mode: RecordingMode.detectionsOnly,
+        format: 'wav',
+      );
+      addTearDown(service.dispose);
+      return service;
+    }
+
+    test('clip holds the analyzed window, not the newest audio', () async {
+      final ringBuffer = RingBuffer(capacity: 10000);
+      final service = await serviceFor(ringBuffer);
+
+      // The analyzed window, then the audio that arrived while the clip write
+      // was queued behind a lagging inference cycle.
+      _writeTone(ringBuffer, 1000);
+      ringBuffer.write(Float32List(1000));
+
+      final anchored = await service.saveDetectionClips(
+        clipNames: ['anchored'],
+        windowEndSample: 1000,
+      );
+      final newest = await service.saveDetectionClips(clipNames: ['newest']);
+
+      // The anchored read still finds the tone; an unanchored one now sees
+      // only the silence that followed it.
+      expect(anchored.keys, ['anchored']);
+      expect(File(anchored['anchored']!).existsSync(), isTrue);
+      expect(newest, isEmpty);
+    });
+
+    test('writes nothing once the analyzed window is gone', () async {
+      final ringBuffer = RingBuffer(capacity: 2000);
+      final service = await serviceFor(ringBuffer);
+
+      _writeTone(ringBuffer, 1000);
+      _writeTone(ringBuffer, 2000); // Evicts the analyzed window.
+
+      final written = await service.saveDetectionClips(
+        clipNames: ['overwritten'],
+        windowEndSample: 1000,
+      );
+
+      // Substituting the newest audio would produce a file the caller dates
+      // as the analyzed window — worse than the detection having no clip.
+      expect(written, isEmpty);
+    });
+
+    test('zero-pads pre-roll before the first analysis window', () async {
+      final ringBuffer = RingBuffer(capacity: 10000);
+      final service = RecordingService(
+        ringBuffer: ringBuffer,
+        sampleRate: 1000,
+        clipContextSeconds: 1,
+        windowSeconds: 1,
+      );
+      await service.startRecording(
+        sessionId: 'startup-pre-roll',
+        mode: RecordingMode.detectionsOnly,
+        format: 'wav',
+      );
+      addTearDown(service.dispose);
+
+      // The analyzed first second contains sound; its post-roll is present,
+      // but a full second of requested pre-roll predates sample zero.
+      _writeTone(ringBuffer, 1000);
+      ringBuffer.write(Float32List(1000));
+
+      final written = await service.saveDetectionClips(
+        clipNames: ['first-window'],
+        windowEndSample: 1000,
+      );
+
+      expect(written.keys, ['first-window']);
+      // 3 seconds of mono PCM16 plus the canonical 44-byte WAV header.
+      expect(File(written['first-window']!).lengthSync(), 44 + 3000 * 2);
+    });
+
+    test('writes nothing when the post-roll was never captured', () async {
+      final ringBuffer = RingBuffer(capacity: 10000);
+      final service = await serviceFor(ringBuffer);
+      _writeTone(ringBuffer, 1500);
+
+      final written = await service.saveDetectionClips(
+        clipNames: ['unwritten'],
+        windowEndSample: ringBuffer.totalWritten + 500,
+      );
+
+      expect(written, isEmpty);
+    });
+
+    test('an unanchored request still takes the newest audio', () async {
+      // ARU's end-of-cycle pass has no particular window in mind.
+      final ringBuffer = RingBuffer(capacity: 2000);
+      final service = await serviceFor(ringBuffer);
+      _writeTone(ringBuffer, 3000);
+
+      final written = await service.saveDetectionClips(clipNames: ['newest']);
+
+      expect(written.keys, ['newest']);
+    });
+  });
+
   // ── Silence detection ──────────────────────────────────────────────────
 
   group('silence detection', () {

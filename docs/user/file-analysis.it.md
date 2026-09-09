@@ -6,6 +6,10 @@ L'Analisi file elabora una registrazione esistente attraverso la stessa pipeline
 
 Dalla Home, tocca la scheda **Analisi file** con l'icona :material-file-music:.
 
+### Da un'altra app
+
+Puoi anche inviare una registrazione da un'altra app. Su Android, condividere un file audio con **BirdNET Live** o scegliere **Apri con** apre subito l'Analisi file. Su iOS, anche **Apri con** è immediato; dopo aver usato il menu di condivisione, apri BirdNET Live o torna all'app e la registrazione in attesa verrà selezionata automaticamente. Prima dell'analisi, l'app copia la registrazione nel proprio spazio di archiviazione temporaneo.
+
 ## Barra dell'app
 
 - :material-tune: — apre le impostazioni di Analisi file
@@ -53,6 +57,19 @@ La procedura guidata mostra:
 - sensibilità
 - soglia di confidenza
 - modalità del filtro specie
+
+La sovrapposizione controlla di quanto avanza ogni finestra di analisi ed è
+specifica dell'analisi file: l'intero file viene sempre esaminato, e più
+sovrapposizione lo esamina semplicemente in modo più fine. Le modalità dal
+vivo usano invece una frequenza di inferenza, perché devono decidere ogni
+quanto eseguire il modello sull'audio in arrivo e non quanto finemente coprire
+una registrazione già fissata.
+
+In qualunque modo l'analisi file arrivi alle sue finestre, le trasforma in
+rilevazioni con le stesse regole della modalità Live, di Point Count e di
+Survey: una rilevazione inizia alla sua prima finestra di supporto, porta il
+punteggio supportato più alto e termina alla fine dell'ultima finestra di
+supporto.
 
 ### 4. Analizza
 

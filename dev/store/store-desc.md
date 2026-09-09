@@ -22,6 +22,8 @@ BirdNET Live
 
 **nl:** Professionele bioakoestiek in je zak.
 
+**nb:** Profesjonell bioakustikk i lommen.
+
 **pl:** Profesjonalna bioakustyka w Twojej kieszeni.
 
 **ru:** Профессиональная биоакустика в вашем кармане.
@@ -45,6 +47,8 @@ BirdNET Live
 **pt:** Bioacústica no seu bolso.
 
 **nl:** Bioakoestiek in je zak.
+
+**nb:** Bioakustikk i lommen.
 
 **pl:** Bioakustyka w Twojej kieszeni.
 
@@ -70,6 +74,8 @@ BirdNET Live
 
 **nl:** BirdNET Live draait ons meest geavanceerde model voor geluidsherkenning rechtstreeks op je apparaat — geen internetverbinding nodig.
 
+**nb:** BirdNET Live kjører vår mest avanserte modell for lydgjenkjenning direkte på enheten din — helt uten internettforbindelse.
+
 **pl:** BirdNET Live uruchamia nasz najbardziej zaawansowany model rozpoznawania dźwięku bezpośrednio na Twoim urządzeniu — bez połączenia z internetem.
 
 **ru:** BirdNET Live запускает нашу самую продвинутую модель распознавания звуков прямо на вашем устройстве — подключение к интернету не требуется.
@@ -77,9 +83,11 @@ BirdNET Live
 **zh:** BirdNET Live 把我们最先进的声音识别模型直接运行在您的设备上——完全无需联网。
 
 
-## Short description
+## Long description
 
 ### cs
+
+Objevujte ptačí zpěv a zvuky přírody a poznávejte ptáky i další druhy podle jejich hlasů.
 
 BirdNET Live spouští náš nejvyspělejší model pro akustickou identifikaci přímo ve vašem zařízení – zcela bez nutnosti připojení k internetu. Sledujte živě se posouvající spektrogram, prohlížejte si detekce druhů v reálném čase a spravujte svou rostoucí knihovnu zvířecích zvuků přímo ze svého telefonu.
 
@@ -101,6 +109,8 @@ Vývoj této aplikace podporuje Deutsche Bundesstiftung Umwelt.
 Další informace naleznete v naší online uživatelské příručce: https://birdnet-team.github.io/birdnet-live-app/user/
 
 ### en
+
+Discover bird songs and the sounds of nature, and identify birds and other species by the sounds they make.
 
 BirdNET Live runs our most sophisticated sound ID model directly on your device — no internet connection required.
 
@@ -125,6 +135,8 @@ For more information, consult our online user guide: https://birdnet-team.github
 
 ### de
 
+Entdecken Sie Vogelstimmen und die Klänge der Natur und bestimmen Sie Vögel und andere Arten anhand ihrer Rufe.
+
 BirdNET Live nutzt unser neuestes Akustikmodell zur Tierstimmenerkennung direkt auf Ihrem Gerät – ganz ohne Internetverbindung.
 
 Verfolgen Sie ein Live-Spektrogramm, sehen Sie Artenerkennungen in Echtzeit und verwalten Sie Ihre wachsende Bibliothek an Tierstimmen direkt auf Ihrem Smartphone.
@@ -147,6 +159,8 @@ Die Entwicklung dieser App wird von der Deutschen Bundesstiftung Umwelt geförde
 Weitere Informationen finden Sie in unserer Online-Benutzeranleitung: https://birdnet-team.github.io/birdnet-live-app/user/
 
 ### es
+
+Descubre el canto de las aves y los sonidos de la naturaleza, e identifica aves y otras especies por los sonidos que emiten.
 
 BirdNET Live ejecuta nuestro modelo de identificación de sonido más sofisticado directamente en tu dispositivo, sin necesidad de conexión a Internet.
 
@@ -171,6 +185,8 @@ Para obtener más información, consulta nuestra guía de usuario en línea: htt
 
 ### fr
 
+Découvrez les chants d'oiseaux et les sons de la nature, et identifiez les oiseaux et d'autres espèces grâce aux sons qu'ils émettent.
+
 BirdNET Live exécute notre modèle d'identification sonore le plus sophistiqué directement sur votre appareil, sans aucune connexion Internet requise.
 
 Observez un spectrogramme défilant en temps réel, visualisez les détections d'espèces en direct et gérez votre bibliothèque grandissante de sons d'animaux directement depuis votre téléphone.
@@ -193,6 +209,8 @@ Le développement de cette application est soutenu par la Deutsche Bundesstiftun
 Pour plus d'informations, consultez notre guide d'utilisation en ligne : https://birdnet-team.github.io/birdnet-live-app/user/
 
 ### it
+
+Scopri i canti degli uccelli e i suoni della natura, e identifica uccelli e altre specie dai suoni che producono.
 
 BirdNET Live esegue il nostro modello di identificazione sonora più sofisticato direttamente sul tuo dispositivo — senza bisogno di connessione Internet.
 
@@ -217,6 +235,8 @@ Per ulteriori informazioni, consulta la nostra guida per l'utente online: https:
 
 ### pt
 
+Descubra o canto das aves e os sons da natureza, e identifique aves e outras espécies pelos sons que produzem.
+
 O BirdNET Live executa o nosso modelo de identificação de som mais sofisticado diretamente no seu dispositivo — sem necessidade de ligação à Internet.
 
 Acompanhe um espectrograma em tempo real, veja as detecções de espécies em tempo real e faça a gestão da sua crescente biblioteca de sons de animais diretamente a partir do seu telemóvel.
@@ -240,6 +260,8 @@ Para mais informações, consulte o nosso guia do utilizador online: https://bir
 
 ### nl
 
+Ontdek vogelzang en de geluiden van de natuur, en herken vogels en andere soorten aan de geluiden die ze maken.
+
 BirdNET Live draait ons meest geavanceerde model voor geluidsherkenning rechtstreeks op je apparaat — geen internetverbinding nodig.
 
 Bekijk een live scrollend spectrogram, zie soortdetecties in realtime en beheer je groeiende bibliotheek met dierengeluiden rechtstreeks vanaf je telefoon.
@@ -261,7 +283,34 @@ De ontwikkeling van deze app wordt ondersteund door de Deutsche Bundesstiftung U
 
 Meer informatie vind je in onze online gebruikershandleiding: https://birdnet-team.github.io/birdnet-live-app/user/
 
+### nb
+
+Oppdag fuglesang og naturens lyder, og identifiser fugler og andre arter etter lydene de lager.
+
+BirdNET Live kjører vår mest avanserte modell for lydgjenkjenning direkte på enheten din — helt uten internettforbindelse.
+
+Følg et rullende spektrogram i sanntid, se artsdeteksjoner med en gang og administrer det voksende biblioteket ditt med dyrelyder direkte fra telefonen.
+
+BirdNET Live støtter bioakustisk forskning og strukturerte akustiske undersøkelser på tvers av flere arbeidsflyter:
+
+- Live Mode — Artsdeteksjoner i sanntid med et levende spektrogram
+- Point Count — Strukturerte, tidsbestemte økter med live-detekteringer
+- Survey — Ta opp lengre transekter mens du følger deteksjoner langs ruten
+- File Analysis — Analyser lydfiler fra lokal lagring
+- Batch Analysis — Behandle flere lydfiler i bulk
+- ARU Mode — Planlegg lengre utplasseringer av akustiske opptakere
+
+BirdNET Live er laget for både forskere og folkeforskere og tilbyr omfattende innstillinger og muligheter for å gjennomgå deteksjoner.
+
+Denne appen er et samarbeid mellom Cornell K. Lisa Yang Center for Conservation Bioacoustics og Chemnitz tekniske universitet, i partnerskap med Museum für Naturkunde Berlin.
+
+Utviklingen av denne appen støttes av Deutsche Bundesstiftung Umwelt.
+
+Mer informasjon finner du i vår nettbaserte brukerveiledning: https://birdnet-team.github.io/birdnet-live-app/user/
+
 ### pl
+
+Odkrywaj ptasie śpiewy i dźwięki natury oraz rozpoznawaj ptaki i inne gatunki po wydawanych przez nie odgłosach.
 
 BirdNET Live uruchamia nasz najbardziej zaawansowany model rozpoznawania dźwięku bezpośrednio na Twoim urządzeniu — bez połączenia z internetem.
 
@@ -286,6 +335,8 @@ Więcej informacji znajdziesz w naszym internetowym podręczniku użytkownika: h
 
 ### ru
 
+Открывайте птичье пение и звуки природы, определяйте птиц и другие виды по звукам, которые они издают.
+
 BirdNET Live запускает нашу самую продвинутую модель распознавания звуков прямо на вашем устройстве — подключение к интернету не требуется.
 
 Следите за live-спектрограммой, просматривайте обнаружения видов в реальном времени и управляйте растущей библиотекой звуков животных прямо с телефона.
@@ -308,6 +359,8 @@ BirdNET Live создан для исследователей и citizen scienti
 Подробнее см. в нашем онлайн-руководстве пользователя: https://birdnet-team.github.io/birdnet-live-app/user/
 
 ### zh
+
+探索鸟鸣与自然之声，通过它们发出的声音识别鸟类和其他物种。
 
 BirdNET Live 把我们最先进的声音识别模型直接运行在您的设备上——完全无需联网。
 
@@ -347,6 +400,8 @@ BirdNET Live 同时面向研究人员和公民科学家，提供丰富的配置�
 **pt:** BirdNET, Bioacústica, IA, Identificação de aves, Identificação de sons, Canto de aves
 
 **nl:** BirdNET, Bioakoestiek, AI, Vogelherkenning, Geluidsherkenning, Vogelzang
+
+**nb:** BirdNET, Bioakustikk, KI, Fuglegjenkjenning, Lydgjenkjenning, Fuglesang
 
 **pl:** BirdNET, Bioakustyka, AI, Rozpoznawanie ptaków, Rozpoznawanie dźwięków, Śpiew ptaków
 

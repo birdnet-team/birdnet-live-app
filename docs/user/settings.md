@@ -104,7 +104,16 @@ An x-axis offset applied to the model's raw probability scores before score pool
 
 ### Inference rate
 
-Controls how frequently BirdNET runs inference. The slider uses the same **0.10–1.00 Hz** steps as Survey and ARU setup.
+Controls how frequently BirdNET runs inference. The slider uses the same
+**0.10–1.00 Hz** steps as Survey and ARU setup. Windows are anchored to
+captured audio samples rather than timer completion, so recording a clip or a
+temporarily slow model call does not shift later windows. With matching
+inference settings, Live Mode, Point Count, and Survey analyze the same windows
+and report the same detections. Lower rates reduce model work and battery use
+but leave wider gaps between windows, so very brief vocalizations are easier to
+miss. New Surveys default to **0.70 Hz** as a middle ground; **0.30 Hz**
+remains an explicit maximum-battery option. File Analysis has no inference rate
+— it uses an [overlap](file-analysis.md) setting instead.
 
 ### Ignore species
 
@@ -116,12 +125,13 @@ The filter is applied to both geo-model and audio-model probabilities immediatel
 
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
-the default uses an adaptive pooling mode with five recent windows and a
-10-second real-time age cap. At high inference rates it uses average pooling
-for stable live decisions; at slower Survey and ARU cadences it uses LME
-pooling to keep precision high over longer runs. Accepted detections display
-the strongest recent supported model confidence, so obvious vocalizations can
-still show high confidence instead of being flattened by smoothing.
+the default uses adaptive Log-Mean-Exp pooling with five recent windows and a
+10-second real-time age cap. Accepted detections display the strongest recent
+supported model confidence, so obvious vocalizations can still show high
+confidence instead of being flattened by smoothing. Every mode now turns that
+pooling result into detections the same way: a detection starts at its earliest
+supporting window, carries the strongest supported score, and ends at the end
+of the last supporting window.
 
 ## Spectrogram
 
@@ -251,11 +261,27 @@ Offline map downloads are currently hidden while BirdNET Live uses the public Op
 
 - **Off** — no geographic filtering
 - **Location filter** — exclude species that fall below the geographic threshold
+- **Adaptive location filter** — ask for more confidence the less common a species is here
 - **Location weighting** — use the geo-model as an additional weighting signal
 
 ### Geo-filter threshold
 
-Appears when a location-based filter mode is active.
+Appears when **Location filter** or **Location weighting** is active. The adaptive filter works out its own bar from the local species mix, so it has no slider.
+
+### How the adaptive filter decides
+
+It scales the bar with how common a species is at your location, using the same abundance tiers you see on the **Explore** screen. Species in the *Abundant* tier are never filtered; below that the required detection score climbs steadily, and species that are not on the local list at all need around 0.92 or more. Anything scoring 0.99 or higher is kept whatever the location model says.
+
+| Tier at your location | Detection score needed |
+|---|---|
+| Abundant | any |
+| Common | ~0.55–0.70 |
+| Frequent | ~0.70–0.82 |
+| Uncommon | ~0.78–0.89 |
+| Scarce / Rare | ~0.83–0.92 |
+| Not on the local list | ~0.92–0.97 |
+
+Because the tiers are rank-based, this behaves the same in a species-rich tropical forest as in the Arctic. Detections that survive keep their original score — the location model only votes on whether to show them. The aim is to cut false positives from uncommon species without losing a genuinely clear recording of one.
 
 ## Export & Sync
 
@@ -272,7 +298,7 @@ The intuition: many workflows need more than one format at the same time — a C
 
 ### Include audio files
 
-Include saved audio alongside the exported tables or metadata when supported by the export workflow.
+Include saved audio alongside the exported tables or metadata when supported by the export workflow. Sharing one detection follows this setting too: a full-session recording is cut to that detection's exact start-to-end timestamps, while a detection-only session uses its retained clip.
 
 ### Always share audio as WAV
 
@@ -288,7 +314,7 @@ When on, every export ZIP also contains a `<session>_report.html` file alongside
 
 ### Audio-only sharing
 
-Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of detection clips (no full recording) still produce a ZIP because there is more than one file to share.
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip.
 
 ## eBird Life List
 

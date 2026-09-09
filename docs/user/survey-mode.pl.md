@@ -41,6 +41,16 @@ Ten krok zawiera parametry właściwe dla Survey, takie jak:
 - tryb próbkowania wykryć
 - limit top-N na gatunek, gdy próbkowanie jest ograniczone
 
+Nowe ustawienia Survey domyślnie używają wnioskowania **0,70 Hz**. Zachowuje
+to więcej krótkich odgłosów niż wybory o niższej częstości oszczędzające
+baterię, a model i tak działa rzadziej niż przy 1,00 Hz. Survey i tryb Live
+mają wspólny harmonogram wnioskowania i wspólną definicję wykrycia, więc przy
+tych samych ustawieniach wnioskowania oba zgłaszają dla tego samego dźwięku te
+same gatunki, oceny i zakresy wykryć. Niższe częstości celowo zostawiają
+szersze przerwy między nakładającymi się oknami analizy i mogą przez to
+pominąć krótkie dźwięki; 0,30 Hz pozostaje dostępne, gdy priorytetem jest czas
+pracy baterii.
+
 #### Próbkowanie wykryć
 
 Długi Survey może dać tysiące wykryć, a zapisywanie fragmentu dźwiękowego do każdego z nich szybko zapełnia pamięć. Próbkowanie wykryć decyduje o tym, **które fragmenty zostają na dysku** — *same zapisy wykryć są zawsze zachowywane*, więc pełny dziennik Session pozostaje nienaruszony niezależnie od trybu. Zapisy, których dźwięk odrzucono, po prostu nie mają odtwarzalnego fragmentu w Przeglądzie Session.

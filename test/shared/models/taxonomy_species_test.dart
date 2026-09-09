@@ -311,6 +311,19 @@ void main() {
       expect(sp.commonNameForLocale('zh-Hans'), '大山雀');
       expect(sp.commonNameForLocale('zh-TW'), '大山雀');
     });
+
+    // The Bokmål app locale is `nb` and a Norwegian phones report `nb`/`nb-NO`,
+    // but the species list uses `no`. Same problem with Nynorsk `nn`.
+    test('commonNameForLocale resolves Norwegian tags to no', () {
+      const sp = TaxonomySpecies(
+        scientificName: 'Parus major',
+        commonName: 'Great Tit',
+        commonNames: {'no': 'kjøttmeis'},
+      );
+      expect(sp.commonNameForLocale('nb'), 'kjøttmeis');
+      expect(sp.commonNameForLocale('nb-NO'), 'kjøttmeis');
+      expect(sp.commonNameForLocale('nn'), 'kjøttmeis');
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -1,8 +1,18 @@
-# Datenschutzerklärung
+# Datenschutzerklärung für BirdNET Live
 
-**Zuletzt aktualisiert:** Juli 2026
+**Zuletzt aktualisiert:** 6. August 2026
 
-BirdNET Live respektiert Ihre Privatsphäre. Dieses Dokument erklärt, wie die App mit Ihren Daten umgeht.
+Diese Datenschutzerklärung gilt für **BirdNET Live** (die **App**). Die App wird von **BirdNET-Team** (dem **Entwickler**, **wir** oder **uns**) entwickelt und angeboten.
+
+## Identität von App und Entwickler
+
+| | |
+|---|---|
+| **App-Name** | BirdNET Live |
+| **Entwicklername** | BirdNET-Team |
+| **Datenschutzkontakt** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team stellt diese Erklärung im eigenen Namen bereit. Sie erläutert, wie BirdNET Live personenbezogene Daten schützt und verarbeitet.
 
 ## Lokale Verarbeitung auf dem Gerät
 
@@ -13,9 +23,9 @@ Die gesamte Audioanalyse und Vogelartenbestimmung findet **vollständig auf Ihre
 
 Es werden niemals Audiodaten an externe Server übertragen.
 
-## Datenerfassung
+## Verarbeitung personenbezogener Daten
 
-BirdNET Live sammelt, überträgt oder teilt **keine** personenbezogenen Daten. Es gibt keine Analysen, kein Tracking und keine Telemetrie.
+BirdNET-Team betreibt kein App-Backend und erhält über BirdNET Live weder Ihre Aufnahmen noch Standort-, Session- oder andere personenbezogene Daten. Die App hat keine Benutzerkonten, Werbung, Analysen, Tracking oder Telemetrie. Sie verarbeitet Audio- und Standortdaten auf Ihrem Gerät und sendet nur dann Daten direkt an den unter **Externe Ressourcen** genannten Drittanbieter, wenn Sie die entsprechende optionale Netzwerkfunktion aktivieren.
 
 ### Lokal auf Ihrem Gerät gespeicherte Daten:
 
@@ -38,17 +48,17 @@ Die App kann auf die folgenden externen Ressourcen zugreifen. Jede Ressource ist
 
 | Ressource | Zweck | Schalter | Pro Anfrage gesendet |
 |----------|-------|----------|----------------------|
-| Kartenkacheln (OpenStreetMap) | Basiskarte für Standortauswahl, Survey-Live-Karte und Sitzungskarte | **Einstellungen → Datenschutz → Kartenkacheln erlauben** | Kachelkoordinaten `(z, x, y)` und BirdNET-Live-User-Agent — keine PII |
-| Reverse Geocoding (OpenStreetMap Nominatim) | Auflösung von GPS-Koordinaten in einen lesbaren Ortsnamen (z. B. „Berlin, Deutschland“) | **Einstellungen → Datenschutz → Ortsnamen-Suche erlauben** | Lat/Lon der Sitzung plus BirdNET-Live-User-Agent |
-| Wetter-Snapshot (Open-Meteo) | Einmalige Aufnahme der lokalen Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung, WMO-Wettercode) an Aufnahmekoordinaten und Endzeit | **Einstellungen → Datenschutz → Wetterabfrage erlauben** | Lat/Lon der Sitzung und Endzeitstempel plus BirdNET-Live-User-Agent |
+| Kartenkacheln (OpenStreetMap Foundation) | Basiskarte für Standortauswahl, Survey-Live-Karte und Session-Karte | **Einstellungen → Datenschutz → Kartenkacheln erlauben** | Kachelkoordinaten `(z, x, y)`, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
+| Reverse Geocoding (Nominatim der OpenStreetMap Foundation) | Auflösung von GPS-Koordinaten in einen lesbaren Ortsnamen (z. B. „Berlin, Deutschland“) | **Einstellungen → Datenschutz → Ortsnamen-Suche erlauben** | Breiten-/Längengrad der Session, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
+| Wetter-Snapshot (OpenMeteo GmbH) | Einmalige Aufnahme der lokalen Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung, WMO-Wettercode) an Aufnahmekoordinaten und Endzeit | **Einstellungen → Datenschutz → Wetterabfrage erlauben** | Breiten-/Längengrad und Endzeit der Session, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
 
-Kartenkachel-Anfragen sind standardmäßige HTTPS-GET-Anfragen an `tile.openstreetmap.org`. Es werden nur Kachelkoordinaten gesendet — keine personenbezogenen Daten.
+Kartenkachel-Anfragen sind HTTPS-GET-Anfragen an `tile.openstreetmap.org`. Die Kachelkoordinaten identifizieren den betrachteten Kartenbereich. Wie jede direkte Internetanfrage legt die Anfrage dem Anbieter auch Ihre IP-Adresse offen.
 
 Reverse-Geocoding-Anfragen senden Breiten- und Längengrad der Sitzung über HTTPS an `nominatim.openstreetmap.org`, zusammen mit dem BirdNET-Live-User-Agent gemäß den [Nominatim-Nutzungsbedingungen](https://operations.osmfoundation.org/policies/nominatim/). Der ermittelte Ortsname wird lokal mit der Sitzung gespeichert, sodass eine Sitzung nur einmal geokodiert wird. Es erfolgt keine Anfrage, wenn die Sitzung keine GPS-Koordinaten enthält oder das Gerät offline ist.
 
 Wetteranfragen senden Lat/Lon der Sitzung und den Endzeitstempel über HTTPS an `api.open-meteo.com`, zusammen mit dem BirdNET-Live-User-Agent. [Open-Meteo](https://open-meteo.com/) ist ein kostenloser Dienst und benötigt weder Konto noch API-Schlüssel. Der zurückgegebene Wetter-Snapshot wird lokal mit der Sitzung gespeichert und in den JSON-Export, den `metadata.json`-Block der Sitzung sowie den HTML-Bericht geschrieben.
 
-**Aufbewahrung:** Keiner der oben genannten Drittanbieterdienste wird kontaktiert, um Nutzerdaten *hochzuladen* oder zu *speichern*. Rückgabewerte (Ortsname, Wetter-Snapshot) liegen ausschließlich im lokalen Sitzungsdatensatz auf Ihrem Gerät und gelangen nur in Exportdateien, die Sie ausdrücklich erzeugen.
+**Verarbeitung und Aufbewahrung durch Dritte:** BirdNET-Team betreibt diese Dienste nicht und erhält deren Anfragedaten nicht. Die OpenStreetMap Foundation kann Netzwerkzugriffsdaten und Anfragedetails gemäß ihrer [Datenschutzrichtlinie](https://osmfoundation.org/wiki/Privacy_Policy) verarbeiten. Laut [Nutzungsbedingungen und Datenschutzangaben](https://open-meteo.com/en/terms) von Open-Meteo können Serverprotokolle der kostenlosen API IP-Adressen und geografische Koordinaten enthalten und werden nach 90 Tagen gelöscht. Diese Anbieter können Daten in anderen Ländern als Ihrem verarbeiten. Rückgabewerte werden lokal in der Session gespeichert und gelangen nur dann in einen Export, wenn Sie ihn erstellen.
 
 **Widerruf:** Sie können jeden der drei Dienste jederzeit unter **Einstellungen → Datenschutz** deaktivieren. Bereits lokal gespeicherte Ortsnamen und Wetter-Snapshots bleiben an den Sitzungen, in denen sie erfasst wurden. Um diese historischen Daten zu entfernen, löschen Sie die betroffenen Sitzungen in der Session Library oder verwenden Sie **Einstellungen → Gefahrenzone → Alle Daten löschen**.
 

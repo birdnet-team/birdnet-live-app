@@ -5,7 +5,90 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## [1.1.2] - 2026-08-11
+
+### Added
+
+- BirdNET Live now accepts audio files from the system share sheet and file managers, opening File Analysis immediately on Android and iOS.
+
+### Changed
+
+- Sharing an audio recording to BirdNET Live on iOS now opens the app straight away. Previously the recording was only picked up the next time BirdNET Live was opened, so the share appeared to do nothing.
+- Tapping the Quick Listen widget now opens Live Mode directly, instead of showing the home screen first.
+
+### Fixed
+
+- Norwegian Bokmål and Nynorsk users now see Norwegian species names instead of English names.
+- Leaving File Analysis or a Point Count session no longer throws while the screen is torn down, which could leave the widget tree half-disposed.
+
+## [1.1.1] - 2026-08-10
+
+### Changed
+
+- Exports no longer report an unreviewed detection as if a reviewer had judged its identification wrong. The `Confirmed` (true/false) column in CSV and Raven exports is replaced by `Review Status`, carrying `confirmed`, `rejected` or `unreviewed`, and `Confirmed At (UTC)` becomes `Reviewed At (UTC)`. JSON detections swap the `confirmed` boolean for a `reviewStatus` string plus `reviewedAt`. Scripts that read the old column or key need updating.
+
+### Added
+
+- New **Adaptive location filter** mode, alongside the existing Location filter and Location weighting. It asks for more confidence the less common a species is at your location, using the same abundance tiers as the Explore screen: abundant species are never filtered, while uncommon or unlisted ones need a high detection score before they show up. Detections that survive keep their original score, unlike Location weighting.
+
+## [1.1.0] - 2026-08-07
+
+### Changed
+
+- File Analysis now shows a concise, actionable message when it cannot process an imported recording instead of exposing a raw filesystem exception.
+- Live Mode, Point Count, and Survey now share one sample-aligned inference schedule, so matching inference settings produce matching windows, timestamps, peak scores, and detection spans across the three modes. File Analysis keeps its own overlap setting but applies the same detection rules.
+- New Surveys now default to 0.70 Hz inference, improving coverage of short vocalizations while retaining a meaningful reduction in model work compared with 1.00 Hz. The 0.30 Hz option remains available for maximum battery savings.
+- The Privacy Policy now identifies the app as BirdNET Live and the AppGallery developer as BirdNET-Team, and more precisely explains local personal-information processing and the data sent to optional map, place-name, and weather providers.
+
+### Fixed
+
+- Recording from an external USB-C microphone no longer produces distorted audio and a spectrogram mirrored across its middle. Such mics usually offer only stereo capture, and the second channel was being read as extra mono samples; both channels are now mixed down to mono as intended.
+- Live and Survey detections now appear as soon as inference finishes; saving or replacing a detection clip continues in the background and no longer delays the UI or shifts the next audio window.
+- Detection clips are now cut from the analysis window that produced the score, so a clip saved while the device is busy still contains the sound it was saved for.
+- Detection clips now cover the whole analysis window. With a 5- or 10-second window they previously held only its last 3 seconds.
+- Detection timestamps at the start of a session are no longer shifted by however long the microphone took to deliver its first audio.
+- A species that stops and is heard again shortly afterwards is now always kept as its own detection. Previously the second detection could take over the first one's audio clip and delete it.
+- Live Mode no longer smooths scores across a pause, which could date a detection heard after resuming inside the paused gap.
+- File Analysis no longer stops recording new detections after 10,000. That ceiling exists for the live modes, which run until you stop them, and should never have applied to a file of known length.
+- ARU cycles now analyze the audio captured while the model was loading instead of discarding it and waiting for a further full window.
+- The Survey notification now lists the species heard most recently, so a bird that is still calling stays visible instead of being pushed out by species that have already stopped.
+- User-guide links now open the existing Dutch, Polish, Russian, and Simplified Chinese translations instead of falling back to English.
+
+## [1.0.6] - 2026-08-05
+
+### Changed
+
+- Session Review now draws the spectrogram in tiles for every recording, so a long session opens as quickly as a short one and never loads the whole file into memory. The full-recording view used for trimming is built when you open the trim editor instead of on every open.
+- Reviewing an imported MP3, M4A, or other compressed recording no longer waits for the whole file to be decoded first. The spectrogram appears within seconds and fills in as decoding proceeds; a 44-minute MP3 went from about 3.5 minutes of blank strip to under 15 seconds. Leaving the screen now stops the decode instead of letting it run on.
+- Tapping a detection in a long recording now zooms the spectrogram to the duration set under Settings → Spectrogram and draws just that window, so the call appears and plays right away instead of waiting on a view spanning several minutes.
+- Spectrogram drawing is substantially faster, most noticeably when zoomed out and on imported recordings that are not already at 32 kHz — a wide tile went from 657 ms to 47 ms. Drawing now costs the same whatever span the view covers.
+- Transcode caches left behind by a crash while reviewing a compressed recording are now cleaned up; each one could be several hundred megabytes.
+
+### Fixed
+
+- Short recordings no longer flash a black spectrogram while opening. Sessions up to two minutes schedule the whole recording in one sweep, while recordings that fit one tile skip the FLAC frame index they never seek against.
+- Pinch-zooming the spectrogram no longer blanks the strip. The tiles you are looking at stay on screen until their replacements arrive.
+- Fixed a crash that could close the app when audio capture restarted after losing the microphone to another app. Capture start, stop, and source switches now run one at a time and always release the old recorder first.
+- Scrubbing and jumping to detections late in a long FLAC recording is no longer slow. Every spectrogram tile used to decode the recording from the beginning — about 19 seconds per tile an hour in — so Session Review now builds a frame index once when the session opens.
+- Trimming a recording or sharing a detection from late in a FLAC session uses the same index instead of re-decoding everything before the cut.
+- Opening a recording no longer freezes the interface while checking whether it needs a playback loudness boost; that decode moved to the background.
+
+## [1.0.5] - 2026-08-04
+
+### Fixed
+
+- Sharing now works on iPad. Every share button passes the anchor rectangle iPadOS requires for the share popover, which previously made the buttons do nothing. A share the system refuses now reports an error instead of failing silently.
+- Sharing one detection from a full-audio Session now includes an exact start-to-end audio clip and honors the saved export format, include-audio, WAV conversion, HTML report, and app-metadata settings instead of falling back to text-only sharing.
+
+## [1.0.4] - 2026-08-03
+
+### Changed
+
+- Upgraded the Android build toolchain to AGP 9.0.1, Gradle 9.1.0, and Kotlin 2.3.20, which enables R8 optimized resource shrinking and trims the app bundle slightly. Needs on-device testing before release.
+- File Analysis now sends up to four audio windows through each model call and uses five inference threads on Android, substantially improving offline-analysis throughput while preserving per-window timestamps, temporal pooling, and bounded-memory decoding.
+- File Analysis now reads WAV files in bounded chunks, overlaps decoding with inference, and uses two concurrent Android decoders for compressed audio. A 31.5-minute MP3 decoded 2.17x faster on a Pixel 10 Pro while keeping memory bounded.
 
 ## [1.0.3] - 2026-08-01
 

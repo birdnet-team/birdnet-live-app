@@ -6,6 +6,10 @@ Bestandsanalyse verwerkt een bestaande opname via dezelfde BirdNET-pijplijn die 
 
 Tik op het startscherm op de kaart **Bestandsanalyse** met het pictogram :material-file-music:.
 
+### Vanuit een andere app
+
+Je kunt ook vanuit een andere app een opname aanleveren. Op Android opent Bestandsanalyse direct wanneer je een audiobestand deelt met **BirdNET Live** of **Openen met** kiest. Op iOS werkt **Openen met** ook direct; open BirdNET Live na gebruik van het deelmenu of ga terug naar de app, waarna de wachtende opname automatisch wordt geselecteerd. Vóór de analyse kopieert de app de opname naar de eigen tijdelijke opslag.
+
 ## Appbalk
 
 - :material-tune: — de instellingen voor Bestandsanalyse openen
@@ -53,6 +57,18 @@ De wizard biedt:
 - gevoeligheid
 - betrouwbaarheidsdrempel
 - modus van het soortenfilter
+
+Overlap bepaalt hoe ver elk analysevenster opschuift en is specifiek voor de
+bestandsanalyse: het hele bestand wordt altijd onderzocht, en meer overlap
+onderzoekt het alleen fijner. De live modi gebruiken in plaats daarvan een
+inferentiesnelheid, omdat die moeten bepalen hoe vaak ze op binnenkomende
+audio draaien en niet hoe fijn ze een vaststaande opname afdekken.
+
+Hoe de bestandsanalyse ook aan haar vensters komt, ze maakt er detecties van
+met dezelfde regels als de Live-modus, Point Count en Survey: een detectie
+begint bij haar vroegste ondersteunende venster, draagt de sterkste
+ondersteunde score en eindigt aan het einde van het laatste ondersteunende
+venster.
 
 ### 4. Analyseren
 

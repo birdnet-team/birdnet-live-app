@@ -827,6 +827,10 @@ class _ParametersStep extends StatelessWidget {
                   child: Text(l10n.settingsFilterGeoExclude),
                 ),
                 DropdownMenuItem(
+                  value: 'geoAdaptive',
+                  child: Text(l10n.settingsFilterGeoAdaptive),
+                ),
+                DropdownMenuItem(
                   value: 'geoMerge',
                   child: Text(l10n.settingsFilterGeoMerge),
                 ),

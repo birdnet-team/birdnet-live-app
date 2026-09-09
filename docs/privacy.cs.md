@@ -1,8 +1,18 @@
-# Zásady ochrany osobních údajů
+# Zásady ochrany osobních údajů pro BirdNET Live
 
-**Poslední aktualizace:** Červenec 2026
+**Poslední aktualizace:** 6. srpna 2026
 
-BirdNET Live respektuje vaše soukromí. Tento dokument vysvětluje, jak aplikace nakládá s vašimi údaji.
+Tyto zásady ochrany osobních údajů se vztahují na **BirdNET Live** (dále jen **aplikace**). Aplikaci vyvíjí a nabízí **BirdNET-Team** (dále jen **vývojář** nebo **my**).
+
+## Identita aplikace a vývojáře
+
+| | |
+|---|---|
+| **Název aplikace** | BirdNET Live |
+| **Název vývojáře** | BirdNET-Team |
+| **Kontakt pro ochranu soukromí** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team poskytuje tyto zásady vlastním jménem. Vysvětlují, jak BirdNET Live chrání osobní údaje a nakládá s nimi.
 
 ## Zpracování na zařízení
 
@@ -13,9 +23,9 @@ Veškerá analýza zvuku a identifikace ptačích druhů probíhá **zcela ve va
 
 Žádná zvuková data nejsou nikdy přenášena na externí servery.
 
-## Shromažďování dat
+## Nakládání s osobními údaji
 
-BirdNET Live **neshromažďuje, nepřenáší ani nesdílí** žádné osobní údaje. Neobsahuje analytiku, sledování ani telemetrii.
+BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepřijímá vaše nahrávky, polohu, data Session ani jiné osobní údaje. Aplikace nemá uživatelské účty, reklamu, analytiku, sledování ani telemetrii. Zvuk a polohu zpracovává ve vašem zařízení a pouze po zapnutí volitelné síťové funkce odešle údaje popsané v části **Externí zdroje** přímo uvedenému poskytovateli třetí strany.
 
 ### Data uložená lokálně ve vašem zařízení:
 
@@ -38,17 +48,17 @@ Aplikace může přistupovat k následujícím externím zdrojům. Každý zdroj
 
 | Zdroj | Účel | Přepínač | Odesíláno v každé žádosti |
 |-------|------|----------|---------------------------|
-| Mapové dlaždice (OpenStreetMap) | Základní mapa pro výběr polohy, živou mapu Survey a mapu Session | **Nastavení → Soukromí → Povolit mapové dlaždice** | Souřadnice dlaždice `(z, x, y)` a user-agent BirdNET Live — žádné PII |
-| Reverzní geokódování (OpenStreetMap Nominatim) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledávání názvu místa** | Lat/lon Session plus user-agent BirdNET Live |
-| Snapshot počasí (Open-Meteo) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a koncovém čase | **Nastavení → Soukromí → Povolit vyhledávání počasí** | Lat/lon Session a koncové časové razítko plus user-agent BirdNET Live |
+| Mapové dlaždice (OpenStreetMap Foundation) | Základní mapa pro výběr polohy, živou mapu Survey a mapu Session | **Nastavení → Soukromí → Povolit mapové dlaždice** | Souřadnice dlaždice `(z, x, y)`, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
+| Reverzní geokódování (Nominatim nadace OpenStreetMap Foundation) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledávání názvu místa** | Zeměpisná šířka/délka Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
+| Snapshot počasí (OpenMeteo GmbH) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a koncovém čase | **Nastavení → Soukromí → Povolit vyhledávání počasí** | Zeměpisná šířka/délka a koncový čas Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
 
-Požadavky na mapové dlaždice jsou standardní HTTPS GET na `tile.openstreetmap.org`. Odesílají se pouze souřadnice dlaždic.
+Požadavky na mapové dlaždice jsou HTTPS GET na `tile.openstreetmap.org`. Souřadnice dlaždic určují zobrazenou oblast mapy. Jako každý přímý internetový požadavek také zpřístupní poskytovateli vaši IP adresu.
 
 Reverzní geokódování odesílá lat/lon Session na `nominatim.openstreetmap.org` přes HTTPS spolu s user-agentem BirdNET Live dle [Pravidel užívání Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Výsledný název místa je uložen lokálně se Session, takže se každá Session geokóduje pouze jednou.
 
 Požadavky na počasí odesílají lat/lon Session a koncový čas na `api.open-meteo.com` přes HTTPS s user-agentem BirdNET Live. [Open-Meteo](https://open-meteo.com/) je bezplatná služba a nevyžaduje účet ani API klíč. Výsledný snapshot počasí je uložen lokálně se Session a také zapsán do JSON exportu, bloku `metadata.json` dané Session a HTML reportu.
 
-**Uchovávání:** žádná z výše uvedených služeb třetích stran není kontaktována, aby *nahrávala* nebo *uchovávala* uživatelská data. Vrácené hodnoty (název místa, snapshot počasí) žijí pouze v lokálním záznamu Session na vašem zařízení a putují jen do exportních souborů, které výslovně vytvoříte.
+**Zpracování a uchovávání třetími stranami:** BirdNET-Team tyto služby neprovozuje a nepřijímá data z jejich požadavků. OpenStreetMap Foundation může zpracovávat údaje o přístupu k síti a podrobnosti požadavků podle svých [zásad ochrany osobních údajů](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo uvádí, že protokoly bezplatného API mohou obsahovat IP adresy a zeměpisné souřadnice a jsou po 90 dnech smazány; viz [Podmínky a soukromí](https://open-meteo.com/en/terms). Poskytovatelé mohou údaje zpracovávat v jiných zemích. Vrácené hodnoty se uloží lokálně do Session a do exportu se dostanou pouze tehdy, když jej vytvoříte.
 
 **Odvolání:** kteroukoli ze tří služeb můžete kdykoliv vypnout v **Nastavení → Soukromí**. Již uložené názvy míst a snapshoty počasí zůstávají u Sessions, kde byly zachyceny. Tato historická data odstraníte smazáním dotčených Sessions v Knihovně Sessions nebo pomocí **Nastavení → Nebezpečná zóna → Vymazat všechna data**.
 

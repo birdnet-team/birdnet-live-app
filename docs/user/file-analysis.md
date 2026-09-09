@@ -6,6 +6,10 @@ File Analysis processes an existing recording through the same BirdNET pipeline 
 
 From Home, tap the **File Analysis** card with the :material-file-music: icon.
 
+### From another app
+
+You can also hand a recording to BirdNET Live from somewhere else. On Android, sharing an audio file with **BirdNET Live** or choosing **Open With** opens File Analysis immediately. On iOS, **Open With** is also immediate; after using the share sheet, open or return to BirdNET Live and the pending recording is selected automatically. The app copies the recording into its own temporary storage before analysis.
+
 ## App Bar
 
 - :material-tune: — open File Analysis settings
@@ -53,6 +57,17 @@ The wizard exposes:
 - sensitivity
 - confidence threshold
 - species filter mode
+
+Overlap controls how far each analysis window advances, and is specific to
+File Analysis: the whole file is always examined, and more overlap simply
+examines it more finely. The live modes use an inference rate instead, because
+they have to decide how often to run against incoming audio rather than how
+finely to cover a fixed recording.
+
+However File Analysis reaches its windows, it turns them into detections with
+the same rules as Live Mode, Point Count, and Survey: a detection starts at its
+earliest supporting window, carries the strongest supported score, and ends at
+the end of the last supporting window.
 
 ### 4. Analyze
 

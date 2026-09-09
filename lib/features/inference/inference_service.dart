@@ -252,6 +252,7 @@ class InferenceService {
     required String labelsCsv,
     required ModelConfig config,
     String? scoreBlacklistJson,
+    int? intraOpNumThreads,
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
@@ -268,6 +269,7 @@ class InferenceService {
       inputName: config.onnx.inputName,
       predictionsName: config.onnx.predictionsName,
       embeddingsName: config.onnx.embeddingsName,
+      intraOpNumThreads: intraOpNumThreads,
     );
   }
 
@@ -335,6 +337,82 @@ class InferenceService {
       audioSamples,
       windowSamples: windowSamples,
     );
+
+    return _postProcessOutput(
+      output,
+      sensitivity: sens,
+      confidenceThreshold: thresh,
+      topK: k,
+      useTemporalPooling: useTemporalPooling,
+      timestamp: now,
+    );
+  }
+
+  /// Run a group of audio windows in one native model call.
+  ///
+  /// Post-processing remains sequential so temporal pooling and support state
+  /// have exactly the same ordering semantics as repeated [infer] calls.
+  Future<List<List<Detection>>> inferBatch(
+    List<Float32List> audioWindows, {
+    int? windowSeconds,
+    double? sensitivity,
+    double? confidenceThreshold,
+    int? topK,
+    bool useTemporalPooling = true,
+    List<DateTime>? timestamps,
+  }) async {
+    if (!isReady) {
+      throw StateError(
+        'InferenceService not initialized. Call initialize() first.',
+      );
+    }
+    if (audioWindows.isEmpty) return const [];
+    if (timestamps != null && timestamps.length != audioWindows.length) {
+      throw ArgumentError.value(
+        timestamps,
+        'timestamps',
+        'Must contain one timestamp per audio window',
+      );
+    }
+
+    final cfg = _config!;
+    final ws = windowSeconds ?? cfg.inference.defaultWindowSeconds;
+    final sens = sensitivity ?? cfg.inference.defaultSensitivity;
+    final thresh =
+        confidenceThreshold ?? cfg.inference.defaultConfidenceThreshold;
+    final k = topK ?? cfg.inference.defaultTopK;
+    final outputs = await _model.predictBatch(
+      audioWindows,
+      windowSamples: sampleRate * ws,
+    );
+
+    return [
+      for (var index = 0; index < outputs.length; index++)
+        _postProcessOutput(
+          outputs[index],
+          sensitivity: sens,
+          confidenceThreshold: thresh,
+          topK: k,
+          useTemporalPooling: useTemporalPooling,
+          timestamp:
+              timestamps?[index] ??
+              DateTime.now().subtract(Duration(seconds: ws)),
+        ),
+    ];
+  }
+
+  List<Detection> _postProcessOutput(
+    ModelOutput output, {
+    required double sensitivity,
+    required double confidenceThreshold,
+    required int topK,
+    required bool useTemporalPooling,
+    required DateTime timestamp,
+  }) {
+    final sens = sensitivity;
+    final thresh = confidenceThreshold;
+    final k = topK;
+    final now = timestamp;
 
     // The model output is already sigmoid-activated (probabilities in [0, 1]).
     // Do NOT apply sigmoid again — that would flatten all near-zero

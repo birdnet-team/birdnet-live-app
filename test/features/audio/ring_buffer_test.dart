@@ -111,6 +111,32 @@ void main() {
       });
     });
 
+    group('readEndingAt', () {
+      test('reads an earlier retained window by absolute sample offset', () {
+        final buf = RingBuffer(capacity: 10);
+        buf.write(Float32List.fromList([1, 2, 3, 4, 5, 6]));
+
+        expect(buf.readEndingAt(3, 4), Float32List.fromList([2, 3, 4]));
+        expect(buf.readEndingAt(3, 6), Float32List.fromList([4, 5, 6]));
+      });
+
+      test('reads a retained window after wrapping', () {
+        final buf = RingBuffer(capacity: 5);
+        buf.write(Float32List.fromList([1, 2, 3, 4, 5, 6, 7]));
+
+        expect(buf.readEndingAt(3, 6), Float32List.fromList([4, 5, 6]));
+        expect(buf.readEndingAt(3, 7), Float32List.fromList([5, 6, 7]));
+      });
+
+      test('rejects incomplete and overwritten ranges', () {
+        final buf = RingBuffer(capacity: 4);
+        buf.write(Float32List.fromList([1, 2, 3, 4, 5, 6]));
+
+        expect(() => buf.readEndingAt(2, 7), throwsRangeError);
+        expect(() => buf.readEndingAt(3, 4), throwsRangeError);
+      });
+    });
+
     group('readLastInto', () {
       test('reads into pre-allocated buffer without allocation', () {
         final buf = RingBuffer(capacity: 100);

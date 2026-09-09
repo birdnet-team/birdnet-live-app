@@ -1,8 +1,18 @@
-# Polityka prywatności
+# Polityka prywatności BirdNET Live
 
-**Ostatnia aktualizacja:** lipiec 2026
+**Ostatnia aktualizacja:** 6 sierpnia 2026 r.
 
-BirdNET Live szanuje Twoją prywatność. Ten dokument wyjaśnia, jak aplikacja obchodzi się z Twoimi danymi.
+Niniejsza Polityka prywatności dotyczy **BirdNET Live** (dalej **aplikacja**). Aplikacja jest rozwijana i oferowana przez **BirdNET-Team** (dalej **deweloper** lub **my**).
+
+## Tożsamość aplikacji i dewelopera
+
+| | |
+|---|---|
+| **Nazwa aplikacji** | BirdNET Live |
+| **Nazwa dewelopera** | BirdNET-Team |
+| **Kontakt w sprawach prywatności** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team udostępnia tę politykę we własnym imieniu. Wyjaśnia ona, jak BirdNET Live chroni i przetwarza dane osobowe.
 
 ## Przetwarzanie na urządzeniu
 
@@ -13,9 +23,9 @@ Cała analiza dźwięku i identyfikacja gatunków ptaków odbywają się **w ca�
 
 Żadne dane dźwiękowe nigdy nie są przesyłane na zewnętrzne serwery.
 
-## Zbieranie danych
+## Przetwarzanie danych osobowych
 
-BirdNET Live **nie** zbiera, nie przesyła ani nie udostępnia żadnych danych osobowych. Nie ma analityki, śledzenia ani telemetrii.
+BirdNET-Team nie prowadzi zaplecza serwerowego aplikacji i nie otrzymuje za pośrednictwem BirdNET Live Twoich nagrań, lokalizacji, danych Session ani innych danych osobowych. Aplikacja nie ma kont użytkowników, reklam, analityki, śledzenia ani telemetrii. Przetwarza jednak dźwięk i lokalizację na Twoim urządzeniu, a tylko po włączeniu opcjonalnej funkcji sieciowej wysyła informacje opisane w sekcji **Zasoby zewnętrzne** bezpośrednio do wskazanego dostawcy zewnętrznego.
 
 ### Dane przechowywane lokalnie na Twoim urządzeniu:
 
@@ -38,17 +48,17 @@ Aplikacja może uzyskiwać dostęp do następujących zasobów zewnętrznych. Ka
 
 | Zasób | Cel | Kontrolowany przez | Wysyłane w każdym żądaniu |
 |-------|-----|--------------------|---------------------------|
-| Kafelki mapy (OpenStreetMap) | Mapa podkładowa dla wyboru lokalizacji, mapy na żywo Survey i mapy sesji | **Ustawienia → Prywatność → Zezwalaj na kafelki mapy** | Współrzędne kafelka `(z, x, y)` i user-agent BirdNET Live — bez PII |
-| Odwrotne geokodowanie (OpenStreetMap Nominatim) | Zamiana współrzędnych GPS na czytelną nazwę miejsca (np. „Berlin, Niemcy”) do wyświetlenia sesji | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie nazw miejsc** | Szerokość/długość geograficzna sesji oraz user-agent BirdNET Live |
-| Migawka pogody (Open-Meteo) | Jednorazowy zapis lokalnych warunków (temperatura, opady, wiatr, zachmurzenie, kod WMO) we współrzędnych nagrania i czasie zakończenia | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie pogody** | Szerokość/długość geograficzna sesji i znacznik czasu zakończenia oraz user-agent BirdNET Live |
+| Kafelki mapy (OpenStreetMap Foundation) | Mapa podkładowa dla wyboru lokalizacji, mapy na żywo Survey i mapy Session | **Ustawienia → Prywatność → Zezwalaj na kafelki mapy** | Współrzędne kafelka `(z, x, y)`, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
+| Odwrotne geokodowanie (Nominatim fundacji OpenStreetMap Foundation) | Zamiana współrzędnych GPS na czytelną nazwę miejsca (np. „Berlin, Niemcy”) do wyświetlenia Session | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie nazw miejsc** | Szerokość/długość geograficzna Session, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
+| Migawka pogody (OpenMeteo GmbH) | Jednorazowy zapis lokalnych warunków (temperatura, opady, wiatr, zachmurzenie, kod WMO) we współrzędnych nagrania i czasie zakończenia | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie pogody** | Szerokość/długość geograficzna i czas zakończenia Session, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
 
-Żądania kafelków mapy to standardowe żądania HTTPS GET do `tile.openstreetmap.org` z user-agentem BirdNET Live. Wysyłane są tylko współrzędne kafelka — żadnych danych umożliwiających identyfikację osoby.
+Żądania kafelków mapy to żądania HTTPS GET do `tile.openstreetmap.org`. Współrzędne kafelka określają oglądany obszar mapy. Jak każde bezpośrednie żądanie internetowe ujawniają też dostawcy Twój adres IP.
 
 Żądania odwrotnego geokodowania wysyłają szerokość i długość geograficzną sesji do `nominatim.openstreetmap.org` przez HTTPS, wraz z user-agentem BirdNET Live zgodnie z [Zasadami korzystania z Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Rozpoznana nazwa miejsca jest zapisywana lokalnie z sesją, więc każda sesja jest geokodowana tylko raz. Żadne żądanie nie jest wysyłane, jeśli sesja nie ma współrzędnych GPS lub urządzenie jest offline.
 
 Żądania pogody wysyłają szerokość/długość geograficzną sesji i znacznik czasu zakończenia do `api.open-meteo.com` przez HTTPS, wraz z user-agentem BirdNET Live. [Open-Meteo](https://open-meteo.com/) to bezpłatna usługa, która nie wymaga konta ani klucza API. Zwrócona migawka pogody jest zapisywana lokalnie z sesją, a także zapisywana w eksporcie JSON, bloku `metadata.json` sesji oraz raporcie HTML.
 
-**Przechowywanie:** żadna z powyższych usług zewnętrznych nie jest kontaktowana w celu *przesłania* ani *przechowywania* danych użytkownika. Zwrócone wartości (nazwa miejsca, migawka pogody) istnieją tylko w lokalnym rekordzie sesji na Twoim urządzeniu i trafiają wyłącznie do plików eksportu, które utworzysz w sposób jawny.
+**Przetwarzanie i przechowywanie przez strony trzecie:** BirdNET-Team nie obsługuje tych usług ani nie otrzymuje danych z ich żądań. OpenStreetMap Foundation może przetwarzać dane dostępu do sieci i szczegóły żądań zgodnie ze swoją [Polityką prywatności](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo podaje, że logi bezpłatnego API mogą zawierać adresy IP i współrzędne geograficzne i są usuwane po 90 dniach; zobacz [Warunki i Prywatność](https://open-meteo.com/en/terms). Dostawcy mogą przetwarzać dane w innych krajach. Zwrócone wartości są zapisywane lokalnie w Session i trafiają do eksportu tylko wtedy, gdy go utworzysz.
 
 **Wycofanie zgody:** każdą z trzech usług możesz wyłączyć w dowolnym momencie w **Ustawienia → Prywatność**. Zapisane już lokalnie nazwy miejsc i migawki pogody pozostają dołączone do sesji, w których zostały zarejestrowane; usuń te sesje z Biblioteki sesji lub użyj **Ustawienia → Strefa zagrożenia → Wyczyść wszystkie dane**, aby usunąć te dane historyczne.
 

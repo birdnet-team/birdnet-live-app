@@ -20,10 +20,12 @@ It is self-contained for sideloading and bundles the ONNX models in `flutter_ass
 
 For Play Store releases, use the app bundle. During AAB builds, the `.onnx` files are moved into the install-time `models_pack` asset pack so the base module stays below Google Play's size limit while the installed app still works offline.
 
-The local release helper wraps the Play Store build and copies the AAB, mapping file, symbols, and release-note stubs into `release/<version>/`:
+The local release helper builds signed AAB and APK artifacts, creates a 512 x 512
+Huawei AppGallery icon, and stages them with the mapping file, symbols, and
+release-note stubs into `release/<version>/`:
 
 ```bash
-dart dev/build_release.dart
+dart dev/build_release.dart --since <last-store-version>
 ```
 
 ## iOS

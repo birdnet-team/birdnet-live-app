@@ -104,18 +104,27 @@ Posun na ose x aplikovaný na surové pravděpodobnostní skóre modelu před sd
 
 ### Frekvence odvozování
 
-Řídí, jak často BirdNET provádí odvozování. Posuvník používá stejné kroky **0,10–1,00 Hz** jako nastavení Survey a ARU.
+Řídí, jak často BirdNET provádí odvozování. Posuvník používá stejné kroky
+**0,10–1,00 Hz** jako nastavení Survey a ARU. Okna jsou ukotvena k
+zachyceným zvukovým vzorkům, nikoli k dokončení časovače, takže uložení
+ukázky ani dočasně pomalé volání modelu neposune následující okna. Při
+shodném nastavení odvozování analyzují režim Live, Point Count a Survey
+stejná okna a hlásí stejné detekce. Nižší frekvence snižují zátěž modelu i
+spotřebu baterie, ale ponechávají mezi okny širší mezery, takže velmi krátké
+hlasové projevy lze snáze přeslechnout. Nové průzkumy Survey mají ve výchozím
+stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou pro
+maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
+používá nastavení [překryvu](file-analysis.md).
 
 BirdNET Live interně vyhlazuje skóre napříč nedávnými okny odvozování, aby
 omezil jednorázové falešně pozitivní nálezy. Toto sdružování není dostupné
-jako uživatelské nastavení; ve výchozím stavu se používá adaptivní režim
-sdružování s pěti nedávnými okny a limitem stáří 10 sekund reálného času. Při
-vysoké frekvenci odvozování používá průměrové sdružování pro stabilní
-rozhodování v reálném čase; při pomalejším tempu Survey a ARU používá
-sdružování LME, aby udrželo vysokou přesnost i při delších bězích. Přijaté
-detekce zobrazují nejvyšší nedávnou podloženou spolehlivost modelu, takže
-zřetelné hlasové projevy mohou stále vykazovat vysokou spolehlivost, místo
-aby je vyhlazování srovnalo.
+jako uživatelské nastavení; ve výchozím stavu se používá adaptivní sdružování
+Log-Mean-Exp s pěti nedávnými okny a limitem stáří 10 sekund reálného času.
+Přijaté detekce zobrazují nejvyšší nedávnou podloženou spolehlivost modelu,
+takže zřetelné hlasové projevy mohou stále vykazovat vysokou spolehlivost,
+místo aby je vyhlazování srovnalo. Všechny režimy nyní převádějí výsledek
+sdružování na detekce stejně: detekce začíná v nejstarším podpůrném okně, nese
+nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
 
@@ -245,11 +254,27 @@ Stahování offline map je momentálně skryté, dokud BirdNET Live používá v
 
 - **Vypnuto** – bez geografické filtrace
 - **Filtr podle polohy** – vyloučit druhy pod geografickým prahem
+- **Adaptivní filtr podle polohy** – vyžadovat tím vyšší jistotu, čím vzácnější druh zde je
 - **Vážení podle polohy** – použít geomodel jako doplňkový vážicí signál
 
 ### Práh geofiltru
 
-Objeví se, když je aktivní režim filtrace založený na poloze.
+Objeví se, když je aktivní **Filtr podle polohy** nebo **Vážení podle polohy**. Adaptivní filtr si hranici odvodí sám z místního složení druhů, a proto posuvník nemá.
+
+### Jak se adaptivní filtr rozhoduje
+
+Náročnost odstupňuje podle toho, jak hojný je druh ve vaší lokalitě, a používá stejné stupně hojnosti, jaké vidíte na obrazovce **Prozkoumat**. Druhy stupně *Hojný* se nefiltrují nikdy; níže potřebné skóre detekce plynule roste a druhy, které na místním seznamu vůbec nejsou, potřebují zhruba 0,92 a více. Cokoli se skóre 0,99 a výš zůstane bez ohledu na model polohy.
+
+| Stupeň ve vaší lokalitě | Potřebné skóre detekce |
+|---|---|
+| Hojný | jakékoli |
+| Běžný | ~0,55–0,70 |
+| Častý | ~0,70–0,82 |
+| Neobvyklý | ~0,78–0,89 |
+| Řídký / Vzácný | ~0,83–0,92 |
+| Není na místním seznamu | ~0,92–0,97 |
+
+Protože stupně vycházejí z pořadí, funguje to v druhově bohatém tropickém lese stejně jako v Arktidě. Detekce, které projdou, si ponechají původní skóre – model polohy rozhoduje jen o tom, zda se zobrazí. Cílem je omezit falešné nálezy u neobvyklých druhů, aniž byste přišli o skutečně jasnou nahrávku.
 
 ## Export a synchronizace
 
@@ -266,7 +291,7 @@ Intuice: mnoho pracovních postupů potřebuje více formátů najednou – CSV 
 
 ### Zahrnout zvukové soubory
 
-Zahrnout uložený zvuk vedle exportovaných tabulek nebo metadat, pokud to daný postup exportu podporuje.
+Zahrnout uložený zvuk vedle exportovaných tabulek nebo metadat, pokud to daný postup exportu podporuje. Sdílení jedné detekce se také řídí tímto nastavením: úplná nahrávka Session se ořízne na přesné počáteční a koncové časové značky detekce, zatímco Session pouze s detekcemi použije její uložený klip.
 
 ### Zvuk vždy sdílet jako WAV
 
@@ -282,7 +307,7 @@ Po zapnutí obsahuje každý exportní ZIP navíc soubor `<session>_report.html`
 
 ### Sdílení pouze zvuku
 
-Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z úseků detekcí (bez úplné nahrávky) stále vytvoří ZIP, protože je pak ke sdílení více než jeden soubor.
+Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z více úseků detekcí stále vytvoří ZIP; při sdílení jedné detekce se předá její jediný surový klip.
 
 ## Soukromí
 

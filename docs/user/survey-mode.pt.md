@@ -35,6 +35,17 @@ Esta etapa contém parâmetros específicos do Survey, como:
 - modo de amostragem de detecções
 - limite Top N por espécie quando a amostragem é limitada
 
+Novas configurações de Survey usam inferência de **0,70 Hz** por padrão. Isso
+preserva mais vocalizações curtas do que as opções de menor taxa para economia
+de bateria e, ainda assim, executa o modelo com menos frequência do que a
+1,00 Hz. O Survey e o modo Live compartilham um único agendamento de
+inferência e uma única definição de detecção, portanto, com os mesmos ajustes
+de inferência, ambos relatam as mesmas espécies, pontuações e durações de
+detecção para o mesmo som. Taxas mais baixas deixam intencionalmente
+intervalos maiores entre as janelas de análise sobrepostas e podem, por isso,
+perder sons breves; 0,30 Hz continua disponível quando a duração da bateria é
+a prioridade.
+
 #### Amostragem de detecções
 
 Um Survey longo pode produzir milhares de detecções, e salvar um clipe de áudio para cada uma delas ocupa rapidamente o armazenamento. A amostragem de detecções controla **quais clipes são mantidos no disco** — *os próprios registros de detecção são sempre mantidos*, de modo que o registro completo da Session permanece intacto, independentemente do modo. Os registros cujo áudio foi descartado simplesmente não têm clipe reproduzível no Resumo da Session.

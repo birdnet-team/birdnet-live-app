@@ -16,6 +16,7 @@ package com.birdnet.birdnet_live
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import java.io.BufferedOutputStream
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -138,6 +139,7 @@ object NativeAudioDecoder {
             var outputShorts: java.nio.ShortBuffer? = null
             var discardSamples = 0L
             var decodedSamplesCount = 0L
+            var interleavedPcm = ShortArray(0)
 
             var channels = if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
                 format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
@@ -187,6 +189,10 @@ object NativeAudioDecoder {
 
                             val totalShorts = bufferInfo.size / 2
                             val frames = totalShorts / channels
+                            if (interleavedPcm.size < totalShorts) {
+                                interleavedPcm = ShortArray(totalShorts)
+                            }
+                            shortBuf.get(interleavedPcm, 0, totalShorts)
 
                             if (outputBufferBytes == null) {
                                 val targetCount = (count.toLong() * codecSampleRate / trackSampleRate).toInt()
@@ -202,26 +208,23 @@ object NativeAudioDecoder {
                             val shorts = outputShorts!!
                             if (channels == 1) {
                                 for (f in 0 until frames) {
-                                    if (shortBuf.hasRemaining()) {
-                                        val sample = shortBuf.get()
-                                        if (decodedSamplesCount >= discardSamples) {
-                                            if (shorts.hasRemaining()) {
-                                                shorts.put(sample)
-                                            } else {
-                                                reachedEnd = true
-                                                break
-                                            }
+                                    val sample = interleavedPcm[f]
+                                    if (decodedSamplesCount >= discardSamples) {
+                                        if (shorts.hasRemaining()) {
+                                            shorts.put(sample)
+                                        } else {
+                                            reachedEnd = true
+                                            break
                                         }
-                                        decodedSamplesCount++
                                     }
+                                    decodedSamplesCount++
                                 }
                             } else {
                                 for (f in 0 until frames) {
                                     var sum = 0L
+                                    val frameOffset = f * channels
                                     for (ch in 0 until channels) {
-                                        if (shortBuf.hasRemaining()) {
-                                            sum += shortBuf.get()
-                                        }
+                                        sum += interleavedPcm[frameOffset + ch]
                                     }
                                     val avg = (sum / channels).toInt().coerceIn(-32768, 32767).toShort()
 
@@ -317,6 +320,7 @@ object NativeAudioDecoder {
         val bufferInfo = MediaCodec.BufferInfo()
         var inputDone = false
         var totalSamples = 0
+        var interleavedPcm = ShortArray(0)
 
         var channels = if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
             format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
@@ -329,7 +333,14 @@ object NativeAudioDecoder {
             32000
         }
 
-        val outputStream = tempFile.outputStream()
+        // A modest buffer on purpose: Session Review reads this file while it
+        // is still being written so it can draw the decoded prefix instead of
+        // waiting for a long recording to finish transcoding. Every flush is
+        // another slice that becomes visible, so a smaller buffer means the
+        // spectrogram fills in more smoothly. 256 KiB is ~3 s of 44.1 kHz mono
+        // audio — fine-grained enough to look continuous, still large enough
+        // that the write syscalls are irrelevant next to the decode itself.
+        val outputStream = BufferedOutputStream(tempFile.outputStream(), 256 * 1024)
         try {
             while (true) {
                 if (isCancelled()) {
@@ -382,12 +393,15 @@ object NativeAudioDecoder {
                                 monoShortBuf.put(shortBuf)
                             }
                         } else {
+                            if (interleavedPcm.size < totalShorts) {
+                                interleavedPcm = ShortArray(totalShorts)
+                            }
+                            shortBuf.get(interleavedPcm, 0, totalShorts)
                             for (i in 0 until frames) {
                                 var sum = 0L
+                                val frameOffset = i * channels
                                 for (ch in 0 until channels) {
-                                    if (shortBuf.hasRemaining()) {
-                                        sum += shortBuf.get()
-                                    }
+                                    sum += interleavedPcm[frameOffset + ch]
                                 }
                                 val avg = (sum / channels).toInt().coerceIn(-32768, 32767).toShort()
                                 monoShortBuf.put(avg)

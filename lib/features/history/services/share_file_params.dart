@@ -1,10 +1,19 @@
+import 'dart:ui' show Rect;
+
 import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
+/// Builds the share payload for [filePath].
+///
+/// [sharePositionOrigin] anchors the iPad popover; omitting it makes the
+/// iOS plugin refuse to present the sheet. Callers should pass the rect of
+/// the widget the user tapped — see `shareOriginFrom` in
+/// `shared/utils/share_origin.dart`.
 ShareParams shareParamsForFile(
   String filePath, {
   String? text,
   String? subject,
+  Rect? sharePositionOrigin,
 }) {
   final name = _basenameForAnyPath(filePath);
   return ShareParams(
@@ -13,6 +22,7 @@ ShareParams shareParamsForFile(
     text: text,
     subject: subject,
     title: name,
+    sharePositionOrigin: sharePositionOrigin,
   );
 }
 

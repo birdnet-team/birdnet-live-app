@@ -104,18 +104,31 @@ Een verschuiving op de x-as die op de ruwe waarschijnlijkheidsscores van het mod
 
 ### Inferentiesnelheid
 
-Bepaalt hoe vaak BirdNET inferentie uitvoert. De schuifregelaar gebruikt dezelfde stappen van **0,10–1,00 Hz** als het opzetten van Survey en ARU.
+Bepaalt hoe vaak BirdNET inferentie uitvoert. De schuifregelaar gebruikt
+dezelfde stappen van **0,10–1,00 Hz** als het opzetten van Survey en ARU. De
+vensters zijn verankerd aan opgenomen audiosamples en niet aan het aflopen van
+een timer, dus het opslaan van een fragment of een tijdelijk trage
+modelaanroep verschuift latere vensters niet. Met dezelfde
+inferentie-instellingen analyseren de Live-modus, Point Count en Survey
+dezelfde vensters en melden ze dezelfde detecties. Lagere snelheden
+verminderen het werk van het model en het batterijverbruik, maar laten
+grotere gaten tussen de vensters, waardoor je heel korte geluiden makkelijker
+mist. Nieuwe Survey-instellingen gebruiken standaard **0,70 Hz** als
+middenweg; **0,30 Hz** blijft de uitdrukkelijke keuze voor maximale
+batterijduur. De bestandsanalyse heeft geen inferentiesnelheid — die gebruikt
+in plaats daarvan een instelling voor [overlap](file-analysis.md).
 
 BirdNET Live effent scores intern uit over recente inferentievensters om
 eenmalige valse treffers te verminderen. Deze pooling is niet als
-gebruikersinstelling beschikbaar; standaard wordt een adaptieve poolingmodus
-gebruikt met vijf recente vensters en een realtime leeftijdsgrens van 10
-seconden. Bij hoge inferentiesnelheden gebruikt die average pooling voor
-stabiele live beslissingen; bij de tragere cadans van Survey en ARU gebruikt
-die LME-pooling om de precisie over langere runs hoog te houden. Geaccepteerde
-detecties tonen de sterkste recent ondersteunde modelbetrouwbaarheid, zodat
-duidelijke geluiden nog steeds een hoge betrouwbaarheid kunnen laten zien in
-plaats van door de uitvlakking te worden afgevlakt.
+gebruikersinstelling beschikbaar; standaard wordt adaptieve
+Log-Mean-Exp-pooling gebruikt met vijf recente vensters en een realtime
+leeftijdsgrens van 10 seconden. Geaccepteerde detecties tonen de sterkste
+recent ondersteunde modelbetrouwbaarheid, zodat duidelijke geluiden nog steeds
+een hoge betrouwbaarheid kunnen laten zien in plaats van door de uitvlakking te
+worden afgevlakt. Alle modi zetten dat poolingresultaat nu op dezelfde manier
+om in detecties: een detectie begint bij haar vroegste ondersteunende venster,
+draagt de sterkste ondersteunde score en eindigt aan het einde van het laatste
+ondersteunende venster.
 
 ## Spectrogram
 
@@ -246,11 +259,27 @@ Het downloaden van offline kaarten is momenteel verborgen zolang BirdNET Live de
 
 - **Uit** — geen geografische filtering
 - **Locatiefilter** — soorten uitsluiten die onder de geografische drempel vallen
+- **Adaptief locatiefilter** — meer zekerheid vragen naarmate een soort hier ongewoner is
 - **Locatieweging** — het geomodel als extra wegingssignaal gebruiken
 
 ### Drempel van het geofilter
 
-Verschijnt wanneer er een filtermodus op basis van locatie actief is.
+Verschijnt wanneer **Locatiefilter** of **Locatieweging** actief is. Het adaptieve filter leidt zijn eigen grens af uit de plaatselijke soortensamenstelling en heeft daarom geen schuifregelaar.
+
+### Hoe het adaptieve filter beslist
+
+Het schaalt de eis met hoe gewoon een soort op jouw locatie is, met dezelfde talrijkheidsniveaus als op het scherm **Ontdekken**. Soorten in het niveau *Talrijk* worden nooit gefilterd; daaronder loopt de vereiste detectiescore gestaag op, en soorten die helemaal niet op de plaatselijke lijst staan hebben ongeveer 0,92 of meer nodig. Alles vanaf 0,99 blijft staan, wat het locatiemodel er ook van vindt.
+
+| Niveau op jouw locatie | Vereiste detectiescore |
+|---|---|
+| Talrijk | elke |
+| Gewoon | ~0,55–0,70 |
+| Regelmatig | ~0,70–0,82 |
+| Ongewoon | ~0,78–0,89 |
+| Schaars / Zeldzaam | ~0,83–0,92 |
+| Niet op de plaatselijke lijst | ~0,92–0,97 |
+
+Omdat de niveaus op rangorde berusten, werkt dit in een soortenrijk tropisch bos net zo als in het Noordpoolgebied. Detecties die blijven staan houden hun oorspronkelijke score — het locatiemodel beslist alleen mee of ze getoond worden. Het doel is minder valse positieven bij ongewone soorten, zonder een echt heldere opname ervan kwijt te raken.
 
 ## Export & synchronisatie
 
@@ -267,7 +296,7 @@ De gedachte erachter: veel workflows hebben tegelijk meer dan één formaat nodi
 
 ### Audiobestanden meesturen
 
-Neem de opgeslagen audio mee naast de geëxporteerde tabellen of metadata wanneer de exportworkflow dat ondersteunt.
+Neem de opgeslagen audio mee naast de geëxporteerde tabellen of metadata wanneer de exportworkflow dat ondersteunt. Het delen van één detectie volgt deze instelling ook: een volledige Session-opname wordt op de exacte begin- en eindtijdstempels van die detectie gesneden, terwijl een Session met alleen detecties het bewaarde fragment gebruikt.
 
 ### Audio altijd als WAV delen
 
@@ -283,7 +312,7 @@ Staat die aan, dan bevat elke export-ZIP ook een bestand `<session>_report.html`
 
 ### Alleen audio delen
 
-Haal het vinkje weg bij elk formaat **én** bij het HTML-rapport **én** bij het vakje voor app-metadata, zodat alleen **Audiobestanden meesturen** overblijft: dan geeft Delen de kale opname (bijvoorbeeld `BirdNET_Live_…flac`) aan het systeemvenster in plaats van een ZIP. Dat is de eenvoudigste route om een Session rechtstreeks naar iNaturalist, eBird of een andere app te sturen die een onverpakt audiobestand verwacht. Sessions die uit detectiefragmenten bestaan (zonder volledige opname) leveren nog steeds een ZIP op, omdat er dan meer dan één bestand te delen is.
+Haal het vinkje weg bij elk formaat **én** bij het HTML-rapport **én** bij het vakje voor app-metadata, zodat alleen **Audiobestanden meesturen** overblijft: dan geeft Delen de kale opname (bijvoorbeeld `BirdNET_Live_…flac`) aan het systeemvenster in plaats van een ZIP. Dat is de eenvoudigste route om een Session rechtstreeks naar iNaturalist, eBird of een andere app te sturen die een onverpakt audiobestand verwacht. Sessions met meerdere detectiefragmenten leveren nog steeds een ZIP op; bij het delen van één detectie wordt dat ene kale fragment overgedragen.
 
 ## Privacy
 

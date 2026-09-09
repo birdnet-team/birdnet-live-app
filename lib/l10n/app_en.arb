@@ -118,6 +118,20 @@
       }
     }
   },
+  "sharedAudioBusyTitle": "Session in progress",
+  "@sharedAudioBusyTitle": {
+    "description": "Title shown when a shared audio file arrives while another Session is still running"
+  },
+  "sharedAudioBusyMessage": "Wait for the current {mode} Session to finish, then share the recording again.",
+  "@sharedAudioBusyMessage": {
+    "description": "Explains that a shared audio file cannot be opened while another Session is running",
+    "placeholders": {
+      "mode": {
+        "type": "String",
+        "example": "Point Count"
+      }
+    }
+  },
   "termsOfUseTitle": "Acceptable Use Policy",
   "@termsOfUseTitle": {
     "description": "Acceptable use policy dialog title"
@@ -1051,6 +1065,10 @@
   "@settingsFilterGeoExclude": {
     "description": "Geo-exclude filter option"
   },
+  "settingsFilterGeoAdaptive": "Adaptive location filter",
+  "@settingsFilterGeoAdaptive": {
+    "description": "Adaptive geo filter option"
+  },
   "settingsFilterGeoMerge": "Location weighting",
   "@settingsFilterGeoMerge": {
     "description": "Geo-merge filter option"
@@ -1574,6 +1592,10 @@
   "sessionTrimExportFailed": "The trimmed audio could not be prepared for sharing.",
   "@sessionTrimExportFailed": {
     "description": "Snack bar shown when a trimmed recording cannot be materialized for export"
+  },
+  "shareSheetFailed": "The share sheet could not be opened.",
+  "@shareSheetFailed": {
+    "description": "Snack bar shown when the platform share sheet fails to open"
   },
   "sessionHelpTitle": "Session Review Help",
   "@sessionHelpTitle": {
@@ -2160,6 +2182,10 @@
   "@fileAnalysisError": {
     "description": "Error card title"
   },
+  "fileAnalysisCouldNotProcessFile": "We couldn't process this file. Check that it uses a supported audio format and has the correct file extension, then try again.",
+  "@fileAnalysisCouldNotProcessFile": {
+    "description": "Friendly message shown when File Analysis cannot inspect or process a selected file"
+  },
 
   "fileAnalysisBack": "Back",
   "@fileAnalysisBack": {
@@ -2349,7 +2375,7 @@
   "@settingsHelpUseGps": {
     "description": "Help text for use GPS setting"
   },
-  "settingsHelpSpeciesFilter": "Restrict detections by geographic likelihood using the on-device location model. 'Location filter' hides species below the threshold; 'Location weighting' multiplies detection scores by the location prior.",
+  "settingsHelpSpeciesFilter": "Restrict detections by geographic likelihood using the on-device location model. 'Location filter' hides species below the threshold. 'Adaptive location filter' asks for more confidence the less common a species is here — abundant species are never filtered, uncommon ones need a high score — using the same abundance tiers as the Explore screen. 'Location weighting' multiplies detection scores by the location prior.",
   "@settingsHelpSpeciesFilter": {
     "description": "Help text for species filter setting"
   },

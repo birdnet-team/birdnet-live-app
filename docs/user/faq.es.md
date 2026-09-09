@@ -19,7 +19,7 @@ R: Android (8.0+), iOS (15.0+) y Windows (experimental).
 R: Reduzca el umbral de confianza en Configuración para ver más detecciones. El ruido de fondo, el viento y la distancia afectan la precisión.
 
 **P: ¿Qué hace el filtro de especies?**
-R: El modelo geográfico predice qué especies probablemente se encuentren en su ubicación GPS y en la época del año. Habilite "Geo Exclude" para ocultar especies poco probables o "Geo Merge" para ponderar los resultados según la probabilidad geográfica.
+R: El modelo geográfico predice qué especies probablemente se encuentren en tu ubicación GPS y en la época del año. Activa **Filtro por ubicación** para ocultar especies poco probables, **Filtro adaptativo por ubicación** para ocultar solo aquellas de las que el modelo de audio tampoco está seguro, o **Ponderación por ubicación** para ponderar los resultados según la probabilidad geográfica.
 
 **P: ¿Qué tan precisa es la identificación?**
 R: La precisión depende de la calidad de la grabación, la distancia, el ruido de fondo y la especie. Las detecciones de alta confianza (>70%) son generalmente fiables. Siempre verifique visualmente las especies raras.

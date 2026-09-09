@@ -1,8 +1,18 @@
-# Privacybeleid
+# Privacybeleid voor BirdNET Live
 
-**Laatst bijgewerkt:** juli 2026
+**Laatst bijgewerkt:** 6 augustus 2026
 
-BirdNET Live respecteert je privacy. Dit document legt uit hoe de app met je gegevens omgaat.
+Dit Privacybeleid is van toepassing op **BirdNET Live** (de **app**). De app wordt ontwikkeld en aangeboden door **BirdNET-Team** (de **ontwikkelaar**, **wij** of **ons**).
+
+## Identiteit van app en ontwikkelaar
+
+| | |
+|---|---|
+| **Appnaam** | BirdNET Live |
+| **Naam ontwikkelaar** | BirdNET-Team |
+| **Privacycontact** | [ccb-birdnet@cornell.edu](mailto:ccb-birdnet@cornell.edu) |
+
+BirdNET-Team verstrekt dit beleid in eigen naam. Het legt uit hoe BirdNET Live persoonlijke informatie beschermt en verwerkt.
 
 ## Verwerking op het apparaat
 
@@ -13,9 +23,9 @@ Alle audioanalyse en identificatie van vogelsoorten gebeuren **volledig op je ap
 
 Er worden nooit audiogegevens naar externe servers verzonden.
 
-## Gegevensverzameling
+## Verwerking van persoonlijke informatie
 
-BirdNET Live verzamelt, verzendt of deelt **geen** persoonlijke gegevens. Er is geen analyse, geen tracking en geen telemetrie.
+BirdNET-Team beheert geen app-backend en ontvangt via BirdNET Live geen opnamen, locatiegegevens, Session-gegevens of andere persoonlijke informatie van je. De app heeft geen gebruikersaccounts, advertenties, analyses, tracking of telemetrie. De app verwerkt wel audio en locatie op je apparaat en stuurt alleen wanneer je een optionele netwerkfunctie inschakelt de onder **Externe bronnen** beschreven informatie rechtstreeks naar de genoemde externe aanbieder.
 
 ### Gegevens die lokaal op je apparaat worden opgeslagen:
 
@@ -38,17 +48,17 @@ De app kan de volgende externe bronnen benaderen. Elke bron wordt geregeld door 
 
 | Bron | Doel | Geregeld door | Verzonden per verzoek |
 |------|------|---------------|-----------------------|
-| Kaarttegels (OpenStreetMap) | Basiskaart voor de locatiekiezer, de live Survey-kaart en de sessiekaart | **Instellingen → Privacy → Kaarttegels toestaan** | Tegelcoördinaten `(z, x, y)` en de BirdNET Live user-agent — geen PII |
-| Reverse-geocoding (OpenStreetMap Nominatim) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de sessie | **Instellingen → Privacy → Sta het opzoeken van plaatsnamen toe** | De breedte-/lengtegraad van de sessie, plus de BirdNET Live user-agent |
-| Weersnapshot (Open-Meteo) | Eenmalige opname van lokale omstandigheden (temperatuur, neerslag, wind, bewolking, WMO-weercode) op de opnamecoördinaten en eindtijd | **Instellingen → Privacy → Weer opzoeken toestaan** | De breedte-/lengtegraad van de sessie en de eindtijdstempel, plus de BirdNET Live user-agent |
+| Kaarttegels (OpenStreetMap Foundation) | Basiskaart voor de locatiekiezer, de live Survey-kaart en de Session-kaart | **Instellingen → Privacy → Kaarttegels toestaan** | Tegelcoördinaten `(z, x, y)`, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
+| Reverse-geocoding (Nominatim van OpenStreetMap Foundation) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de Session | **Instellingen → Privacy → Sta het opzoeken van plaatsnamen toe** | Breedte-/lengtegraad van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
+| Weersnapshot (OpenMeteo GmbH) | Eenmalige opname van lokale omstandigheden (temperatuur, neerslag, wind, bewolking, WMO-weercode) op de opnamecoördinaten en eindtijd | **Instellingen → Privacy → Weer opzoeken toestaan** | Breedte-/lengtegraad en eindtijd van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
 
-Verzoeken om kaarttegels zijn standaard HTTPS GET-verzoeken naar `tile.openstreetmap.org` met de BirdNET Live user-agent. Alleen de tegelcoördinaten worden verzonden — geen persoonlijk identificeerbare informatie.
+Verzoeken om kaarttegels zijn HTTPS GET-verzoeken naar `tile.openstreetmap.org`. De tegelcoördinaten identificeren het bekeken kaartgebied. Zoals bij elk rechtstreeks internetverzoek wordt ook je IP-adres aan de aanbieder bekendgemaakt.
 
 Reverse-geocodingverzoeken sturen de breedte- en lengtegraad van de sessie via HTTPS naar `nominatim.openstreetmap.org`, samen met de BirdNET Live user-agent zoals vereist door het [Nominatim-gebruiksbeleid](https://operations.osmfoundation.org/policies/nominatim/). De opgeloste plaatsnaam wordt lokaal bij de sessie opgeslagen, zodat een sessie maar één keer wordt gegeocodeerd. Er wordt geen verzoek gedaan als de sessie geen GPS-coördinaten heeft of het apparaat offline is.
 
 Weerverzoeken sturen de breedte-/lengtegraad van de sessie en de eindtijdstempel via HTTPS naar `api.open-meteo.com`, samen met de BirdNET Live user-agent. [Open-Meteo](https://open-meteo.com/) is een gratis dienst en vereist geen account of API-sleutel. De teruggegeven weersnapshot wordt lokaal bij de sessie opgeslagen en ook weggeschreven naar de JSON-export, het `metadata.json`-blok per sessie en het HTML-rapport.
 
-**Bewaring:** geen van de bovenstaande externe diensten wordt benaderd om gebruikersgegevens te *uploaden* of op te *slaan*. Teruggegeven waarden (plaatsnaam, weersnapshot) leven alleen in het lokale sessierecord op je apparaat en reizen alleen mee naar exportbestanden die je expliciet aanmaakt.
+**Verwerking en bewaring door derden:** BirdNET-Team beheert deze diensten niet en ontvangt hun aanvraaggegevens niet. OpenStreetMap Foundation kan netwerktoegangsgegevens en aanvraagdetails verwerken volgens haar [Privacybeleid](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo stelt dat serverlogs van de gratis API IP-adressen en geografische coördinaten kunnen bevatten en na 90 dagen worden verwijderd; zie de [Voorwaarden en Privacy](https://open-meteo.com/en/terms). Deze aanbieders kunnen gegevens in andere landen verwerken. Teruggegeven waarden worden lokaal in de Session opgeslagen en komen alleen in een export terecht wanneer je die maakt.
 
 **Intrekken:** je kunt elk van de drie diensten op elk moment uitschakelen onder **Instellingen → Privacy**. Reeds lokaal opgeslagen plaatsnamen en weersnapshots blijven gekoppeld aan de sessies waarin ze zijn vastgelegd; verwijder die sessies uit de Sessiebibliotheek of gebruik **Instellingen → Gevarenzone → Wis alle gegevens** om die historische gegevens te verwijderen.
 

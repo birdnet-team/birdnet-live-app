@@ -272,7 +272,8 @@ final advancedPoolingParamsProvider = Provider<AdvancedPoolingParams>((ref) {
   );
 });
 
-/// Species filter mode ('off', 'geoExclude', 'geoMerge', 'customList').
+/// Species filter mode ('off', 'geoExclude', 'geoAdaptive', 'geoMerge',
+/// 'customList').
 final speciesFilterModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -791,14 +792,14 @@ String _legacyLastObserver(SharedPreferences prefs) {
 // Survey Mode
 // ---------------------------------------------------------------------------
 
-/// Survey inference rate in Hz (default 0.3).
+/// Survey inference rate in Hz (default 0.7).
 final surveyInferenceRateProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return InferenceRateSettingNotifier(
         prefs,
         key: PrefKeys.surveyInferenceRate,
-        defaultValue: 0.3,
+        defaultValue: 0.7,
       );
     });
 

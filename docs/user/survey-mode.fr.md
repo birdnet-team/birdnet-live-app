@@ -42,6 +42,17 @@ Cette étape contient des paramètres propres au Relevé, tels que :
 - le mode d'échantillonnage des détections
 - la limite Top N par espèce lorsque l'échantillonnage est limité
 
+Les nouveaux réglages Survey utilisent une inférence de **0,70 Hz** par
+défaut. Cela conserve davantage de vocalisations brèves que les options plus
+économes, tout en faisant tourner le modèle moins souvent qu'à 1,00 Hz.
+Survey et le mode Live partagent la même planification d'inférence et la même
+définition d'une détection : à réglages d'inférence identiques, les deux
+signalent les mêmes espèces, les mêmes scores et les mêmes durées de détection
+pour un même son. Les fréquences plus basses laissent volontairement des
+écarts plus larges entre les fenêtres d'analyse qui se chevauchent et peuvent
+donc manquer des sons brefs ; 0,30 Hz reste disponible lorsque l'autonomie est
+prioritaire.
+
 #### Échantillonnage des détections
 
 Un long relevé peut produire des milliers de détections, et enregistrer un clip audio pour chacune remplit vite l'espace de stockage. L'échantillonnage des détections contrôle **quels clips sont conservés sur le disque** — *les enregistrements de détection eux-mêmes sont toujours conservés*, de sorte que votre journal de session complet reste intact quel que soit le mode. Les détections dont l'audio a été supprimé n'ont simplement aucun clip lisible dans le Résumé de la session.

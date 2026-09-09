@@ -42,6 +42,16 @@ Dieser Schritt enthält Survey-spezifische Parameter wie:
 - Detektions-Sampling-Modus
 - Top-N-Grenze pro Art bei begrenztem Sampling
 
+Neue Survey-Einstellungen verwenden standardmäßig **0,70 Hz** Inferenz. Das
+bewahrt mehr kurze Lautäußerungen als die sparsameren Optionen und lässt das
+Modell dennoch seltener laufen als bei 1,00 Hz. Survey und der Live-Modus
+teilen sich einen Inferenzplan und eine Definition einer Detektion: Bei
+gleichen Inferenzeinstellungen melden beide für denselben Laut dieselben
+Arten, Scores und Detektionsspannen. Niedrigere Raten lassen bewusst größere
+Lücken zwischen den überlappenden Analysefenstern und können daher kurze
+Geräusche übersehen; 0,30 Hz bleibt verfügbar, wenn die Akkulaufzeit Vorrang
+hat.
+
 #### Detektions-Sampling
 
 Ein langer Survey kann Tausende von Detektionen erzeugen, und einen Audioclip für

@@ -6,6 +6,10 @@ Analiza plików przetwarza istniejące nagranie tym samym potokiem BirdNET, któ
 
 Na ekranie startowym dotknij karty **Analiza plików** z ikoną :material-file-music:.
 
+### Z innej aplikacji
+
+Nagranie możesz też przekazać z innej aplikacji. W systemie Android udostępnienie pliku dźwiękowego aplikacji **BirdNET Live** lub wybranie opcji **Otwórz za pomocą** natychmiast otwiera Analizę plików. W systemie iOS opcja **Otwórz za pomocą** również działa natychmiast; po użyciu menu udostępniania otwórz BirdNET Live lub wróć do aplikacji, a oczekujące nagranie zostanie wybrane automatycznie. Przed analizą aplikacja kopiuje nagranie do własnej pamięci tymczasowej.
+
 ## Pasek aplikacji
 
 - :material-tune: — otwórz ustawienia analizy plików
@@ -53,6 +57,18 @@ Kreator udostępnia:
 - czułość
 - próg pewności
 - tryb filtra gatunków
+
+Nakładanie określa, o ile przesuwa się każde okno analizy, i jest właściwe dla
+analizy plików: cały plik jest zawsze przeglądany, a większe nakładanie
+przegląda go po prostu drobiazgowiej. Tryby na żywo używają zamiast tego
+częstości wnioskowania, ponieważ muszą decydować, jak często uruchamiać model
+na napływającym dźwięku, a nie jak drobiazgowo pokryć gotowe nagranie.
+
+Niezależnie od tego, jak analiza plików dochodzi do swoich okien, zamienia je
+na wykrycia według tych samych reguł co tryb Live, Point Count i Survey:
+wykrycie zaczyna się w najwcześniejszym oknie potwierdzającym, niesie
+najwyższą potwierdzoną ocenę i kończy się na końcu ostatniego okna
+potwierdzającego.
 
 ### 4. Analiza
 

@@ -19,7 +19,7 @@ R: Android (8.0+), iOS (15.0+) e Windows (sperimentale).
 R: Abbassa la soglia di confidenza nelle Impostazioni per vedere più rilevamenti. Il rumore di fondo, il vento e la distanza influiscono sulla precisione.
 
 **D: Cosa fa il filtro delle specie?**
-R: Il modello geografico prevede quali specie si troveranno probabilmente nella tua posizione GPS e in quale periodo dell'anno. Abilita "Geo Exclude" per nascondere specie improbabili o "Geo Merge" per ponderare i risultati in base alla probabilità geografica.
+R: Il modello geografico prevede quali specie si troveranno probabilmente nella tua posizione GPS e in quale periodo dell'anno. Attiva **Filtro per posizione** per nascondere le specie improbabili, **Filtro adattivo per posizione** per nasconderne solo quelle su cui è incerto anche il modello audio, oppure **Ponderazione per posizione** per ponderare i risultati in base alla probabilità geografica.
 
 **D: Quanto è precisa l'identificazione?**
 R: La precisione dipende dalla qualità della registrazione, dalla distanza, dal rumore di fondo e dalla specie. I rilevamenti con elevata affidabilità (>70%) sono generalmente affidabili. Verifica sempre visivamente le specie rare.

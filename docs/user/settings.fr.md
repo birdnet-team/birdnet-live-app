@@ -104,19 +104,32 @@ Un décalage sur l'axe des x appliqué aux scores de probabilité bruts du modè
 
 ### Fréquence d'inférence
 
-Contrôle la fréquence à laquelle BirdNET exécute l'inférence. Le curseur utilise les mêmes paliers de **0,10–1,00 Hz** que la configuration Survey et ARU.
+Contrôle la fréquence à laquelle BirdNET exécute l'inférence. Le curseur
+utilise les mêmes paliers de **0,10–1,00 Hz** que la configuration Survey et
+ARU. Les fenêtres sont ancrées aux échantillons audio capturés et non à
+l'expiration d'un minuteur : enregistrer un extrait ou un appel au modèle
+temporairement lent ne décale donc pas les fenêtres suivantes. À réglages
+d'inférence identiques, le mode Live, Point Count et Survey analysent les
+mêmes fenêtres et signalent les mêmes détections. Les fréquences plus basses
+réduisent le travail du modèle et la consommation de batterie, mais laissent
+des écarts plus larges entre les fenêtres : les vocalisations très brèves sont
+donc plus faciles à manquer. Les nouveaux réglages Survey utilisent
+**0,70 Hz** par défaut comme compromis ; **0,30 Hz** reste l'option explicite
+pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
+d'inférence — elle utilise un réglage de
+[chevauchement](file-analysis.md) à la place.
 
 BirdNET Live lisse en interne les scores sur les fenêtres d'inférence récentes
 afin de réduire les faux positifs isolés. Cette mise en commun n'est pas
-exposée comme paramètre utilisateur ; par défaut, un mode adaptatif est
-utilisé, avec cinq fenêtres récentes et une limite d'ancienneté de 10 secondes
-en temps réel. Aux fréquences d'inférence élevées, il utilise une mise en
-commun par moyenne pour des décisions stables en direct ; aux cadences plus
-lentes de Survey et ARU, il utilise la mise en commun LME afin de maintenir
-une précision élevée sur les longues durées. Les détections acceptées
-affichent la plus forte confiance récente étayée par le modèle, de sorte que
-des vocalisations évidentes peuvent toujours afficher une confiance élevée au
-lieu d'être aplaties par le lissage.
+exposée comme paramètre utilisateur ; par défaut, une mise en commun adaptative
+Log-Mean-Exp est utilisée, avec cinq fenêtres récentes et une limite
+d'ancienneté de 10 secondes en temps réel. Les détections acceptées affichent
+la plus forte confiance récente étayée par le modèle, de sorte que des
+vocalisations évidentes peuvent toujours afficher une confiance élevée au lieu
+d'être aplaties par le lissage. Tous les modes transforment désormais ce
+résultat de la même façon en détections : une détection commence à sa première
+fenêtre de soutien, porte le score étayé le plus fort et se termine à la fin de
+la dernière fenêtre de soutien.
 
 ## Spectrogramme
 
@@ -248,11 +261,27 @@ Les téléchargements de cartes hors ligne sont masqués pour l'instant, tant qu
 
 - **Désactivé** — pas de filtrage géographique
 - **Filtre par position** — exclure les espèces sous le seuil géographique
+- **Filtre adaptatif par position** — exiger d'autant plus de certitude que l'espèce est peu commune ici
 - **Pondération par position** — utiliser le géo-modèle comme signal de pondération supplémentaire
 
 ### Seuil du géo-filtre
 
-Apparaît lorsqu'un mode de filtrage fondé sur la position est actif.
+Apparaît lorsque **Filtre par position** ou **Pondération par position** est actif. Le filtre adaptatif détermine lui-même son seuil à partir de la composition locale en espèces : il n'a donc pas de curseur.
+
+### Comment le filtre adaptatif décide
+
+Il module l'exigence selon la fréquence de l'espèce à votre position, en s'appuyant sur les mêmes niveaux d'abondance que l'écran **Explorer**. Les espèces du niveau *Abondante* ne sont jamais filtrées ; en dessous, le score de détection requis augmente régulièrement, et les espèces absentes de la liste locale demandent environ 0,92 ou plus. Tout ce qui atteint 0,99 est conservé, quoi qu'en dise le modèle de localisation.
+
+| Niveau à votre position | Score de détection requis |
+|---|---|
+| Abondante | quelconque |
+| Commune | ~0,55–0,70 |
+| Fréquente | ~0,70–0,82 |
+| Inhabituelle | ~0,78–0,89 |
+| Sporadique / Rare | ~0,83–0,92 |
+| Absente de la liste locale | ~0,92–0,97 |
+
+Comme les niveaux reposent sur un rang, cela se comporte de la même façon dans une forêt tropicale très riche que dans l'Arctique. Les détections conservées gardent leur score d'origine : le modèle de localisation ne fait que décider de leur affichage. L'objectif est de réduire les faux positifs sur les espèces peu communes sans perdre un enregistrement vraiment net de l'une d'elles.
 
 ## Export et synchronisation
 
@@ -269,7 +298,7 @@ L'intuition : de nombreux flux de travail ont besoin de plusieurs formats à la 
 
 ### Inclure les fichiers audio
 
-Inclure l'audio enregistré à côté des tableaux ou métadonnées exportés lorsque le flux d'export le permet.
+Inclure l'audio enregistré à côté des tableaux ou métadonnées exportés lorsque le flux d'export le permet. Le partage d'une seule détection suit aussi ce réglage : un enregistrement complet de Session est coupé aux horodatages exacts de début et de fin de cette détection, tandis qu'une Session composée uniquement de détections utilise son clip conservé.
 
 ### Toujours partager l'audio en WAV
 
@@ -285,7 +314,7 @@ Une fois activé, chaque archive ZIP d'export contient également un fichier `<s
 
 ### Partage de l'audio seul
 
-Décochez tous les formats **ainsi que** le rapport HTML **et** la case des métadonnées de l'application, en ne laissant que **Inclure les fichiers audio** : Partager remettra alors au panneau système l'enregistrement brut (par exemple `BirdNET_Live_…flac`) au lieu d'un ZIP. C'est la voie la plus directe pour envoyer une session vers iNaturalist, eBird ou toute autre application attendant un fichier audio non empaqueté. Les sessions constituées d'extraits de détection (sans enregistrement complet) produisent toujours un ZIP, car il y a alors plus d'un fichier à partager.
+Décochez tous les formats **ainsi que** le rapport HTML **et** la case des métadonnées de l'application, en ne laissant que **Inclure les fichiers audio** : Partager remettra alors au panneau système l'enregistrement brut (par exemple `BirdNET_Live_…flac`) au lieu d'un ZIP. C'est la voie la plus directe pour envoyer une session vers iNaturalist, eBird ou toute autre application attendant un fichier audio non empaqueté. Les Sessions avec plusieurs extraits de détection produisent toujours un ZIP ; le partage d'une seule détection transmet ce clip brut unique.
 
 ## Confidentialité
 

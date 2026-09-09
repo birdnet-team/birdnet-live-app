@@ -104,18 +104,29 @@ Przesunięcie na osi x stosowane do surowych ocen prawdopodobieństwa modelu prz
 
 ### Częstość wnioskowania
 
-Steruje tym, jak często BirdNET wykonuje wnioskowanie. Suwak używa tych samych kroków **0,10–1,00 Hz** co konfiguracja Survey i ARU.
+Steruje tym, jak często BirdNET wykonuje wnioskowanie. Suwak używa tych samych
+kroków **0,10–1,00 Hz** co konfiguracja Survey i ARU. Okna są zakotwiczone w
+zarejestrowanych próbkach dźwięku, a nie w zakończeniu odliczania, więc
+zapisanie fragmentu ani chwilowo wolne wywołanie modelu nie przesuwa
+kolejnych okien. Przy tych samych ustawieniach wnioskowania tryb Live, Point
+Count i Survey analizują te same okna i zgłaszają te same wykrycia. Niższe
+częstości zmniejszają obciążenie modelu i zużycie baterii, ale zostawiają
+szersze przerwy między oknami, więc łatwiej przeoczyć bardzo krótkie odgłosy.
+Nowe ustawienia Survey domyślnie używają **0,70 Hz** jako rozwiązania
+pośredniego; **0,30 Hz** pozostaje wyraźnym wyborem na maksymalny czas pracy
+baterii. Analiza plików nie ma częstości wnioskowania — zamiast tego używa
+ustawienia [nakładania](file-analysis.md).
 
 BirdNET Live wewnętrznie wygładza oceny w ostatnich oknach wnioskowania, aby
 ograniczyć jednorazowe fałszywe trafienia. Ten pooling nie jest dostępny jako
-ustawienie użytkownika; domyślnie stosowany jest tryb adaptacyjny z pięcioma
-ostatnimi oknami i limitem wieku 10 sekund w czasie rzeczywistym. Przy dużych
-częstościach wnioskowania używa poolingu średniej, aby decyzje na żywo były
-stabilne; przy wolniejszym rytmie Survey i ARU używa poolingu LME, aby
-utrzymać wysoką precyzję przy dłuższych przebiegach. Zaakceptowane wykrycia
-pokazują najwyższą niedawną potwierdzoną pewność modelu, dzięki czemu wyraźne
-odgłosy mogą nadal osiągać wysoką pewność, zamiast zostać spłaszczone przez
-wygładzanie.
+ustawienie użytkownika; domyślnie stosowany jest adaptacyjny pooling
+Log-Mean-Exp z pięcioma ostatnimi oknami i limitem wieku 10 sekund w czasie
+rzeczywistym. Zaakceptowane wykrycia pokazują najwyższą niedawną potwierdzoną
+pewność modelu, dzięki czemu wyraźne odgłosy mogą nadal osiągać wysoką pewność,
+zamiast zostać spłaszczone przez wygładzanie. Wszystkie tryby zamieniają teraz
+ten wynik poolingu na wykrycia w ten sam sposób: wykrycie zaczyna się w
+najwcześniejszym oknie potwierdzającym, niesie najwyższą potwierdzoną ocenę i
+kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
 
@@ -246,11 +257,27 @@ Pobieranie map offline jest obecnie ukryte, dopóki BirdNET Live korzysta z publ
 
 - **Wyłączony** — bez filtrowania geograficznego
 - **Filtr lokalizacji** — wyklucza gatunki poniżej progu geograficznego
+- **Adaptacyjny filtr lokalizacji** — wymaga tym większej pewności, im rzadszy jest tu gatunek
 - **Ważenie lokalizacją** — używa geomodelu jako dodatkowego sygnału ważącego
 
 ### Próg filtra geograficznego
 
-Pojawia się, gdy aktywny jest tryb filtrowania oparty na lokalizacji.
+Pojawia się, gdy aktywny jest **Filtr lokalizacji** lub **Ważenie lokalizacją**. Filtr adaptacyjny wyznacza swoją granicę sam, na podstawie miejscowego składu gatunków, więc nie ma suwaka.
+
+### Jak decyduje filtr adaptacyjny
+
+Stopniuje wymagania według tego, jak pospolity jest gatunek w Twojej lokalizacji, korzystając z tych samych poziomów liczebności, które widzisz na ekranie **Odkrywaj**. Gatunki z poziomu *Liczny* nie są filtrowane nigdy; poniżej wymagany wynik wykrycia stale rośnie, a gatunki, których w ogóle nie ma na miejscowej liście, potrzebują około 0,92 lub więcej. Wszystko od 0,99 wzwyż zostaje niezależnie od tego, co mówi model lokalizacji.
+
+| Poziom w Twojej lokalizacji | Wymagany wynik wykrycia |
+|---|---|
+| Liczny | dowolny |
+| Pospolity | ~0,55–0,70 |
+| Częsty | ~0,70–0,82 |
+| Nieliczny | ~0,78–0,89 |
+| Skąpy / Rzadki | ~0,83–0,92 |
+| Spoza miejscowej listy | ~0,92–0,97 |
+
+Ponieważ poziomy opierają się na rankingu, działa to tak samo w bogatym gatunkowo lesie tropikalnym, jak i w Arktyce. Wykrycia, które przechodzą, zachowują pierwotny wynik — model lokalizacji decyduje wyłącznie o tym, czy je pokazać. Celem jest ograniczenie fałszywych trafień dla nielicznych gatunków bez utraty naprawdę wyraźnego nagrania takiego gatunku.
 
 ## Eksport i synchronizacja
 
@@ -267,7 +294,7 @@ Intuicja: wiele sposobów pracy wymaga jednocześnie więcej niż jednego format
 
 ### Dołącz pliki dźwiękowe
 
-Dołącz zapisany dźwięk obok eksportowanych tabel lub metadanych, jeśli dany sposób eksportu to obsługuje.
+Dołącz zapisany dźwięk obok eksportowanych tabel lub metadanych, jeśli dany sposób eksportu to obsługuje. Udostępnianie pojedynczego wykrycia także korzysta z tego ustawienia: pełne nagranie Session jest przycinane do dokładnych znaczników początku i końca tego wykrycia, a Session zawierająca tylko wykrycia używa zachowanego fragmentu.
 
 ### Zawsze udostępniaj dźwięk jako WAV
 
@@ -283,7 +310,7 @@ Po włączeniu każdy plik ZIP eksportu zawiera dodatkowo plik `<session>_report
 
 ### Udostępnianie samego dźwięku
 
-Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions złożone z fragmentów wykryć (bez pełnego nagrania) nadal dają plik ZIP, bo jest wtedy więcej niż jeden plik do udostępnienia.
+Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions z wieloma fragmentami wykryć nadal dają ZIP; przy udostępnianiu pojedynczego wykrycia przekazywany jest ten jeden surowy fragment.
 
 ## Prywatność
 

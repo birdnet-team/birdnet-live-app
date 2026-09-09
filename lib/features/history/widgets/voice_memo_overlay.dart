@@ -124,6 +124,15 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
   Duration _playPosition = Duration.zero;
   Duration _playDuration = Duration.zero;
   bool _isRecording = false;
+
+  /// Set while a start/stop is waiting on the platform. `_isRecording` only
+  /// flips once the call returns, so without this a second tap in that window
+  /// would hand `record` a start while it is already recording — the plugin
+  /// restarts the live recording from inside its stop callback there and can
+  /// answer the same method call twice, crashing the app with
+  /// `IllegalStateException: Reply already submitted`.
+  bool _recorderBusy = false;
+
   bool _isPlaying = false;
   String? _loadedPlayerPath;
   String? _pendingPath; // freshly-recorded but not yet committed
@@ -227,6 +236,8 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
   }
 
   Future<void> _startRecording() async {
+    if (_recorderBusy || _isRecording) return;
+    _recorderBusy = true;
     setState(() => _errorMessage = null);
     try {
       final hasPerm = await _recorder.hasPermission();
@@ -304,10 +315,22 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       });
     } catch (e) {
       setState(() => _errorMessage = e.toString());
+    } finally {
+      _recorderBusy = false;
     }
   }
 
   Future<void> _stopRecording() async {
+    if (_recorderBusy) return;
+    _recorderBusy = true;
+    try {
+      await _stopRecordingImpl();
+    } finally {
+      _recorderBusy = false;
+    }
+  }
+
+  Future<void> _stopRecordingImpl() async {
     _elapsedTimer?.cancel();
     _ampTimer?.cancel();
     _ampTimer = null;

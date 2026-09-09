@@ -104,18 +104,31 @@ Uno scostamento sull'asse x applicato ai punteggi di probabilità grezzi del mod
 
 ### Frequenza di inferenza
 
-Controlla con quale frequenza BirdNET esegue l'inferenza. Il cursore usa gli stessi passi **0,10–1,00 Hz** della configurazione di Survey e ARU.
+Controlla con quale frequenza BirdNET esegue l'inferenza. Il cursore usa gli
+stessi passi **0,10–1,00 Hz** della configurazione di Survey e ARU. Le
+finestre sono ancorate ai campioni audio acquisiti e non allo scadere di un
+timer, quindi salvare un clip o una chiamata al modello temporaneamente lenta
+non sposta le finestre successive. A parità di impostazioni di inferenza, la
+modalità Live, Point Count e Survey analizzano le stesse finestre e segnalano
+le stesse rilevazioni. Le frequenze più basse riducono il lavoro del modello e
+il consumo della batteria, ma lasciano spazi più ampi tra le finestre, perciò
+è più facile perdere vocalizzazioni molto brevi. Le nuove impostazioni di
+Survey usano **0,70 Hz** come via di mezzo; **0,30 Hz** resta l'opzione
+esplicita per la massima autonomia. L'analisi file non ha una frequenza di
+inferenza: usa invece un'impostazione di
+[sovrapposizione](file-analysis.md).
 
 BirdNET Live leviga internamente i punteggi sulle finestre di inferenza
 recenti per ridurre i falsi positivi isolati. Questo pooling non è esposto come
-impostazione utente; per impostazione predefinita usa una modalità di pooling
-adattiva con cinque finestre recenti e un limite di anzianità di 10 secondi in
-tempo reale. Alle frequenze di inferenza elevate usa il pooling per media, per
-decisioni stabili dal vivo; alle cadenze più lente di Survey e ARU usa il
-pooling LME, per mantenere alta la precisione su esecuzioni lunghe. Le
-rilevazioni accettate mostrano la confidenza recente più alta supportata dal
-modello, così le vocalizzazioni evidenti possono ancora presentare confidenza
-elevata invece di essere appiattite dalla levigatura.
+impostazione utente; per impostazione predefinita usa il pooling adattivo
+Log-Mean-Exp con cinque finestre recenti e un limite di anzianità di 10 secondi
+in tempo reale. Le rilevazioni accettate mostrano la confidenza recente più
+alta supportata dal modello, così le vocalizzazioni evidenti possono ancora
+presentare confidenza elevata invece di essere appiattite dalla levigatura.
+Tutte le modalità trasformano ora quel risultato in rilevazioni allo stesso
+modo: una rilevazione inizia alla sua prima finestra di supporto, porta il
+punteggio supportato più alto e termina alla fine dell'ultima finestra di
+supporto.
 
 ## Spettrogramma
 
@@ -247,11 +260,27 @@ I download di mappe offline sono attualmente nascosti finché BirdNET Live usa i
 
 - **Disattivato** — nessun filtro geografico
 - **Filtro per posizione** — escludi le specie sotto la soglia geografica
+- **Filtro adattivo per posizione** — richiedere tanta più certezza quanto meno comune è la specie qui
 - **Ponderazione per posizione** — usa il geo-modello come segnale di ponderazione aggiuntivo
 
 ### Soglia del geo-filtro
 
-Compare quando è attiva una modalità di filtro basata sulla posizione.
+Compare quando è attivo **Filtro per posizione** o **Ponderazione per posizione**. Il filtro adattivo ricava da sé la propria soglia dalla composizione locale delle specie, quindi non ha un cursore.
+
+### Come decide il filtro adattivo
+
+Gradua la richiesta in base a quanto è comune una specie nella tua posizione, usando gli stessi livelli di abbondanza che vedi nella schermata **Esplora**. Le specie del livello *Abbondante* non vengono mai filtrate; sotto di esso il punteggio di rilevamento necessario sale progressivamente, e le specie che non figurano affatto nell'elenco locale richiedono circa 0,92 o più. Tutto ciò che raggiunge 0,99 viene mantenuto, qualunque cosa dica il modello di localizzazione.
+
+| Livello nella tua posizione | Punteggio di rilevamento necessario |
+|---|---|
+| Abbondante | qualsiasi |
+| Comune | ~0,55–0,70 |
+| Frequente | ~0,70–0,82 |
+| Insolita | ~0,78–0,89 |
+| Scarsa / Rara | ~0,83–0,92 |
+| Fuori dall'elenco locale | ~0,92–0,97 |
+
+Poiché i livelli si basano sulla posizione in classifica, il comportamento è lo stesso in una foresta tropicale ricchissima e nell'Artico. Le rilevazioni che sopravvivono conservano il punteggio originale: il modello di localizzazione decide solo se mostrarle. L'obiettivo è ridurre i falsi positivi sulle specie insolite senza perdere una registrazione davvero nitida di una di esse.
 
 ## Esportazione e sincronizzazione
 
@@ -268,7 +297,7 @@ L'intuizione: molti flussi di lavoro richiedono più di un formato alla volta �
 
 ### Includi i file audio
 
-Includi l'audio salvato accanto alle tabelle o ai metadati esportati, quando il flusso di esportazione lo supporta.
+Includi l'audio salvato accanto alle tabelle o ai metadati esportati, quando il flusso di esportazione lo supporta. Anche la condivisione di una singola rilevazione segue questa impostazione: una registrazione Session completa viene ritagliata alle marche temporali esatte di inizio e fine della rilevazione, mentre una Session con sole rilevazioni usa il suo clip conservato.
 
 ### Condividi sempre l'audio come WAV
 
@@ -284,7 +313,7 @@ Una volta attivo, ogni ZIP di esportazione contiene anche un file `<session>_rep
 
 ### Condivisione del solo audio
 
-Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions composte da spezzoni di rilevazione (senza registrazione completa) producono comunque uno ZIP, perché in quel caso i file da condividere sono più di uno.
+Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions con più spezzoni di rilevazione producono comunque uno ZIP; condividendo una sola rilevazione viene consegnato quell'unico clip grezzo.
 
 ## Privacy
 

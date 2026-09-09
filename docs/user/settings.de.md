@@ -104,18 +104,30 @@ Ein Versatz auf der x-Achse, der auf die rohen Wahrscheinlichkeitswerte des Mode
 
 ### Inferenzrate
 
-Steuert, wie häufig BirdNET eine Inferenz durchführt. Der Schieberegler verwendet dieselben Stufen von **0,10–1,00 Hz** wie die Einrichtung von Survey und ARU.
+Steuert, wie häufig BirdNET eine Inferenz durchführt. Der Schieberegler
+verwendet dieselben Stufen von **0,10–1,00 Hz** wie die Einrichtung von Survey
+und ARU. Die Fenster sind an aufgezeichnete Audio-Samples gebunden und nicht
+an den Ablauf eines Timers, sodass das Speichern einer Aufnahme oder ein
+vorübergehend langsamer Modellaufruf spätere Fenster nicht verschiebt. Bei
+gleichen Inferenzeinstellungen analysieren Live-Modus, Point Count und Survey
+dieselben Fenster und melden dieselben Detektionen. Niedrigere Raten
+verringern die Modellarbeit und den Akkuverbrauch, lassen aber größere Lücken
+zwischen den Fenstern, sodass sehr kurze Lautäußerungen leichter übersehen
+werden. Neue Survey-Einstellungen verwenden standardmäßig **0,70 Hz** als
+Mittelweg; **0,30 Hz** bleibt die ausdrückliche Option für maximale
+Akkulaufzeit. Die Dateianalyse hat keine Inferenzrate — sie verwendet
+stattdessen eine [Überlappung](file-analysis.md).
 
 BirdNET Live glättet Scores intern über die jüngsten Inferenzfenster hinweg,
 um einmalige Falschpositive zu reduzieren. Dieses Pooling ist nicht als
-Benutzereinstellung verfügbar; standardmäßig wird ein adaptiver Pooling-Modus
-mit fünf jüngsten Fenstern und einer Echtzeit-Altersgrenze von 10 Sekunden
-verwendet. Bei hohen Inferenzraten nutzt es Average-Pooling für stabile
-Live-Entscheidungen; bei den langsameren Takten von Survey und ARU nutzt es
-LME-Pooling, um die Präzision über längere Läufe hoch zu halten. Akzeptierte
-Detektionen zeigen die stärkste kürzlich gestützte Modellkonfidenz, sodass
-eindeutige Lautäußerungen weiterhin hohe Konfidenz anzeigen können, statt von
-der Glättung eingeebnet zu werden.
+Benutzereinstellung verfügbar; standardmäßig wird adaptives
+Log-Mean-Exp-Pooling mit fünf jüngsten Fenstern und einer Echtzeit-Altersgrenze
+von 10 Sekunden verwendet. Akzeptierte Detektionen zeigen die stärkste kürzlich
+gestützte Modellkonfidenz, sodass eindeutige Lautäußerungen weiterhin hohe
+Konfidenz anzeigen können, statt von der Glättung eingeebnet zu werden. Alle
+Modi wandeln dieses Pooling-Ergebnis jetzt auf dieselbe Weise in Detektionen
+um: Eine Detektion beginnt bei ihrem frühesten stützenden Fenster, trägt den
+stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
 
@@ -246,11 +258,27 @@ Offline-Karten-Downloads sind derzeit ausgeblendet, solange BirdNET Live den öf
 
 - **Aus** – keine geografische Filterung
 - **Standortfilter** – Arten ausschließen, die unter dem geografischen Schwellenwert liegen
+- **Adaptiver Standortfilter** – umso mehr Sicherheit verlangen, je seltener eine Art hier ist
 - **Standortgewichtung** – das Geo-Modell als zusätzliches Gewichtungssignal verwenden
 
 ### Geofilter-Schwellenwert
 
-Erscheint, wenn ein standortbasierter Filtermodus aktiv ist.
+Erscheint, wenn **Standortfilter** oder **Standortgewichtung** aktiv ist. Der adaptive Filter ermittelt seine Grenze selbst aus der örtlichen Artenzusammensetzung und hat deshalb keinen Regler.
+
+### Wie der adaptive Filter entscheidet
+
+Er staffelt die Anforderung danach, wie häufig eine Art an Ihrem Standort ist, und nutzt dieselben Häufigkeitsstufen wie der **Entdecken**-Bildschirm. Arten der Stufe *Zahlreich* werden nie gefiltert; darunter steigt der nötige Detektions-Score stetig an, und Arten, die gar nicht auf der örtlichen Liste stehen, brauchen etwa 0,92 oder mehr. Alles ab 0,99 bleibt erhalten, ganz gleich was das Standortmodell sagt.
+
+| Stufe an Ihrem Standort | Nötiger Detektions-Score |
+|---|---|
+| Zahlreich | beliebig |
+| Häufig | ~0,55–0,70 |
+| Verbreitet | ~0,70–0,82 |
+| Mäßig | ~0,78–0,89 |
+| Selten / Rar | ~0,83–0,92 |
+| Nicht auf der örtlichen Liste | ~0,92–0,97 |
+
+Da die Stufen auf Rängen beruhen, verhält sich das im artenreichen Tropenwald genauso wie in der Arktis. Detektionen, die durchkommen, behalten ihren ursprünglichen Score – das Standortmodell entscheidet nur mit, ob sie angezeigt werden. Ziel ist, Falschmeldungen bei seltenen Arten zu verringern, ohne eine wirklich klare Aufnahme davon zu verlieren.
 
 ## Export & Sync
 
@@ -267,7 +295,7 @@ Die Intuition dahinter: Viele Arbeitsabläufe brauchen mehr als ein Format gleic
 
 ### Audiodateien einschließen
 
-Gespeichertes Audio zusammen mit den exportierten Tabellen oder Metadaten einschließen, sofern der Exportablauf das unterstützt.
+Gespeichertes Audio zusammen mit den exportierten Tabellen oder Metadaten einschließen, sofern der Exportablauf das unterstützt. Auch das Teilen einer einzelnen Detektion folgt dieser Einstellung: Eine vollständige Session-Aufnahme wird auf die exakten Start- und Endzeitstempel der Detektion geschnitten, während eine Session nur mit Detektionsclips ihren gespeicherten Clip verwendet.
 
 ### Audio immer als WAV teilen
 
@@ -283,7 +311,7 @@ Wenn aktiviert, enthält jedes Export-ZIP zusätzlich eine Datei `<session>_repo
 
 ### Nur Audio teilen
 
-Nehmen Sie den Haken bei jedem Format **und** beim HTML-Bericht **und** beim Feld für die App-Metadaten weg, sodass nur **Audiodateien einschließen** bleibt: Dann übergibt „Teilen“ dem Systemdialog die reine Aufnahme (z. B. `BirdNET_Live_…flac`) statt eines ZIP. Das ist der reibungsarme Weg, eine Session direkt an iNaturalist, eBird oder jede andere App zu senden, die eine unverpackte Audiodatei erwartet. Sessions, die aus Detektionsclips bestehen (ohne vollständige Aufnahme), erzeugen weiterhin ein ZIP, weil es dann mehr als eine Datei zu teilen gibt.
+Nehmen Sie den Haken bei jedem Format **und** beim HTML-Bericht **und** beim Feld für die App-Metadaten weg, sodass nur **Audiodateien einschließen** bleibt: Dann übergibt „Teilen“ dem Systemdialog die reine Aufnahme (z. B. `BirdNET_Live_…flac`) statt eines ZIP. Das ist der reibungsarme Weg, eine Session direkt an iNaturalist, eBird oder jede andere App zu senden, die eine unverpackte Audiodatei erwartet. Sessions mit mehreren Detektionsclips erzeugen weiterhin ein ZIP; beim Teilen einer einzelnen Detektion wird deren einzelner roher Clip übergeben.
 
 ## Datenschutz
 
