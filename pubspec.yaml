@@ -23,7 +23,7 @@ dependencies:
   path_provider: ^2.1.5
 
   # Permissions
-  permission_handler: ^12.0.1
+  permission_handler: ^13.0.0
 
   # Audio
   record: ^7.0.0
