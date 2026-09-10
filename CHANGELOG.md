@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.3] - 2026-09-10
+
+### Fixed
+
+- Starting and saving a Survey no longer stalls without internet access or when Android platform services are slow to respond. Leaving the screen during startup now cancels the Survey instead of leaving the microphone and foreground service running.
+
 ## [1.1.2] - 2026-08-11
 
 ### Added
