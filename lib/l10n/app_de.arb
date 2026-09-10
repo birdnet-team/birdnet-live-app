@@ -28,6 +28,8 @@
   "done": "Fertig",
   "quickListenBlockedTitle": "Aktuelle Session zuerst beenden",
   "quickListenBlockedMessage": "Quick Listen kann nicht starten, während eine {mode}-Session läuft oder gestartet wird. Beenden Sie zuerst diese Session und tippen Sie dann erneut auf das Widget.",
+  "sharedAudioBusyTitle": "Session läuft",
+  "sharedAudioBusyMessage": "Warten Sie, bis die aktuelle {mode}-Session abgeschlossen ist, und teilen Sie die Aufnahme dann erneut.",
   "termsOfUseTitle": "Richtlinie zur akzeptablen Nutzung",
   "privacyPolicyTitle": "Datenschutzrichtlinie",
   "acceptTerms": "Akzeptieren",

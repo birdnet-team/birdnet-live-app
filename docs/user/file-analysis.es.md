@@ -6,6 +6,10 @@ El Análisis de archivos procesa una grabación existente a través del mismo pi
 
 Desde Inicio, toca la tarjeta **Análisis de archivos** con el icono :material-file-music:.
 
+### Desde otra app
+
+También puedes enviar una grabación desde otra app. En Android, compartir un archivo de audio con **BirdNET Live** o elegir **Abrir con** abre inmediatamente el Análisis de archivos. En iOS, **Abrir con** también es inmediato; después de usar el menú de compartir, abre BirdNET Live o vuelve a la app y la grabación pendiente se seleccionará automáticamente. Antes del análisis, la app copia la grabación en su propio almacenamiento temporal.
+
 ## Barra de aplicaciones
 
 - :material-tune: — abre los Ajustes de Análisis de archivos

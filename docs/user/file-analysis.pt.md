@@ -6,6 +6,10 @@ A Análise de arquivos processa uma gravação existente pelo mesmo pipeline do 
 
 Na tela de Início, toque no cartão **Análise de arquivos** com o ícone :material-file-music:.
 
+### De outro aplicativo
+
+Você também pode enviar uma gravação de outro aplicativo. No Android, compartilhar um arquivo de áudio com o **BirdNET Live** ou escolher **Abrir com** abre imediatamente a Análise de arquivos. No iOS, **Abrir com** também é imediato; depois de usar o menu de compartilhamento, abra o BirdNET Live ou volte ao aplicativo para que a gravação pendente seja selecionada automaticamente. Antes da análise, o aplicativo copia a gravação para seu próprio armazenamento temporário.
+
 ## Barra de aplicativo
 
 - :material-tune: — abre as configurações da Análise de arquivos

@@ -118,6 +118,20 @@
       }
     }
   },
+  "sharedAudioBusyTitle": "Session in progress",
+  "@sharedAudioBusyTitle": {
+    "description": "Title shown when a shared audio file arrives while another Session is still running"
+  },
+  "sharedAudioBusyMessage": "Wait for the current {mode} Session to finish, then share the recording again.",
+  "@sharedAudioBusyMessage": {
+    "description": "Explains that a shared audio file cannot be opened while another Session is running",
+    "placeholders": {
+      "mode": {
+        "type": "String",
+        "example": "Point Count"
+      }
+    }
+  },
   "termsOfUseTitle": "Acceptable Use Policy",
   "@termsOfUseTitle": {
     "description": "Acceptable use policy dialog title"

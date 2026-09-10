@@ -28,6 +28,8 @@
   "done": "完成",
   "quickListenBlockedTitle": "请先结束当前 Session",
   "quickListenBlockedMessage": "{mode} Session 正在运行或启动时无法开始快速聆听。请先停止该 Session，然后再次点击小组件。",
+  "sharedAudioBusyTitle": "Session 正在进行",
+  "sharedAudioBusyMessage": "请等待当前的 {mode} Session 结束，然后重新分享该录音。",
   "termsOfUseTitle": "使用规范",
   "privacyPolicyTitle": "隐私政策",
   "acceptTerms": "接受",

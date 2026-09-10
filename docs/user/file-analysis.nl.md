@@ -6,6 +6,10 @@ Bestandsanalyse verwerkt een bestaande opname via dezelfde BirdNET-pijplijn die 
 
 Tik op het startscherm op de kaart **Bestandsanalyse** met het pictogram :material-file-music:.
 
+### Vanuit een andere app
+
+Je kunt ook vanuit een andere app een opname aanleveren. Op Android opent Bestandsanalyse direct wanneer je een audiobestand deelt met **BirdNET Live** of **Openen met** kiest. Op iOS werkt **Openen met** ook direct; open BirdNET Live na gebruik van het deelmenu of ga terug naar de app, waarna de wachtende opname automatisch wordt geselecteerd. Vóór de analyse kopieert de app de opname naar de eigen tijdelijke opslag.
+
 ## Appbalk
 
 - :material-tune: — de instellingen voor Bestandsanalyse openen

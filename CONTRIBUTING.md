@@ -144,6 +144,7 @@ For deeper localization conventions, see `docs/developer/localization.md`. For t
 3. **Keep PRs focused**: One feature or fix per PR
 4. **Tests**: Add tests for new functionality
 5. **Documentation**: Update relevant docs for user-facing changes
+6. **Changelog**: Add user-visible changes to the `Unreleased` section of `CHANGELOG.md`
 
 ## Reporting Issues
 
