@@ -433,13 +433,17 @@ class AudioDecoder {
           header[1] == 0x49 &&
           header[2] == 0x46 &&
           header[3] == 0x46) {
-        return _decodeWavRange(file, startSample: startSample, count: count);
+        return await _decodeWavRange(
+          file,
+          startSample: startSample,
+          count: count,
+        );
       }
       if (header[0] == 0x66 &&
           header[1] == 0x4C &&
           header[2] == 0x61 &&
           header[3] == 0x43) {
-        return decodeFlacRange(
+        return await decodeFlacRange(
           path,
           startSample: startSample,
           count: count,
