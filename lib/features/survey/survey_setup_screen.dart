@@ -36,6 +36,7 @@ import '../../shared/widgets/site_context_card.dart';
 import '../../shared/widgets/weather_setup_card.dart';
 import '../../shared/widgets/wizard_scaffold.dart';
 import '../audio/widgets/audio_source_tile.dart';
+import '../ebird/ebird_life_list.dart';
 import '../explore/explore_providers.dart';
 import '../inference/custom_species_list.dart';
 import '../settings/settings_screen.dart';
@@ -262,7 +263,8 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
       _latitude = double.tryParse(_latController.text)?.clamp(-90, 90);
       _longitude = double.tryParse(_lonController.text)?.clamp(-180, 180);
     }
-    // Validate the alerts step: watchlist mode requires a non-empty list.
+    // Validate the alerts step: watchlist mode requires a non-empty list,
+    // lifer mode requires an imported eBird life list.
     if (_step == 2) {
       final mode = AlertMode.fromPrefValue(ref.read(surveyAlertModeProvider));
       if (mode == AlertMode.watchlist) {
@@ -272,6 +274,19 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
             SnackBar(
               content: Text(
                 AppLocalizations.of(context)!.surveyAlertWatchlistRequired,
+              ),
+            ),
+          );
+          return;
+        }
+      }
+      if (mode == AlertMode.lifer) {
+        final lifeList = ref.read(ebirdLifeListProvider);
+        if (lifeList.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.surveyAlertLiferRequired,
               ),
             ),
           );
@@ -1042,6 +1057,7 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         firstEverBody: l10n.surveyAlertBodyFirstEver,
         rareBody: l10n.surveyAlertBodyRare('{pct}'),
         watchlistBody: l10n.surveyAlertBodyWatchlist,
+        liferBody: l10n.surveyAlertBodyLifer,
         summaryTitle: l10n
             .surveyAlertSummaryTitle(0)
             .replaceAll('0', '{count}'),
@@ -1061,7 +1077,8 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final mode = AlertMode.fromPrefValue(ref.watch(surveyAlertModeProvider));
-    final modes = const [
+    final hasLifeList = !ref.watch(ebirdLifeListProvider).isEmpty;
+    final modes = [
       (AlertMode.off, 'surveyAlertModeOff', 'surveyAlertModeOffDescription'),
       (
         AlertMode.firstInSession,
@@ -1079,11 +1096,21 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         'surveyAlertModeWatchlist',
         'surveyAlertModeWatchlistDescription',
       ),
+      // Hidden until a life list is imported (or already selected) so
+      // regular users who never touch the eBird integration don't see an
+      // alert mode they can't use — see Settings > eBird Life List.
+      if (hasLifeList || mode == AlertMode.lifer)
+        (
+          AlertMode.lifer,
+          'surveyAlertModeLifer',
+          'surveyAlertModeLiferDescription',
+        ),
     ];
 
     final selectedWatchlist = ref.watch(surveyAlertWatchlistNameProvider);
     final watchlistInvalid =
         mode == AlertMode.watchlist && selectedWatchlist.trim().isEmpty;
+    final liferInvalid = mode == AlertMode.lifer && !hasLifeList;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -1169,6 +1196,28 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
               ),
             ),
         ],
+        if (mode == AlertMode.lifer && liferInvalid)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Icon(
+                  AppIcons.errorOutlineRounded,
+                  size: 18,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.surveyAlertLiferRequired,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         if (mode != AlertMode.off) ...[
           const Divider(height: 32),
           _MinConfidenceControl(),
@@ -1282,6 +1331,8 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         return l10n.surveyAlertModeRare;
       case 'surveyAlertModeWatchlist':
         return l10n.surveyAlertModeWatchlist;
+      case 'surveyAlertModeLifer':
+        return l10n.surveyAlertModeLifer;
       case 'surveyAlertModeOffDescription':
         return l10n.surveyAlertModeOffDescription;
       case 'surveyAlertModeFirstInSessionDescription':
@@ -1292,6 +1343,8 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
         return l10n.surveyAlertModeRareDescription;
       case 'surveyAlertModeWatchlistDescription':
         return l10n.surveyAlertModeWatchlistDescription;
+      case 'surveyAlertModeLiferDescription':
+        return l10n.surveyAlertModeLiferDescription;
     }
     return key;
   }

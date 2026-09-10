@@ -36,6 +36,7 @@ class SpeciesAlertStrings {
     required this.firstEverBody,
     required this.rareBody,
     required this.watchlistBody,
+    required this.liferBody,
     required this.summaryTitle,
     required this.summaryBody,
   });
@@ -55,6 +56,9 @@ class SpeciesAlertStrings {
 
   /// "On your watchlist"
   final String watchlistBody;
+
+  /// "New for your life list"
+  final String liferBody;
 
   /// Title for coalesced alerts. Use `{count}` placeholder.
   final String summaryTitle;
@@ -246,6 +250,8 @@ class SpeciesAlertNotifier {
         return strings.rareBody.replaceAll('{pct}', pct.toString());
       case AlertReason.watchlist:
         return strings.watchlistBody;
+      case AlertReason.lifer:
+        return strings.liferBody;
     }
   }
 

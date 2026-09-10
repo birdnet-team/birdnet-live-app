@@ -38,6 +38,7 @@ class SurveyAlertCoordinator {
     required this.globalHistory,
     required this.geoScores,
     required this.watchlist,
+    this.lifeList,
     this.minConfidence = 0.5,
     this.rareThreshold = 0.05,
     this.startupGraceSeconds = 60,
@@ -55,6 +56,7 @@ class SurveyAlertCoordinator {
       globalHistory: globalHistory,
       geoScores: geoScores ?? const <String, double>{},
       watchlist: watchlist ?? const <String>{},
+      lifeList: lifeList ?? const <String>{},
       minConfidence: minConfidence,
       rareThreshold: rareThreshold,
     );
@@ -64,7 +66,11 @@ class SurveyAlertCoordinator {
       minInterval: Duration(seconds: minIntervalSeconds),
       maxPerMinute: maxPerMinute,
       coalesce: coalesce,
-      bypassReasons: const {AlertReason.rare, AlertReason.watchlist},
+      bypassReasons: const {
+        AlertReason.rare,
+        AlertReason.watchlist,
+        AlertReason.lifer,
+      },
       now: _clock,
     );
     _tickTimer = Timer.periodic(tickInterval, (_) => _tick());
@@ -76,6 +82,11 @@ class SurveyAlertCoordinator {
   final GlobalSpeciesHistory globalHistory;
   final Map<String, double>? geoScores;
   final Set<String>? watchlist;
+
+  /// Scientific names on the user's imported eBird life list, used by
+  /// [AlertMode.lifer].
+  final Set<String>? lifeList;
+
   final double minConfidence;
   final double rareThreshold;
   final int startupGraceSeconds;

@@ -37,6 +37,7 @@ import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
 import '../audio/audio_providers.dart';
 import '../audio/ring_buffer.dart';
+import '../ebird/ebird_life_list.dart';
 import '../explore/explore_providers.dart';
 import '../explore/explore_screen.dart';
 import '../explore/widgets/species_info_overlay.dart';
@@ -479,6 +480,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       // template through.
       rareBody: l10n.surveyAlertBodyRare('{pct}'),
       watchlistBody: l10n.surveyAlertBodyWatchlist,
+      liferBody: l10n.surveyAlertBodyLifer,
       summaryTitle: l10n.surveyAlertSummaryTitle(0).replaceAll('0', '{count}'),
       summaryBody: l10n
           .surveyAlertSummaryBody(0, '{names}')
@@ -500,6 +502,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       }
     }
 
+    Set<String>? lifeList;
+    if (mode == AlertMode.lifer) {
+      lifeList = ref.read(ebirdLifeListProvider).all;
+    }
+
     final coord = SurveyAlertCoordinator(
       mode: mode,
       notifier: notifier,
@@ -507,6 +514,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       globalHistory: history,
       geoScores: geoScores,
       watchlist: watchlist,
+      lifeList: lifeList,
       minConfidence: ref.read(surveyAlertMinConfidenceProvider),
       rareThreshold: ref.read(surveyAlertRareThresholdProvider),
       startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),
@@ -1630,6 +1638,7 @@ class _SurveySummaryTab extends ConsumerWidget {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
+    final lifeList = ref.watch(ebirdLifeListProvider);
 
     if (session == null) {
       return Center(
@@ -1738,14 +1747,35 @@ class _SurveySummaryTab extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        taxonomy
-                                ?.lookup(sp.scientificName)
-                                ?.commonNameForLocale(speciesLocale) ??
-                            sp.commonName,
-                        style: theme.textTheme.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              taxonomy
+                                      ?.lookup(sp.scientificName)
+                                      ?.commonNameForLocale(speciesLocale) ??
+                                  sp.commonName,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (sp.scientificName !=
+                                  DetectionRecord.unknownSpeciesName &&
+                              !lifeList.isEmpty &&
+                              !lifeList.contains(sp.scientificName))
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4),
+                              child: Tooltip(
+                                message: l10n.ebirdLifeListBadgeTooltip,
+                                child: Icon(
+                                  AppIcons.flagRounded,
+                                  size: 14,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       if (showSciNames)
                         Text(

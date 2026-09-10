@@ -1745,6 +1745,12 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
 
     final displayName = _resolveDisplayName(taxonomyAsync.value, speciesLocale);
 
+    final lifeList = ref.watch(ebirdLifeListProvider);
+    final isLifer =
+        widget.group.scientificName != DetectionRecord.unknownSpeciesName &&
+        !lifeList.isEmpty &&
+        !lifeList.contains(widget.group.scientificName);
+
     // Render the per-cluster time using the user's selected mode.
     // Relative mode subtracts the current clip offset so that the
     // displayed offset stays aligned with the spectrogram playhead
@@ -1879,25 +1885,7 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                     // Species thumbnail. Uses the bundled image's 3:2 ratio
                     // so BoxFit.cover never has to crop the photo. Shortcut
                     // is now handled by tapping the entire row.
-                    SizedBox(
-                      width: 48,
-                      height: 32,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.asset(
-                          taxonomyAsync.value?.assetImagePath(
-                                widget.group.scientificName,
-                              ) ??
-                              'assets/images/dummy_species.png',
-                          fit: BoxFit.cover,
-                          errorBuilder:
-                              (a, b, c) => Image.asset(
-                                'assets/images/dummy_species.png',
-                                fit: BoxFit.cover,
-                              ),
-                        ),
-                      ),
-                    ),
+                    _buildThumbnail(theme, l10n, taxonomyAsync, isLifer),
                     const SizedBox(width: 8),
 
                     // Species info.
@@ -2168,6 +2156,71 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
             ),
             onPressed: () => setState(() => _noClipVisibleCount += 50),
           ),
+      ],
+    );
+  }
+
+  /// Thumbnail with a small flag badge overlaid on the top-left corner when
+  /// [isLifer] — the species isn't on the user's imported eBird life list.
+  /// Mirrors the Live detection tile's corner badge and the
+  /// confirmed-detection badge on the survey map, so the same "flagged"
+  /// language reads consistently across all three surfaces.
+  Widget _buildThumbnail(
+    ThemeData theme,
+    AppLocalizations l10n,
+    AsyncValue<TaxonomyService> taxonomyAsync,
+    bool isLifer,
+  ) {
+    final image = SizedBox(
+      width: 48,
+      height: 32,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: Image.asset(
+          taxonomyAsync.value?.assetImagePath(widget.group.scientificName) ??
+              'assets/images/dummy_species.png',
+          fit: BoxFit.cover,
+          errorBuilder:
+              (a, b, c) => Image.asset(
+                'assets/images/dummy_species.png',
+                fit: BoxFit.cover,
+              ),
+        ),
+      ),
+    );
+    if (!isLifer) return image;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        image,
+        Positioned(
+          top: -5,
+          left: -5,
+          child: Tooltip(
+            message: l10n.ebirdLifeListBadgeTooltip,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.shadow.withAlpha(80),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Icon(
+                AppIcons.flagRounded,
+                size: 10,
+                color: theme.colorScheme.onPrimary,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
