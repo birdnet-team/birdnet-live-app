@@ -300,20 +300,33 @@ class RecordingService {
     _mode = mode;
     _format = format;
     _isRecording = true;
-    _recordingGeneration++;
+    final generation = ++_recordingGeneration;
 
     final appDir = await getApplicationDocumentsDirectory();
-    _sessionDir = '${appDir.path}/recordings/$sessionId';
-    await Directory(_sessionDir!).create(recursive: true);
+    if (!_isRecording || generation != _recordingGeneration) return null;
+    final sessionDir = '${appDir.path}/recordings/$sessionId';
+    await Directory(sessionDir).create(recursive: true);
+    if (!_isRecording || generation != _recordingGeneration) return null;
 
     if (mode == RecordingMode.full) {
       final ext = format == 'flac' ? 'flac' : 'wav';
-      final filePath = '$_sessionDir/full.$ext';
-      _writer =
+      final filePath = '$sessionDir/full.$ext';
+      final AudioFileWriter writer =
           format == 'flac'
               ? FlacEncoder(filePath: filePath, sampleRate: sampleRate)
               : WavWriter(filePath: filePath, sampleRate: sampleRate);
-      await _writer!.open();
+      await writer.open();
+      // Publish the writer and directory only once the file is open, so a
+      // stopRecording() that ran during open() never flushes into or closes
+      // a half-opened writer, nor reports the directory as the recording.
+      if (!_isRecording || generation != _recordingGeneration) {
+        await writer.close();
+        try {
+          await File(filePath).delete();
+        } catch (_) {}
+        return null;
+      }
+      _writer = writer;
       _lastFlushPosition = ringBuffer.totalWritten;
 
       // Periodically flush ring buffer to file (every 1 second).
@@ -323,7 +336,8 @@ class RecordingService {
       );
     }
 
-    return _sessionDir;
+    _sessionDir = sessionDir;
+    return sessionDir;
   }
 
   /// Save an audio clip around a detection.
