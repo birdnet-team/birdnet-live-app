@@ -63,7 +63,7 @@ dependencies:
   battery_plus: ^7.0.0
 
   # Notifications (heads-up species alerts during surveys)
-  flutter_local_notifications: ^22.0.1
+  flutter_local_notifications: ^22.3.0
 
   # Location
   geolocator: ^14.0.2
