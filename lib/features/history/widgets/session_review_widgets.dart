@@ -2696,10 +2696,8 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
 
   /// Heard / seen checkbox state. Kept as two independent booleans so both
   /// can be ticked, and collapsed into a [DetectionEvidence] only on
-  /// confirm. Defaults to "heard" — the app's detections are acoustic by
-  /// nature, so that is the state a user who ignores the control expects.
-  /// A locked replace seeds from the target so re-identifying a record
-  /// never silently drops the evidence already on it.
+  /// confirm. A locked replace seeds from the target so re-identifying a
+  /// record never silently drops the evidence already on it.
   late bool _heard;
   late bool _seen;
 
@@ -2720,7 +2718,7 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     _mode = widget.initialMode ?? AddSpeciesInsertMode.atTimestamp;
     _replaceTarget = widget.initialReplaceTarget;
     final seed = widget.initialReplaceTarget?.evidence;
-    _heard = seed?.includesHeard ?? true;
+    _heard = seed?.includesHeard ?? false;
     _seen = seed?.includesSeen ?? false;
   }
 
@@ -2738,34 +2736,18 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
     final geoScores = ref.read(rawGeoScoresProvider).value;
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     setState(() {
       if (query.trim().isEmpty) {
         _results = [];
         return;
       }
-      // Service ranks by text relevance (prefix > word-prefix > substring) and
-      // observation count. We then apply a soft geo bump: among results with
-      // equal text-relevance, prefer species likely to occur at this location.
-      final raw = svc.search(query, limit: 100);
-      if (geoScores != null && geoScores.isNotEmpty) {
-        // Stable sort: only re-order when one result has a meaningfully higher
-        // geo score than another. Cap influence so a perfect text match is
-        // never demoted by geography alone.
-        final stable = List<TaxonomySpecies>.from(raw);
-        for (var i = 1; i < stable.length; i++) {
-          final cur = stable[i];
-          final prev = stable[i - 1];
-          final scoreCur = geoScores[cur.scientificName] ?? 0.0;
-          final scorePrev = geoScores[prev.scientificName] ?? 0.0;
-          if (scoreCur > 0.5 && scorePrev <= 0.05) {
-            stable[i - 1] = cur;
-            stable[i] = prev;
-          }
-        }
-        _results = stable.take(40).toList();
-      } else {
-        _results = raw.take(40).toList();
-      }
+      _results = svc.search(
+        query,
+        locale: speciesLocale,
+        geoScores: geoScores,
+        limit: 40,
+      );
     });
   }
 
@@ -2896,6 +2878,20 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     final l10n = AppLocalizations.of(context)!;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+    final split = TaxonomyService.splitByGeoLikelihood(
+      _results,
+      geoScores: ref.watch(rawGeoScoresProvider).value,
+      threshold: ref.watch(geoThresholdProvider),
+    );
+
+    Widget resultTile(TaxonomySpecies species) {
+      final localizedName = species.commonNameForLocale(speciesLocale);
+      return _SpeciesResultTile(
+        species: species,
+        displayName: localizedName,
+        onTap: () => _selectSpecies(species.scientificName, species.commonName),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -2989,24 +2985,38 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                     )
                     : _results.isEmpty
                     ? _NoResultsState(query: _searchController.text.trim())
-                    : ListView.separated(
-                      itemCount: _results.length,
-                      separatorBuilder:
-                          (a, b) =>
-                              Divider(height: 1, color: theme.dividerColor),
-                      itemBuilder: (context, index) {
-                        final sp = _results[index];
-                        final locName = sp.commonNameForLocale(speciesLocale);
-                        return _SpeciesResultTile(
-                          species: sp,
-                          displayName: locName,
-                          onTap:
-                              () => _selectSpecies(
-                                sp.scientificName,
-                                sp.commonName,
+                    : ListView(
+                      children: [
+                        if (split == null)
+                          ..._results.map(resultTile)
+                        else ...[
+                          if (split.likely.isNotEmpty) ...[
+                            ListTile(
+                              dense: true,
+                              leading: const Icon(AppIcons.locationOn),
+                              title: Text(
+                                l10n.exploreSectionAtLocation(
+                                  split.likely.length,
+                                ),
                               ),
-                        );
-                      },
+                            ),
+                            ...split.likely.map(resultTile),
+                          ],
+                          if (split.other.isNotEmpty) ...[
+                            Divider(height: 1, color: theme.dividerColor),
+                            ListTile(
+                              dense: true,
+                              leading: const Icon(AppIcons.public),
+                              title: Text(
+                                l10n.exploreSectionElsewhere(
+                                  split.other.length,
+                                ),
+                              ),
+                            ),
+                            ...split.other.map(resultTile),
+                          ],
+                        ],
+                      ],
                     ),
           ),
         ],
