@@ -29,6 +29,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/taxonomy_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
@@ -1615,8 +1616,18 @@ class _CreateWatchlistScreenState
   void _onSearchChanged(String query) {
     final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    final geoScores = ref.read(rawGeoScoresProvider).value;
     setState(() {
-      _results = query.trim().isEmpty ? const [] : svc.search(query, limit: 60);
+      _results =
+          query.trim().isEmpty
+              ? const []
+              : svc.search(
+                query,
+                locale: speciesLocale,
+                geoScores: geoScores,
+                limit: 60,
+              );
     });
   }
 
@@ -1703,10 +1714,38 @@ class _CreateWatchlistScreenState
     final theme = Theme.of(context);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final showSci = ref.watch(showSciNamesProvider);
+    final split = TaxonomyService.splitByGeoLikelihood(
+      _results,
+      geoScores: ref.watch(rawGeoScoresProvider).value,
+      threshold: ref.watch(geoThresholdProvider),
+    );
 
     String labelFor(TaxonomySpecies sp) {
       if (showSci) return sp.displayScientificName;
       return sp.commonNameForLocale(speciesLocale);
+    }
+
+    Widget resultTile(TaxonomySpecies sp) {
+      final label = labelFor(sp);
+      return CheckboxListTile(
+        value: _selected.contains(sp.scientificName),
+        onChanged: (_) => _toggle(sp, label),
+        title: Text(label),
+        subtitle:
+            showSci
+                ? Text(
+                  sp.commonNameForLocale(speciesLocale),
+                  style: theme.textTheme.bodySmall,
+                )
+                : Text(
+                  sp.displayScientificName,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+        dense: true,
+        controlAffinity: ListTileControlAffinity.leading,
+      );
     }
 
     return Scaffold(
@@ -1787,35 +1826,35 @@ class _CreateWatchlistScreenState
                               _selected.remove(sci);
                             }),
                       )
-                      : ListView.builder(
-                        itemCount: _results.length,
-                        itemBuilder: (context, i) {
-                          final sp = _results[i];
-                          final label = labelFor(sp);
-                          final isSelected = _selected.contains(
-                            sp.scientificName,
-                          );
-                          return CheckboxListTile(
-                            value: isSelected,
-                            onChanged: (_) => _toggle(sp, label),
-                            title: Text(label),
-                            subtitle:
-                                showSci
-                                    ? Text(
-                                      sp.commonNameForLocale(speciesLocale),
-                                      style: theme.textTheme.bodySmall,
-                                    )
-                                    : Text(
-                                      sp.displayScientificName,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                    ),
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        },
+                      : ListView(
+                        children: [
+                          if (split == null)
+                            ..._results.map(resultTile)
+                          else ...[
+                            if (split.likely.isNotEmpty)
+                              ListTile(
+                                dense: true,
+                                leading: const Icon(AppIcons.locationOn),
+                                title: Text(
+                                  l10n.exploreSectionAtLocation(
+                                    split.likely.length,
+                                  ),
+                                ),
+                              ),
+                            ...split.likely.map(resultTile),
+                            if (split.other.isNotEmpty)
+                              ListTile(
+                                dense: true,
+                                leading: const Icon(AppIcons.public),
+                                title: Text(
+                                  l10n.exploreSectionElsewhere(
+                                    split.other.length,
+                                  ),
+                                ),
+                              ),
+                            ...split.other.map(resultTile),
+                          ],
+                        ],
                       ),
             ),
             if (_error != null)

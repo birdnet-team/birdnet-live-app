@@ -422,7 +422,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           query: _query,
                           groups: _groups,
                           tiers: _tiers,
-                          sortMode: _sortMode,
                           detectionFilter: _detectionFilter,
                           localSpecies: localSpecies,
                           onRefresh: _refresh,
@@ -770,7 +769,6 @@ class _SearchResults extends ConsumerStatefulWidget {
     required this.query,
     required this.groups,
     required this.tiers,
-    required this.sortMode,
     required this.detectionFilter,
     required this.localSpecies,
     required this.onRefresh,
@@ -780,7 +778,6 @@ class _SearchResults extends ConsumerStatefulWidget {
   final String query;
   final Set<_TaxonGroup> groups;
   final Set<ExploreTier> tiers;
-  final _SortMode sortMode;
   final _DetectionFilter detectionFilter;
   final List<ExploreSpecies> localSpecies;
   final VoidCallback onRefresh;
@@ -858,6 +855,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     final l10n = AppLocalizations.of(context)!;
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final audioLabelsAsync = ref.watch(audioLabelsSetProvider);
+    final rawGeoScores = ref.watch(rawGeoScoresProvider).value;
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final detected = ref.watch(detectedSpeciesSetProvider);
     final showScientificName = ref.watch(showSciNamesProvider);
@@ -878,7 +876,12 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     // taxonomic-group + detection-state filters.
     final hits =
         taxonomy
-            .search(widget.query, limit: 200)
+            .search(
+              widget.query,
+              locale: speciesLocale,
+              geoScores: rawGeoScores,
+              limit: 200,
+            )
             .where((sp) => audioLabels.contains(sp.scientificName))
             .where(
               (sp) =>
@@ -934,26 +937,6 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
         elsewhere.add(hit);
       }
     }
-    // Apply the user's chosen sort to each bucket independently. Geo
-    // probability is the default for the at-location bucket; the
-    // alphabetical modes apply to both buckets symmetrically.
-    int byNameAsc(_SearchHit a, _SearchHit b) =>
-        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
-    int byNameDesc(_SearchHit a, _SearchHit b) =>
-        b.displayName.toLowerCase().compareTo(a.displayName.toLowerCase());
-    switch (widget.sortMode) {
-      case _SortMode.geo:
-        atLocation.sort(
-          (a, b) => (b.local?.geoScore ?? 0).compareTo(a.local?.geoScore ?? 0),
-        );
-      case _SortMode.nameAsc:
-        atLocation.sort(byNameAsc);
-        elsewhere.sort(byNameAsc);
-      case _SortMode.nameDesc:
-        atLocation.sort(byNameDesc);
-        elsewhere.sort(byNameDesc);
-    }
-
     final items = <_ListEntry>[];
     if (atLocation.isNotEmpty) {
       items.add(
@@ -965,12 +948,16 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
       items.addAll(atLocation.map(_ListEntry.hit));
     }
     if (elsewhere.isNotEmpty) {
-      items.add(
-        _ListEntry.header(
-          l10n.exploreSectionElsewhere(elsewhere.length),
-          AppIcons.public,
-        ),
-      );
+      // Without location data every hit lands here; a header would only
+      // suggest a location split that does not exist.
+      if (atLocation.isNotEmpty || (rawGeoScores?.isNotEmpty ?? false)) {
+        items.add(
+          _ListEntry.header(
+            l10n.exploreSectionElsewhere(elsewhere.length),
+            AppIcons.public,
+          ),
+        );
+      }
       items.addAll(elsewhere.map(_ListEntry.hit));
     }
 

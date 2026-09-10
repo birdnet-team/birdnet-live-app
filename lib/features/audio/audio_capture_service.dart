@@ -649,8 +649,16 @@ class AudioCaptureService with WidgetsBindingObserver {
     _levelTimer?.cancel();
     _levelTimer = null;
 
-    await _streamSub?.cancel();
+    final streamSub = _streamSub;
     _streamSub = null;
+    if (streamSub != null) {
+      try {
+        await streamSub.cancel().timeout(_teardownTimeout);
+      } catch (_) {
+        // A platform audio stream that never acknowledges cancellation must
+        // not wedge the serialized lifecycle queue and block session saving.
+      }
+    }
 
     final rec = _recorder;
     _recorder = null;

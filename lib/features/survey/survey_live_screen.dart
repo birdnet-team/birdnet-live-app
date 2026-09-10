@@ -97,6 +97,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   final Object _quickListenSafetyOwner = Object();
 
   bool _started = false;
+  bool _startAbandoned = false;
+  // Whether this route still owned the shared controller (and with it the
+  // shared capture) when it was disposed. A newer Survey route may already
+  // have taken both over, and must not have its startup torn down.
+  bool _ownedControllerAtDispose = false;
   bool _finalizing = false;
   bool _stopDialogShowing = false;
   bool _foregroundGpsStream = false;
@@ -108,10 +113,12 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// without ever reaching `paused`. Work that belongs to "the user returned"
   /// is keyed off this instead of off `resumed` alone.
   bool _wasBackgrounded = false;
+  Future<void>? _disposeReleaseFuture;
 
   StreamSubscription<bool>? _micContestedSub;
   late final TabController _tabController;
   late final SurveyController _surveyController;
+  late final CaptureStateNotifier _captureNotifier;
 
   @override
   void initState() {
@@ -127,6 +134,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
+    _captureNotifier = ref.read(captureStateProvider.notifier);
     _surveyController.onStateChanged = _onControllerStateChanged;
     _surveyController.onAutoStop = _onAutoStop;
 
@@ -157,7 +165,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   }
 
   void _onControllerStateChanged() {
-    if (!mounted) return;
+    if (_startAbandoned || !mounted) return;
     final controller = ref.read(surveyControllerProvider);
     ref.read(surveyStateProvider.notifier).state = controller.state;
     ref.read(surveyDetectionsProvider.notifier).state =
@@ -572,7 +580,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   Future<void> _startSurvey() async {
     if (_started) return;
     final controller = ref.read(surveyControllerProvider);
-    final captureNotifier = ref.read(captureStateProvider.notifier);
+    final captureNotifier = _captureNotifier;
     final captureService = ref.read(audioCaptureServiceProvider);
     final audioSource = ref.read(audioSourceProvider);
     // Capture localizations now — the rest of this method awaits multiple
@@ -580,164 +588,217 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     // crossing BuildContext async gaps.
     final l10n = AppLocalizations.of(context)!;
 
-    // Apply user-tunable DSP (gain + high-pass) before capture starts.
-    captureService.setGain(ref.read(audioGainProvider));
-    captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
+    try {
+      // Apply user-tunable DSP (gain + high-pass) before capture starts.
+      captureService.setGain(ref.read(audioGainProvider));
+      captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
-    // Start audio capture.
-    await captureNotifier.start(source: audioSource);
-    if (captureService.state != CaptureState.capturing) {
-      _showStartError(
-        captureService.lastError == 'Microphone permission not granted'
-            ? l10n.errorMicrophoneRequired
-            : captureService.lastError ?? l10n.statusError,
+      // Start audio capture.
+      await captureNotifier.start(source: audioSource);
+      if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
+      if (captureService.state != CaptureState.capturing) {
+        _showStartError(
+          captureService.lastError == 'Microphone permission not granted'
+              ? l10n.errorMicrophoneRequired
+              : captureService.lastError ?? l10n.statusError,
+        );
+        return;
+      }
+
+      // Read settings.
+      final windowDuration = ref.read(windowDurationProvider);
+      final inferenceRate = ref.read(surveyInferenceRateProvider);
+      final confidenceThreshold = ref.read(confidenceThresholdProvider);
+      final filterMode = ref.read(speciesFilterModeProvider);
+      // When resuming, keep the session's *original* recording mode and format
+      // rather than the current global setting. This preserves continuity (a
+      // clip-subsampling session stays clips) and guarantees a resumed session
+      // never switches into full-audio recording — which can't be safely
+      // concatenated across a resume, and is why the Continue button is hidden
+      // for full-audio sessions in the first place.
+      final resumeSettings = widget.resumeSession?.settings;
+      var recordingModeStr = ref.read(surveyRecordingModeProvider);
+      var recordingFormat = ref.read(recordingFormatProvider);
+      if (widget.resumeSession != null) {
+        // Legacy resumable sessions have no recording snapshot and no audio
+        // path. Keep them audio-free instead of inheriting a newer global
+        // setting that could create a partial full-session recording.
+        recordingModeStr = resumeSettings?.recordingMode ?? 'off';
+        recordingFormat = resumeSettings?.recordingFormat ?? recordingFormat;
+      }
+      final recordingMode = recordingModeFromString(recordingModeStr);
+      final geoThreshold = ref.read(geoThresholdProvider);
+      final gpsInterval = ref.read(surveyGpsIntervalProvider);
+      final maxDuration = ref.read(surveyMaxDurationProvider);
+      final samplingStr = ref.read(surveyDetectionSamplingProvider);
+      final samplingMode = samplingModeFromString(samplingStr);
+      final topN = ref.read(surveyTopNPerSpeciesProvider);
+      final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
+      final clipContext = ref.read(surveyClipContextProvider);
+
+      final geoScores = await ref.read(geoScoresProvider.future);
+      final geoSpeciesNames = await ref.read(
+        geoModelSpeciesNamesProvider.future,
       );
-      return;
-    }
-
-    // Read settings.
-    final windowDuration = ref.read(windowDurationProvider);
-    final inferenceRate = ref.read(surveyInferenceRateProvider);
-    final confidenceThreshold = ref.read(confidenceThresholdProvider);
-    final filterMode = ref.read(speciesFilterModeProvider);
-    // When resuming, keep the session's *original* recording mode and format
-    // rather than the current global setting. This preserves continuity (a
-    // clip-subsampling session stays clips) and guarantees a resumed session
-    // never switches into full-audio recording — which can't be safely
-    // concatenated across a resume, and is why the Continue button is hidden
-    // for full-audio sessions in the first place.
-    final resumeSettings = widget.resumeSession?.settings;
-    var recordingModeStr = ref.read(surveyRecordingModeProvider);
-    var recordingFormat = ref.read(recordingFormatProvider);
-    if (widget.resumeSession != null) {
-      // Legacy resumable sessions have no recording snapshot and no audio
-      // path. Keep them audio-free instead of inheriting a newer global
-      // setting that could create a partial full-session recording.
-      recordingModeStr = resumeSettings?.recordingMode ?? 'off';
-      recordingFormat = resumeSettings?.recordingFormat ?? recordingFormat;
-    }
-    final recordingMode = recordingModeFromString(recordingModeStr);
-    final geoThreshold = ref.read(geoThresholdProvider);
-    final gpsInterval = ref.read(surveyGpsIntervalProvider);
-    final maxDuration = ref.read(surveyMaxDurationProvider);
-    final samplingStr = ref.read(surveyDetectionSamplingProvider);
-    final samplingMode = samplingModeFromString(samplingStr);
-    final topN = ref.read(surveyTopNPerSpeciesProvider);
-    final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
-    final clipContext = ref.read(surveyClipContextProvider);
-
-    final geoScores = await ref.read(geoScoresProvider.future);
-    final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
-    final ignoredSpeciesNames = await ref.read(
-      ignoredSpeciesNamesProvider.future,
-    );
-
-    // Build the species-alert pipeline before starting the controller so
-    // the very first detection can fire a notification. If the user
-    // chose `off` we skip everything — no plugin init, no history load.
-    await _maybeBuildAlertCoordinator(controller: controller);
-
-    // Wire localization helpers used by the foreground notification's
-    // recent-detections list (species names + relative timestamps).
-    controller.setNameLocalizer(_buildNameLocalizer());
-    controller.setNotificationStrings(
-      title: l10n.surveyNotificationTitle,
-      justNow: l10n.surveyJustNow,
-      secondsAgo: (s) => l10n.surveySecondsAgo(s),
-      minutesAgo: (m) => l10n.surveyMinutesAgo(m),
-      hoursAgo: (h) => l10n.surveyHoursAgo(h),
-      stats:
-          (elapsed, det, spp, km) =>
-              l10n.surveyNotificationStats(elapsed, det, spp, km),
-      micContested: l10n.surveyNotificationMicContested,
-    );
-
-    // With whileInUse permission, use the GPS stream while in the foreground.
-    // The screen's lifecycle handler will stop/restart it as the app is
-    // backgrounded and foregrounded.
-    if (!widget.backgroundGps && ref.read(useGpsProvider)) {
-      final permission = await Geolocator.checkPermission();
-      _foregroundGpsStream =
-          permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always;
-    }
-
-    if (widget.resumeSession != null) {
-      await controller.resumeSurvey(
-        existingSession: widget.resumeSession!,
-        windowDuration: windowDuration,
-        inferenceRate: inferenceRate,
-        confidenceThreshold: confidenceThreshold,
-        speciesFilterMode: filterMode,
-        recordingMode: recordingMode,
-        recordingFormat: recordingFormat,
-        geoScores: geoScores,
-        geoThreshold: geoThreshold,
-        geoModelSpeciesNames: geoSpeciesNames,
-        gpsIntervalSeconds: gpsInterval,
-        maxDurationHours: maxDuration,
-        samplingMode: samplingMode,
-        topNPerSpecies: topN,
-        backgroundGps: widget.backgroundGps,
-        foregroundGps: _foregroundGpsStream,
-        autoStopBattery: autoStopBattery,
-        poolingWindows: ref.read(scorePoolingWindowsProvider),
-        poolingMode: ref.read(scorePoolingProvider),
-        poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
-        advancedPooling: ref.read(advancedPoolingParamsProvider),
-        sensitivity: ref.read(sensitivityProvider),
-        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
-        ignoredSpeciesNames: ignoredSpeciesNames,
+      final ignoredSpeciesNames = await ref.read(
+        ignoredSpeciesNamesProvider.future,
       );
-    } else {
-      await controller.startSurvey(
-        windowDuration: windowDuration,
-        inferenceRate: inferenceRate,
-        confidenceThreshold: confidenceThreshold,
-        speciesFilterMode: filterMode,
-        recordingMode: recordingMode,
-        recordingFormat: recordingFormat,
-        geoScores: geoScores,
-        geoThreshold: geoThreshold,
-        geoModelSpeciesNames: geoSpeciesNames,
-        gpsIntervalSeconds: gpsInterval,
-        maxDurationHours: maxDuration,
-        samplingMode: samplingMode,
-        topNPerSpecies: topN,
-        clipContextSeconds: clipContext,
-        transectId: widget.transectId,
-        observerName: widget.observerName,
-        customName: widget.customName,
-        startLatitude: widget.startLatitude,
-        startLongitude: widget.startLongitude,
-        backgroundGps: widget.backgroundGps,
-        foregroundGps: _foregroundGpsStream,
-        autoStopBattery: autoStopBattery,
-        poolingWindows: ref.read(scorePoolingWindowsProvider),
-        poolingMode: ref.read(scorePoolingProvider),
-        poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
-        advancedPooling: ref.read(advancedPoolingParamsProvider),
-        sensitivity: ref.read(sensitivityProvider),
-        ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
-        ignoredSpeciesNames: ignoredSpeciesNames,
-        gainLinear: ref.read(audioGainProvider),
-        highPassHz: ref.read(highPassFilterProvider).toDouble(),
-      );
-    }
+      if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
 
-    if (controller.state == SurveyState.error) {
-      await captureNotifier.stop();
-      _showStartError(controller.errorMessage ?? l10n.statusError);
+      // Build the species-alert pipeline before starting the controller so
+      // the very first detection can fire a notification. If the user
+      // chose `off` we skip everything — no plugin init, no history load.
+      await _maybeBuildAlertCoordinator(controller: controller);
+      if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
+
+      // Wire localization helpers used by the foreground notification's
+      // recent-detections list (species names + relative timestamps).
+      controller.setNameLocalizer(_buildNameLocalizer());
+      controller.setNotificationStrings(
+        title: l10n.surveyNotificationTitle,
+        justNow: l10n.surveyJustNow,
+        secondsAgo: (s) => l10n.surveySecondsAgo(s),
+        minutesAgo: (m) => l10n.surveyMinutesAgo(m),
+        hoursAgo: (h) => l10n.surveyHoursAgo(h),
+        stats:
+            (elapsed, det, spp, km) =>
+                l10n.surveyNotificationStats(elapsed, det, spp, km),
+        micContested: l10n.surveyNotificationMicContested,
+      );
+
+      // With whileInUse permission, use the GPS stream while in the foreground.
+      // The screen's lifecycle handler will stop/restart it as the app is
+      // backgrounded and foregrounded.
+      if (!widget.backgroundGps && ref.read(useGpsProvider)) {
+        final permission = await Geolocator.checkPermission();
+        _foregroundGpsStream =
+            permission == LocationPermission.whileInUse ||
+            permission == LocationPermission.always;
+        if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
+      }
+
+      if (widget.resumeSession != null) {
+        await controller.resumeSurvey(
+          existingSession: widget.resumeSession!,
+          windowDuration: windowDuration,
+          inferenceRate: inferenceRate,
+          confidenceThreshold: confidenceThreshold,
+          speciesFilterMode: filterMode,
+          recordingMode: recordingMode,
+          recordingFormat: recordingFormat,
+          geoScores: geoScores,
+          geoThreshold: geoThreshold,
+          geoModelSpeciesNames: geoSpeciesNames,
+          gpsIntervalSeconds: gpsInterval,
+          maxDurationHours: maxDuration,
+          samplingMode: samplingMode,
+          topNPerSpecies: topN,
+          backgroundGps: widget.backgroundGps,
+          foregroundGps: _foregroundGpsStream,
+          autoStopBattery: autoStopBattery,
+          poolingWindows: ref.read(scorePoolingWindowsProvider),
+          poolingMode: ref.read(scorePoolingProvider),
+          poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+          advancedPooling: ref.read(advancedPoolingParamsProvider),
+          sensitivity: ref.read(sensitivityProvider),
+          ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+          ignoredSpeciesNames: ignoredSpeciesNames,
+        );
+      } else {
+        await controller.startSurvey(
+          windowDuration: windowDuration,
+          inferenceRate: inferenceRate,
+          confidenceThreshold: confidenceThreshold,
+          speciesFilterMode: filterMode,
+          recordingMode: recordingMode,
+          recordingFormat: recordingFormat,
+          geoScores: geoScores,
+          geoThreshold: geoThreshold,
+          geoModelSpeciesNames: geoSpeciesNames,
+          gpsIntervalSeconds: gpsInterval,
+          maxDurationHours: maxDuration,
+          samplingMode: samplingMode,
+          topNPerSpecies: topN,
+          clipContextSeconds: clipContext,
+          transectId: widget.transectId,
+          observerName: widget.observerName,
+          customName: widget.customName,
+          startLatitude: widget.startLatitude,
+          startLongitude: widget.startLongitude,
+          backgroundGps: widget.backgroundGps,
+          foregroundGps: _foregroundGpsStream,
+          autoStopBattery: autoStopBattery,
+          poolingWindows: ref.read(scorePoolingWindowsProvider),
+          poolingMode: ref.read(scorePoolingProvider),
+          poolingMaxAgeSeconds: ref.read(scorePoolingMaxAgeSecondsProvider),
+          advancedPooling: ref.read(advancedPoolingParamsProvider),
+          sensitivity: ref.read(sensitivityProvider),
+          ignoreSettings: ref.read(speciesIgnoreSettingsProvider),
+          ignoredSpeciesNames: ignoredSpeciesNames,
+          gainLinear: ref.read(audioGainProvider),
+          highPassHz: ref.read(highPassFilterProvider).toDouble(),
+        );
+      }
+
+      if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
+
+      if (controller.state == SurveyState.error) {
+        await captureNotifier.stop();
+        _showStartError(controller.errorMessage ?? l10n.statusError);
+        _onControllerStateChanged();
+        return;
+      }
+
+      _started = true;
       _onControllerStateChanged();
-      return;
+    } catch (error, stackTrace) {
+      debugPrint('[SurveyLiveScreen] start error: $error\n$stackTrace');
+      if (_startAbandoned && !_ownedControllerAtDispose) return;
+      if (controller.session != null &&
+          controller.state != SurveyState.stopping) {
+        await controller.stopSurvey();
+      } else {
+        await controller.setAlertCoordinator(null);
+      }
+      await captureNotifier.stop();
+      if (!_startAbandoned && mounted) _showStartError(error.toString());
     }
+  }
 
-    _started = true;
-    _onControllerStateChanged();
+  /// Dispose can run while one of the awaited startup dependencies is still
+  /// resolving. Once control returns, tear down anything that started instead
+  /// of allowing an off-screen Survey to retain the microphone and foreground
+  /// service.
+  Future<bool> _cleanUpAbandonedStart(
+    SurveyController controller,
+    CaptureStateNotifier captureNotifier,
+  ) async {
+    if (!_startAbandoned && mounted) return false;
+    if (!_ownedControllerAtDispose) return true;
+    await (_disposeReleaseFuture ??= _releaseSurveyOnDispose());
+    return true;
+  }
+
+  /// Release the microphone and any Survey this route started. Capture
+  /// starts before the heavier model/GPS/notification setup, so a route that
+  /// goes away mid-start would otherwise leave it running off-screen. An
+  /// already-active Survey is stopped before capture so its final clips still
+  /// receive post-roll audio.
+  Future<void> _releaseSurveyOnDispose() async {
+    try {
+      await _surveyController.cancelPendingStart();
+      if (_surveyController.session == null) {
+        await _surveyController.setAlertCoordinator(null);
+      }
+    } catch (error, stackTrace) {
+      debugPrint('[SurveyLiveScreen] dispose stop error: $error\n$stackTrace');
+    } finally {
+      await _captureNotifier.stop();
+    }
   }
 
   void _showStartError(String message) {
-    if (!mounted) return;
+    if (_startAbandoned || !mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -776,8 +837,16 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       final controller = ref.read(surveyControllerProvider);
       final captureNotifier = ref.read(captureStateProvider.notifier);
 
-      await captureNotifier.stop();
-      final session = await controller.stopSurvey();
+      LiveSession? session;
+      try {
+        // The controller drains pending clip post-roll before it finalizes the
+        // recording. Keep capture alive until that work is done; stopping it
+        // first makes every last-moment clip wait for audio that can no longer
+        // arrive.
+        session = await controller.stopSurvey();
+      } finally {
+        await captureNotifier.stop();
+      }
       _onControllerStateChanged();
 
       if (session != null && mounted) {
@@ -797,7 +866,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           );
           navigator.push(
             MaterialPageRoute<void>(
-              builder: (_) => SessionReviewScreen(session: session),
+              builder: (_) => SessionReviewScreen(session: session!),
             ),
           );
         }
@@ -859,15 +928,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
   @override
   void dispose() {
-    QuickListenSafety.unregisterIncompatibleSessionOwner(
-      _quickListenSafetyOwner,
-    );
-    if (_surveyController.onStateChanged == _onControllerStateChanged) {
+    _startAbandoned = true;
+    _ownedControllerAtDispose =
+        _surveyController.onStateChanged == _onControllerStateChanged;
+    if (_ownedControllerAtDispose) {
       _surveyController.onStateChanged = null;
+      unawaited(_disposeReleaseFuture ??= _releaseSurveyOnDispose());
     }
     if (_surveyController.onAutoStop == _onAutoStop) {
       _surveyController.onAutoStop = null;
     }
+    QuickListenSafety.unregisterIncompatibleSessionOwner(
+      _quickListenSafetyOwner,
+    );
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _micContestedSub?.cancel();
