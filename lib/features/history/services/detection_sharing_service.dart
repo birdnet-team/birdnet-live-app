@@ -207,10 +207,13 @@ LiveSession _singleDetectionSession({
               detection.endTimestamp!.isAfter(detection.timestamp)
           ? detection.endTimestamp!
           : detection.timestamp.add(Duration(seconds: settings.windowDuration));
+  // Document-only exports still need the source clip reference.
   final exportDetection = _copyDetection(
     detection,
     audioClipPath:
-        audioFile != null && !audioIsFullDetectionSpan ? audioFile.path : null,
+        audioIsFullDetectionSpan
+            ? null
+            : audioFile?.path ?? detection.audioClipPath,
   );
 
   return LiveSession(

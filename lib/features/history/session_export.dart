@@ -201,27 +201,13 @@ String _evidenceField(DetectionRecord d) => switch (d.evidence) {
 String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
     taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName;
 
-/// Generates a Raven Pro-compatible selection table from session detections.
+/// Generates a Raven-compatible selection table from session detections.
 ///
-/// When [audioFileName] is provided every row references that single file.
-/// When [clipFileMap] is provided (detection index → clip filename), rows with
-/// a clip reference that file; rows without a clip get an empty `Begin File`.
-///
-/// Time semantics:
-///   • For rows referencing a per-detection **clip**, `Begin/End Time` are
-///     offsets *within the clip*. With pre/post context of
-///     [SessionSettings.clipContextSeconds] seconds, the detection starts
-///     after the available pre-roll and ends at [DetectionRecord.endTimestamp]
-///     when present, otherwise after one inference window.
-///   • For rows referencing the **full recording** (or no audio), `Begin/End
-///     Time` are session-relative offsets.
-///   • A `Survey Time` column is always appended so analysts can recover the
-///     timeline of every detection regardless of file layout. By default this
-///     is `Survey Time (s)` (seconds since session start). When
-///     [useAbsoluteSurveyTime] is true the column becomes `Survey Time (UTC)`
-///     and carries the detection's wall-clock timestamp as an ISO-8601 UTC
-///     string — useful when correlating across surveys, devices, or external
-///     data sources that work in absolute time.
+/// [clipFileMap] maps detection indices to exported filenames in sound-file
+/// sequence order. Only those detections are emitted, with Begin/End Time
+/// measured along the cumulative clip sequence. Without a clip map, times
+/// index the full recording (including gap removal and export trimming).
+/// Survey Time always carries the detection's absolute UTC timestamp.
 ///
 /// Common Name is rendered in the user's species locale when [taxonomy] is
 /// supplied; Scientific Name is always emitted regardless of any UI toggle
@@ -236,7 +222,6 @@ String buildRavenSelectionTable(
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
-  bool useAbsoluteSurveyTime = false,
 }) {
   final buf = StringBuffer();
   final hasCoords = session.detections.any(
@@ -252,23 +237,13 @@ String buildRavenSelectionTable(
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
 
-  // Header row — 'Begin File' is a standard Raven column for multi-file
-  // selection tables. 'Survey Time' is non-standard but harmless to Raven
-  // (extra columns are ignored on import) and lets analysts cross-reference
-  // detections back to the survey timeline. We always emit it: when no clips
-  // are involved it duplicates Begin Time, but having a stable column name
-  // makes downstream tooling simpler than conditionally including it.
-  // 'Review Status' / 'Reviewed At (UTC)' are likewise always emitted so the
-  // schema is stable regardless of whether the session has any reviewed
-  // detections; unreviewed rows carry an empty 'Reviewed At'.
-  final surveyTimeHeader =
-      useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
+  // Raven requires its seven default fields before any additional fields.
   buf.writeln(
-    'Selection\tView\tChannel\tBegin File\t'
+    'Selection\tView\tChannel\t'
     'Begin Time (s)\tEnd Time (s)\t'
-    'Low Freq (Hz)\tHigh Freq (Hz)\t'
+    'Low Freq (Hz)\tHigh Freq (Hz)\tBegin File\t'
     'Common Name\tScientific Name\tConfidence'
-    '\t$surveyTimeHeader'
+    '\tSurvey Time (UTC)'
     '\tReview Status\tReviewed At (UTC)'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}'
     '${hasEvidence ? '\tEvidence' : ''}'
@@ -280,11 +255,14 @@ String buildRavenSelectionTable(
   // gap-removed timeline so resumed sessions don't include stopped time.
   final sessionDurationSec = _recordedTimelineDurationSeconds(session);
 
-  for (var i = 0; i < session.detections.length; i++) {
+  final indices =
+      clipFileMap?.keys ?? Iterable<int>.generate(session.detections.length);
+  var selection = 0;
+  var clipSequenceOffset = 0.0;
+  for (final i in indices) {
     final d = session.detections[i];
     final isGlobal = d.source == DetectionSource.manualGlobal;
 
-    // File reference: clip name (if available) > full recording > empty.
     final clipName = clipFileMap?[i];
     final beginFile = clipName ?? audioFileName ?? '';
     final referencesClip = clipName != null;
@@ -295,26 +273,18 @@ String buildRavenSelectionTable(
       clipContextSeconds: clipContext,
       referencesDetectionClip: referencesClip,
     );
-    // Session-relative offset (always computed; used for either Begin Time
-    // or the auxiliary Survey Time column), rebased onto the exported
-    // (possibly trimmed) audio so it indexes the file the row references.
-    final surveySec =
-        isGlobal
-            ? 0.0
-            : _exportTimelineOffset(session, timing.detectionStartSec);
-
     // Begin/End times depend on whether the row references a clip file.
     final double beginSec;
     final double endSec;
     if (referencesClip) {
-      // Inside the clip: detection sits after the pre-roll context.
-      beginSec = timing.clipDetectionStartSec;
-      endSec = timing.clipDetectionEndSec;
+      beginSec = clipSequenceOffset + timing.clipDetectionStartSec;
+      endSec = clipSequenceOffset + timing.clipDetectionEndSec;
+      clipSequenceOffset += timing.clipDurationSec;
     } else if (isGlobal) {
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = surveySec;
+      beginSec = _exportTimelineOffset(session, timing.detectionStartSec);
       endSec = _exportTimelineOffset(session, timing.detectionEndSec);
     }
 
@@ -324,11 +294,7 @@ String buildRavenSelectionTable(
       speciesLocale: speciesLocale,
     );
 
-    final surveyTimeValue =
-        useAbsoluteSurveyTime
-            ? d.timestamp.toUtc().toIso8601String()
-            : surveySec.toStringAsFixed(3);
-    final surveyTimeSuffix = '\t$surveyTimeValue';
+    final surveyTimeSuffix = '\t${d.timestamp.toUtc().toIso8601String()}';
     final reviewSuffix =
         '\t${d.reviewStatus.name}'
         '\t${d.reviewedAt?.toUtc().toIso8601String() ?? ''}';
@@ -348,14 +314,14 @@ String buildRavenSelectionTable(
             : '';
 
     buf.writeln(
-      '${i + 1}\t'
+      '${++selection}\t'
       'Spectrogram 1\t'
       '1\t'
-      '$beginFile\t'
       '${beginSec.toStringAsFixed(3)}\t'
       '${endSec.toStringAsFixed(3)}\t'
       '0\t'
       '$_highFreqHz\t'
+      '$beginFile\t'
       '$commonName\t'
       '${_displaySci(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
@@ -404,9 +370,8 @@ String buildCsvExport(
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
 
-  // Survey Time is always included (see [buildRavenSelectionTable] for the
-  // rationale). When [useAbsoluteSurveyTime] is true the column becomes
-  // 'Survey Time (UTC)' and carries an ISO-8601 wall-clock timestamp.
+  // Survey Time is always included. When [useAbsoluteSurveyTime] is true,
+  // the column becomes 'Survey Time (UTC)' with an ISO-8601 timestamp.
   // 'Review Status' / 'Reviewed At (UTC)' are always emitted so downstream
   // pipelines see a stable schema; unreviewed rows carry an empty
   // 'Reviewed At'.
@@ -1029,6 +994,10 @@ Future<String?> buildSessionExport(
     }
   }
   final hasClips = clipEntries.isNotEmpty;
+  final usesDetectionClips =
+      !hasFullRecording &&
+      (session.settings.recordingMode == 'detections' ||
+          session.detections.any((d) => (d.audioClipPath ?? '').isNotEmpty));
   final hasAnyAudio = hasFullRecording || hasClips;
 
   // ── Build export clip names (sequential, 1-indexed, zero-padded) ────
@@ -1086,6 +1055,17 @@ Future<String?> buildSessionExport(
     }
     clipFileMap = clipExportNames;
   }
+
+  // Unbundled Raven audio references identify the existing source files.
+  final ravenClipFileMap =
+      usesDetectionClips
+          ? (includeAudio
+              ? clipExportNames
+              : <int, String>{
+                for (final i in clipExportNames.keys)
+                  i: p.basename(clipEntries[i]!.path),
+              })
+          : null;
 
   final aruCycleAudioEntries = <int, ({File file, String name})>{};
   final aruCycles = session.aruMetadata?.cycles ?? const <AruCycleMetadata>[];
@@ -1162,11 +1142,10 @@ Future<String?> buildSessionExport(
           content: buildRavenSelectionTable(
             session,
             audioFileName: hasFullRecording ? audioFileName : null,
-            clipFileMap: clipFileMap,
+            clipFileMap: ravenClipFileMap,
             taxonomy: taxonomy,
             speciesLocale: speciesLocale,
             clipContextSecondsOverride: clipContextSecondsOverride,
-            useAbsoluteSurveyTime: useAbsoluteSurveyTime,
           ),
         );
         break;
