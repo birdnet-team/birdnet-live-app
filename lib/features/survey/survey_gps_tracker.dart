@@ -120,8 +120,17 @@ class SurveyGpsTracker {
 
   /// Stop GPS tracking.
   Future<void> stopTracking() async {
-    await _positionSub?.cancel();
+    final positionSub = _positionSub;
     _positionSub = null;
+    if (positionSub != null) {
+      try {
+        await positionSub.cancel().timeout(const Duration(seconds: 2));
+      } on TimeoutException {
+        debugPrint('[SurveyGpsTracker] position stream stop timed out');
+      } catch (error) {
+        debugPrint('[SurveyGpsTracker] position stream stop failed: $error');
+      }
+    }
     debugPrint(
       '[SurveyGpsTracker] tracking stopped '
       '(${track.length} points, ${distanceMeters.toStringAsFixed(0)} m)',

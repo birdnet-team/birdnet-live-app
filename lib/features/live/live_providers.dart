@@ -193,6 +193,11 @@ void _resolvePendingWeather(Ref ref, List<LiveSession> sessions) async {
 
     if (missing.isEmpty) return;
 
+    // Avoid walking the entire missing-session list while offline. The
+    // service repeats this guard for direct callers, but probing once here
+    // also skips the per-session delay below.
+    if (!await svc.canAttemptNetwork()) return;
+
     var updatedAny = false;
     for (final s in missing) {
       try {

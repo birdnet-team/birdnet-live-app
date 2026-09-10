@@ -28,6 +28,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -99,6 +100,9 @@ class SurveyController {
     debugLabel: 'SurveyController',
   );
   int _sessionGeneration = 0;
+  bool _startCancellationRequested = false;
+  bool _startInProgress = false;
+  Future<void> _persistTail = Future<void>.value();
   Timer? _persistTimer;
   Timer? _notificationTimer;
   SurveyGpsTracker? _gpsTracker;
@@ -417,6 +421,8 @@ class SurveyController {
     double? highPassHz,
   }) async {
     if (_state == SurveyState.active) return;
+    _startCancellationRequested = false;
+    _startInProgress = true;
     _sessionGeneration++;
     _state = SurveyState.starting;
     _notifyListeners();
@@ -427,6 +433,7 @@ class SurveyController {
         await loadModel();
         if (_state == SurveyState.error) return;
       }
+      if (await _cancelStartIfRequested()) return;
 
       final sessionId = DateTime.now().toIso8601String().replaceAll(':', '-');
 
@@ -530,7 +537,12 @@ class SurveyController {
       // Clips cover the window the model scored, whichever length this survey
       // analyzes with.
       recordingService.setWindowSeconds(windowDuration);
-      if (recordingMode != RecordingMode.off) {
+      if (recordingMode == RecordingMode.detectionsOnly) {
+        _startDetectionRecording(
+          sessionId: sessionId,
+          recordingFormat: recordingFormat,
+        );
+      } else if (recordingMode == RecordingMode.full) {
         final dir = await recordingService.startRecording(
           sessionId: sessionId,
           mode: recordingMode,
@@ -538,6 +550,7 @@ class SurveyController {
         );
         _session!.recordingPath = dir;
       }
+      if (await _cancelStartIfRequested()) return;
 
       // GPS tracking — skipped entirely when the user has GPS turned off.
       if (_useGps) {
@@ -550,6 +563,7 @@ class SurveyController {
           await _gpsTracker!.captureOnce();
         }
       }
+      if (await _cancelStartIfRequested()) return;
 
       // Max duration auto-stop.
       _maxEndTime = DateTime.now().add(Duration(hours: maxDurationHours));
@@ -580,6 +594,7 @@ class SurveyController {
         title: _notificationTitle,
         text: _buildNotificationText(),
       );
+      if (await _cancelStartIfRequested()) return;
 
       _state = SurveyState.active;
       _armNextInference();
@@ -597,6 +612,8 @@ class SurveyController {
       _state = SurveyState.error;
       _errorMessage = e.toString();
       _notifyListeners();
+    } finally {
+      _startInProgress = false;
     }
   }
 
@@ -631,6 +648,8 @@ class SurveyController {
     Set<String> ignoredSpeciesNames = const <String>{},
   }) async {
     if (_state == SurveyState.active) return;
+    _startCancellationRequested = false;
+    _startInProgress = true;
     _sessionGeneration++;
     _state = SurveyState.starting;
     _notifyListeners();
@@ -640,6 +659,7 @@ class SurveyController {
         await loadModel();
         if (_state == SurveyState.error) return;
       }
+      if (await _cancelStartIfRequested()) return;
 
       // Restore the existing session.
       _session = existingSession;
@@ -694,7 +714,12 @@ class SurveyController {
       // Clips cover the window the model scored, whichever length this survey
       // analyzes with.
       recordingService.setWindowSeconds(windowDuration);
-      if (recordingMode != RecordingMode.off) {
+      if (recordingMode == RecordingMode.detectionsOnly) {
+        _startDetectionRecording(
+          sessionId: existingSession.id,
+          recordingFormat: recordingFormat,
+        );
+      } else if (recordingMode == RecordingMode.full) {
         final dir = await recordingService.startRecording(
           sessionId: existingSession.id,
           mode: recordingMode,
@@ -702,6 +727,7 @@ class SurveyController {
         );
         _session!.recordingPath = dir;
       }
+      if (await _cancelStartIfRequested()) return;
 
       // GPS tracking: seed with existing track data.
       if (_useGps) {
@@ -714,6 +740,7 @@ class SurveyController {
           await _gpsTracker!.captureOnce();
         }
       }
+      if (await _cancelStartIfRequested()) return;
 
       _maxEndTime = DateTime.now().add(Duration(hours: maxDurationHours));
       _autoStopBattery = autoStopBattery;
@@ -722,6 +749,7 @@ class SurveyController {
         title: _notificationTitle,
         text: _buildNotificationText(),
       );
+      if (await _cancelStartIfRequested()) return;
 
       // Reactivate only after all fallible async setup has completed so the
       // original session stays untouched if setup fails. LiveSession.resume
@@ -756,6 +784,8 @@ class SurveyController {
       _state = SurveyState.error;
       _errorMessage = e.toString();
       _notifyListeners();
+    } finally {
+      _startInProgress = false;
     }
   }
 
@@ -788,6 +818,60 @@ class SurveyController {
     _accumulator = null;
     _clipWriter.reset();
     _samplerTail = Future<void>.value();
+    if (kDebugMode) MemoryMonitor.stop();
+  }
+
+  /// Signal that the route which initiated startup has gone away.
+  ///
+  /// Startup checks this after every platform await. The in-progress flag is
+  /// used instead of [SurveyState.starting] because [loadModel] moves the
+  /// state to idle midway through a cold start. If startup already reached
+  /// active between the user's tap and route disposal, stop it; the returned
+  /// future completes once that stop has finished.
+  Future<void> cancelPendingStart() async {
+    if (_startInProgress) {
+      _startCancellationRequested = true;
+    } else if (_state == SurveyState.active) {
+      await stopSurvey();
+    }
+  }
+
+  Future<bool> _cancelStartIfRequested() async {
+    if (!_startCancellationRequested) return false;
+    _startCancellationRequested = false;
+    await _cleanupFailedStart();
+    _state = SurveyState.idle;
+    _errorMessage = null;
+    _notifyListeners();
+    debugPrint('[SurveyController] abandoned startup cancelled');
+    return true;
+  }
+
+  /// Detection clips do not need a writer to be open before inference starts.
+  /// Resolve their directory in parallel so a slow path-provider platform
+  /// call cannot hold the whole Survey startup screen hostage.
+  void _startDetectionRecording({
+    required String sessionId,
+    required String recordingFormat,
+  }) {
+    final generation = _sessionGeneration;
+    unawaited(() async {
+      try {
+        final dir = await recordingService.startRecording(
+          sessionId: sessionId,
+          mode: RecordingMode.detectionsOnly,
+          format: recordingFormat,
+        );
+        if (generation == _sessionGeneration && _session?.id == sessionId) {
+          _session!.recordingPath = dir;
+        }
+      } catch (error, stackTrace) {
+        debugPrint(
+          '[SurveyController] detection recording start failed: '
+          '$error\n$stackTrace',
+        );
+      }
+    }());
   }
 
   /// Stop and finalize the survey.
@@ -809,11 +893,25 @@ class SurveyController {
     // since the last persist tick is counted in the final duration.
     _closeRecordingSegment();
 
-    // Stop foreground service notification.
-    await _notificationService.stop();
+    // Platform service teardown has occasionally failed to answer on newer
+    // Android versions. It is best-effort and must not strand the session in
+    // `stopping` forever.
+    try {
+      await _notificationService.stop().timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      debugPrint('[SurveyController] notification stop timed out');
+    } catch (error) {
+      debugPrint('[SurveyController] notification stop failed: $error');
+    }
 
     // Stop GPS.
-    await _gpsTracker?.stopTracking();
+    try {
+      await _gpsTracker?.stopTracking().timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      debugPrint('[SurveyController] GPS stop timed out');
+    } catch (error) {
+      debugPrint('[SurveyController] GPS stop failed: $error');
+    }
 
     // Simplify GPS track.
     _gpsTracker?.simplifyTrack();
@@ -864,7 +962,13 @@ class SurveyController {
     final alertCoord = _alertCoordinator;
     _alertCoordinator = null;
     if (alertCoord != null) {
-      await alertCoord.shutdown();
+      try {
+        await alertCoord.shutdown().timeout(const Duration(seconds: 3));
+      } on TimeoutException {
+        debugPrint('[SurveyController] alert shutdown timed out');
+      } catch (error) {
+        debugPrint('[SurveyController] alert shutdown failed: $error');
+      }
     }
 
     try {
@@ -1277,30 +1381,42 @@ class SurveyController {
     _segmentStart = null;
   }
 
-  Future<void> _persistSession() async {
-    if (_session == null) return;
-    try {
-      // Roll the segment forward so the persisted recordedDurationSeconds
-      // reflects time recorded since the last persist tick. We immediately
-      // open a new segment for active surveys so [elapsed] keeps ticking
-      // smoothly. Final persists run after [LiveSession.end] and must not
-      // reopen a segment, otherwise saved Survey durations keep growing in
-      // Session Library.
-      _closeRecordingSegment();
-      if (_session!.endTime == null) {
-        _session!.startSegment();
-        _segmentStart = DateTime.now();
-      }
+  Future<void> _persistSession() {
+    final session = _session;
+    if (session == null) return Future<void>.value();
 
+    // Roll the segment forward so the persisted recordedDurationSeconds
+    // reflects time recorded since the last persist tick. We immediately
+    // open a new segment for active surveys so [elapsed] keeps ticking
+    // smoothly. Final persists run after [LiveSession.end] and must not
+    // reopen a segment, otherwise saved Survey durations keep growing in
+    // Session Library. This stays synchronous so a queued write can never
+    // reopen a segment after stopSurvey has closed it.
+    _closeRecordingSegment();
+    if (session.endTime == null) {
+      session.startSegment();
+      _segmentStart = DateTime.now();
+    }
+
+    // The periodic tick does not await persistence. Queue writes so an older
+    // snapshot still encoding off-isolate cannot finish after, and overwrite,
+    // a newer one such as the final persist.
+    final write = _persistTail.then((_) => _writeSessionFile(session));
+    _persistTail = write;
+    return write;
+  }
+
+  Future<void> _writeSessionFile(LiveSession session) async {
+    try {
       final appDir = await getApplicationDocumentsDirectory();
       final sessionsDir = Directory('${appDir.path}/sessions');
       if (!sessionsDir.existsSync()) {
         await sessionsDir.create(recursive: true);
       }
 
-      final sessionFile = File('${sessionsDir.path}/${_session!.id}.json');
+      final sessionFile = File('${sessionsDir.path}/${session.id}.json');
       final recoveryFile = File(
-        '${sessionsDir.path}/${_session!.id}.recovery.json',
+        '${sessionsDir.path}/${session.id}.recovery.json',
       );
 
       // Write-ahead: rename current → recovery, write new, delete recovery.
@@ -1308,14 +1424,13 @@ class SurveyController {
         await sessionFile.rename(recoveryFile.path);
       }
 
-      final sessionJson = sessionJsonForStorage(
-        _session!,
-        documentsPath: appDir.path,
+      final documentsPath = appDir.path;
+      final jsonStr = await Isolate.run(
+        () => json.encode(
+          sessionJsonForStorage(session, documentsPath: documentsPath),
+        ),
       );
-      final jsonStr = json.encode(sessionJson);
-      await File(
-        '${sessionsDir.path}/${_session!.id}.json',
-      ).writeAsString(jsonStr, flush: true);
+      await sessionFile.writeAsString(jsonStr, flush: true);
 
       if (await recoveryFile.exists()) {
         await recoveryFile.delete();
@@ -1323,8 +1438,8 @@ class SurveyController {
 
       debugPrint(
         '[SurveyController] session persisted '
-        '(${_session!.detections.length} detections, '
-        '${_session!.gpsTrack.length} GPS points)',
+        '(${session.detections.length} detections, '
+        '${session.gpsTrack.length} GPS points)',
       );
     } catch (e) {
       debugPrint('[SurveyController] persist error: $e');
@@ -1379,9 +1494,7 @@ class SurveyController {
           final byHeard = lastHeard(b).compareTo(lastHeard(a));
           return byHeard != 0 ? byHeard : b.timestamp.compareTo(a.timestamp);
         });
-    _recentForNotification = List<DetectionRecord>.unmodifiable(
-      ranked.take(3),
-    );
+    _recentForNotification = List<DetectionRecord>.unmodifiable(ranked.take(3));
   }
 
   /// Build the notification body text with the three most recent

@@ -57,8 +57,14 @@ class SessionRepository {
     final basePath = await _getBasePath();
     final file = File('$basePath/${_sanitiseId(session.id)}.json');
     final documentsPath = Directory(basePath).parent.path;
-    final json = sessionJsonForStorage(session, documentsPath: documentsPath);
-    final jsonString = const JsonEncoder.withIndent('  ').convert(json);
+    // Large Surveys can contain thousands of detections and GPS points.
+    // Building and encoding that object graph on the main isolate freezes all
+    // navigation while the session is being saved.
+    final jsonString = await Isolate.run(
+      () => const JsonEncoder.withIndent(
+        '  ',
+      ).convert(sessionJsonForStorage(session, documentsPath: documentsPath)),
+    );
     await file.writeAsString(jsonString, flush: true);
   }
 

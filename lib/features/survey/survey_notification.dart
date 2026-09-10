@@ -25,6 +25,7 @@
 //   await svc.stop();                          // on survey stop
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -92,6 +93,7 @@ class SurveyNotificationService {
   static String _stopButtonText = '';
   static String _openButtonText = '';
   bool _running = false;
+  int _lifecycleGeneration = 0;
 
   /// Localized title used for foreground notification updates.
   static String get notificationTitle => _notificationTitle;
@@ -151,7 +153,9 @@ class SurveyNotificationService {
   /// Start the foreground service with an initial notification.
   Future<void> start({required String title, required String text}) async {
     if (!Platform.isAndroid) return;
+    final generation = ++_lifecycleGeneration;
     await init();
+    if (generation != _lifecycleGeneration) return;
 
     if (!ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey)) {
       debugPrint(
@@ -165,6 +169,9 @@ class SurveyNotificationService {
     // still create a foreground service (just with a default notification
     // on some OEMs).
     final granted = await ensurePermission();
+    // stop() has already released the claim. If a newer start() superseded
+    // this one instead, the shared survey claim is now its claim to keep.
+    if (generation != _lifecycleGeneration) return;
     if (!granted) {
       debugPrint(
         '[SurveyNotification] permission not granted — '
@@ -172,7 +179,7 @@ class SurveyNotificationService {
       );
     }
 
-    final result = await FlutterForegroundTask.startService(
+    final request = FlutterForegroundTask.startService(
       serviceId: 256,
       notificationTitle: title,
       notificationText: text,
@@ -185,6 +192,49 @@ class SurveyNotificationService {
       ],
       callback: surveyTaskCallback,
     );
+    late final Object result;
+    try {
+      // Starting the secondary Flutter engine has occasionally taken tens of
+      // seconds on recent Android versions. The Survey itself must not wait
+      // indefinitely for this best-effort background notification.
+      result = await request.timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      debugPrint('[SurveyNotification] start timed out; continuing Survey');
+      // The platform request cannot be cancelled. Reconcile its eventual
+      // result without holding up Survey startup. If stop() ran meanwhile,
+      // tear down the late service unless a newer Survey now owns it.
+      unawaited(() async {
+        try {
+          final lateResult = await request;
+          if (lateResult is ServiceRequestSuccess &&
+              generation == _lifecycleGeneration) {
+            _running = true;
+            debugPrint('[SurveyNotification] started after timeout');
+          } else if (lateResult is ServiceRequestSuccess &&
+              ForegroundServiceGuard.owner != ForegroundServiceOwner.survey) {
+            await FlutterForegroundTask.stopService().timeout(
+              const Duration(seconds: 2),
+            );
+          } else if (generation == _lifecycleGeneration) {
+            ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+          }
+        } catch (error) {
+          if (generation == _lifecycleGeneration) {
+            ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+          }
+          debugPrint('[SurveyNotification] late start failed: $error');
+        }
+      }());
+      return;
+    }
+
+    if (generation != _lifecycleGeneration) {
+      if (result is ServiceRequestSuccess &&
+          ForegroundServiceGuard.owner != ForegroundServiceOwner.survey) {
+        unawaited(FlutterForegroundTask.stopService());
+      }
+      return;
+    }
     if (result is ServiceRequestSuccess) {
       _running = true;
       debugPrint('[SurveyNotification] started');
@@ -209,11 +259,24 @@ class SurveyNotificationService {
 
   /// Stop the foreground service.
   Future<void> stop() async {
-    if (!_running) return;
-    await FlutterForegroundTask.stopService();
-    _running = false;
-    ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
-    debugPrint('[SurveyNotification] stopped');
+    ++_lifecycleGeneration;
+    if (!_running) {
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+      return;
+    }
+    try {
+      await FlutterForegroundTask.stopService().timeout(
+        const Duration(seconds: 2),
+      );
+      debugPrint('[SurveyNotification] stopped');
+    } on TimeoutException {
+      debugPrint('[SurveyNotification] stop timed out');
+    } catch (error) {
+      debugPrint('[SurveyNotification] stop failed: $error');
+    } finally {
+      _running = false;
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+    }
   }
 }
 
