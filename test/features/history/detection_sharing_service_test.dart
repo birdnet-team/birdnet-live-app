@@ -463,6 +463,113 @@ void main() {
       expect(params.files!.single.mimeType, 'text/csv');
     });
 
+    for (final scenario in [
+      (includeAudio: false, asWav: false, exists: true),
+      (includeAudio: false, asWav: true, exists: true),
+      (includeAudio: false, asWav: false, exists: false),
+      (includeAudio: false, asWav: true, exists: false),
+      (includeAudio: true, asWav: true, exists: true),
+    ]) {
+      test('Raven detection share $scenario', () async {
+        final start = DateTime.utc(2026, 5, 11, 10);
+        final clip = File(p.join(tmp.path, 'original-field-recording.flac'));
+        await FlacEncoder.writeFile(
+          filePath: clip.path,
+          samples: _pcmLikeFloatSamples(32000 * 5),
+        );
+        final originalBytes = await clip.readAsBytes();
+        if (!scenario.exists) await clip.delete();
+        final detection = _det(start)..audioClipPath = clip.path;
+        final session = LiveSession(
+          id: 'raven-only',
+          startTime: start,
+          detections: [detection],
+          settings: const SessionSettings(
+            windowDuration: 3,
+            confidenceThreshold: 25,
+            inferenceRate: 1,
+            speciesFilterMode: 'off',
+            clipContextSeconds: 1,
+            recordingMode: 'detections',
+          ),
+        );
+
+        await shareDetection(
+          detection,
+          session: session,
+          formats: const {'raven'},
+          includeAudio: scenario.includeAudio,
+          shareAudioAsWav: scenario.asWav,
+        );
+
+        final files = fakeSharePlatform.lastParams!.files!;
+        expect(files, hasLength(1));
+        final String table;
+        Archive? archive;
+        if (scenario.includeAudio) {
+          expect(files.single.name, endsWith('.zip'));
+          archive = ZipDecoder().decodeBytes(
+            await File(files.single.path).readAsBytes(),
+          );
+          table = utf8.decode(
+            archive
+                    .firstWhere((file) => file.name.endsWith('.selections.txt'))
+                    .content
+                as List<int>,
+          );
+        } else {
+          expect(files.single.name, endsWith('.selections.txt'));
+          table = await File(files.single.path).readAsString();
+          final audioFiles =
+              tmp
+                  .listSync(recursive: true)
+                  .whereType<File>()
+                  .where(
+                    (file) =>
+                        ['.wav', '.flac'].contains(p.extension(file.path)),
+                  )
+                  .map((file) => file.path)
+                  .toList();
+          expect(audioFiles, scenario.exists ? [clip.path] : isEmpty);
+        }
+        final rows =
+            table
+                .split('\n')
+                .where((line) => line.isNotEmpty)
+                .map((line) => line.split('\t'))
+                .toList();
+        expect(rows, hasLength(scenario.exists ? 2 : 1));
+        if (scenario.exists) {
+          final header = rows.first;
+          final row = rows[1];
+          expect(row.length, header.length);
+          expect(row[header.indexOf('Selection')], '1');
+          expect(row[header.indexOf('Begin Time (s)')], '1.000');
+          expect(row[header.indexOf('End Time (s)')], '4.000');
+          final beginFile = row[header.indexOf('Begin File')];
+          if (scenario.includeAudio) {
+            expect(beginFile, endsWith('_clip_001_Eurasian_Wren.wav'));
+            expect(
+              archive!
+                  .where((file) => file.name.endsWith('.wav'))
+                  .map((file) => file.name),
+              [beginFile],
+            );
+          } else {
+            expect(beginFile, 'original-field-recording.flac');
+            expect(table, isNot(contains('_clip_001_')));
+          }
+          expect(
+            row[header.indexOf('Survey Time (UTC)')],
+            '2026-05-11T10:00:00.000Z',
+          );
+        }
+        expect(detection.audioClipPath, clip.path);
+        expect(clip.existsSync(), scenario.exists);
+        if (scenario.exists) expect(await clip.readAsBytes(), originalBytes);
+      });
+    }
+
     test('can share only the selected app metadata', () async {
       final start = DateTime.utc(2026, 5, 11, 10);
       final session = _session(recordingPath: '', start: start);

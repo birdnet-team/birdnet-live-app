@@ -17,7 +17,9 @@ You can enter:
 - survey name
 - transect ID
 - observer name
-- GPS, manual coordinates, or no starting location
+- GPS :material-crosshairs-gps:, manual coordinates
+  :material-map-marker-plus:, or no starting location
+  :material-map-marker-off:. The map picker uses :material-map:.
 
 This step also exposes the map picker, refreshes GPS when you return from
 system permission screens, and shows the background-GPS permission reminder
@@ -40,6 +42,22 @@ This step contains Survey-specific parameters such as:
 - detection sampling mode
 - top-N-per-species limit when sampling is limited
 
+| Setup control | Icon |
+|---|---|
+| Microphone | :material-microphone: |
+| Inference rate | :material-speedometer: |
+| Confidence threshold | :material-check-decagram: |
+| GPS interval | :material-crosshairs-gps: |
+| Maximum duration | :material-timer: |
+| Recording mode | :material-record-circle: |
+| Clip context | :material-timer: |
+| Detection sampling | :material-filter-outline: |
+| Top N per species | :material-format-list-numbered: |
+
+Tap the :material-help: button beside a setup control for an explanation.
+The name, transect, observer, location, and alert controls have help buttons
+as well.
+
 New Survey settings default to **0.70 Hz** inference. This retains more short
 vocalizations than the lower-rate battery-saving choices while still running
 the model less often than 1.00 Hz. Survey and Live Mode share one inference
@@ -59,7 +77,7 @@ Three modes are available:
 |---|---|
 | **All** | Keep every clip. Most disk usage. Recommended for short surveys or when you want every detection's audio for later analysis. |
 | **Top N** | Keep only the **N highest-confidence clips per species**. Other clips are deleted as the survey runs. Default N is 10, configurable from 1 to 50. |
-| **Smart** | Same per-species cap of N as Top N, **plus** spatial distribution: if a new detection lands at the same "spot" as an already-kept clip (within ~500 m and ~2 min of each other), only the higher-confidence one keeps its clip. This prevents one stationary singer from monopolizing all N slots and biases the kept clips toward covering the full transect. |
+| **Smart** | Same per-species cap of N as Top N, **plus** spatial distribution: if a new detection lands at the same "spot" as an already-kept clip (within ~250 m and ~2 min of each other), only the higher-confidence one keeps its clip. This prevents one stationary singer from monopolizing all N slots and biases the kept clips toward covering the full transect. |
 
 The N limit is **per species, not global** — if you record 10 robins and 10 chaffinches, you keep 20 clips. There is no overall cap on the number of clips a survey can produce.
 

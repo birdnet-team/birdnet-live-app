@@ -6,6 +6,7 @@
 //
 // Captures:
 //   * App name + version + build number + package name (PackageInfo).
+//   * Readable device model and OS version, without a device ID.
 //   * Both ONNX model blocks from `assets/models/model_config.json`.
 //   * A curated snapshot of relevant SharedPreferences key/value pairs.
 //   * Session-level provenance (id, type, timestamps, observer, weather…)
@@ -28,6 +29,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../live/live_session.dart';
+import 'export_device_info.dart';
 import 'session_export.dart';
 
 /// Builds the standard export metadata map for [session].
@@ -72,7 +74,10 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
     /* non-fatal */
   }
 
+  final deviceInfo = await exportDeviceInfo();
   return buildExportMetadata(
+    device: deviceInfo.device,
+    os: deviceInfo.os,
     appVersion: appVersion,
     appBuildNumber: appBuildNumber,
     appPackageName: appPackageName,

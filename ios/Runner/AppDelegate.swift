@@ -33,6 +33,23 @@ import UIKit
 
     let controller = window?.rootViewController as! FlutterViewController
 
+    let deviceDescriptionChannel = FlutterMethodChannel(
+      name: "com.birdnet/device_description",
+      binaryMessenger: controller.binaryMessenger
+    )
+    deviceDescriptionChannel.setMethodCallHandler { (call, result) in
+      guard call.method == "getInfo" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let device = UIDevice.current
+      result([
+        "model": device.model,
+        "os": device.userInterfaceIdiom == .pad ? "iPadOS" : "iOS",
+        "version": device.systemVersion,
+      ])
+    }
+
     let wakelockChannel = FlutterMethodChannel(
       name: "com.birdnet/wakelock",
       binaryMessenger: controller.binaryMessenger

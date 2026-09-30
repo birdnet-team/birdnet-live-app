@@ -7,6 +7,7 @@ This file is for coding agents working in this repository.
 - Keep changes small, safe, and easy to review.
 - Prefer behavior-preserving updates unless a behavior change is requested.
 - Validate changes with focused checks, then run flutter analyze before finishing.
+- Prefer small, purpose-built solutions over third-party packages that provide much more than the task needs. Add a package only after verifying that it neither accesses private user data nor communicates with the internet.
 
 ## Communication Style
 
@@ -103,6 +104,8 @@ This file is for coding agents working in this repository.
 - flutter gen-l10n
 - flutter analyze
 - flutter test
+- Never run integration tests without explicit user approval in the current conversation; they are costly.
+- For pure UI changes, use focused widget/unit tests and static analysis. Do not run unrelated integration tests.
 - Version source of truth is pubspec.yaml.
 - Never bump the version without explicit user consent in the current turn. Do not change pubspec.yaml version/build, version badges, or add a new CHANGELOG version header unless the user explicitly asks. Fold user-facing changes into the current unreleased version section instead.
 - For release bumps, increment patch and build together, then run dart dev/sync_version.dart.

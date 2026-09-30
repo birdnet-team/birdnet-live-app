@@ -331,15 +331,20 @@ enum SessionType {
 
 /// Why a session ended.
 ///
-/// Used primarily for survey sessions that can auto-stop on max duration
-/// or low battery, but applicable to any session type. `null` means the
-/// session was stopped manually or pre-dates this field.
+/// Used by timed and unattended sessions. `null` means the session was
+/// stopped manually or pre-dates this field.
 enum SessionStopReason {
   /// User tapped Stop.
   manual,
 
   /// Configured maximum duration was reached.
   maxDuration,
+
+  /// Live Mode reached its selected background time limit.
+  backgroundLimit,
+
+  /// Point Count ended because background operation was disabled.
+  backgrounded,
 
   /// Battery dropped below the configured auto-stop threshold.
   lowBattery,
@@ -1112,8 +1117,9 @@ class LiveSession {
   SessionStopReason? stopReason;
 
   /// Numeric value associated with [stopReason] (e.g. battery % for
-  /// [SessionStopReason.lowBattery], or duration hours for
-  /// [SessionStopReason.maxDuration]). `null` when not applicable.
+  /// [SessionStopReason.lowBattery], duration hours for
+  /// [SessionStopReason.maxDuration], or background limit minutes for
+  /// [SessionStopReason.backgroundLimit]). `null` when not applicable.
   num? stopReasonValue;
 
   /// Optional weather snapshot captured once at session save time when
