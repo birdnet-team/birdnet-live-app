@@ -143,6 +143,18 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     super.dispose();
   }
 
+  void _returnToHome() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  void _handleSystemBack() {
+    if (_selectedSessions.isNotEmpty) {
+      _clearSelection();
+      return;
+    }
+    _returnToHome();
+  }
+
   void _showHelp() {
     final l10n = AppLocalizations.of(context)!;
 
@@ -478,7 +490,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         filtered.isNotEmpty &&
         filtered.every((s) => _selectedSessions.contains(s.id));
 
-    return Scaffold(
+    final scaffold = Scaffold(
       appBar:
           isSelectMode
               ? AppBar(
@@ -544,6 +556,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                 ],
               )
               : AppBar(
+                leading: IconButton(
+                  icon: const Icon(AppIcons.arrowBackRounded),
+                  tooltip: l10n.tooltipBack,
+                  onPressed: _returnToHome,
+                ),
                 title:
                     _showSearch
                         ? TextField(
@@ -737,6 +754,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         onStart: () => _startNewSession(_newSessionMode),
         onChooseMode: _showNewSessionPicker,
       ),
+    );
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleSystemBack();
+      },
+      child: scaffold,
     );
   }
 
@@ -1008,6 +1032,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         shareAudioAsWav: shareAudioAsWav,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
+        metadataProvider:
+            (session) => buildSessionExportMetadata(
+              session,
+              speciesLocale: speciesLocale,
+            ),
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
         includeHtmlReport: includeHtmlReport,
         includeAppMetadata: includeAppMetadata,

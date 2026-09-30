@@ -6,9 +6,12 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:birdnet_live/features/history/session_repository.dart';
+import 'package:birdnet_live/features/live/live_providers.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 
 void main() {
@@ -125,6 +128,52 @@ void main() {
 
       final loaded = await repo.load('test-session-1');
       expect(loaded!.detections.length, 2);
+    });
+
+    test('an early Point Count remains alongside the previous count', () async {
+      final previous =
+          makeSession(id: 'point-count-previous')
+            ..type = SessionType.pointCount
+            ..sessionNumber = 1;
+      await repo.save(previous);
+
+      final current = makeSession(
+        id: 'point-count-current',
+        startTime: DateTime(2025, 6, 15, 11),
+        endTime: DateTime(2025, 6, 15, 11, 3),
+      )..type = SessionType.pointCount;
+      current.sessionNumber = await repo.nextSessionNumber(current.type);
+      await repo.save(current);
+
+      final listed = await repo.listAll();
+      expect(listed.map((session) => session.id), [current.id, previous.id]);
+      expect((await repo.load(current.id))?.sessionNumber, 2);
+    });
+
+    test('library refresh includes the newly saved Point Count', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer(
+        overrides: [sessionRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+
+      final previous = makeSession(id: 'previous')
+        ..type = SessionType.pointCount;
+      await repo.save(previous);
+      expect(
+        (await container.read(sessionListProvider.future)).map((s) => s.id),
+        [previous.id],
+      );
+
+      final current = makeSession(
+        id: 'current',
+        startTime: DateTime(2025, 6, 15, 11),
+      )..type = SessionType.pointCount;
+      await repo.save(current);
+      expect(
+        (await container.refresh(sessionListProvider.future)).map((s) => s.id),
+        [current.id, previous.id],
+      );
     });
 
     test('preserves session without detections', () async {

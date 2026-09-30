@@ -64,6 +64,56 @@ void main() {
   group('buildSessionReviewPlaybackOrder', () {
     final base = DateTime.utc(2026, 5, 24, 8);
 
+    test('count ties prefer species with the higher score', () {
+      final lowerScore = _record(
+        scientificName: 'A species',
+        commonName: 'Alphabetical First',
+        confidence: 0.70,
+        timestamp: base,
+      );
+      final higherScore = _record(
+        scientificName: 'B species',
+        commonName: 'Alphabetical Second',
+        confidence: 0.90,
+        timestamp: base.add(const Duration(seconds: 10)),
+      );
+
+      final order = buildSessionReviewPlaybackOrder(
+        detections: [lowerScore, higherScore],
+        maxGapSec: 3,
+        sortMode: SpeciesSortMode.count,
+        localizedCommonName: (_, fallback) => fallback,
+        hasPlayableClip: (_) => true,
+      );
+
+      expect(order, [higherScore, lowerScore]);
+    });
+
+    test('count mode sorts detections within a species by score', () {
+      final lowerScore = _record(
+        scientificName: 'A species',
+        commonName: 'Species',
+        confidence: 0.70,
+        timestamp: base,
+      );
+      final higherScore = _record(
+        scientificName: 'A species',
+        commonName: 'Species',
+        confidence: 0.90,
+        timestamp: base.add(const Duration(seconds: 10)),
+      );
+
+      final order = buildSessionReviewPlaybackOrder(
+        detections: [lowerScore, higherScore],
+        maxGapSec: 3,
+        sortMode: SpeciesSortMode.count,
+        localizedCommonName: (_, fallback) => fallback,
+        hasPlayableClip: (_) => true,
+      );
+
+      expect(order, [higherScore, lowerScore]);
+    });
+
     test(
       'keeps confidence-sorted playback within a species before advancing',
       () {

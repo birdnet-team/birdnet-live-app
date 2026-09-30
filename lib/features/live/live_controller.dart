@@ -453,6 +453,10 @@ class LiveController {
         gainLinear: gainLinear,
         highPassHz: highPassHz,
         recordingMode: recordingMode.name,
+        clipContextSeconds:
+            recordingMode == RecordingMode.detectionsOnly
+                ? recordingService.clipContextSeconds
+                : 0,
         recordingFormat: recordingFormat,
         targetDurationSeconds: targetDurationSeconds,
       ),
@@ -558,7 +562,8 @@ class LiveController {
     _windowDriver.cancelPendingWakeup();
 
     _sessionGeneration++;
-    for (final closed in _accumulator?.closeAll() ?? const <DetectionRecord>[]) {
+    for (final closed
+        in _accumulator?.closeAll() ?? const <DetectionRecord>[]) {
       _clipWriter.forget(closed);
     }
     _syncSessionDetections();
@@ -618,12 +623,24 @@ class LiveController {
 
     // Finish already-requested post-roll clips while capture and recording
     // are still available. These tasks never block inference or UI updates.
-    await _clipWriter.drain();
+    try {
+      await _clipWriter.drain();
+    } catch (error, stack) {
+      // A failed optional clip must not discard the entire Session.
+      debugPrint('[LiveController] clip finalization failed: $error\n$stack');
+    }
 
     // Stop recording.
-    final recordingPath = await recordingService.stopRecording();
-    if (recordingPath != null) {
-      _session!.recordingPath = recordingPath;
+    try {
+      final recordingPath = await recordingService.stopRecording();
+      if (recordingPath != null) {
+        _session!.recordingPath = recordingPath;
+      }
+    } catch (error, stack) {
+      // Keep detections and timing even if closing the audio file fails.
+      debugPrint(
+        '[LiveController] recording finalization failed: $error\n$stack',
+      );
     }
 
     // Stop memory monitoring (debug builds only).

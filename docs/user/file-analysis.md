@@ -13,6 +13,7 @@ You can also hand a recording to BirdNET Live from somewhere else. On Android, s
 ## App Bar
 
 - :material-tune: — open File Analysis settings
+- :material-help-circle-outline: — open File Analysis help
 - :material-close: — cancel an active analysis run
 
 ## Supported Inputs
@@ -42,11 +43,11 @@ Choose a file and review its metadata card:
 
 You can:
 
-- use current GPS
-- enter coordinates manually
-- skip location
-- pick a point on the map
-- set an optional recording date
+- use current GPS :material-crosshairs-gps:
+- enter coordinates manually :material-map-marker-plus:
+- skip location :material-map-marker-off:
+- pick a point on the map :material-map:
+- set an optional recording date :material-calendar-today:
 
 ### 3. Parameters
 
@@ -57,6 +58,17 @@ The wizard exposes:
 - sensitivity
 - confidence threshold
 - species filter mode
+
+| Setup control | Icon |
+|---|---|
+| Window duration | :material-timer: |
+| Overlap | :material-swap-horizontal: |
+| Sensitivity | :material-ear-hearing: |
+| Confidence threshold | :material-check-decagram: |
+| Species filter | :material-filter-outline: |
+
+Tap the :material-help: button beside a setup control for its explanation.
+The file, location, and recording-date steps have help buttons too.
 
 Overlap controls how far each analysis window advances, and is specific to
 File Analysis: the whole file is always examined, and more overlap simply

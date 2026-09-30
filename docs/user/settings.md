@@ -2,6 +2,10 @@
 
 BirdNET Live reuses one Settings screen across multiple workflows. The :material-tune: button opens the sections that are relevant to the screen you came from.
 
+The :material-help: button beside a setting opens a short explanation. The
+Point Count, Survey, ARU, and File Analysis setup wizards use the same button
+and the same icons for controls they share with Settings or each other.
+
 ## How Settings Scope Works
 
 - Opening Settings from Home shows the full screen.
@@ -195,13 +199,17 @@ A disclosure that exposes a handful of audio-routing toggles plus the trigger-mo
 
 ### Mode
 
+This setting controls Live Mode. Point Count has its own recording choice on
+the Analysis Settings step of setup; new Point Counts default to Full. Survey
+also has a separate recording choice in its setup.
+
 - **Full** — save the whole recording
 - **Detections only** — save clips around detections
 - **Off** — no audio recording
 
 ### Clip context
 
-When **Detections only** is active, the app shows a single **Clip context** slider (0–5 s) that sets how much audio is preserved on **both sides** of each detection. Each clip is `analysis window + 2 × clip context` long, so with a 3 s analysis window and the default 1 s context the saved clip is 5 s. Setting the context to 2 s yields a 7 s clip (2 s pre-roll + 3 s analyzed audio + 2 s post-roll). Larger values give you more room for visual inspection or external review tools at the cost of disk space; 0 saves only the analyzed window itself.
+When **Detections only** is active, the app shows a single **Clip context** slider (0–5 s) that sets how much audio is preserved on **both sides** of each detection. Point Count uses this same value when Clips is selected in setup, and can change it there. Each clip is `analysis window + 2 × clip context` long, so with a 3 s analysis window and the default 1 s context the saved clip is 5 s. Setting the context to 2 s yields a 7 s clip (2 s pre-roll + 3 s analyzed audio + 2 s post-roll). Larger values give you more room for visual inspection or external review tools at the cost of disk space; 0 saves only the analyzed window itself.
 
 ### Format
 
@@ -214,6 +222,14 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
 This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) starts listening when tapped, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
+
+### Continue with screen off
+
+**Live Mode** pauses audio capture and identification when you lock the screen or leave the app, then resumes the same Session when you return. This is off by default. After the first such return, a one-time dialog explains how to enable background listening. You can also change the switch directly in Live Mode settings. When enabled, choose a **Maximum background time** of 15, 30, 60, or 120 minutes (30 minutes by default). The timer starts when the app goes into the background. Returning to the app before it expires cancels that timer; leaving again starts a new one. Reaching the limit ends the Session automatically and opens review with the stop reason shown. The existing automatic-saving setting still decides whether the completed Session is kept immediately or marked unsaved in review.
+
+**Point Count** continues in the background by default when you lock the screen or switch to another app while the screen stays on, and ends at its selected count duration. Its **Continue with screen off** switch appears only in the first setup step. Turn it off there if you want either action to end the count early. The question mark beside the switch explains this behavior. A Point Count cannot pause and later resume without creating a gap in the timed protocol. The Ready screen summarizes the choice before you start, and Session Review shows the reason if the count ended early.
+
+Android shows a persistent notification with an Open and Stop action while either mode is allowed to run in the background. The screen is free to turn off normally. If background operation cannot start, keep the app open: Live Mode will pause and Point Count will end when the app goes into the background. If you leave the app while a Point Count is still starting, the count is canceled and a message explains why; set it up again to start a new count. On Windows, minimizing the window never pauses Live Mode or ends a Point Count, whatever these switches are set to.
 
 ### Save sessions automatically (Live and Point Count)
 
@@ -306,7 +322,7 @@ Shown only when **Include audio files** is on. When enabled, FLAC recordings are
 
 ### Include app metadata
 
-When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, the weather snapshot captured at session start, and any audio integrity warnings detected during recording. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
+When on, the export ZIP carries a `*.metadata.json` side-file describing how the session was produced: BirdNET Live version, model identity, readable `device` and `os` fields for the device used to export it (for example, `"device": "Pixel 10"` and `"os": "Android 17"`), the weather snapshot captured at session start, and any audio integrity warnings detected during recording. It does not include a device ID or user-assigned device name. The intuition: that provenance is what lets you (or a reviewer) reproduce or audit a session months later. Turn it off when you want a clean share of just the audio and your selected formats — for example, dropping a single WAV into iNaturalist or eBird without any app-specific files riding along.
 
 ### Include HTML report
 

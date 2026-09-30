@@ -7,9 +7,10 @@ ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for schedule
 
 ## Current Setup Flow
 
-- **Deployment and audio**: 
+- **Details and analysis settings**:
     - **Metadata**: Enter a deployment name, ARU/station ID, and observer name.
-    - **Location**: Provide site coordinates using automatic GPS acquisition, manual lat/lon entry, or skip location setup. Latitude and longitude are required if using sun-anchored scheduling.
+    - **Location**: Use GPS :material-crosshairs-gps:, manual coordinates :material-map-marker-plus:, or skip location :material-map-marker-off:. The map picker uses :material-map:. Latitude and longitude are required if using sun-anchored scheduling.
+    - **Analysis**: Choose the microphone, inference rate, confidence threshold, and sensitivity.
     - **Recording Format**: Choose between FLAC (compressed lossless) and WAV (uncompressed) formats.
     - **Recording Mode**:
         - *Full*: Records the entire duration of each active cycle.
@@ -23,6 +24,16 @@ ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for schedule
     - **Test Run**: An optional one-minute test cycle is enabled by default to verify microphone input and inference immediately upon starting, without counting toward the scheduled cycle limit.
     - **Session Grouping**: Configure whether to save each cycle as a separate session (recommended for faster load times and modular viewing) or combine all cycles into a single, multi-segment session.
 - **Ready**: Review the schedule, estimated audio storage consumption, and diel constraints, then start the deployment.
+
+The setup controls use the same icons as the other wizards: :material-microphone:
+microphone, :material-speedometer: inference rate, :material-check-decagram: confidence,
+:material-ear-hearing: sensitivity, :material-record-circle: recording mode,
+:material-timer: clip context and cycle duration, :material-filter-outline:
+detection sampling, and :material-format-list-numbered: the per-species clip
+limit. The repeat interval uses :material-repeat:, the low-battery controls use
+:material-battery-alert: and :material-battery-charging:, and test run and
+Session grouping use :material-flask-outline: and :material-bookshelf:.
+Tap the :material-help: button beside a setup control for its explanation.
 
 Starting a deployment immediately saves a `SessionType.aru` session with ARU schedule metadata so cycle state can be recovered later.
 

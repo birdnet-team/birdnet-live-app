@@ -670,6 +670,10 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.aruDeploymentName,
             prefixIcon: const Icon(AppIcons.noteAdd),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.aruDeploymentName,
+              body: l10n.setupHelpSessionName,
+            ),
           ),
           textInputAction: TextInputAction.next,
         ),
@@ -679,6 +683,10 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.aruStationId,
             prefixIcon: const Icon(AppIcons.sdStorage),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.aruStationId,
+              body: l10n.setupHelpStationId,
+            ),
           ),
           textInputAction: TextInputAction.next,
         ),
@@ -688,12 +696,20 @@ class _DetailsStep extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l10n.aruObserverName,
             prefixIcon: const Icon(AppIcons.personRounded),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.aruObserverName,
+              body: l10n.setupHelpObserverName,
+            ),
           ),
           textInputAction: TextInputAction.done,
         ),
         const SizedBox(height: 24),
-        Text(
-          l10n.surveyLocation,
+        SettingHelpTitle(
+          title: l10n.surveyLocation,
+          helpBody:
+              locationChoice == _LocationChoice.manual
+                  ? l10n.settingsHelpManualCoordinates
+                  : l10n.pointCountSetupHelpLocation,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -813,7 +829,7 @@ class _DetailsStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(AppIcons.map),
+            icon: const Icon(AppIcons.mapSheet),
             label: Text(l10n.surveyPickOnMap),
           ),
           const SizedBox(height: 12),
@@ -896,7 +912,10 @@ class _ParametersStep extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(AppIcons.speedRounded),
-          title: Text(l10n.surveyInferenceRate),
+          title: SettingHelpTitle(
+            title: l10n.surveyInferenceRate,
+            helpBody: l10n.settingsHelpInferenceRate,
+          ),
           subtitle: Text('${inferenceRate.toStringAsFixed(2)} Hz'),
         ),
         Slider(
@@ -912,7 +931,10 @@ class _ParametersStep extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(AppIcons.verifiedRounded),
-          title: Text(l10n.settingsConfidenceThreshold),
+          title: SettingHelpTitle(
+            title: l10n.settingsConfidenceThreshold,
+            helpBody: l10n.settingsHelpConfidenceThreshold,
+          ),
           subtitle: Text('$confidenceThreshold %'),
         ),
         Slider(
@@ -930,7 +952,10 @@ class _ParametersStep extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(AppIcons.hearing),
-          title: Text(l10n.settingsSensitivity),
+          title: SettingHelpTitle(
+            title: l10n.settingsSensitivity,
+            helpBody: l10n.settingsHelpSensitivity,
+          ),
           subtitle: Text(sensitivity.toStringAsFixed(2)),
         ),
         Slider(
@@ -947,7 +972,10 @@ class _ParametersStep extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(AppIcons.saveRounded),
-            title: Text(l10n.settingsRecordingFormat),
+            title: SettingHelpTitle(
+              title: l10n.settingsRecordingFormat,
+              helpBody: l10n.settingsHelpRecordingFormat,
+            ),
             subtitle: Text(l10n.settingsHelpRecordingFormat),
           ),
           Padding(
@@ -973,7 +1001,10 @@ class _ParametersStep extends ConsumerWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(AppIcons.fiberManualRecordRounded),
-          title: Text(l10n.surveyRecordingMode),
+          title: SettingHelpTitle(
+            title: l10n.surveyRecordingMode,
+            helpBody: l10n.setupHelpRecordingMode,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1007,7 +1038,10 @@ class _ParametersStep extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(AppIcons.timerOutlined),
-            title: Text(l10n.surveyClipContext),
+            title: SettingHelpTitle(
+              title: l10n.surveyClipContext,
+              helpBody: l10n.setupHelpClipContext,
+            ),
             subtitle: Text(l10n.surveyClipContextDescription),
           ),
           Padding(
@@ -1029,7 +1063,10 @@ class _ParametersStep extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(AppIcons.filterAltRounded),
-            title: Text(l10n.surveyDetectionSampling),
+            title: SettingHelpTitle(
+              title: l10n.surveyDetectionSampling,
+              helpBody: l10n.setupHelpDetectionSampling,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1062,7 +1099,10 @@ class _ParametersStep extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(AppIcons.formatListNumberedRounded),
-              title: Text(l10n.surveyTopNPerSpecies),
+              title: SettingHelpTitle(
+                title: l10n.surveyTopNPerSpecies,
+                helpBody: l10n.setupHelpTopNPerSpecies,
+              ),
               subtitle: Text('$topNPerSpecies'),
             ),
             Slider(
@@ -1194,6 +1234,8 @@ class _ScheduleStep extends ConsumerWidget {
         const SizedBox(height: 16),
         _DurationSliderControl(
           label: l10n.aruCycleDuration,
+          helpBody: l10n.setupHelpAruCycleDuration,
+          icon: AppIcons.timerRounded,
           value: cycleDuration,
           options: AruDefaults.cycleDurationOptions,
           onChanged: onCycleDurationChanged,
@@ -1201,6 +1243,8 @@ class _ScheduleStep extends ConsumerWidget {
         const SizedBox(height: 12),
         _DurationSliderControl(
           label: l10n.aruRepeatInterval,
+          helpBody: l10n.setupHelpAruRepeatInterval,
+          icon: AppIcons.repeatRounded,
           value:
               repeatOptions.contains(repeatInterval)
                   ? repeatInterval
@@ -1226,8 +1270,9 @@ class _ScheduleStep extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text(
-          l10n.aruRecordingWindow,
+        SettingHelpTitle(
+          title: l10n.aruRecordingWindow,
+          helpBody: l10n.setupHelpAruRecordingWindow,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
@@ -1277,8 +1322,9 @@ class _ScheduleStep extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Text(
-          l10n.aruScheduleEnd,
+        SettingHelpTitle(
+          title: l10n.aruScheduleEnd,
+          helpBody: l10n.setupHelpAruDeploymentEnd,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
@@ -1309,7 +1355,20 @@ class _ScheduleStep extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (scheduleEndMode == _ScheduleEndMode.cycles) ...[
-          Text('${l10n.aruMaxCycles}: $maxCycles'),
+          Row(
+            children: [
+              const Icon(AppIcons.repeatRounded),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: l10n.aruMaxCycles,
+                  helpBody: l10n.setupHelpAruDeploymentEnd,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('$maxCycles'),
+            ],
+          ),
           Slider(
             value: maxCycles.toDouble(),
             min: 1,
@@ -1362,7 +1421,20 @@ class _ScheduleStep extends ConsumerWidget {
           ),
         ],
         const SizedBox(height: 12),
-        Text('${l10n.aruLowBatteryStop}: $lowBatteryStop%'),
+        Row(
+          children: [
+            const Icon(AppIcons.batteryAlert),
+            const SizedBox(width: 16),
+            Expanded(
+              child: SettingHelpTitle(
+                title: l10n.aruLowBatteryStop,
+                helpBody: l10n.aruLowBatteryHint,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text('$lowBatteryStop%'),
+          ],
+        ),
         Slider(
           value: lowBatteryStop.toDouble(),
           min: 0,
@@ -1381,7 +1453,20 @@ class _ScheduleStep extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${l10n.aruLowBatteryResume}: $effectiveResume%'),
+                  Row(
+                    children: [
+                      const Icon(AppIcons.batteryChargingFull),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SettingHelpTitle(
+                          title: l10n.aruLowBatteryResume,
+                          helpBody: l10n.aruLowBatteryHint,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('$effectiveResume%'),
+                    ],
+                  ),
                   Slider(
                     value: effectiveResume.toDouble(),
                     min: AruDefaults.minLowBatteryResumePercent.toDouble(),
@@ -1410,7 +1495,10 @@ class _ScheduleStep extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(AppIcons.scienceRounded),
-          title: Text(l10n.aruOptionalTestCycle),
+          title: SettingHelpTitle(
+            title: l10n.aruOptionalTestCycle,
+            helpBody: l10n.aruTestRunReadyHint,
+          ),
           value: testCycleEnabled,
           onChanged: (value) {
             HapticFeedback.selectionClick();
@@ -1423,7 +1511,10 @@ class _ScheduleStep extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           secondary: const Icon(AppIcons.libraryBooks),
-          title: Text(l10n.aruSessionGroupingEach),
+          title: SettingHelpTitle(
+            title: l10n.aruSessionGroupingEach,
+            helpBody: l10n.setupHelpAruSessionGrouping,
+          ),
           subtitle: Text(
             eachCycleIsSession
                 ? l10n.aruSessionGroupingEachDesc
@@ -1445,12 +1536,16 @@ class _ScheduleStep extends ConsumerWidget {
 class _DurationSliderControl extends StatelessWidget {
   const _DurationSliderControl({
     required this.label,
+    required this.helpBody,
+    required this.icon,
     required this.value,
     required this.options,
     required this.onChanged,
   });
 
   final String label;
+  final String helpBody;
+  final IconData icon;
   final Duration value;
   final List<Duration> options;
   final ValueChanged<Duration> onChanged;
@@ -1467,7 +1562,15 @@ class _DurationSliderControl extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+              Icon(icon),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: label,
+                  helpBody: helpBody,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
               Text(
                 _formatDuration(options[index]),
                 style: theme.textTheme.bodyMedium?.copyWith(

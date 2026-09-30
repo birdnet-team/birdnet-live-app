@@ -710,8 +710,9 @@ class _FileStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.fileAnalysisPickTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisPickTitle,
+            helpBody: l10n.fileAnalysisPickSubtitle,
             style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -942,8 +943,12 @@ class _LocationStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.fileAnalysisLocationTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisLocationTitle,
+            helpBody:
+                choice == _LocationChoice.manual
+                    ? l10n.settingsHelpManualCoordinates
+                    : l10n.fileAnalysisLocationSubtitle,
             style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -1072,15 +1077,16 @@ class _LocationStep extends StatelessWidget {
                   onMapPick(result.latitude, result.longitude);
                 }
               },
-              icon: const Icon(AppIcons.map, size: 18),
+              icon: const Icon(AppIcons.mapSheet, size: 18),
               label: Text(l10n.fileAnalysisPickOnMap),
             ),
           ],
 
           // ── Recording date (optional) ─────────────────────
           const SizedBox(height: 24),
-          Text(
-            l10n.fileAnalysisDateTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisDateTitle,
+            helpBody: l10n.fileAnalysisDateSubtitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -1210,6 +1216,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Window duration ──────────────────────────────────
           _ParamTile(
             title: l10n.settingsWindowDuration,
+            helpBody: l10n.settingsHelpWindowDuration,
+            icon: AppIcons.timerOutlined,
             value: '${windowDuration}s',
             child: Slider(
               value: effectiveWindowDurationIndex.toDouble(),
@@ -1226,6 +1234,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Overlap ──────────────────────────────────────────
           _ParamTile(
             title: l10n.fileAnalysisOverlap,
+            helpBody: l10n.setupHelpFileOverlap,
+            icon: AppIcons.swapHoriz,
             value: '${(overlap * 100).round()}%',
             child: Slider(
               value: overlap,
@@ -1239,6 +1249,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Sensitivity ──────────────────────────────────────
           _ParamTile(
             title: l10n.settingsSensitivity,
+            helpBody: l10n.settingsHelpSensitivity,
+            icon: AppIcons.hearing,
             value: sensitivity.toStringAsFixed(1),
             child: Slider(
               value: sensitivity,
@@ -1252,6 +1264,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Confidence threshold ─────────────────────────────
           _ParamTile(
             title: l10n.settingsConfidenceThreshold,
+            helpBody: l10n.settingsHelpConfidenceThreshold,
+            icon: AppIcons.verifiedRounded,
             value: '$confidenceThreshold%',
             child: Slider(
               value: confidenceThreshold.toDouble(),
@@ -1265,6 +1279,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Species filter mode ──────────────────────────────
           _ParamTile(
             title: l10n.settingsSpeciesFilter,
+            helpBody: l10n.settingsHelpSpeciesFilter,
+            icon: AppIcons.filterAltRounded,
             value: '',
             child: DropdownButton<String>(
               value: speciesFilterMode,
@@ -1301,11 +1317,15 @@ class _ParametersStep extends StatelessWidget {
 class _ParamTile extends StatelessWidget {
   const _ParamTile({
     required this.title,
+    required this.helpBody,
+    required this.icon,
     required this.value,
     required this.child,
   });
 
   final String title;
+  final String helpBody;
+  final IconData icon;
   final String value;
   final Widget child;
 
@@ -1319,14 +1339,19 @@ class _ParamTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+              Icon(icon),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: title,
+                  helpBody: helpBody,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               if (value.isNotEmpty) ...[
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(

@@ -864,6 +864,26 @@ void main() {
       expect(roundTripped.settings.windowDuration, 3);
     });
 
+    test('background stop reasons survive saving and reopening', () {
+      for (final reason in [
+        SessionStopReason.backgroundLimit,
+        SessionStopReason.backgrounded,
+      ]) {
+        final session = LiveSession(
+          id: reason.name,
+          startTime: DateTime(2026, 2, 28),
+          settings: testSettings,
+          stopReason: reason,
+          stopReasonValue:
+              reason == SessionStopReason.backgroundLimit ? 30 : null,
+        );
+
+        final restored = LiveSession.fromJson(session.toJson());
+        expect(restored.stopReason, reason);
+        expect(restored.stopReasonValue, session.stopReasonValue);
+      }
+    });
+
     test('toJson omits null fields', () {
       final session = LiveSession(
         id: 'test',

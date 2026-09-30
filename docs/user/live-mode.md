@@ -73,3 +73,7 @@ Recording is controlled in [Settings](settings.md).
 - **Off** disables recording.
 
 When you stop Live Mode, BirdNET Live saves the session and opens [Session Review](session-review.md).
+
+## Screen-off listening
+
+Live Mode normally pauses when you lock the screen or leave the app and resumes the same Session when you return. The first time this happens, a dialog offers limited background listening. In [Recording settings](settings.md), turn on **Continue with screen off** and choose a 15, 30, 60, or 120 minute maximum (30 minutes by default). The time limit applies to each period away from the app; reaching it ends the Session. On Android, a persistent notification shows that listening is active and offers Open and Stop actions. On Windows, Live Mode keeps listening while its window is minimized.

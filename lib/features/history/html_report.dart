@@ -1681,7 +1681,8 @@ String _buildOsmLinkHtml((double, double)? center) {
   if (center == null) return '';
   final lat = center.$1.toStringAsFixed(5);
   final lon = center.$2.toStringAsFixed(5);
-  final url = 'https://www.openstreetmap.org/?mlat=$lat&mlon=$lon#map=14/$lat/$lon';
+  final url =
+      'https://www.openstreetmap.org/?mlat=$lat&mlon=$lon#map=14/$lat/$lon';
   return '<a class="map-osm-link" href="${_esc(url)}" target="_blank" '
       'rel="noopener">View on OpenStreetMap &rarr;</a>';
 }
@@ -1737,6 +1738,10 @@ String _stopReasonLabel(SessionStopReason? reason) {
       return 'Manual stop';
     case SessionStopReason.maxDuration:
       return 'Max duration reached';
+    case SessionStopReason.backgroundLimit:
+      return 'Background time limit reached';
+    case SessionStopReason.backgrounded:
+      return 'App went to background';
     case SessionStopReason.lowBattery:
       return 'Low battery';
     case null:

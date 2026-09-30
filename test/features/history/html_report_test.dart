@@ -59,6 +59,20 @@ LiveSession _sessionWithDetections() {
 
 void main() {
   group('buildHtmlReport', () {
+    test('explains background stop reasons in the report', () {
+      final live =
+          _sessionWithDetections()
+            ..type = SessionType.live
+            ..stopReason = SessionStopReason.backgroundLimit;
+      final count =
+          _sessionWithDetections()
+            ..type = SessionType.pointCount
+            ..stopReason = SessionStopReason.backgrounded;
+
+      expect(buildHtmlReport(live), contains('Background time limit reached'));
+      expect(buildHtmlReport(count), contains('App went to background'));
+    });
+
     test('renders escaped fields, map section, and encoded clip names', () {
       final html = buildHtmlReport(
         _sessionWithDetections(),
@@ -249,7 +263,10 @@ void main() {
 
         // Plain anchor: must not depend on Leaflet or the tile service.
         expect(html, contains('class="map-osm-link"'));
-        expect(html, contains('openstreetmap.org/?mlat=50.12340&amp;mlon=8.56780'));
+        expect(
+          html,
+          contains('openstreetmap.org/?mlat=50.12340&amp;mlon=8.56780'),
+        );
         expect(html, contains('id="map-notice"'));
         // Tile requests are made identical across browsers.
         expect(html, contains("referrerPolicy: 'no-referrer'"));

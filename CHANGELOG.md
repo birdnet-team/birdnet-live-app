@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Live Mode can keep listening with the screen off or while another app is open for a selectable 15–120 minute interval; a one-time return dialog explains the option. Point Count setup now makes its default background behavior explicit and can end a count early when the option is off; on Windows, a minimized window never pauses either mode.
+- Setup controls in Point Count, Survey, ARU, and File Analysis now have matching help buttons and consistent icons for shared settings; the user guide reflects the same icons.
+- Point Count setup now offers Full, Clips, and Off recording choices independently of Live Mode. Full is the default; Clips use Live Mode's clip context and keep every detection clip.
+- Export metadata now includes separate readable `device` and `os` fields without a device ID.
+
+### Fixed
+
+- The Session Library back arrow and system back action now return directly to the main menu, even after starting several sessions from the library.
+- Ending a Point Count or Live Mode Session while returning from the background now keeps the screen open until saving finishes, refreshes the Session Library, and completes background notification stops reliably.
+- The Russian Stop label on the Survey screen and in Survey, ARU, Live Mode, and Point Count notifications now uses the correct imperative, “Остановить”.
+- Live Mode and Point Count Sessions now record their clip context, so Raven and CSV exports place detections at the right offset within each clip.
+- Raven selection tables now use cumulative clip-sequence times, omit detections without exported clips, always report Survey Time in UTC, and keep Raven’s default columns first. Document-only Raven clip exports reference the original audio filenames (#229).
+
 ## [1.1.3] - 2026-09-10
+
+### Changed
+
+- Species search now checks only scientific names and common names in the selected species language, making results much faster. Exact matches come first alphabetically; all other matches sort by likelihood at the current location.
+- Session Review now uses detection score to break species count ties and sorts detections within each species by score when count sorting is selected.
+- Heard and Seen now both start unchecked when manually adding a detection. Replacing a detection still preserves its existing Heard and Seen values.
 
 ### Fixed
 

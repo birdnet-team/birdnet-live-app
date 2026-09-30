@@ -181,6 +181,8 @@ List<_SpeciesGroup> _orderSessionReviewSpeciesGroups({
       sorted.sort((a, b) {
         final c = b.totalCount.compareTo(a.totalCount);
         if (c != 0) return c;
+        final confidence = b.bestConfidence.compareTo(a.bestConfidence);
+        if (confidence != 0) return confidence;
         return localizedCommonName(
           a,
         ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
@@ -215,17 +217,25 @@ _SpeciesGroup _orderSessionReviewSpeciesGroupClusters({
   required SpeciesSortMode sortMode,
   required bool Function(DetectionRecord detection) hasPlayableClip,
 }) {
-  if (sortMode != SpeciesSortMode.confidence) return group;
-  final clusters = List<_DetectionCluster>.of(group.clusters)..sort(
-    (a, b) => compareSessionReviewConfidenceSortEntries(
-      aHasAudioClip: a.records.any(hasPlayableClip),
-      aConfidence: a.bestConfidence,
-      aTimestamp: a.firstTimestamp,
-      bHasAudioClip: b.records.any(hasPlayableClip),
-      bConfidence: b.bestConfidence,
-      bTimestamp: b.firstTimestamp,
-    ),
-  );
+  if (sortMode != SpeciesSortMode.confidence &&
+      sortMode != SpeciesSortMode.count) {
+    return group;
+  }
+  final clusters = List<_DetectionCluster>.of(group.clusters)..sort((a, b) {
+    if (sortMode == SpeciesSortMode.confidence) {
+      return compareSessionReviewConfidenceSortEntries(
+        aHasAudioClip: a.records.any(hasPlayableClip),
+        aConfidence: a.bestConfidence,
+        aTimestamp: a.firstTimestamp,
+        bHasAudioClip: b.records.any(hasPlayableClip),
+        bConfidence: b.bestConfidence,
+        bTimestamp: b.firstTimestamp,
+      );
+    }
+    final confidence = b.bestConfidence.compareTo(a.bestConfidence);
+    if (confidence != 0) return confidence;
+    return a.firstTimestamp.compareTo(b.firstTimestamp);
+  });
   return _SpeciesGroup(
     scientificName: group.scientificName,
     commonName: group.commonName,
