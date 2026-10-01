@@ -20,6 +20,8 @@
 // - `rare` — first-in-session AND geo-model score below the user threshold
 //   (treats absent species as score = 0, i.e. always rare here).
 // - `watchlist` — first-in-session AND species on the user's selected list.
+// - `lifer` — first-in-session AND species not on the user's imported eBird
+//   life list.
 //
 // All non-off modes require [firstInSession] (the caller tracks this in a
 // per-session `Set<String>`). The minConfidence floor applies to every mode.
@@ -35,7 +37,8 @@ enum AlertMode {
   firstInSession,
   firstEver,
   rare,
-  watchlist;
+  watchlist,
+  lifer;
 
   /// Stable enum index used for persistence. Adding a new mode must append
   /// to the end so existing prefs continue to point at the right entry.
@@ -50,7 +53,7 @@ enum AlertMode {
 }
 
 /// Why an alert was raised. Drives the notification body string and icon.
-enum AlertReason { firstInSession, firstEver, rare, watchlist }
+enum AlertReason { firstInSession, firstEver, rare, watchlist, lifer }
 
 /// One species-alert candidate produced by [SurveyAlertEngine.evaluate].
 class AlertCandidate {
@@ -98,6 +101,7 @@ class SurveyAlertEngine {
     this.rareThreshold = 0.05,
     this.watchlist = const <String>{},
     this.geoScores = const <String, double>{},
+    this.lifeList = const <String>{},
   });
 
   final AlertMode mode;
@@ -117,6 +121,11 @@ class SurveyAlertEngine {
   /// Set of scientific names on the user's selected watchlist. Empty when
   /// no list is selected (in which case [AlertMode.watchlist] never fires).
   final Set<String> watchlist;
+
+  /// Scientific names on the user's imported eBird life list. Empty when
+  /// nothing has been imported (in which case [AlertMode.lifer] never
+  /// fires).
+  final Set<String> lifeList;
 
   /// Geo-model probability map snapshot for the current location/week.
   /// Maps scientific name → score in `[0, 1]`.
@@ -154,6 +163,9 @@ class SurveyAlertEngine {
       case AlertMode.watchlist:
         if (!watchlist.contains(name)) return null;
         return _build(d, AlertReason.watchlist);
+      case AlertMode.lifer:
+        if (lifeList.isEmpty || lifeList.contains(name)) return null;
+        return _build(d, AlertReason.lifer);
     }
   }
 

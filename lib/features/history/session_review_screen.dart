@@ -81,6 +81,7 @@ import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../../shared/widgets/detection_evidence_badge.dart';
 import '../../shared/widgets/stat_chip.dart';
+import '../ebird/ebird_life_list.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../live/live_providers.dart';

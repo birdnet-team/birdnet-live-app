@@ -2811,6 +2811,14 @@
     "description": "Metadata for surveyAlertModeWatchlistDescription"
 
   },
+  "surveyAlertModeLifer": "Lifer",
+  "@surveyAlertModeLifer": {
+    "description": "Alert mode: notify when a species isn't on the user's imported eBird life list"
+  },
+  "surveyAlertModeLiferDescription": "Alert when a species isn't on your imported eBird life list.",
+  "@surveyAlertModeLiferDescription": {
+    "description": "Metadata for surveyAlertModeLifer"
+  },
   "surveyAlertRareThresholdLabel": "Rarity threshold",
   "@surveyAlertRareThresholdLabel": {
 
@@ -2869,6 +2877,12 @@
   "@surveyAlertWatchlistRequired": {
 
     "description": "Metadata for surveyAlertWatchlistRequired"
+
+  },
+  "surveyAlertLiferRequired": "Import your eBird life list in Settings to continue.",
+  "@surveyAlertLiferRequired": {
+
+    "description": "Metadata for surveyAlertLiferRequired"
 
   },
   "surveyAlertCreateListButton": "New watchlist",
@@ -3096,6 +3110,10 @@
 
     "description": "Metadata for surveyAlertBodyWatchlist"
 
+  },
+  "surveyAlertBodyLifer": "New for your life list",
+  "@surveyAlertBodyLifer": {
+    "description": "Notification body for a lifer alert (species not on the imported eBird life list)"
   },
   "surveyAlertSummaryTitle": "{count} more new species",
   "@surveyAlertSummaryTitle": {
@@ -3750,6 +3768,48 @@
   "settingsExportAppMetadata": "Include app metadata",
   "@settingsExportAppMetadata": {
     "description": "Checkbox: bundle the BirdNET Live metadata side-file inside the export ZIP"
+  },
+  "ebirdLifeListTitle": "eBird Life List",
+  "@ebirdLifeListTitle": {
+    "description": "Settings section header for importing an eBird life list"
+  },
+  "ebirdLifeListDescription": "Import your eBird life list to highlight lifers.",
+  "@ebirdLifeListDescription": {
+    "description": "Settings section subtitle"
+  },
+  "ebirdLifeListImportButton": "Import Life List (CSV)",
+  "@ebirdLifeListImportButton": {
+    "description": "Button to pick and import an eBird life list CSV file"
+  },
+  "ebirdLifeListGetListLink": "Download your life list from eBird.org",
+  "@ebirdLifeListGetListLink": {
+    "description": "Link to the eBird life list CSV export URL"
+  },
+  "ebirdLifeListSpeciesCount": "{count} species imported",
+  "@ebirdLifeListSpeciesCount": {
+    "description": "Shows how many species are on the imported life list",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ebirdLifeListImportedOn": "Last updated {date}",
+  "@ebirdLifeListImportedOn": {
+    "description": "Shows when the life list was last imported",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ebirdLifeListImportError": "Couldn't find a \"Scientific Name\" column — is this an eBird life list CSV?",
+  "@ebirdLifeListImportError": {
+    "description": "Error shown when the picked file doesn't look like an eBird life list export"
+  },
+  "ebirdLifeListBadgeTooltip": "Not on your eBird life list",
+  "@ebirdLifeListBadgeTooltip": {
+    "description": "Tooltip for the lifer badge shown on detections not on the imported eBird life list"
   },
   "settingsPrivacy": "Privacy",
   "@settingsPrivacy": {
