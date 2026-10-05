@@ -14,7 +14,7 @@ Point Count setup uses four steps.
 
 Choose:
 
-- one of the available duration chips
+- one of the available duration chips: 3, 5, 10, 15, 20, 25, or 30 minutes
 - whether the count continues with the screen off (on by default)
 - current GPS with :material-crosshairs-gps:
 - manual coordinates with :material-map-marker-plus:

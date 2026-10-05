@@ -376,6 +376,6 @@ Use this before handing a device to another observer, retiring a field phone, or
 
 Some parameters are configured inside their own setup screens rather than in the shared Settings screen.
 
-- [Point Count Mode](point-count-mode.md) has its own duration and location setup.
+- [Point Count Mode](point-count-mode.md) has its own duration and location setup. Choose 3, 5, 10, 15, 20, 25, or 30 minutes to match your counting protocol; the last selection is remembered, with 5 minutes as the default.
 - [Survey Mode](survey-mode.md) has its own survey parameters screen.
 - [File Analysis](file-analysis.md) has its own analysis-parameter step.

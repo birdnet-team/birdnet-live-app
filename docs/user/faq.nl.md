@@ -35,7 +35,7 @@ A: Ja. Open Bestandsanalyse vanaf het startscherm, kies een audiobestand, stel d
 ## Point Count
 
 **V: Wat is de Point Count-modus?**
-A: Een telmodus op tijd voor formele punttellingen van vogels. Je stelt een vaste duur in (3–20 minuten) en een locatie; de app draait dan doorlopend en stopt automatisch wanneer de klok op nul staat.
+A: Een telmodus op tijd voor formele punttellingen van vogels. Je stelt een vaste duur in (3–30 minuten) en een locatie; de app draait dan doorlopend en stopt automatisch wanneer de klok op nul staat.
 
 **V: Kan ik een punttelling pauzeren?**
 A: Nee. Om aan het protocol te voldoen moet er ononderbroken worden opgenomen. Je kunt een telling wel vroegtijdig beëindigen met de stopknop.

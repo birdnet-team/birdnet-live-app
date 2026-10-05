@@ -35,7 +35,7 @@ R: Sim. Abra Análise de Arquivo na tela inicial, escolha um arquivo de áudio, 
 ## Contagem de pontos
 
 **P: O que é o modo de contagem de pontos?**
-R: Um modo de levantamento cronometrado para observações formais de contagem de pontos de aves. Você define uma duração fixa (3 a 20 minutos) e um local, então o aplicativo é executado continuamente e para automaticamente quando o cronômetro chega a zero.
+R: Um modo de levantamento cronometrado para observações formais de contagem de pontos de aves. Você define uma duração fixa (3 a 30 minutos) e um local, então o aplicativo é executado continuamente e para automaticamente quando o cronômetro chega a zero.
 
 **P: Posso pausar uma contagem de pontos?**
 R: Não. A conformidade com o protocolo exige gravação ininterrupta. Você pode terminar mais cedo através do botão Parar.

@@ -35,7 +35,7 @@ A: Ja. Öffnen Sie die Dateianalyse auf dem Startbildschirm, wählen Sie eine Au
 ## Point Count
 
 **F: Was ist der Point-Count-Modus?**
-A: Ein zeitgesteuerter Survey-Modus für formelle Punkt-Stopp-Zählungen von Vögeln. Sie legen eine feste Dauer (3–20 Minuten) und einen Standort fest; die App läuft dann kontinuierlich und stoppt automatisch, sobald der Timer null erreicht.
+A: Ein zeitgesteuerter Survey-Modus für formelle Punkt-Stopp-Zählungen von Vögeln. Sie legen eine feste Dauer (3–30 Minuten) und einen Standort fest; die App läuft dann kontinuierlich und stoppt automatisch, sobald der Timer null erreicht.
 
 **F: Kann ich einen Point Count pausieren?**
 A: Nein. Die Einhaltung des Protokolls erfordert eine unterbrechungsfreie Aufnahme. Sie können eine Zählung jedoch über die Stopp-Schaltfläche vorzeitig beenden.

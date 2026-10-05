@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Point Count duration selection now includes 25 and 30 minutes.
 - GPS heights now follow session and detection coordinates into saved metadata and exports: CSV and Raven gain one Altitude (m) column, while JSON and GPX also carry vertical accuracy, reference surface, and fix time. Detections added in Survey review take a position interpolated along the track.
 - Live Mode can keep listening with the screen off or while another app is open for a selectable 15–120 minute interval; a one-time return dialog explains the option. Point Count setup now makes its default background behavior explicit and can end a count early when the option is off; on Windows, a minimized window never pauses either mode.
 - Setup controls in Point Count, Survey, ARU, and File Analysis now have matching help buttons and consistent icons for shared settings; the user guide reflects the same icons.
