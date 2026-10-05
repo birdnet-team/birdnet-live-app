@@ -4,7 +4,7 @@
 //
 // A four-step setup wizard following standard point-count protocol:
 //
-//   1. **Duration & Context** — Select count duration (3–20 min), choose
+//   1. **Duration & Context** — Select count duration (3–30 min), choose
 //      location (GPS / Manual with map picker / Skip), and display date.
 //   2. **Inference Parameters** — Tweak window duration, inference rate,
 //      confidence threshold, and species filter mode for this session.
@@ -58,7 +58,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   static const _totalSteps = 4;
 
   /// Available durations in minutes.
-  static const _durations = [3, 5, 10, 15, 20];
+  static const _durations = [3, 5, 10, 15, 20, 25, 30];
 
   // Auto-retry GPS until a fix is acquired or we give up.
   static const _maxGpsAttempts = 5;

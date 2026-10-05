@@ -35,7 +35,7 @@ R : Oui. Ouvrez File Analysis depuis l'écran d'accueil, choisissez un fichier a
 ## Point Count
 
 **Q : Qu'est-ce que le mode comptage de points ?**
-R : Un mode chronométré pour les observations formelles de points d'écoute des oiseaux. Vous définissez une durée fixe (3 à 20 minutes) et un emplacement, puis l'application s'exécute en continu et s'arrête automatiquement lorsque la minuterie atteint zéro.
+R : Un mode chronométré pour les observations formelles de points d'écoute des oiseaux. Vous définissez une durée fixe (3 à 30 minutes) et un emplacement, puis l'application s'exécute en continu et s'arrête automatiquement lorsque la minuterie atteint zéro.
 
 **Q : Puis-je suspendre un décompte de points ?**
 R : Non. La conformité au protocole nécessite un enregistrement ininterrompu. Vous pouvez terminer plus tôt via le bouton d'arrêt.
