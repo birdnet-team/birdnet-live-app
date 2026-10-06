@@ -44,6 +44,7 @@ import 'export_device_info.dart';
 import 'html_report.dart';
 import 'services/audio_share_extension.dart';
 import 'services/detection_audio_window.dart';
+import 'services/export_zip_writer.dart';
 import 'services/session_audio_trim.dart';
 
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
@@ -1259,47 +1260,39 @@ Future<String?> buildSessionExport(
   // ── Bundle into ZIP ───────────────────────────────────────────────
   if (mustZip) {
     final archive = Archive();
+    final archiveFiles = <String, String>{};
 
-    Future<Uint8List> audioBytes(String path) async {
+    Future<void> addAudio(String name, String path) async {
       final sourceExt = await sourceAudioExtensionForFile(File(path));
       if (shareAudioAsWav && sourceExt == '.flac') {
         final bytes = await _flacToWavBytes(path);
         if (bytes == null) {
           throw FormatException('Could not convert FLAC to WAV: $path');
         }
-        return bytes;
+        archive.addFile(ArchiveFile(name, bytes.length, bytes));
+      } else {
+        archiveFiles[name] = path;
       }
-      return File(path).readAsBytes();
     }
 
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
         // A materialized trim is already in the requested container.
-        final bytes = trimmedRecording != null
-            ? await trimmedRecording.file.readAsBytes()
-            : await audioBytes(fullRecordingPath);
-        archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
         if (trimmedRecording != null) {
-          // The bytes are in the archive now; don't leave a second copy of
-          // the recording sitting in the temp directory.
-          try {
-            await trimmedRecording.file.delete();
-          } catch (_) {
-            // Best-effort cleanup.
-          }
+          archiveFiles[audioFileName] = trimmedRecording.file.path;
+        } else {
+          await addAudio(audioFileName, fullRecordingPath);
         }
       } else {
         for (final entry in clipExportNames.entries) {
-          final bytes = await audioBytes(clipEntries[entry.key]!.path);
-          archive.addFile(ArchiveFile(entry.value, bytes.length, bytes));
+          await addAudio(entry.value, clipEntries[entry.key]!.path);
         }
       }
     }
 
     if (includeAudio && hasAruCycleAudio) {
       for (final entry in aruCycleAudioEntries.values) {
-        final bytes = await audioBytes(entry.file.path);
-        archive.addFile(ArchiveFile(entry.name, bytes.length, bytes));
+        await addAudio(entry.name, entry.file.path);
       }
     }
 
@@ -1323,14 +1316,7 @@ Future<String?> buildSessionExport(
       if (memoPath == null) continue;
       final memoFile = File(memoPath);
       if (!await memoFile.exists()) continue;
-      final memoBytes = await memoFile.readAsBytes();
-      archive.addFile(
-        ArchiveFile(
-          'memos/${p.basename(memoPath)}',
-          memoBytes.length,
-          memoBytes,
-        ),
-      );
+      archiveFiles['memos/${p.basename(memoPath)}'] = memoPath;
     }
 
     // Same treatment for session-level annotation memos.
@@ -1339,14 +1325,7 @@ Future<String?> buildSessionExport(
       if (memoPath == null) continue;
       final memoFile = File(memoPath);
       if (!await memoFile.exists()) continue;
-      final memoBytes = await memoFile.readAsBytes();
-      archive.addFile(
-        ArchiveFile(
-          'memos/${p.basename(memoPath)}',
-          memoBytes.length,
-          memoBytes,
-        ),
-      );
+      archiveFiles['memos/${p.basename(memoPath)}'] = memoPath;
     }
 
     // Always drop a metadata side-file when the caller provided one and
@@ -1411,7 +1390,6 @@ Future<String?> buildSessionExport(
       );
     }
 
-    final zipBytes = ZipEncoder().encode(archive);
     final zipDir = hasFullRecording
         ? p.dirname(fullRecordingPath)
         : (hasClips
@@ -1420,7 +1398,22 @@ Future<String?> buildSessionExport(
                     ? p.dirname(aruCycleAudioEntries.values.first.file.path)
                     : Directory.systemTemp.path));
     final zipPath = p.join(zipDir, '$prefix.zip');
-    await File(zipPath).writeAsBytes(zipBytes);
+    try {
+      await writeExportZip(
+        outputPath: zipPath,
+        files: archiveFiles,
+        contents: archive,
+      );
+    } finally {
+      if (trimmedRecording != null) {
+        // Keep the staged trim until the worker has finished reading it.
+        try {
+          await trimmedRecording.file.delete();
+        } catch (_) {
+          // Best-effort cleanup.
+        }
+      }
+    }
 
     return zipPath;
   } else {
@@ -1647,7 +1640,7 @@ Future<String?> buildMultiSessionExport(
 }) async {
   if (sessions.isEmpty) return null;
 
-  final archive = Archive();
+  final archiveFiles = <String, String>{};
   final timestamp = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
   final bulkPrefix = 'BirdNET_Live_Bulk_Export_$timestamp';
 
@@ -1692,17 +1685,19 @@ Future<String?> buildMultiSessionExport(
 
     final file = File(path);
     if (file.existsSync()) {
-      final bytes = await file.readAsBytes();
       final filename = p.basename(path);
-      archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+      archiveFiles[filename] = path;
     }
   }
 
-  if (archive.isEmpty) return null;
+  if (archiveFiles.isEmpty) return null;
 
-  final zipBytes = ZipEncoder().encode(archive);
   final tempDir = Directory.systemTemp.path;
   final zipPath = p.join(tempDir, '$bulkPrefix.zip');
-  await File(zipPath).writeAsBytes(zipBytes);
+  await writeExportZip(
+    outputPath: zipPath,
+    files: archiveFiles,
+    contents: Archive(),
+  );
   return zipPath;
 }
