@@ -2,55 +2,67 @@
 
 Auf dieser Seite werden die wiederkehrenden Steuerelemente und Symbole erläutert, die in BirdNET Live verwendet werden. Die folgenden Beschriftungen entsprechen exakt den Steuerelementen, wie sie in der App erscheinen.
 
+## Modussymbole
+
+Diese Symbole haben dieselben Formen wie in der App. Hier übernehmen sie die Textfarbe; App-Farben hängen von Design, dynamischen Farben und hohem Kontrast ab.
+
+- :app-micRounded: **Live**
+- :app-locationOnRounded: **Point Count**
+- :app-routeRounded: **Survey**
+- :app-timerRounded: **ARU-Modus**
+- :app-audioFileRounded: **Dateianalyse**
+- :app-sdStorage: **Batch-Analyse** (Demnächst)
+
 ## Gemeinsame Navigationssteuerelemente
 
 | Steuerelement | Wo Sie es sehen | Was es tut |
 |---|---|---|
-| :material-tune: **Einstellungen** | Start-Fußzeile, Live, Point Count, Survey, Dateianalyse, Session-Übersicht | Öffnet die Einstellungen. In den Modus-Bildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
-| :material-magnify: **Erkunden** | Start-Fußzeile | Öffnet Erkunden. |
-| :material-music-box-multiple-outline: **Bibliothek** | Start-Fußzeile | Öffnet die Session-Bibliothek. |
-| :material-help-circle-outline: **Hilfe** | Start-Fußzeile, Erkunden-Kopfzeile, Survey-Dashboard, Session-Übersicht-Symbolleiste | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
-| :material-information-outline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder zusammenfassenden Kontext an. |
-| :material-arrow-left: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
-| :material-open-in-new: **Extern öffnen** | Über-Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, etwa das Online-Benutzerhandbuch. |
-| :material-hand-heart: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
+| :app-tuneRounded: **Einstellungen** | Start-Fußzeile, Live, Point Count, Survey, Dateianalyse, Session-Übersicht | Öffnet die Einstellungen. In den Modus-Bildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
+| :app-searchRounded: **Erkunden** | Start-Fußzeile | Öffnet Erkunden. |
+| :app-libraryMusic: **Bibliothek** | Start-Fußzeile | Öffnet die Session-Bibliothek. |
+| :app-helpOutlineRounded: **Hilfe** | Start-Fußzeile, Erkunden-Kopfzeile, Survey-Dashboard, Session-Übersicht-Symbolleiste | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
+| :app-infoOutline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder zusammenfassenden Kontext an. |
+| :app-arrowBackRounded: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
+| :app-openInNew: **Extern öffnen** | Über-Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, etwa das Online-Benutzerhandbuch. |
+| :app-arrowUpwardRounded: **Nach oben** | Hilfebildschirm | Kehrt zur Einführung und den Abschnittsverknüpfungen zurück. Erscheint nach dem Herunterscrollen. |
+| :app-volunteerActivism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
 
 ## Wettersymbole
 
 | Symbol | Bedeutung |
 |---|---|
-| :material-weather-sunny: **Klar** | Klarer Himmel. |
-| :material-weather-partly-cloudy: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klares oder teilweise bewölktes Wetter. |
-| :material-weather-cloudy: **Bedeckt** | Vollständige Bewölkung. |
-| :material-weather-fog: **Nebel** | Nebel oder gefrierender Nebel. |
-| :material-weather-partly-rainy: **Nieselregen** | Leichter Niederschlag. |
-| :material-weather-rainy: **Regen** | Regen oder Regenschauer. |
-| :material-weather-snowy: **Schnee** | Schnee oder Schneeschauer. |
-| :material-weather-lightning-rainy: **Gewitter** | Gewitterbedingungen. |
+| :app-wbSunny: **Klar** | Klarer Himmel. |
+| :app-partlyCloudyDay: **Teilweise bewölkt** | Sonne und Wolke für überwiegend klares oder teilweise bewölktes Wetter. |
+| :app-cloudy: **Bedeckt** | Vollständige Bewölkung. |
+| :app-foggy: **Nebel** | Nebel oder gefrierender Nebel. |
+| :app-rainyLight: **Nieselregen** | Leichter Niederschlag. |
+| :app-rainy: **Regen** | Regen oder Regenschauer. |
+| :app-weatherSnowy: **Schnee** | Schnee oder Schneeschauer. |
+| :app-thunderstorm: **Gewitter** | Gewitterbedingungen. |
 
 ## Start-, Stopp- und Session-Steuerung
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :material-microphone: **Mic** | Live-Hören starten. |
-| :material-stop: **Stop** | Eine aktive Aufnahme, einen Point Count oder einen Survey stoppen. |
-| :material-play: **Play** | Einen konfigurierten Setup-Ablauf starten oder aus einem angehaltenen Bereitschaftszustand fortsetzen. |
-| :material-close: **Schließen / Abbrechen** | Eine aktive Dateianalyse abbrechen. |
-| :material-timer: **Timer** | Dauer oder verbleibende Zeit. |
-| :material-alert-circle-outline: **Fehler** | Modell- oder Verarbeitungsfehler. |
+| :app-micRounded: **Mic** | Live-Hören starten. |
+| :app-stopRounded: **Stop** | Eine aktive Aufnahme, einen Point Count oder einen Survey stoppen. |
+| :app-playArrowRounded: **Play** | Einen konfigurierten Setup-Ablauf starten oder aus einem angehaltenen Bereitschaftszustand fortsetzen. |
+| :app-close: **Schließen** / :app-stop: **Abbrechen** | Eine aktive Dateianalyse über die Kopfzeile oder die Fortschrittsanzeige abbrechen. |
+| :app-timerOutlined: **Timer** | Dauer oder verbleibende Zeit. |
+| :app-errorOutline: **Fehler** | Modell- oder Verarbeitungsfehler. |
 
 ## Orts- und Zeitsteuerung
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :material-crosshairs-gps: **Aktueller Standort** | Die aktuelle GPS-Position des Geräts verwenden. |
-| :material-map-marker-plus: **Manuelle Koordinaten** | Koordinaten manuell eingeben. |
-| :material-map-marker-off: **Kein Standort** | Standort überspringen oder anzeigen, dass kein Standort verfügbar ist. |
-| :material-map-marker: **Standort vorhanden** | Einen Standort bestätigen, Koordinaten anzeigen oder eine kartierte Session kennzeichnen. |
-| :material-refresh: **Aktualisieren** | Den aktuellen Standort erneut auslesen oder eine Vorhersageliste aktualisieren. |
-| :material-map: **Kartenauswahl** | Koordinaten aus der Kartenauswahl auswählen. |
-| :material-calendar: **Datum** | Ein Datum festlegen oder anzeigen. |
-| :material-close: **Löschen** | Ein ausgewähltes Datum entfernen. |
+| :app-myLocation: **Aktueller Standort** | Die aktuelle GPS-Position des Geräts verwenden. |
+| :app-editLocationAlt: **Manuelle Koordinaten** | Koordinaten manuell eingeben. |
+| :app-locationOff: **Kein Standort** | Standort überspringen oder anzeigen, dass kein Standort verfügbar ist. |
+| :app-locationOn: **Standort vorhanden** | Einen Standort bestätigen, Koordinaten anzeigen oder eine kartierte Session kennzeichnen. |
+| :app-refresh: **Aktualisieren** | Den aktuellen Standort erneut auslesen oder eine Vorhersageliste aktualisieren. |
+| :app-mapSheet: **Kartenauswahl** | Koordinaten aus der Kartenauswahl auswählen. |
+| :app-calendarToday: **Datum** | Ein Datum festlegen oder anzeigen. |
+| :app-clear: **Löschen** | Ein ausgewähltes Datum entfernen. |
 
 ## Erkunden- und Artensymbole
 
@@ -66,14 +78,14 @@ Diese Steuerelemente erscheinen in jeder Erkennungszeile der App – in der Arte
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :material-check: **Bestätigen** | Ein-Tipp-Häkchen, das eine Erkennung als visuell oder akustisch überprüft markiert. Bestätigte Erkennungen erhalten ein kleines grünes Häkchen an Cluster-Zeilen und Kartenmarkierungen. |
-| :material-dots-vertical: **Mehr** | Öffnet das Überlaufmenü je Erkennung mit **Erkennung teilen**, **Art ersetzen**, **Erkennung löschen** und **Art löschen**. |
-| :material-share-variant: **Erkennung teilen** | Teilt eine einzelne Erkennung über das Teilen-Menü der Plattform und hängt nach Möglichkeit den Audioclip an – einschließlich eines Ausschnitts der laufenden Aufnahme während eines Live-Survey. |
-| :material-swap-horizontal: **Art ersetzen** | Eine andere Art für diese Erkennung auswählen. Lässt sich auch durch Wischen einer Übersichtszeile nach links öffnen. |
-| :material-delete-outline: **Erkennung löschen** | Entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen. Lässt sich auch durch Wischen einer Übersichtszeile nach rechts auslösen. |
-| :material-delete-sweep-outline: **Art löschen** | Entfernt jede Erkennung dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. |
-| :material-ear-hearing: **Gehört** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gehört. Wird über das Kontrollkästchen im Bestätigungsfenster nach der Artenauswahl gesetzt. |
-| :material-eye: **Gesehen** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gesehen. Beide Symbole zusammen bedeuten gehört *und* gesehen. |
+| :app-checkCircleOutline: **Bestätigen** | Ein-Tipp-Häkchen, das eine Erkennung als visuell oder akustisch überprüft markiert. Bestätigte Erkennungen erhalten ein kleines grünes Häkchen an Cluster-Zeilen und Kartenmarkierungen. |
+| :app-moreVert: **Mehr** | Öffnet das Überlaufmenü je Erkennung mit **Erkennung teilen**, **Art ersetzen**, **Erkennung löschen** und **Art löschen**. |
+| :app-share: **Erkennung teilen** | Teilt eine einzelne Erkennung über das Teilen-Menü der Plattform und hängt nach Möglichkeit den Audioclip an – einschließlich eines Ausschnitts der laufenden Aufnahme während eines Live-Survey. |
+| :app-swapHoriz: **Art ersetzen** | Eine andere Art für diese Erkennung auswählen. Lässt sich auch durch Wischen einer Übersichtszeile nach links öffnen. |
+| :app-deleteOutline: **Erkennung löschen** | Entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen. Lässt sich auch durch Wischen einer Übersichtszeile nach rechts auslösen. |
+| :app-deleteSweep: **Art löschen** | Entfernt jede Erkennung dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. |
+| :app-hearing: **Gehört** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gehört. Wird über das Kontrollkästchen im Bestätigungsfenster nach der Artenauswahl gesetzt. |
+| :app-visibility: **Gesehen** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gesehen. Beide Symbole zusammen bedeuten gehört *und* gesehen. |
 
 ## Session-Übersicht-Symbolleiste
 
@@ -81,19 +93,19 @@ Diese Steuerelemente werden auf dem Bildschirm der Session-Übersicht verwendet.
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :material-plus-circle-outline: **Hinzufügen** | Inhalte hinzufügen, etwa eine Art oder eine Anmerkung. |
-| :material-undo-variant: **Rückgängig** / :material-redo-variant: **Wiederherstellen** | Durch die Bearbeitungsschritte der Übersicht zurück- oder vorgehen. |
-| :material-content-cut: **Trimmen** | In den Trimm-Modus wechseln oder anzeigen, dass der Trimm-Modus aktiv ist. |
-| :material-content-save: **Speichern** | Änderungen der Übersicht speichern. |
-| :material-share-variant: **Teilen** | Die Session exportieren oder teilen. |
-| :material-delete-outline: **Löschen** | Die Session verwerfen. |
-| :material-play: **Fortsetzen** | Einen nicht abgeschlossenen Survey aus der Session-Übersicht fortsetzen, sofern diese Aktion verfügbar ist. |
+| :app-addCircleOutline: **Hinzufügen** | Inhalte hinzufügen, etwa eine Art oder eine Anmerkung. |
+| :app-undo: **Rückgängig** / :app-redo: **Wiederherstellen** | Durch die Bearbeitungsschritte der Übersicht zurück- oder vorgehen. |
+| :app-contentCut: **Trimmen** | In den Trimm-Modus wechseln oder anzeigen, dass der Trimm-Modus aktiv ist. |
+| :app-save: **Speichern** | Änderungen der Übersicht speichern. |
+| :app-share: **Teilen** | Die Session exportieren oder teilen. |
+| :app-deleteOutline: **Löschen** | Die Session verwerfen. |
+| :app-playArrowRounded: **Fortsetzen** | Einen nicht abgeschlossenen Survey aus der Session-Übersicht fortsetzen, sofern diese Aktion verfügbar ist. |
 
 ## Bildschirmspezifische Statusleisten
 
 ### Live-Modus
 
-Die Live-Infoleiste verwendet :material-information-outline: gefolgt von kompakten Beschriftungen wie:
+Die Live-Infoleiste verwendet :app-infoOutline: gefolgt von kompakten Beschriftungen wie:
 
 - `now` – derzeit in der Live-Liste sichtbare Erkennungen
 - `spp` – Anzahl der eindeutigen Arten
@@ -102,16 +114,16 @@ Die Live-Infoleiste verwendet :material-information-outline: gefolgt von kompakt
 
 ### Point Count
 
-Die Point-Count-Timerleiste kombiniert :material-stop: **Stop**, :material-timer: **Timer** und einen Fortschrittsbalken, um die verbleibende zeitgesteuerte Session anzuzeigen.
+Die Point-Count-Timerleiste kombiniert :app-stopRounded: **Stop**, :app-timerOutlined: **Timer** und einen Fortschrittsbalken, um die verbleibende zeitgesteuerte Session anzuzeigen.
 
 ### Survey
 
 Das Survey-Dashboard verwendet:
 
-- :material-map-outline: **Karte** – Tab „Live-Karte“
-- :material-equalizer: **Spektrogramm** – Spektrogramm-Tab
-- :material-chart-bar: **Zusammenfassung** – Zusammenfassungs-Tab
-- :material-chart-bar: Statistikbeschriftungen in der Zusammenfassungsansicht des Survey
+- :app-map: **Karte** – Tab „Live-Karte“
+- :app-graphicEq: **Spektrogramm** – Spektrogramm-Tab
+- :app-summaryChart: **Zusammenfassung** – Zusammenfassungs-Tab
+- :app-summaryChart: Statistikbeschriftungen in der Zusammenfassungsansicht des Survey
 
 ## Im Zweifelsfall
 

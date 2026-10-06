@@ -4,7 +4,7 @@ El Modo Live es la forma más rápida de escuchar a través del micrófono del t
 
 ## Cómo abrirlo
 
-Desde la pantalla de Inicio, toca la tarjeta **Modo Live** con el icono :material-microphone:.
+Desde la pantalla de Inicio, toca la tarjeta **Modo Live** con el icono :app-micRounded:.
 
 ## Widget «Escucha rápida»
 
@@ -25,17 +25,17 @@ Escucha rápida nunca sustituye a otro modo en ejecución. Si se está ejecutand
 
 La barra superior contiene tres elementos:
 
-- :material-arrow-left: — salir del Modo Live
+- :app-arrowBackRounded: — salir del Modo Live
 - texto de estado central — `Inicializando…`, `Cargando modelo…`, `Listo`, `Identificando especies…`, `En pausa` o `Error`
-- :material-tune: — abre la vista de Ajustes específica de Live
+- :app-tuneRounded: — abre la vista de Ajustes específica de Live
 
 ## Botón de acción principal
 
 El gran botón circular de la parte inferior central cambia de estado:
 
-- :material-microphone: — empezar a escuchar
-- :material-stop: — detener la Session activa
-- :material-play: — reanudar desde un estado en pausa y listo
+- :app-mic: — empezar a escuchar
+- :app-stopRounded: — detener la Session activa
+- :app-playArrowRounded: — reanudar desde un estado en pausa y listo
 
 ## Lo que ves mientras escuchas
 
@@ -75,3 +75,7 @@ La grabación se controla en [Ajustes](settings.md).
 Cuando detienes el Modo Live, BirdNET Live guarda la Session y abre el [Resumen de la Session](session-review.md).
 
 Cuando el guardado automático de sesiones está activado, el Modo Live también guarda una Session parcial al inicio, cada 30 segundos y cuando la aplicación pasa a segundo plano. Tras un cierre inesperado o un corte de energía, la última copia guardada está disponible en la Biblioteca de sesiones. Pueden perderse los cambios posteriores a esa copia. Al desactivar el guardado automático también se desactivan estos guardados intermedios.
+
+## Escuchar con la pantalla apagada
+
+Live Mode normalmente se pausa al bloquear la pantalla o salir de la aplicación y reanuda la misma Session al volver. La primera vez, un diálogo ofrece escucha limitada en segundo plano. En los [ajustes de grabación](settings.md), activa **Continuar con la pantalla apagada** y elige un máximo de 15, 30, 60 o 120 minutos (30 de forma predeterminada). El límite se aplica a cada período fuera de la aplicación; alcanzarlo termina la Session. Android muestra una notificación persistente con Abrir y Detener. En Windows, Live Mode sigue escuchando con la ventana minimizada.

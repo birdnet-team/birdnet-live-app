@@ -40,18 +40,20 @@ BirdNET Live 支持 Android、iOS 和 Windows。
 
 ### 主要模式卡片
 
-- :material-microphone: **Live 模式**
-- :material-map-marker: **Point Count 模式**
-- :material-routes: **Survey 模式**
-- :material-file-music: **文件分析**
+- :app-micRounded: **Live 模式**
+- :app-locationOnRounded: **Point Count 模式**
+- :app-routeRounded: **Survey 模式**
+- :app-audioFileRounded: **文件分析**
+- :app-timerRounded: **ARU 模式**
+- :app-sdStorage: **批量分析** (敬请期待)
 
 ### 底部按钮
 
-- :material-tune: **设置**
-- :material-magnify: **探索**
-- :material-music-box-multiple-outline: **Session 库**
-- :material-help-circle-outline: **帮助**
-- :material-information-outline: **关于**
+- :app-tuneRounded: **设置**
+- :app-searchRounded: **探索**
+- :app-libraryMusic: **Session 库**
+- :app-helpOutlineRounded: **帮助**
+- :app-infoOutline: **关于**
 
 ## 会保存哪些内容
 

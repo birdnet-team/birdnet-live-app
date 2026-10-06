@@ -7,9 +7,10 @@ Režim ARU (Autonomous Recording Unit) je workflow pro plánovaná akustická na
 
 ## Aktuální postup nastavení
 
-- **Nasazení a zvuk**: 
+- **Podrobnosti a nastavení analýzy**:
     - **Metadata**: Zadejte název nasazení, ID ARU/stanice a jméno pozorovatele.
-    - **Poloha**: Zadejte souřadnice místa pomocí automatického zaměření GPS, manuálního zadání zeměpisné šířky a délky, nebo nastavení polohy přeskočte. Zeměpisná šířka a délka jsou vyžadovány, pokud používáte plánování vázané na polohu slunce.
+    - **Poloha**: Zadejte souřadnice místa pomocí automatického zaměření GPS, manuálního zadání zeměpisné šířky a délky, nebo nastavení polohy přeskočte. Zeměpisná šířka a délka jsou vyžadovány, pokud používáte plánování vázané na polohu slunce. Ikony: GPS :app-myLocation:, ruční souřadnice :app-editLocationAlt:, přeskočení polohy :app-locationOff: a výběr na mapě :app-mapSheet:.
+    - **Analýza**: Vyberte mikrofon, rychlost inference, práh spolehlivosti a citlivost.
     - **Formát nahrávání**: Zvolte mezi formáty FLAC (komprimovaný bezztrátový) a WAV (nekomprimovaný).
     - **Režim nahrávání**:
         - *Plný*: Nahrává celou dobu trvání každého aktivního cyklu.
@@ -23,6 +24,8 @@ Režim ARU (Autonomous Recording Unit) je workflow pro plánovaná akustická na
     - **Testovací běh**: Volitelný jednominutový testovací cyklus je ve výchozím nastavení povolen pro okamžité ověření vstupu mikrofonu a inference po spuštění, aniž by se započítával do limitu plánovaných cyklů.
     - **Seskupování relací**: Nakonfigurujte, zda se má každý cyklus ukládat jako samostatná Session (doporučeno pro rychlejší načítání a modulární prohlížení), nebo zda se mají všechny cykly sloučit do jediné vícesegmentové Session.
 - **Připraveno**: Zkontrolujte plán, odhadovanou spotřebu úložného prostoru a dielní omezení a poté spusťte nasazení.
+
+Ovládací prvky nastavení používají stejné ikony jako ostatní průvodci: :app-micRounded: mikrofon, :app-speedRounded: rychlost inference, :app-verifiedRounded: spolehlivost, :app-hearing: citlivost, :app-fiberManualRecordRounded: režim nahrávání, :app-timerOutlined: kontext klipu a délka cyklu, :app-filterAltRounded: vzorkování detekcí a :app-formatListNumberedRounded: limit klipů na druh. Interval opakování používá :app-repeatRounded:, ovládání nízkého stavu baterie :app-batteryAlert: a :app-batteryChargingFull:, zkušební běh a seskupování Session :app-scienceRounded: a :app-libraryBooks:. Klepnutím na tlačítko :app-helpOutline: vedle ovládacího prvku zobrazíte jeho vysvětlení.
 
 Při spuštění se okamžitě uloží `SessionType.aru` Session s metadaty plánu ARU. Nahrávací cykly se navíc ukládají každých 30 sekund, včetně cyklů bez detekcí. Po pádu aplikace nebo výpadku napájení se poslední uložené nasazení objeví v Knihovně Sessions jako ukončená Session; nahrávání se znovu nespustí. Data od posledního uložení mohou být ztracena.
 

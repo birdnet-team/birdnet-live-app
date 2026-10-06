@@ -7,9 +7,10 @@ Der ARU-Modus (Autonomous Recording Unit) ist der feste Standort-Workflow für g
 
 ## Aktueller Setup-Ablauf
 
-- **Aufstellung und Audio**: 
+- **Details und Analyseeinstellungen**:
     - **Metadaten**: Geben Sie einen Aufstellungsnamen, eine ARU-/Stations-ID und den Namen der beobachtenden Person ein.
-    - **Standort**: Geben Sie die Standortkoordinaten über eine automatische GPS-Erfassung, eine manuelle Eingabe von Breitengrad/Längengrad ein oder überspringen Sie die Standorteinrichtung. Breitengrad und Längengrad sind erforderlich, wenn Sie eine sonnenbezogene Zeitplanung verwenden.
+    - **Standort**: Geben Sie die Standortkoordinaten über eine automatische GPS-Erfassung, eine manuelle Eingabe von Breitengrad/Längengrad ein oder überspringen Sie die Standorteinrichtung. Breitengrad und Längengrad sind erforderlich, wenn Sie eine sonnenbezogene Zeitplanung verwenden. Symbole: GPS :app-myLocation:, manuelle Koordinaten :app-editLocationAlt:, Standort überspringen :app-locationOff: und Kartenauswahl :app-mapSheet:.
+    - **Analyse**: Wählen Sie Mikrofon, Inferenzrate, Konfidenzschwelle und Empfindlichkeit.
     - **Aufnahmeformat**: Wählen Sie zwischen den Formaten FLAC (komprimiert verlustfrei) und WAV (unkomprimiert).
     - **Aufnahmemodus**:
         - *Vollständig*: Zeichnet die gesamte Dauer jedes aktiven Zyklus auf.
@@ -23,6 +24,8 @@ Der ARU-Modus (Autonomous Recording Unit) ist der feste Standort-Workflow für g
     - **Testlauf**: Ein optionaler einminütiger Testzyklus ist standardmäßig aktiviert, um die Mikrofoneingabe und Inferenz sofort nach dem Start zu überprüfen, ohne auf das geplante Zykluslimit angerechnet zu werden.
     - **Session-Gruppierung**: Konfigurieren Sie, ob jeder Zyklus als separate Session gespeichert werden soll (empfohlen für schnellere Ladezeiten und modulare Betrachtung) oder ob alle Zyklen in einer einzigen, mehrteiligen Session zusammengefasst werden sollen.
 - **Bereit**: Überprüfen Sie den Zeitplan, den geschätzten Audiospeicherverbrauch und die Diel-Einschränkungen und starten Sie dann die Aufstellung.
+
+Die Einrichtungselemente verwenden dieselben Symbole wie die anderen Assistenten: :app-micRounded: Mikrofon, :app-speedRounded: Inferenzrate, :app-verifiedRounded: Konfidenz, :app-hearing: Empfindlichkeit, :app-fiberManualRecordRounded: Aufnahmemodus, :app-timerOutlined: Clip-Kontext und Zyklusdauer, :app-filterAltRounded: Detektions-Sampling und :app-formatListNumberedRounded: Clip-Limit pro Art. Das Wiederholungsintervall verwendet :app-repeatRounded:, die Akku-Schwellen :app-batteryAlert: und :app-batteryChargingFull:, Testlauf und Session-Gruppierung :app-scienceRounded: und :app-libraryBooks:. Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Element, um eine Erklärung zu erhalten.
 
 Beim Start wird sofort eine `SessionType.aru`-Session mit ARU-Zeitplanmetadaten gespeichert. Aufnahmezyklen werden außerdem alle 30 Sekunden gesichert, auch Zyklen ohne Detektionen. Nach einem Absturz oder Stromausfall erscheint die zuletzt gesicherte Aufstellung als beendete Session in der Session-Bibliothek; die Aufnahme wird nicht neu gestartet. Was seit der letzten Sicherung aufgenommen wurde, kann verloren gehen.
 

@@ -27,7 +27,7 @@ De spectrogramstrook boven de speler is interactief: tik om te zoeken, sleep met
 
 Soorten zijn gegroepeerd in uitklapbare rijen. Je kunt detecties per soort bekijken en tijdens het nakijken door de opname bewegen. Clusterrijen onder een uitgeklapte soort worden ingesprongen, zodat de kaart van de bovenliggende soort visueel onderscheiden blijft van de onderliggende rijen.
 
-Een zoekveld boven de lijst filtert soorten op Nederlandse of wetenschappelijke naam, zodat één specifieke vogel vinden in een Session met 100 soorten een paar toetsaanslagen kost in plaats van lang scrollen. De knop :material-sort: ernaast wijzigt de volgorde van de soorten:
+Een zoekveld boven de lijst filtert soorten op Nederlandse of wetenschappelijke naam, zodat één specifieke vogel vinden in een Session met 100 soorten een paar toetsaanslagen kost in plaats van lang scrollen. De knop :app-sort: ernaast wijzigt de volgorde van de soorten:
 
 - **Hoogste betrouwbaarheid** (standaard) — soorten met de hoogste betrouwbaarheid van één detectie eerst. Handig om de meest zekere determinaties als eerste te beoordelen. Klap je in deze modus een soort uit, dan verschijnen detecties met afspeelbare audiofragmenten vóór detecties zonder fragment, daarna op betrouwbaarheid.
 - **Meeste detecties** — soorten met het hoogste aantal detecties eerst. Handig om de dominante zangers te herkennen.
@@ -38,10 +38,10 @@ De gekozen sortering blijft behouden tussen Sessions.
 
 ### Een soort handmatig toevoegen
 
-De werkbalkknop :material-plus-circle-outline: opent de soortkiezer voor vogels die BirdNET heeft gemist. Een zoekresultaat kiezen voegt die niet meteen toe — eerst schuift een bevestigingsvenster omhoog met de gekozen soort en twee selectievakjes:
+De werkbalkknop :app-addCircleOutline: opent de soortkiezer voor vogels die BirdNET heeft gemist. Een zoekresultaat kiezen voegt die niet meteen toe — eerst schuift een bevestigingsvenster omhoog met de gekozen soort en twee selectievakjes:
 
-- :material-ear-hearing: **Gehoord** — je hebt de vogel gehoord.
-- :material-eye: **Gezien** — je hebt de vogel gezien.
+- :app-hearing: **Gehoord** — je hebt de vogel gehoord.
+- :app-visibility: **Gezien** — je hebt de vogel gezien.
 
 Vink er één, beide of geen aan en tik dan op **Toevoegen**. **Annuleren** — of naar beneden vegen — brengt je terug naar het zoeken, dus een verkeerde tik kost niets. **Gehoord** staat standaard aangevinkt, en je keuze wordt overgenomen naar de volgende soort die je toevoegt, zodat je bij een reeks vogels die je alleen zag maar één keer **Gezien** hoeft aan te vinken. Laat je beide leeg, dan wordt de invoer zonder waarnemingstype opgeslagen, niet als "geen van beide".
 
@@ -51,12 +51,12 @@ De keuze wordt bij de detectie bewaard en getoond als een klein oor- en/of oogsy
 
 Overal waar een detectie verschijnt — de soortenlijst, het venster van de fragmentspeler, de lijst tijdens een live Survey en de markers op de Survey-kaart — gelden dezelfde acties:
 
-- :material-check: **Bevestigen** — een vinkje met één tik dat een detectie markeert als visueel of akoestisch geverifieerd. Bevestigde clusters en kaartmarkers krijgen een klein groen vinkje zodat ze in één oogopslag opvallen, en de markering gaat mee in elk exportformaat.
-- :material-dots-vertical: **Meer** — opent een overloopmenu met:
-    - :material-share-variant: **Detectie delen** — zie *Delen* hieronder.
-    - :material-swap-horizontal: **Soort vervangen** — kies een andere soort voor deze detectie.
-    - :material-delete-outline: **Detectie verwijderen** — verwijdert de rij direct. Er verschijnt een paar seconden een SnackBar om dit ongedaan te maken, zodat missers omkeerbaar zijn. Geen bevestigingsvenster.
-    - :material-delete-sweep-outline: **Soort verwijderen** — verwijdert in één keer elke detectie van die soort uit de Session, met dezelfde SnackBar om het ongedaan te maken. Handig om een verkeerd gedetermineerde geluidsbron op te ruimen zonder de soort uit te klappen en clusters een voor een te verwijderen.
+- :app-checkCircleOutline: **Bevestigen** — een vinkje met één tik dat een detectie markeert als visueel of akoestisch geverifieerd. Bevestigde clusters en kaartmarkers krijgen een klein groen vinkje zodat ze in één oogopslag opvallen, en de markering gaat mee in elk exportformaat.
+- :app-moreVert: **Meer** — opent een overloopmenu met:
+    - :app-share: **Detectie delen** — zie *Delen* hieronder.
+    - :app-swapHoriz: **Soort vervangen** — kies een andere soort voor deze detectie.
+    - :app-deleteOutline: **Detectie verwijderen** — verwijdert de rij direct. Er verschijnt een paar seconden een SnackBar om dit ongedaan te maken, zodat missers omkeerbaar zijn. Geen bevestigingsvenster.
+    - :app-deleteSweep: **Soort verwijderen** — verwijdert in één keer elke detectie van die soort uit de Session, met dezelfde SnackBar om het ongedaan te maken. Handig om een verkeerd gedetermineerde geluidsbron op te ruimen zonder de soort uit te klappen en clusters een voor een te verwijderen.
 
 #### Veegsnelkoppelingen op rijen in het overzicht
 
@@ -71,7 +71,7 @@ Veeg je een rij met een **soortkop** (naar links of rechts), dan worden alle det
 
 ### Eén detectie delen
 
-Het item :material-share-variant: **Detectie delen** gebruikt dezelfde keuzes als **Instellingen → Exporteren en synchroniseren**. Alleen deze detectie wordt geëxporteerd in de geselecteerde Raven-, CSV-, JSON-, GPX-, HTML- en app-metadata-artefacten. Wanneer **Audiobestanden opnemen** aanstaat, bevat het pakket ook de audio van de detectie; **Audio altijd als WAV delen** wordt gevolgd. Als alle begeleidende formaten, HTML en app-metadata uitstaan, ontvangt het systeemdeelvenster het onbewerkte audiofragment in plaats van een ZIP-bestand.
+Het item :app-share: **Detectie delen** gebruikt dezelfde keuzes als **Instellingen → Exporteren en synchroniseren**. Alleen deze detectie wordt geëxporteerd in de geselecteerde Raven-, CSV-, JSON-, GPX-, HTML- en app-metadata-artefacten. Wanneer **Audiobestanden opnemen** aanstaat, bevat het pakket ook de audio van de detectie; **Audio altijd als WAV delen** wordt gevolgd. Als alle begeleidende formaten, HTML en app-metadata uitstaan, ontvangt het systeemdeelvenster het onbewerkte audiofragment in plaats van een ZIP-bestand.
 
 De audiobijlage wordt in deze volgorde bepaald:
 
@@ -83,7 +83,7 @@ De audiobijlage wordt in deze volgorde bepaald:
 
 Je kunt korte gesproken opmerkingen aan afzonderlijke detectieregistraties koppelen:
 
-- **Opnemen**: Tik op de knop :material-dots-vertical: bij een detectiecluster en kies **Spraaknotitie opnemen** om het venster voor spraaknotities te openen. Tik op de grote microfoonknop om de opname te starten. Een live golfvorm geeft je stem in realtime weer. Tik op de stopknop wanneer je klaar bent.
+- **Opnemen**: Tik op de knop :app-moreVert: bij een detectiecluster en kies **Spraaknotitie opnemen** om het venster voor spraaknotities te openen. Tik op de grote microfoonknop om de opname te starten. Een live golfvorm geeft je stem in realtime weer. Tik op de stopknop wanneer je klaar bent.
 - **Beluisteren**: Zodra de notitie is opgenomen, kun je die met de ingebouwde speler beluisteren. Tik op **Opnieuw opnemen** om de notitie te vervangen. Tik op **Opslaan** om die te bewaren.
 - **Verwijderen**: Heeft een detectie al een spraaknotitie, dan kun je die verwijderen via het overloopmenu of via het venster voor spraaknotities.
 - **Formaten per platform**: Op Android en andere platformen worden spraaknotities opgenomen in sterk gecomprimeerd AAC-formaat (`.m4a`) op 16 kHz. Op iOS wordt automatisch WAV/PCM16 (`.wav`) gebruikt om compatibiliteitsproblemen met CoreAudio en de actieve audiosessies van de app te voorkomen. Beide formaten worden volledig ondersteund door de ZIP-export.
@@ -91,7 +91,7 @@ Je kunt korte gesproken opmerkingen aan afzonderlijke detectieregistraties koppe
 
 ### Kaart met het Survey-spoor
 
-Survey-Sessions tonen een kleine ingebouwde kaart met het GPS-spoor en de detectiemarkers. Tik op een marker op die kaart om een detectie te richten — de ingebouwde kaart centreert erop. Tik op de knop :material-fullscreen: **uitklappen** (rechtsboven op de ingebouwde kaart) om de **kaart op volledig scherm** te openen; was er een detectie gericht, dan opent de kaart gecentreerd en ingezoomd op die detectie, zodat je je plek behoudt.
+Survey-Sessions tonen een kleine ingebouwde kaart met het GPS-spoor en de detectiemarkers. Tik op een marker op die kaart om een detectie te richten — de ingebouwde kaart centreert erop. Tik op de knop :app-fullscreen: **uitklappen** (rechtsboven op de ingebouwde kaart) om de **kaart op volledig scherm** te openen; was er een detectie gericht, dan opent de kaart gecentreerd en ingezoomd op die detectie, zodat je je plek behoudt.
 
 #### Betekenis van de markers
 
@@ -119,15 +119,15 @@ Is er een filter actief, dan krijgt de titel in de appbalk een ondertitel met he
 
 De werkbalk gebruikt dezelfde betekenissen van pictogrammen als beschreven in [Pictogrammen en bediening](icons-and-controls.md):
 
-- :material-plus-circle-outline: — inhoud toevoegen
-- :material-undo-variant: / :material-redo-variant: — door bewerkingen stappen
-- :material-content-cut: — bijsnijdmodus
-- :material-content-save: — bewerkingen opslaan
-- :material-share-variant: — exporteren of delen
-- :material-delete-outline: — Session weggooien
-- :material-play: — een Survey voortzetten wanneer die actie beschikbaar is
-- :material-help-circle-outline: — het hulpvenster van het Session-overzicht openen
-- :material-tune: — de instellingen openen
+- :app-addCircleOutline: — inhoud toevoegen
+- :app-undo: / :app-redo: — door bewerkingen stappen
+- :app-contentCut: — bijsnijdmodus
+- :app-save: — bewerkingen opslaan
+- :app-share: — exporteren of delen
+- :app-deleteOutline: — Session weggooien
+- :app-playArrowRounded: — een Survey voortzetten wanneer die actie beschikbaar is
+- :app-helpOutlineRounded: — het hulpvenster van het Session-overzicht openen
+- :app-tuneRounded: — de instellingen openen
 
 ## Gebruikelijke taken bij het nakijken
 
@@ -139,6 +139,8 @@ De werkbalk gebruikt dezelfde betekenissen van pictogrammen als beschreven in [P
 ## Export
 
 Het exportgedrag hangt af van de opties die je in [Instellingen](settings.md) hebt gekozen. De app kan detecties en optioneel audio in het gekozen exportformaat verpakken. Elke export gaat vergezeld van herkomstmetadata — de versie van de app, de naam en versie van het model, de taal van de soortnamen, het tijdstempel van de export, de bij de Session bewaarde instellingen en de relevante exportopties — weggeschreven naar een bijbestand `<prefix>.metadata.json` (ZIP) of een `meta`-blok op het hoogste niveau (JSON), zodat exports zichzelf beschrijven en reproduceerbaar zijn.
+
+Als het apparaat bij een GPS-positie hoogte levert, bevatten exports de hoogte in meters, beschikbare verticale nauwkeurigheid, referentievlak en meettijd. JSON bevat alles bij de bijbehorende coördinaten; GPX bevat het bij Survey-trackpunten en detectiewaypoints. CSV en Raven voegen alleen een kolom `Altitude (m)` toe naast breedte- en lengtegraad. Handmatige of op de kaart gekozen coördinaten krijgen geen afgeleide hoogte. Een detectie die tijdens Survey-review op een tijdstip wordt toegevoegd, krijgt een positie geïnterpoleerd tussen omringende trackpunten, zonder eigen meettijd. Apparaten kunnen verschillende referentievlakken gebruiken; controleer `altitudeReference` vóór een vergelijking. `unknown` betekent dat het platform het vlak niet heeft aangegeven.
 
 Het blok `settings` in de JSON-export legt de waarden vast die *daadwerkelijk op deze Session zijn toegepast* — gevoeligheid, de modus en het aantal vensters voor score-pooling, de microfoonversterking en de grensfrequentie van het hoogdoorlaatfilter — en niet wat er nu toevallig in de instellingen staat. Zo kun je maanden later een resultaat reproduceren of twee Surveys vergelijken zonder te onthouden hoe de schuifregelaars stonden toen je ze draaide.
 

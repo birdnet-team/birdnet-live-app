@@ -4,7 +4,7 @@ Der Live-Modus ist die schnellste Möglichkeit, über das Smartphone-Mikrofon zu
 
 ## So öffnen Sie ihn
 
-Tippen Sie auf dem Startbildschirm auf die Karte **Live-Modus** mit dem Symbol :material-microphone:.
+Tippen Sie auf dem Startbildschirm auf die Karte **Live-Modus** mit dem Symbol :app-micRounded:.
 
 ## Widget „Schnell lauschen“
 
@@ -25,17 +25,17 @@ Quick Listen ersetzt niemals einen anderen laufenden Modus. Wenn eine Point Coun
 
 Die obere Leiste enthält drei Elemente:
 
-- :material-arrow-left: – Live-Modus verlassen
+- :app-arrowBackRounded: – Live-Modus verlassen
 - mittlerer Statustext – `Initialisierung`, `Modell wird geladen`, `Bereit`, `Arten werden identifiziert`, `Pausiert` oder `Fehler`
-- :material-tune: – die Live-spezifische Einstellungsansicht öffnen
+- :app-tuneRounded: – die Live-spezifische Einstellungsansicht öffnen
 
 ## Hauptaktionsschaltfläche
 
 Die große runde Schaltfläche unten in der Mitte wechselt ihren Zustand:
 
-- :material-microphone: – Zuhören starten
-- :material-stop: – die aktive Session stoppen
-- :material-play: – aus einem pausierten Bereitschaftszustand fortsetzen
+- :app-mic: – Zuhören starten
+- :app-stopRounded: – die aktive Session stoppen
+- :app-playArrowRounded: – aus einem pausierten Bereitschaftszustand fortsetzen
 
 ## Was Sie beim Zuhören sehen
 
@@ -75,3 +75,7 @@ Die Aufnahme wird in den [Einstellungen](settings.md) gesteuert.
 Wenn Sie den Live-Modus beenden, speichert BirdNET Live die Session und öffnet die [Session-Übersicht](session-review.md).
 
 Wenn das automatische Speichern von Sessions aktiviert ist, sichert der Live-Modus außerdem beim Start, alle 30 Sekunden und beim Wechsel der App in den Hintergrund eine Teil-Session. Nach einem Absturz oder Stromausfall steht der zuletzt gesicherte Stand in der Session-Bibliothek bereit. Änderungen seit dieser Sicherung können verloren gehen. Wenn Sie das automatische Speichern ausschalten, entfallen auch diese Zwischenstände.
+
+## Zuhören bei ausgeschaltetem Bildschirm
+
+Live Mode pausiert normalerweise beim Sperren des Bildschirms oder Verlassen der App und setzt dieselbe Session bei Ihrer Rückkehr fort. Beim ersten Mal bietet ein Dialog begrenztes Zuhören im Hintergrund an. Aktivieren Sie in den [Aufnahmeeinstellungen](settings.md) **Bei ausgeschaltetem Bildschirm fortsetzen** und wählen Sie eine Höchstdauer von 15, 30, 60 oder 120 Minuten (Standard: 30 Minuten). Das Limit gilt für jeden Zeitraum außerhalb der App; bei Erreichen endet die Session. Android zeigt eine dauerhafte Benachrichtigung mit Öffnen und Stopp. Unter Windows hört Live Mode auch bei minimiertem Fenster weiter zu.

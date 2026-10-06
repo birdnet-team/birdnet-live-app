@@ -9,7 +9,7 @@ ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for schedule
 
 - **Details and analysis settings**:
     - **Metadata**: Enter a deployment name, ARU/station ID, and observer name.
-    - **Location**: Use GPS :material-crosshairs-gps:, manual coordinates :material-map-marker-plus:, or skip location :material-map-marker-off:. The map picker uses :material-map:. Latitude and longitude are required if using sun-anchored scheduling.
+    - **Location**: Use GPS :app-myLocation:, manual coordinates :app-editLocationAlt:, or skip location :app-locationOff:. The map picker uses :app-mapSheet:. Latitude and longitude are required if using sun-anchored scheduling.
     - **Analysis**: Choose the microphone, inference rate, confidence threshold, and sensitivity.
     - **Recording Format**: Choose between FLAC (compressed lossless) and WAV (uncompressed) formats.
     - **Recording Mode**:
@@ -25,15 +25,15 @@ ARU (Autonomous Recording Unit) Mode is the fixed-location workflow for schedule
     - **Session Grouping**: Configure whether to save each cycle as a separate session (recommended for faster load times and modular viewing) or combine all cycles into a single, multi-segment session.
 - **Ready**: Review the schedule, estimated audio storage consumption, and diel constraints, then start the deployment.
 
-The setup controls use the same icons as the other wizards: :material-microphone:
-microphone, :material-speedometer: inference rate, :material-check-decagram: confidence,
-:material-ear-hearing: sensitivity, :material-record-circle: recording mode,
-:material-timer: clip context and cycle duration, :material-filter-outline:
-detection sampling, and :material-format-list-numbered: the per-species clip
-limit. The repeat interval uses :material-repeat:, the low-battery controls use
-:material-battery-alert: and :material-battery-charging:, and test run and
-Session grouping use :material-flask-outline: and :material-bookshelf:.
-Tap the :material-help: button beside a setup control for its explanation.
+The setup controls use the same icons as the other wizards: :app-micRounded:
+microphone, :app-speedRounded: inference rate, :app-verifiedRounded: confidence,
+:app-hearing: sensitivity, :app-fiberManualRecordRounded: recording mode,
+:app-timerOutlined: clip context and cycle duration, :app-filterAltRounded:
+detection sampling, and :app-formatListNumberedRounded: the per-species clip
+limit. The repeat interval uses :app-repeatRounded:, the low-battery controls use
+:app-batteryAlert: and :app-batteryChargingFull:, and test run and
+Session grouping use :app-scienceRounded: and :app-libraryBooks:.
+Tap the :app-helpOutline: button beside a setup control for its explanation.
 
 Starting a deployment immediately saves a `SessionType.aru` session with ARU schedule metadata. Recording cycles are also checkpointed every 30 seconds, including cycles with no detections. After a crash or power loss, the latest partial deployment appears in Session Library as an ended Session; recording does not restart. Work since its last checkpoint may be lost.
 

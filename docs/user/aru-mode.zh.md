@@ -7,9 +7,10 @@ ARU（Autonomous Recording Unit，自主录音单元）模式是用于定点计�
 
 ## 当前设置流程
 
-- **部署与音频**：
+- **详情与分析设置**：
     - **元数据**：输入部署名称、ARU/站点编号和观察者姓名。
-    - **位置**：通过自动获取 GPS、手动输入经纬度提供站点坐标，或跳过位置设置。如果使用与日出日落绑定的排程，则必须提供纬度和经度。
+    - **位置**：通过自动获取 GPS、手动输入经纬度提供站点坐标，或跳过位置设置。如果使用与日出日落绑定的排程，则必须提供纬度和经度。 图标：GPS :app-myLocation:、手动坐标 :app-editLocationAlt:、跳过位置 :app-locationOff:、地图选点 :app-mapSheet:。
+    - **分析**：选择麦克风、推理频率、置信度阈值和灵敏度。
     - **录音格式**：在 FLAC（无损压缩）和 WAV（未压缩）之间选择。
     - **录音模式**：
         - *完整*：录制每个活动周期的全部时长。
@@ -23,6 +24,8 @@ ARU（Autonomous Recording Unit，自主录音单元）模式是用于定点计�
     - **测试运行**：默认启用一次可选的一分钟测试周期，以便启动后立即验证麦克风输入和推理，且不计入计划的周期数量。
     - **Session 分组**：设置是把每个周期保存为独立 Session（推荐，加载更快、便于分段查看），还是把所有周期合并为一个多分段 Session。
 - **准备就绪**：检查排程、预计音频存储占用和昼夜限制，然后开始部署。
+
+设置控件使用与其他向导相同的图标：:app-micRounded: 麦克风、:app-speedRounded: 推理频率、:app-verifiedRounded: 置信度、:app-hearing: 灵敏度、:app-fiberManualRecordRounded: 录音模式、:app-timerOutlined: 片段上下文和周期时长、:app-filterAltRounded: 检测抽样，以及 :app-formatListNumberedRounded: 每个物种的片段上限。重复间隔使用 :app-repeatRounded:，低电量控件使用 :app-batteryAlert: 和 :app-batteryChargingFull:，测试运行和 Session 分组使用 :app-scienceRounded: 和 :app-libraryBooks:。点按控件旁的 :app-helpOutline: 按钮可查看说明。
 
 开始部署会立即保存一个带 ARU 排程元数据的 `SessionType.aru` Session。录音周期还会每 30 秒保存一次检查点，包括没有检测结果的周期。发生崩溃或断电后，最近保存的部分部署会作为已结束的 Session 出现在 Session 库中；录音不会自动重新开始。上次保存之后的数据可能会丢失。
 

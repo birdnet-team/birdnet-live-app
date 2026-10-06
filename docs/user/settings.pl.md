@@ -1,6 +1,8 @@
 # Ustawienia
 
-BirdNET Live używa jednego ekranu ustawień dla wielu sposobów pracy. Przycisk :material-tune: otwiera sekcje istotne dla ekranu, z którego przyszedłeś.
+BirdNET Live używa jednego ekranu ustawień dla wielu sposobów pracy. Przycisk :app-tuneRounded: otwiera sekcje istotne dla ekranu, z którego przyszedłeś.
+
+Przycisk :app-helpOutline: obok ustawienia otwiera krótkie wyjaśnienie. Kreatory konfiguracji Point Count, Survey, ARU i analizy plików używają tego samego przycisku i tych samych ikon dla elementów wspólnych z Ustawieniami lub między sobą.
 
 ## Jak działa zakres ustawień
 
@@ -117,6 +119,14 @@ pośredniego; **0,30 Hz** pozostaje wyraźnym wyborem na maksymalny czas pracy
 baterii. Analiza plików nie ma częstości wnioskowania — zamiast tego używa
 ustawienia [nakładania](file-analysis.md).
 
+### Ignoruj gatunki
+
+Otwiera panel binarnych filtrów wnioskowania. Zaznacz **Ptaki**, **Ssaki**, **Płazy** lub **Owady**, aby wykluczyć całą klasę taksonomiczną. Wszystkie cztery pola są domyślnie wyłączone.
+
+Suwak **Ignoruj pospolite gatunki powyżej** obejmuje **80–100%** i wyklucza gatunki, których bieżący wynik modelu geograficznego jest ściśle powyżej wybranego progu. Domyślne **100%** nie ignoruje gatunków według pospolitości; niższy próg ignoruje ich więcej. Panel uruchamia model geograficzny raz dla bieżącej lokalizacji i pokazuje łączną liczbę ignorowanych gatunków. Zmiany używają tej zapisanej prognozy bez ponownego wnioskowania. Reguła pospolitości wymaga lokalizacji; filtr grup taksonomicznych działa bez niej.
+
+Filtr ustawia ignorowane prawdopodobieństwa modelu geograficznego i dźwiękowego dokładnie na zero po aktywacji sigmoidalnej, przed łączeniem czasowym. Nie wpływają na późniejsze wyniki ani nie stają się wykryciami wyświetlanymi, zapisanymi, ogłaszanymi lub eksportowanymi. Zmiany podczas aktywnej Session Live Mode, Point Count, Survey lub ARU obowiązują od następnego okna; analiza plików używa wartości wybranych na początku.
+
 BirdNET Live wewnętrznie wygładza oceny w ostatnich oknach wnioskowania, aby
 ograniczyć jednorazowe fałszywe trafienia. Ten pooling nie jest dostępny jako
 ustawienie użytkownika; domyślnie stosowany jest adaptacyjny pooling
@@ -190,13 +200,15 @@ Rozwijana sekcja z kilkoma przełącznikami kierowania dźwiękiem oraz selektor
 
 ### Tryb
 
+To ustawienie dotyczy Live Mode. Point Count ma osobny wybór nagrywania w kroku ustawień analizy; nowe liczenia domyślnie używają **Pełny**. Survey także ma osobny wybór w konfiguracji.
+
 - **Pełne** — zapisz całe nagranie
 - **Tylko wykrycia** — zapisz fragmenty wokół wykryć
 - **Wyłączone** — bez nagrywania dźwięku
 
 ### Kontekst fragmentu
 
-Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst fragmentu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
+Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst fragmentu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Point Count używa tej samej wartości przy wyborze **Klipy** w konfiguracji i pozwala ją tam zmienić. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
 
 ### Format
 
@@ -209,6 +221,14 @@ To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plikó
 Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
 
 To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Widżet Quick Listen](live-mode.md) po dotknięciu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
+
+### Kontynuuj przy wyłączonym ekranie
+
+**Live Mode** wstrzymuje przechwytywanie i identyfikację po zablokowaniu ekranu lub opuszczeniu aplikacji i wznawia tę samą Session po powrocie. Kontynuacja w tle jest domyślnie wyłączona. Po pierwszym powrocie jednorazowe okno wyjaśnia jej włączenie; przełącznik jest też w ustawieniach Live Mode. Wybierz **Maksymalny czas w tle**: 15, 30, 60 lub 120 minut (domyślnie 30). Zegar zaczyna działać po wyjściu, jest anulowany przy powrocie przed limitem i uruchamia się ponownie przy kolejnym wyjściu. Limit kończy Session i otwiera przegląd z przyczyną. Automatyczny zapis nadal decyduje, czy zostanie od razu zachowana, czy oznaczona jako niezapisana.
+
+**Point Count** domyślnie trwa po zablokowaniu ekranu lub zmianie aplikacji przy włączonym ekranie i kończy się po wybranym czasie. Przełącznik **Kontynuuj przy wyłączonym ekranie** jest tylko w pierwszym kroku konfiguracji. Wyłącz go, aby te działania kończyły liczenie wcześniej. Znak zapytania wyjaśnia zachowanie. Wstrzymanie i wznowienie tworzyłoby lukę w protokole czasowym. Ekran gotowości podsumowuje wybór, a przegląd Session pokazuje powód wcześniejszego zakończenia.
+
+Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle; ekran może normalnie zgasnąć. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
 
 ### Automatyczne zapisywanie Sessions (Live i Point Count)
 
@@ -356,6 +376,6 @@ Użyj tego, zanim przekażesz urządzenie innemu obserwatorowi, wycofasz telefon
 
 Niektóre parametry konfiguruje się na własnych ekranach konfiguracji, a nie na wspólnym ekranie ustawień.
 
-- [Tryb Point Count](point-count-mode.md) ma własną konfigurację czasu trwania i lokalizacji.
+- [Tryb Point Count](point-count-mode.md) ma własną konfigurację czasu trwania i lokalizacji. Wybierz 3, 5, 10, 15, 20, 25 lub 30 minut zgodnie z protokołem; ostatni wybór jest zapamiętywany, a domyślny czas to 5 minut.
 - [Tryb Survey](survey-mode.md) ma własny ekran parametrów Survey.
 - [Analiza plików](file-analysis.md) ma własny krok z parametrami analizy.

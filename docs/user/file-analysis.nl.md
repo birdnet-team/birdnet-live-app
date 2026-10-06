@@ -4,7 +4,7 @@ Bestandsanalyse verwerkt een bestaande opname via dezelfde BirdNET-pijplijn die 
 
 ## Zo open je de modus
 
-Tik op het startscherm op de kaart **Bestandsanalyse** met het pictogram :material-file-music:.
+Tik op het startscherm op de kaart **Bestandsanalyse** met het pictogram :app-audioFileRounded:.
 
 ### Vanuit een andere app
 
@@ -12,8 +12,9 @@ Je kunt ook vanuit een andere app een opname aanleveren. Op Android opent Bestan
 
 ## Appbalk
 
-- :material-tune: — de instellingen voor Bestandsanalyse openen
-- :material-close: — een lopende analyse annuleren
+- :app-tuneRounded: — de instellingen voor Bestandsanalyse openen
+- :app-helpOutlineRounded: — de help voor Bestandsanalyse openen
+- :app-close: — een lopende analyse annuleren
 
 ## Ondersteunde invoer
 
@@ -42,11 +43,11 @@ Kies een bestand en bekijk de metadatakaart:
 
 Je kunt:
 
-- de huidige GPS-positie gebruiken
-- coördinaten handmatig invoeren
-- de locatie overslaan
-- een punt op de kaart kiezen
-- optioneel een opnamedatum instellen
+- de huidige GPS-positie gebruiken :app-myLocation:
+- coördinaten handmatig invoeren :app-editLocationAlt:
+- de locatie overslaan :app-locationOff:
+- een punt op de kaart kiezen :app-mapSheet:
+- optioneel een opnamedatum instellen :app-calendarTodayRounded:
 
 ### 3. Parameters
 
@@ -57,6 +58,16 @@ De wizard biedt:
 - gevoeligheid
 - betrouwbaarheidsdrempel
 - modus van het soortenfilter
+
+| Instelling | Pictogram |
+|---|---|
+| Vensterduur | :app-timerOutlined: |
+| Overlap | :app-swapHoriz: |
+| Gevoeligheid | :app-hearing: |
+| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
+| Soortenfilter | :app-filterAltRounded: |
+
+Tik op de knop :app-helpOutline: naast een instelling voor uitleg. Ook de stappen voor bestand, locatie en opnamedatum hebben helpknoppen.
 
 Overlap bepaalt hoe ver elk analysevenster opschuift en is specifiek voor de
 bestandsanalyse: het hele bestand wordt altijd onderzocht, en meer overlap

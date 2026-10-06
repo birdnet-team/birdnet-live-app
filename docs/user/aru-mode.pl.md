@@ -7,9 +7,10 @@ Tryb ARU (Autonomous Recording Unit) to sposób pracy w stałej lokalizacji, prz
 
 ## Obecny przebieg konfiguracji
 
-- **Wdrożenie i dźwięk**:
+- **Szczegóły i ustawienia analizy**:
     - **Metadane**: wprowadź nazwę wdrożenia, identyfikator ARU/stanowiska i nazwę obserwatora.
-    - **Lokalizacja**: podaj współrzędne miejsca przez automatyczne ustalenie pozycji GPS, ręczne wpisanie szerokości i długości geograficznej albo pomiń ustawianie lokalizacji. Szerokość i długość geograficzna są wymagane, jeśli korzystasz z harmonogramu powiązanego z pozycją słońca.
+    - **Lokalizacja**: podaj współrzędne miejsca przez automatyczne ustalenie pozycji GPS, ręczne wpisanie szerokości i długości geograficznej albo pomiń ustawianie lokalizacji. Szerokość i długość geograficzna są wymagane, jeśli korzystasz z harmonogramu powiązanego z pozycją słońca. Ikony: GPS :app-myLocation:, współrzędne ręczne :app-editLocationAlt:, pominięcie lokalizacji :app-locationOff: i wybór na mapie :app-mapSheet:.
+    - **Analiza**: Wybierz mikrofon, częstość wnioskowania, próg pewności i czułość.
     - **Format nagrania**: wybierz FLAC (skompresowany bezstratnie) albo WAV (nieskompresowany).
     - **Tryb nagrywania**:
         - *Pełny*: nagrywa cały czas trwania każdego aktywnego cyklu.
@@ -23,6 +24,8 @@ Tryb ARU (Autonomous Recording Unit) to sposób pracy w stałej lokalizacji, prz
     - **Przebieg testowy**: opcjonalny jednominutowy cykl testowy jest domyślnie włączony, aby zaraz po starcie sprawdzić wejście mikrofonowe i wnioskowanie, bez wliczania do zaplanowanej liczby cykli.
     - **Grupowanie Sessions**: ustal, czy każdy cykl ma być zapisywany jako osobna Session (zalecane ze względu na szybsze wczytywanie i modułowy podgląd), czy wszystkie cykle mają trafić do jednej Session z wieloma segmentami.
 - **Gotowe**: sprawdź harmonogram, szacowane zużycie pamięci na dźwięk i ograniczenia dobowe, a następnie rozpocznij wdrożenie.
+
+Elementy konfiguracji używają tych samych ikon co pozostałe kreatory: :app-micRounded: mikrofon, :app-speedRounded: częstość wnioskowania, :app-verifiedRounded: pewność, :app-hearing: czułość, :app-fiberManualRecordRounded: tryb nagrywania, :app-timerOutlined: kontekst fragmentu i czas trwania cyklu, :app-filterAltRounded: próbkowanie wykryć oraz :app-formatListNumberedRounded: limit fragmentów na gatunek. Interwał powtarzania używa :app-repeatRounded:, ustawienia niskiego poziomu baterii :app-batteryAlert: i :app-batteryChargingFull:, a przebieg testowy i grupowanie Session :app-scienceRounded: i :app-libraryBooks:. Stuknij przycisk :app-helpOutline: obok elementu, aby zobaczyć wyjaśnienie.
 
 Rozpoczęcie wdrożenia od razu zapisuje Session typu `SessionType.aru` z metadanymi harmonogramu ARU. Cykle nagrywania są też zapisywane co 30 sekund, również te bez wykryć. Po awarii lub utracie zasilania ostatnio zapisane wdrożenie pojawia się w Bibliotece Sessions jako zakończona Session; nagrywanie nie wznawia się samo. Dane od ostatniego zapisu mogą zostać utracone.
 

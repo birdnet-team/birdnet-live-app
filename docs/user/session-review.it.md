@@ -27,7 +27,7 @@ La striscia dello spettrogramma sopra il lettore è interattiva: tocca per spost
 
 Le specie sono raggruppate in righe espandibili. Puoi esaminare le rilevazioni per specie e spostarti nella registrazione mentre le rivedi. Le righe dei gruppi sotto una specie espansa sono rientrate, così la scheda della specie principale resta visivamente distinta dai suoi elementi.
 
-Un campo di ricerca sopra l'elenco filtra le specie per nome comune o scientifico, così trovare un uccello specifico in una Session di 100 specie richiede pochi tasti invece di un lungo scorrimento. Il pulsante :material-sort: accanto cambia l'ordine delle specie:
+Un campo di ricerca sopra l'elenco filtra le specie per nome comune o scientifico, così trovare un uccello specifico in una Session di 100 specie richiede pochi tasti invece di un lungo scorrimento. Il pulsante :app-sort: accanto cambia l'ordine delle specie:
 
 - **Confidenza più alta** (predefinito) — prima le specie con la confidenza più alta su una singola rilevazione. Utile per smistare le identificazioni più certe. Quando espandi una specie in questa modalità, le rilevazioni con clip audio riproducibili appaiono prima di quelle senza clip, poi per confidenza.
 - **Più rilevamenti** — prima le specie con il maggior numero di rilevazioni. Utile per individuare le specie più presenti nel coro.
@@ -38,10 +38,10 @@ L'ordinamento scelto viene mantenuto tra le Sessions.
 
 ### Aggiungere una specie a mano
 
-Il pulsante :material-plus-circle-outline: nella barra degli strumenti apre il selettore di specie per gli uccelli che BirdNET non ha rilevato. Toccare un risultato non lo inserisce subito: prima compare un pannello di conferma con la specie scelta e due caselle:
+Il pulsante :app-addCircleOutline: nella barra degli strumenti apre il selettore di specie per gli uccelli che BirdNET non ha rilevato. Toccare un risultato non lo inserisce subito: prima compare un pannello di conferma con la specie scelta e due caselle:
 
-- :material-ear-hearing: **Sentito** — hai sentito l'uccello.
-- :material-eye: **Visto** — hai visto l'uccello.
+- :app-hearing: **Sentito** — hai sentito l'uccello.
+- :app-visibility: **Visto** — hai visto l'uccello.
 
 Seleziona una, entrambe o nessuna, poi tocca **Aggiungi**. **Annulla** — o uno scorrimento verso il basso — ti riporta alla ricerca, quindi un tocco sbagliato non costa nulla. **Sentito** è selezionato per impostazione predefinita e la tua scelta resta valida per la specie successiva: per una serie di uccelli solo visti basta selezionare **Visto** una volta. Lasciandole entrambe vuote la voce viene salvata senza tipo di osservazione, non come "nessuno dei due".
 
@@ -51,12 +51,12 @@ La scelta viene memorizzata sulla rilevazione e mostrata come una piccola icona 
 
 Ovunque compaia una rilevazione — l'elenco delle specie, il pannello del lettore dei clip, l'elenco del Survey in tempo reale e i marcatori sulla mappa del Survey — si usa lo stesso insieme di azioni:
 
-- :material-check: **Conferma** — un segno di spunta inline con un tocco che contrassegna una rilevazione come verificata visivamente o acusticamente. I gruppi e i marcatori confermati ottengono un piccolo segno verde che li fa risaltare a colpo d'occhio, e il contrassegno viene mantenuto in ogni formato di esportazione.
-- :material-dots-vertical: **Altro** — apre un menu aggiuntivo con:
-    - :material-share-variant: **Condividi rilevazione** — vedi *Condivisione* più sotto.
-    - :material-swap-horizontal: **Sostituisci specie** — scegli una specie diversa per questa rilevazione.
-    - :material-delete-outline: **Elimina rilevazione** — rimuove subito la riga. Per alcuni secondi appare una SnackBar per annullare, così gli errori sono reversibili. Nessuna finestra di conferma.
-    - :material-delete-sweep-outline: **Elimina specie** — rimuove in un colpo solo tutte le rilevazioni di quella specie dalla Session, con la stessa SnackBar per annullare. Utile per eliminare una sorgente di rumore identificata male senza espandere la specie ed eliminare i gruppi uno per uno.
+- :app-checkCircleOutline: **Conferma** — un segno di spunta inline con un tocco che contrassegna una rilevazione come verificata visivamente o acusticamente. I gruppi e i marcatori confermati ottengono un piccolo segno verde che li fa risaltare a colpo d'occhio, e il contrassegno viene mantenuto in ogni formato di esportazione.
+- :app-moreVert: **Altro** — apre un menu aggiuntivo con:
+    - :app-share: **Condividi rilevazione** — vedi *Condivisione* più sotto.
+    - :app-swapHoriz: **Sostituisci specie** — scegli una specie diversa per questa rilevazione.
+    - :app-deleteOutline: **Elimina rilevazione** — rimuove subito la riga. Per alcuni secondi appare una SnackBar per annullare, così gli errori sono reversibili. Nessuna finestra di conferma.
+    - :app-deleteSweep: **Elimina specie** — rimuove in un colpo solo tutte le rilevazioni di quella specie dalla Session, con la stessa SnackBar per annullare. Utile per eliminare una sorgente di rumore identificata male senza espandere la specie ed eliminare i gruppi uno per uno.
 
 #### Scorciatoie con lo scorrimento sulle righe in revisione
 
@@ -71,7 +71,7 @@ Scorrendo la riga di un'**intestazione di specie** (a sinistra o a destra) si el
 
 ### Condivisione di una singola rilevazione
 
-La voce :material-share-variant: **Condividi rilevazione** usa le stesse opzioni di **Impostazioni → Esporta e sincronizza**. Esporta solo questa rilevazione negli artefatti Raven, CSV, JSON, GPX, HTML e metadati dell'app selezionati. Quando **Includi file audio** è attivo, il pacchetto contiene anche l'audio della rilevazione; viene rispettata l'opzione **Condividi sempre l'audio come WAV**. Con tutti i formati complementari, HTML e metadati dell'app disattivati, il foglio di condivisione riceve il clip audio non compresso in uno ZIP.
+La voce :app-share: **Condividi rilevazione** usa le stesse opzioni di **Impostazioni → Esporta e sincronizza**. Esporta solo questa rilevazione negli artefatti Raven, CSV, JSON, GPX, HTML e metadati dell'app selezionati. Quando **Includi file audio** è attivo, il pacchetto contiene anche l'audio della rilevazione; viene rispettata l'opzione **Condividi sempre l'audio come WAV**. Con tutti i formati complementari, HTML e metadati dell'app disattivati, il foglio di condivisione riceve il clip audio non compresso in uno ZIP.
 
 L'allegato audio viene determinato in questo ordine:
 
@@ -83,7 +83,7 @@ L'allegato audio viene determinato in questo ordine:
 
 Puoi allegare brevi commenti vocali ai singoli record di rilevazione:
 
-- **Registra**: tocca il pulsante :material-dots-vertical: su un gruppo di rilevazioni e seleziona **Registra memo vocale** per aprire la finestra del memo vocale. Tocca il grande pulsante del microfono per avviare la registrazione. Una forma d'onda in tempo reale riflette la tua voce. Tocca il pulsante di arresto al termine.
+- **Registra**: tocca il pulsante :app-moreVert: su un gruppo di rilevazioni e seleziona **Registra memo vocale** per aprire la finestra del memo vocale. Tocca il grande pulsante del microfono per avviare la registrazione. Una forma d'onda in tempo reale riflette la tua voce. Tocca il pulsante di arresto al termine.
 - **Rivedi**: una volta registrato, puoi ascoltare il memo con il lettore integrato. Per sostituirlo, tocca il pulsante **Registra di nuovo**. Per salvarlo, tocca il pulsante **Salva**.
 - **Elimina**: se una rilevazione ha già un memo vocale allegato, puoi eliminarlo dal menu aggiuntivo o dalla finestra del memo vocale.
 - **Formati specifici per piattaforma**: su Android e altre piattaforme i memo vocali vengono registrati in formato AAC (`.m4a`) altamente compresso a 16 kHz. Su iOS usano automaticamente il formato WAV/PCM16 (`.wav`) per evitare problemi di compatibilità CoreAudio con le sessioni audio attive dell'app. Entrambi i formati sono pienamente supportati dal pacchetto ZIP di esportazione.
@@ -91,7 +91,7 @@ Puoi allegare brevi commenti vocali ai singoli record di rilevazione:
 
 ### Mappa del percorso del Survey
 
-Le Sessions Survey mostrano una piccola mappa integrata del percorso GPS e dei marcatori delle rilevazioni. Tocca un marcatore sulla mappa integrata per mettere a fuoco una rilevazione — la mappa si centra su di essa. Tocca il pulsante :material-fullscreen: **espandi** (in alto a destra della mappa integrata) per aprire la **mappa a schermo intero**; se una rilevazione era a fuoco, la mappa a schermo intero si apre centrata e ingrandita su quella rilevazione, così non perdi il segno.
+Le Sessions Survey mostrano una piccola mappa integrata del percorso GPS e dei marcatori delle rilevazioni. Tocca un marcatore sulla mappa integrata per mettere a fuoco una rilevazione — la mappa si centra su di essa. Tocca il pulsante :app-fullscreen: **espandi** (in alto a destra della mappa integrata) per aprire la **mappa a schermo intero**; se una rilevazione era a fuoco, la mappa a schermo intero si apre centrata e ingrandita su quella rilevazione, così non perdi il segno.
 
 #### Codifica dei marcatori
 
@@ -119,15 +119,15 @@ Quando un filtro è attivo, il titolo della barra dell'app acquisisce un sottoti
 
 La barra degli strumenti usa gli stessi significati delle icone descritti in [Icone e controlli](icons-and-controls.md):
 
-- :material-plus-circle-outline: — aggiungi contenuti
-- :material-undo-variant: / :material-redo-variant: — scorri tra le modifiche
-- :material-content-cut: — modalità di ritaglio
-- :material-content-save: — salva le modifiche
-- :material-share-variant: — esporta o condividi
-- :material-delete-outline: — scarta la Session
-- :material-play: — continua un Survey quando questa azione è disponibile
-- :material-help-circle-outline: — apre il pannello di aiuto del Riepilogo sessione
-- :material-tune: — apre le Impostazioni
+- :app-addCircleOutline: — aggiungi contenuti
+- :app-undo: / :app-redo: — scorri tra le modifiche
+- :app-contentCut: — modalità di ritaglio
+- :app-save: — salva le modifiche
+- :app-share: — esporta o condividi
+- :app-deleteOutline: — scarta la Session
+- :app-playArrowRounded: — continua un Survey quando questa azione è disponibile
+- :app-helpOutlineRounded: — apre il pannello di aiuto del Riepilogo sessione
+- :app-tuneRounded: — apre le Impostazioni
 
 ## Operazioni tipiche di revisione
 
@@ -139,6 +139,8 @@ La barra degli strumenti usa gli stessi significati delle icone descritti in [Ic
 ## Esportazione
 
 Il comportamento dell'esportazione dipende dalle opzioni selezionate nelle [Impostazioni](settings.md). L'app può racchiudere le rilevazioni e, facoltativamente, l'audio nel formato di esportazione scelto. Ogni esportazione include metadati di provenienza — versione dell'app, nome e versione del modello, lingua delle specie, marca temporale dell'esportazione, impostazioni conservate con la Session e le opzioni di esportazione pertinenti — scritti in un file accessorio `<prefix>.metadata.json` (ZIP) o in un blocco `meta` di primo livello (JSON), così che le esportazioni siano autodescrittive e riproducibili.
+
+Se il dispositivo fornisce l’altitudine con una posizione GPS, le esportazioni includono altezza in metri, precisione verticale disponibile, superficie di riferimento e ora della misurazione. JSON include tutto con le coordinate associate; GPX include questi dati nei punti del percorso Survey e nei punti delle rilevazioni. CSV e Raven aggiungono solo una colonna `Altitude (m)` accanto a latitudine e longitudine. Per coordinate manuali o scelte sulla mappa non viene dedotta alcuna altitudine. Una rilevazione aggiunta a un istante nel riepilogo Survey riceve una posizione interpolata fra i punti del percorso vicini, senza un’ora di misurazione propria. I dispositivi possono usare superfici di riferimento diverse; controlla `altitudeReference` prima di confrontare le altezze. `unknown` significa che la piattaforma non ha identificato la superficie.
 
 Il blocco `settings` dell'esportazione JSON registra i valori *effettivamente applicati a questa Session* — sensibilità, modalità di score pooling e numero di finestre, guadagno del microfono e taglio del filtro passa-alto — non quelli impostati ora nelle Impostazioni. Questo significa che puoi riprodurre un risultato mesi dopo, o confrontare due Survey, senza dover ricordare la posizione dei vari cursori al momento dell'esecuzione.
 

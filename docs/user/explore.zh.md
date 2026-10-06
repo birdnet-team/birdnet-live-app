@@ -4,13 +4,13 @@
 
 ## 如何打开
 
-在主界面底栏用 :material-magnify: 按钮打开**探索**。
+在主界面底栏用 :app-searchRounded: 按钮打开**探索**。
 
 ## 应用栏与页头
 
 ### 应用栏
 
-- :material-refresh: — 刷新位置并重新生成预测物种列表
+- :app-refresh: — 刷新位置并重新生成预测物种列表
 
 ### 位置页头
 
@@ -18,7 +18,7 @@
 
 - 当前通过反向地理编码得到的地名（如果可用）
 - 地名下方的坐标
-- :material-help-circle-outline: — 打开探索的帮助面板
+- :app-helpOutlineRounded: — 打开探索的帮助面板
 
 ## 物种列表
 

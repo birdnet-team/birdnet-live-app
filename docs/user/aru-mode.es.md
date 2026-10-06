@@ -7,9 +7,10 @@ El modo ARU (Autonomous Recording Unit) es el flujo de trabajo para despliegues 
 
 ## Flujo de configuración actual
 
-- **Despliegue y audio**: 
+- **Detalles y ajustes de análisis**:
     - **Metadatos**: Introduzca un nombre de despliegue, ID de ARU/estación y nombre del observador.
-    - **Ubicación**: Proporcione las coordenadas del sitio usando la adquisición automática de GPS, la entrada manual de latitud/longitud o salte la configuración de ubicación. La latitud y la longitud son requeridas si se utiliza la programación vinculada al sol.
+    - **Ubicación**: Proporcione las coordenadas del sitio usando la adquisición automática de GPS, la entrada manual de latitud/longitud o salte la configuración de ubicación. La latitud y la longitud son requeridas si se utiliza la programación vinculada al sol. Iconos: GPS :app-myLocation:, coordenadas manuales :app-editLocationAlt:, omitir ubicación :app-locationOff: y selector de mapa :app-mapSheet:.
+    - **Análisis**: Elige el micrófono, la tasa de inferencia, el umbral de confianza y la sensibilidad.
     - **Formato de grabación**: Elija entre los formatos FLAC (comprimido sin pérdidas) y WAV (sin comprimir).
     - **Modo de grabación**:
         - *Completo*: Graba la duración total de cada ciclo activo.
@@ -23,6 +24,8 @@ El modo ARU (Autonomous Recording Unit) es el flujo de trabajo para despliegues 
     - **Prueba**: Un ciclo de prueba opcional de un minuto está activado por defecto para verificar la entrada del micrófono y la inferencia inmediatamente después de iniciar, sin contar para el límite de ciclos programados.
     - **Agrupación de Sessions**: Configure si desea guardar cada ciclo como una Session separada (recomendado para tiempos de carga más rápidos y visualización modular) o combinar todos los ciclos en una única Session de múltiples segmentos.
 - **Listo**: Revise el horario, el consumo estimado de almacenamiento de audio y las restricciones diurnas/nocturnas, luego inicie el despliegue.
+
+Los controles de configuración usan los mismos iconos que los demás asistentes: :app-micRounded: micrófono, :app-speedRounded: tasa de inferencia, :app-verifiedRounded: confianza, :app-hearing: sensibilidad, :app-fiberManualRecordRounded: modo de grabación, :app-timerOutlined: contexto del clip y duración del ciclo, :app-filterAltRounded: muestreo de detecciones y :app-formatListNumberedRounded: límite de clips por especie. El intervalo de repetición usa :app-repeatRounded:, los controles de batería baja :app-batteryAlert: y :app-batteryChargingFull:, y la prueba y la agrupación de Sessions :app-scienceRounded: y :app-libraryBooks:. Toque el botón :app-helpOutline: junto a un control para ver su explicación.
 
 Al iniciar, se guarda inmediatamente una Session `SessionType.aru` con metadatos del horario ARU. Además, los ciclos de grabación se guardan cada 30 segundos, incluidos los ciclos sin detecciones. Tras un cierre inesperado o un corte de energía, el último despliegue parcial aparece en la Biblioteca de sesiones como una Session finalizada; la grabación no se reinicia. Puede perderse lo registrado desde el último guardado.
 

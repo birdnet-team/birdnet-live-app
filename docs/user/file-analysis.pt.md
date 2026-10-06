@@ -4,7 +4,7 @@ A Análise de arquivos processa uma gravação existente pelo mesmo pipeline do 
 
 ## Como abrir
 
-Na tela de Início, toque no cartão **Análise de arquivos** com o ícone :material-file-music:.
+Na tela de Início, toque no cartão **Análise de arquivos** com o ícone :app-audioFileRounded:.
 
 ### De outro aplicativo
 
@@ -12,8 +12,9 @@ Você também pode enviar uma gravação de outro aplicativo. No Android, compar
 
 ## Barra de aplicativo
 
-- :material-tune: — abre as configurações da Análise de arquivos
-- :material-close: — cancela uma execução de análise ativa
+- :app-tuneRounded: — abre as configurações da Análise de arquivos
+- :app-helpOutlineRounded: — abre a ajuda da Análise de arquivos
+- :app-close: — cancela uma execução de análise ativa
 
 ## Entradas suportadas
 
@@ -42,11 +43,11 @@ Escolha um arquivo e revise seu cartão de metadados:
 
 Você pode:
 
-- usar o GPS atual
-- inserir as coordenadas manualmente
-- ignorar a localização
-- escolher um ponto no mapa
-- definir uma data de gravação opcional
+- usar o GPS atual :app-myLocation:
+- inserir as coordenadas manualmente :app-editLocationAlt:
+- ignorar a localização :app-locationOff:
+- escolher um ponto no mapa :app-mapSheet:
+- definir uma data de gravação opcional :app-calendarTodayRounded:
 
 ### 3. Parâmetros
 
@@ -57,6 +58,16 @@ O assistente expõe:
 - sensibilidade
 - limiar de confiança
 - modo do filtro de espécies
+
+| Controle de configuração | Ícone |
+|---|---|
+| Duração da janela | :app-timerOutlined: |
+| Sobreposição | :app-swapHoriz: |
+| Sensibilidade | :app-hearing: |
+| Limiar de confiança | :app-verifiedRounded: |
+| Filtro de espécies | :app-filterAltRounded: |
+
+Toque no botão :app-helpOutline: ao lado de um controle de configuração para ver a explicação. As etapas de arquivo, localização e data de gravação também têm botões de ajuda.
 
 A sobreposição controla quanto cada janela de análise avança e é específica da
 análise de arquivos: o arquivo inteiro é sempre examinado, e mais sobreposição

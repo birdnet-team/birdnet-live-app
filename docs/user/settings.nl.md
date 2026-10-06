@@ -1,6 +1,8 @@
 # Instellingen
 
-BirdNET Live gebruikt één instellingenscherm voor meerdere workflows. De knop :material-tune: opent de secties die relevant zijn voor het scherm waarvandaan je komt.
+BirdNET Live gebruikt één instellingenscherm voor meerdere workflows. De knop :app-tuneRounded: opent de secties die relevant zijn voor het scherm waarvandaan je komt.
+
+De knop :app-helpOutline: naast een instelling opent een korte uitleg. De instelwizards van Point Count, Survey, ARU en Bestandsanalyse gebruiken dezelfde knop en dezelfde pictogrammen voor instellingen die ze met Instellingen of met elkaar delen.
 
 ## Hoe het bereik van de instellingen werkt
 
@@ -118,6 +120,14 @@ middenweg; **0,30 Hz** blijft de uitdrukkelijke keuze voor maximale
 batterijduur. De bestandsanalyse heeft geen inferentiesnelheid — die gebruikt
 in plaats daarvan een instelling voor [overlap](file-analysis.md).
 
+### Soorten negeren
+
+Opent een paneel met binaire inferentiefilters. Vink **Vogels**, **Zoogdieren**, **Amfibieën** of **Insecten** aan om die hele taxonomische klasse te onderdrukken. Alle vier staan standaard uit.
+
+**Algemene soorten negeren boven** loopt van **80–100%** en onderdrukt soorten waarvan de huidige geomodelscore strikt boven de gekozen grens ligt. De standaardwaarde **100%** negeert geen soorten vanwege algemeenheid; verlagen negeert meer algemene soorten. Het paneel voert het geomodel één keer uit voor de huidige locatie en toont het totale aantal genegeerde soorten. Wijzigingen hergebruiken die opgeslagen voorspelling zonder nieuwe inferentie. De algemeenheidsregel vereist een locatie; het taxonomische filter werkt ook zonder.
+
+Het filter zet genegeerde kansen van zowel het geo- als audiomodel precies op nul na de sigmoïdeactivatie en vóór temporele pooling. Ze kunnen daardoor niet bijdragen aan latere resultaten of als detectie worden weergegeven, opgeslagen, aangekondigd of geëxporteerd. Wijzigingen tijdens een actieve Live Mode-, Point Count-, Survey- of ARU-Session gelden vanaf het volgende venster; bestandsanalyse gebruikt de waarden bij de start.
+
 BirdNET Live effent scores intern uit over recente inferentievensters om
 eenmalige valse treffers te verminderen. Deze pooling is niet als
 gebruikersinstelling beschikbaar; standaard wordt adaptieve
@@ -192,13 +202,15 @@ Een uitklapbaar deel met een handvol schakelaars voor het routeren van audio, pl
 
 ### Modus
 
+Deze instelling regelt Live Mode. Point Count heeft een eigen opnamekeuze bij de analyse-instellingen; nieuwe tellingen gebruiken standaard **Vol**. Survey heeft ook een aparte opnamekeuze in de wizard.
+
 - **Volledig** — de hele opname bewaren
 - **Alleen detecties** — fragmenten rond detecties bewaren
 - **Uit** — geen audio-opname
 
 ### Fragmentcontext
 
-Is **Alleen detecties** actief, dan toont de app één schuifregelaar **Fragmentcontext** (0–5 s) die bepaalt hoeveel audio er aan **beide zijden** van elke detectie bewaard blijft. Elk fragment duurt `analysevenster + 2 × fragmentcontext`, dus met een analysevenster van 3 s en de standaardcontext van 1 s is het bewaarde fragment 5 s. Zet je de context op 2 s, dan levert dat een fragment van 7 s op (2 s aanloop + 3 s geanalyseerde audio + 2 s uitloop). Grotere waarden geven je meer ruimte voor visuele inspectie of externe controlegereedschappen, ten koste van schijfruimte; 0 bewaart alleen het geanalyseerde venster zelf.
+Is **Alleen detecties** actief, dan toont de app één schuifregelaar **Fragmentcontext** (0–5 s) die bepaalt hoeveel audio er aan **beide zijden** van elke detectie bewaard blijft. Point Count gebruikt dezelfde waarde als je **Clips** kiest in de wizard en kan haar daar wijzigen. Elk fragment duurt `analysevenster + 2 × fragmentcontext`, dus met een analysevenster van 3 s en de standaardcontext van 1 s is het bewaarde fragment 5 s. Zet je de context op 2 s, dan levert dat een fragment van 7 s op (2 s aanloop + 3 s geanalyseerde audio + 2 s uitloop). Grotere waarden geven je meer ruimte voor visuele inspectie of externe controlegereedschappen, ten koste van schijfruimte; 0 bewaart alleen het geanalyseerde venster zelf.
 
 ### Formaat
 
@@ -211,6 +223,14 @@ Deze instelling geldt voor audio die BirdNET Live opneemt. **Bestandsanalyse** b
 Staat die aan, dan begint de Live-modus met opnemen zodra het scherm opent en het model klaar is met laden — zonder dat je op de microfoonknop hoeft te tikken. Handig voor kioskachtige opstellingen, handsfree gebruik (bijvoorbeeld het toestel in het veld gemonteerd) of elke workflow waarbij Live openen sowieso "nu starten" betekent. Staat standaard uit, zodat een onbedoelde tik op de Live-tegel op het startscherm niet stilzwijgend een Session begint. Het automatisch starten gebeurt maar één keer per schermbezoek, dus een Session stoppen en opnieuw op de microfoon tikken werkt gewoon als handmatige herstart.
 
 Deze instelling regelt het openen van de Live-modus binnen de app. De [Quick Listen-widget](live-mode.md) begint bij een tik te luisteren, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
+
+### Doorgaan met uitgeschakeld scherm
+
+**Live Mode** pauzeert audio-opname en herkenning bij vergrendelen of verlaten van de app en hervat dezelfde Session bij terugkomst. Doorgaan op de achtergrond staat standaard uit. Na de eerste terugkomst legt een eenmalige dialoog uit hoe je het inschakelt; de schakelaar staat ook in de Live Mode-instellingen. Kies een **Maximale achtergrondtijd** van 15, 30, 60 of 120 minuten (standaard 30). De timer begint bij verlaten, vervalt bij terugkomst vóór de limiet en begint opnieuw bij een volgend vertrek. De limiet beëindigt de Session en opent het overzicht met de stopreden. Automatisch opslaan bepaalt nog steeds of ze meteen wordt bewaard of als niet opgeslagen verschijnt.
+
+**Point Count** gaat standaard door bij vergrendelen of wisselen van app met het scherm aan en eindigt na de gekozen duur. **Doorgaan met uitgeschakeld scherm** staat alleen in de eerste wizardstap. Zet het uit om bij deze acties eerder te stoppen. Het vraagteken verklaart het gedrag. Pauzeren en hervatten zou een gat in het getimede protocol maken. Het gereedscherm vat de keuze samen en het Session-overzicht toont de reden bij vroegtijdig stoppen.
+
+Android toont tijdens achtergrondgebruik een blijvende melding met Openen en Stoppen; het scherm mag normaal uitgaan. Kan achtergrondgebruik niet starten, houd de app dan open: op de achtergrond pauzeert Live Mode en eindigt Point Count. De app verlaten tijdens het starten van een Point Count annuleert die met een melding; stel de telling opnieuw in. In Windows pauzeert minimaliseren nooit Live Mode en beëindigt het nooit Point Count, ongeacht deze schakelaars.
 
 ### Sessions automatisch opslaan (Live en Point Count)
 
@@ -358,6 +378,6 @@ Gebruik dit voordat je een toestel aan een andere waarnemer overdraagt, een veld
 
 Sommige parameters stel je in hun eigen opzetschermen in, niet in het gedeelde instellingenscherm.
 
-- [Point Count-modus](point-count-mode.md) heeft een eigen instelling voor duur en locatie.
+- [Point Count-modus](point-count-mode.md) heeft een eigen instelling voor duur en locatie. Kies 3, 5, 10, 15, 20, 25 of 30 minuten passend bij je telprotocol; de laatste keuze wordt onthouden, met 5 minuten als standaard.
 - [Survey-modus](survey-mode.md) heeft een eigen scherm met Survey-parameters.
 - [Bestandsanalyse](file-analysis.md) heeft een eigen stap voor analyseparameters.

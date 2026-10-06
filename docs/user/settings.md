@@ -1,8 +1,8 @@
 # Settings
 
-BirdNET Live reuses one Settings screen across multiple workflows. The :material-tune: button opens the sections that are relevant to the screen you came from.
+BirdNET Live reuses one Settings screen across multiple workflows. The :app-tuneRounded: button opens the sections that are relevant to the screen you came from.
 
-The :material-help: button beside a setting opens a short explanation. The
+The :app-helpOutline: button beside a setting opens a short explanation. The
 Point Count, Survey, ARU, and File Analysis setup wizards use the same button
 and the same icons for controls they share with Settings or each other.
 

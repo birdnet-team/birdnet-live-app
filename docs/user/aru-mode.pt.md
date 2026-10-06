@@ -7,9 +7,10 @@ O modo ARU (Autonomous Recording Unit) é o fluxo de trabalho em local fixo para
 
 ## Fluxo de configuração atual
 
-- **Implantação e áudio**: 
+- **Detalhes e configurações de análise**:
     - **Metadados**: insira o nome da implantação, o ID da ARU/estação e o nome do observador.
-    - **Localização**: forneça as coordenadas do site usando aquisição GPS automática, entrada manual de latitude/longitude ou pule a configuração de localização. A latitude e a longitude são obrigatórias se for utilizada a programação baseada no sol.
+    - **Localização**: forneça as coordenadas do site usando aquisição GPS automática, entrada manual de latitude/longitude ou pule a configuração de localização. A latitude e a longitude são obrigatórias se for utilizada a programação baseada no sol. Ícones: GPS :app-myLocation:, coordenadas manuais :app-editLocationAlt:, ignorar localização :app-locationOff: e seletor no mapa :app-mapSheet:.
+    - **Análise**: Escolha o microfone, a taxa de inferência, o limiar de confiança e a sensibilidade.
     - **Formato de gravação**: escolha entre os formatos FLAC (comprimido sem perdas) e WAV (não comprimido).
     - **Modo de gravação**:
         - *Completo*: grava a duração total de cada ciclo ativo.
@@ -23,6 +24,8 @@ O modo ARU (Autonomous Recording Unit) é o fluxo de trabalho em local fixo para
     - **Teste**: um ciclo de teste opcional de um minuto está habilitado por padrão para verificar a entrada do microfone e a inferência imediatamente ao iniciar, sem contar para o limite de ciclos agendados.
     - **Agrupamento de Sessions**: configure se deseja salvar cada ciclo como uma Session separada (recomendado para carregamentos mais rápidos e visualização modular) ou combinar todos os ciclos em uma única Session multisegmentada.
 - **Pronto**: revise o cronograma, a estimativa de consumo de armazenamento de áudio e as restrições baseadas no sol, depois inicie a implantação.
+
+Os controles de configuração usam os mesmos ícones dos outros assistentes: :app-micRounded: microfone, :app-speedRounded: taxa de inferência, :app-verifiedRounded: confiança, :app-hearing: sensibilidade, :app-fiberManualRecordRounded: modo de gravação, :app-timerOutlined: contexto do clipe e duração do ciclo, :app-filterAltRounded: amostragem de detecções e :app-formatListNumberedRounded: limite de clipes por espécie. O intervalo de repetição usa :app-repeatRounded:, os controles de bateria fraca :app-batteryAlert: e :app-batteryChargingFull:, e o teste e o agrupamento de Sessions :app-scienceRounded: e :app-libraryBooks:. Toque no botão :app-helpOutline: ao lado de um controle para ver a explicação.
 
 Ao iniciar uma implantação, salva-se imediatamente uma Session `SessionType.aru` com os metadados de cronograma do ARU. Os ciclos de gravação também são salvos a cada 30 segundos, inclusive ciclos sem detecções. Após uma falha ou queda de energia, a última implantação parcial aparece na Biblioteca de Sessions como uma Session encerrada; a gravação não é reiniciada. O que foi registrado desde o último salvamento pode ser perdido.
 

@@ -27,7 +27,7 @@ Pasek spektrogramu nad odtwarzaczem jest interaktywny: dotknij, aby przeskoczyć
 
 Gatunki są pogrupowane w rozwijane wiersze. Możesz przeglądać wykrycia według gatunków i poruszać się po nagraniu w trakcie ich sprawdzania. Wiersze klastrów pod rozwiniętym gatunkiem są wcięte, dzięki czemu karta gatunku nadrzędnego pozostaje wizualnie odrębna od podrzędnych.
 
-Pole wyszukiwania nad listą filtruje gatunki po nazwie zwyczajowej lub naukowej, więc odnalezienie jednego konkretnego ptaka w Session ze stoma gatunkami to kilka znaków zamiast długiego przewijania. Przycisk :material-sort: obok zmienia kolejność gatunków:
+Pole wyszukiwania nad listą filtruje gatunki po nazwie zwyczajowej lub naukowej, więc odnalezienie jednego konkretnego ptaka w Session ze stoma gatunkami to kilka znaków zamiast długiego przewijania. Przycisk :app-sort: obok zmienia kolejność gatunków:
 
 - **Najwyższa pewność** (domyślnie) — najpierw gatunki o najwyższej pewności pojedynczego wykrycia. Dobre do przesiewania najpewniejszych oznaczeń. Gdy w tym trybie rozwiniesz gatunek, wykrycia z odtwarzalnymi fragmentami pojawią się przed tymi bez fragmentu, a dalej według pewności.
 - **Najwięcej wykryć** — najpierw gatunki o największej liczbie wykryć. Dobre do wychwycenia dominujących śpiewaków.
@@ -38,10 +38,10 @@ Wybrane sortowanie jest zapamiętywane między Sessions.
 
 ### Dodawanie gatunku ręcznie
 
-Przycisk :material-plus-circle-outline: na pasku narzędzi otwiera selektor gatunków dla ptaków, które BirdNET pominął. Wybranie wyniku wyszukiwania nie dodaje go od razu — najpierw wysuwa się panel potwierdzenia z wybranym gatunkiem i dwoma polami wyboru:
+Przycisk :app-addCircleOutline: na pasku narzędzi otwiera selektor gatunków dla ptaków, które BirdNET pominął. Wybranie wyniku wyszukiwania nie dodaje go od razu — najpierw wysuwa się panel potwierdzenia z wybranym gatunkiem i dwoma polami wyboru:
 
-- :material-ear-hearing: **Słyszany** — usłyszałeś ptaka.
-- :material-eye: **Widziany** — zobaczyłeś ptaka.
+- :app-hearing: **Słyszany** — usłyszałeś ptaka.
+- :app-visibility: **Widziany** — zobaczyłeś ptaka.
 
 Zaznacz jedno, oba albo żadne, a następnie dotknij **Dodaj**. **Anuluj** — albo przesunięcie w dół — wraca do wyszukiwania, więc pomyłka nic nie kosztuje. **Słyszany** jest zaznaczone domyślnie, a Twój wybór przenosi się na kolejny dodawany gatunek, więc zapisując serię ptaków, które tylko widziałeś, wystarczy raz zaznaczyć **Widziany**. Pozostawienie obu niezaznaczonych zapisuje wpis bez typu obserwacji, a nie jako „żadne”.
 
@@ -51,12 +51,12 @@ Wybór jest przechowywany przy wykryciu i pokazywany jako mały symbol ucha lub 
 
 Wszędzie, gdzie pojawia się wykrycie — na liście gatunków, w panelu odtwarzacza fragmentów, na liście podczas Survey na żywo i na znacznikach mapy Survey — obowiązuje ten sam zestaw działań:
 
-- :material-check: **Potwierdź** — znacznik dodawany jednym dotknięciem, który oznacza wykrycie jako zweryfikowane wzrokowo lub słuchowo. Potwierdzone klastry i znaczniki mapy otrzymują mały zielony znacznik, aby od razu rzucały się w oczy, a oznaczenie trafia do każdego formatu eksportu.
-- :material-dots-vertical: **Więcej** — otwiera menu z opcjami:
-    - :material-share-variant: **Udostępnij wykrycie** — zobacz *Udostępnianie* poniżej.
-    - :material-swap-horizontal: **Zamień gatunek** — wybierz inny gatunek dla tego wykrycia.
-    - :material-delete-outline: **Usuń wykrycie** — natychmiast usuwa wiersz. Na kilka sekund pojawia się pasek SnackBar z opcją cofnięcia, więc pomyłki da się odwrócić. Bez okna potwierdzenia.
-    - :material-delete-sweep-outline: **Usuń gatunek** — usuwa z Session wszystkie wykrycia danego gatunku naraz, z tą samą możliwością cofnięcia. Przydatne, gdy chcesz jednym ruchem usunąć błędnie oznaczone źródło hałasu, zamiast rozwijać gatunek i kasować klastry po kolei.
+- :app-checkCircleOutline: **Potwierdź** — znacznik dodawany jednym dotknięciem, który oznacza wykrycie jako zweryfikowane wzrokowo lub słuchowo. Potwierdzone klastry i znaczniki mapy otrzymują mały zielony znacznik, aby od razu rzucały się w oczy, a oznaczenie trafia do każdego formatu eksportu.
+- :app-moreVert: **Więcej** — otwiera menu z opcjami:
+    - :app-share: **Udostępnij wykrycie** — zobacz *Udostępnianie* poniżej.
+    - :app-swapHoriz: **Zamień gatunek** — wybierz inny gatunek dla tego wykrycia.
+    - :app-deleteOutline: **Usuń wykrycie** — natychmiast usuwa wiersz. Na kilka sekund pojawia się pasek SnackBar z opcją cofnięcia, więc pomyłki da się odwrócić. Bez okna potwierdzenia.
+    - :app-deleteSweep: **Usuń gatunek** — usuwa z Session wszystkie wykrycia danego gatunku naraz, z tą samą możliwością cofnięcia. Przydatne, gdy chcesz jednym ruchem usunąć błędnie oznaczone źródło hałasu, zamiast rozwijać gatunek i kasować klastry po kolei.
 
 #### Skróty gestami na wierszach przeglądu
 
@@ -71,7 +71,7 @@ Przesunięcie wiersza z **nagłówkiem gatunku** (w lewo lub w prawo) usuwa nara
 
 ### Udostępnianie pojedynczego wykrycia
 
-Pozycja :material-share-variant: **Udostępnij wykrycie** używa tych samych opcji co **Ustawienia → Eksport i synchronizacja**. Eksportuje tylko to wykrycie w wybranych artefaktach Raven, CSV, JSON, GPX, HTML i metadanych aplikacji. Gdy włączona jest opcja **Dołącz pliki audio**, pakiet zawiera też dźwięk wykrycia; opcja **Zawsze udostępniaj dźwięk jako WAV** jest respektowana. Gdy wszystkie formaty towarzyszące, HTML i metadane aplikacji są wyłączone, systemowy panel udostępniania otrzymuje surowy fragment dźwięku zamiast ZIP.
+Pozycja :app-share: **Udostępnij wykrycie** używa tych samych opcji co **Ustawienia → Eksport i synchronizacja**. Eksportuje tylko to wykrycie w wybranych artefaktach Raven, CSV, JSON, GPX, HTML i metadanych aplikacji. Gdy włączona jest opcja **Dołącz pliki audio**, pakiet zawiera też dźwięk wykrycia; opcja **Zawsze udostępniaj dźwięk jako WAV** jest respektowana. Gdy wszystkie formaty towarzyszące, HTML i metadane aplikacji są wyłączone, systemowy panel udostępniania otrzymuje surowy fragment dźwięku zamiast ZIP.
 
 Załącznik dźwiękowy jest ustalany w tej kolejności:
 
@@ -83,7 +83,7 @@ Załącznik dźwiękowy jest ustalany w tej kolejności:
 
 Do poszczególnych zapisów wykryć możesz dołączyć krótkie komentarze głosowe:
 
-- **Nagrywanie**: dotknij przycisku :material-dots-vertical: przy klastrze wykrycia i wybierz **Nagraj notatkę głosową**, aby otworzyć okno notatki głosowej. Dotknij dużego przycisku mikrofonu, aby rozpocząć nagrywanie. Przebieg fali na żywo odzwierciedla Twój głos w czasie rzeczywistym. Po zakończeniu dotknij przycisku stop.
+- **Nagrywanie**: dotknij przycisku :app-moreVert: przy klastrze wykrycia i wybierz **Nagraj notatkę głosową**, aby otworzyć okno notatki głosowej. Dotknij dużego przycisku mikrofonu, aby rozpocząć nagrywanie. Przebieg fali na żywo odzwierciedla Twój głos w czasie rzeczywistym. Po zakończeniu dotknij przycisku stop.
 - **Odsłuch**: po nagraniu możesz odsłuchać notatkę we wbudowanym odtwarzaczu. Aby ją zastąpić, dotknij przycisku **Nagraj ponownie**. Aby ją zachować, dotknij przycisku **Zapisz**.
 - **Usuwanie**: jeśli wykrycie ma już dołączoną notatkę głosową, możesz ją usunąć z menu albo z okna notatki głosowej.
 - **Formaty zależne od platformy**: na Androidzie i innych platformach notatki głosowe są nagrywane w mocno skompresowanym formacie AAC (`.m4a`) przy 16 kHz. Na iOS automatycznie używany jest format WAV/PCM16 (`.wav`), aby uniknąć problemów zgodności CoreAudio z aktywnymi sesjami dźwiękowymi aplikacji. Oba formaty są w pełni obsługiwane przez pakowanie do eksportu ZIP.
@@ -91,7 +91,7 @@ Do poszczególnych zapisów wykryć możesz dołączyć krótkie komentarze gło
 
 ### Mapa trasy Survey
 
-Sessions trybu Survey pokazują małą wbudowaną mapę śladu GPS i znaczników wykryć. Dotknij znacznika na tej mapie, aby wskazać wykrycie — mapa wyśrodkuje się na nim. Dotknij przycisku :material-fullscreen: **rozwiń** (u góry po prawej stronie mapy), aby otworzyć **mapę pełnoekranową**; jeśli wcześniej wskazano wykrycie, mapa pełnoekranowa otworzy się wyśrodkowana i przybliżona na tym wykryciu, więc nie stracisz miejsca.
+Sessions trybu Survey pokazują małą wbudowaną mapę śladu GPS i znaczników wykryć. Dotknij znacznika na tej mapie, aby wskazać wykrycie — mapa wyśrodkuje się na nim. Dotknij przycisku :app-fullscreen: **rozwiń** (u góry po prawej stronie mapy), aby otworzyć **mapę pełnoekranową**; jeśli wcześniej wskazano wykrycie, mapa pełnoekranowa otworzy się wyśrodkowana i przybliżona na tym wykryciu, więc nie stracisz miejsca.
 
 #### Znaczenie znaczników
 
@@ -119,15 +119,15 @@ Gdy filtr jest aktywny, tytuł na pasku aplikacji zyskuje podtytuł z liczbą do
 
 Pasek narzędzi używa tych samych znaczeń ikon, które opisano w [Ikonach i elementach sterujących](icons-and-controls.md):
 
-- :material-plus-circle-outline: — dodaj treść
-- :material-undo-variant: / :material-redo-variant: — przechodź przez zmiany
-- :material-content-cut: — tryb przycinania
-- :material-content-save: — zapisz zmiany
-- :material-share-variant: — wyeksportuj lub udostępnij
-- :material-delete-outline: — odrzuć Session
-- :material-play: — kontynuuj Survey, gdy ta akcja jest dostępna
-- :material-help-circle-outline: — otwórz panel pomocy Przeglądu Session
-- :material-tune: — otwórz ustawienia
+- :app-addCircleOutline: — dodaj treść
+- :app-undo: / :app-redo: — przechodź przez zmiany
+- :app-contentCut: — tryb przycinania
+- :app-save: — zapisz zmiany
+- :app-share: — wyeksportuj lub udostępnij
+- :app-deleteOutline: — odrzuć Session
+- :app-playArrowRounded: — kontynuuj Survey, gdy ta akcja jest dostępna
+- :app-helpOutlineRounded: — otwórz panel pomocy Przeglądu Session
+- :app-tuneRounded: — otwórz ustawienia
 
 ## Typowe zadania podczas przeglądu
 
@@ -139,6 +139,8 @@ Pasek narzędzi używa tych samych znaczeń ikon, które opisano w [Ikonach i el
 ## Eksport
 
 Sposób eksportu zależy od opcji wybranych w [Ustawieniach](settings.md). Aplikacja potrafi spakować wykrycia oraz opcjonalnie dźwięk do wybranego formatu eksportu. Każdy eksport zawiera metadane pochodzenia — wersję aplikacji, nazwę i wersję modelu, język nazw gatunków, znacznik czasu eksportu, ustawienia zachowane wraz z Session oraz odpowiednie opcje eksportu — zapisane w pliku towarzyszącym `<prefix>.metadata.json` (ZIP) albo w bloku `meta` na najwyższym poziomie (JSON), dzięki czemu eksporty same się opisują i są odtwarzalne.
+
+Jeśli urządzenie dostarcza wysokość z pozycją GPS, eksporty zawierają wysokość w metrach, dostępną dokładność pionową, powierzchnię odniesienia i czas pomiaru. JSON zapisuje wszystko przy powiązanych współrzędnych; GPX przy punktach trasy Survey i punktach wykryć. CSV i Raven dodają tylko kolumnę `Altitude (m)` obok szerokości i długości geograficznej. Dla współrzędnych ręcznych lub wybranych na mapie wysokość nie jest wyznaczana. Wykrycie dodane w danym czasie podczas przeglądu Survey otrzymuje pozycję interpolowaną między sąsiednimi punktami trasy, bez własnego czasu pomiaru. Urządzenia mogą używać różnych powierzchni odniesienia; przed porównaniem sprawdź `altitudeReference`. `unknown` oznacza, że platforma nie określiła powierzchni.
 
 Blok `settings` w eksporcie JSON zapisuje wartości, które *faktycznie zastosowano do tej Session* — czułość, tryb i liczbę okien score-poolingu, wzmocnienie mikrofonu oraz częstotliwość odcięcia filtra górnoprzepustowego — a nie to, co akurat jest ustawione teraz. Dzięki temu możesz odtworzyć wynik po miesiącach albo porównać dwa Surveys, nie pamiętając, gdzie stały wtedy suwaki.
 

@@ -1,6 +1,8 @@
 # Impostazioni
 
-BirdNET Live riutilizza una schermata Impostazioni su più flussi di lavoro. Il pulsante :material-tune: apre le sezioni rilevanti per la schermata da cui provieni.
+BirdNET Live riutilizza una schermata Impostazioni su più flussi di lavoro. Il pulsante :app-tuneRounded: apre le sezioni rilevanti per la schermata da cui provieni.
+
+Il pulsante :app-helpOutline: accanto a un'impostazione apre una breve spiegazione. Le procedure guidate di Point Count, Survey, ARU e Analisi file usano lo stesso pulsante e le stesse icone per i controlli che condividono con le Impostazioni o tra loro.
 
 ## Come funziona l'ambito delle impostazioni
 
@@ -118,6 +120,14 @@ esplicita per la massima autonomia. L'analisi file non ha una frequenza di
 inferenza: usa invece un'impostazione di
 [sovrapposizione](file-analysis.md).
 
+### Ignora specie
+
+Apre un pannello con filtri binari di inferenza. Seleziona **Uccelli**, **Mammiferi**, **Anfibi** o **Insetti** per sopprimere l’intera classe tassonomica. Le quattro caselle sono disattivate per impostazione predefinita.
+
+**Ignora specie comuni oltre** va da **80–100%** e sopprime le specie il cui punteggio attuale del modello geografico supera strettamente la soglia scelta. Il valore predefinito **100%** non ignora specie per la loro abbondanza; abbassarlo ne ignora di più. Il pannello esegue il modello geografico una volta per la posizione attuale e mostra il totale delle specie ignorate. Le modifiche riusano la previsione in cache senza ripetere l’inferenza. La regola sull’abbondanza richiede una posizione; il filtro tassonomico funziona senza.
+
+Il filtro azzera esattamente le probabilità ignorate dei modelli geografico e audio subito dopo l’attivazione sigmoide e prima dell’aggregazione temporale. Non possono contribuire ai risultati successivi né diventare rilevazioni mostrate, salvate, annunciate o esportate. Le modifiche durante una Session attiva di Live Mode, Point Count, Survey o ARU valgono dalla finestra successiva; l’analisi file usa i valori scelti all’avvio.
+
 BirdNET Live leviga internamente i punteggi sulle finestre di inferenza
 recenti per ridurre i falsi positivi isolati. Questo pooling non è esposto come
 impostazione utente; per impostazione predefinita usa il pooling adattivo
@@ -192,13 +202,15 @@ Una sezione a scomparsa che espone alcuni interruttori di instradamento audio e 
 
 ### Modalità
 
+Questa impostazione controlla Live Mode. Point Count ha una scelta di registrazione indipendente nel passaggio delle impostazioni di analisi; i nuovi conteggi usano **Completa** per impostazione predefinita. Anche Survey ha una scelta separata nella configurazione.
+
 - **Completa** — salva l'intera registrazione
 - **Solo rilevazioni** — salva spezzoni attorno alle rilevazioni
 - **Disattivata** — nessuna registrazione audio
 
 ### Contesto dello spezzone
 
-Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto dello spezzone** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
+Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto dello spezzone** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Point Count usa questo stesso valore quando scegli **Solo clip** nella configurazione e permette di modificarlo lì. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
 
 ### Formato
 
@@ -211,6 +223,14 @@ Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi fil
 Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
 
 Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. Il [widget Quick Listen](live-mode.md) inizia ad ascoltare quando lo tocchi, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
+
+### Continua a schermo spento
+
+**Live Mode** sospende acquisizione e identificazione quando blocchi lo schermo o lasci l’app, poi riprende la stessa Session al ritorno. La continuazione in background è disattivata per impostazione predefinita. Dopo il primo ritorno, un dialogo spiega come attivarla; l’interruttore è anche nelle impostazioni di Live Mode. Scegli un **Tempo massimo in background** di 15, 30, 60 o 120 minuti (30 predefiniti). Il timer parte uscendo, si annulla se torni prima della scadenza e riparte alla successiva uscita. Al limite termina la Session e apre il riepilogo con il motivo. Il salvataggio automatico determina ancora se conservarla subito o mostrarla come non salvata.
+
+**Point Count** continua per impostazione predefinita quando blocchi lo schermo o cambi app a schermo acceso e termina alla durata scelta. L’interruttore **Continua a schermo spento** appare solo nel primo passaggio di configurazione. Disattivalo per terminare prima in questi casi. Il punto interrogativo spiega il comportamento. Una pausa seguita dalla ripresa creerebbe un’interruzione nel protocollo a tempo. La schermata di pronto riassume la scelta e il riepilogo della Session mostra il motivo di una fine anticipata.
+
+Android mostra una notifica persistente con Apri e Interrompi durante il funzionamento in background; lo schermo può spegnersi normalmente. Se il funzionamento non può iniziare, tieni l’app aperta: in background Live Mode si sospende e Point Count termina. Uscire durante l’avvio di un Point Count lo annulla con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non sospende mai Live Mode né termina Point Count, indipendentemente dagli interruttori.
 
 ### Salva automaticamente le Sessions (Live e Point Count)
 
@@ -359,6 +379,6 @@ Usalo prima di consegnare un dispositivo a un altro osservatore, di dismettere u
 
 Alcuni parametri si configurano nelle rispettive schermate di configurazione anziché nella schermata Impostazioni condivisa.
 
-- [Modalità Point Count](point-count-mode.md) ha una propria configurazione di durata e posizione.
+- [Modalità Point Count](point-count-mode.md) ha una propria configurazione di durata e posizione. Scegli 3, 5, 10, 15, 20, 25 o 30 minuti secondo il protocollo; l’ultima scelta viene ricordata, con 5 minuti come valore predefinito.
 - [Modalità Survey](survey-mode.md) ha una propria schermata di parametri del rilievo.
 - [Analisi file](file-analysis.md) ha un proprio passaggio dei parametri di analisi.

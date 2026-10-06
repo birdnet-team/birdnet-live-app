@@ -4,7 +4,7 @@ File Analysis processes an existing recording through the same BirdNET pipeline 
 
 ## How to Open It
 
-From Home, tap the **File Analysis** card with the :material-file-music: icon.
+From Home, tap the **File Analysis** card with the :app-audioFileRounded: icon.
 
 ### From another app
 
@@ -12,9 +12,9 @@ You can also hand a recording to BirdNET Live from somewhere else. On Android, s
 
 ## App Bar
 
-- :material-tune: — open File Analysis settings
-- :material-help-circle-outline: — open File Analysis help
-- :material-close: — cancel an active analysis run
+- :app-tuneRounded: — open File Analysis settings
+- :app-helpOutlineRounded: — open File Analysis help
+- :app-close: — cancel an active analysis run
 
 ## Supported Inputs
 
@@ -43,11 +43,11 @@ Choose a file and review its metadata card:
 
 You can:
 
-- use current GPS :material-crosshairs-gps:
-- enter coordinates manually :material-map-marker-plus:
-- skip location :material-map-marker-off:
-- pick a point on the map :material-map:
-- set an optional recording date :material-calendar-today:
+- use current GPS :app-myLocation:
+- enter coordinates manually :app-editLocationAlt:
+- skip location :app-locationOff:
+- pick a point on the map :app-mapSheet:
+- set an optional recording date :app-calendarTodayRounded:
 
 ### 3. Parameters
 
@@ -61,13 +61,13 @@ The wizard exposes:
 
 | Setup control | Icon |
 |---|---|
-| Window duration | :material-timer: |
-| Overlap | :material-swap-horizontal: |
-| Sensitivity | :material-ear-hearing: |
-| Confidence threshold | :material-check-decagram: |
-| Species filter | :material-filter-outline: |
+| Window duration | :app-timerOutlined: |
+| Overlap | :app-swapHoriz: |
+| Sensitivity | :app-hearing: |
+| Confidence threshold | :app-verifiedRounded: |
+| Species filter | :app-filterAltRounded: |
 
-Tap the :material-help: button beside a setup control for its explanation.
+Tap the :app-helpOutline: button beside a setup control for its explanation.
 The file, location, and recording-date steps have help buttons too.
 
 Overlap controls how far each analysis window advances, and is specific to
