@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.2.0] - 2026-10-06
+
 ### Changed
 
 - Redesigned Help as a quick reference with mode purposes, audio-model and geomodel explanations, essential settings, field tips, guide links, and a floating back-to-top button. User-guide icons now match the app's actual glyphs across translated pages.
@@ -2037,4 +2039,3 @@ defaults to off and the feature has no UI surface in this commit.
 - LiveSession data model with settings snapshot and detection records
 - Audio playback for detection clips (just_audio integration)
 - Session info bar showing species and detection counts during active sessions
-
