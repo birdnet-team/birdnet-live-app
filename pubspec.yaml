@@ -45,7 +45,7 @@ dependencies:
   flutter_onnxruntime: 1.7.1
 
   # UI & UX
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.3
   # >=13.3.0 keeps the plugin's own iPad fallback (centre-of-screen anchor)
   # as a backstop; before that, a missing sharePositionOrigin made the
   # native share sheet refuse to present at all. See issue #203.
