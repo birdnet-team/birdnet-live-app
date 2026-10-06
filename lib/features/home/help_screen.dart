@@ -1,515 +1,606 @@
-// =============================================================================
-// Help Screen — Comprehensive app help clustered by mode
-// =============================================================================
-//
-// A dedicated help screen accessible from the home screen footer. Explains
-// each app mode and general tips for best results, organized into expandable
-// sections.
-// =============================================================================
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:birdnet_live/l10n/app_localizations.dart';
-import 'package:birdnet_live/shared/utils/app_icons.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/services/link_launcher.dart';
+import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/session_type_visuals.dart';
 import '../../shared/widgets/content_width_constraint.dart';
 import '../live/live_session.dart';
 
-/// Comprehensive help screen with mode-by-mode explanations.
-class HelpScreen extends StatelessWidget {
+/// Quick reference with visible summaries and optional workflow details.
+class HelpScreen extends StatefulWidget {
   const HelpScreen({super.key});
+
+  @override
+  State<HelpScreen> createState() => _HelpScreenState();
+}
+
+class _HelpScreenState extends State<HelpScreen> {
+  final _sections = List.generate(5, (_) => GlobalKey());
+  final _scrollController = ScrollController();
+  final _showBackToTop = ValueNotifier(false);
+  late final Future<Map<String, dynamic>> _modelNames = _loadModelNames();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateBackToTop);
+  }
+
+  void _updateBackToTop() {
+    _showBackToTop.value = _scrollController.offset > 300;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _showBackToTop.dispose();
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>> _loadModelNames() async {
+    final raw = await rootBundle.loadString(AppConstants.modelConfigAssetPath);
+    return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  void _jumpTo(int section) {
+    final target = _sections[section].currentContext;
+    if (target != null) {
+      Scrollable.ensureVisible(
+        target,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isBrandTheme = isBrandThemeColorScheme(theme.colorScheme);
-    final highContrast = AppTheme.isHighContrastTheme(theme);
+    final headings = [
+      l10n.helpModesTitle,
+      l10n.helpModelsTitle,
+      l10n.helpSettingsTitle,
+      l10n.helpToolsTitle,
+      l10n.helpTipsTitle,
+    ];
+
+    Widget mode(
+      SessionType type,
+      String title,
+      String summary,
+      String body,
+      String guide, {
+      String? tip,
+      bool comingSoon = false,
+    }) {
+      final palette = sessionTypePalette(theme, type);
+      return _HelpCard(
+        icon: sessionTypeIcon(type),
+        accent: palette.accent,
+        container: palette.container,
+        title: title,
+        summary: summary,
+        badge: comingSoon ? l10n.comingSoon : null,
+        children: [
+          _HelpText(body),
+          if (tip != null) ...[const SizedBox(height: 12), _FieldTip(tip)],
+          _GuideLink(page: guide),
+        ],
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpTitle)),
-      body: ContentWidthConstraint(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          children: [
-            // ── 1. Introduction ─────────────────────────────────
-            // Sets context for everything that follows: what kind of app
-            // this is and how the help page is organized.
-            Text(
-              l10n.helpIntro,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color:
-                    highContrast
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSurface.withAlpha(200),
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // ── 2. What you can do (the four core capture modes) ──
-            // The user's primary intent on opening the app is to record
-            // and identify something — so the four capture modes come
-            // first, in order of increasing structure / commitment:
-            //   Live  → Point Count → Survey → File Analysis
-            _SectionHeader(
-              icon: AppIcons.micNoneOutlined,
-              title: l10n.helpModesTitle,
-            ),
-            const SizedBox(height: 12),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.live),
-              color: sessionTypeAccentColor(theme, SessionType.live),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.live,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(theme, SessionType.live),
-              title: l10n.helpLiveTitle,
-              body: l10n.helpLiveBody,
-            ),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.pointCount),
-              color: sessionTypeAccentColor(theme, SessionType.pointCount),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.pointCount,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(
-                        theme,
-                        SessionType.pointCount,
-                      ),
-              title: l10n.helpPointCountTitle,
-              body: l10n.helpPointCountBody,
-            ),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.survey),
-              color: sessionTypeAccentColor(theme, SessionType.survey),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.survey,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(theme, SessionType.survey),
-              title: l10n.helpSurveyTitle,
-              body: l10n.helpSurveyBody,
-            ),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.fileUpload),
-              color: sessionTypeAccentColor(theme, SessionType.fileUpload),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.fileUpload,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(
-                        theme,
-                        SessionType.fileUpload,
-                      ),
-              title: l10n.helpFileAnalysisTitle,
-              body: l10n.helpFileAnalysisBody,
-            ),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.batchAnalysis),
-              color: sessionTypeAccentColor(theme, SessionType.batchAnalysis),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.batchAnalysis,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(
-                        theme,
-                        SessionType.batchAnalysis,
-                      ),
-              title: l10n.helpBatchAnalysisTitle,
-              body: l10n.helpBatchAnalysisBody,
-            ),
-            _HelpSection(
-              icon: sessionTypeIcon(SessionType.aru),
-              color: sessionTypeAccentColor(theme, SessionType.aru),
-              containerColor:
-                  isBrandTheme
-                      ? sessionTypeAccentColor(
-                        theme,
-                        SessionType.aru,
-                      ).withAlpha(30)
-                      : sessionTypeContainerColor(theme, SessionType.aru),
-              title: l10n.helpAruTitle,
-              body: l10n.helpAruBody,
-            ),
-            const SizedBox(height: 20),
-
-            // ── 3. Discover & revisit (Explore + Session Library) ──
-            // Once the user has captured something — or wants to know
-            // *what to expect* before recording — these two screens are
-            // where they go.
-            _SectionHeader(
-              icon: AppIcons.travelExplore,
-              title: l10n.helpToolsTitle,
-            ),
-            const SizedBox(height: 12),
-            _HelpSection(
-              icon: AppIcons.searchRounded,
-              color: theme.colorScheme.primary,
-              containerColor: theme.colorScheme.primaryContainer,
-              title: l10n.helpExploreTitle,
-              body: l10n.helpExploreBody,
-            ),
-            _HelpSection(
-              icon: AppIcons.libraryBooks,
-              color: theme.colorScheme.secondary,
-              containerColor: theme.colorScheme.secondaryContainer,
-              title: l10n.helpSessionsTitle,
-              body: l10n.helpSessionsBody,
-            ),
-            const SizedBox(height: 20),
-
-            // ── 4. Common controls (settings & meta navigation) ──
-            // These are the small AppBar / footer affordances common to
-            // every screen. They follow the modes because users typically
-            // discover them only after they've started using the app.
-            _SectionHeader(
-              icon: AppIcons.gridViewRounded,
-              title: l10n.helpControlsTitle,
-            ),
-            const SizedBox(height: 12),
-            _ControlCard(
-              icon: AppIcons.tuneRounded,
-              title: l10n.settings,
-              body: l10n.helpControlSettings,
-            ),
-            _ControlCard(
-              icon: AppIcons.helpOutlineRounded,
-              title: l10n.helpTitle,
-              body: l10n.helpControlHelp,
-            ),
-            _ControlCard(
-              icon: AppIcons.infoOutline,
-              title: l10n.about,
-              body: l10n.helpControlAbout,
-            ),
-
-            const SizedBox(height: 8),
-            const Divider(),
-            const SizedBox(height: 8),
-
-            // ── 5. Tips for best results ─────────────────────────
-            _SectionHeader(
-              icon: AppIcons.lightbulbOutline,
-              title: l10n.helpTipsTitle,
-            ),
-            const SizedBox(height: 12),
-            _TipRow(text: l10n.helpTipQuiet),
-            _TipRow(text: l10n.helpTipMic),
-            _TipRow(text: l10n.helpTipBasics),
-            _TipRow(text: l10n.helpTipThreshold),
-            _TipRow(text: l10n.helpTipGeoFilter),
-            _TipRow(text: l10n.helpTipGuide),
-            const SizedBox(height: 12),
-
-            // ── 6. Deeper dive — link out to the online user guide ──
-            Card(
-              color:
-                  highContrast
-                      ? theme.colorScheme.surface
-                      : theme.colorScheme.surfaceContainerLow,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+      floatingActionButton: ValueListenableBuilder<bool>(
+        valueListenable: _showBackToTop,
+        builder: (context, visible, child) => visible
+            ? FloatingActionButton.small(
+                heroTag: null,
+                tooltip: l10n.helpBackToTop,
+                onPressed: () {
+                  if (MediaQuery.disableAnimationsOf(context)) {
+                    _scrollController.jumpTo(0);
+                  } else {
+                    _scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  }
+                },
+                child: const Icon(AppIcons.arrowUpwardRounded),
+              )
+            : const SizedBox.shrink(),
+      ),
+      body: SafeArea(
+        top: false,
+        child: ContentWidthConstraint(
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  AppConstants.appName,
+                  style: theme.textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                _HelpText(l10n.helpIntro),
+                const SizedBox(height: 16),
+                _HelpSurface(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          AppIcons.menuBook,
-                          size: 20,
-                          color: theme.colorScheme.primary,
+                        _Heading(
+                          icon: AppIcons.menuBook,
+                          title: l10n.aboutUserGuide,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          l10n.aboutUserGuide,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        const SizedBox(height: 8),
+                        _HelpText(l10n.helpTipGuide),
+                        const SizedBox(height: 12),
+                        FilledButton.tonalIcon(
+                          onPressed: () => _launchUserGuide(context),
+                          icon: const Icon(AppIcons.openInNew, size: 18),
+                          label: Text(l10n.aboutUserGuide),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      l10n.helpTipGuide,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color:
-                            highContrast
-                                ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurface.withAlpha(180),
-                        height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(l10n.helpJumpTo, style: theme.textTheme.labelLarge),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (var i = 0; i < headings.length; i++)
+                      ActionChip(
+                        label: Text(headings[i]),
+                        onPressed: () => _jumpTo(i),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.tonalIcon(
-                      onPressed: () => _launchUserGuide(context),
-                      icon: const Icon(AppIcons.openInNew),
-                      label: Text(l10n.aboutUserGuide),
-                    ),
                   ],
                 ),
-              ),
+                _Heading(key: _sections[0], title: headings[0], section: true),
+                mode(
+                  SessionType.live,
+                  l10n.liveMode,
+                  l10n.liveModeDescription,
+                  l10n.helpLiveBody,
+                  'live-mode/',
+                ),
+                mode(
+                  SessionType.pointCount,
+                  l10n.pointCountMode,
+                  l10n.pointCountModeDescription,
+                  l10n.helpPointCountBody,
+                  'point-count-mode/',
+                  tip: l10n.pointCountTipConsistency,
+                ),
+                mode(
+                  SessionType.survey,
+                  l10n.surveyMode,
+                  l10n.helpSurveySummary,
+                  l10n.helpSurveyBody,
+                  'survey-mode/',
+                  tip: l10n.surveyTipRepeat,
+                ),
+                mode(
+                  SessionType.aru,
+                  l10n.aruMode,
+                  l10n.aruModeDescription,
+                  l10n.helpAruBody,
+                  'aru-mode/',
+                  tip: l10n.helpTipTest,
+                ),
+                mode(
+                  SessionType.fileUpload,
+                  l10n.fileAnalysisMode,
+                  l10n.fileAnalysisModeDescription,
+                  l10n.helpFileAnalysisBody,
+                  'file-analysis/',
+                  tip: l10n.helpTipRecordingLocation,
+                ),
+                mode(
+                  SessionType.batchAnalysis,
+                  l10n.batchAnalysisMode,
+                  l10n.batchAnalysisModeDescription,
+                  l10n.helpBatchAnalysisBody,
+                  'batch-analysis/',
+                  comingSoon: true,
+                ),
+                _Heading(key: _sections[1], title: headings[1], section: true),
+                _HelpText(l10n.helpModelsIntro),
+                const SizedBox(height: 12),
+                FutureBuilder<Map<String, dynamic>>(
+                  future: _modelNames,
+                  builder: (context, snapshot) {
+                    // Explanations remain available if metadata cannot load.
+                    String? name(String model) =>
+                        (snapshot.data?[model]
+                                as Map<String, dynamic>?)?['name']
+                            as String?;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _HelpCard(
+                          icon: AppIcons.graphicEq,
+                          title: l10n.helpAudioModelTitle,
+                          summary: l10n.helpAudioModelSummary,
+                          children: [
+                            _HelpText(l10n.helpAudioModelBody),
+                            if (name('audioModel') case final modelName?) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                modelName,
+                                style: theme.textTheme.labelMedium,
+                              ),
+                            ],
+                          ],
+                        ),
+                        _HelpCard(
+                          icon: AppIcons.travelExplore,
+                          title: l10n.helpGeomodelTitle,
+                          summary: l10n.helpGeomodelSummary,
+                          children: [
+                            _HelpText(l10n.helpGeomodelBody),
+                            if (name('geoModel') case final modelName?) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                modelName,
+                                style: theme.textTheme.labelMedium,
+                              ),
+                            ],
+                            const _GuideLink(page: 'explore/'),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                _Heading(key: _sections[2], title: headings[2], section: true),
+                _HelpText(l10n.helpControlSettings),
+                const SizedBox(height: 12),
+                _HelpCard(
+                  icon: AppIcons.verifiedRounded,
+                  title: l10n.settingsInference,
+                  summary: l10n.helpDetectionSettingsSummary,
+                  children: [
+                    _HelpParagraph(
+                      l10n.settingsConfidenceThreshold,
+                      l10n.helpTipThreshold,
+                    ),
+                    _HelpParagraph(
+                      l10n.settingsSensitivity,
+                      l10n.helpSensitivityBody,
+                    ),
+                    _HelpParagraph(
+                      l10n.settingsWindowDuration,
+                      l10n.settingsHelpWindowDuration,
+                    ),
+                    _HelpParagraph(
+                      l10n.settingsInferenceRate,
+                      l10n.settingsHelpInferenceRate,
+                    ),
+                    const _GuideLink(page: 'settings/'),
+                  ],
+                ),
+                _HelpCard(
+                  icon: AppIcons.myLocation,
+                  title: l10n.settingsLocation,
+                  summary: l10n.helpTipGeoFilter,
+                  children: [
+                    _HelpText(l10n.helpLocationSettingsBody),
+                    const _GuideLink(page: 'settings/'),
+                  ],
+                ),
+                _HelpCard(
+                  icon: AppIcons.micRounded,
+                  title: l10n.settingsAudio,
+                  summary: l10n.audioSourcePickerHint,
+                  children: [
+                    _HelpParagraph(
+                      l10n.audioSourceMicrophone,
+                      l10n.settingsHelpAudioSource,
+                    ),
+                    _HelpParagraph(
+                      l10n.settingsHighPassFilter,
+                      l10n.helpHighPassBody,
+                    ),
+                    const _GuideLink(page: 'settings/'),
+                  ],
+                ),
+                _HelpCard(
+                  icon: AppIcons.saveRounded,
+                  title: l10n.settingsRecording,
+                  summary: l10n.settingsRecordingDescription,
+                  children: [
+                    _HelpText(l10n.settingsHelpRecordingMode),
+                    const SizedBox(height: 12),
+                    _HelpText(l10n.settingsHelpRecordingFormat),
+                    const SizedBox(height: 12),
+                    _HelpText(l10n.helpSavingBody),
+                    const _GuideLink(page: 'settings/'),
+                  ],
+                ),
+                _HelpCard(
+                  icon: AppIcons.tuneRounded,
+                  title: l10n.settingsGeneral,
+                  summary: l10n.helpPreferencesSummary,
+                  children: [
+                    _HelpParagraph(
+                      l10n.settingsSpectrogram,
+                      l10n.helpSpectrogramBody,
+                    ),
+                    _HelpParagraph(l10n.settingsPrivacy, l10n.helpPrivacyBody),
+                    const _GuideLink(page: 'settings/'),
+                  ],
+                ),
+                _Heading(key: _sections[3], title: headings[3], section: true),
+                _HelpCard(
+                  icon: AppIcons.searchRounded,
+                  title: l10n.exploreMode,
+                  summary: l10n.exploreModeDescription,
+                  children: [
+                    _HelpText(l10n.helpExploreBody),
+                    const _GuideLink(page: 'explore/'),
+                  ],
+                ),
+                _HelpCard(
+                  icon: AppIcons.libraryMusic,
+                  title: l10n.sessionLibraryTitle,
+                  summary: l10n.helpReviewSummary,
+                  children: [
+                    _HelpText(l10n.helpSessionsBody),
+                    const SizedBox(height: 12),
+                    _HelpText(l10n.helpTipReview),
+                    const _GuideLink(page: 'session-review/'),
+                  ],
+                ),
+                _Heading(key: _sections[4], title: headings[4], section: true),
+                _HelpSurface(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _FieldTip(
+                          l10n.pointCountTipMicrophone,
+                          icon: AppIcons.micRounded,
+                        ),
+                        _FieldTip(l10n.pointCountTipWind, icon: AppIcons.air),
+                        _FieldTip(
+                          l10n.pointCountTipQuiet,
+                          icon: AppIcons.volumeMuteRounded,
+                        ),
+                        _FieldTip(
+                          l10n.pointCountTipStableSurface,
+                          icon: AppIcons.touchApp,
+                        ),
+                        _FieldTip(
+                          l10n.helpTipTest,
+                          icon: AppIcons.playArrowRounded,
+                        ),
+                        _FieldTip(
+                          l10n.helpTipRecordingLocation,
+                          icon: AppIcons.myLocation,
+                        ),
+                        _FieldTip(l10n.helpTipReview, icon: AppIcons.hearing),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section header — small icon + title row used between top-level help
-// groups. Kept inline here (rather than promoted to a shared widget)
-// because the layout is intentionally tied to this screen's rhythm.
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.icon, required this.title});
-  final IconData icon;
+class _Heading extends StatelessWidget {
+  const _Heading({
+    super.key,
+    required this.title,
+    this.icon,
+    this.section = false,
+  });
   final String title;
+  final IconData? icon;
+  final bool section;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 22, color: theme.colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) => Padding(
+    padding: section
+        ? const EdgeInsets.only(top: 28, bottom: 12)
+        : EdgeInsets.zero,
+    child: Semantics(
+      header: true,
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 22),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: Text(title, style: Theme.of(context).textTheme.titleMedium),
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+    ),
+  );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Help Section — Expandable card for a single mode
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _HelpSection extends StatelessWidget {
-  const _HelpSection({
-    required this.icon,
-    required this.color,
-    required this.containerColor,
-    required this.title,
-    required this.body,
-  });
-
-  final IconData icon;
-  final Color color;
-  final Color containerColor;
-  final String title;
-  final String body;
+class _HelpSurface extends StatelessWidget {
+  const _HelpSurface({required this.child});
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final highContrast = AppTheme.isHighContrastTheme(theme);
+    final contrast = AppTheme.isHighContrastTheme(theme);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 0,
-      color:
-          highContrast
-              ? theme.colorScheme.surface
-              : theme.colorScheme.surfaceContainerLow,
+      color: contrast
+          ? theme.colorScheme.surface
+          : theme.colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
-        side:
-            highContrast
-                ? BorderSide(color: theme.colorScheme.outline)
-                : BorderSide.none,
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: contrast
+              ? theme.colorScheme.outline
+              : theme.colorScheme.outlineVariant,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+}
+
+class _HelpCard extends StatelessWidget {
+  const _HelpCard({
+    required this.icon,
+    required this.title,
+    required this.summary,
+    required this.children,
+    this.accent,
+    this.container,
+    this.badge,
+  });
+  final IconData icon;
+  final String title;
+  final String summary;
+  final List<Widget> children;
+  final Color? accent;
+  final Color? container;
+  final String? badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final contrast = AppTheme.isHighContrastTheme(theme);
+    return _HelpSurface(
       child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: highContrast ? theme.colorScheme.surface : containerColor,
+            color: contrast
+                ? theme.colorScheme.surface
+                : (container ?? theme.colorScheme.surfaceContainerHighest),
             borderRadius: BorderRadius.circular(10),
-            border:
-                highContrast
-                    ? Border.all(color: theme.colorScheme.outline)
-                    : null,
+            border: contrast
+                ? Border.all(color: theme.colorScheme.outline)
+                : null,
           ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        title: Text(
-          title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
+          child: Icon(
+            icon,
+            size: 22,
+            color: accent ?? theme.colorScheme.onSurface,
           ),
         ),
-        childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            body,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color:
-                  highContrast
-                      ? theme.colorScheme.onSurface
-                      : theme.colorScheme.onSurface.withAlpha(200),
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ControlCard extends StatelessWidget {
-  const _ControlCard({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final highContrast = AppTheme.isHighContrastTheme(theme);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 0,
-      color:
-          highContrast
-              ? theme.colorScheme.surface
-              : theme.colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
-        side:
-            highContrast
-                ? BorderSide(color: theme.colorScheme.outline)
-                : BorderSide.none,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color:
-                    highContrast
-                        ? theme.colorScheme.surface
-                        : theme.colorScheme.primary.withAlpha(24),
-                borderRadius: BorderRadius.circular(10),
-                border:
-                    highContrast
-                        ? Border.all(color: theme.colorScheme.outline)
-                        : null,
-              ),
-              child: Icon(icon, color: theme.colorScheme.primary, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    body,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color:
-                          highContrast
-                              ? theme.colorScheme.onSurface
-                              : theme.colorScheme.onSurface.withAlpha(180),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Text(title, style: theme.textTheme.titleSmall),
+            if (badge != null) ...[
+              const SizedBox(height: 4),
+              Text(badge!, style: theme.textTheme.labelMedium),
+            ],
           ],
         ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: _HelpText(summary),
+        ),
+        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+        childrenPadding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        children: children,
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tip Row — Bullet-style tip
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _TipRow extends StatelessWidget {
-  const _TipRow({required this.text});
+class _HelpText extends StatelessWidget {
+  const _HelpText(this.text);
   final String text;
-
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final highContrast = AppTheme.isHighContrastTheme(theme);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Icon(
-              AppIcons.chevronRight,
-              size: 16,
-              color:
-                  highContrast
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.primary.withAlpha(180),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color:
-                    highContrast
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSurface.withAlpha(180),
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+    text,
+    style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.5),
+  );
 }
 
-Future<void> _launchUserGuide(BuildContext context) async {
-  final localeCode = Localizations.localeOf(context).languageCode;
-  final basePath = AppConstants.docsLocalePrefix(localeCode);
-  await openExternalUrl(context, '${AppConstants.docsUrl}$basePath/user/');
+class _HelpParagraph extends StatelessWidget {
+  const _HelpParagraph(this.title, this.body);
+  final String title;
+  final String body;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 4),
+        _HelpText(body),
+      ],
+    ),
+  );
+}
+
+class _FieldTip extends StatelessWidget {
+  const _FieldTip(this.text, {this.icon = AppIcons.lightbulbOutline});
+  final String text;
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 12),
+        Expanded(child: _HelpText(text)),
+      ],
+    ),
+  );
+}
+
+class _GuideLink extends StatelessWidget {
+  const _GuideLink({required this.page});
+  final String page;
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: TextButton.icon(
+      onPressed: () => _launchUserGuide(context, page),
+      icon: const Icon(AppIcons.openInNew, size: 18),
+      label: Text(AppLocalizations.of(context)!.aboutUserGuide),
+    ),
+  );
+}
+
+Future<void> _launchUserGuide(BuildContext context, [String page = '']) async {
+  final prefix = AppConstants.docsLocalePrefix(
+    Localizations.localeOf(context).languageCode,
+  );
+  await openExternalUrl(context, '${AppConstants.docsUrl}$prefix/user/$page');
 }

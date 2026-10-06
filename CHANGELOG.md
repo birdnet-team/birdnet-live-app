@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Redesigned Help as a quick reference with mode purposes, audio-model and geomodel explanations, essential settings, field tips, guide links, and a floating back-to-top button. User-guide icons now match the app's actual glyphs across translated pages.
+- German app text now consistently uses the formal “Sie” address, including Help, Live Mode tips, and remaining informal prompts.
+- Refreshed the pre-recording Live Mode tips with practical field advice, microphone checks, and current recording and background-listening settings.
 - Development and release builds now require Flutter 3.47 or later with Dart 3.13 or later.
 
 ### Added
