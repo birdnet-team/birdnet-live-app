@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed an Android recording crash caused by a late Bluetooth connection event triggering startup twice ("Reply already submitted").
 - Active Sessions now save a partial snapshot every 30 seconds (Live Mode and Point Count only when automatic saving is enabled), so a crash or power loss leaves the latest snapshot in the Session Library; recording does not restart. Session saves keep a recovery copy during replacement, and long WAV recordings refresh their header while recording (#240).
 - The Session Library back arrow and system back action now return directly to the main menu, even after starting several sessions from the library.
 - Ending a Point Count or Live Mode Session while returning from the background now keeps the screen open until saving finishes, refreshes the Session Library, and completes background notification stops reliably.
