@@ -4,7 +4,7 @@ Point Count Mode is the timed stationary workflow in BirdNET Live.
 
 ## How to Open It
 
-From Home, tap the **Point Count Mode** card with the :material-map-marker: icon.
+From Home, tap the **Point Count Mode** card with the :app-locationOnRounded: icon.
 
 ## Setup Flow
 
@@ -16,10 +16,10 @@ Choose:
 
 - one of the available duration chips: 3, 5, 10, 15, 20, 25, or 30 minutes
 - whether the count continues with the screen off (on by default)
-- current GPS with :material-crosshairs-gps:
-- manual coordinates with :material-map-marker-plus:
-- no location with :material-map-marker-off:
-- map picker with :material-map:
+- current GPS with :app-myLocation:
+- manual coordinates with :app-editLocationAlt:
+- no location with :app-locationOff:
+- map picker with :app-mapSheet:
 
 The setup screen refreshes GPS when you return from the system permission
 dialog or app settings, so a newly granted location permission should update
@@ -37,16 +37,16 @@ settings but can be adjusted for this count without changing your defaults.
 
 | Setup control | Icon |
 |---|---|
-| Microphone | :material-microphone: |
-| Recording mode | :material-record-circle: |
-| Clip context | :material-timer: |
-| Inference rate | :material-speedometer: |
-| Confidence threshold | :material-check-decagram: |
-| Sensitivity | :material-ear-hearing: |
-| Species filter | :material-filter-outline: |
+| Microphone | :app-micRounded: |
+| Recording mode | :app-fiberManualRecordRounded: |
+| Clip context | :app-timerOutlined: |
+| Inference rate | :app-speedRounded: |
+| Confidence threshold | :app-verifiedRounded: |
+| Sensitivity | :app-hearing: |
+| Species filter | :app-filterAltRounded: |
 
-The :material-help: button beside each control explains its effect. The
-:material-timer: duration control and location selector have the same help
+The :app-helpOutline: button beside each control explains its effect. The
+:app-timerRounded: duration control and location selector have the same help
 button on the first step.
 
 Choose **Full** to save continuous audio (the default), **Clips** to save a
@@ -64,7 +64,7 @@ This screen presents a short in-app checklist to run through before starting.
 ### 4. Ready
 
 The ready screen summarizes the selected duration, recording choice, and
-screen-off behavior, then lets you start with :material-play:.
+screen-off behavior, then lets you start with :app-playArrowRounded:.
 
 ## Live Point Count Screen
 
@@ -72,10 +72,10 @@ The live point-count screen focuses on a timed dashboard.
 
 ### Top bar
 
-- :material-stop: — end the point count early
-- :material-timer: — show time remaining
-- :material-help-circle-outline: — open Point Count help
-- :material-tune: — open Point Count settings
+- :app-stopRounded: — end the point count early
+- :app-timerRounded: — show time remaining
+- :app-helpOutlineRounded: — open Point Count help
+- :app-tuneRounded: — open Point Count settings
 
 ### Main indicators
 

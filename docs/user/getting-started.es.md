@@ -40,18 +40,20 @@ La pantalla de inicio es el centro principal.
 
 ### Tarjetas de los modos principales
 
-- :material-microphone: **Modo Live**
-- :material-map-marker: **Modo Point Count**
-- :material-routes: **Modo Survey**
-- :material-file-music: **Análisis de archivos**
+- :app-micRounded: **Modo Live**
+- :app-locationOnRounded: **Modo Point Count**
+- :app-routeRounded: **Modo Survey**
+- :app-audioFileRounded: **Análisis de archivos**
+- :app-timerRounded: **Modo ARU**
+- :app-sdStorage: **Análisis por lotes** (Próximamente)
 
 ### Botones del pie
 
-- :material-tune: **Ajustes**
-- :material-magnify: **Explorar**
-- :material-music-box-multiple-outline: **Biblioteca de sesiones**
-- :material-help-circle-outline: **Ayuda**
-- :material-information-outline: **Acerca de**
+- :app-tuneRounded: **Ajustes**
+- :app-searchRounded: **Explorar**
+- :app-libraryMusic: **Biblioteca de sesiones**
+- :app-helpOutlineRounded: **Ayuda**
+- :app-infoOutline: **Acerca de**
 
 ## Qué se guarda
 

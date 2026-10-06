@@ -4,7 +4,7 @@ Survey Mode is the route-based workflow for long-running moving surveys.
 
 ## How to Open It
 
-From Home, tap the **Survey Mode** card with the :material-routes: icon.
+From Home, tap the **Survey Mode** card with the :app-routeRounded: icon.
 
 ## Setup Flow
 
@@ -17,9 +17,9 @@ You can enter:
 - survey name
 - transect ID
 - observer name
-- GPS :material-crosshairs-gps:, manual coordinates
-  :material-map-marker-plus:, or no starting location
-  :material-map-marker-off:. The map picker uses :material-map:.
+- GPS :app-myLocation:, manual coordinates
+  :app-editLocationAlt:, or no starting location
+  :app-locationOff:. The map picker uses :app-mapSheet:.
 
 This step also exposes the map picker, refreshes GPS when you return from
 system permission screens, and shows the background-GPS permission reminder
@@ -44,17 +44,17 @@ This step contains Survey-specific parameters such as:
 
 | Setup control | Icon |
 |---|---|
-| Microphone | :material-microphone: |
-| Inference rate | :material-speedometer: |
-| Confidence threshold | :material-check-decagram: |
-| GPS interval | :material-crosshairs-gps: |
-| Maximum duration | :material-timer: |
-| Recording mode | :material-record-circle: |
-| Clip context | :material-timer: |
-| Detection sampling | :material-filter-outline: |
-| Top N per species | :material-format-list-numbered: |
+| Microphone | :app-micRounded: |
+| Inference rate | :app-speedRounded: |
+| Confidence threshold | :app-verifiedRounded: |
+| GPS interval | :app-myLocation: |
+| Maximum duration | :app-timerOutlined: |
+| Recording mode | :app-fiberManualRecordRounded: |
+| Clip context | :app-timerOutlined: |
+| Detection sampling | :app-filterAltRounded: |
+| Top N per species | :app-formatListNumberedRounded: |
 
-Tap the :material-help: button beside a setup control for an explanation.
+Tap the :app-helpOutline: button beside a setup control for an explanation.
 The name, transect, observer, location, and alert controls have help buttons
 as well.
 
@@ -101,7 +101,7 @@ A short pre-start checklist inside the setup flow.
 
 ### 5. Ready
 
-The ready screen summarizes the active survey configuration before you start with :material-play:.
+The ready screen summarizes the active survey configuration before you start with :app-playArrowRounded:.
 
 ## Live Survey Dashboard
 
@@ -109,28 +109,28 @@ The live Survey screen has three main tabs plus a recent detections list.
 
 ### Top bar
 
-- :material-stop: — end the survey
-- :material-timer: — elapsed time
-- :material-help-circle-outline: — open the Survey help sheet
-- :material-tune: — open Survey settings
+- :app-stopRounded: — end the survey
+- :app-timerOutlined: — elapsed time
+- :app-helpOutlineRounded: — open the Survey help sheet
+- :app-tuneRounded: — open Survey settings
 
 ### Tabs
 
-- :material-map-outline: — route map and mapped detections
-- :material-equalizer: — spectrogram
+- :app-map: — route map and mapped detections
+- :app-graphicEq: — spectrogram
 - chart icon — summary statistics and species breakdown
 
 ### Stats and detections
 
 Below the tab content, the survey dashboard shows a stats bar and a recent detections list. Tapping a detection opens the species details overlay.
 
-Each detection row also exposes the same per-detection actions used in [Session Review](session-review.md): a one-tap :material-check: **Confirm** checkmark and a :material-dots-vertical: **More** overflow with **Share detection** and **Delete detection** (with SnackBar undo) — so you can validate, share, or remove a noisy hit mid-capture instead of waiting for the post-session review.
+Each detection row also exposes the same per-detection actions used in [Session Review](session-review.md): a one-tap :app-checkCircleOutline: **Confirm** checkmark and a :app-moreVert: **More** overflow with **Share detection** and **Delete detection** (with SnackBar undo) — so you can validate, share, or remove a noisy hit mid-capture instead of waiting for the post-session review.
 
 The same actions are available from the **live route map**: tap a detection marker to open the clip player sheet with confirm, share, and delete. Sharing during a survey works even when you've opted for one continuous WAV recording instead of per-detection clips — the relevant audio window is sliced out of the in-progress file on the fly. See [Session Review → Sharing a single detection](session-review.md#sharing-a-single-detection) for details.
 
 ### Logging an observation
 
-The :material-plus-circle-outline: button on the live survey opens a small menu with **Add Species** and **Add note**. **Add Species** opens the same picker used in [Session Review](session-review.md#adding-a-species-by-hand), choose a species, then tick :material-ear-hearing: **Heard** and/or :material-eye: **Seen** on the confirmation sheet and tap **Add**. The entry is timestamped to that moment, tagged with the current GPS fix, and appears immediately in the detection list and on the route map with the manual badge and the matching ear / eye glyphs.
+The :app-addCircleOutline: button on the live survey opens a small menu with **Add Species** and **Add note**. **Add Species** opens the same picker used in [Session Review](session-review.md#adding-a-species-by-hand), choose a species, then tick :app-hearing: **Heard** and/or :app-visibility: **Seen** on the confirmation sheet and tap **Add**. The entry is timestamped to that moment, tagged with the current GPS fix, and appears immediately in the detection list and on the route map with the manual badge and the matching ear / eye glyphs.
 
 Voice memos are deliberately absent here: the microphone is busy with the survey's own capture. Attach them in Session Review after the survey ends.
 
@@ -149,7 +149,7 @@ A Survey that was not recorded with full audio, including one recovered after a 
 
 ## Reviewing on the Map
 
-The fullscreen Survey map view (the :material-fullscreen: button in Session Review) opens a clip player when you tap a marker. The transport row has skip-previous and skip-next buttons flanking the play control — they walk through detections in chronological order, but **only those currently visible on the map**, so any active species, confidence, or mode-chip filter narrows the playlist accordingly. The buttons grey out at the first/last detection in the filtered list.
+The fullscreen Survey map view (the :app-fullscreen: button in Session Review) opens a clip player when you tap a marker. The transport row has skip-previous and skip-next buttons flanking the play control — they walk through detections in chronological order, but **only those currently visible on the map**, so any active species, confidence, or mode-chip filter narrows the playlist accordingly. The buttons grey out at the first/last detection in the filtered list.
 
 ## After Stopping
 

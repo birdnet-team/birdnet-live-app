@@ -1,6 +1,8 @@
 # Ajustes
 
-BirdNET Live reutiliza una misma pantalla de Ajustes en varios flujos de trabajo. El botón :material-tune: abre las secciones relevantes para la pantalla desde la que llegas.
+BirdNET Live reutiliza una misma pantalla de Ajustes en varios flujos de trabajo. El botón :app-tuneRounded: abre las secciones relevantes para la pantalla desde la que llegas.
+
+El botón :app-helpOutline: junto a un ajuste abre una breve explicación. Los asistentes de configuración de Point Count, Survey, ARU y Análisis de archivos usan el mismo botón y los mismos iconos para los controles que comparten con los Ajustes o entre sí.
 
 ## Cómo funciona el alcance de los ajustes
 
@@ -118,6 +120,14 @@ forma predeterminada como término medio; **0,30 Hz** sigue siendo la opción
 explícita de máxima autonomía. El análisis de archivos no tiene frecuencia de
 inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
+### Ignorar especies
+
+Abre un panel con filtros binarios de inferencia. Marca **Aves**, **Mamíferos**, **Anfibios** o **Insectos** para suprimir toda esa clase taxonómica. Las cuatro casillas están desactivadas de forma predeterminada.
+
+**Ignorar especies comunes por encima de** va de **80–100 %** y suprime especies cuyo resultado actual del modelo geográfico supera estrictamente el límite elegido. El valor predeterminado **100 %** no ignora especies por su abundancia; bajarlo ignora más especies comunes. El panel ejecuta el modelo geográfico una vez para la ubicación actual y muestra el total de especies ignoradas. Los cambios reutilizan esa predicción almacenada sin repetir la inferencia. La regla de abundancia necesita ubicación; el filtro de grupos taxonómicos funciona sin ella.
+
+El filtro pone exactamente a cero las probabilidades ignoradas de los modelos geográfico y de audio inmediatamente después de la activación sigmoide y antes de la agrupación temporal. No pueden contribuir a resultados posteriores ni convertirse en detecciones mostradas, guardadas, anunciadas o exportadas. Los cambios durante una Session activa de Live Mode, Point Count, Survey o ARU se aplican a la siguiente ventana; el análisis de archivos usa los valores elegidos al iniciar.
+
 BirdNET Live suaviza internamente las puntuaciones a lo largo de las ventanas
 de inferencia recientes para reducir falsos positivos puntuales. Esta
 agrupación no se expone como ajuste de usuario; de forma predeterminada usa
@@ -192,13 +202,15 @@ Una sección desplegable que expone unos cuantos interruptores de enrutado de au
 
 ### Modo
 
+Este ajuste controla Live Mode. Point Count tiene su propia opción de grabación en el paso de ajustes de análisis; los nuevos conteos usan **Completa** de forma predeterminada. Survey también tiene una opción independiente en su configuración.
+
 - **Completa** — guardar toda la grabación
 - **Solo detecciones** — guardar fragmentos alrededor de las detecciones
 - **Desactivado** — sin grabación de audio
 
 ### Contexto del fragmento
 
-Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del fragmento** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
+Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del fragmento** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Point Count usa este mismo valor al seleccionar **Solo clips** en su configuración y permite cambiarlo allí. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
 
 ### Formato
 
@@ -211,6 +223,14 @@ Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos
 Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
 
 Este ajuste rige la apertura del modo Live desde dentro de la aplicación. El [widget Quick Listen](live-mode.md) empieza a escuchar al tocarlo, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
+
+### Continuar con la pantalla apagada
+
+**Live Mode** pausa la captura y la identificación al bloquear la pantalla o salir de la aplicación y reanuda la misma Session al volver. Continuar en segundo plano está desactivado de forma predeterminada. Tras la primera vuelta, un diálogo explica cómo activarlo; también puedes usar el interruptor de los ajustes de Live Mode. Elige un **Tiempo máximo en segundo plano** de 15, 30, 60 o 120 minutos (30 de forma predeterminada). El temporizador empieza al salir, se cancela si vuelves antes del límite y vuelve a empezar en cada salida. Al agotarse, termina la Session y abre el resumen con el motivo. El guardado automático sigue determinando si se conserva inmediatamente o aparece sin guardar.
+
+**Point Count** continúa de forma predeterminada al bloquear la pantalla o cambiar de aplicación con la pantalla encendida y termina tras la duración elegida. Su interruptor **Continuar con la pantalla apagada** solo aparece en el primer paso de configuración. Desactívalo para terminar antes al realizar esas acciones. El signo de interrogación explica el comportamiento. Pausar y reanudar dejaría un hueco en el protocolo cronometrado. La pantalla de listo resume la elección y el resumen de la Session muestra el motivo de un final anticipado.
+
+Android muestra una notificación persistente con Abrir y Detener durante el funcionamiento en segundo plano; la pantalla puede apagarse normalmente. Si no puede iniciarse, mantén la aplicación abierta: en segundo plano Live Mode se pausa y Point Count termina. Salir durante el inicio de un Point Count lo cancela con un mensaje; configúralo de nuevo. En Windows, minimizar nunca pausa Live Mode ni termina Point Count, independientemente de estos interruptores.
 
 ### Guardar sesiones automáticamente (Live y Point Count)
 
@@ -358,6 +378,6 @@ Elimina de forma permanente sesiones, detecciones, grabaciones, notas de voz, li
 
 Algunos parámetros se configuran en sus propias pantallas de configuración en lugar de en la pantalla de Ajustes compartida.
 
-- [Modo Point Count](point-count-mode.md) tiene su propia configuración de duración y ubicación.
+- [Modo Point Count](point-count-mode.md) tiene su propia configuración de duración y ubicación. Elige 3, 5, 10, 15, 20, 25 o 30 minutos según tu protocolo; se recuerda la última elección y el valor predeterminado es 5 minutos.
 - [Modo Survey](survey-mode.md) tiene su propia pantalla de parámetros de muestreo.
 - [Análisis de archivos](file-analysis.md) tiene su propio paso de parámetros de análisis.

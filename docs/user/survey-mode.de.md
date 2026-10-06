@@ -4,7 +4,7 @@ Der Survey-Modus ist der routenbasierte Arbeitsablauf für lange Surveys in Bewe
 
 ## So öffnen Sie ihn
 
-Tippen Sie auf der Startseite auf die Karte **Survey** mit dem Symbol :material-routes:.
+Tippen Sie auf der Startseite auf die Karte **Survey** mit dem Symbol :app-routeRounded:.
 
 ## Einrichtung
 
@@ -17,7 +17,7 @@ Sie können Folgendes eingeben:
 - Survey-Name
 - Transekt-ID
 - Name der beobachtenden Person
-- GPS, manuelle Koordinaten oder kein Startort
+- GPS :app-myLocation:, manuelle Koordinaten :app-editLocationAlt: oder kein Startort :app-locationOff:. Die Kartenauswahl verwendet :app-mapSheet:.
 
 In diesem Schritt erscheinen außerdem die Kartenauswahl, eine Aktualisierung des
 GPS-Signals nach der Rückkehr von den System-Berechtigungsdialogen sowie bei
@@ -41,6 +41,20 @@ Dieser Schritt enthält Survey-spezifische Parameter wie:
 - Clip-Kontext für die reine Detektionsaufzeichnung
 - Detektions-Sampling-Modus
 - Top-N-Grenze pro Art bei begrenztem Sampling
+
+| Einrichtungselement | Symbol |
+|---|---|
+| Mikrofon | :app-micRounded: |
+| Inferenzrate | :app-speedRounded: |
+| Konfidenzschwelle | :app-verifiedRounded: |
+| GPS-Intervall | :app-myLocation: |
+| Maximale Dauer | :app-timerOutlined: |
+| Aufnahmemodus | :app-fiberManualRecordRounded: |
+| Clip-Kontext | :app-timerOutlined: |
+| Detektions-Sampling | :app-filterAltRounded: |
+| Top N pro Art | :app-formatListNumberedRounded: |
+
+Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch Name, Transekt, beobachtende Person, Standort und Alarme haben Hilfeschaltflächen.
 
 Neue Survey-Einstellungen verwenden standardmäßig **0,70 Hz** Inferenz. Das
 bewahrt mehr kurze Lautäußerungen als die sparsameren Optionen und lässt das
@@ -67,7 +81,7 @@ Es stehen drei Modi zur Verfügung:
 |---|---|
 | **Alle** | Behält jeden Clip. Höchster Speicherbedarf. Empfohlen für kurze Surveys oder wenn Sie das Audio jeder Detektion für die spätere Analyse benötigen. |
 | **Top N** | Behält nur die **N Clips mit der höchsten Konfidenz pro Art**. Weitere Clips werden während des Surveys gelöscht. Der Standardwert für N ist 10, einstellbar von 1 bis 50. |
-| **Smart** | Gleiche Obergrenze von N pro Art wie bei Top N, **zusätzlich** mit räumlicher Verteilung: Landet eine neue Detektion an derselben „Stelle“ wie ein bereits behaltener Clip (innerhalb von ~500 m und ~2 Minuten), behält nur die Detektion mit der höheren Konfidenz ihren Clip. So verhindert der Modus, dass ein einzelner ortstreuer Sänger alle N Plätze belegt, und sorgt dafür, dass die behaltenen Clips das gesamte Transekt abdecken. |
+| **Smart** | Gleiche Obergrenze von N pro Art wie bei Top N, **zusätzlich** mit räumlicher Verteilung: Landet eine neue Detektion an derselben „Stelle“ wie ein bereits behaltener Clip (innerhalb von ~250 m und ~2 Minuten), behält nur die Detektion mit der höheren Konfidenz ihren Clip. So verhindert der Modus, dass ein einzelner ortstreuer Sänger alle N Plätze belegt, und sorgt dafür, dass die behaltenen Clips das gesamte Transekt abdecken. |
 
 Die Grenze N gilt **pro Art, nicht global** – wenn Sie 10 Rotkehlchen und
 10 Buchfinken erfassen, behalten Sie 20 Clips. Es gibt keine Gesamtobergrenze für
@@ -119,7 +133,7 @@ Eine kurze Checkliste vor dem Start, direkt im Einrichtungsablauf.
 ### 5. Fertig
 
 Der Bereitschaftsbildschirm fasst die aktive Survey-Konfiguration zusammen, bevor Sie
-mit :material-play: starten.
+mit :app-playArrowRounded: starten.
 
 ## Live-Dashboard des Surveys
 
@@ -128,15 +142,15 @@ Detektionen.
 
 ### Obere Leiste
 
-- :material-stop: — Survey beenden
-- :material-timer: — verstrichene Zeit
-- :material-help-circle-outline: — Hilfeblatt zum Survey öffnen
-- :material-tune: — Survey-Einstellungen öffnen
+- :app-stopRounded: — Survey beenden
+- :app-timerOutlined: — verstrichene Zeit
+- :app-helpOutlineRounded: — Hilfeblatt zum Survey öffnen
+- :app-tuneRounded: — Survey-Einstellungen öffnen
 
 ### Tabs
 
-- :material-map-outline: — Routenkarte und verortete Detektionen
-- :material-equalizer: — Spektrogramm
+- :app-map: — Routenkarte und verortete Detektionen
+- :app-graphicEq: — Spektrogramm
 - Diagrammsymbol — zusammenfassende Statistiken und Artenaufschlüsselung
 
 ### Statistiken und Detektionen
@@ -146,8 +160,8 @@ der letzten Detektionen. Ein Tippen auf eine Detektion öffnet die Detailansicht
 Art.
 
 Jede Detektionszeile bietet außerdem dieselben Aktionen pro Detektion wie die
-[Session-Übersicht](session-review.md): ein :material-check: **Bestätigen** mit
-einem Tipp sowie ein :material-dots-vertical: **Mehr**-Menü mit **Erkennung teilen**
+[Session-Übersicht](session-review.md): ein :app-checkCircleOutline: **Bestätigen** mit
+einem Tipp sowie ein :app-moreVert: **Mehr**-Menü mit **Erkennung teilen**
 und **Detektion löschen** (mit Rückgängig-Option in der SnackBar) – so können Sie
 einen verrauschten Treffer schon während der Aufnahme prüfen, teilen oder entfernen,
 statt auf die spätere Durchsicht zu warten.
@@ -162,7 +176,7 @@ Details finden Sie unter
 
 ### Eine Beobachtung erfassen
 
-Die Schaltfläche :material-plus-circle-outline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie [Session Review](session-review.md#arten-manuell-hinzufügen) — Wählen Sie eine Art, setzen Sie im Bestätigungsfenster :material-ear-hearing: **Gehört** und/oder :material-eye: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte — mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
+Die Schaltfläche :app-addCircleOutline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie [Session Review](session-review.md#arten-manuell-hinzufügen) — Wählen Sie eine Art, setzen Sie im Bestätigungsfenster :app-hearing: **Gehört** und/oder :app-visibility: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte — mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
 
 Sprachmemos fehlen hier bewusst: Das Mikrofon ist mit der Aufnahme des Surveys belegt. Hängen Sie sie nach dem Ende des Surveys in Session Review an.
 
@@ -199,7 +213,7 @@ der fortgesetzte Survey übernimmt die neuen Einstellungen sofort.
 
 ## Auf der Karte überprüfen
 
-Die Vollbild-Kartenansicht des Surveys (die Schaltfläche :material-fullscreen: in der
+Die Vollbild-Kartenansicht des Surveys (die Schaltfläche :app-fullscreen: in der
 Session-Übersicht) öffnet beim Tippen auf einen Marker einen Clip-Player. Die
 Steuerleiste hat neben der Wiedergabetaste Schaltflächen für „Vorherige“ und
 „Nächste“ – sie blättern in chronologischer Reihenfolge durch die Detektionen, jedoch

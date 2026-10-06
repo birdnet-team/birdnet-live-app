@@ -4,7 +4,7 @@ Tryb Live to najszybszy sposób, aby nasłuchiwać przez mikrofon telefonu i ogl
 
 ## Jak go otworzyć
 
-Na ekranie startowym dotknij karty **Tryb Live** z ikoną :material-microphone:.
+Na ekranie startowym dotknij karty **Tryb Live** z ikoną :app-micRounded:.
 
 ## Widżet Quick Listen
 
@@ -25,17 +25,17 @@ Quick Listen nigdy nie zastępuje innego działającego trybu. Jeśli trwa lub w
 
 Górny pasek zawiera trzy elementy:
 
-- :material-arrow-left: — wyjście z trybu Live
+- :app-arrowBackRounded: — wyjście z trybu Live
 - tekst stanu na środku — `Inicjowanie`, `Wczytywanie modelu`, `Gotowe`, `Rozpoznawanie gatunków`, `Wstrzymano` lub `Błąd`
-- :material-tune: — otwarcie ustawień dotyczących trybu Live
+- :app-tuneRounded: — otwarcie ustawień dotyczących trybu Live
 
 ## Główny przycisk
 
 Duży okrągły przycisk na dole pośrodku zmienia stan:
 
-- :material-microphone: — rozpocznij nasłuchiwanie
-- :material-stop: — zatrzymaj aktywną Session
-- :material-play: — wznów ze stanu wstrzymanego i gotowego
+- :app-mic: — rozpocznij nasłuchiwanie
+- :app-stopRounded: — zatrzymaj aktywną Session
+- :app-playArrowRounded: — wznów ze stanu wstrzymanego i gotowego
 
 ## Co widzisz podczas nasłuchiwania
 
@@ -75,3 +75,7 @@ Nagrywaniem sterujesz w [Ustawieniach](settings.md).
 Gdy zatrzymasz tryb Live, BirdNET Live zapisuje Session i otwiera [Przegląd Session](session-review.md).
 
 Gdy automatyczne zapisywanie Sessions jest włączone, tryb Live zapisuje też częściową Session na starcie, co 30 sekund i gdy aplikacja przechodzi w tło. Po awarii lub utracie zasilania ostatni zapisany stan jest dostępny w Bibliotece Sessions. Zmiany od tego zapisu mogą zostać utracone. Wyłączenie automatycznego zapisywania wyłącza też te zapisy pośrednie.
+
+## Nasłuchiwanie przy wyłączonym ekranie
+
+Live Mode zwykle wstrzymuje się po zablokowaniu ekranu lub opuszczeniu aplikacji i wznawia tę samą Session po powrocie. Za pierwszym razem okno dialogowe proponuje ograniczony nasłuch w tle. W [ustawieniach nagrywania](settings.md) włącz **Kontynuuj przy wyłączonym ekranie** i wybierz maksymalnie 15, 30, 60 lub 120 minut (domyślnie 30). Limit dotyczy każdego okresu poza aplikacją; po jego osiągnięciu Session kończy się. Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj. W Windows Live Mode działa także po minimalizacji okna.

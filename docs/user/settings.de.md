@@ -1,6 +1,8 @@
 # Einstellungen
 
-BirdNET Live nutzt einen einzigen Einstellungsbildschirm für mehrere Arbeitsabläufe. Die Schaltfläche :material-tune: öffnet die Abschnitte, die für den Bildschirm relevant sind, von dem aus Sie gekommen sind.
+BirdNET Live nutzt einen einzigen Einstellungsbildschirm für mehrere Arbeitsabläufe. Die Schaltfläche :app-tuneRounded: öffnet die Abschnitte, die für den Bildschirm relevant sind, von dem aus Sie gekommen sind.
+
+Die Schaltfläche :app-helpOutline: neben einer Einstellung öffnet eine kurze Erklärung. Die Einrichtungsassistenten für Point Count, Survey, ARU und Dateianalyse verwenden dieselbe Schaltfläche und dieselben Symbole für Elemente, die sie mit den Einstellungen oder untereinander teilen.
 
 ## Funktionsweise des Einstellungsumfangs
 
@@ -118,6 +120,14 @@ Mittelweg; **0,30 Hz** bleibt die ausdrückliche Option für maximale
 Akkulaufzeit. Die Dateianalyse hat keine Inferenzrate — sie verwendet
 stattdessen eine [Überlappung](file-analysis.md).
 
+### Arten ignorieren
+
+Öffnet ein Fenster mit binären Inferenzfiltern. Aktivieren Sie **Vögel**, **Säugetiere**, **Amphibien** oder **Insekten**, um die gesamte taxonomische Klasse zu unterdrücken. Alle vier Kontrollkästchen sind standardmäßig deaktiviert.
+
+**Häufige Arten ignorieren über** reicht von **80–100 %** und unterdrückt Arten, deren aktueller Geomodell-Score strikt über dem gewählten Grenzwert liegt. Der Standard **100 %** ignoriert keine Arten wegen ihrer Häufigkeit. Niedrigere Werte ignorieren mehr häufige Arten. Das Fenster berechnet einmal die Geomodell-Vorhersage für den Standort und zeigt die Gesamtzahl ignorierter Arten. Änderungen verwenden diese zwischengespeicherte Vorhersage. Die Häufigkeitsregel benötigt einen Standort; die Filterung nach taxonomischer Gruppe funktioniert auch ohne.
+
+Der Filter setzt ignorierte Geomodell- und Audiomodell-Wahrscheinlichkeiten direkt nach der Sigmoid-Aktivierung und vor dem zeitlichen Pooling auf exakt null. Sie können daher weder spätere Pooling-Ergebnisse beeinflussen noch als Detektionen angezeigt, gespeichert, angesagt oder exportiert werden. Änderungen in einer aktiven Live Mode-, Point Count-, Survey- oder ARU-Session gelten ab dem nächsten Inferenzfenster; die Dateianalyse verwendet die beim Start ausgewählten Werte.
+
 BirdNET Live glättet Scores intern über die jüngsten Inferenzfenster hinweg,
 um einmalige Falschpositive zu reduzieren. Dieses Pooling ist nicht als
 Benutzereinstellung verfügbar; standardmäßig wird adaptives
@@ -191,13 +201,15 @@ Ein aufklappbarer Bereich mit einigen Schaltern zur Audioführung sowie der Ausw
 
 ### Modus
 
+Diese Einstellung steuert Live Mode. Point Count hat eine eigene Aufnahmeauswahl im Schritt für Analyseeinstellungen; neue Point Counts verwenden standardmäßig **Vollständig**. Survey hat ebenfalls eine eigene Aufnahmeauswahl in der Einrichtung.
+
 - **Vollständig** – die gesamte Aufnahme speichern
 - **Nur Detektionen** – Clips rund um Detektionen speichern
 - **Aus** – keine Audioaufnahme
 
 ### Clip-Kontext
 
-Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen Schieberegler **Clip-Kontext** (0–5 s), der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Jeder Clip ist `Analysefenster + 2 × Clip-Kontext` lang, mit einem Analysefenster von 3 s und dem voreingestellten Kontext von 1 s ist der gespeicherte Clip also 5 s lang. Ein Kontext von 2 s ergibt einen Clip von 7 s (2 s Vorlauf + 3 s analysiertes Audio + 2 s Nachlauf). Größere Werte geben Ihnen mehr Spielraum für die visuelle Prüfung oder externe Auswertungswerkzeuge, kosten aber Speicherplatz; 0 speichert nur das analysierte Fenster selbst.
+Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen Schieberegler **Clip-Kontext** (0–5 s), der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Point Count verwendet denselben Wert, wenn in der Einrichtung **Clips** ausgewählt ist, und kann ihn dort ändern. Jeder Clip ist `Analysefenster + 2 × Clip-Kontext` lang, mit einem Analysefenster von 3 s und dem voreingestellten Kontext von 1 s ist der gespeicherte Clip also 5 s lang. Ein Kontext von 2 s ergibt einen Clip von 7 s (2 s Vorlauf + 3 s analysiertes Audio + 2 s Nachlauf). Größere Werte geben Ihnen mehr Spielraum für die visuelle Prüfung oder externe Auswertungswerkzeuge, kosten aber Speicherplatz; 0 speichert nur das analysierte Fenster selbst.
 
 ### Format
 
@@ -210,6 +222,14 @@ Diese Einstellung gilt für Audio, das BirdNET Live aufnimmt. Die **Dateianalyse
 Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet ist und das Modell geladen wurde – ohne die Mikrofonschaltfläche antippen zu müssen. Nützlich für Kiosk-artige Aufstellungen, freihändige Nutzung (z. B. das Gerät im Feld montiert) oder jeden Ablauf, bei dem das Öffnen von Live ohnehin „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Antippen der Live-Kachel auf dem Startbildschirm nicht stillschweigend eine Session beginnt. Der automatische Start erfolgt nur einmal pro Bildschirmbesuch, sodass ein Beenden der Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
 
 Diese Einstellung betrifft das Öffnen des Live-Modus innerhalb der App. Das [Quick-Listen-Widget](live-mode.md) beginnt beim Antippen zu lauschen, unabhängig von dieser Einstellung, und lässt die Einstellung unberührt. Läuft oder startet bereits eine Session von Point Count, Survey, Dateianalyse oder ARU-Modus, bleibt diese Session erhalten und Sie werden gebeten, sie zuerst zu beenden.
+
+### Bei ausgeschaltetem Bildschirm fortsetzen
+
+**Live Mode** pausiert beim Sperren des Bildschirms oder Verlassen der App Audioerfassung und Erkennung und setzt dieselbe Session bei Ihrer Rückkehr fort. Das Fortsetzen im Hintergrund ist standardmäßig deaktiviert. Nach der ersten Rückkehr erklärt ein einmaliger Dialog die Aktivierung; der Schalter ist auch direkt in den Live Mode-Einstellungen verfügbar. Wählen Sie nach der Aktivierung eine **Maximale Hintergrundzeit** von 15, 30, 60 oder 120 Minuten (Standard: 30). Der Timer beginnt beim Wechsel in den Hintergrund, wird bei rechtzeitiger Rückkehr abgebrochen und startet beim erneuten Verlassen neu. Das Limit beendet die Session automatisch und öffnet die Übersicht mit dem Stoppgrund. Die Einstellung zum automatischen Speichern bestimmt weiterhin, ob sie sofort behalten oder als nicht gespeichert angezeigt wird.
+
+**Point Count** läuft standardmäßig beim Sperren oder Wechseln zu einer anderen App im Hintergrund weiter, auch bei eingeschaltetem Bildschirm, und endet nach der gewählten Dauer. Sein Schalter **Bei ausgeschaltetem Bildschirm fortsetzen** erscheint nur im ersten Einrichtungsschritt. Deaktivieren Sie ihn, um die Zählung bei diesen Aktionen vorzeitig zu beenden. Das Fragezeichen erklärt das Verhalten. Pausieren und Fortsetzen würden eine Lücke im zeitgebundenen Protokoll erzeugen. Der Bereitschaftsbildschirm fasst die Auswahl zusammen; die Session-Übersicht zeigt den Grund eines vorzeitigen Endes.
+
+Android zeigt während des Hintergrundbetriebs eine dauerhafte Benachrichtigung mit Öffnen und Stopp; der Bildschirm kann normal ausgehen. Kann der Hintergrundbetrieb nicht starten, halten Sie die App geöffnet: Im Hintergrund pausiert Live Mode und Point Count endet. Verlassen Sie die App während des Starts eines Point Count, wird er mit einer Meldung abgebrochen; richten Sie ihn erneut ein. Unter Windows pausiert oder beendet das Minimieren keinen dieser Modi, unabhängig von den Schaltern.
 
 ### Sessions automatisch speichern (Live und Point Count)
 
@@ -357,6 +377,6 @@ Verwenden Sie das, bevor Sie ein Gerät an eine andere beobachtende Person über
 
 Einige Parameter werden in eigenen Einrichtungsbildschirmen konfiguriert und nicht im gemeinsamen Einstellungsbildschirm.
 
-- [Point-Count-Modus](point-count-mode.md) hat eine eigene Einrichtung für Dauer und Standort.
+- [Point-Count-Modus](point-count-mode.md) hat eine eigene Einrichtung für Dauer und Standort. Wählen Sie passend zu Ihrem Zählprotokoll 3, 5, 10, 15, 20, 25 oder 30 Minuten; die letzte Auswahl bleibt gespeichert, der Standard ist 5 Minuten.
 - [Survey-Modus](survey-mode.md) hat einen eigenen Bildschirm für Survey-Parameter.
 - [Dateianalyse](file-analysis.md) hat einen eigenen Schritt für Analyseparameter.

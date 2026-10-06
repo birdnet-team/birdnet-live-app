@@ -4,7 +4,7 @@ De Survey-modus is de routegebaseerde workflow voor langlopende tellingen waarbi
 
 ## Zo open je de modus
 
-Tik op het startscherm op de kaart **Survey-modus** met het pictogram :material-routes:.
+Tik op het startscherm op de kaart **Survey-modus** met het pictogram :app-routeRounded:.
 
 ## Opzetproces
 
@@ -17,7 +17,7 @@ Je kunt hier invoeren:
 - naam van de Survey
 - transect-ID
 - naam van de waarnemer
-- GPS, handmatige coördinaten of geen startlocatie
+- GPS :app-myLocation:, handmatige coördinaten :app-editLocationAlt: of geen startlocatie :app-locationOff:. De kaartkiezer gebruikt :app-mapSheet:.
 
 Deze stap biedt ook de kaartkiezer, vernieuwt de GPS-positie wanneer je
 terugkeert uit systeemschermen voor machtigingen, en toont zo nodig de
@@ -42,6 +42,20 @@ Deze stap bevat parameters die specifiek voor een Survey gelden, zoals:
 - steekproefmodus voor detecties
 - limiet van top-N per soort wanneer de steekproef beperkt is
 
+| Instelling | Pictogram |
+|---|---|
+| Microfoon | :app-micRounded: |
+| Inferentiesnelheid | :app-speedRounded: |
+| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
+| GPS-interval | :app-myLocation: |
+| Maximale duur | :app-timerOutlined: |
+| Opnamemodus | :app-fiberManualRecordRounded: |
+| Fragmentcontext | :app-timerOutlined: |
+| Steekproef van detecties | :app-filterAltRounded: |
+| Top-N per soort | :app-formatListNumberedRounded: |
+
+Tik op de knop :app-helpOutline: naast een instelling voor uitleg. Ook naam, transect, waarnemer, locatie en meldingen hebben helpknoppen.
+
 Nieuwe Survey-instellingen gebruiken standaard **0,70 Hz** inferentie. Dat
 behoudt meer korte geluiden dan de zuinigere keuzes met een lagere snelheid,
 terwijl het model nog steeds minder vaak draait dan bij 1,00 Hz. Survey en de
@@ -61,7 +75,7 @@ Er zijn drie modi beschikbaar:
 |---|---|
 | **Alles** | Bewaart elk fragment. Het meeste schijfgebruik. Aanbevolen voor korte Surveys of wanneer je van elke detectie de audio voor latere analyse wilt bewaren. |
 | **Top N** | Bewaart alleen de **N fragmenten met de hoogste betrouwbaarheid per soort**. Andere fragmenten worden tijdens de Survey verwijderd. N is standaard 10 en instelbaar van 1 tot 50. |
-| **Smart** | Dezelfde limiet van N per soort als Top N, **plus** ruimtelijke spreiding: komt een nieuwe detectie op dezelfde "plek" als een al bewaard fragment (binnen ongeveer 500 m en 2 minuten van elkaar), dan behoudt alleen de detectie met de hoogste betrouwbaarheid haar fragment. Zo kan één zingend exemplaar op één plek niet alle N plekken opeisen en dekken de bewaarde fragmenten het hele transect beter. |
+| **Smart** | Dezelfde limiet van N per soort als Top N, **plus** ruimtelijke spreiding: komt een nieuwe detectie op dezelfde "plek" als een al bewaard fragment (binnen ongeveer 250 m en 2 minuten van elkaar), dan behoudt alleen de detectie met de hoogste betrouwbaarheid haar fragment. Zo kan één zingend exemplaar op één plek niet alle N plekken opeisen en dekken de bewaarde fragmenten het hele transect beter. |
 
 De limiet N geldt **per soort, niet in totaal** — neem je 10 roodborsten en 10 vinken op, dan bewaar je 20 fragmenten. Er is geen totale bovengrens aan het aantal fragmenten dat een Survey kan opleveren.
 
@@ -85,7 +99,7 @@ Een korte checklist vóór de start, binnen het opzetproces.
 
 ### 5. Gereed
 
-Het gereedscherm vat de actieve Survey-configuratie samen voordat je start met :material-play:.
+Het gereedscherm vat de actieve Survey-configuratie samen voordat je start met :app-playArrowRounded:.
 
 ## Live Survey-dashboard
 
@@ -93,28 +107,28 @@ Het scherm van de lopende Survey heeft drie hoofdtabbladen plus een lijst met re
 
 ### Bovenbalk
 
-- :material-stop: — de Survey beëindigen
-- :material-timer: — verstreken tijd
-- :material-help-circle-outline: — het hulpvenster van de Survey openen
-- :material-tune: — de Survey-instellingen openen
+- :app-stopRounded: — de Survey beëindigen
+- :app-timerOutlined: — verstreken tijd
+- :app-helpOutlineRounded: — het hulpvenster van de Survey openen
+- :app-tuneRounded: — de Survey-instellingen openen
 
 ### Tabbladen
 
-- :material-map-outline: — routekaart en detecties op de kaart
-- :material-equalizer: — spectrogram
+- :app-map: — routekaart en detecties op de kaart
+- :app-graphicEq: — spectrogram
 - grafiekpictogram — samenvattende statistieken en verdeling per soort
 
 ### Statistieken en detecties
 
 Onder de inhoud van het tabblad toont het Survey-dashboard een statistiekbalk en een lijst met recente detecties. Tik op een detectie om de overlay met soortdetails te openen.
 
-Elke detectierij biedt ook dezelfde acties per detectie als in het [Session-overzicht](session-review.md): een vinkje :material-check: **Bevestigen** met één tik en een overloopmenu :material-dots-vertical: **Meer** met **Detectie delen** en **Detectie verwijderen** (met een SnackBar om dat ongedaan te maken) — zo kun je een storende treffer al tijdens de opname bevestigen, delen of verwijderen in plaats van te wachten op het overzicht achteraf.
+Elke detectierij biedt ook dezelfde acties per detectie als in het [Session-overzicht](session-review.md): een vinkje :app-checkCircleOutline: **Bevestigen** met één tik en een overloopmenu :app-moreVert: **Meer** met **Detectie delen** en **Detectie verwijderen** (met een SnackBar om dat ongedaan te maken) — zo kun je een storende treffer al tijdens de opname bevestigen, delen of verwijderen in plaats van te wachten op het overzicht achteraf.
 
 Dezelfde acties zijn beschikbaar vanaf de **live routekaart**: tik op een detectiemarker om het venster van de fragmentspeler te openen met bevestigen, delen en verwijderen. Delen tijdens een Survey werkt ook wanneer je hebt gekozen voor één doorlopende WAV-opname in plaats van fragmenten per detectie — het relevante audiovenster wordt ter plekke uit het lopende bestand gesneden. Zie [Session-overzicht → Eén detectie delen](session-review.md#eén-detectie-delen) voor details.
 
 ### Een waarneming vastleggen
 
-De knop :material-plus-circle-outline: op de lopende Survey opent een klein menu met **Soort toevoegen** en **Notitie toevoegen**. **Soort toevoegen** opent dezelfde kiezer als in het [Session-overzicht](session-review.md#een-soort-handmatig-toevoegen): kies een soort, vink dan :material-ear-hearing: **Gehoord** en/of :material-eye: **Gezien** aan op het bevestigingsvenster en tik op **Toevoegen**. De invoer krijgt een tijdstempel van dat moment, wordt aan de huidige GPS-positie gekoppeld en verschijnt meteen in de detectielijst en op de routekaart, met de badge voor handmatige invoer en de bijbehorende oor- en oogsymbolen.
+De knop :app-addCircleOutline: op de lopende Survey opent een klein menu met **Soort toevoegen** en **Notitie toevoegen**. **Soort toevoegen** opent dezelfde kiezer als in het [Session-overzicht](session-review.md#een-soort-handmatig-toevoegen): kies een soort, vink dan :app-hearing: **Gehoord** en/of :app-visibility: **Gezien** aan op het bevestigingsvenster en tik op **Toevoegen**. De invoer krijgt een tijdstempel van dat moment, wordt aan de huidige GPS-positie gekoppeld en verschijnt meteen in de detectielijst en op de routekaart, met de badge voor handmatige invoer en de bijbehorende oor- en oogsymbolen.
 
 Spraaknotities ontbreken hier bewust: de microfoon is bezet met de opname van de Survey zelf. Voeg ze na afloop toe in het Session-overzicht.
 
@@ -133,7 +147,7 @@ Wanneer je een onafgeronde Survey vanuit de Session-bibliotheek **hervat**, word
 
 ## Nakijken op de kaart
 
-De Survey-kaart op volledig scherm (de knop :material-fullscreen: in het Session-overzicht) opent een fragmentspeler wanneer je op een marker tikt. In de transportrij staan knoppen voor vorige en volgende naast de afspeelknop — die lopen chronologisch door de detecties, maar **alleen door de detecties die op dat moment op de kaart zichtbaar zijn**, dus elk actief filter op soort, betrouwbaarheid of moduschip beperkt de afspeellijst navenant. De knoppen worden grijs bij de eerste en laatste detectie in de gefilterde lijst.
+De Survey-kaart op volledig scherm (de knop :app-fullscreen: in het Session-overzicht) opent een fragmentspeler wanneer je op een marker tikt. In de transportrij staan knoppen voor vorige en volgende naast de afspeelknop — die lopen chronologisch door de detecties, maar **alleen door de detecties die op dat moment op de kaart zichtbaar zijn**, dus elk actief filter op soort, betrouwbaarheid of moduschip beperkt de afspeellijst navenant. De knoppen worden grijs bij de eerste en laatste detectie in de gefilterde lijst.
 
 ## Na het stoppen
 

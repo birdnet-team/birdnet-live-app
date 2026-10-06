@@ -40,18 +40,20 @@ Domovská obrazovka je hlavní rozcestník.
 
 ### Karty hlavních režimů
 
-- :material-microphone: **Režim Live**
-- :material-map-marker: **Režim Point Count**
-- :material-routes: **Režim Survey**
-- :material-file-music: **Analýza souborů**
+- :app-micRounded: **Režim Live**
+- :app-locationOnRounded: **Režim Point Count**
+- :app-routeRounded: **Režim Survey**
+- :app-audioFileRounded: **Analýza souborů**
+- :app-timerRounded: **Režim ARU**
+- :app-sdStorage: **Dávková analýza** (Již brzy)
 
 ### Tlačítka v zápatí
 
-- :material-tune: **Nastavení**
-- :material-magnify: **Prozkoumat**
-- :material-music-box-multiple-outline: **Knihovna Sessions**
-- :material-help-circle-outline: **Nápověda**
-- :material-information-outline: **O aplikaci**
+- :app-tuneRounded: **Nastavení**
+- :app-searchRounded: **Prozkoumat**
+- :app-libraryMusic: **Knihovna Sessions**
+- :app-helpOutlineRounded: **Nápověda**
+- :app-infoOutline: **O aplikaci**
 
 ## Co se ukládá
 

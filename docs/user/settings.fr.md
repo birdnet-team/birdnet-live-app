@@ -1,6 +1,8 @@
 # Paramètres
 
-BirdNET Live réutilise un même écran Paramètres dans plusieurs flux de travail. Le bouton :material-tune: ouvre les sections pertinentes pour l'écran d'où vous venez.
+BirdNET Live réutilise un même écran Paramètres dans plusieurs flux de travail. Le bouton :app-tuneRounded: ouvre les sections pertinentes pour l'écran d'où vous venez.
+
+Le bouton :app-helpOutline: à côté d'un réglage ouvre une courte explication. Les assistants de configuration Point Count, Survey, ARU et Analyse de fichiers utilisent le même bouton et les mêmes icônes pour les contrôles qu'ils partagent avec les Paramètres ou entre eux.
 
 ## Fonctionnement de la portée des paramètres
 
@@ -119,6 +121,14 @@ pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
 d'inférence — elle utilise un réglage de
 [chevauchement](file-analysis.md) à la place.
 
+### Ignorer des espèces
+
+Ouvre un panneau de filtres binaires d’inférence. Cochez **Oiseaux**, **Mammifères**, **Amphibiens** ou **Insectes** pour supprimer toute cette classe taxonomique. Les quatre cases sont décochées par défaut.
+
+Le curseur **Ignorer les espèces communes au-dessus de** va de **80–100 %** et supprime les espèces dont le score actuel du modèle géographique dépasse strictement le seuil choisi. À **100 %**, valeur par défaut, aucune espèce n’est ignorée pour sa fréquence ; abaisser le seuil en ignore davantage. Le panneau exécute une fois le modèle géographique pour le lieu actuel et affiche le total des espèces ignorées. Les modifications réutilisent cette prédiction en cache sans nouvelle inférence. La règle de fréquence nécessite une localisation ; le filtre taxonomique fonctionne sans.
+
+Le filtre met exactement à zéro les probabilités ignorées des modèles géographique et audio juste après l’activation sigmoïde, avant l’agrégation temporelle. Elles ne peuvent contribuer aux résultats ultérieurs ni devenir des détections affichées, enregistrées, annoncées ou exportées. Les changements pendant une Session active de Live Mode, Point Count, Survey ou ARU s’appliquent à la fenêtre suivante ; l’analyse de fichiers utilise les valeurs choisies au démarrage.
+
 BirdNET Live lisse en interne les scores sur les fenêtres d'inférence récentes
 afin de réduire les faux positifs isolés. Cette mise en commun n'est pas
 exposée comme paramètre utilisateur ; par défaut, une mise en commun adaptative
@@ -193,13 +203,15 @@ Un volet dépliant qui expose quelques interrupteurs de routage audio ainsi que 
 
 ### Mode
 
+Ce réglage concerne Live Mode. Point Count propose son propre choix d’enregistrement à l’étape des réglages d’analyse ; les nouveaux comptages utilisent **Complet** par défaut. Survey dispose également d’un choix indépendant dans sa configuration.
+
 - **Complet** — enregistrer tout l'enregistrement
 - **Détections uniquement** — enregistrer des extraits autour des détections
 - **Désactivé** — pas d'enregistrement audio
 
 ### Contexte de l'extrait
 
-Lorsque **Détections uniquement** est actif, l'application affiche un unique curseur **Contexte de l'extrait** (0–5 s) qui fixe la quantité d'audio conservée **de part et d'autre** de chaque détection. Chaque extrait dure `fenêtre d'analyse + 2 × contexte de l'extrait` : avec une fenêtre d'analyse de 3 s et le contexte par défaut de 1 s, l'extrait enregistré fait donc 5 s. Un contexte de 2 s donne un extrait de 7 s (2 s avant + 3 s d'audio analysé + 2 s après). Des valeurs plus élevées vous laissent plus de marge pour l'inspection visuelle ou des outils d'analyse externes, au prix d'espace disque ; 0 n'enregistre que la fenêtre analysée elle-même.
+Lorsque **Détections uniquement** est actif, l'application affiche un unique curseur **Contexte de l'extrait** (0–5 s) qui fixe la quantité d'audio conservée **de part et d'autre** de chaque détection. Point Count utilise cette même valeur lorsque **Extraits** est sélectionné dans sa configuration et permet de la modifier à cet endroit. Chaque extrait dure `fenêtre d'analyse + 2 × contexte de l'extrait` : avec une fenêtre d'analyse de 3 s et le contexte par défaut de 1 s, l'extrait enregistré fait donc 5 s. Un contexte de 2 s donne un extrait de 7 s (2 s avant + 3 s d'audio analysé + 2 s après). Des valeurs plus élevées vous laissent plus de marge pour l'inspection visuelle ou des outils d'analyse externes, au prix d'espace disque ; 0 n'enregistre que la fenêtre analysée elle-même.
 
 ### Format
 
@@ -212,6 +224,14 @@ Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de f
 Une fois activé, le mode Live commence à enregistrer dès l'ouverture de l'écran et la fin du chargement du modèle — sans avoir à appuyer sur le bouton du micro. Utile pour des installations de type borne, une utilisation mains libres (appareil monté sur le terrain, par exemple) ou tout flux où ouvrir Live signifie déjà « on démarre maintenant ». Désactivé par défaut, afin qu'un appui accidentel sur la tuile Live depuis l'écran d'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se produit qu'une fois par visite de l'écran : arrêter une session puis réappuyer sur le micro fonctionne donc toujours comme un redémarrage manuel.
 
 Ce réglage concerne l'ouverture du mode Live depuis l'application. Le [widget Quick Listen](live-mode.md) commence à écouter dès qu'on appuie dessus, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
+
+### Continuer avec l’écran éteint
+
+**Live Mode** suspend la capture et l’identification lorsque vous verrouillez l’écran ou quittez l’application, puis reprend la même Session à votre retour. La poursuite en arrière-plan est désactivée par défaut. Après le premier retour, un dialogue explique son activation ; le commutateur est aussi dans les réglages de Live Mode. Choisissez une **Durée maximale en arrière-plan** de 15, 30, 60 ou 120 minutes (30 par défaut). Le minuteur commence au passage en arrière-plan, s’annule au retour avant expiration et redémarre à chaque nouveau départ. La limite termine la Session et ouvre le résumé avec le motif d’arrêt. L’enregistrement automatique détermine toujours si elle est conservée immédiatement ou indiquée comme non enregistrée.
+
+**Point Count** continue par défaut au verrouillage ou au passage vers une autre application avec l’écran allumé, puis s’arrête après la durée choisie. Son commutateur **Continuer avec l’écran éteint** n’apparaît qu’à la première étape de configuration. Désactivez-le pour terminer plus tôt dans ces cas. Le point d’interrogation explique ce comportement. Une pause suivie d’une reprise créerait une interruption du protocole chronométré. L’écran prêt récapitule le choix et le résumé de la Session indique le motif d’un arrêt anticipé.
+
+Android affiche une notification persistante avec Ouvrir et Arrêter pendant le fonctionnement en arrière-plan ; l’écran peut s’éteindre normalement. Si ce fonctionnement ne peut démarrer, gardez l’application ouverte : en arrière-plan, Live Mode se met en pause et Point Count s’arrête. Quitter pendant le démarrage d’un Point Count l’annule avec un message ; configurez-le à nouveau. Sous Windows, réduire la fenêtre ne suspend jamais Live Mode et ne termine jamais Point Count, quels que soient ces réglages.
 
 ### Enregistrer les sessions automatiquement (Live et Point Count)
 
@@ -360,6 +380,6 @@ Utilisez-la avant de confier un appareil à un autre observateur, de retirer du 
 
 Certains paramètres se configurent dans leurs propres écrans de configuration plutôt que dans l'écran Paramètres partagé.
 
-- [Mode Point d'écoute](point-count-mode.md) dispose de sa propre configuration de durée et de position.
+- [Mode Point d'écoute](point-count-mode.md) dispose de sa propre configuration de durée et de position. Choisissez 3, 5, 10, 15, 20, 25 ou 30 minutes selon votre protocole ; le dernier choix est mémorisé, avec 5 minutes par défaut.
 - [Mode Relevé](survey-mode.md) dispose de son propre écran de paramètres de relevé.
 - [Analyse de fichiers](file-analysis.md) dispose de sa propre étape de paramètres d'analyse.

@@ -4,7 +4,7 @@ Tryb Survey to sposób pracy oparty na trasie, przeznaczony do długich liczeń 
 
 ## Jak go otworzyć
 
-Na ekranie startowym dotknij karty **Tryb Survey** z ikoną :material-routes:.
+Na ekranie startowym dotknij karty **Tryb Survey** z ikoną :app-routeRounded:.
 
 ## Konfiguracja
 
@@ -17,7 +17,7 @@ Możesz tu wprowadzić:
 - nazwę Survey
 - identyfikator transektu
 - nazwę obserwatora
-- GPS, współrzędne ręczne albo brak lokalizacji początkowej
+- GPS :app-myLocation:, współrzędne ręczne :app-editLocationAlt: albo brak lokalizacji początkowej :app-locationOff:. Wybór na mapie używa :app-mapSheet:.
 
 Ten krok udostępnia także wybór na mapie, odświeża GPS po powrocie z
 systemowych ekranów uprawnień i w razie potrzeby pokazuje przypomnienie o
@@ -41,6 +41,20 @@ Ten krok zawiera parametry właściwe dla Survey, takie jak:
 - tryb próbkowania wykryć
 - limit top-N na gatunek, gdy próbkowanie jest ograniczone
 
+| Element konfiguracji | Ikona |
+|---|---|
+| Mikrofon | :app-micRounded: |
+| Częstość wnioskowania | :app-speedRounded: |
+| Próg pewności | :app-verifiedRounded: |
+| Interwał GPS | :app-myLocation: |
+| Maksymalny czas trwania | :app-timerOutlined: |
+| Tryb nagrywania | :app-fiberManualRecordRounded: |
+| Kontekst fragmentu | :app-timerOutlined: |
+| Próbkowanie wykryć | :app-filterAltRounded: |
+| Top-N na gatunek | :app-formatListNumberedRounded: |
+
+Stuknij przycisk :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Nazwa, transekt, obserwator, lokalizacja i alerty także mają przyciski pomocy.
+
 Nowe ustawienia Survey domyślnie używają wnioskowania **0,70 Hz**. Zachowuje
 to więcej krótkich odgłosów niż wybory o niższej częstości oszczędzające
 baterię, a model i tak działa rzadziej niż przy 1,00 Hz. Survey i tryb Live
@@ -61,7 +75,7 @@ Dostępne są trzy tryby:
 |---|---|
 | **Wszystko** | Zachowuje każdy fragment. Największe zużycie dysku. Zalecany przy krótkich Surveys lub gdy chcesz mieć dźwięk każdego wykrycia do późniejszej analizy. |
 | **Top N** | Zachowuje tylko **N fragmentów o najwyższej pewności dla każdego gatunku**. Pozostałe fragmenty są usuwane w trakcie Survey. Domyślne N to 10, z możliwością ustawienia od 1 do 50. |
-| **Smart** | Ten sam limit N na gatunek co w Top N, **plus** rozkład przestrzenny: jeśli nowe wykrycie trafi w to samo „miejsce” co już zachowany fragment (w promieniu około 500 m i w odstępie około 2 minut), fragment zachowuje tylko to o wyższej pewności. Dzięki temu jeden śpiewający w miejscu osobnik nie zajmie wszystkich N miejsc, a zachowane fragmenty lepiej pokrywają cały transekt. |
+| **Smart** | Ten sam limit N na gatunek co w Top N, **plus** rozkład przestrzenny: jeśli nowe wykrycie trafi w to samo „miejsce” co już zachowany fragment (w promieniu około 250 m i w odstępie około 2 minut), fragment zachowuje tylko to o wyższej pewności. Dzięki temu jeden śpiewający w miejscu osobnik nie zajmie wszystkich N miejsc, a zachowane fragmenty lepiej pokrywają cały transekt. |
 
 Limit N obowiązuje **na gatunek, nie łącznie** — jeśli nagrasz 10 rudzików i 10 zięb, zachowasz 20 fragmentów. Nie ma ogólnego limitu liczby fragmentów, jakie może dać jeden Survey.
 
@@ -85,7 +99,7 @@ Krótka lista kontrolna przed startem, w ramach konfiguracji.
 
 ### 5. Gotowe
 
-Ekran gotowości podsumowuje aktywną konfigurację Survey, zanim rozpoczniesz przyciskiem :material-play:.
+Ekran gotowości podsumowuje aktywną konfigurację Survey, zanim rozpoczniesz przyciskiem :app-playArrowRounded:.
 
 ## Panel Survey na żywo
 
@@ -93,28 +107,28 @@ Ekran trwającego Survey ma trzy główne zakładki oraz listę ostatnich wykry�
 
 ### Górny pasek
 
-- :material-stop: — zakończ Survey
-- :material-timer: — czas, który upłynął
-- :material-help-circle-outline: — otwórz panel pomocy Survey
-- :material-tune: — otwórz ustawienia Survey
+- :app-stopRounded: — zakończ Survey
+- :app-timerOutlined: — czas, który upłynął
+- :app-helpOutlineRounded: — otwórz panel pomocy Survey
+- :app-tuneRounded: — otwórz ustawienia Survey
 
 ### Zakładki
 
-- :material-map-outline: — mapa trasy i wykrycia na mapie
-- :material-equalizer: — spektrogram
+- :app-map: — mapa trasy i wykrycia na mapie
+- :app-graphicEq: — spektrogram
 - ikona wykresu — statystyki podsumowujące i rozkład gatunków
 
 ### Statystyki i wykrycia
 
 Pod treścią zakładki panel Survey pokazuje pasek statystyk i listę ostatnich wykryć. Dotknięcie wykrycia otwiera nakładkę ze szczegółami gatunku.
 
-Każdy wiersz wykrycia udostępnia też te same działania co w [Przeglądzie Session](session-review.md): znacznik :material-check: **Potwierdź** dodawany jednym dotknięciem oraz menu :material-dots-vertical: **Więcej** z opcjami **Udostępnij wykrycie** i **Usuń wykrycie** (z możliwością cofnięcia przez SnackBar) — dzięki temu możesz zweryfikować, udostępnić lub usunąć zakłócone trafienie już w trakcie rejestracji, zamiast czekać na przegląd po zakończeniu.
+Każdy wiersz wykrycia udostępnia też te same działania co w [Przeglądzie Session](session-review.md): znacznik :app-checkCircleOutline: **Potwierdź** dodawany jednym dotknięciem oraz menu :app-moreVert: **Więcej** z opcjami **Udostępnij wykrycie** i **Usuń wykrycie** (z możliwością cofnięcia przez SnackBar) — dzięki temu możesz zweryfikować, udostępnić lub usunąć zakłócone trafienie już w trakcie rejestracji, zamiast czekać na przegląd po zakończeniu.
 
 Te same działania są dostępne z **mapy trasy na żywo**: dotknij znacznika wykrycia, aby otworzyć panel odtwarzacza fragmentów z potwierdzaniem, udostępnianiem i usuwaniem. Udostępnianie w trakcie Survey działa nawet wtedy, gdy wybrano jedno ciągłe nagranie WAV zamiast fragmentów dla poszczególnych wykryć — odpowiednie okno dźwiękowe jest wycinane z trwającego pliku w locie. Szczegóły znajdziesz w [Przeglądzie Session → Udostępnianie pojedynczego wykrycia](session-review.md#udostępnianie-pojedynczego-wykrycia).
 
 ### Zapisywanie obserwacji
 
-Przycisk :material-plus-circle-outline: podczas Survey na żywo otwiera małe menu z opcjami **Dodaj gatunek** i **Dodaj notatkę**. **Dodaj gatunek** otwiera ten sam selektor co w [Przeglądzie Session](session-review.md#dodawanie-gatunku-ręcznie): wybierz gatunek, następnie zaznacz :material-ear-hearing: **Słyszany** lub :material-eye: **Widziany** w panelu potwierdzenia i dotknij **Dodaj**. Wpis otrzymuje znacznik czasu z tej chwili, jest wiązany z bieżącą pozycją GPS i pojawia się natychmiast na liście wykryć oraz na mapie trasy z odznaką wpisu ręcznego i odpowiednimi symbolami ucha i oka.
+Przycisk :app-addCircleOutline: podczas Survey na żywo otwiera małe menu z opcjami **Dodaj gatunek** i **Dodaj notatkę**. **Dodaj gatunek** otwiera ten sam selektor co w [Przeglądzie Session](session-review.md#dodawanie-gatunku-ręcznie): wybierz gatunek, następnie zaznacz :app-hearing: **Słyszany** lub :app-visibility: **Widziany** w panelu potwierdzenia i dotknij **Dodaj**. Wpis otrzymuje znacznik czasu z tej chwili, jest wiązany z bieżącą pozycją GPS i pojawia się natychmiast na liście wykryć oraz na mapie trasy z odznaką wpisu ręcznego i odpowiednimi symbolami ucha i oka.
 
 Notatek głosowych celowo tu nie ma: mikrofon jest zajęty rejestracją samego Survey. Dodaj je w Przeglądzie Session po zakończeniu Survey.
 
@@ -133,7 +147,7 @@ Gdy **wznawiasz** niedokończony Survey z Biblioteki Sessions, potok alertów je
 
 ## Przeglądanie na mapie
 
-Pełnoekranowy widok mapy Survey (przycisk :material-fullscreen: w Przeglądzie Session) otwiera odtwarzacz fragmentów po dotknięciu znacznika. W wierszu sterowania obok przycisku odtwarzania znajdują się przyciski poprzedni i następny — przechodzą przez wykrycia w kolejności chronologicznej, ale **tylko przez te widoczne aktualnie na mapie**, więc każdy aktywny filtr gatunku, pewności lub odznaki trybu odpowiednio zawęża listę odtwarzania. Przyciski szarzeją przy pierwszym i ostatnim wykryciu na przefiltrowanej liście.
+Pełnoekranowy widok mapy Survey (przycisk :app-fullscreen: w Przeglądzie Session) otwiera odtwarzacz fragmentów po dotknięciu znacznika. W wierszu sterowania obok przycisku odtwarzania znajdują się przyciski poprzedni i następny — przechodzą przez wykrycia w kolejności chronologicznej, ale **tylko przez te widoczne aktualnie na mapie**, więc każdy aktywny filtr gatunku, pewności lub odznaki trybu odpowiednio zawęża listę odtwarzania. Przyciski szarzeją przy pierwszym i ostatnim wykryciu na przefiltrowanej liście.
 
 ## Po zatrzymaniu
 

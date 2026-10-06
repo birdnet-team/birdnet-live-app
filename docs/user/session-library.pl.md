@@ -4,7 +4,7 @@ Biblioteka Sessions to archiwum zapisanych Sessions i przetworzonych plików.
 
 ## Jak ją otworzyć
 
-Użyj przycisku :material-music-box-multiple-outline: w stopce ekranu startowego.
+Użyj przycisku :app-libraryMusic: w stopce ekranu startowego.
 
 ## Co pokazuje biblioteka
 
@@ -12,16 +12,16 @@ Każdy wpis podsumowuje zapisany zestaw wyników wraz z typem, datą, czasem trw
 
 Typy Sessions używają tych samych ikon co ekran startowy:
 
-- :material-microphone: — Session trybu Live
-- :material-file-music: — Session analizy plików
-- :material-map-marker: — Session trybu Point Count
-- :material-routes: — Session trybu Survey
+- :app-micRounded: — Session trybu Live
+- :app-audioFileRounded: — Session analizy plików
+- :app-locationOnRounded: — Session trybu Point Count
+- :app-routeRounded: — Session trybu Survey
 
 ## Elementy paska aplikacji
 
-- :material-magnify: — wyszukiwanie po dacie, typie Session, nazwie miejsca, współrzędnych, nazwie zwyczajowej lub naukowej
+- :app-searchRounded: — wyszukiwanie po dacie, typie Session, nazwie miejsca, współrzędnych, nazwie zwyczajowej lub naukowej
 - menu trybu widoku — przełączanie między **Szczegółowym**, **Zwartym** i **Według gatunków**
-- :material-swap-vertical: — zmiana kolejności sortowania
+- :app-filterList: — zmiana kolejności sortowania
 
 ## Tryby widoku
 
@@ -31,7 +31,7 @@ Pokazuje pełne karty Sessions z większą liczbą metadanych.
 
 ### Zwarty
 
-Pokazuje ciaśniejsze wiersze, aby szybciej przeglądać. Każdy wiersz ma po prawej przycisk :material-chevron-down:, który rozwija go w miejscu do pełnej treści karty z widoku szczegółowego — przydatne, gdy chcesz szybko podejrzeć statystyki jednej konkretnej Session bez utraty pozycji przewijania.
+Pokazuje ciaśniejsze wiersze, aby szybciej przeglądać. Każdy wiersz ma po prawej przycisk :app-expandMore:, który rozwija go w miejscu do pełnej treści karty z widoku szczegółowego — przydatne, gdy chcesz szybko podejrzeć statystyki jednej konkretnej Session bez utraty pozycji przewijania.
 
 ### Według gatunków
 
@@ -41,7 +41,7 @@ Grupuje Sessions według gatunków i rozwija je do Sessions, które zawierają d
 
 Sortuj Sessions według **daty** (od najnowszych lub najstarszych), **nazwy** (A–Z lub Z–A) albo **czasu trwania** (od najdłuższych lub najkrótszych). Sortowanie po czasie trwania przydaje się, gdy chcesz znaleźć najdłuższy Survey w tygodniu albo najkrótszy trzydziestosekundowy test, który przypadkiem zapisałeś.
 
-Gdy Sessions są pogrupowane według dni, każdy wiersz nagłówka dnia pokazuje najpierw menu (:material-dots-vertical:) z działaniami dla całego dnia, a strzałkę rozwijania i zwijania na końcu wiersza. Strzałka jest *ostatnim* elementem — tak samo jak w każdej innej rozwijanej liście w aplikacji — więc dotknięcie przy prawej krawędzi zawsze rozwija lub zwija grupę.
+Gdy Sessions są pogrupowane według dni, każdy wiersz nagłówka dnia pokazuje najpierw menu (:app-moreVert:) z działaniami dla całego dnia, a strzałkę rozwijania i zwijania na końcu wiersza. Strzałka jest *ostatnim* elementem — tak samo jak w każdej innej rozwijanej liście w aplikacji — więc dotknięcie przy prawej krawędzi zawsze rozwija lub zwija grupę.
 
 ## Czas lokalny
 
@@ -51,7 +51,7 @@ Każdy znacznik czasu w Bibliotece Sessions — wiersze listy, nagłówki grup d
 
 Na każdym wierszu Session możesz działać na dwa sposoby:
 
-- **Menu z trzema kropkami** (:material-dots-vertical:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie korzysta z bieżących preferencji z Ustawienia → Eksport (format i „dołącz dźwięk”) i otwiera systemowy panel udostępniania od razu — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
+- **Menu z trzema kropkami** (:app-moreVert:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie korzysta z bieżących preferencji z Ustawienia → Eksport (format i „dołącz dźwięk”) i otwiera systemowy panel udostępniania od razu — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
 - **Przesuń** wiersz w lewo lub w prawo, aby go usunąć. Przed usunięciem i tak pojawia się okno potwierdzenia, więc przypadkowe przesunięcie da się odwrócić.
 
 ## Co dalej

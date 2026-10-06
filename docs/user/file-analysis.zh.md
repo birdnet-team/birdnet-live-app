@@ -4,7 +4,7 @@
 
 ## 如何打开
 
-在主界面点按带 :material-file-music: 图标的**文件分析**卡片。
+在主界面点按带 :app-audioFileRounded: 图标的**文件分析**卡片。
 
 ### 从其他应用打开
 
@@ -12,8 +12,9 @@
 
 ## 应用栏
 
-- :material-tune: — 打开文件分析设置
-- :material-close: — 取消正在进行的分析
+- :app-tuneRounded: — 打开文件分析设置
+- :app-helpOutlineRounded: — 打开文件分析帮助
+- :app-close: — 取消正在进行的分析
 
 ## 支持的输入
 
@@ -42,11 +43,11 @@
 
 您可以：
 
-- 使用当前 GPS 位置
-- 手动输入坐标
-- 跳过位置
-- 在地图上选点
-- 可选地设置录音日期
+- 使用当前 GPS 位置 :app-myLocation:
+- 手动输入坐标 :app-editLocationAlt:
+- 跳过位置 :app-locationOff:
+- 在地图上选点 :app-mapSheet:
+- 可选地设置录音日期 :app-calendarTodayRounded:
 
 ### 3. 参数
 
@@ -57,6 +58,16 @@
 - 灵敏度
 - 置信度阈值
 - 物种筛选模式
+
+| 设置控件 | 图标 |
+|---|---|
+| 窗口时长 | :app-timerOutlined: |
+| 重叠 | :app-swapHoriz: |
+| 灵敏度 | :app-hearing: |
+| 置信度阈值 | :app-verifiedRounded: |
+| 物种筛选 | :app-filterAltRounded: |
+
+点按设置控件旁的 :app-helpOutline: 按钮可查看说明。文件、位置和录音日期步骤也有帮助按钮。
 
 重叠决定每个分析窗口前进多少，它是文件分析特有的设置：整个文件始终都会被检查，重叠越多只是检查得越细。实时模式改用推理频率，因为它们要决定的是对不断到来的音频运行模型的频率，而不是以多细的粒度覆盖一段已经固定的录音。
 
