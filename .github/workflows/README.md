@@ -2,6 +2,11 @@
 
 This folder contains CI workflows for BirdNET Live.
 
+Release uploads use the shared action in `../actions/upload-release-assets`.
+It validates the local files and removes existing assets whose names differ
+only in capitalization before uploading. Exact filename matches are replaced
+by the uploader; unrelated release assets are preserved.
+
 ## CI Configuration Reference
 
 Configure the following repository-level GitHub Actions settings in `Settings > Secrets and variables > Actions`.
