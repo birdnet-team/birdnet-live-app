@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
+
 ## [1.2.0] - 2026-10-06
 
 ### Changed
