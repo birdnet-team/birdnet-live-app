@@ -58,21 +58,20 @@ work and hands the results to `App.launchSharedFile` / `App.launchQuickAction`.
 
 That read is safe because of thread ordering, not luck. The payload is captured
 on the platform thread inside `MainActivity.onCreate` and
-`didFinishLaunchingWithOptions`, and Dart's read is a channel message dispatched
-to that same thread — so it cannot be served until those methods return. The
-Dart entrypoint starting first does not matter.
+`SceneDelegate.scene(_:willConnectTo:options:)`, and Dart's read is a channel
+message dispatched to that same thread — so it cannot be served until those
+methods return. The Dart entrypoint starting first does not matter.
 
-The same ordering is why a document that launched the app on iOS is queued from
-`launchOptions[.url]` rather than waiting for `application(_:open:)`: iOS calls
-that only *after* `didFinishLaunchingWithOptions` returns, which is late enough
-to lose the race. iOS then delivers the same URL again through that callback,
-so `launchDocumentURI` drops the replay exactly once — a genuine re-open of the
-same document later still works.
+On iOS, the cold-launch document is queued from the scene's
+`connectionOptions.urlContexts` before forwarding the connection event to
+Flutter. Warm opens arrive through `scene(_:openURLContexts:)`. These replace
+the legacy `launchOptions[.url]` and `application(_:open:)` paths; the legacy
+one-time replay guard is no longer needed. Opening the same document again
+after Dart drains it still works.
 
 Reading early is not enough on its own, because the app still cannot decide
-where to go without the readiness check, and on a cold start that check parses
-every stored session looking for an unfinished ARU deployment. So the listener
-holds the launch. `_LaunchFrameHold` wraps `deferFirstFrame`/`allowFirstFrame`:
+where to go without the readiness check for running audio workflows. So the
+listener holds the launch. `_LaunchFrameHold` wraps `deferFirstFrame`/`allowFirstFrame`:
 the system launch screen stays up — frames are still built and laid out, only
 compositing waits — and every path out of the handler releases it once the
 destination is settled. The blocked-dialog path releases *before* awaiting the
@@ -123,8 +122,24 @@ the shared-media channel can consume it.
 One mechanism: `CFBundleDocumentTypes` in `Runner/Info.plist`. It covers both
 the system share sheet and Files' "Open With", and the app launches straight
 into File Analysis. The document arrives as a copy in `Documents/Inbox`, which
-`AppDelegate.application(_:open:)` queues and `importSharedFile` moves into the
-temporary directory.
+`SceneDelegate` queues through `AppDelegate.queueDocument` and
+`importSharedFile` copies into the temporary directory before releasing the
+Inbox copy.
+
+`Runner/Info.plist` declares a single scene using
+`$(PRODUCT_MODULE_NAME).SceneDelegate`, a subclass of `FlutterSceneDelegate`.
+Plugin registration and all four custom method channels are set up in
+`AppDelegate.didInitializeImplicitFlutterEngine` using the engine bridge's
+messenger. Startup does not access `AppDelegate.window` or cast its root view
+controller. This follows Flutter's
+[scene lifecycle migration](https://docs.flutter.dev/release/breaking-changes/uiscenedelegate),
+required when building with the iOS 27 SDK.
+
+`FlutterDeepLinkingEnabled` is `false` so Flutter does not treat audio file URLs
+as named routes during scene connection. Warm file opens are consumed by our
+scene delegate; other URL contexts continue to Flutter's plugin handlers.
+Scene activation also drains a recording left by the legacy Share extension,
+without replacing a pending document.
 
 `LSSupportsOpeningDocumentsInPlace` stays `false`: analysis re-reads the file
 while drawing the spectrogram, so a copy we own is safer than a reference to a
@@ -186,6 +201,11 @@ and `Platform.isIOS` are both false there, so `SharedMediaService` short-circuit
 platform-independent — the `importSharedFile` channel contract and the route
 presence tracking that decides whether a second share replaces an open wizard.
 
+`ios/RunnerTests/RunnerTests.swift` covers native document queueing before
+channel setup, draining once, replacing a pending file, reopening the same
+document, and leaving non-file URLs to other handlers. These XCTest checks
+require Xcode and do not exercise the full scene launch sequence.
+
 On device, worth covering both entry states:
 
 - **Android cold** — force-quit the app, then share. The pending item is drained
@@ -197,7 +217,12 @@ On device, worth covering both entry states:
   missing, check that no Share extension has crept back into the build: one
   suppresses it.
 - **iOS Open With** — open an audio document with BirdNET Live from Files and
-  verify the direct document URL is handled immediately.
+  verify the direct document URL is handled immediately, both after force-quitting
+  the app and while it is already running.
+- **iOS startup** — build with the iOS 27 SDK, launch a release build from the
+  home-screen icon without a debugger, and verify normal launch and return from
+  the background on both a 60 Hz iPhone and a ProMotion device. Windows Flutter
+  checks cannot validate native compilation or these launch paths.
 
 The receiving half can be driven without touching the screen, which is worth
 knowing when the share sheet itself is not what is under test:
@@ -211,7 +236,7 @@ xcrun devicectl device process launch --device <id> --terminate-existing \
 ```
 
 A copy appearing under `tmp/shared_audio/` in the app container means the whole
-chain ran: `application(_:open:)` queued it, Dart drained it, File Analysis
+chain ran: the scene callback queued it, Dart drained it, File Analysis
 imported it.
 
 Also worth a pass: sharing while a File Analysis run is in progress (expect the

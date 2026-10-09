@@ -8,8 +8,8 @@
 //     intent carrying an `audio/*` URI. See the intent filters in
 //     AndroidManifest.xml and `captureSharedMedia` in MainActivity.kt.
 //   * iOS — a document opened through CFBundleDocumentTypes, which covers both
-//     the share sheet and Files' "Open With". AppDelegate.swift queues it. See
-//     docs/developer/share-targets.md.
+//     the share sheet and Files' "Open With". SceneDelegate.swift queues it
+//     through AppDelegate.swift. See docs/developer/share-targets.md.
 //
 // Both platforms queue the incoming item natively and either forward it
 // immediately (app already running — "warm" case) or hold it for
