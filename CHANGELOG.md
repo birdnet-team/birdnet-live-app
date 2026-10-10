@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
 - Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
 
 ## [1.2.0] - 2026-10-06
