@@ -45,6 +45,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.5'
           channel: stable
 
       - name: Show Flutter version
@@ -135,8 +136,10 @@ jobs:
              build/app/outputs/flutter-apk/BirdNET_Live_v${{ env.APP_VERSION }}.apk
 
       - name: Attach APK to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: ./.github/actions/upload-release-assets
         with:
+          tag-name: ${{ github.event.release.tag_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: build/app/outputs/flutter-apk/BirdNET_Live_v${{ env.APP_VERSION }}.apk
 
       - name: Clean up Android signing files
@@ -159,6 +162,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.5'
           channel: stable
 
       - name: Show Flutter version
@@ -211,8 +215,10 @@ jobs:
           Compress-Archive -Path $releaseDir -DestinationPath $zipPath
 
       - name: Attach Windows artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: ./.github/actions/upload-release-assets
         with:
+          tag-name: ${{ github.event.release.tag_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
             build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64_setup.exe

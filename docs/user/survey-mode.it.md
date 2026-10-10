@@ -4,7 +4,7 @@ La modalità Survey è il flusso di lavoro basato sul percorso per Survey in mov
 
 ## Come aprirla
 
-Dalla Home, tocca la scheda **Modalità Survey** con l'icona :material-routes:.
+Dalla Home, tocca la scheda **Modalità Survey** con l'icona :app-routeRounded:.
 
 ## Flusso di configurazione
 
@@ -17,7 +17,7 @@ Puoi inserire:
 - nome del Survey
 - ID del transetto
 - nome dell'osservatore
-- GPS, coordinate manuali o nessuna posizione di partenza
+- GPS :app-myLocation:, coordinate manuali :app-editLocationAlt: o nessuna posizione di partenza :app-locationOff:. Il selettore sulla mappa usa :app-mapSheet:.
 
 Questo passaggio mostra anche il selettore sulla mappa, aggiorna il GPS quando
 torni dalle schermate di autorizzazione di sistema e mostra il promemoria
@@ -42,6 +42,20 @@ Questo passaggio contiene parametri specifici del Survey, come:
 - modalità di campionamento delle rilevazioni
 - limite Top N per specie quando il campionamento è limitato
 
+| Controllo di configurazione | Icona |
+|---|---|
+| Microfono | :app-micRounded: |
+| Frequenza di inferenza | :app-speedRounded: |
+| Soglia di confidenza | :app-verifiedRounded: |
+| Intervallo GPS | :app-myLocation: |
+| Durata massima | :app-timerOutlined: |
+| Modalità di registrazione | :app-fiberManualRecordRounded: |
+| Contesto del clip | :app-timerOutlined: |
+| Campionamento delle rilevazioni | :app-filterAltRounded: |
+| Top N per specie | :app-formatListNumberedRounded: |
+
+Tocca il pulsante :app-helpOutline: accanto a un controllo per leggerne la spiegazione. Anche nome, transetto, osservatore, posizione e avvisi hanno pulsanti di aiuto.
+
 Le nuove impostazioni di Survey usano un'inferenza di **0,70 Hz** come
 predefinita. In questo modo si conservano più vocalizzazioni brevi rispetto
 alle scelte a frequenza più bassa per il risparmio energetico, pur eseguendo
@@ -63,7 +77,7 @@ Sono disponibili tre modalità:
 |---|---|
 | **Tutte** | Conserva ogni clip. Massimo uso del disco. Consigliata per Survey brevi o quando vuoi l'audio di ogni rilevazione per un'analisi successiva. |
 | **Top N** | Conserva solo le **N clip con confidenza più alta per specie**. Gli altri clip vengono eliminati man mano che il Survey procede. N predefinito è 10, configurabile da 1 a 50. |
-| **Smart** | Stesso limite per specie di N come Top N, **più** distribuzione spaziale: se una nuova rilevazione cade nello stesso "punto" di un clip già conservato (entro ~500 m e ~2 min l'uno dall'altro), solo quella con confidenza più alta mantiene il clip. Questo evita che un singolo cantore stazionario monopolizzi tutti gli N slot e orienta i clip conservati verso la copertura dell'intero transetto. |
+| **Smart** | Stesso limite per specie di N come Top N, **più** distribuzione spaziale: se una nuova rilevazione cade nello stesso "punto" di un clip già conservato (entro ~250 m e ~2 min l'uno dall'altro), solo quella con confidenza più alta mantiene il clip. Questo evita che un singolo cantore stazionario monopolizzi tutti gli N slot e orienta i clip conservati verso la copertura dell'intero transetto. |
 
 Il limite N è **per specie, non globale**: se registri 10 pettirossi e 10 fringuelli, conservi 20 clip. Non esiste un limite complessivo al numero di clip che un Survey può produrre.
 
@@ -87,7 +101,7 @@ Una breve lista di controllo pre-avvio all'interno del flusso di configurazione.
 
 ### 5. Pronto
 
-La schermata di pronto riassume la configurazione attiva del Survey prima di iniziare con :material-play:.
+La schermata di pronto riassume la configurazione attiva del Survey prima di iniziare con :app-playArrowRounded:.
 
 ## Dashboard del Survey in tempo reale
 
@@ -95,28 +109,28 @@ La schermata del Survey in tempo reale ha tre schede principali più un elenco d
 
 ### Barra superiore
 
-- :material-stop: — termina il Survey
-- :material-timer: — tempo trascorso
-- :material-help-circle-outline: — apre il pannello di aiuto del Survey
-- :material-tune: — apre le impostazioni del Survey
+- :app-stopRounded: — termina il Survey
+- :app-timerOutlined: — tempo trascorso
+- :app-helpOutlineRounded: — apre il pannello di aiuto del Survey
+- :app-tuneRounded: — apre le impostazioni del Survey
 
 ### Schede
 
-- :material-map-outline: — mappa del percorso e rilevazioni mappate
-- :material-equalizer: — spettrogramma
+- :app-map: — mappa del percorso e rilevazioni mappate
+- :app-graphicEq: — spettrogramma
 - icona del grafico — statistiche riassuntive e suddivisione per specie
 
 ### Statistiche e rilevazioni
 
 Sotto il contenuto della scheda, la dashboard del Survey mostra una barra delle statistiche e un elenco delle rilevazioni recenti. Toccando una rilevazione si apre il pannello dei dettagli della specie.
 
-Ogni riga di rilevazione mostra anche le stesse azioni per rilevazione usate nel [Riepilogo sessione](session-review.md): un segno di spunta :material-check: **Conferma** da un tocco e un menu :material-dots-vertical: **Altro** con **Condividi rilevazione** ed **Elimina rilevazione** (con SnackBar per annullare) — così puoi convalidare, condividere o rimuovere un risultato rumoroso durante la cattura, senza attendere la revisione post-Session.
+Ogni riga di rilevazione mostra anche le stesse azioni per rilevazione usate nel [Riepilogo sessione](session-review.md): un segno di spunta :app-checkCircleOutline: **Conferma** da un tocco e un menu :app-moreVert: **Altro** con **Condividi rilevazione** ed **Elimina rilevazione** (con SnackBar per annullare) — così puoi convalidare, condividere o rimuovere un risultato rumoroso durante la cattura, senza attendere la revisione post-Session.
 
 Le stesse azioni sono disponibili dalla **mappa del percorso in tempo reale**: tocca un marcatore di rilevazione per aprire il pannello del lettore dei clip con conferma, condivisione ed eliminazione. La condivisione durante un Survey funziona anche quando hai scelto un'unica registrazione WAV continua invece dei clip per rilevazione — la finestra audio pertinente viene estratta al volo dal file in corso. Vedi [Riepilogo sessione → Condivisione di una singola rilevazione](session-review.md#condivisione-di-una-singola-rilevazione) per i dettagli.
 
 ### Registrare un'osservazione
 
-Il pulsante :material-plus-circle-outline: del survey dal vivo apre un piccolo menu con **Aggiungi specie** e **Aggiungi nota**. **Aggiungi specie** apre lo stesso selettore usato in [Session Review](session-review.md#aggiungere-una-specie-a-mano), scegli una specie, poi seleziona :material-ear-hearing: **Sentito** e/o :material-eye: **Visto** nel pannello di conferma e tocca **Aggiungi**. La voce viene marcata con l'ora di quel momento e con la posizione GPS corrente e compare subito nell'elenco delle rilevazioni e sulla mappa del percorso, con il badge manuale e le relative icone orecchio / occhio.
+Il pulsante :app-addCircleOutline: del survey dal vivo apre un piccolo menu con **Aggiungi specie** e **Aggiungi nota**. **Aggiungi specie** apre lo stesso selettore usato in [Session Review](session-review.md#aggiungere-una-specie-a-mano), scegli una specie, poi seleziona :app-hearing: **Sentito** e/o :app-visibility: **Visto** nel pannello di conferma e tocca **Aggiungi**. La voce viene marcata con l'ora di quel momento e con la posizione GPS corrente e compare subito nell'elenco delle rilevazioni e sulla mappa del percorso, con il badge manuale e le relative icone orecchio / occhio.
 
 I memo vocali sono volutamente assenti qui: il microfono è impegnato con la registrazione del survey. Aggiungili in Session Review al termine.
 
@@ -135,8 +149,10 @@ Quando **riprendi** un Survey non completato dalla Libreria Sessions, la pipelin
 
 ## Revisione sulla mappa
 
-La vista della mappa del Survey a schermo intero (il pulsante :material-fullscreen: nel Riepilogo sessione) apre un lettore di clip quando tocchi un marcatore. La riga dei comandi ha i pulsanti per la rilevazione precedente e successiva ai lati del comando di riproduzione — scorrono le rilevazioni in ordine cronologico, ma **solo quelle attualmente visibili sulla mappa**, quindi qualsiasi filtro attivo per specie, confidenza o chip di modalità restringe di conseguenza la playlist. I pulsanti si disattivano alla prima/ultima rilevazione dell'elenco filtrato.
+La vista della mappa del Survey a schermo intero (il pulsante :app-fullscreen: nel Riepilogo sessione) apre un lettore di clip quando tocchi un marcatore. La riga dei comandi ha i pulsanti per la rilevazione precedente e successiva ai lati del comando di riproduzione — scorrono le rilevazioni in ordine cronologico, ma **solo quelle attualmente visibili sulla mappa**, quindi qualsiasi filtro attivo per specie, confidenza o chip di modalità restringe di conseguenza la playlist. I pulsanti si disattivano alla prima/ultima rilevazione dell'elenco filtrato.
 
 ## Dopo l'interruzione
 
 BirdNET Live salva il Survey completato e apre il [Riepilogo sessione](session-review.md).
+
+Il Survey attivo viene salvato all'avvio, ogni 30 secondi e quando l'app lascia il primo piano. Dopo un arresto anomalo o un'interruzione di corrente, l'ultimo Survey parziale compare nella Libreria Sessions come Session terminata. La registrazione non riparte. Le osservazioni successive all'ultimo salvataggio potrebbero mancare.

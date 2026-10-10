@@ -289,14 +289,14 @@ class _SummaryHeader extends ConsumerWidget {
                 ],
               ),
             ],
-            if (session.stopReason != null &&
-                session.stopReason != SessionStopReason.manual) ...[
-              const SizedBox(height: 6),
-              _StopReasonBanner(
-                reason: session.stopReason!,
-                value: session.stopReasonValue,
-              ),
-            ],
+          ],
+          if (session.stopReason != null &&
+              session.stopReason != SessionStopReason.manual) ...[
+            const SizedBox(height: 6),
+            _StopReasonBanner(
+              reason: session.stopReason!,
+              value: session.stopReasonValue,
+            ),
           ],
         ],
       ),
@@ -312,11 +312,11 @@ class _SummaryHeader extends ConsumerWidget {
   }
 }
 
-/// Subtle inline banner that surfaces the auto-stop reason for a survey.
+/// Subtle inline banner that surfaces an automatic stop reason.
 ///
 /// Hidden when the session was stopped manually or pre-dates the
-/// `stopReason` field. Uses the secondary tonal palette so it sits
-/// quietly under the other survey stat chips.
+/// `stopReason` field. Uses the secondary tonal palette so it sits quietly
+/// below the session metadata.
 class _StopReasonBanner extends StatelessWidget {
   const _StopReasonBanner({required this.reason, required this.value});
 
@@ -334,6 +334,14 @@ class _StopReasonBanner extends StatelessWidget {
       case SessionStopReason.maxDuration:
         icon = AppIcons.timerOff;
         text = l10n.sessionAutoStopMaxDuration;
+        break;
+      case SessionStopReason.backgroundLimit:
+        icon = AppIcons.timerOff;
+        text = l10n.liveBackgroundLimitReached;
+        break;
+      case SessionStopReason.backgrounded:
+        icon = AppIcons.timerOff;
+        text = l10n.pointCountBackgroundEnded;
         break;
       case SessionStopReason.lowBattery:
         icon = AppIcons.batteryAlert;

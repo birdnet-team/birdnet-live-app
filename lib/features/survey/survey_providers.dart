@@ -28,6 +28,7 @@ import '../announcements/announcements_alert_sink.dart';
 import '../audio/audio_providers.dart';
 import '../recording/recording_service.dart';
 import '../live/live_session.dart';
+import '../live/live_providers.dart' show sessionRepositoryProvider;
 import 'species_alert_notifier.dart';
 import 'survey_controller.dart';
 
@@ -60,6 +61,7 @@ final surveyControllerProvider = Provider<SurveyController>((ref) {
   final controller = SurveyController(
     ringBuffer: ringBuffer,
     recordingService: recordingService,
+    repository: ref.read(sessionRepositoryProvider),
     gpsEnabled: () => ref.read(useGpsProvider),
   );
 

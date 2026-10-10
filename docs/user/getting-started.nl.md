@@ -40,18 +40,20 @@ Het startscherm is het centrale punt.
 
 ### Kaarten voor de hoofdmodi
 
-- :material-microphone: **Live-modus**
-- :material-map-marker: **Point Count-modus**
-- :material-routes: **Survey-modus**
-- :material-file-music: **Bestandsanalyse**
+- :app-micRounded: **Live-modus**
+- :app-locationOnRounded: **Point Count-modus**
+- :app-routeRounded: **Survey-modus**
+- :app-audioFileRounded: **Bestandsanalyse**
+- :app-timerRounded: **ARU-modus**
+- :app-sdStorage: **Batchanalyse** (Binnenkort beschikbaar)
 
 ### Knoppen onderaan
 
-- :material-tune: **Instellingen**
-- :material-magnify: **Verkennen**
-- :material-music-box-multiple-outline: **Session-bibliotheek**
-- :material-help-circle-outline: **Help**
-- :material-information-outline: **Over**
+- :app-tuneRounded: **Instellingen**
+- :app-searchRounded: **Verkennen**
+- :app-libraryMusic: **Session-bibliotheek**
+- :app-helpOutlineRounded: **Help**
+- :app-infoOutline: **Over**
 
 ## Wat wordt er opgeslagen
 

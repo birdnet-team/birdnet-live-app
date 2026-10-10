@@ -7,10 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/services/wakelock_service.dart';
+import '../../core/services/location_service.dart';
 
+import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/audio_background_notification.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
 import '../audio/audio_capture_service.dart';
@@ -18,6 +23,7 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
+import '../history/session_checkpoint_writer.dart';
 import '../history/session_review_screen.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
@@ -104,8 +110,19 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
   bool _isStarting = false;
   bool _finalizing = false;
+  bool _stopDialogOpen = false;
   Timer? _sessionTimer;
+  SessionCheckpointWriter? _checkpointWriter;
   bool _durationWarningShown = false;
+  bool _backgroundTipOpen = false;
+  final AudioBackgroundNotificationService _backgroundService =
+      AudioBackgroundNotificationService(AudioBackgroundMode.live);
+  Future<void> _backgroundTransition = Future<void>.value();
+  bool _backgroundReady = false;
+  bool _appBackgrounded = false;
+  int _backgroundEpisode = 0;
+  DateTime? _backgroundDeadline;
+  Timer? _backgroundLimitTimer;
   bool _autoStartAttempted = false;
   bool _startScheduled = false;
   bool _forceAutoStartRequested = false;
@@ -128,6 +145,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     super.initState();
     _forceAutoStartRequested = widget.forceAutoStart;
     WidgetsBinding.instance.addObserver(this);
+    FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
     // Register the state change callback so the controller can trigger
     // rebuilds when detections arrive.
     final controller = ref.read(liveControllerProvider);
@@ -267,12 +285,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
   }
 
+  Future<bool> _abandonPendingStart(
+    CaptureStateNotifier captureNotifier,
+  ) async {
+    if (mounted && !_appBackgrounded) return false;
+    await captureNotifier.stop();
+    await WakelockService.disable();
+    _isStarting = false;
+    if (mounted) setState(() {});
+    return true;
+  }
+
   /// Handle the main action button press (pause / resume / start).
   Future<void> _toggleSession() async {
-    if (_isStarting) return;
+    if (_isStarting || _finalizing) return;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final audioSource = ref.read(audioSourceProvider);
+    final repo = ref.read(sessionRepositoryProvider);
 
     if (controller.state == LiveState.active) {
       // ── Stop session → confirm, then go to review ────────────
@@ -280,8 +310,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     } else if (controller.state == LiveState.paused) {
       // ── Resume the same session ──────────────────────────────────
       await captureNotifier.start(source: audioSource);
+      if (_appBackgrounded || !mounted || _finalizing) {
+        await captureNotifier.stop();
+        return;
+      }
       await controller.resumeSession();
+      _pausedByLifecycle = false;
       _onControllerStateChanged();
+      await _syncBackgroundSupport();
     } else {
       // ── Start a brand-new session ────────────────────────────────
       // Every non-session state lands here — `ready`, but also `idle`,
@@ -311,6 +347,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         setState(() {});
         return;
       }
+      if (await _abandonPendingStart(captureNotifier)) return;
 
       // Keep screen on during live recording.
       await WakelockService.enable();
@@ -323,6 +360,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
       // Start audio capture.
       await captureNotifier.start(source: audioSource);
+      if (await _abandonPendingStart(captureNotifier)) return;
 
       // Read settings.
       final windowDuration = ref.read(windowDurationProvider);
@@ -361,9 +399,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       // Live screen in the meantime. Bail out before touching [ref] again so
       // we never read providers on an unmounted widget.
       if (!mounted) {
+        await captureNotifier.stop();
+        await WakelockService.disable();
         _isStarting = false;
         return;
       }
+      if (await _abandonPendingStart(captureNotifier)) return;
       if (useGps && mounted) {
         final svc = ref.read(locationServiceProvider);
         if (svc.lastFetchUsedCachedFallback) {
@@ -381,11 +422,13 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
       double? startLat;
       double? startLon;
+      AppLocation? startLocation;
       try {
         final loc = ref.read(currentLocationProvider).value;
         if (loc != null) {
           startLat = loc.latitude;
           startLon = loc.longitude;
+          startLocation = loc;
         }
       } catch (_) {}
 
@@ -411,26 +454,56 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         highPassHz: ref.read(highPassFilterProvider).toDouble(),
         latitude: startLat,
         longitude: startLon,
+        startLocation: startLocation,
       );
+
+      if (!mounted) {
+        await captureNotifier.stop();
+        final abandoned = await controller.finalizeSession();
+        if (abandoned != null) await repo.delete(abandoned.id);
+        await WakelockService.disable();
+        _isStarting = false;
+        return;
+      }
 
       _isStarting = false;
       _onControllerStateChanged();
+      _checkpointWriter = SessionCheckpointWriter(
+        repository: repo,
+        session: () => controller.session,
+        shouldSave: () => ref.read(saveSessionAutomaticallyProvider),
+      )..start();
+      if (_appBackgrounded) {
+        await _pauseSessionForBackground();
+        return;
+      }
+      await _syncBackgroundSupport();
+      if (_appBackgrounded) {
+        await _pauseSessionForBackground();
+        return;
+      }
       _startSessionTimer();
     }
   }
 
   /// Show confirmation dialog, then finalize and navigate to review.
   Future<void> _confirmStop() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await confirmDestructive(
-      context,
-      title: l10n.sessionStopTitle,
-      body: l10n.sessionStopMessage,
-      confirmLabel: l10n.sessionStopConfirm,
-      cancelLabel: l10n.cancel,
-    );
-    if (!confirmed || !mounted) return;
-    await _finalizeAndReview();
+    if (_finalizing || _stopDialogOpen) return;
+    _stopDialogOpen = true;
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await confirmDestructive(
+        context,
+        title: l10n.sessionStopTitle,
+        body: l10n.sessionStopMessage,
+        confirmLabel: l10n.sessionStopConfirm,
+        cancelLabel: l10n.cancel,
+      );
+      if (!confirmed || !mounted) return;
+      await _finalizeAndReview();
+    } finally {
+      _stopDialogOpen = false;
+    }
   }
 
   @override
@@ -440,7 +513,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       LiveScreenPresence.unregister(presenceRoute);
     }
     WidgetsBinding.instance.removeObserver(this);
+    FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _sessionTimer?.cancel();
+    _checkpointWriter?.dispose();
+    _backgroundLimitTimer?.cancel();
+    _backgroundDeadline = null;
+    if (!_finalizing) unawaited(_backgroundService.stop());
 
     // Clear the state-change callback on the long-lived controller to avoid calling
     // updates on a defunct/disposed widget state. Use the cached reference
@@ -460,17 +538,101 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Only [paused] means the app is actually backgrounded. [inactive] also
-    // fires for transient interruptions that leave the app on screen — the
+    // Only [paused] means the app is actually backgrounded. Windows never
+    // reports it, so a minimized window keeps listening. [inactive] also
+    // fires for interruptions that leave the app visible — the
     // rotation transition under auto-rotate, the app switcher, Control
     // Center, an incoming call, and the task-to-front blip when the Quick
     // Listen widget or an ARU notification action relaunches an app that is
     // already in the foreground — and must not tear down a live recording.
     if (state == AppLifecycleState.paused) {
-      _enqueueLifecycleTransition(_pauseSessionForBackground);
+      if (_checkpointWriter != null) {
+        unawaited(_checkpointWriter!.saveNow());
+      }
+      if (!_appBackgrounded) ++_backgroundEpisode;
+      _appBackgrounded = true;
+      final backgroundedAt = DateTime.now();
+      final episode = _backgroundEpisode;
+      _enqueueLifecycleTransition(
+        () => _pauseSessionForBackground(backgroundedAt, episode),
+      );
     } else if (state == AppLifecycleState.resumed) {
-      _enqueueLifecycleTransition(_resumeSessionFromBackground);
+      if (_appBackgrounded) ++_backgroundEpisode;
+      _appBackgrounded = false;
+      final resumedAt = DateTime.now();
+      _enqueueLifecycleTransition(() async {
+        // Without a session, finalizing would pop the screen; the stale flag
+        // is cleared by the next service start or stop.
+        if (await _backgroundService.hasPendingStop() &&
+            _liveController?.session != null) {
+          await _finalizeAndReview();
+        } else {
+          await _resumeSessionFromBackground(resumedAt);
+        }
+      });
     }
+  }
+
+  void _onNotificationData(Object data) {
+    if (data is Map &&
+        data['action'] == 'liveStop' &&
+        mounted &&
+        _liveController?.session != null) {
+      unawaited(_finalizeAndReview());
+    }
+  }
+
+  /// Reconcile an active session with the saved background preference.
+  /// The Android service must start while the app is visible, before a lock
+  /// or app switch makes a microphone service start ineligible.
+  Future<void> _syncBackgroundSupport() {
+    _backgroundTransition = _backgroundTransition
+        .then((_) async {
+          if (!mounted || _finalizing) return;
+          final controller = ref.read(liveControllerProvider);
+          if (controller.state != LiveState.active ||
+              !ref.read(liveBackgroundEnabledProvider)) {
+            _backgroundReady = false;
+            await _backgroundService.stop();
+            if (mounted && controller.state == LiveState.active) {
+              await WakelockService.enable();
+            }
+            return;
+          }
+
+          final l10n = AppLocalizations.of(context)!;
+          final minutes = ref.read(liveBackgroundMaxMinutesProvider);
+          _backgroundReady = await _backgroundService.start(l10n, minutes);
+          if (!mounted || _finalizing) return;
+          if (controller.state != LiveState.active) {
+            _backgroundReady = false;
+            await _backgroundService.stop();
+            return;
+          }
+          if (!ref.read(liveBackgroundEnabledProvider)) {
+            _backgroundReady = false;
+            await _backgroundService.stop();
+            await WakelockService.enable();
+          } else if (_backgroundReady) {
+            await _backgroundService.update(l10n, minutes);
+            await WakelockService.disable();
+          } else {
+            await WakelockService.enable();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.backgroundAudioUnavailable)),
+            );
+          }
+        })
+        .catchError((Object error, StackTrace stack) async {
+          debugPrint('LiveScreen: background support failed: $error\n$stack');
+          _backgroundReady = false;
+          await _backgroundService.stop();
+          if (mounted && _appBackgrounded) {
+            _enqueueLifecycleTransition(() => _pauseSessionForBackground());
+          }
+        });
+    return _backgroundTransition;
   }
 
   bool _pausedByLifecycle = false;
@@ -502,71 +664,213 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
   }
 
-  Future<void> _pauseSessionForBackground() async {
+  Future<void> _pauseSessionForBackground([
+    DateTime? backgroundedAt,
+    int? episode,
+  ]) async {
     // The session is already being torn down — finalizing stops capture and
     // closes the session itself, so pausing would only race it.
-    if (_finalizing) return;
+    // A deferred pause (startup, queued lifecycle event) must not land after
+    // the app has already returned to the foreground.
+    if (!_appBackgrounded ||
+        _finalizing ||
+        _backgroundDeadline != null ||
+        _pausedByLifecycle) {
+      return;
+    }
     final controller = ref.read(liveControllerProvider);
     if (controller.state != LiveState.active) return;
+    if (ref.read(liveBackgroundEnabledProvider) && _backgroundReady) {
+      _sessionTimer?.cancel();
+      final minutes = ref.read(liveBackgroundMaxMinutesProvider);
+      _backgroundDeadline = (backgroundedAt ?? DateTime.now()).add(
+        Duration(minutes: minutes),
+      );
+      _armBackgroundLimitTimer(episode ?? _backgroundEpisode);
+      return;
+    }
     _pausedByLifecycle = true;
     _sessionTimer?.cancel();
     final captureNotifier = ref.read(captureStateProvider.notifier);
     await captureNotifier.stop();
     await controller.pauseSession();
+    if (_checkpointWriter != null) {
+      await _checkpointWriter!.saveNow();
+    }
     _onControllerStateChanged();
   }
 
-  Future<void> _resumeSessionFromBackground() async {
+  Future<void> _resumeSessionFromBackground(DateTime resumedAt) async {
     // Don't hand the microphone back to a session that is on its way out.
     if (_finalizing) return;
+    final deadline = _backgroundDeadline;
+    if (deadline != null) {
+      _backgroundLimitTimer?.cancel();
+      if (!resumedAt.isBefore(deadline)) {
+        await _onBackgroundLimitReached();
+      } else {
+        _backgroundDeadline = null;
+        _startSessionTimer();
+      }
+      return;
+    }
     final controller = ref.read(liveControllerProvider);
     if (!_pausedByLifecycle || controller.state != LiveState.paused) return;
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final audioSource = ref.read(audioSourceProvider);
     await captureNotifier.start(source: audioSource);
+    if (_appBackgrounded || !mounted || _finalizing) {
+      await captureNotifier.stop();
+      return;
+    }
     await controller.resumeSession();
     // Disarmed only once the resume has actually landed. Clearing it up front
     // would make a failure here permanent: the session would stay paused with
     // the flag down, so no later `resumed` event could retry it.
     _pausedByLifecycle = false;
     _onControllerStateChanged();
+    await _syncBackgroundSupport();
+    // Do not hold the lifecycle queue open for a dialog. A second lock while
+    // the dialog is visible must still pause foreground-only capture.
+    unawaited(_showBackgroundTipIfNeeded());
     _startSessionTimer();
+  }
+
+  /// The deadline uses wall time so device sleep counts toward the limit.
+  /// Timers use a monotonic clock, so re-arm if one fires before it.
+  void _armBackgroundLimitTimer(int episode) {
+    final deadline = _backgroundDeadline;
+    if (deadline == null) return;
+    _backgroundLimitTimer?.cancel();
+    _backgroundLimitTimer = Timer(deadline.difference(DateTime.now()), () {
+      if (!_appBackgrounded || episode != _backgroundEpisode) return;
+      if (DateTime.now().isBefore(deadline)) {
+        _armBackgroundLimitTimer(episode);
+      } else {
+        unawaited(_onBackgroundLimitReached());
+      }
+    });
+  }
+
+  Future<void> _onBackgroundLimitReached() async {
+    if (!mounted || _finalizing || _backgroundDeadline == null) return;
+    // A delayed timer can arrive after the user already returned.
+    if (DateTime.now().isBefore(_backgroundDeadline!)) return;
+    _backgroundDeadline = null;
+    _backgroundLimitTimer?.cancel();
+    await _finalizeAndReview(backgroundLimitReached: true);
+  }
+
+  Future<void> _showBackgroundTipIfNeeded() async {
+    if (!mounted ||
+        _backgroundTipOpen ||
+        ref.read(liveBackgroundEnabledProvider)) {
+      return;
+    }
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs.getBool(PrefKeys.liveBackgroundTipShown) ?? false) return;
+    _backgroundTipOpen = true;
+    try {
+      if (!mounted || _appBackgrounded) return;
+
+      final l10n = AppLocalizations.of(context)!;
+      var selectedMinutes = ref.read(liveBackgroundMaxMinutesProvider);
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            scrollable: true,
+            title: Text(l10n.liveBackgroundTipTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.liveBackgroundTipBody),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.settingsLiveBackgroundMaxTime,
+                  style: Theme.of(dialogContext).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final minutes in liveBackgroundMaxMinuteOptions)
+                      ChoiceChip(
+                        label: Text(l10n.pointCountDurationMinutes(minutes)),
+                        selected: selectedMinutes == minutes,
+                        onSelected: (_) =>
+                            setDialogState(() => selectedMinutes = minutes),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.liveBackgroundTipNotNow),
+              ),
+              FilledButton(
+                onPressed: () {
+                  ref
+                      .read(liveBackgroundMaxMinutesProvider.notifier)
+                      .set(selectedMinutes);
+                  ref.read(liveBackgroundEnabledProvider.notifier).set(true);
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Text(l10n.liveBackgroundTipEnable),
+              ),
+            ],
+          ),
+        ),
+      );
+      await prefs.setBool(PrefKeys.liveBackgroundTipShown, true);
+    } finally {
+      _backgroundTipOpen = false;
+      if (mounted && !_appBackgrounded) _startSessionTimer();
+    }
   }
 
   // ── Session duration timer ────────────────────────────────────────────
 
   void _startSessionTimer() {
     _sessionTimer?.cancel();
-    if (_durationWarningShown) return;
+    if (_durationWarningShown || _appBackgrounded || _backgroundTipOpen) return;
     final controller = ref.read(liveControllerProvider);
     final elapsed = controller.session?.duration ?? Duration.zero;
     final remaining = _warningDuration - elapsed;
-    if (remaining <= Duration.zero) return;
+    if (remaining <= Duration.zero) {
+      unawaited(_showDurationWarning());
+      return;
+    }
     _sessionTimer = Timer(remaining, _showDurationWarning);
   }
 
   Future<void> _showDurationWarning() async {
-    if (!mounted || _durationWarningShown) return;
+    if (!mounted || _durationWarningShown || _appBackgrounded || _finalizing) {
+      return;
+    }
     _durationWarningShown = true;
     final l10n = AppLocalizations.of(context)!;
     final shouldContinue = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionDurationWarningTitle),
-            content: Text(l10n.sessionDurationWarningMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.sessionStopConfirm),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.sessionContinue),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionDurationWarningTitle),
+        content: Text(l10n.sessionDurationWarningMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.sessionStopConfirm),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.sessionContinue),
+          ),
+        ],
+      ),
     );
     if (!mounted) return;
     if (shouldContinue != true) {
@@ -575,56 +879,118 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   }
 
   /// Finalize and save the session when leaving the live screen.
-  Future<void> _finalizeAndReview() async {
-    if (_finalizing) return;
+  Future<void> _finalizeAndReview({bool backgroundLimitReached = false}) async {
+    // [ref] and [context] are read below; both are invalid once unmounted.
+    if (_finalizing || !mounted) return;
     _finalizing = true;
     _sessionTimer?.cancel();
+    _backgroundLimitTimer?.cancel();
+    _backgroundDeadline = null;
+    if (mounted) setState(() {});
+
+    // Capture dependencies before any await so saving survives route disposal.
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
+    final repo = ref.read(sessionRepositoryProvider);
+    final autoSave = ref.read(saveSessionAutomaticallyProvider);
+    final backgroundMinutes = ref.read(liveBackgroundMaxMinutesProvider);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final cachedLocation = ref.read(currentLocationProvider).value;
+    var serviceStopped = false;
 
-    // Release screen wakelock.
-    await WakelockService.disable();
+    try {
+      await _checkpointWriter?.stop();
+      _checkpointWriter = null;
+      try {
+        await WakelockService.disable();
+      } catch (error, stack) {
+        debugPrint('LiveScreen: wakelock release failed: $error\n$stack');
+      }
+      try {
+        await captureNotifier.stop();
+      } catch (error, stack) {
+        debugPrint('LiveScreen: capture stop failed: $error\n$stack');
+      }
 
-    // Stop audio capture if still running.
-    await captureNotifier.stop();
-
-    // Finalize the session (works from both active and paused states).
-    final session = await controller.finalizeSession();
-    _onControllerStateChanged();
-
-    if (session != null && mounted) {
-      // Assign a per-type sequential session number.
-      final repo = ref.read(sessionRepositoryProvider);
-      session.sessionNumber = await repo.nextSessionNumber(session.type);
-
-      // Capture recording location (best effort — null if unavailable) if not already set.
-      if (session.latitude == null || session.longitude == null) {
-        try {
-          final location = await ref.read(currentLocationProvider.future);
-          if (location != null) {
-            session.latitude = location.latitude;
-            session.longitude = location.longitude;
+      final session = await controller.finalizeSession();
+      _onControllerStateChanged();
+      if (session == null) {
+        if (mounted) {
+          final navigator = Navigator.of(context);
+          final sessionRoute = ModalRoute.of(context);
+          if (sessionRoute != null) {
+            navigator.popUntil((route) => route == sessionRoute);
           }
-        } catch (_) {
-          // Location unavailable — leave fields null.
+          navigator.pop();
+        }
+        return;
+      }
+      if (backgroundLimitReached) {
+        session.stopReason = SessionStopReason.backgroundLimit;
+        session.stopReasonValue = backgroundMinutes;
+      }
+      session.latitude ??= cachedLocation?.latitude;
+      session.longitude ??= cachedLocation?.longitude;
+      if (session.latitude == cachedLocation?.latitude &&
+          session.longitude == cachedLocation?.longitude) {
+        session.altitude ??= cachedLocation?.altitude;
+        session.altitudeAccuracy ??= cachedLocation?.altitudeAccuracy;
+        session.altitudeReference ??= cachedLocation?.altitudeReference;
+        session.locationFixTime ??= cachedLocation?.timestamp;
+      }
+
+      try {
+        session.sessionNumber = await repo.nextSessionNumber(session.type);
+      } catch (error, stack) {
+        debugPrint('LiveScreen: session numbering failed: $error\n$stack');
+      }
+
+      var saved = false;
+      if (autoSave) {
+        try {
+          await repo.save(session);
+          if (await repo.load(session.id) == null) {
+            throw StateError('Saved Live Mode Session could not be reopened');
+          }
+          saved = true;
+        } catch (error, stack) {
+          debugPrint('LiveScreen: session save failed: $error\n$stack');
+        }
+        if (saved) {
+          try {
+            final listed = await container.refresh(sessionListProvider.future);
+            if (!listed.any((item) => item.id == session.id)) {
+              throw StateError('Saved Live Mode Session missing from library');
+            }
+          } catch (error, stack) {
+            debugPrint('LiveScreen: library refresh failed: $error\n$stack');
+            container.invalidate(sessionListProvider);
+          }
         }
       }
 
-      // Persist completed session — unless the user turned off automatic
-      // saving, in which case the review screen opens in the "unsaved" state
-      // and only writes the session if the user explicitly saves it.
-      final autoSave = ref.read(saveSessionAutomaticallyProvider);
-      if (autoSave) {
-        await repo.save(session);
-        ref.invalidate(sessionListProvider);
+      if (!autoSave) {
+        await repo.deleteMetadataOnly(session.id);
       }
 
-      // Replace the live screen with the session library (instantly,
-      // no transition) and then push the review screen on top with the
-      // normal page animation. The user sees `live → review`; closing
-      // review pops back to the library instead of the home screen.
+      // Release the old service before review permits a new session to start.
+      await _backgroundService.stop();
+      serviceStopped = true;
       if (mounted) {
         final navigator = Navigator.of(context);
+        final sessionRoute = ModalRoute.of(context);
+        if (sessionRoute != null) {
+          navigator.popUntil((route) => route == sessionRoute);
+        }
+        if (autoSave && !saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.sessionUnsavedSession,
+              ),
+            ),
+          );
+        }
         navigator.pushReplacement(
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
@@ -634,14 +1000,23 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         );
         navigator.push(
           MaterialPageRoute<void>(
-            builder:
-                (_) =>
-                    SessionReviewScreen(session: session, autoSaved: autoSave),
+            builder: (_) =>
+                SessionReviewScreen(session: session, autoSaved: saved),
           ),
         );
       }
-    } else {
-      if (mounted) Navigator.of(context).pop();
+    } catch (error, stack) {
+      debugPrint('LiveScreen: finalization failed: $error\n$stack');
+      if (mounted) {
+        _finalizing = false;
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.statusError)),
+        );
+      }
+    } finally {
+      // A background stop must finish persistence before losing its service.
+      if (!serviceStopped) await _backgroundService.stop();
     }
   }
 
@@ -653,41 +1028,41 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
     final isPaused = liveState == LiveState.paused;
-    final currentDetections =
-        (isActive || isPaused)
-            ? ref.watch(sessionDetectionsProvider)
-            : const <DetectionRecord>[];
-    final allDetections =
-        (isActive || isPaused)
-            ? ref.watch(allSessionDetectionsProvider)
-            : const <DetectionRecord>[];
+    ref.listen<bool>(liveBackgroundEnabledProvider, (_, _) {
+      unawaited(_syncBackgroundSupport());
+    });
+    ref.listen<int>(liveBackgroundMaxMinutesProvider, (_, _) {
+      unawaited(_syncBackgroundSupport());
+    });
+    final currentDetections = (isActive || isPaused)
+        ? ref.watch(sessionDetectionsProvider)
+        : const <DetectionRecord>[];
+    final allDetections = (isActive || isPaused)
+        ? ref.watch(allSessionDetectionsProvider)
+        : const <DetectionRecord>[];
     final showAllDetectedSpecies = ref.watch(showAllDetectedSpeciesProvider);
     final detectedSpeciesSortMode = ref.watch(detectedSpeciesSortModeProvider);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
-    final detections =
-        (isActive || isPaused)
-            ? buildLiveDetectionDisplayList(
-              currentDetections: currentDetections,
-              sessionDetections: allDetections,
-              showAllDetectedSpecies: showAllDetectedSpecies,
-              sortMode: detectedSpeciesSortMode,
-              localizedCommonName:
-                  (detection) =>
-                      taxonomy
-                          ?.lookup(detection.scientificName)
-                          ?.commonNameForLocale(speciesLocale) ??
-                      detection.commonName,
-            )
-            : const <DetectionRecord>[];
-    final activeDetections =
-        showAllDetectedSpecies
-            ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
-            : null;
-    final speciesDetectionCounts =
-        showAllDetectedSpecies
-            ? buildSpeciesDetectionCounts(allDetections)
-            : null;
+    final detections = (isActive || isPaused)
+        ? buildLiveDetectionDisplayList(
+            currentDetections: currentDetections,
+            sessionDetections: allDetections,
+            showAllDetectedSpecies: showAllDetectedSpecies,
+            sortMode: detectedSpeciesSortMode,
+            localizedCommonName: (detection) =>
+                taxonomy
+                    ?.lookup(detection.scientificName)
+                    ?.commonNameForLocale(speciesLocale) ??
+                detection.commonName,
+          )
+        : const <DetectionRecord>[];
+    final activeDetections = showAllDetectedSpecies
+        ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
+        : null;
+    final speciesDetectionCounts = showAllDetectedSpecies
+        ? buildSpeciesDetectionCounts(allDetections)
+        : null;
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -730,7 +1105,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (liveState == LiveState.active || liveState == LiveState.paused) {
+        if (_finalizing) return;
+        if (_liveController?.session != null) {
           await _confirmStop();
         } else {
           Navigator.of(context).pop();
@@ -782,10 +1158,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     final statusBar = _CompactStatusBar(liveState: liveState, ref: ref);
-    final errorBanner =
-        liveState == LiveState.error
-            ? _StatusBanner(liveState: liveState, ref: ref)
-            : null;
+    final errorBanner = liveState == LiveState.error
+        ? _StatusBanner(liveState: liveState, ref: ref)
+        : null;
     final spectrogram = Container(
       color: theme.colorScheme.surfaceContainerLowest,
       child: _LiveSpectrogram(isCapturing: isCapturing),
@@ -829,7 +1204,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
                 Expanded(
                   flex: 1,
                   child: Column(
-                    children: [Expanded(child: spectrogram), sessionInfo],
+                    children: [
+                      Expanded(child: spectrogram),
+                      sessionInfo,
+                    ],
                   ),
                 ),
                 // Right: detection list
@@ -948,10 +1326,9 @@ class _CompactStatusBar extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder:
-                      (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.live,
-                      ),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.live,
+                  ),
                 ),
               );
             },
@@ -970,28 +1347,24 @@ void _showLiveHelp(BuildContext context) {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder:
-        (_) => AppHelpBottomSheet(
-          title: l10n.liveScreenHelpTitle,
-          sections: [
-            AppHelpSection(
-              icon: AppIcons.mic,
-              body: l10n.liveScreenHelpOverview,
-            ),
-            AppHelpSection(
-              icon: AppIcons.helpOutlineRounded,
-              body: l10n.liveScreenHelpControls,
-            ),
-            AppHelpSection(
-              icon: AppIcons.infoOutline,
-              body: l10n.liveScreenHelpInfoBar,
-            ),
-            AppHelpSection(
-              icon: AppIcons.libraryMusic,
-              body: l10n.liveScreenHelpDetections,
-            ),
-          ],
+    builder: (_) => AppHelpBottomSheet(
+      title: l10n.liveScreenHelpTitle,
+      sections: [
+        AppHelpSection(icon: AppIcons.mic, body: l10n.liveScreenHelpOverview),
+        AppHelpSection(
+          icon: AppIcons.helpOutlineRounded,
+          body: l10n.liveScreenHelpControls,
         ),
+        AppHelpSection(
+          icon: AppIcons.infoOutline,
+          body: l10n.liveScreenHelpInfoBar,
+        ),
+        AppHelpSection(
+          icon: AppIcons.libraryMusic,
+          body: l10n.liveScreenHelpDetections,
+        ),
+      ],
+    ),
   );
 }
 
@@ -1051,25 +1424,23 @@ class _CaptureButton extends StatelessWidget {
           shadowColor: bgColor.withAlpha(120),
           child: InkWell(
             customBorder: const CircleBorder(),
-            onTap:
-                isLoading
-                    ? null
-                    : () {
-                      HapticFeedback.lightImpact();
-                      onPressed();
-                    },
-            child:
-                isLoading
-                    ? Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    )
-                    : ExcludeSemantics(
-                      child: Icon(icon, color: iconColor, size: 28),
+            onTap: isLoading
+                ? null
+                : () {
+                    HapticFeedback.lightImpact();
+                    onPressed();
+                  },
+            child: isLoading
+                ? Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: theme.colorScheme.onPrimary,
                     ),
+                  )
+                : ExcludeSemantics(
+                    child: Icon(icon, color: iconColor, size: 28),
+                  ),
           ),
         ),
       ),
@@ -1161,11 +1532,10 @@ class _SessionInfoBar extends ConsumerWidget {
     final totalDetections = controller.sessionDetections.length;
 
     // Unique species across the entire session (cumulative).
-    final totalUnique =
-        controller.sessionDetections
-            .map((d) => d.scientificName)
-            .toSet()
-            .length;
+    final totalUnique = controller.sessionDetections
+        .map((d) => d.scientificName)
+        .toSet()
+        .length;
 
     // Duration of the active session.
     int durationSec = 0;
@@ -1183,10 +1553,9 @@ class _SessionInfoBar extends ConsumerWidget {
         // so this matches the size reported by the session library card.
         // Falls back to 0 (omitted) when recording is off or the directory
         // doesn't exist yet.
-        future:
-            recordingMode == 'off'
-                ? Future.value(0)
-                : _readRecordingBytes(controller.recordingService.sessionDir),
+        future: recordingMode == 'off'
+            ? Future.value(0)
+            : _readRecordingBytes(controller.recordingService.sessionDir),
         builder: (context, snap) {
           final bytes = snap.data ?? 0;
           final List<String> parts = [];

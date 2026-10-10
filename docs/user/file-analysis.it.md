@@ -4,7 +4,7 @@ L'Analisi file elabora una registrazione esistente attraverso la stessa pipeline
 
 ## Come aprirla
 
-Dalla Home, tocca la scheda **Analisi file** con l'icona :material-file-music:.
+Dalla Home, tocca la scheda **Analisi file** con l'icona :app-audioFileRounded:.
 
 ### Da un'altra app
 
@@ -12,8 +12,9 @@ Puoi anche inviare una registrazione da un'altra app. Su Android, condividere un
 
 ## Barra dell'app
 
-- :material-tune: — apre le impostazioni di Analisi file
-- :material-close: — annulla un'analisi in corso
+- :app-tuneRounded: — apre le impostazioni di Analisi file
+- :app-helpOutlineRounded: — apre l'aiuto di Analisi file
+- :app-close: — annulla un'analisi in corso
 
 ## Formati supportati
 
@@ -42,11 +43,11 @@ Scegli un file ed esamina la relativa scheda dei metadati:
 
 Puoi:
 
-- usare il GPS attuale
-- inserire le coordinate manualmente
-- saltare la posizione
-- scegliere un punto sulla mappa
-- impostare una data di registrazione facoltativa
+- usare il GPS attuale :app-myLocation:
+- inserire le coordinate manualmente :app-editLocationAlt:
+- saltare la posizione :app-locationOff:
+- scegliere un punto sulla mappa :app-mapSheet:
+- impostare una data di registrazione facoltativa :app-calendarTodayRounded:
 
 ### 3. Parametri
 
@@ -57,6 +58,16 @@ La procedura guidata mostra:
 - sensibilità
 - soglia di confidenza
 - modalità del filtro specie
+
+| Controllo di configurazione | Icona |
+|---|---|
+| Durata della finestra | :app-timerOutlined: |
+| Sovrapposizione | :app-swapHoriz: |
+| Sensibilità | :app-hearing: |
+| Soglia di confidenza | :app-verifiedRounded: |
+| Filtro specie | :app-filterAltRounded: |
+
+Tocca il pulsante :app-helpOutline: accanto a un controllo per leggerne la spiegazione. Anche i passaggi di file, posizione e data di registrazione hanno pulsanti di aiuto.
 
 La sovrapposizione controlla di quanto avanza ogni finestra di analisi ed è
 specifica dell'analisi file: l'intero file viene sempre esaminato, e più

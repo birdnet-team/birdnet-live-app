@@ -27,7 +27,7 @@ Pruh spektrogramu nad přehrávačem je interaktivní: klepnutím přejdete na p
 
 Druhy jsou seskupené do rozbalitelných řádků. Detekce můžete procházet podle druhu a zároveň se při kontrole pohybovat nahrávkou. Řádky shluků pod rozbaleným druhem jsou odsazené, aby karta nadřazeného druhu zůstala vizuálně odlišená od svých potomků.
 
-Vyhledávací pole nad seznamem filtruje druhy podle běžného nebo vědeckého názvu, takže nalezení jednoho konkrétního ptáka v session se 100 druhy je otázkou několika úhozů místo dlouhého posouvání. Tlačítko :material-sort: vedle něj mění pořadí druhů:
+Vyhledávací pole nad seznamem filtruje druhy podle běžného nebo vědeckého názvu, takže nalezení jednoho konkrétního ptáka v session se 100 druhy je otázkou několika úhozů místo dlouhého posouvání. Tlačítko :app-sort: vedle něj mění pořadí druhů:
 
 - **Nejvyšší konfidence** (výchozí) — nejprve druhy s nejvyšší konfidencí jednotlivé detekce. Vhodné pro třídění nejjistějších identifikací. Když v tomto režimu druh rozbalíte, detekce s přehratelnými zvukovými klipy se zobrazí před detekcemi bez klipu a poté podle konfidence.
 - **Nejvíce detekcí** — nejprve druhy s nejvyšším počtem detekcí. Vhodné pro odhalení dominantních zpěváků.
@@ -38,10 +38,10 @@ Zvolené řazení se zachová napříč sessions.
 
 ### Ruční přidání druhu
 
-Tlačítko :material-plus-circle-outline: na panelu nástrojů otevře vyhledávání druhů pro ptáky, které BirdNET nezachytil. Klepnutí na výsledek druh hned nevloží — nejprve vyjede potvrzovací panel s vybraným druhem a dvěma zaškrtávacími políčky:
+Tlačítko :app-addCircleOutline: na panelu nástrojů otevře vyhledávání druhů pro ptáky, které BirdNET nezachytil. Klepnutí na výsledek druh hned nevloží — nejprve vyjede potvrzovací panel s vybraným druhem a dvěma zaškrtávacími políčky:
 
-- :material-ear-hearing: **Slyšeno** — ptáka jste slyšeli.
-- :material-eye: **Viděno** — ptáka jste viděli.
+- :app-hearing: **Slyšeno** — ptáka jste slyšeli.
+- :app-visibility: **Viděno** — ptáka jste viděli.
 
 Zaškrtněte jedno, obě, nebo žádné a poté klepněte na **Přidat**. Tlačítko **Zrušit** (nebo přejetí dolů) vás vrátí zpět do vyhledávání, takže omyl nic nestojí. **Slyšeno** je zaškrtnuto ve výchozím stavu a volba se přenese i na další přidávaný druh — sérii jen viděných ptáků tak zaškrtnete jednou. Necháte-li obě prázdná, záznam se uloží bez typu pozorování — nikoli jako „ani jedno“.
 
@@ -51,12 +51,12 @@ Volba se uloží k detekci a zobrazí se jako malá ikona ucha a/nebo oka vedle 
 
 Všude, kde se detekce objeví — v seznamu druhů, v panelu přehrávače klipu, v živém seznamu Survey i u značek na mapě Survey — se používá stejná sada akcí:
 
-- :material-check: **Potvrdit** — zaškrtnutí jedním klepnutím přímo v řádku, které označí detekci jako vizuálně či akusticky ověřenou. Potvrzené shluky a značky mapy získají malé zelené zaškrtnutí, takže na první pohled vyniknou, a tento příznak putuje do každého exportního formátu.
-- :material-dots-vertical: **Více** — otevře nabídku dalších akcí s položkami:
-    - :material-share-variant: **Sdílet detekci** — viz *Sdílení* níže.
-    - :material-swap-horizontal: **Nahradit druh** — zvolí pro tuto detekci jiný druh.
-    - :material-delete-outline: **Smazat detekci** — okamžitě odebere řádek. Na pár sekund se objeví SnackBar s možností vrácení, takže omyly lze vrátit. Bez potvrzovacího dialogu.
-    - :material-delete-sweep-outline: **Smazat druh** — odebere ze session všechny detekce daného druhu naráz, se stejným vrácením přes SnackBar. Užitečné pro odstranění chybně identifikovaného zdroje hluku, aniž byste museli druh rozbalovat a mazat shluky jeden po druhém.
+- :app-checkCircleOutline: **Potvrdit** — zaškrtnutí jedním klepnutím přímo v řádku, které označí detekci jako vizuálně či akusticky ověřenou. Potvrzené shluky a značky mapy získají malé zelené zaškrtnutí, takže na první pohled vyniknou, a tento příznak putuje do každého exportního formátu.
+- :app-moreVert: **Více** — otevře nabídku dalších akcí s položkami:
+    - :app-share: **Sdílet detekci** — viz *Sdílení* níže.
+    - :app-swapHoriz: **Nahradit druh** — zvolí pro tuto detekci jiný druh.
+    - :app-deleteOutline: **Smazat detekci** — okamžitě odebere řádek. Na pár sekund se objeví SnackBar s možností vrácení, takže omyly lze vrátit. Bez potvrzovacího dialogu.
+    - :app-deleteSweep: **Smazat druh** — odebere ze session všechny detekce daného druhu naráz, se stejným vrácením přes SnackBar. Užitečné pro odstranění chybně identifikovaného zdroje hluku, aniž byste museli druh rozbalovat a mazat shluky jeden po druhém.
 
 #### Zkratky přejetím na řádcích přehledu
 
@@ -71,7 +71,7 @@ Přejetí řádku **záhlaví druhu** (doleva nebo doprava) smaže všechny dete
 
 ### Sdílení jedné detekce
 
-Položka :material-share-variant: **Sdílet detekci** používá stejné volby jako **Nastavení → Export a synchronizace**. Exportuje pouze tuto detekci ve zvolených artefaktech Raven, CSV, JSON, GPX, HTML a metadatech aplikace. Když je zapnuté **Zahrnout zvukové soubory**, balíček obsahuje i zvuk detekce; volba **Vždy sdílet zvuk jako WAV** je dodržena. Když jsou všechny doprovodné formáty, HTML i metadata aplikace vypnuté, systémový panel sdílení dostane nezabalený zvukový klip místo ZIP.
+Položka :app-share: **Sdílet detekci** používá stejné volby jako **Nastavení → Export a synchronizace**. Exportuje pouze tuto detekci ve zvolených artefaktech Raven, CSV, JSON, GPX, HTML a metadatech aplikace. Když je zapnuté **Zahrnout zvukové soubory**, balíček obsahuje i zvuk detekce; volba **Vždy sdílet zvuk jako WAV** je dodržena. Když jsou všechny doprovodné formáty, HTML i metadata aplikace vypnuté, systémový panel sdílení dostane nezabalený zvukový klip místo ZIP.
 
 Zvuková příloha se vyhledává v tomto pořadí:
 
@@ -83,7 +83,7 @@ Zvuková příloha se vyhledává v tomto pořadí:
 
 K jednotlivým záznamům detekce můžete připojit krátké mluvené hlasové komentáře:
 
-- **Nahrát**: Klepnutím na tlačítko :material-dots-vertical: u shluku detekcí a výběrem možnosti **Nahrát hlasovou poznámku** otevřete dialog hlasové poznámky. Klepnutím na velké tlačítko mikrofonu spustíte nahrávání. Živá křivka zobrazuje váš hlas v reálném čase. Po dokončení klepněte na tlačítko zastavení.
+- **Nahrát**: Klepnutím na tlačítko :app-moreVert: u shluku detekcí a výběrem možnosti **Nahrát hlasovou poznámku** otevřete dialog hlasové poznámky. Klepnutím na velké tlačítko mikrofonu spustíte nahrávání. Živá křivka zobrazuje váš hlas v reálném čase. Po dokončení klepněte na tlačítko zastavení.
 - **Zkontrolovat**: Po nahrání si poznámku poslechnete v integrovaném přehrávači. Chcete-li poznámku nahradit, klepněte na tlačítko **Nahrát znovu**. Chcete-li ji uložit, klepněte na tlačítko **Uložit**.
 - **Smazat**: Pokud detekce již obsahuje hlasovou poznámku, můžete ji smazat z nabídky dalších akcí nebo z dialogu hlasové poznámky.
 - **Formáty podle platformy**: Na Androidu a dalších platformách se hlasové poznámky nahrávají ve výrazně komprimovaném formátu AAC (`.m4a`) na 16 kHz. Na iOS automaticky používají formát WAV/PCM16 (`.wav`), aby se předešlo problémům s kompatibilitou CoreAudio s aktivními zvukovými sessions aplikace. Oba formáty jsou plně podporovány při balení exportu do ZIP.
@@ -91,7 +91,7 @@ K jednotlivým záznamům detekce můžete připojit krátké mluvené hlasové 
 
 ### Mapa trasy Survey
 
-Sessions Survey zobrazují malou vloženou mapu GPS trasy a značek detekcí. Klepnutím na značku ve vložené mapě zaměříte detekci — vložená mapa se na ni vycentruje. Klepnutím na tlačítko :material-fullscreen: **rozbalit** (vpravo nahoře ve vložené mapě) otevřete **celoobrazovkovou mapu**; pokud byla detekce zaměřena, celoobrazovková mapa se otevře vycentrovaná a přiblížená na tuto detekci, takže neztratíte pozici.
+Sessions Survey zobrazují malou vloženou mapu GPS trasy a značek detekcí. Klepnutím na značku ve vložené mapě zaměříte detekci — vložená mapa se na ni vycentruje. Klepnutím na tlačítko :app-fullscreen: **rozbalit** (vpravo nahoře ve vložené mapě) otevřete **celoobrazovkovou mapu**; pokud byla detekce zaměřena, celoobrazovková mapa se otevře vycentrovaná a přiblížená na tuto detekci, takže neztratíte pozici.
 
 #### Kódování značek
 
@@ -119,15 +119,15 @@ Když je filtr aktivní, název v horní liště získá podtitul s počtem shod
 
 Panel nástrojů používá stejné významy ikon, jaké popisují [Ikony a ovládací prvky](icons-and-controls.md):
 
-- :material-plus-circle-outline: — přidat obsah
-- :material-undo-variant: / :material-redo-variant: — krok mezi úpravami
-- :material-content-cut: — režim oříznutí
-- :material-content-save: — uložit úpravy
-- :material-share-variant: — exportovat nebo sdílet
-- :material-delete-outline: — zahodit session
-- :material-play: — pokračovat v survey, je-li tato akce dostupná
-- :material-help-circle-outline: — otevřít panel nápovědy Přehledu Session
-- :material-tune: — otevřít Nastavení
+- :app-addCircleOutline: — přidat obsah
+- :app-undo: / :app-redo: — krok mezi úpravami
+- :app-contentCut: — režim oříznutí
+- :app-save: — uložit úpravy
+- :app-share: — exportovat nebo sdílet
+- :app-deleteOutline: — zahodit session
+- :app-playArrowRounded: — pokračovat v survey, je-li tato akce dostupná
+- :app-helpOutlineRounded: — otevřít panel nápovědy Přehledu Session
+- :app-tuneRounded: — otevřít Nastavení
 
 ## Typické úkoly při kontrole
 
@@ -139,6 +139,8 @@ Panel nástrojů používá stejné významy ikon, jaké popisují [Ikony a ovl�
 ## Export
 
 Chování exportu závisí na možnostech zvolených v [Nastavení](settings.md). Aplikace umí do zvoleného exportního formátu zabalit detekce a volitelně i zvuk. Každý export obsahuje metadata o původu — verzi aplikace, název a verzi modelu, jazyk názvů druhů, časovou značku exportu, nastavení uchovaná se session a relevantní možnosti exportu — zapsaná do vedlejšího souboru `<prefix>.metadata.json` (ZIP) nebo do bloku `meta` na nejvyšší úrovni (JSON), takže exporty jsou sebepopisné a reprodukovatelné.
+
+Pokud zařízení s polohou GPS dodá nadmořskou výšku, exporty zahrnou výšku v metrech, dostupnou vertikální přesnost, referenční povrch a čas určení polohy. JSON obsahuje vše u příslušných souřadnic a GPX u bodů trasy Survey a bodů detekcí. CSV a Raven přidávají pouze sloupec `Altitude (m)` vedle zeměpisné šířky a délky. Ručně zadané a na mapě vybrané souřadnice nemají odvozenou výšku. Detekce přidaná v přehledu Survey k určitému času dostane polohu interpolovanou mezi okolními body trasy, bez vlastního času určení polohy. Zařízení mohou používat různé referenční povrchy; před porovnáním ověřte exportované pole `altitudeReference`. Hodnota `unknown` znamená, že platforma povrch neurčila.
 
 Blok `settings` v exportu JSON zaznamenává hodnoty, které byly *skutečně použity na tuto session* — citlivost, režim a počet oken score poolingu, zesílení mikrofonu a frekvenci horní propusti — nikoli to, co je zrovna nastaveno v Nastavení teď. Díky tomu lze výsledek reprodukovat i po měsících nebo porovnat dvě surveye, aniž byste si museli pamatovat, kde byly které posuvníky při jejich pořízení.
 

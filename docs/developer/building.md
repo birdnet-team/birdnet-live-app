@@ -41,7 +41,9 @@ Open `ios/Runner.xcworkspace` in Xcode for archive and distribution.
 
 ## Windows
 
-Requires Visual Studio 2022 with C++ desktop workload:
+Requires Visual Studio 2022 with the C++ desktop workload and
+[NuGet CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools)
+(`nuget.exe` on `PATH`) for the Windows TTS plugin:
 
 ```bash
 flutter build windows --release

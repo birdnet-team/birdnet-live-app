@@ -18,12 +18,11 @@ import 'aru_controller.dart';
 import 'aru_runner.dart';
 import 'aru_storage_estimator.dart';
 
-typedef AruCycleRecordingStart =
-    Future<String?> Function({
-      required String sessionId,
-      required RecordingMode mode,
-      required String format,
-    });
+typedef AruCycleRecordingStart = Future<String?> Function({
+  required String sessionId,
+  required RecordingMode mode,
+  required String format,
+});
 
 @visibleForTesting
 Future<String?> startAruCycleAudio({
@@ -95,7 +94,9 @@ final aruControllerProvider = Provider<AruController>((ref) {
   var aruCaptureActive = false;
 
   return AruController(
-    saveSession: repository.save,
+    saveSession: (session) => session.endTime == null
+        ? repository.saveCheckpoint(session)
+        : repository.save(session),
     discardSession: repository.deleteMetadataOnly,
     startCycleRecording: (session, window) async {
       final metadata = session.aruMetadata;

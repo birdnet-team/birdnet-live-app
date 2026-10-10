@@ -27,13 +27,10 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:isolate';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:path_provider/path_provider.dart';
 
 import 'survey_notification.dart';
 import 'survey_alert_coordinator.dart';
@@ -41,10 +38,11 @@ import 'survey_alert_coordinator.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
 import '../../core/services/memory_monitor.dart';
+import '../../core/services/location_service.dart';
 import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
 import '../audio/ring_buffer.dart';
-import '../history/session_path_codec.dart';
+import '../history/session_repository.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/detection_accumulator.dart';
 import '../inference/detection_clip_writer.dart';
@@ -76,11 +74,14 @@ class SurveyController {
   SurveyController({
     required this.ringBuffer,
     required this.recordingService,
+    SessionRepository? repository,
     bool Function()? gpsEnabled,
-  }) : _gpsEnabled = gpsEnabled;
+  }) : _gpsEnabled = gpsEnabled,
+       _repository = repository ?? SessionRepository();
 
   final RingBuffer ringBuffer;
   final RecordingService recordingService;
+  final SessionRepository _repository;
 
   /// Reads Settings → Location → Use GPS. When off, no GPS tracker is
   /// created and the survey runs on the coordinates chosen in setup.
@@ -359,12 +360,11 @@ class SurveyController {
       final labelsCsv = await rootBundle.loadString(labelsAssetPath);
 
       final blacklistFile = _config!.scoreBlacklistFile;
-      final scoreBlacklistJson =
-          blacklistFile == null
-              ? null
-              : await rootBundle.loadString(
-                '${AppConstants.modelAssetsDir}/$blacklistFile',
-              );
+      final scoreBlacklistJson = blacklistFile == null
+          ? null
+          : await rootBundle.loadString(
+              '${AppConstants.modelAssetsDir}/$blacklistFile',
+            );
 
       await _isolate.start(
         modelFilePath: modelFilePath,
@@ -406,6 +406,7 @@ class SurveyController {
     String? customName,
     double? startLatitude,
     double? startLongitude,
+    AppLocation? startLocation,
     bool backgroundGps = true,
     bool foregroundGps = false,
     int autoStopBattery = 0,
@@ -485,6 +486,13 @@ class SurveyController {
       if (startLatitude != null && startLongitude != null) {
         _session!.latitude = startLatitude;
         _session!.longitude = startLongitude;
+        if (startLocation?.latitude == startLatitude &&
+            startLocation?.longitude == startLongitude) {
+          _session!.altitude = startLocation?.altitude;
+          _session!.altitudeAccuracy = startLocation?.altitudeAccuracy;
+          _session!.altitudeReference = startLocation?.altitudeReference;
+          _session!.locationFixTime = startLocation?.timestamp;
+        }
       }
 
       _sessionDetections.clear();
@@ -597,6 +605,7 @@ class SurveyController {
       if (await _cancelStartIfRequested()) return;
 
       _state = SurveyState.active;
+      unawaited(_persistSession());
       _armNextInference();
       onSessionStarted?.call();
       _notifyListeners();
@@ -770,6 +779,7 @@ class SurveyController {
       );
 
       _state = SurveyState.active;
+      unawaited(_persistSession());
       _armNextInference();
       _notifyListeners();
 
@@ -930,6 +940,10 @@ class SurveyController {
         final last = track.last;
         _session!.latitude = last.latitude;
         _session!.longitude = last.longitude;
+        _session!.altitude = last.altitude;
+        _session!.altitudeAccuracy = last.altitudeAccuracy;
+        _session!.altitudeReference = last.altitudeReference;
+        _session!.locationFixTime = last.timestamp;
       }
     }
 
@@ -974,9 +988,6 @@ class SurveyController {
     try {
       // Final persist.
       await _persistSession();
-
-      // Delete recovery file.
-      await _deleteRecoveryFile();
     } catch (e, st) {
       debugPrint('[SurveyController] finalize persist error: $e\n$st');
       _errorMessage = e.toString();
@@ -1058,13 +1069,24 @@ class SurveyController {
       commonName: commonName,
       confidence: 1.0,
       timestamp: DateTime.now(),
-      source:
-          userSpecified
-              ? DetectionSource.userSpecified
-              : DetectionSource.manual,
+      source: userSpecified
+          ? DetectionSource.userSpecified
+          : DetectionSource.manual,
       evidence: evidence,
       latitude: gpsPoint?.latitude ?? _session!.latitude,
       longitude: gpsPoint?.longitude ?? _session!.longitude,
+      altitude: gpsPoint == null
+          ? (_useGps ? null : _session!.altitude)
+          : gpsPoint.altitude,
+      altitudeAccuracy: gpsPoint == null
+          ? (_useGps ? null : _session!.altitudeAccuracy)
+          : gpsPoint.altitudeAccuracy,
+      altitudeReference: gpsPoint == null
+          ? (_useGps ? null : _session!.altitudeReference)
+          : gpsPoint.altitudeReference,
+      locationFixTime: gpsPoint == null
+          ? (_useGps ? null : _session!.locationFixTime)
+          : gpsPoint.timestamp,
     );
     _session!.addDetection(record);
     _sessionDetections.insert(0, record);
@@ -1180,10 +1202,9 @@ class SurveyController {
       _triggerAutoStop(
         'Maximum survey duration reached',
         reasonCode: SessionStopReason.maxDuration,
-        value:
-            _maxEndTime!
-                .difference(_session?.startTime ?? _maxEndTime!)
-                .inHours,
+        value: _maxEndTime!
+            .difference(_session?.startTime ?? _maxEndTime!)
+            .inHours,
       );
       return;
     }
@@ -1235,12 +1256,11 @@ class SurveyController {
       );
 
       final geoNames = _geoModelSpeciesNames;
-      final filteredDetections =
-          geoNames == null
-              ? speciesFiltered
-              : speciesFiltered
-                  .where((d) => geoNames.contains(d.species.scientificName))
-                  .toList();
+      final filteredDetections = geoNames == null
+          ? speciesFiltered
+          : speciesFiltered
+                .where((d) => geoNames.contains(d.species.scientificName))
+                .toList();
 
       // Update live detection list.
       _currentLiveDetections = [
@@ -1255,18 +1275,33 @@ class SurveyController {
         final detectionLatitude = gpsPoint?.latitude ?? session.latitude;
         final detectionLongitude = gpsPoint?.longitude ?? session.longitude;
 
+        final detectionAltitude = gpsPoint == null
+            ? (_useGps ? null : session.altitude)
+            : gpsPoint.altitude;
+        final detectionAltitudeAccuracy = gpsPoint == null
+            ? (_useGps ? null : session.altitudeAccuracy)
+            : gpsPoint.altitudeAccuracy;
+        final detectionAltitudeReference = gpsPoint == null
+            ? (_useGps ? null : session.altitudeReference)
+            : gpsPoint.altitudeReference;
+
         final cycle = _accumulator!.processCycle(
           detections: filteredDetections,
           windowEnd: windowEnd,
-          createRecord:
-              (detection, timestamp) => DetectionRecord(
-                scientificName: detection.species.scientificName,
-                commonName: detection.species.commonName,
-                confidence: detection.confidence,
-                timestamp: timestamp,
-                latitude: detectionLatitude,
-                longitude: detectionLongitude,
-              ),
+          createRecord: (detection, timestamp) => DetectionRecord(
+            scientificName: detection.species.scientificName,
+            commonName: detection.species.commonName,
+            confidence: detection.confidence,
+            timestamp: timestamp,
+            latitude: detectionLatitude,
+            longitude: detectionLongitude,
+            altitude: detectionAltitude,
+            altitudeAccuracy: detectionAltitudeAccuracy,
+            altitudeReference: detectionAltitudeReference,
+            locationFixTime: gpsPoint == null
+                ? (_useGps ? null : session.locationFixTime)
+                : gpsPoint.timestamp,
+          ),
         );
         for (final closed in cycle.closedRecords) {
           _clipWriter.forget(closed);
@@ -1385,79 +1420,34 @@ class SurveyController {
     final session = _session;
     if (session == null) return Future<void>.value();
 
-    // Roll the segment forward so the persisted recordedDurationSeconds
-    // reflects time recorded since the last persist tick. We immediately
-    // open a new segment for active surveys so [elapsed] keeps ticking
-    // smoothly. Final persists run after [LiveSession.end] and must not
-    // reopen a segment, otherwise saved Survey durations keep growing in
-    // Session Library. This stays synchronous so a queued write can never
-    // reopen a segment after stopSurvey has closed it.
-    _closeRecordingSegment();
-    if (session.endTime == null) {
-      session.startSegment();
-      _segmentStart = DateTime.now();
-    }
+    // Only the final persist, which runs after [LiveSession.end], closes the
+    // segment and accumulates its time. An active Survey keeps its segment
+    // open: saveCheckpoint closes it in the snapshot and derives the recorded
+    // duration from it, so rolling it here would split the timeline into one
+    // segment per tick. This stays synchronous so a queued write can never
+    // touch the segment after stopSurvey has closed it.
+    if (session.endTime != null) _closeRecordingSegment();
 
     // The periodic tick does not await persistence. Queue writes so an older
     // snapshot still encoding off-isolate cannot finish after, and overwrite,
     // a newer one such as the final persist.
-    final write = _persistTail.then((_) => _writeSessionFile(session));
+    final write = _persistTail.then((_) async {
+      try {
+        if (session.endTime == null) {
+          await _repository.saveCheckpoint(session);
+        } else {
+          await _repository.save(session);
+        }
+      } catch (e) {
+        debugPrint('[SurveyController] persist error: $e');
+      }
+    });
     _persistTail = write;
     return write;
   }
 
-  Future<void> _writeSessionFile(LiveSession session) async {
-    try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final sessionsDir = Directory('${appDir.path}/sessions');
-      if (!sessionsDir.existsSync()) {
-        await sessionsDir.create(recursive: true);
-      }
-
-      final sessionFile = File('${sessionsDir.path}/${session.id}.json');
-      final recoveryFile = File(
-        '${sessionsDir.path}/${session.id}.recovery.json',
-      );
-
-      // Write-ahead: rename current → recovery, write new, delete recovery.
-      if (await sessionFile.exists()) {
-        await sessionFile.rename(recoveryFile.path);
-      }
-
-      final documentsPath = appDir.path;
-      final jsonStr = await Isolate.run(
-        () => json.encode(
-          sessionJsonForStorage(session, documentsPath: documentsPath),
-        ),
-      );
-      await sessionFile.writeAsString(jsonStr, flush: true);
-
-      if (await recoveryFile.exists()) {
-        await recoveryFile.delete();
-      }
-
-      debugPrint(
-        '[SurveyController] session persisted '
-        '(${session.detections.length} detections, '
-        '${session.gpsTrack.length} GPS points)',
-      );
-    } catch (e) {
-      debugPrint('[SurveyController] persist error: $e');
-    }
-  }
-
-  Future<void> _deleteRecoveryFile() async {
-    if (_session == null) return;
-    try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final recoveryFile = File(
-        '${appDir.path}/sessions/${_session!.id}.recovery.json',
-      );
-      if (await recoveryFile.exists()) {
-        await recoveryFile.delete();
-      }
-    } catch (_) {}
-  }
+  /// Flush the current survey when the app is backgrounded.
+  Future<void> checkpoint() => _persistSession();
 
   // ── Notification + battery ─────────────────────────────────────────────
 
@@ -1489,11 +1479,11 @@ class SurveyController {
       }
     }
 
-    final ranked =
-        bestByName.values.toList()..sort((a, b) {
-          final byHeard = lastHeard(b).compareTo(lastHeard(a));
-          return byHeard != 0 ? byHeard : b.timestamp.compareTo(a.timestamp);
-        });
+    final ranked = bestByName.values.toList()
+      ..sort((a, b) {
+        final byHeard = lastHeard(b).compareTo(lastHeard(a));
+        return byHeard != 0 ? byHeard : b.timestamp.compareTo(a.timestamp);
+      });
     _recentForNotification = List<DetectionRecord>.unmodifiable(ranked.take(3));
   }
 
@@ -1520,11 +1510,10 @@ class SurveyController {
             '\uD83D\uDCCD $km km';
 
     // Heads-up status when the microphone is held by another app.
-    final micWarning =
-        _micContested
-            ? (s?.micContested ??
-                '\u26A0 Microphone in use by another app — audio paused')
-            : null;
+    final micWarning = _micContested
+        ? (s?.micContested ??
+              '\u26A0 Microphone in use by another app — audio paused')
+        : null;
 
     // Render up to 3 most-recent *unique* species (so a chatty bird
     // doesn't fill the whole list). The buffer is maintained on the

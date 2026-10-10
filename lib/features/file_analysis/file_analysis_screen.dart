@@ -37,6 +37,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/services/reverse_geocoding_service.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/quick_action_service.dart';
 import '../../shared/services/shared_media_service.dart';
@@ -111,8 +112,10 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
+  AppLocation? _gpsLocation;
   String? _locationName;
   bool _isFetchingLocation = false;
+  int _gpsRequestSerial = 0;
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
   DateTime? _recordingDate;
@@ -135,24 +138,23 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.fileAnalysisHelpTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.audioFileRounded,
-                body: l10n.fileAnalysisHelpSteps,
-              ),
-              AppHelpSection(
-                icon: AppIcons.locationOnRounded,
-                body: l10n.fileAnalysisHelpLocation,
-              ),
-              AppHelpSection(
-                icon: AppIcons.playArrowRounded,
-                body: l10n.fileAnalysisHelpAnalyze,
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.fileAnalysisHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: AppIcons.audioFileRounded,
+            body: l10n.fileAnalysisHelpSteps,
           ),
+          AppHelpSection(
+            icon: AppIcons.locationOnRounded,
+            body: l10n.fileAnalysisHelpLocation,
+          ),
+          AppHelpSection(
+            icon: AppIcons.playArrowRounded,
+            body: l10n.fileAnalysisHelpAnalyze,
+          ),
+        ],
+      ),
     );
   }
 
@@ -340,23 +342,38 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   // ── Location ──────────────────────────────────────────────────────────
 
   Future<void> _fetchGpsLocation() async {
+    final requestSerial = ++_gpsRequestSerial;
     setState(() => _isFetchingLocation = true);
     try {
       final location = await ref.read(currentLocationProvider.future);
-      if (location != null && mounted) {
+      if (!mounted ||
+          requestSerial != _gpsRequestSerial ||
+          _locationChoice != _LocationChoice.gps) {
+        return;
+      }
+      if (location != null) {
         _latitude = location.latitude;
         _longitude = location.longitude;
+        _gpsLocation = location;
         // Reverse geocode for display name.
-        _locationName = await reverseGeocode(
+        final locationName = await reverseGeocode(
           latitude: location.latitude,
           longitude: location.longitude,
           localeName: ref.read(effectiveAppLocaleProvider),
         );
+        if (!mounted ||
+            requestSerial != _gpsRequestSerial ||
+            _locationChoice != _LocationChoice.gps) {
+          return;
+        }
+        _locationName = locationName;
       }
     } catch (_) {
       // Location unavailable.
     }
-    if (mounted) setState(() => _isFetchingLocation = false);
+    if (mounted && requestSerial == _gpsRequestSerial) {
+      setState(() => _isFetchingLocation = false);
+    }
   }
 
   void _parseManualLocation() {
@@ -365,6 +382,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     if (lat != null && lon != null) {
       _latitude = lat.clamp(-90.0, 90.0);
       _longitude = lon.clamp(-180.0, 180.0);
+      _gpsLocation = null;
       _locationName = null;
     }
   }
@@ -499,6 +517,12 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
       geoModelSpeciesNames: geoSpeciesNames,
       latitude: _latitude,
       longitude: _longitude,
+      location:
+          _locationChoice == _LocationChoice.gps &&
+              _gpsLocation?.latitude == _latitude &&
+              _gpsLocation?.longitude == _longitude
+          ? _gpsLocation
+          : null,
       locationName: _locationName,
       recordingDate: _recordingDate,
     );
@@ -578,14 +602,13 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         title: l10n.fileAnalysisMode,
         step: _currentStep,
         totalSteps: 4,
-        leading:
-            isAnalyzing
-                ? IconButton(
-                  icon: const Icon(AppIcons.close),
-                  tooltip: l10n.tooltipCancelAnalysis,
-                  onPressed: _confirmCancel,
-                )
-                : null,
+        leading: isAnalyzing
+            ? IconButton(
+                icon: const Icon(AppIcons.close),
+                tooltip: l10n.tooltipCancelAnalysis,
+                onPressed: _confirmCancel,
+              )
+            : null,
         actions: [
           IconButton(
             icon: const Icon(AppIcons.helpOutlineRounded, size: 20),
@@ -597,10 +620,9 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder:
-                      (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.fileAnalysis,
-                      ),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.fileAnalysis,
+                  ),
                 ),
               );
             },
@@ -609,13 +631,13 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         ],
         showFooter: !isAnalyzing && analysisState != FileAnalysisState.complete,
         onBack: _currentStep > 0 ? () => _goToStep(_currentStep - 1) : null,
-        onNext:
-            _currentStep == 3
-                ? _startAnalysis
-                : (_canProceed ? () => _goToStep(_currentStep + 1) : null),
+        onNext: _currentStep == 3
+            ? _startAnalysis
+            : (_canProceed ? () => _goToStep(_currentStep + 1) : null),
         backLabel: l10n.fileAnalysisBack,
-        nextLabel:
-            _currentStep == 3 ? l10n.fileAnalysisStart : l10n.fileAnalysisNext,
+        nextLabel: _currentStep == 3
+            ? l10n.fileAnalysisStart
+            : l10n.fileAnalysisNext,
         nextIcon: _currentStep == 3 ? AppIcons.playArrow : null,
         child: PageView(
           controller: _pageController,
@@ -637,7 +659,19 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
               lonController: _lonController,
               recordingDate: _recordingDate,
               onChoiceChanged: (c) {
-                setState(() => _locationChoice = c);
+                setState(() {
+                  _locationChoice = c;
+                  if (c != _LocationChoice.gps) {
+                    _gpsRequestSerial++;
+                    _isFetchingLocation = false;
+                  }
+                  if (c == _LocationChoice.skip) {
+                    _latitude = null;
+                    _longitude = null;
+                    _gpsLocation = null;
+                    _locationName = null;
+                  }
+                });
                 if (c == _LocationChoice.gps) _fetchGpsLocation();
               },
               onFetchGps: _fetchGpsLocation,
@@ -646,6 +680,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
                 setState(() {
                   _latitude = lat;
                   _longitude = lon;
+                  _gpsLocation = null;
                   _locationName = null;
                 });
               },
@@ -656,14 +691,14 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
               sensitivity: _sensitivity,
               confidenceThreshold: _confidenceThreshold,
               speciesFilterMode: _speciesFilterMode,
-              onWindowDurationChanged:
-                  (v) => setState(() => _windowDuration = v),
+              onWindowDurationChanged: (v) =>
+                  setState(() => _windowDuration = v),
               onOverlapChanged: (v) => setState(() => _overlap = v),
               onSensitivityChanged: (v) => setState(() => _sensitivity = v),
-              onConfidenceChanged:
-                  (v) => setState(() => _confidenceThreshold = v),
-              onFilterModeChanged:
-                  (v) => setState(() => _speciesFilterMode = v),
+              onConfidenceChanged: (v) =>
+                  setState(() => _confidenceThreshold = v),
+              onFilterModeChanged: (v) =>
+                  setState(() => _speciesFilterMode = v),
             ),
             _AnalysisStep(
               state: analysisState,
@@ -710,8 +745,9 @@ class _FileStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.fileAnalysisPickTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisPickTitle,
+            helpBody: l10n.fileAnalysisPickSubtitle,
             style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -942,8 +978,11 @@ class _LocationStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            l10n.fileAnalysisLocationTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisLocationTitle,
+            helpBody: choice == _LocationChoice.manual
+                ? l10n.settingsHelpManualCoordinates
+                : l10n.fileAnalysisLocationSubtitle,
             style: theme.textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -1059,11 +1098,10 @@ class _LocationStep extends StatelessWidget {
               onPressed: () async {
                 final result = await Navigator.of(context).push<LatLng>(
                   MaterialPageRoute<LatLng>(
-                    builder:
-                        (_) => MapPickerScreen(
-                          initialLat: double.tryParse(latController.text),
-                          initialLon: double.tryParse(lonController.text),
-                        ),
+                    builder: (_) => MapPickerScreen(
+                      initialLat: double.tryParse(latController.text),
+                      initialLon: double.tryParse(lonController.text),
+                    ),
                   ),
                 );
                 if (result != null) {
@@ -1072,15 +1110,16 @@ class _LocationStep extends StatelessWidget {
                   onMapPick(result.latitude, result.longitude);
                 }
               },
-              icon: const Icon(AppIcons.map, size: 18),
+              icon: const Icon(AppIcons.mapSheet, size: 18),
               label: Text(l10n.fileAnalysisPickOnMap),
             ),
           ],
 
           // ── Recording date (optional) ─────────────────────
           const SizedBox(height: 24),
-          Text(
-            l10n.fileAnalysisDateTitle,
+          SettingHelpTitle(
+            title: l10n.fileAnalysisDateTitle,
+            helpBody: l10n.fileAnalysisDateSubtitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -1116,10 +1155,9 @@ class _DatePickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
-    final label =
-        selectedDate != null
-            ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
-            : l10n.fileAnalysisDateToday;
+    final label = selectedDate != null
+        ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+        : l10n.fileAnalysisDateToday;
 
     return Row(
       children: [
@@ -1186,8 +1224,9 @@ class _ParametersStep extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     const windowDurationValues = [1, 3, 5, 7, 10, 15];
     final windowDurationIndex = windowDurationValues.indexOf(windowDuration);
-    final effectiveWindowDurationIndex =
-        windowDurationIndex >= 0 ? windowDurationIndex : 1;
+    final effectiveWindowDurationIndex = windowDurationIndex >= 0
+        ? windowDurationIndex
+        : 1;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -1210,6 +1249,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Window duration ──────────────────────────────────
           _ParamTile(
             title: l10n.settingsWindowDuration,
+            helpBody: l10n.settingsHelpWindowDuration,
+            icon: AppIcons.timerOutlined,
             value: '${windowDuration}s',
             child: Slider(
               value: effectiveWindowDurationIndex.toDouble(),
@@ -1217,15 +1258,16 @@ class _ParametersStep extends StatelessWidget {
               max: (windowDurationValues.length - 1).toDouble(),
               divisions: windowDurationValues.length - 1,
               label: '${windowDurationValues[effectiveWindowDurationIndex]}s',
-              onChanged:
-                  (v) =>
-                      onWindowDurationChanged(windowDurationValues[v.round()]),
+              onChanged: (v) =>
+                  onWindowDurationChanged(windowDurationValues[v.round()]),
             ),
           ),
 
           // ── Overlap ──────────────────────────────────────────
           _ParamTile(
             title: l10n.fileAnalysisOverlap,
+            helpBody: l10n.setupHelpFileOverlap,
+            icon: AppIcons.swapHoriz,
             value: '${(overlap * 100).round()}%',
             child: Slider(
               value: overlap,
@@ -1239,6 +1281,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Sensitivity ──────────────────────────────────────
           _ParamTile(
             title: l10n.settingsSensitivity,
+            helpBody: l10n.settingsHelpSensitivity,
+            icon: AppIcons.hearing,
             value: sensitivity.toStringAsFixed(1),
             child: Slider(
               value: sensitivity,
@@ -1252,6 +1296,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Confidence threshold ─────────────────────────────
           _ParamTile(
             title: l10n.settingsConfidenceThreshold,
+            helpBody: l10n.settingsHelpConfidenceThreshold,
+            icon: AppIcons.verifiedRounded,
             value: '$confidenceThreshold%',
             child: Slider(
               value: confidenceThreshold.toDouble(),
@@ -1265,6 +1311,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Species filter mode ──────────────────────────────
           _ParamTile(
             title: l10n.settingsSpeciesFilter,
+            helpBody: l10n.settingsHelpSpeciesFilter,
+            icon: AppIcons.filterAltRounded,
             value: '',
             child: DropdownButton<String>(
               value: speciesFilterMode,
@@ -1301,11 +1349,15 @@ class _ParametersStep extends StatelessWidget {
 class _ParamTile extends StatelessWidget {
   const _ParamTile({
     required this.title,
+    required this.helpBody,
+    required this.icon,
     required this.value,
     required this.child,
   });
 
   final String title;
+  final String helpBody;
+  final IconData icon;
   final String value;
   final Widget child;
 
@@ -1319,14 +1371,19 @@ class _ParamTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+              Icon(icon),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: title,
+                  helpBody: helpBody,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               if (value.isNotEmpty) ...[
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -1516,9 +1573,9 @@ class _AnalysisStepState extends State<_AnalysisStep> {
               child: Text(
                 progress.totalWindows > 0
                     ? l10n.fileAnalysisProgressWindows(
-                      progress.currentWindow,
-                      progress.totalWindows,
-                    )
+                        progress.currentWindow,
+                        progress.totalWindows,
+                      )
                     : l10n.fileAnalysisReading,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,

@@ -20,7 +20,6 @@ import 'features/file_analysis/file_analysis_screen.dart';
 import 'features/live/live_controller.dart';
 import 'features/live/live_providers.dart';
 import 'features/live/live_screen.dart';
-import 'features/live/live_session.dart';
 import 'shared/providers/app_providers.dart';
 import 'shared/services/quick_action_service.dart';
 import 'shared/services/shared_media_service.dart';
@@ -495,46 +494,8 @@ class _AudioWorkflowProbe {
   /// Whether a running Live Mode counts as a blocker for this caller.
   final bool liveModeBlocks;
 
-  /// Set once a storage scan has confirmed there is no unfinished ARU
-  /// deployment on disk. Only the cold-start case needs that scan — nothing
-  /// outside this process can start a deployment — and it parses every session
-  /// file, which is too slow to repeat on a widget tap whose whole point is
-  /// landing in Live Mode immediately. A positive result is never cached: the
-  /// user can resolve the deployment and try again.
-  bool _aruStorageScanCleared = false;
-
-  /// The owner blocking this hand-off, or `null` if the way is clear.
-  Future<_AudioWorkflowOwner?> find() async {
-    final running = _findRunning();
-    if (running != null) return running;
-
-    // After Android restarts the process, ARU's provider begins at `idle`
-    // until its persisted deployment is restored. Check storage before
-    // treating that cold-start state as permission to take the controller.
-    if (_aruStorageScanCleared) return null;
-    try {
-      final sessions = await _ref.read(sessionRepositoryProvider).listAll();
-      final hasUnfinishedAru = sessions.any(
-        (session) =>
-            session.type == SessionType.aru &&
-            session.endTime == null &&
-            session.aruMetadata != null,
-      );
-      if (hasUnfinishedAru) return _AudioWorkflowOwner.aru;
-      _aruStorageScanCleared = true;
-    } catch (error, stackTrace) {
-      // Fail closed. Starting another recorder is less safe than asking the
-      // user to resolve a possibly active ARU deployment.
-      debugPrint(
-        'Could not check for active ARU deployments: $error\n$stackTrace',
-      );
-      return _AudioWorkflowOwner.aru;
-    }
-
-    // The storage read yields to the UI; a workflow may have started while it
-    // was in flight, so close that race before answering "nothing is running".
-    return _findRunning();
-  }
+  /// The owner blocking this hand-off, or null if the way is clear.
+  Future<_AudioWorkflowOwner?> find() async => _findRunning();
 
   /// The synchronous half of [find] — everything answerable from live state.
   _AudioWorkflowOwner? _findRunning() {

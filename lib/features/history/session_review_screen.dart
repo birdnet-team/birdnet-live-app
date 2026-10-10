@@ -98,6 +98,7 @@ import 'widgets/clip_player_sheet.dart';
 import 'widgets/detection_actions.dart';
 import 'widgets/voice_memo_overlay.dart';
 import '../settings/settings_screen.dart';
+import '../survey/survey_gps_tracker.dart';
 import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
@@ -150,8 +151,8 @@ List<DetectionRecord> buildSessionReviewPlaybackOrder({
   final orderedGroups = _orderSessionReviewSpeciesGroups(
     groups: groups,
     sortMode: sortMode,
-    localizedCommonName:
-        (group) => localizedCommonName(group.scientificName, group.commonName),
+    localizedCommonName: (group) =>
+        localizedCommonName(group.scientificName, group.commonName),
     hasPlayableClip: hasPlayableClip,
   );
 
@@ -173,9 +174,10 @@ List<_SpeciesGroup> _orderSessionReviewSpeciesGroups({
   switch (sortMode) {
     case SpeciesSortMode.alphabetical:
       sorted.sort(
-        (a, b) => localizedCommonName(
-          a,
-        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase()),
+        (a, b) =>
+            localizedCommonName(a)
+                .toLowerCase()
+                .compareTo(localizedCommonName(b).toLowerCase()),
       );
       break;
     case SpeciesSortMode.count:
@@ -184,18 +186,18 @@ List<_SpeciesGroup> _orderSessionReviewSpeciesGroups({
         if (c != 0) return c;
         final confidence = b.bestConfidence.compareTo(a.bestConfidence);
         if (confidence != 0) return confidence;
-        return localizedCommonName(
-          a,
-        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+        return localizedCommonName(a)
+            .toLowerCase()
+            .compareTo(localizedCommonName(b).toLowerCase());
       });
       break;
     case SpeciesSortMode.confidence:
       sorted.sort((a, b) {
         final c = b.bestConfidence.compareTo(a.bestConfidence);
         if (c != 0) return c;
-        return localizedCommonName(
-          a,
-        ).toLowerCase().compareTo(localizedCommonName(b).toLowerCase());
+        return localizedCommonName(a)
+            .toLowerCase()
+            .compareTo(localizedCommonName(b).toLowerCase());
       });
       break;
     case SpeciesSortMode.firstSeen:
@@ -222,21 +224,22 @@ _SpeciesGroup _orderSessionReviewSpeciesGroupClusters({
       sortMode != SpeciesSortMode.count) {
     return group;
   }
-  final clusters = List<_DetectionCluster>.of(group.clusters)..sort((a, b) {
-    if (sortMode == SpeciesSortMode.confidence) {
-      return compareSessionReviewConfidenceSortEntries(
-        aHasAudioClip: a.records.any(hasPlayableClip),
-        aConfidence: a.bestConfidence,
-        aTimestamp: a.firstTimestamp,
-        bHasAudioClip: b.records.any(hasPlayableClip),
-        bConfidence: b.bestConfidence,
-        bTimestamp: b.firstTimestamp,
-      );
-    }
-    final confidence = b.bestConfidence.compareTo(a.bestConfidence);
-    if (confidence != 0) return confidence;
-    return a.firstTimestamp.compareTo(b.firstTimestamp);
-  });
+  final clusters = List<_DetectionCluster>.of(group.clusters)
+    ..sort((a, b) {
+      if (sortMode == SpeciesSortMode.confidence) {
+        return compareSessionReviewConfidenceSortEntries(
+          aHasAudioClip: a.records.any(hasPlayableClip),
+          aConfidence: a.bestConfidence,
+          aTimestamp: a.firstTimestamp,
+          bHasAudioClip: b.records.any(hasPlayableClip),
+          bConfidence: b.bestConfidence,
+          bTimestamp: b.firstTimestamp,
+        );
+      }
+      final confidence = b.bestConfidence.compareTo(a.bestConfidence);
+      if (confidence != 0) return confidence;
+      return a.firstTimestamp.compareTo(b.firstTimestamp);
+    });
   return _SpeciesGroup(
     scientificName: group.scientificName,
     commonName: group.commonName,
@@ -545,10 +548,9 @@ Future<SpectrogramPixels?> _decodeAndRenderFullSpectrogram(
   // Column count is measured on the target grid the renderer will resample
   // onto, without materializing it.
   final ratio = decoded.sampleRate / req.targetSampleRate;
-  final targetTotal =
-      ratio == 1.0
-          ? decoded.totalSamples
-          : (decoded.totalSamples / ratio).floor();
+  final targetTotal = ratio == 1.0
+      ? decoded.totalSamples
+      : (decoded.totalSamples / ratio).floor();
   if (targetTotal < fftSize) return null;
   // Stretch the hop rather than the column count so a long recording costs
   // the same as a short one to render.
@@ -1263,13 +1265,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Future<_SourceAudioInfo?> _readSourceAudioInfo(String path) async {
     try {
       final canDart = await AudioDecoder.canDecodeDart(path);
-      final metadata =
-          canDart
-              ? await AudioDecoder.inspectFile(path)
-              : await NativeAudioDecoder.inspectFile(
-                path,
-                _formatLabelForPath(path),
-              );
+      final metadata = canDart
+          ? await AudioDecoder.inspectFile(path)
+          : await NativeAudioDecoder.inspectFile(
+              path,
+              _formatLabelForPath(path),
+            );
       return (canDart: canDart, metadata: metadata);
     } catch (_) {
       return null;
@@ -1499,12 +1500,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
       final totalSec = sourceMetadata.duration.inMicroseconds / 1000000.0;
       final userPref = ref.read(spectrogramDurationProvider).toDouble();
-      final bootstrapView =
-          totalSec <= 0
-              ? userPref
-              : totalSec <= 300.0
-              ? math.min(userPref, totalSec)
-              : (totalSec * 0.1).clamp(userPref, 60.0).toDouble();
+      final bootstrapView = totalSec <= 0
+          ? userPref
+          : totalSec <= 300.0
+          ? math.min(userPref, totalSec)
+          : (totalSec * 0.1).clamp(userPref, 60.0).toDouble();
       _bootstrapViewSeconds = bootstrapView;
 
       if (transcode != null) {
@@ -2027,8 +2027,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       if (decodedSec != null && chunkEndSec > decodedSec) return;
 
       final startSample = (chunkStartSec * metadata.sampleRate).floor();
-      final count =
-          ((chunkEndSec - chunkStartSec) * metadata.sampleRate).ceil();
+      final count = ((chunkEndSec - chunkStartSec) * metadata.sampleRate)
+          .ceil();
 
       final String quality = ref.read(spectrogramQualityProvider);
       final fftSize = 2048;
@@ -2062,8 +2062,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           break;
       }
       final hopMultiplier = math.max(1, hop ~/ baseHop);
-      final int binDivisor =
-          hopMultiplier == 1 ? 1 : (hopMultiplier <= 4 ? 2 : 4);
+      final int binDivisor = hopMultiplier == 1
+          ? 1
+          : (hopMultiplier <= 4 ? 2 : 4);
       final maxDisplayBins = math.max(32, baseMaxDisplayBins ~/ binDivisor);
 
       // Decode + STFT in a background isolate so pinch-zoom never stalls
@@ -2233,30 +2234,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final result = await showDialog<String>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionReviewTitle),
-            // A never-saved session prompts to keep or discard the whole
-            // session; an edited-but-saved session prompts about the edits.
-            content: Text(
-              _isUnsaved
-                  ? l10n.sessionUnsavedSession
-                  : l10n.sessionUnsavedChanges,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionReviewTitle),
+        // A never-saved session prompts to keep or discard the whole
+        // session; an edited-but-saved session prompts about the edits.
+        content: Text(
+          _isUnsaved ? l10n.sessionUnsavedSession : l10n.sessionUnsavedChanges,
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(ctx).colorScheme.error,
             ),
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(ctx).colorScheme.error,
-                ),
-                onPressed: () => Navigator.of(ctx).pop('discard'),
-                child: Text(l10n.sessionDiscard),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop('save'),
-                child: Text(l10n.sessionSave),
-              ),
-            ],
+            onPressed: () => Navigator.of(ctx).pop('discard'),
+            child: Text(l10n.sessionDiscard),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop('save'),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
     );
     if (result == 'save') {
       // A declined trim confirmation cancels the save, and with it the exit —
@@ -2285,26 +2283,25 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
     final result = await showDialog<String>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionRenameTitle),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: InputDecoration(hintText: l10n.sessionRenameHint),
-              onSubmitted: (v) => Navigator.of(ctx).pop(v),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(controller.text),
-                child: Text(l10n.sessionSave),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionRenameTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.sessionRenameHint),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
     );
     if (result == null) return;
     final trimmed = result.trim();
@@ -2495,35 +2492,33 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.surveyResumeTitle),
-            content: Text(l10n.surveyResumeMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: Text(l10n.surveyResumeConfirm),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.surveyResumeTitle),
+        content: Text(l10n.surveyResumeMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
           ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.surveyResumeConfirm),
+          ),
+        ],
+      ),
     );
     if (confirmed != true || !mounted) return;
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder:
-            (_) => SurveyLiveScreen(
-              customName: widget.session.customName,
-              transectId: widget.session.transectId,
-              observerName: widget.session.observerName,
-              startLatitude: widget.session.latitude,
-              startLongitude: widget.session.longitude,
-              resumeSession: widget.session,
-            ),
+        builder: (_) => SurveyLiveScreen(
+          customName: widget.session.customName,
+          transectId: widget.session.transectId,
+          observerName: widget.session.observerName,
+          startLatitude: widget.session.latitude,
+          startLongitude: widget.session.longitude,
+          resumeSession: widget.session,
+        ),
       ),
     );
   }
@@ -2560,10 +2555,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     );
     final hasOnlyLegacyClips =
         clips.isNotEmpty && clips.every((d) => d.clipTimestamp == null);
-    final clipContextOverride =
-        (hasOnlyLegacyClips && sessionClipContext == 0)
-            ? ref.read(surveyClipContextProvider)
-            : null;
+    final clipContextOverride = (hasOnlyLegacyClips && sessionClipContext == 0)
+        ? ref.read(surveyClipContextProvider)
+        : null;
 
     final exportPath = await buildSessionExport(
       widget.session,
@@ -2611,12 +2605,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final positionSec = centerSec;
     final result = await Navigator.of(context).push<AddSpeciesResult>(
       MaterialPageRoute(
-        builder:
-            (_) => AddSpeciesOverlay(
-              sessionStart: widget.session.startTime,
-              positionSec: positionSec,
-              existingDetections: _detections,
-            ),
+        builder: (_) => AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+        ),
         fullscreenDialog: true,
       ),
     );
@@ -2633,11 +2626,28 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               commonName: result.commonName,
               confidence: 1.0,
               timestamp: widget.session.startTime,
-              source:
-                  result.userSpecified
-                      ? DetectionSource.userSpecified
-                      : DetectionSource.manualGlobal,
+              source: result.userSpecified
+                  ? DetectionSource.userSpecified
+                  : DetectionSource.manualGlobal,
               evidence: result.evidence,
+              latitude: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.latitude,
+              longitude: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.longitude,
+              altitude: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.altitude,
+              altitudeAccuracy: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.altitudeAccuracy,
+              altitudeReference: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.altitudeReference,
+              locationFixTime: widget.session.type == SessionType.survey
+                  ? null
+                  : widget.session.locationFixTime,
             ),
           );
           break;
@@ -2648,6 +2658,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // survey collapses its stopped gap, and a destructive trim leaves
           // the audio starting later than the session did.
           final ts = widget.session.relativeToAbsolute(centerSec);
+          // Surveys interpolate along their track; other sessions (and
+          // surveys run without GPS) use their fixed coordinates.
+          final point = SurveyGpsTracker.positionAt(
+            widget.session.gpsTrack,
+            ts,
+          );
+          final session = widget.session;
           _detections.add(
             DetectionRecord(
               scientificName: result.scientificName,
@@ -2657,11 +2674,23 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               endTimestamp: ts.add(
                 Duration(seconds: widget.session.settings.windowDuration),
               ),
-              source:
-                  result.userSpecified
-                      ? DetectionSource.userSpecified
-                      : DetectionSource.manual,
+              source: result.userSpecified
+                  ? DetectionSource.userSpecified
+                  : DetectionSource.manual,
               evidence: result.evidence,
+              latitude: point?.latitude ?? session.latitude,
+              longitude: point?.longitude ?? session.longitude,
+              altitude: point != null ? point.altitude : session.altitude,
+              altitudeAccuracy: point != null
+                  ? point.altitudeAccuracy
+                  : session.altitudeAccuracy,
+              altitudeReference: point != null
+                  ? point.altitudeReference
+                  : session.altitudeReference,
+              // An interpolated position has no single fix behind it.
+              locationFixTime: point != null
+                  ? (point.measured ? point.timestamp : null)
+                  : session.locationFixTime,
             ),
           );
           break;
@@ -2678,10 +2707,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 endTimestamp: result.replaceRecord!.endTimestamp,
                 audioClipPath: result.replaceRecord!.audioClipPath,
                 clipTimestamp: result.replaceRecord!.clipTimestamp,
-                source:
-                    result.userSpecified
-                        ? DetectionSource.userSpecified
-                        : DetectionSource.manual,
+                source: result.userSpecified
+                    ? DetectionSource.userSpecified
+                    : DetectionSource.manual,
                 evidence: result.evidence,
                 reviewStatus: result.replaceRecord!.reviewStatus,
                 reviewedAt: result.replaceRecord!.reviewedAt,
@@ -2689,6 +2717,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                 voiceMemoPath: result.replaceRecord!.voiceMemoPath,
                 latitude: result.replaceRecord!.latitude,
                 longitude: result.replaceRecord!.longitude,
+                altitude: result.replaceRecord!.altitude,
+                altitudeAccuracy: result.replaceRecord!.altitudeAccuracy,
+                altitudeReference: result.replaceRecord!.altitudeReference,
+                locationFixTime: result.replaceRecord!.locationFixTime,
               );
             }
           }
@@ -2849,16 +2881,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       final existingEnd = pendingEnd;
       pendingStart =
           (existingStart != null &&
-                  existingStart >= visibleStart &&
-                  existingStart < visibleEnd)
-              ? existingStart
-              : visibleStart;
+              existingStart >= visibleStart &&
+              existingStart < visibleEnd)
+          ? existingStart
+          : visibleStart;
       pendingEnd =
           (existingEnd != null &&
-                  existingEnd > visibleStart &&
-                  existingEnd <= visibleEnd)
-              ? existingEnd
-              : visibleEnd;
+              existingEnd > visibleStart &&
+              existingEnd <= visibleEnd)
+          ? existingEnd
+          : visibleEnd;
     }
 
     setState(() {
@@ -2953,13 +2985,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         }
       }
       if (untrimmedSnapshot != null) {
-        final retainedByTrim =
-            detectionsOverlappingTrim(
-              session: widget.session,
-              detections: untrimmedSnapshot.detections,
-              startSec: range.start,
-              endSec: range.end,
-            ).toSet();
+        final retainedByTrim = detectionsOverlappingTrim(
+          session: widget.session,
+          detections: untrimmedSnapshot.detections,
+          startSec: range.start,
+          endSec: range.end,
+        ).toSet();
         restoredDetections = [
           ..._detections,
           for (final detection in untrimmedSnapshot.detections)
@@ -3007,28 +3038,27 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   void _openFullscreenSurveyMap(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => _FullscreenSurveyMapScreen(
-              session: widget.session,
-              gpsTrack: widget.session.gpsTrack,
-              detections: _detections,
-              initialHighlight: _highlightedDetection,
-              onConfirmChanged: () {
-                // Detections were mutated in place from the in-sheet
-                // checkmark; mark dirty so save/discard prompts trigger
-                // and rebuild so species rows + badges refresh.
-                if (mounted) setState(() => _isDirty = true);
-              },
-              onNoteChanged: () {
-                if (mounted) setState(() => _isDirty = true);
-              },
-              onVoiceMemoChanged: () {
-                if (mounted) setState(() => _isDirty = true);
-              },
-              onDeleteDetection: (record) {
-                _deleteDetectionWithUndo(_DetectionCluster([record]));
-              },
-            ),
+        builder: (_) => _FullscreenSurveyMapScreen(
+          session: widget.session,
+          gpsTrack: widget.session.gpsTrack,
+          detections: _detections,
+          initialHighlight: _highlightedDetection,
+          onConfirmChanged: () {
+            // Detections were mutated in place from the in-sheet
+            // checkmark; mark dirty so save/discard prompts trigger
+            // and rebuild so species rows + badges refresh.
+            if (mounted) setState(() => _isDirty = true);
+          },
+          onNoteChanged: () {
+            if (mounted) setState(() => _isDirty = true);
+          },
+          onVoiceMemoChanged: () {
+            if (mounted) setState(() => _isDirty = true);
+          },
+          onDeleteDetection: (record) {
+            _deleteDetectionWithUndo(_DetectionCluster([record]));
+          },
+        ),
       ),
     );
   }
@@ -3047,11 +3077,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (widget.session.type == SessionType.survey &&
         _visibleMapBounds != null) {
       final bounds = _visibleMapBounds!;
-      final visible =
-          _detections.where((d) {
-            if (d.latitude == null || d.longitude == null) return true;
-            return bounds.contains(LatLng(d.latitude!, d.longitude!));
-          }).toList();
+      final visible = _detections.where((d) {
+        if (d.latitude == null || d.longitude == null) return true;
+        return bounds.contains(LatLng(d.latitude!, d.longitude!));
+      }).toList();
       groups = _buildSpeciesGroups(
         visible,
         widget.session.settings.windowDuration,
@@ -3174,25 +3203,24 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
       final idx = playable.indexOf(record);
       final prev = idx > 0 ? playable[idx - 1] : null;
-      final next =
-          idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
+      final next = idx >= 0 && idx < playable.length - 1
+          ? playable[idx + 1]
+          : null;
 
       await showClipPlayerSheet(
         context,
         detection: record,
         session: widget.session,
-        onPrevious:
-            prev == null
-                ? null
-                : () {
-                  if (mounted) showOverlayForRecord(prev);
-                },
-        onNext:
-            next == null
-                ? null
-                : () {
-                  if (mounted) showOverlayForRecord(next);
-                },
+        onPrevious: prev == null
+            ? null
+            : () {
+                if (mounted) showOverlayForRecord(prev);
+              },
+        onNext: next == null
+            ? null
+            : () {
+                if (mounted) showOverlayForRecord(next);
+              },
         onConfirmChanged: () {
           if (mounted) setState(() {});
           _isDirty = true;
@@ -3295,14 +3323,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   /// Play the first available detection clip from the given cluster.
   Future<void> _playDetectionClip(_DetectionCluster cluster) async {
-    final clip =
-        cluster.records
-            .where(
-              (r) =>
-                  r.audioClipPath != null &&
-                  File(r.audioClipPath!).existsSync(),
-            )
-            .firstOrNull;
+    final clip = cluster.records
+        .where(
+          (r) => r.audioClipPath != null && File(r.audioClipPath!).existsSync(),
+        )
+        .firstOrNull;
     if (clip == null) return;
     await _clipPlayer.stop();
     final clipPath = clip.audioClipPath!;
@@ -3480,29 +3505,28 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final value = await showModalBottomSheet<String>(
       context: context,
       useSafeArea: true,
-      builder:
-          (ctx) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(AppIcons.addCircleOutline),
-                  title: Text(l10n.sessionAddSpecies),
-                  onTap: () => Navigator.of(ctx).pop('species'),
-                ),
-                ListTile(
-                  leading: const Icon(AppIcons.noteAdd),
-                  title: Text(l10n.sessionAddAnnotationOption),
-                  onTap: () => Navigator.of(ctx).pop('annotation'),
-                ),
-                ListTile(
-                  leading: const Icon(AppIcons.micNone),
-                  title: Text(l10n.sessionAddVoiceMemoOption),
-                  onTap: () => Navigator.of(ctx).pop('voice_memo'),
-                ),
-              ],
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(AppIcons.addCircleOutline),
+              title: Text(l10n.sessionAddSpecies),
+              onTap: () => Navigator.of(ctx).pop('species'),
             ),
-          ),
+            ListTile(
+              leading: const Icon(AppIcons.noteAdd),
+              title: Text(l10n.sessionAddAnnotationOption),
+              onTap: () => Navigator.of(ctx).pop('annotation'),
+            ),
+            ListTile(
+              leading: const Icon(AppIcons.micNone),
+              title: Text(l10n.sessionAddVoiceMemoOption),
+              onTap: () => Navigator.of(ctx).pop('voice_memo'),
+            ),
+          ],
+        ),
+      ),
     );
     if (!mounted || value == null) return;
     if (value == 'species') {
@@ -3549,119 +3573,115 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
     // Default scope mirrors text annotations: at-current-position when
     // playback has progressed past the start, otherwise session-global.
-    var atTimestamp =
-        isEdit ? existing!.offsetInRecording != null : positionSec > 0.5;
+    var atTimestamp = isEdit
+        ? existing!.offsetInRecording != null
+        : positionSec > 0.5;
     final titleController = TextEditingController(
       text: isEdit ? existing!.title : '',
     );
-    var savedOffset =
-        isEdit
-            ? existing!.offsetInRecording
-            : (atTimestamp ? positionSec : null);
+    var savedOffset = isEdit
+        ? existing!.offsetInRecording
+        : (atTimestamp ? positionSec : null);
     var currentMemoPath = memoPath;
 
     final saved = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => StatefulBuilder(
-            builder:
-                (ctx, setDialogState) => AlertDialog(
-                  insetPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 24,
-                  ),
-                  title: Text(
-                    isEdit
-                        ? l10n.sessionEditVoiceMemo
-                        : l10n.sessionAddVoiceMemoOption,
-                  ),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          controller: titleController,
-                          decoration: InputDecoration(
-                            hintText: l10n.sessionAnnotationName,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          textCapitalization: TextCapitalization.sentences,
-                          autofocus: !isEdit,
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            ChoiceChip(
-                              avatar: const Icon(AppIcons.public, size: 18),
-                              label: Text(l10n.sessionAnnotationGlobal),
-                              selected: !atTimestamp,
-                              onSelected: (_) {
-                                setDialogState(() {
-                                  atTimestamp = false;
-                                  savedOffset = null;
-                                });
-                              },
-                            ),
-                            ChoiceChip(
-                              avatar: const Icon(AppIcons.schedule, size: 18),
-                              label: Text(l10n.sessionInsertAtTimestamp),
-                              selected: atTimestamp,
-                              onSelected: (_) {
-                                setDialogState(() {
-                                  atTimestamp = true;
-                                  savedOffset = positionSec;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        if (isEdit) ...[
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            icon: const Icon(AppIcons.mic, size: 18),
-                            label: Text(l10n.detectionReplaceVoiceMemo),
-                            onPressed: () async {
-                              await _pausePlayersForVoiceMemo();
-                              if (!ctx.mounted) return;
-                              // Open idle mode (no existing path) so the user
-                              // taps to record — same flow as the initial add.
-                              final result = await showVoiceMemoDialog(
-                                context: ctx,
-                                sessionId: widget.session.id,
-                              );
-                              if (result?.savedPath != null) {
-                                setDialogState(
-                                  () => currentMemoPath = result!.savedPath,
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton(
-                              onPressed: () => Navigator.of(ctx).pop(false),
-                              child: Text(l10n.cancel),
-                            ),
-                            const SizedBox(width: 8),
-                            FilledButton(
-                              onPressed: () => Navigator.of(ctx).pop(true),
-                              child: Text(l10n.sessionSave),
-                            ),
-                          ],
-                        ),
-                      ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          title: Text(
+            isEdit ? l10n.sessionEditVoiceMemo : l10n.sessionAddVoiceMemoOption,
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAnnotationName,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  textCapitalization: TextCapitalization.sentences,
+                  autofocus: !isEdit,
                 ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      avatar: const Icon(AppIcons.public, size: 18),
+                      label: Text(l10n.sessionAnnotationGlobal),
+                      selected: !atTimestamp,
+                      onSelected: (_) {
+                        setDialogState(() {
+                          atTimestamp = false;
+                          savedOffset = null;
+                        });
+                      },
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(AppIcons.schedule, size: 18),
+                      label: Text(l10n.sessionInsertAtTimestamp),
+                      selected: atTimestamp,
+                      onSelected: (_) {
+                        setDialogState(() {
+                          atTimestamp = true;
+                          savedOffset = positionSec;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                if (isEdit) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    icon: const Icon(AppIcons.mic, size: 18),
+                    label: Text(l10n.detectionReplaceVoiceMemo),
+                    onPressed: () async {
+                      await _pausePlayersForVoiceMemo();
+                      if (!ctx.mounted) return;
+                      // Open idle mode (no existing path) so the user
+                      // taps to record — same flow as the initial add.
+                      final result = await showVoiceMemoDialog(
+                        context: ctx,
+                        sessionId: widget.session.id,
+                      );
+                      if (result?.savedPath != null) {
+                        setDialogState(
+                          () => currentMemoPath = result!.savedPath,
+                        );
+                      }
+                    },
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(false),
+                      child: Text(l10n.cancel),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                      child: Text(l10n.sessionSave),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
     );
 
     if (!mounted || saved != true) {
@@ -3717,112 +3737,103 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     var atTimestamp = isEdit ? existing!.offsetInRecording != null : false;
     showDialog<void>(
       context: context,
-      builder:
-          (ctx) => StatefulBuilder(
-            builder:
-                (ctx, setDialogState) => AlertDialog(
-                  insetPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 24,
-                  ),
-                  title: Text(
-                    isEdit
-                        ? l10n.sessionEditAnnotation
-                        : l10n.sessionAddAnnotationOption,
-                  ),
-                  content: SizedBox(
-                    width: double.maxFinite,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          controller: titleController,
-                          decoration: InputDecoration(
-                            hintText: l10n.sessionAnnotationName,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          textCapitalization: TextCapitalization.sentences,
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: controller,
-                          decoration: InputDecoration(
-                            hintText: l10n.sessionAddAnnotation,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          maxLines: 5,
-                          minLines: 2,
-                          autofocus: true,
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            ChoiceChip(
-                              avatar: const Icon(AppIcons.public, size: 18),
-                              label: Text(l10n.sessionAnnotationGlobal),
-                              selected: !atTimestamp,
-                              onSelected:
-                                  (_) =>
-                                      setDialogState(() => atTimestamp = false),
-                            ),
-                            ChoiceChip(
-                              avatar: const Icon(AppIcons.schedule, size: 18),
-                              label: Text(l10n.sessionInsertAtTimestamp),
-                              selected: atTimestamp,
-                              onSelected:
-                                  (_) =>
-                                      setDialogState(() => atTimestamp = true),
-                            ),
-                          ],
-                        ),
-                      ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          title: Text(
+            isEdit
+                ? l10n.sessionEditAnnotation
+                : l10n.sessionAddAnnotationOption,
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAnnotationName,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: Text(l10n.cancel),
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: l10n.sessionAddAnnotation,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    FilledButton(
-                      onPressed: () {
-                        final text = controller.text.trim();
-                        final title = titleController.text.trim();
-                        // Need at least *some* content — title or body.
-                        if (text.isEmpty && title.isEmpty) return;
-                        final positionSec =
-                            isEdit
-                                ? (existing!.offsetInRecording ??
-                                    _currentSourcePositionSec)
-                                : _currentSourcePositionSec;
-                        final annotation = SessionAnnotation(
-                          text: text,
-                          title: title,
-                          createdAt:
-                              isEdit ? existing!.createdAt : DateTime.now(),
-                          offsetInRecording: atTimestamp ? positionSec : null,
-                        );
-                        if (isEdit) {
-                          _replaceAnnotation(editingIndex, annotation);
-                        } else {
-                          _addAnnotation(annotation);
-                        }
-                        Navigator.of(ctx).pop();
-                      },
-                      child: Text(
-                        isEdit
-                            ? l10n.sessionSave
-                            : l10n.sessionAddAnnotationOption,
-                      ),
+                  ),
+                  maxLines: 5,
+                  minLines: 2,
+                  autofocus: true,
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    ChoiceChip(
+                      avatar: const Icon(AppIcons.public, size: 18),
+                      label: Text(l10n.sessionAnnotationGlobal),
+                      selected: !atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = false),
+                    ),
+                    ChoiceChip(
+                      avatar: const Icon(AppIcons.schedule, size: 18),
+                      label: Text(l10n.sessionInsertAtTimestamp),
+                      selected: atTimestamp,
+                      onSelected: (_) =>
+                          setDialogState(() => atTimestamp = true),
                     ),
                   ],
                 ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                final title = titleController.text.trim();
+                // Need at least *some* content — title or body.
+                if (text.isEmpty && title.isEmpty) return;
+                final positionSec = isEdit
+                    ? (existing!.offsetInRecording ?? _currentSourcePositionSec)
+                    : _currentSourcePositionSec;
+                final annotation = SessionAnnotation(
+                  text: text,
+                  title: title,
+                  createdAt: isEdit ? existing!.createdAt : DateTime.now(),
+                  offsetInRecording: atTimestamp ? positionSec : null,
+                );
+                if (isEdit) {
+                  _replaceAnnotation(editingIndex, annotation);
+                } else {
+                  _addAnnotation(annotation);
+                }
+                Navigator.of(ctx).pop();
+              },
+              child: Text(
+                isEdit ? l10n.sessionSave : l10n.sessionAddAnnotationOption,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -3833,36 +3844,35 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final controller = TextEditingController(text: target.note ?? '');
     final result = await showDialog<String>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.detectionNoteDialogTitle),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 4,
-              minLines: 2,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(hintText: l10n.detectionNoteHint),
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.detectionNoteDialogTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 4,
+          minLines: 2,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(hintText: l10n.detectionNoteHint),
+        ),
+        actions: [
+          if (hadNote)
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(''),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(ctx).colorScheme.error,
+              ),
+              child: Text(l10n.detectionDeleteNote),
             ),
-            actions: [
-              if (hadNote)
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(''),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(ctx).colorScheme.error,
-                  ),
-                  child: Text(l10n.detectionDeleteNote),
-                ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(controller.text),
-                child: Text(l10n.sessionSave),
-              ),
-            ],
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
     );
     if (result == null || !mounted) return;
     final trimmed = result.trim();
@@ -3976,14 +3986,13 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final target = cluster.records.first;
     final result = await Navigator.of(context).push<AddSpeciesResult>(
       MaterialPageRoute(
-        builder:
-            (_) => AddSpeciesOverlay(
-              sessionStart: widget.session.startTime,
-              positionSec: positionSec,
-              existingDetections: _detections,
-              initialMode: AddSpeciesInsertMode.replace,
-              initialReplaceTarget: target,
-            ),
+        builder: (_) => AddSpeciesOverlay(
+          sessionStart: widget.session.startTime,
+          positionSec: positionSec,
+          existingDetections: _detections,
+          initialMode: AddSpeciesInsertMode.replace,
+          initialReplaceTarget: target,
+        ),
         fullscreenDialog: true,
       ),
     );
@@ -4002,10 +4011,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             endTimestamp: result.replaceRecord!.endTimestamp,
             audioClipPath: result.replaceRecord!.audioClipPath,
             clipTimestamp: result.replaceRecord!.clipTimestamp,
-            source:
-                result.userSpecified
-                    ? DetectionSource.userSpecified
-                    : DetectionSource.manual,
+            source: result.userSpecified
+                ? DetectionSource.userSpecified
+                : DetectionSource.manual,
             evidence: result.evidence,
             reviewStatus: result.replaceRecord!.reviewStatus,
             reviewedAt: result.replaceRecord!.reviewedAt,
@@ -4013,6 +4021,10 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             voiceMemoPath: result.replaceRecord!.voiceMemoPath,
             latitude: result.replaceRecord!.latitude,
             longitude: result.replaceRecord!.longitude,
+            altitude: result.replaceRecord!.altitude,
+            altitudeAccuracy: result.replaceRecord!.altitudeAccuracy,
+            altitudeReference: result.replaceRecord!.altitudeReference,
+            locationFixTime: result.replaceRecord!.locationFixTime,
           );
         }
       }
@@ -4068,9 +4080,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                       Icon(
                         AppIcons.edit,
                         size: 16,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(153),
+                        color: Theme.of(context).colorScheme.onSurface
+                            .withAlpha(153),
                       ),
                     ],
                   ),
@@ -4099,12 +4110,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             IconButton(
               icon: const Icon(AppIcons.tuneRounded),
               tooltip: l10n.settings,
-              onPressed:
-                  () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const SettingsScreen(),
-                    ),
-                  ),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+              ),
             ),
           ],
           // Indeterminate progress under the AppBar while the screen is
@@ -4112,13 +4120,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // decode). Keeps the rest of the UI responsive but makes it
           // obvious that something is loading on large sessions where
           // decoding can take several seconds.
-          bottom:
-              (_initializing || _decoding)
-                  ? const PreferredSize(
-                    preferredSize: Size.fromHeight(2),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  )
-                  : null,
+          bottom: (_initializing || _decoding)
+              ? const PreferredSize(
+                  preferredSize: Size.fromHeight(2),
+                  child: LinearProgressIndicator(minHeight: 2),
+                )
+              : null,
         ),
         body: _buildReviewBody(context, theme, l10n),
       ),
@@ -4195,10 +4202,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           IconButton(
             icon: Icon(
               AppIcons.undo,
-              color:
-                  !_trimMode && _canUndo
-                      ? null
-                      : theme.colorScheme.onSurface.withAlpha(80),
+              color: !_trimMode && _canUndo
+                  ? null
+                  : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionUndo,
             onPressed: !_trimMode && _canUndo ? _undo : null,
@@ -4206,10 +4212,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           IconButton(
             icon: Icon(
               AppIcons.redo,
-              color:
-                  !_trimMode && _canRedo
-                      ? null
-                      : theme.colorScheme.onSurface.withAlpha(80),
+              color: !_trimMode && _canRedo
+                  ? null
+                  : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionRedo,
             onPressed: !_trimMode && _canRedo ? _redo : null,
@@ -4224,10 +4229,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           IconButton(
             icon: Icon(
               AppIcons.save,
-              color:
-                  _hasUnsavedWork
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurface.withAlpha(80),
+              color: _hasUnsavedWork
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurface.withAlpha(80),
             ),
             tooltip: l10n.sessionSave,
             onPressed: !_trimMode && _hasUnsavedWork ? _save : null,
@@ -4235,17 +4239,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           // Builder so the share popover can anchor on this button's own
           // box rather than the whole screen — iPad needs a source rect.
           Builder(
-            builder:
-                (buttonContext) => IconButton(
-                  icon: const Icon(AppIcons.share),
-                  tooltip: l10n.sessionShare,
-                  onPressed:
-                      _trimMode
-                          ? null
-                          : () => _reportShareFailure(
-                            _share(shareOriginFrom(buttonContext)),
-                          ),
-                ),
+            builder: (buttonContext) => IconButton(
+              icon: const Icon(AppIcons.share),
+              tooltip: l10n.sessionShare,
+              onPressed: _trimMode
+                  ? null
+                  : () => _reportShareFailure(
+                      _share(shareOriginFrom(buttonContext)),
+                    ),
+            ),
           ),
           IconButton(
             icon: const Icon(AppIcons.deleteOutline),
@@ -4288,19 +4290,17 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
         session: widget.session,
         detectionCount: _detections.length,
         locationName: _locationName,
-        onShowMap:
-            widget.session.latitude != null
-                ? () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder:
-                        (_) => SessionMapScreen(
-                          latitude: widget.session.latitude!,
-                          longitude: widget.session.longitude!,
-                          locationName: _locationName,
-                        ),
+        onShowMap: widget.session.latitude != null
+            ? () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => SessionMapScreen(
+                    latitude: widget.session.latitude!,
+                    longitude: widget.session.longitude!,
+                    locationName: _locationName,
                   ),
-                )
-                : null,
+                ),
+              )
+            : null,
         onFetchWeather: _resolveWeather,
       ),
       if (_audioTruncatedWarning && !_audioTruncatedWarningDismissed)
@@ -4409,12 +4409,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
               highlightedDetection: _highlightedDetection,
               initialCenter:
                   widget.session.latitude != null &&
-                          widget.session.longitude != null
-                      ? LatLng(
-                        widget.session.latitude!,
-                        widget.session.longitude!,
-                      )
-                      : null,
+                      widget.session.longitude != null
+                  ? LatLng(widget.session.latitude!, widget.session.longitude!)
+                  : null,
             ),
           ),
         ),
@@ -4477,8 +4474,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           onSeek: _seekToPosition,
           onPause: _pausePlayer,
           isPlaying: _isPlaying,
-          userDefaultViewSeconds:
-              ref.watch(spectrogramDurationProvider).toDouble(),
+          userDefaultViewSeconds: ref
+              .watch(spectrogramDurationProvider)
+              .toDouble(),
           singleSweep: _isShortRecording,
           focusRequests: _spectrogramFocus,
           quality: ref.watch(spectrogramQualityProvider),
@@ -4496,12 +4494,16 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             child: Builder(
               builder: (context) {
                 final totalSec = _sourceDurationSec;
-                final visibleStart = (_lastViewportCenterSec! -
-                        _lastViewportViewSec! / 2)
-                    .clamp(0.0, totalSec);
-                final visibleEnd = (_lastViewportCenterSec! +
-                        _lastViewportViewSec! / 2)
-                    .clamp(0.0, totalSec);
+                final visibleStart =
+                    (_lastViewportCenterSec! - _lastViewportViewSec! / 2).clamp(
+                      0.0,
+                      totalSec,
+                    );
+                final visibleEnd =
+                    (_lastViewportCenterSec! + _lastViewportViewSec! / 2).clamp(
+                      0.0,
+                      totalSec,
+                    );
                 return _TrimOverlay.windowed(
                   visibleStartSec: visibleStart,
                   visibleEndSec: visibleEnd,
@@ -4580,12 +4582,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           _editAnnotation(i);
         }
       },
-      tooltip:
-          a.hasVoiceMemo
-              ? l10n.sessionEditVoiceMemo
-              : (isTimed
-                  ? l10n.detectionSeekToPosition
-                  : l10n.sessionEditAnnotation),
+      tooltip: a.hasVoiceMemo
+          ? l10n.sessionEditVoiceMemo
+          : (isTimed
+                ? l10n.detectionSeekToPosition
+                : l10n.sessionEditAnnotation),
       deleteIcon: const Icon(AppIcons.close, size: 16),
       onDeleted: () => _deleteAnnotation(i),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -4620,12 +4621,11 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     final query = _speciesSearchQuery.trim().toLowerCase();
     var groups = _filteredSpeciesGroups;
     if (query.isNotEmpty) {
-      groups =
-          groups.where((g) {
-            final common = localizedCommonName(g).toLowerCase();
-            final sci = g.scientificName.toLowerCase();
-            return common.contains(query) || sci.contains(query);
-          }).toList();
+      groups = groups.where((g) {
+        final common = localizedCommonName(g).toLowerCase();
+        final sci = g.scientificName.toLowerCase();
+        return common.contains(query) || sci.contains(query);
+      }).toList();
     }
 
     final sorted = _orderSessionReviewSpeciesGroups(
@@ -4686,44 +4686,41 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             windowSec: widget.session.settings.windowDuration,
             isSurvey: widget.session.type == SessionType.survey,
             audioAvailable: _audioAvailable,
-            onToggleExpand:
-                () => setState(() {
-                  if (isExpanded) {
-                    _expandedSpecies.remove(group.scientificName);
-                  } else {
-                    _expandedSpecies.add(group.scientificName);
-                  }
-                }),
-            onSpeciesInfo:
-                () => SpeciesInfoOverlay.show(
-                  context,
-                  ref,
-                  scientificName: group.scientificName,
-                  commonName: group.commonName,
-                ),
+            onToggleExpand: () => setState(() {
+              if (isExpanded) {
+                _expandedSpecies.remove(group.scientificName);
+              } else {
+                _expandedSpecies.add(group.scientificName);
+              }
+            }),
+            onSpeciesInfo: () => SpeciesInfoOverlay.show(
+              context,
+              ref,
+              scientificName: group.scientificName,
+              commonName: group.commonName,
+            ),
             onSeekCluster: _seekToCluster,
             onPause: _pausePlayer,
             onDeleteCluster: _deleteDetectionWithUndo,
             onDeleteSpecies: () => _deleteSpeciesWithUndo(group.scientificName),
             onReplaceCluster: _replaceDetection,
             onToggleConfirmCluster: _toggleClusterConfirmation,
-            onShareCluster:
-                (cluster, origin) => _reportShareFailure(
-                  shareDetection(
-                    cluster.records.first,
-                    session: widget.session,
-                    formats: ref.read(exportSelectionProvider),
-                    includeAudio: ref.read(includeAudioProvider),
-                    shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                    includeHtmlReport: ref.read(exportHtmlReportProvider),
-                    includeAppMetadata: ref.read(includeAppMetadataProvider),
-                    taxonomy: taxonomy,
-                    speciesLocale: speciesLocale,
-                    useAbsoluteSurveyTime:
-                        ref.read(timestampDisplayModeProvider) == 'absolute',
-                    sharePositionOrigin: origin,
-                  ),
-                ),
+            onShareCluster: (cluster, origin) => _reportShareFailure(
+              shareDetection(
+                cluster.records.first,
+                session: widget.session,
+                formats: ref.read(exportSelectionProvider),
+                includeAudio: ref.read(includeAudioProvider),
+                shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                includeHtmlReport: ref.read(exportHtmlReportProvider),
+                includeAppMetadata: ref.read(includeAppMetadataProvider),
+                taxonomy: taxonomy,
+                speciesLocale: speciesLocale,
+                useAbsoluteSurveyTime:
+                    ref.read(timestampDisplayModeProvider) == 'absolute',
+                sharePositionOrigin: origin,
+              ),
+            ),
             onEditNoteCluster: _editClusterNote,
             onEditVoiceMemoCluster: _editClusterVoiceMemo,
             onDeleteVoiceMemoCluster: _deleteClusterVoiceMemo,
@@ -4733,7 +4730,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       );
     }
 
-    return Column(children: [header, Expanded(child: body)]);
+    return Column(
+      children: [
+        header,
+        Expanded(child: body),
+      ],
+    );
   }
 
   /// Sticky header above the species list with a search field and
@@ -4760,22 +4762,21 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
                     minWidth: 32,
                     minHeight: 32,
                   ),
-                  suffixIcon:
-                      _speciesSearchQuery.isEmpty
-                          ? null
-                          : IconButton(
-                            icon: const Icon(AppIcons.clear, size: 18),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
-                            ),
-                            tooltip: l10n.tooltipClearSearch,
-                            onPressed: () {
-                              _speciesSearchController.clear();
-                              setState(() => _speciesSearchQuery = '');
-                            },
+                  suffixIcon: _speciesSearchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(AppIcons.clear, size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
                           ),
+                          tooltip: l10n.tooltipClearSearch,
+                          onPressed: () {
+                            _speciesSearchController.clear();
+                            setState(() => _speciesSearchQuery = '');
+                          },
+                        ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 0,
@@ -4792,29 +4793,28 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             icon: const Icon(AppIcons.sort),
             initialValue: _speciesSort,
             onSelected: _setSpeciesSort,
-            itemBuilder:
-                (context) => [
-                  CheckedPopupMenuItem(
-                    value: SpeciesSortMode.confidence,
-                    checked: _speciesSort == SpeciesSortMode.confidence,
-                    child: Text(l10n.sessionSpeciesSortConfidence),
-                  ),
-                  CheckedPopupMenuItem(
-                    value: SpeciesSortMode.alphabetical,
-                    checked: _speciesSort == SpeciesSortMode.alphabetical,
-                    child: Text(l10n.sessionSpeciesSortAlphabetical),
-                  ),
-                  CheckedPopupMenuItem(
-                    value: SpeciesSortMode.count,
-                    checked: _speciesSort == SpeciesSortMode.count,
-                    child: Text(l10n.sessionSpeciesSortCount),
-                  ),
-                  CheckedPopupMenuItem(
-                    value: SpeciesSortMode.firstSeen,
-                    checked: _speciesSort == SpeciesSortMode.firstSeen,
-                    child: Text(l10n.sessionSpeciesSortFirstSeen),
-                  ),
-                ],
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem(
+                value: SpeciesSortMode.confidence,
+                checked: _speciesSort == SpeciesSortMode.confidence,
+                child: Text(l10n.sessionSpeciesSortConfidence),
+              ),
+              CheckedPopupMenuItem(
+                value: SpeciesSortMode.alphabetical,
+                checked: _speciesSort == SpeciesSortMode.alphabetical,
+                child: Text(l10n.sessionSpeciesSortAlphabetical),
+              ),
+              CheckedPopupMenuItem(
+                value: SpeciesSortMode.count,
+                checked: _speciesSort == SpeciesSortMode.count,
+                child: Text(l10n.sessionSpeciesSortCount),
+              ),
+              CheckedPopupMenuItem(
+                value: SpeciesSortMode.firstSeen,
+                checked: _speciesSort == SpeciesSortMode.firstSeen,
+                child: Text(l10n.sessionSpeciesSortFirstSeen),
+              ),
+            ],
           ),
         ],
       ),
@@ -4854,8 +4854,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       var current = <DetectionRecord>[sorted.first];
 
       for (var i = 1; i < sorted.length; i++) {
-        final gap =
-            sorted[i].timestamp.difference(sorted[i - 1].timestamp).inSeconds;
+        final gap = sorted[i].timestamp
+            .difference(sorted[i - 1].timestamp)
+            .inSeconds;
         if (gap <= effectiveMaxGapSec) {
           current.add(sorted[i]);
         } else {
@@ -5081,33 +5082,30 @@ class _FullscreenSurveyMapScreenState
     // \u2014 otherwise the skip button would open onto an empty sheet.
     // Ordered by timestamp so "next" / "prev" matches the user's mental
     // model of stepping forward / backward in time.
-    final playable =
-        _filtered.where((d) {
-            final p = d.audioClipPath;
-            return p != null && File(p).existsSync();
-          }).toList()
-          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final playable = _filtered.where((d) {
+      final p = d.audioClipPath;
+      return p != null && File(p).existsSync();
+    }).toList()..sort((a, b) => a.timestamp.compareTo(b.timestamp));
     final idx = playable.indexOf(detection);
     final prev = idx > 0 ? playable[idx - 1] : null;
-    final next =
-        idx >= 0 && idx < playable.length - 1 ? playable[idx + 1] : null;
+    final next = idx >= 0 && idx < playable.length - 1
+        ? playable[idx + 1]
+        : null;
 
     await showClipPlayerSheet(
       context,
       detection: detection,
       session: widget.session,
-      onPrevious:
-          prev == null
-              ? null
-              : () {
-                if (mounted) _onMarkerTap(prev);
-              },
-      onNext:
-          next == null
-              ? null
-              : () {
-                if (mounted) _onMarkerTap(next);
-              },
+      onPrevious: prev == null
+          ? null
+          : () {
+              if (mounted) _onMarkerTap(prev);
+            },
+      onNext: next == null
+          ? null
+          : () {
+              if (mounted) _onMarkerTap(next);
+            },
       onConfirmChanged: () {
         // Rebuild this screen so the marker's confirmed badge updates
         // immediately, then forward to the host so the session is marked
@@ -5123,13 +5121,12 @@ class _FullscreenSurveyMapScreenState
         if (mounted) setState(() {});
         widget.onVoiceMemoChanged?.call();
       },
-      onDelete:
-          widget.onDeleteDetection == null
-              ? null
-              : () {
-                widget.onDeleteDetection!(detection);
-                if (mounted) setState(() => _highlight = null);
-              },
+      onDelete: widget.onDeleteDetection == null
+          ? null
+          : () {
+              widget.onDeleteDetection!(detection);
+              if (mounted) setState(() => _highlight = null);
+            },
     );
     if (mounted) setState(() => _highlight = null);
   }
@@ -5157,12 +5154,11 @@ class _FullscreenSurveyMapScreenState
         );
       }
     }
-    final speciesEntries =
-        byScientific.values.toList()..sort(
-          (a, b) => a.displayName.toLowerCase().compareTo(
-            b.displayName.toLowerCase(),
-          ),
-        );
+    final speciesEntries = byScientific.values.toList()
+      ..sort(
+        (a, b) =>
+            a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()),
+      );
 
     // Live-apply changes as the user interacts (#33). Each chip /
     // slider / species tap fires `onChanged` and we update map state
@@ -5380,16 +5376,15 @@ class _MapFilterSheetState extends State<_MapFilterSheet> {
     final l10n = widget.l10n;
 
     final lowerQuery = _query.trim().toLowerCase();
-    final filteredSpecies =
-        lowerQuery.isEmpty
-            ? widget.speciesEntries
-            : widget.speciesEntries
-                .where(
-                  (e) =>
-                      e.displayName.toLowerCase().contains(lowerQuery) ||
-                      e.scientificName.toLowerCase().contains(lowerQuery),
-                )
-                .toList();
+    final filteredSpecies = lowerQuery.isEmpty
+        ? widget.speciesEntries
+        : widget.speciesEntries
+              .where(
+                (e) =>
+                    e.displayName.toLowerCase().contains(lowerQuery) ||
+                    e.scientificName.toLowerCase().contains(lowerQuery),
+              )
+              .toList();
 
     return Padding(
       padding: EdgeInsets.only(
@@ -5607,14 +5602,13 @@ class _SpeciesPickerTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final showSciNames = ref.watch(showSciNamesProvider);
-    final displaySci =
-        scientificName == null
-            ? null
-            : ref
-                    .watch(taxonomyServiceProvider)
-                    .value
-                    ?.displayScientificName(scientificName!) ??
-                scientificName;
+    final displaySci = scientificName == null
+        ? null
+        : ref
+                  .watch(taxonomyServiceProvider)
+                  .value
+                  ?.displayScientificName(scientificName!) ??
+              scientificName;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -5627,10 +5621,9 @@ class _SpeciesPickerTile extends ConsumerWidget {
                   ? AppIcons.checkCircleRounded
                   : AppIcons.radioButtonUnchecked,
               size: 20,
-              color:
-                  selected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outline,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outline,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -5698,12 +5691,12 @@ class _MapFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg =
-        isActive
-            ? theme.colorScheme.primary
-            : theme.colorScheme.surface.withAlpha(230);
-    final fg =
-        isActive ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+    final bg = isActive
+        ? theme.colorScheme.primary
+        : theme.colorScheme.surface.withAlpha(230);
+    final fg = isActive
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
     return Material(
       color: bg,
       elevation: 4,

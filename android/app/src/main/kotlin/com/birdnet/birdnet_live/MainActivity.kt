@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
 import android.provider.OpenableColumns
 import android.view.WindowManager
 import android.webkit.MimeTypeMap
@@ -30,6 +31,7 @@ class MainActivity: FlutterActivity() {
     private val ARU_NOTIFICATION_ACTION_EXTRA = "com.birdnet.aru_notification_action"
     private val QUICK_ACTION_INTENTS_CHANNEL = "com.birdnet/quick_action_intents"
     private val SHARED_MEDIA_CHANNEL = "com.birdnet/shared_media"
+    private val DEVICE_DESCRIPTION_CHANNEL = "com.birdnet/device_description"
     private val SHARED_MEDIA_DIR = "shared_audio"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val activeDecodeJobs = Collections.synchronizedSet(mutableSetOf<Job>())
@@ -63,6 +65,19 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
+            if (call.method == "getInfo") {
+                result.success(mapOf(
+                    "model" to Build.MODEL,
+                    "brand" to Build.BRAND,
+                    "os" to "Android",
+                    "version" to Build.VERSION.RELEASE,
+                ))
+            } else {
+                result.notImplemented()
+            }
+        }
 
         // Wakelock channel.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WAKELOCK_CHANNEL).setMethodCallHandler { call, result ->

@@ -4,7 +4,7 @@ Set up your development environment.
 
 ## Prerequisites
 
-- **Flutter SDK** 3.27 or later, with **Dart 3.7** or later
+- **Flutter SDK** 3.47 or later, with **Dart 3.13** or later
 - **Git** and **Git LFS** for the large ONNX model files
 - **Android Studio** or **VS Code** with Flutter/Dart extensions
 
@@ -12,7 +12,7 @@ Set up your development environment.
 
 - **Android**: Android SDK, NDK (for ONNX native libraries)
 - **iOS**: Xcode 15+, CocoaPods
-- **Windows**: Visual Studio 2022 with C++ desktop workload
+- **Windows**: Visual Studio 2022 with C++ desktop workload and [NuGet CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools) (`nuget.exe` on `PATH`)
 
 ## Setup
 

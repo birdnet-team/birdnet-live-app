@@ -31,9 +31,12 @@ import 'package:flutter/scheduler.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 
 import '../../core/services/wakelock_service.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/audio_background_notification.dart';
 import '../../shared/services/quick_action_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/confirm_destructive.dart';
@@ -42,6 +45,7 @@ import '../audio/audio_providers.dart';
 import '../explore/explore_providers.dart';
 import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
+import '../history/session_checkpoint_writer.dart';
 import '../history/session_review_screen.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
@@ -58,8 +62,11 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
   const PointCountLiveScreen({
     super.key,
     required this.durationMinutes,
+    required this.recordingMode,
+    required this.continueWithScreenOff,
     this.latitude,
     this.longitude,
+    this.startLocation,
     this.customName,
     this.observerName,
     this.windowDurationOverride,
@@ -72,11 +79,18 @@ class PointCountLiveScreen extends ConsumerStatefulWidget {
   /// Total survey duration in minutes.
   final int durationMinutes;
 
+  /// Recording choice made in Point Count setup.
+  final String recordingMode;
+
+  /// Screen-off choice made in Point Count setup for this count.
+  final bool continueWithScreenOff;
+
   /// Optional latitude chosen during setup (GPS or manual).
   final double? latitude;
 
   /// Optional longitude chosen during setup (GPS or manual).
   final double? longitude;
+  final AppLocation? startLocation;
 
   /// Optional user-chosen name for the count (e.g., "Pond Stop 1").
   final String? customName;
@@ -114,12 +128,23 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
   /// Periodic timer that ticks every second to update the countdown.
   Timer? _countdownTimer;
+  SessionCheckpointWriter? _checkpointWriter;
+  DateTime? _countEndTime;
+  int _lastNotifiedRemainingMinutes = -1;
+  bool _appBackgrounded = false;
+  bool _endWhenStarted = false;
+  bool _endOnResume = false;
+  bool _backgroundReady = false;
+  final AudioBackgroundNotificationService _backgroundService =
+      AudioBackgroundNotificationService(AudioBackgroundMode.pointCount);
+  Future<void> _backgroundTransition = Future<void>.value();
 
   /// Whether the session has been started.
   bool _started = false;
 
   /// Whether we're in the process of finalizing (prevents double-finalize).
   bool _finalizing = false;
+  bool _stopDialogOpen = false;
 
   @override
   void initState() {
@@ -129,6 +154,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       QuickListenSessionOwner.pointCount,
     );
     WidgetsBinding.instance.addObserver(this);
+    FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
     _remainingNotifier = ValueNotifier(
       Duration(minutes: widget.durationMinutes),
     );
@@ -165,18 +191,41 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     ref.read(currentSessionProvider.notifier).state = controller.session;
   }
 
+  Future<bool> _abortPendingStart(CaptureStateNotifier captureNotifier) async {
+    if (mounted && !_endWhenStarted) return false;
+    await captureNotifier.stop();
+    await WakelockService.disable();
+    // No session exists yet to review when startup was interrupted. The
+    // message stays queued until the user returns to the app.
+    if (mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      final message = AppLocalizations.of(context)!.pointCountStartInterrupted;
+      Navigator.of(context).pop();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 8),
+          showCloseIcon: true,
+        ),
+      );
+    }
+    return true;
+  }
+
   /// Load model (if needed) and start the inference session.
   Future<void> _startSession() async {
     if (_started) return;
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
     final audioSource = ref.read(audioSourceProvider);
+    final repo = ref.read(sessionRepositoryProvider);
 
     // Load model if not ready.
     if (controller.state == LiveState.idle) {
       await controller.loadModel();
       _onControllerStateChanged();
     }
+    if (await _abortPendingStart(captureNotifier)) return;
     if (controller.state == LiveState.error) return;
 
     await WakelockService.enable();
@@ -187,6 +236,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     captureService.setHighPassCutoff(ref.read(highPassFilterProvider));
 
     await captureNotifier.start(source: audioSource);
+    if (await _abortPendingStart(captureNotifier)) return;
 
     // Read inference settings (use wizard overrides when provided).
     final int windowDuration =
@@ -200,8 +250,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         widget.speciesFilterModeOverride ?? ref.read(speciesFilterModeProvider);
     final double sensitivity =
         widget.sensitivityOverride ?? ref.read(sensitivityProvider);
-    final recordingModeStr = ref.read(recordingModeProvider);
-    final recordingMode = recordingModeFromString(recordingModeStr);
+    final recordingMode = recordingModeFromString(widget.recordingMode);
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
     final geoScores = await ref.read(geoScoresProvider.future);
@@ -209,15 +258,18 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ignoredSpeciesNamesProvider.future,
     );
     final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    if (await _abortPendingStart(captureNotifier)) return;
 
     double? startLat = widget.latitude;
     double? startLon = widget.longitude;
+    AppLocation? startLocation = widget.startLocation;
     if (startLat == null || startLon == null) {
       try {
         final loc = ref.read(currentLocationProvider).value;
         if (loc != null) {
           startLat = loc.latitude;
           startLon = loc.longitude;
+          startLocation = loc;
         }
       } catch (_) {}
     }
@@ -242,22 +294,146 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       targetDurationSeconds: widget.durationMinutes * 60,
       latitude: startLat,
       longitude: startLon,
+      startLocation: startLocation,
+      fixedLocationForDetections: true,
     );
+
+    if (!mounted) {
+      await captureNotifier.stop();
+      final abandoned = await controller.finalizeSession();
+      if (abandoned != null) await repo.delete(abandoned.id);
+      await WakelockService.disable();
+      return;
+    }
 
     _started = true;
     _onControllerStateChanged();
+    _checkpointWriter = SessionCheckpointWriter(
+      repository: repo,
+      session: () => controller.session,
+      shouldSave: () => ref.read(saveSessionAutomaticallyProvider),
+      prepare: (session) {
+        session.type = SessionType.pointCount;
+        session.customName = widget.customName;
+        session.observerName = widget.observerName;
+        session.latitude ??= widget.latitude;
+        session.longitude ??= widget.longitude;
+        if (session.latitude == widget.startLocation?.latitude &&
+            session.longitude == widget.startLocation?.longitude) {
+          session.altitude ??= widget.startLocation?.altitude;
+          session.altitudeAccuracy ??= widget.startLocation?.altitudeAccuracy;
+          session.altitudeReference ??= widget.startLocation?.altitudeReference;
+          session.locationFixTime ??= widget.startLocation?.timestamp;
+        }
+      },
+    )..start();
 
-    // Start the countdown.
-    _remainingNotifier.value = Duration(minutes: widget.durationMinutes);
+    // Use wall time so a suspended UI timer cannot extend the count.
+    _countEndTime = DateTime.now().add(
+      Duration(minutes: widget.durationMinutes),
+    );
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      final next = _remainingNotifier.value - const Duration(seconds: 1);
-      _remainingNotifier.value = next;
-      if (next <= Duration.zero) {
-        _countdownTimer?.cancel();
-        _onCountdownComplete();
-      }
+      _refreshCountdown();
     });
+    if (_endWhenStarted) {
+      await _finalizeAndReview(endedEarlyByBackground: true);
+      return;
+    }
+    await _syncBackgroundSupport();
+    if (_appBackgrounded && !_backgroundReady) {
+      await _finalizeAndReview(endedEarlyByBackground: true);
+    }
+  }
+
+  void _refreshCountdown() {
+    if (!mounted || _finalizing || _countEndTime == null) return;
+    final remaining = _countEndTime!.difference(DateTime.now());
+    _remainingNotifier.value = remaining > Duration.zero
+        ? remaining
+        : Duration.zero;
+    if (_backgroundReady && remaining > Duration.zero) {
+      final minutesLeft = (remaining.inSeconds + 59) ~/ 60;
+      if (minutesLeft != _lastNotifiedRemainingMinutes) {
+        _lastNotifiedRemainingMinutes = minutesLeft;
+        unawaited(
+          _backgroundService.update(AppLocalizations.of(context)!, minutesLeft),
+        );
+      }
+    }
+    if (remaining <= Duration.zero) {
+      _countdownTimer?.cancel();
+      unawaited(_onCountdownComplete());
+    }
+  }
+
+  void _onNotificationData(Object data) {
+    if (data is Map && data['action'] == 'pointCountStop' && mounted) {
+      unawaited(_finalizeAndReview());
+    }
+  }
+
+  Future<void> _finishPendingNotificationStop() async {
+    if (!await _backgroundService.hasPendingStop()) return;
+    if (mounted && !_finalizing && _liveController.session != null) {
+      await _finalizeAndReview();
+    }
+  }
+
+  Future<void> _endIfBackgroundUnavailable() async {
+    await _backgroundTransition;
+    if (!mounted || _finalizing || !_started) return;
+    if (_backgroundReady && widget.continueWithScreenOff) {
+      _endOnResume = false;
+      return;
+    }
+    await _finalizeAndReview(endedEarlyByBackground: true);
+  }
+
+  Future<void> _syncBackgroundSupport() {
+    _backgroundTransition = _backgroundTransition
+        .then((_) async {
+          if (!mounted || _finalizing) return;
+          if (!_started || !widget.continueWithScreenOff) {
+            _backgroundReady = false;
+            _lastNotifiedRemainingMinutes = -1;
+            await _backgroundService.stop();
+            if (mounted && _started) await WakelockService.enable();
+            return;
+          }
+
+          final l10n = AppLocalizations.of(context)!;
+          final remaining = _countEndTime?.difference(DateTime.now());
+          final minutesLeft = remaining == null
+              ? widget.durationMinutes
+              : ((remaining.inSeconds + 59) ~/ 60)
+                    .clamp(1, widget.durationMinutes)
+                    .toInt();
+          _backgroundReady = await _backgroundService.start(l10n, minutesLeft);
+          if (!mounted || _finalizing) return;
+          if (!widget.continueWithScreenOff) {
+            _backgroundReady = false;
+            await _backgroundService.stop();
+            await WakelockService.enable();
+          } else if (_backgroundReady) {
+            _lastNotifiedRemainingMinutes = minutesLeft;
+            await WakelockService.disable();
+          } else {
+            await WakelockService.enable();
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.backgroundAudioUnavailable)),
+            );
+          }
+        })
+        .catchError((Object error, StackTrace stack) async {
+          debugPrint('PointCount: background support failed: $error\n$stack');
+          _backgroundReady = false;
+          await _backgroundService.stop();
+          if (mounted && _appBackgrounded && !_finalizing) {
+            await _finalizeAndReview(endedEarlyByBackground: true);
+          }
+        });
+    return _backgroundTransition;
   }
 
   /// Called when the countdown reaches zero.
@@ -275,79 +451,146 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
   /// User wants to stop early.
   Future<void> _confirmStopEarly() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await confirmDestructive(
-      context,
-      title: l10n.pointCountStopEarlyTitle,
-      body: l10n.pointCountStopEarlyMessage,
-      confirmLabel: l10n.pointCountStopEarly,
-      cancelLabel: l10n.cancel,
-    );
-    if (!confirmed || !mounted) return;
-    await _finalizeAndReview();
+    if (_finalizing || _stopDialogOpen) return;
+    _stopDialogOpen = true;
+    try {
+      final l10n = AppLocalizations.of(context)!;
+      final confirmed = await confirmDestructive(
+        context,
+        title: l10n.pointCountStopEarlyTitle,
+        body: l10n.pointCountStopEarlyMessage,
+        confirmLabel: l10n.pointCountStopEarly,
+        cancelLabel: l10n.cancel,
+      );
+      if (!confirmed || !mounted) return;
+      await _finalizeAndReview();
+    } finally {
+      _stopDialogOpen = false;
+    }
   }
 
-  Future<void> _finalizeAndReview() async {
-    if (_finalizing) return;
+  Future<void> _finalizeAndReview({bool endedEarlyByBackground = false}) async {
+    // [ref] and [context] are read below; both are invalid once unmounted.
+    if (_finalizing || !mounted) return;
     _finalizing = true;
     _countdownTimer?.cancel();
+    if (mounted) setState(() {});
 
+    // Capture dependencies before any await. Persistence must complete even
+    // if the route is removed while the app is in the background.
     final controller = ref.read(liveControllerProvider);
     final captureNotifier = ref.read(captureStateProvider.notifier);
+    final repo = ref.read(sessionRepositoryProvider);
+    final autoSave = ref.read(saveSessionAutomaticallyProvider);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final customName = widget.customName;
+    final observerName = widget.observerName;
+    final latitude = widget.latitude;
+    final longitude = widget.longitude;
+    final cachedLocation = ref.read(currentLocationProvider).value;
+    var serviceStopped = false;
 
-    await WakelockService.disable();
-    await captureNotifier.stop();
-
-    final session = await controller.finalizeSession();
-    _onControllerStateChanged();
-
-    if (session != null && mounted) {
-      // Mark as point count.
-      // The session type is on the LiveSession constructor but it's final,
-      // so we need to set it via a different approach. Let's check if we can
-      // pass it. Looking at LiveController.startSession — it creates the
-      // session internally. We need to set the type after finalization.
-      _setSessionType(session);
-
-      // Apply user-chosen name and observer from setup.
-      if (widget.customName != null && widget.customName!.isNotEmpty) {
-        session.customName = widget.customName;
+    try {
+      await _checkpointWriter?.stop();
+      _checkpointWriter = null;
+      try {
+        await WakelockService.disable();
+      } catch (error, stack) {
+        debugPrint('PointCount: wakelock release failed: $error\n$stack');
       }
-      if (widget.observerName != null && widget.observerName!.isNotEmpty) {
-        session.observerName = widget.observerName;
+      try {
+        await captureNotifier.stop();
+      } catch (error, stack) {
+        debugPrint('PointCount: capture stop failed: $error\n$stack');
       }
 
-      final repo = ref.read(sessionRepositoryProvider);
-      session.sessionNumber = await repo.nextSessionNumber(session.type);
+      final session = await controller.finalizeSession();
+      _onControllerStateChanged();
+      if (session == null) {
+        if (mounted) {
+          final navigator = Navigator.of(context);
+          final sessionRoute = ModalRoute.of(context);
+          if (sessionRoute != null) {
+            navigator.popUntil((route) => route == sessionRoute);
+          }
+          navigator.pop();
+        }
+        return;
+      }
 
-      // Capture location from setup (GPS, manual, or map-picked) only if not already set.
-      if (session.latitude == null || session.longitude == null) {
-        if (widget.latitude != null && widget.longitude != null) {
-          session.latitude = widget.latitude;
-          session.longitude = widget.longitude;
-        } else {
+      if (endedEarlyByBackground) {
+        session.stopReason = SessionStopReason.backgrounded;
+      }
+      session.type = SessionType.pointCount;
+      session.customName = customName;
+      session.observerName = observerName;
+      session.latitude ??= latitude;
+      session.longitude ??= longitude;
+      session.latitude ??= cachedLocation?.latitude;
+      session.longitude ??= cachedLocation?.longitude;
+      final location = widget.startLocation ?? cachedLocation;
+      if (session.latitude == location?.latitude &&
+          session.longitude == location?.longitude) {
+        session.altitude ??= location?.altitude;
+        session.altitudeAccuracy ??= location?.altitudeAccuracy;
+        session.altitudeReference ??= location?.altitudeReference;
+        session.locationFixTime ??= location?.timestamp;
+      }
+
+      try {
+        session.sessionNumber = await repo.nextSessionNumber(session.type);
+      } catch (error, stack) {
+        debugPrint('PointCount: session numbering failed: $error\n$stack');
+      }
+
+      var saved = false;
+      if (autoSave) {
+        try {
+          await repo.save(session);
+          if (await repo.load(session.id) == null) {
+            throw StateError('Saved Point Count could not be reopened');
+          }
+          saved = true;
+        } catch (error, stack) {
+          debugPrint('PointCount: session save failed: $error\n$stack');
+        }
+        if (saved) {
           try {
-            final location = await ref.read(currentLocationProvider.future);
-            if (location != null) {
-              session.latitude = location.latitude;
-              session.longitude = location.longitude;
+            final listed = await container.refresh(sessionListProvider.future);
+            if (!listed.any((item) => item.id == session.id)) {
+              throw StateError(
+                'Saved Point Count missing from Session Library',
+              );
             }
-          } catch (_) {
-            // Location unavailable.
+          } catch (error, stack) {
+            debugPrint('PointCount: library refresh failed: $error\n$stack');
+            container.invalidate(sessionListProvider);
           }
         }
       }
 
-      // Persist the completed session unless the user disabled automatic
-      // saving, in which case review opens unsaved and only writes if saved.
-      final autoSave = ref.read(saveSessionAutomaticallyProvider);
-      if (autoSave) {
-        await repo.save(session);
-        ref.invalidate(sessionListProvider);
+      if (!autoSave) {
+        await repo.deleteMetadataOnly(session.id);
       }
 
+      // Release the old service before review permits a new session to start.
+      await _backgroundService.stop();
+      serviceStopped = true;
       if (mounted) {
         final navigator = Navigator.of(context);
+        final sessionRoute = ModalRoute.of(context);
+        if (sessionRoute != null) {
+          navigator.popUntil((route) => route == sessionRoute);
+        }
+        if (autoSave && !saved) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                AppLocalizations.of(context)!.sessionUnsavedSession,
+              ),
+            ),
+          );
+        }
         navigator.pushReplacement(
           PageRouteBuilder<void>(
             transitionDuration: Duration.zero,
@@ -357,41 +600,68 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         );
         navigator.push(
           MaterialPageRoute<void>(
-            builder:
-                (_) =>
-                    SessionReviewScreen(session: session, autoSaved: autoSave),
+            builder: (_) =>
+                SessionReviewScreen(session: session, autoSaved: saved),
           ),
         );
       }
-    } else {
-      if (mounted) Navigator.of(context).pop();
+    } catch (error, stack) {
+      debugPrint('PointCount: finalization failed: $error\n$stack');
+      if (mounted) {
+        _finalizing = false;
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.statusError)),
+        );
+      }
+    } finally {
+      // Keep the foreground service alive until the session has been saved.
+      if (!serviceStopped) await _backgroundService.stop();
     }
   }
 
-  /// Set session type to pointCount. The LiveSession.type is final, so we
-  /// need to work around that by using a helper that accesses the internal
-  /// JSON serialization path. For now, we'll need to make the type field
-  /// settable. See the modification to live_session.dart.
-  void _setSessionType(LiveSession session) {
-    session.type = SessionType.pointCount;
-  }
-
-  /// Whether the spectrogram was suppressed due to the app going to
-  /// background.  Audio capture and inference keep running.
+  /// Whether the spectrogram was suppressed while the app is not visible.
   bool _spectrogramPaused = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Point counts keep audio capture + inference running in background,
-    // but suspend the spectrogram ticker (60 fps FFT + GPU texture rebuilds)
-    // to save battery when the screen is not visible.
+    // Suspend the spectrogram ticker when it is not visible. Audio and
+    // inference continue only when background operation is enabled.
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      if (_checkpointWriter != null) {
+        unawaited(_checkpointWriter!.saveNow());
+      }
       if (!_spectrogramPaused) {
         _spectrogramPaused = true;
         setState(() {});
       }
+      // Windows never reports [paused], so a minimized count keeps running.
+      if (state == AppLifecycleState.paused) {
+        _appBackgrounded = true;
+        if (_started) _refreshCountdown();
+        if (!_started) {
+          _endWhenStarted = true;
+        } else if (!_finalizing && !widget.continueWithScreenOff) {
+          _endOnResume = true;
+          unawaited(_finalizeAndReview(endedEarlyByBackground: true));
+        } else if (!_finalizing && !_backgroundReady) {
+          _endOnResume = true;
+          unawaited(_endIfBackgroundUnavailable());
+        }
+      }
     } else if (state == AppLifecycleState.resumed) {
+      _appBackgrounded = false;
+      unawaited(_finishPendingNotificationStop());
+      if (!_started) _endWhenStarted = false;
+      if (_endOnResume &&
+          _started &&
+          !_finalizing &&
+          !widget.continueWithScreenOff) {
+        unawaited(_finalizeAndReview(endedEarlyByBackground: true));
+      }
+      _refreshCountdown();
       if (_spectrogramPaused) {
         _spectrogramPaused = false;
         setState(() {});
@@ -405,7 +675,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       _quickListenSafetyOwner,
     );
     WidgetsBinding.instance.removeObserver(this);
+    FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _countdownTimer?.cancel();
+    _checkpointWriter?.dispose();
+    if (!_finalizing) unawaited(_backgroundService.stop());
     _remainingNotifier.dispose();
 
     // Clear the state-change callback on the long-lived controller to avoid calling
@@ -425,41 +698,35 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final captureState = ref.watch(captureStateProvider);
     final isCapturing = captureState == CaptureState.capturing;
     final isActive = liveState == LiveState.active;
-    final currentDetections =
-        isActive
-            ? ref.watch(sessionDetectionsProvider)
-            : const <DetectionRecord>[];
-    final allDetections =
-        isActive
-            ? ref.watch(allSessionDetectionsProvider)
-            : const <DetectionRecord>[];
+    final currentDetections = isActive
+        ? ref.watch(sessionDetectionsProvider)
+        : const <DetectionRecord>[];
+    final allDetections = isActive
+        ? ref.watch(allSessionDetectionsProvider)
+        : const <DetectionRecord>[];
     final showAllDetectedSpecies = ref.watch(showAllDetectedSpeciesProvider);
     final detectedSpeciesSortMode = ref.watch(detectedSpeciesSortModeProvider);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
-    final detections =
-        isActive
-            ? buildLiveDetectionDisplayList(
-              currentDetections: currentDetections,
-              sessionDetections: allDetections,
-              showAllDetectedSpecies: showAllDetectedSpecies,
-              sortMode: detectedSpeciesSortMode,
-              localizedCommonName:
-                  (detection) =>
-                      taxonomy
-                          ?.lookup(detection.scientificName)
-                          ?.commonNameForLocale(speciesLocale) ??
-                      detection.commonName,
-            )
-            : const <DetectionRecord>[];
-    final activeDetections =
-        showAllDetectedSpecies
-            ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
-            : null;
-    final speciesDetectionCounts =
-        showAllDetectedSpecies
-            ? buildSpeciesDetectionCounts(allDetections)
-            : null;
+    final detections = isActive
+        ? buildLiveDetectionDisplayList(
+            currentDetections: currentDetections,
+            sessionDetections: allDetections,
+            showAllDetectedSpecies: showAllDetectedSpecies,
+            sortMode: detectedSpeciesSortMode,
+            localizedCommonName: (detection) =>
+                taxonomy
+                    ?.lookup(detection.scientificName)
+                    ?.commonNameForLocale(speciesLocale) ??
+                detection.commonName,
+          )
+        : const <DetectionRecord>[];
+    final activeDetections = showAllDetectedSpecies
+        ? (Set<DetectionRecord>.identity()..addAll(currentDetections))
+        : null;
+    final speciesDetectionCounts = showAllDetectedSpecies
+        ? buildSpeciesDetectionCounts(allDetections)
+        : null;
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the
@@ -500,7 +767,8 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (isActive) {
+        if (_finalizing) return;
+        if (_started && _liveController.session != null) {
           await _confirmStopEarly();
         } else {
           Navigator.of(context).pop();
@@ -541,21 +809,23 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
 
     final statusBar = ValueListenableBuilder<Duration>(
       valueListenable: _remainingNotifier,
-      builder:
-          (context, remaining, _) => _CountdownStatusBar(
-            remaining: remaining,
-            totalDuration: Duration(minutes: widget.durationMinutes),
-            liveState: liveState,
-            onStop: _confirmStopEarly,
-          ),
+      builder: (context, remaining, _) => _CountdownStatusBar(
+        remaining: remaining,
+        totalDuration: Duration(minutes: widget.durationMinutes),
+        liveState: liveState,
+        onStop: _finalizing
+            ? null
+            : _started
+            ? _confirmStopEarly
+            : () => Navigator.of(context).pop(),
+      ),
     );
     final progressBar = ValueListenableBuilder<Duration>(
       valueListenable: _remainingNotifier,
-      builder:
-          (context, remaining, _) => _CountdownProgressBar(
-            remaining: remaining,
-            totalDuration: Duration(minutes: widget.durationMinutes),
-          ),
+      builder: (context, remaining, _) => _CountdownProgressBar(
+        remaining: remaining,
+        totalDuration: Duration(minutes: widget.durationMinutes),
+      ),
     );
     final spectrogram = Container(
       color: theme.colorScheme.surfaceContainerLowest,
@@ -600,7 +870,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
                 Expanded(
                   flex: 1,
                   child: Column(
-                    children: [Expanded(child: spectrogram), sessionInfo],
+                    children: [
+                      Expanded(child: spectrogram),
+                      sessionInfo,
+                    ],
                   ),
                 ),
                 Expanded(flex: 1, child: detectionList),
@@ -640,7 +913,7 @@ class _CountdownStatusBar extends StatelessWidget {
   final Duration remaining;
   final Duration totalDuration;
   final LiveState liveState;
-  final VoidCallback onStop;
+  final VoidCallback? onStop;
 
   @override
   Widget build(BuildContext context) {
@@ -663,7 +936,7 @@ class _CountdownStatusBar extends StatelessWidget {
             icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            onPressed: isActive ? onStop : () => Navigator.of(context).pop(),
+            onPressed: onStop,
             tooltip: l10n.pointCountStopEarly,
             color: isActive ? theme.colorScheme.error : null,
           ),
@@ -671,53 +944,50 @@ class _CountdownStatusBar extends StatelessWidget {
           // Countdown timer (center).
           Expanded(
             child: Center(
-              child:
-                  isLoading
-                      ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: theme.colorScheme.onSurface.withAlpha(153),
-                            ),
+              child: isLoading
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: theme.colorScheme.onSurface.withAlpha(153),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.statusLoadingModel,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withAlpha(153),
-                            ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.statusLoadingModel,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withAlpha(153),
                           ),
-                        ],
-                      )
-                      : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            AppIcons.timerRounded,
-                            size: 18,
-                            color:
-                                remaining.inSeconds <= 30
-                                    ? theme.colorScheme.error
-                                    : theme.colorScheme.primary,
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          AppIcons.timerRounded,
+                          size: 18,
+                          color: remaining.inSeconds <= 30
+                              ? theme.colorScheme.error
+                              : theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          l10n.pointCountTimeRemaining(minutes, seconds),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            color: remaining.inSeconds <= 30
+                                ? theme.colorScheme.error
+                                : theme.colorScheme.primary,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.pointCountTimeRemaining(minutes, seconds),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'monospace',
-                              color:
-                                  remaining.inSeconds <= 30
-                                      ? theme.colorScheme.error
-                                      : theme.colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
             ),
           ),
 
@@ -745,10 +1015,9 @@ class _CountdownStatusBar extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder:
-                      (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.pointCount,
-                      ),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.pointCount,
+                  ),
                 ),
               );
             },
@@ -767,24 +1036,23 @@ void _showPointCountLiveHelp(BuildContext context) {
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder:
-        (_) => AppHelpBottomSheet(
-          title: l10n.pointCountLiveHelpTitle,
-          sections: [
-            AppHelpSection(
-              icon: AppIcons.timerRounded,
-              body: l10n.pointCountLiveHelpTimer,
-            ),
-            AppHelpSection(
-              icon: AppIcons.infoOutline,
-              body: l10n.pointCountLiveHelpDetections,
-            ),
-            AppHelpSection(
-              icon: AppIcons.stopRounded,
-              body: l10n.pointCountLiveHelpFinish,
-            ),
-          ],
+    builder: (_) => AppHelpBottomSheet(
+      title: l10n.pointCountLiveHelpTitle,
+      sections: [
+        AppHelpSection(
+          icon: AppIcons.timerRounded,
+          body: l10n.pointCountLiveHelpTimer,
         ),
+        AppHelpSection(
+          icon: AppIcons.infoOutline,
+          body: l10n.pointCountLiveHelpDetections,
+        ),
+        AppHelpSection(
+          icon: AppIcons.stopRounded,
+          body: l10n.pointCountLiveHelpFinish,
+        ),
+      ],
+    ),
   );
 }
 
@@ -805,10 +1073,9 @@ class _CountdownProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final elapsed = totalDuration - remaining;
-    final progress =
-        totalDuration.inSeconds > 0
-            ? (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0)
-            : 0.0;
+    final progress = totalDuration.inSeconds > 0
+        ? (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0)
+        : 0.0;
 
     return LinearProgressIndicator(
       value: progress,
@@ -851,11 +1118,10 @@ class _PointCountInfoBar extends StatelessWidget {
     }
 
     final totalDetections = controller.sessionDetections.length;
-    final totalUnique =
-        controller.sessionDetections
-            .map((d) => d.scientificName)
-            .toSet()
-            .length;
+    final totalUnique = controller.sessionDetections
+        .map((d) => d.scientificName)
+        .toSet()
+        .length;
 
     final parts = <String>[];
     if (currentDetectionCount > 0) {

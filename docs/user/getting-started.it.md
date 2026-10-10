@@ -40,18 +40,20 @@ La schermata Home è l'hub principale.
 
 ### Schede delle modalità principali
 
-- :material-microphone: **Modalità Live**
-- :material-map-marker: **Modalità Point Count**
-- :material-routes: **Modalità Survey**
-- :material-file-music: **Analisi file**
+- :app-micRounded: **Modalità Live**
+- :app-locationOnRounded: **Modalità Point Count**
+- :app-routeRounded: **Modalità Survey**
+- :app-audioFileRounded: **Analisi file**
+- :app-timerRounded: **Modalità ARU**
+- :app-sdStorage: **Analisi in batch** (Prossimamente)
 
 ### Pulsanti del piè di pagina
 
-- :material-tune: **Impostazioni**
-- :material-magnify: **Esplora**
-- :material-music-box-multiple-outline: **Libreria Sessions**
-- :material-help-circle-outline: **Aiuto**
-- :material-information-outline: **Informazioni**
+- :app-tuneRounded: **Impostazioni**
+- :app-searchRounded: **Esplora**
+- :app-libraryMusic: **Libreria Sessions**
+- :app-helpOutlineRounded: **Aiuto**
+- :app-infoOutline: **Informazioni**
 
 ## Cosa viene salvato
 

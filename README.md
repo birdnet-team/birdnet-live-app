@@ -6,9 +6,9 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
-   <img src="https://img.shields.io/badge/flutter-%3E%3D3.27-blue.svg" alt="Flutter >=3.27">
+   <img src="https://img.shields.io/badge/flutter-%3E%3D3.47-blue.svg" alt="Flutter >=3.47">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-1.1.3-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.0-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
 </p>
 
@@ -86,7 +86,7 @@ BirdNET Live is available on the [Google Play Store](https://play.google.com/sto
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+ with Dart 3.7+)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.47+ with Dart 3.13+)
 - [Git LFS](https://git-lfs.com/) for the large ONNX model files
 - [Android Studio](https://developer.android.com/studio) (for Android SDK & emulator)
 - Xcode (macOS only, for iOS development)

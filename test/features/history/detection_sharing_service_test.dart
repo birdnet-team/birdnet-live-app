@@ -20,6 +20,7 @@ import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -128,9 +129,8 @@ Future<File> _writeWavWithJunkChunk(Directory dir, double seconds) async {
   expanded.setRange(36, 40, 'JUNK'.codeUnits);
   ByteData.sublistView(expanded).setUint32(40, 4, Endian.little);
   expanded.setRange(48, expanded.length, source.sublist(36));
-  ByteData.sublistView(
-    expanded,
-  ).setUint32(4, expanded.length - 8, Endian.little);
+  ByteData.sublistView(expanded)
+      .setUint32(4, expanded.length - 8, Endian.little);
   await canonical.writeAsBytes(expanded, flush: true);
   return canonical;
 }
@@ -164,6 +164,63 @@ void main() {
   });
 
   group('shareDetection', () {
+    test(
+      'keeps detection height and fix metadata separate from session',
+      () async {
+        final start = DateTime.utc(2026, 5, 11, 10);
+        final session = _session(recordingPath: 'unused.wav', start: start)
+          ..latitude = 52.52
+          ..longitude = 13.405
+          ..altitude = 34.5
+          ..altitudeAccuracy = 5
+          ..altitudeReference = AltitudeReference.meanSeaLevel
+          ..locationFixTime = start;
+
+        for (final altitude in <double?>[null, 42]) {
+          final detection = DetectionRecord(
+            scientificName: 'Troglodytes troglodytes',
+            commonName: 'Eurasian Wren',
+            confidence: 0.9,
+            timestamp: start.add(const Duration(seconds: 10)),
+            latitude: 52.52,
+            longitude: 13.405,
+            altitude: altitude,
+          );
+          await shareDetection(
+            detection,
+            session: session,
+            formats: const {'json'},
+            includeAudio: false,
+          );
+          final payload = jsonDecode(
+            await File(fakeSharePlatform.lastParams!.files!.single.path)
+                .readAsString(),
+          ) as Map<String, dynamic>;
+          expect(payload['altitude'], altitude);
+          expect(payload['altitudeAccuracy'], isNull);
+          expect(payload['altitudeReference'], isNull);
+          expect(payload['locationFixTime'], isNull);
+        }
+
+        await shareDetection(
+          _det(start),
+          session: session,
+          formats: const {'json'},
+          includeAudio: false,
+        );
+        final payload = jsonDecode(
+          await File(fakeSharePlatform.lastParams!.files!.single.path)
+              .readAsString(),
+        ) as Map<String, dynamic>;
+        expect(payload['latitude'], 52.52);
+        expect(payload['longitude'], 13.405);
+        expect(payload['altitude'], 34.5);
+        expect(payload['altitudeAccuracy'], 5);
+        expect(payload['altitudeReference'], 'meanSeaLevel');
+        expect(payload['locationFixTime'], start.toIso8601String());
+      },
+    );
+
     test('shares a saved FLAC detection clip as valid WAV', () async {
       final clip = File(p.join(tmp.path, 'kept_clip.flac'));
       final sourceSamples = _pcmLikeFloatSamples(32000);
@@ -264,8 +321,9 @@ void main() {
 
     test('applies selected formats and metadata to one detection', () async {
       final start = DateTime.utc(2026, 5, 11, 10);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_detection_bundle')).create();
+      final sessionDir = await Directory(
+        p.join(tmp.path, 'rec_detection_bundle'),
+      ).create();
       await FlacEncoder.writeFile(
         filePath: p.join(sessionDir.path, 'full.flac'),
         samples: _pcmLikeFloatSamples(30 * 32000),
@@ -316,9 +374,9 @@ void main() {
             file.name.endsWith('.json') &&
             !file.name.endsWith('.metadata.json'),
       );
-      final jsonMap =
-          jsonDecode(utf8.decode(jsonFile.content as List<int>))
-              as Map<String, dynamic>;
+      final jsonMap = jsonDecode(
+        utf8.decode(jsonFile.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(jsonMap['detections'], hasLength(1));
       expect(
         (jsonMap['detections'] as List).single['scientificName'],
@@ -328,8 +386,8 @@ void main() {
 
     test('packages audio from a WAV with noncanonical chunks', () async {
       final start = DateTime.utc(2026, 5, 11, 10);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_chunked_wav')).create();
+      final sessionDir = await Directory(p.join(tmp.path, 'rec_chunked_wav'))
+          .create();
       await _writeWavWithJunkChunk(sessionDir, 20);
       final session = _session(recordingPath: sessionDir.path, start: start);
       final detection = _det(
@@ -346,9 +404,8 @@ void main() {
       );
 
       final archive = ZipDecoder().decodeBytes(
-        await File(
-          fakeSharePlatform.lastParams!.files!.single.path,
-        ).readAsBytes(),
+        await File(fakeSharePlatform.lastParams!.files!.single.path)
+            .readAsBytes(),
       );
       expect(
         archive.files.where((file) => file.name.endsWith('.wav')),
@@ -406,9 +463,8 @@ void main() {
         );
 
         final archive = ZipDecoder().decodeBytes(
-          await File(
-            fakeSharePlatform.lastParams!.files!.single.path,
-          ).readAsBytes(),
+          await File(fakeSharePlatform.lastParams!.files!.single.path)
+              .readAsBytes(),
         );
         final audio = archive.files.singleWhere(
           (file) => file.name.endsWith('.wav'),
@@ -445,8 +501,9 @@ void main() {
 
     test('honors the include-audio setting for a detection export', () async {
       final start = DateTime.utc(2026, 5, 11, 10);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_no_detection_audio')).create();
+      final sessionDir = await Directory(
+        p.join(tmp.path, 'rec_no_detection_audio'),
+      ).create();
       await _writeFakeWav(sessionDir, 10);
       final session = _session(recordingPath: sessionDir.path, start: start);
 
@@ -462,6 +519,110 @@ void main() {
       expect(params.files!.single.name, endsWith('.csv'));
       expect(params.files!.single.mimeType, 'text/csv');
     });
+
+    for (final scenario in [
+      (includeAudio: false, asWav: false, exists: true),
+      (includeAudio: false, asWav: true, exists: true),
+      (includeAudio: false, asWav: false, exists: false),
+      (includeAudio: false, asWav: true, exists: false),
+      (includeAudio: true, asWav: true, exists: true),
+    ]) {
+      test('Raven detection share $scenario', () async {
+        final start = DateTime.utc(2026, 5, 11, 10);
+        final clip = File(p.join(tmp.path, 'original-field-recording.flac'));
+        await FlacEncoder.writeFile(
+          filePath: clip.path,
+          samples: _pcmLikeFloatSamples(32000 * 5),
+        );
+        final originalBytes = await clip.readAsBytes();
+        if (!scenario.exists) await clip.delete();
+        final detection = _det(start)..audioClipPath = clip.path;
+        final session = LiveSession(
+          id: 'raven-only',
+          startTime: start,
+          detections: [detection],
+          settings: const SessionSettings(
+            windowDuration: 3,
+            confidenceThreshold: 25,
+            inferenceRate: 1,
+            speciesFilterMode: 'off',
+            clipContextSeconds: 1,
+            recordingMode: 'detections',
+          ),
+        );
+
+        await shareDetection(
+          detection,
+          session: session,
+          formats: const {'raven'},
+          includeAudio: scenario.includeAudio,
+          shareAudioAsWav: scenario.asWav,
+        );
+
+        final files = fakeSharePlatform.lastParams!.files!;
+        expect(files, hasLength(1));
+        final String table;
+        Archive? archive;
+        if (scenario.includeAudio) {
+          expect(files.single.name, endsWith('.zip'));
+          archive = ZipDecoder().decodeBytes(
+            await File(files.single.path).readAsBytes(),
+          );
+          table = utf8.decode(
+            archive
+                    .firstWhere((file) => file.name.endsWith('.selections.txt'))
+                    .content
+                as List<int>,
+          );
+        } else {
+          expect(files.single.name, endsWith('.selections.txt'));
+          table = await File(files.single.path).readAsString();
+          final audioFiles = tmp
+              .listSync(recursive: true)
+              .whereType<File>()
+              .where(
+                (file) => ['.wav', '.flac'].contains(p.extension(file.path)),
+              )
+              .map((file) => file.path)
+              .toList();
+          expect(audioFiles, scenario.exists ? [clip.path] : isEmpty);
+        }
+        final rows = table
+            .split('\n')
+            .where((line) => line.isNotEmpty)
+            .map((line) => line.split('\t'))
+            .toList();
+        expect(rows, hasLength(scenario.exists ? 2 : 1));
+        if (scenario.exists) {
+          final header = rows.first;
+          final row = rows[1];
+          expect(row.length, header.length);
+          expect(row[header.indexOf('Selection')], '1');
+          expect(row[header.indexOf('Begin Time (s)')], '1.000');
+          expect(row[header.indexOf('End Time (s)')], '4.000');
+          final beginFile = row[header.indexOf('Begin File')];
+          if (scenario.includeAudio) {
+            expect(beginFile, endsWith('_clip_001_Eurasian_Wren.wav'));
+            expect(
+              archive!
+                  .where((file) => file.name.endsWith('.wav'))
+                  .map((file) => file.name),
+              [beginFile],
+            );
+          } else {
+            expect(beginFile, 'original-field-recording.flac');
+            expect(table, isNot(contains('_clip_001_')));
+          }
+          expect(
+            row[header.indexOf('Survey Time (UTC)')],
+            '2026-05-11T10:00:00.000Z',
+          );
+        }
+        expect(detection.audioClipPath, clip.path);
+        expect(clip.existsSync(), scenario.exists);
+        if (scenario.exists) expect(await clip.readAsBytes(), originalBytes);
+      });
+    }
 
     test('can share only the selected app metadata', () async {
       final start = DateTime.utc(2026, 5, 11, 10);
@@ -511,8 +672,8 @@ void main() {
 
       test('is forwarded when slicing the full recording', () async {
         final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-        final sessionDir =
-            await Directory(p.join(tmp.path, 'rec_anchored')).create();
+        final sessionDir = await Directory(p.join(tmp.path, 'rec_anchored'))
+            .create();
         await _writeFakeWav(sessionDir, 10.0);
         final session = _session(recordingPath: sessionDir.path, start: start);
         final detection = _det(start.add(const Duration(seconds: 4)));
@@ -589,8 +750,9 @@ void main() {
       'shares the full continuous detection duration from full.wav',
       () async {
         final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-        final sessionDir =
-            await Directory(p.join(tmp.path, 'rec_long_detection')).create();
+        final sessionDir = await Directory(
+          p.join(tmp.path, 'rec_long_detection'),
+        ).create();
         await _writeFakeWav(sessionDir, 30.0);
         final session = _session(
           recordingPath: sessionDir.path,
@@ -622,8 +784,8 @@ void main() {
 
     test('normalizes quiet slices from full.wav on share', () async {
       final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_quiet_slice')).create();
+      final sessionDir = await Directory(p.join(tmp.path, 'rec_quiet_slice'))
+          .create();
       await _writeQuietWav(sessionDir, 10.0);
       final session = _session(
         recordingPath: sessionDir.path,
@@ -755,8 +917,8 @@ void main() {
 
     test('FLAC: accepts a direct file path (post-stop shape)', () async {
       final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_flac2')).create();
+      final sessionDir = await Directory(p.join(tmp.path, 'rec_flac2'))
+          .create();
       const sampleRate = 32000;
       final flacPath = p.join(sessionDir.path, 'full.flac');
       final encoder = FlacEncoder(filePath: flacPath, sampleRate: sampleRate);
@@ -787,8 +949,8 @@ void main() {
 
     test('converts a full FLAC slice to valid WAV when requested', () async {
       final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_flac_wav')).create();
+      final sessionDir = await Directory(p.join(tmp.path, 'rec_flac_wav'))
+          .create();
       const sampleRate = 32000;
       final flacPath = p.join(sessionDir.path, 'full.flac');
       final sourceSamples = _pcmLikeFloatSamples(sampleRate * 10);
@@ -833,8 +995,8 @@ void main() {
 
     test('returns null when no full recording exists at all', () async {
       final start = DateTime.utc(2026, 5, 11, 10, 0, 0);
-      final sessionDir =
-          await Directory(p.join(tmp.path, 'rec_empty')).create();
+      final sessionDir = await Directory(p.join(tmp.path, 'rec_empty'))
+          .create();
       // Empty session dir — no full.wav and no full.flac.
       final session = _session(recordingPath: sessionDir.path, start: start);
       final out = await extractClipFromFullAudio(session, _det(start));

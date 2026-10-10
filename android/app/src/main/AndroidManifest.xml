@@ -85,7 +85,7 @@
         <meta-data
             android:name="com.birdnet.live.notification_icon"
             android:resource="@drawable/ic_notification" />
-        <!-- Survey foreground service -->
+        <!-- Shared Survey, ARU, Live Mode, and Point Count foreground service -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:foregroundServiceType="microphone|location"

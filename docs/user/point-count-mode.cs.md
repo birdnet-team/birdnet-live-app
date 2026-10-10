@@ -4,7 +4,7 @@ Režim Point Count je časovaný stacionární pracovní postup v BirdNET Live.
 
 ## Jak jej otevřít
 
-Na domovské obrazovce klepněte na kartu **Point Count** s ikonou :material-map-marker:.
+Na domovské obrazovce klepněte na kartu **Point Count** s ikonou :app-locationOnRounded:.
 
 ## Postup nastavení
 
@@ -14,17 +14,32 @@ Nastavení Point Count má čtyři kroky.
 
 Vyberte:
 
-- jeden z dostupných čipů doby trvání
-- aktuální GPS pomocí :material-crosshairs-gps:
-- ruční souřadnice pomocí :material-map-marker-plus:
-- žádnou polohu pomocí :material-map-marker-off:
-- výběr na mapě pomocí :material-map:
+- jednu z dostupných dob trvání: 3, 5, 10, 15, 20, 25 nebo 30 minut
+- zda sčítání pokračuje při vypnuté obrazovce (ve výchozím nastavení zapnuto)
+- aktuální GPS pomocí :app-myLocation:
+- ruční souřadnice pomocí :app-editLocationAlt:
+- žádnou polohu pomocí :app-locationOff:
+- výběr na mapě pomocí :app-mapSheet:
 
 Obrazovka nastavení obnoví GPS, když se vrátíte ze systémového dialogu oprávnění nebo z nastavení aplikace, takže nově udělené oprávnění k poloze by mělo souřadnice aktualizovat bez restartu průvodce. Tatáž sekce obsahuje i kartu počasí. Pokud je přístup k počasí vypnutý, karta požádá o souhlas **Povolit vyhledání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení point countu.
 
 ### 2. Parametry inference
 
-Zvolte nastavení analýzy pro tuto session, například dobu okna, rychlost inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento count upravit beze změny výchozích hodnot.
+Zvolte nastavení analýzy pro tuto session, například rychlost inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento count upravit beze změny výchozích hodnot.
+
+| Ovládací prvek nastavení | Ikona |
+|---|---|
+| Mikrofon | :app-micRounded: |
+| Režim nahrávání | :app-fiberManualRecordRounded: |
+| Kontext klipu | :app-timerOutlined: |
+| Rychlost inference | :app-speedRounded: |
+| Práh spolehlivosti | :app-verifiedRounded: |
+| Citlivost | :app-hearing: |
+| Filtr druhů | :app-filterAltRounded: |
+
+Tlačítko :app-helpOutline: vedle každého ovládacího prvku vysvětluje jeho účinek. Ovládání délky :app-timerRounded: a výběr polohy mají v prvním kroku stejné tlačítko nápovědy.
+
+Vyberte **Úplné** pro nepřetržité nahrávání (výchozí), **Jen klipy** pro klip každého zjištěného hlasového projevu nebo **Vypnuto**, pokud nechcete ukládat zvuk. Volba je nezávislá na nahrávání v Live Mode a pamatuje se pro příští Point Count. Klipy používají stejný výběr okna s nejvyšším skóre a kontext jako Live Mode, bez omezení podle polohy. Při volbě **Jen klipy** posuvník **Kontext klipu** určuje počet sekund zachovaných před a po každém analyzovaném okně; aktualizuje také kontext klipů v Live Mode.
 
 ### 3. Terénní tipy
 
@@ -32,7 +47,7 @@ Tato obrazovka nabízí krátký kontrolní seznam v aplikaci, který je dobré 
 
 ### 4. Připraveno
 
-Obrazovka připravenosti shrnuje zvolenou dobu trvání a umožní začít pomocí :material-play:.
+Obrazovka připravenosti shrnuje dobu trvání, volbu nahrávání a chování při vypnuté obrazovce. Spusťte pomocí :app-playArrowRounded:.
 
 ## Živá obrazovka Point Count
 
@@ -40,9 +55,10 @@ Obrazovka připravenosti shrnuje zvolenou dobu trvání a umožní začít pomoc
 
 ### Horní lišta
 
-- :material-stop: — předčasné ukončení point countu
-- :material-timer: — zobrazení zbývajícího času
-- :material-tune: — otevření nastavení Point Count
+- :app-stopRounded: — předčasné ukončení point countu
+- :app-timerRounded: — zobrazení zbývajícího času
+- :app-helpOutlineRounded: — otevření nápovědy k Point Count
+- :app-tuneRounded: — otevření nastavení Point Count
 
 ### Hlavní ukazatele
 
@@ -53,4 +69,8 @@ Obrazovka připravenosti shrnuje zvolenou dobu trvání a umožní začít pomoc
 
 ## Po sčítání
 
-Když point count skončí, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).
+Při zapnuté volbě **Pokračovat při vypnuté obrazovce** v nastavení Point Count sčítání pokračuje při zamknutí obrazovky i přepnutí do jiné aplikace se zapnutou obrazovkou. Končí po zvolené době; odpočet používá skutečně uplynulý čas, takže pozastavená obrazovka sčítání neprodlouží. Android zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit. Vypnutím přepínače tyto akce ukončí sčítání předčasně. Point Count se nepozastavuje a neobnovuje, protože by to přerušilo časované sčítání. Pokud aplikaci opustíte během spouštění, sčítání se zruší se zprávou; nastavte je znovu. Ve Windows minimalizace okna sčítání neukončí.
+
+Po skončení Point Count otevře BirdNET Live [Přehled Session](session-review.md). Při zapnutém automatickém ukládání uloží Session automaticky; jinak ji můžete uložit z přehledu.
+
+Při zapnutém automatickém ukládání se rozpracované sčítání ukládá také při spuštění, každých 30 sekund a když aplikace opustí popředí. Po pádu aplikace nebo výpadku napájení najdete poslední uložené částečné sčítání v Knihovně Sessions.

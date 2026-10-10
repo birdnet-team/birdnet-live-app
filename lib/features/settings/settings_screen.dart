@@ -205,7 +205,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               _ThemeTile(l10n: l10n),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsDynamicColor,
                   helpBody: l10n.settingsHelpDynamicColor,
                 ),
@@ -215,7 +215,7 @@ class SettingsScreen extends ConsumerWidget {
                     (v) => ref.read(dynamicColorProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsHighContrastTheme,
                   helpBody: l10n.settingsHelpHighContrastTheme,
                 ),
@@ -226,7 +226,7 @@ class SettingsScreen extends ConsumerWidget {
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsShowSciNames,
                   helpBody: l10n.settingsHelpShowSciNames,
                 ),
@@ -238,7 +238,7 @@ class SettingsScreen extends ConsumerWidget {
                   settingsContext == SettingsContext.pointCount ||
                   settingsContext == SettingsContext.all) ...[
                 SwitchListTile(
-                  title: _TitleWithHelp(
+                  title: SettingHelpTitle(
                     title: l10n.settingsShowAllDetectedSpecies,
                     helpBody: l10n.settingsHelpShowAllDetectedSpecies,
                   ),
@@ -280,7 +280,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
               ],
               ListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsTimestampDisplayMode,
                   helpBody: l10n.settingsHelpTimestampDisplayMode,
                 ),
@@ -322,7 +322,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               if (ref.watch(timestampDisplayModeProvider) == 'absolute')
                 SwitchListTile(
-                  title: _TitleWithHelp(
+                  title: SettingHelpTitle(
                     title: l10n.settingsTimestampShowSeconds,
                     helpBody: l10n.settingsHelpTimestampShowSeconds,
                   ),
@@ -415,7 +415,7 @@ class SettingsScreen extends ConsumerWidget {
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
               ),
               ListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsIgnoreSpecies,
                   helpBody: l10n.settingsHelpIgnoreSpecies,
                 ),
@@ -493,7 +493,7 @@ class SettingsScreen extends ConsumerWidget {
                     (v) => ref.read(spectrogramMaxFreqProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsLogAmplitude,
                   helpBody: l10n.settingsHelpLogAmplitude,
                 ),
@@ -520,22 +520,27 @@ class SettingsScreen extends ConsumerWidget {
             if (_showSection('recording')) ...[
               _SectionHeader(
                 title: l10n.settingsRecording,
-                subtitle: l10n.settingsRecordingDescription,
+                subtitle:
+                    settingsContext == SettingsContext.pointCount
+                        ? null
+                        : l10n.settingsRecordingDescription,
               ),
-              _ChoiceTile<String>(
-                title: l10n.settingsRecordingMode,
-                helpBody: l10n.settingsHelpRecordingMode,
-                value: ref.watch(recordingModeProvider),
-                options: {
-                  'full': l10n.settingsRecordingModeFull,
-                  'detections': l10n.settingsRecordingModeDetections,
-                  'off': l10n.settingsRecordingModeOff,
-                },
-                onChanged:
-                    (v) => ref.read(recordingModeProvider.notifier).set(v),
-              ),
+              if (settingsContext != SettingsContext.pointCount)
+                _ChoiceTile<String>(
+                  title: l10n.settingsRecordingMode,
+                  helpBody: l10n.settingsHelpRecordingMode,
+                  value: ref.watch(recordingModeProvider),
+                  options: {
+                    'full': l10n.settingsRecordingModeFull,
+                    'detections': l10n.settingsRecordingModeDetections,
+                    'off': l10n.settingsRecordingModeOff,
+                  },
+                  onChanged:
+                      (v) => ref.read(recordingModeProvider.notifier).set(v),
+                ),
               // Clip context (visible only when recording mode = detections)
-              if (ref.watch(recordingModeProvider) == 'detections') ...[
+              if (settingsContext != SettingsContext.pointCount &&
+                  ref.watch(recordingModeProvider) == 'detections') ...[
                 ListTile(
                   title: Text(l10n.surveyClipContext),
                   subtitle: Text(l10n.surveyClipContextDescription),
@@ -563,7 +568,10 @@ class SettingsScreen extends ConsumerWidget {
               // Audio file format only matters when something is being
               // recorded; hiding it for mode = off avoids implying that the
               // setting has any effect.
-              if (ref.watch(recordingModeProvider) != 'off')
+              if ((settingsContext == SettingsContext.pointCount
+                      ? ref.watch(pointCountRecordingModeProvider)
+                      : ref.watch(recordingModeProvider)) !=
+                  'off')
                 _ChoiceTile<String>(
                   title: l10n.settingsRecordingFormat,
                   helpBody: l10n.settingsHelpRecordingFormat,
@@ -581,7 +589,7 @@ class SettingsScreen extends ConsumerWidget {
                   settingsContext == SettingsContext.pointCount ||
                   settingsContext == SettingsContext.all)
                 SwitchListTile(
-                  title: _TitleWithHelp(
+                  title: SettingHelpTitle(
                     title: l10n.settingsSaveSessionAutomatically,
                     helpBody: l10n.settingsHelpSaveSessionAutomatically,
                   ),
@@ -601,7 +609,7 @@ class SettingsScreen extends ConsumerWidget {
               if (settingsContext == SettingsContext.live ||
                   settingsContext == SettingsContext.all)
                 SwitchListTile(
-                  title: _TitleWithHelp(
+                  title: SettingHelpTitle(
                     title: l10n.settingsLiveAutoStart,
                     helpBody: l10n.settingsHelpLiveAutoStart,
                   ),
@@ -610,6 +618,35 @@ class SettingsScreen extends ConsumerWidget {
                   onChanged:
                       (v) => ref.read(liveAutoStartProvider.notifier).set(v),
                 ),
+              if (settingsContext == SettingsContext.live ||
+                  settingsContext == SettingsContext.all) ...[
+                SwitchListTile(
+                  title: SettingHelpTitle(
+                    title: l10n.settingsLiveBackground,
+                    helpBody: l10n.settingsHelpLiveBackground,
+                  ),
+                  subtitle: Text(l10n.settingsLiveBackgroundDescription),
+                  value: ref.watch(liveBackgroundEnabledProvider),
+                  onChanged:
+                      (v) => ref
+                          .read(liveBackgroundEnabledProvider.notifier)
+                          .set(v),
+                ),
+                if (ref.watch(liveBackgroundEnabledProvider))
+                  _ChoiceTile<int>(
+                    title: l10n.settingsLiveBackgroundMaxTime,
+                    helpBody: l10n.settingsHelpLiveBackgroundMaxTime,
+                    value: ref.watch(liveBackgroundMaxMinutesProvider),
+                    options: {
+                      for (final minutes in liveBackgroundMaxMinuteOptions)
+                        minutes: l10n.pointCountDurationMinutes(minutes),
+                    },
+                    onChanged:
+                        (v) => ref
+                            .read(liveBackgroundMaxMinutesProvider.notifier)
+                            .set(v),
+                  ),
+              ],
               const Divider(),
             ],
 
@@ -620,7 +657,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsPlaybackDescription,
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsPlaybackOverlay,
                   helpBody: l10n.settingsHelpPlaybackOverlay,
                 ),
@@ -632,7 +669,7 @@ class SettingsScreen extends ConsumerWidget {
                         .set(v),
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsPlaybackVoiceMemos,
                   helpBody: l10n.settingsHelpPlaybackVoiceMemos,
                 ),
@@ -666,7 +703,7 @@ class SettingsScreen extends ConsumerWidget {
                         _SectionHeader(title: title, subtitle: subtitle),
                 titleWithHelp:
                     ({required String title, String? helpBody}) =>
-                        _TitleWithHelp(title: title, helpBody: helpBody),
+                        SettingHelpTitle(title: title, helpBody: helpBody),
               ),
 
             // --- Location / Geo ---
@@ -676,7 +713,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsLocationDescription,
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsUseGps,
                   helpBody: l10n.settingsHelpUseGps,
                 ),
@@ -730,7 +767,7 @@ class SettingsScreen extends ConsumerWidget {
               _ExportFormatChecklist(),
               CheckboxListTile(
                 dense: true,
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsIncludeAudioFiles,
                   helpBody: l10n.settingsHelpIncludeAudioFiles,
                 ),
@@ -742,7 +779,7 @@ class SettingsScreen extends ConsumerWidget {
               if (ref.watch(includeAudioProvider))
                 CheckboxListTile(
                   dense: true,
-                  title: _TitleWithHelp(
+                  title: SettingHelpTitle(
                     title: l10n.settingsShareAudioAsWav,
                     helpBody: l10n.settingsHelpShareAudioAsWav,
                   ),
@@ -754,7 +791,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               CheckboxListTile(
                 dense: true,
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsExportAppMetadata,
                   helpBody: l10n.settingsHelpExportAppMetadata,
                 ),
@@ -766,7 +803,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               CheckboxListTile(
                 dense: true,
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsExportHtmlReport,
                   helpBody: l10n.settingsHelpExportHtmlReport,
                 ),
@@ -792,7 +829,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: l10n.settingsPrivacyDescription,
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsPrivacyAllowMap,
                   helpBody: l10n.settingsHelpPrivacyAllowMap,
                 ),
@@ -802,7 +839,7 @@ class SettingsScreen extends ConsumerWidget {
                     (v) => ref.read(privacyAllowMapProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsPrivacyAllowReverseGeocoding,
                   helpBody: l10n.settingsHelpPrivacyAllowReverseGeocoding,
                 ),
@@ -816,7 +853,7 @@ class SettingsScreen extends ConsumerWidget {
                         .set(v),
               ),
               SwitchListTile(
-                title: _TitleWithHelp(
+                title: SettingHelpTitle(
                   title: l10n.settingsPrivacyAllowWeather,
                   helpBody: l10n.settingsHelpPrivacyAllowWeather,
                 ),
@@ -1245,33 +1282,43 @@ class _SectionHeader extends StatelessWidget {
 }
 
 /// Inline title row that appends a small "?" help button when [helpBody]
-/// is provided. Tap opens [showHelpSheet] with the same [title] and the
+/// is provided. Tap opens [showSettingHelpSheet] with the same [title] and the
 /// localized explanatory paragraph.
 ///
 /// When [helpBody] is null, falls back to a plain `Text(title)` so the
 /// surrounding layout stays identical for settings without help text.
-class _TitleWithHelp extends StatelessWidget {
-  const _TitleWithHelp({required this.title, this.helpBody});
+class SettingHelpTitle extends StatelessWidget {
+  const SettingHelpTitle({
+    super.key,
+    required this.title,
+    this.helpBody,
+    this.style,
+  });
 
   final String title;
   final String? helpBody;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
-    if (helpBody == null) return Text(title);
+    if (helpBody == null) return Text(title, style: style);
     return Row(
       children: [
-        Flexible(child: Text(title)),
+        Flexible(child: Text(title, style: style)),
         const SizedBox(width: 4),
-        _HelpIconButton(title: title, body: helpBody!),
+        SettingHelpIconButton(title: title, body: helpBody!),
       ],
     );
   }
 }
 
 /// Compact info-icon button that opens a settings help bottom sheet.
-class _HelpIconButton extends StatelessWidget {
-  const _HelpIconButton({required this.title, required this.body});
+class SettingHelpIconButton extends StatelessWidget {
+  const SettingHelpIconButton({
+    super.key,
+    required this.title,
+    required this.body,
+  });
 
   final String title;
   final String body;
@@ -1676,7 +1723,7 @@ class _ManualCoordinatesTileState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _TitleWithHelp(
+          SettingHelpTitle(
             title: l10n.settingsManualCoordinates,
             helpBody: l10n.settingsHelpManualCoordinates,
           ),
@@ -1763,7 +1810,7 @@ class _SliderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      title: SettingHelpTitle(title: title, helpBody: helpBody),
       subtitle: Semantics(
         label: title,
         value: format(value),
@@ -1811,7 +1858,7 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
     final selectedIndex = _selectedIndex;
     final selectedValue = values[selectedIndex];
     return ListTile(
-      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      title: SettingHelpTitle(title: title, helpBody: helpBody),
       subtitle: Semantics(
         label: title,
         value: format(selectedValue),
@@ -1861,7 +1908,7 @@ class _ChoiceTile<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      title: SettingHelpTitle(title: title, helpBody: helpBody),
       subtitle: subtitle == null ? null : Text(subtitle!),
       trailing: DropdownButton<T>(
         value: value,
@@ -2121,7 +2168,7 @@ class _ColorMapChoiceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: _TitleWithHelp(title: title, helpBody: helpBody),
+      title: SettingHelpTitle(title: title, helpBody: helpBody),
       trailing: DropdownButton<String>(
         value: value,
         underline: const SizedBox.shrink(),
@@ -2294,7 +2341,7 @@ class _ExportFormatChecklist extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: _TitleWithHelp(
+          child: SettingHelpTitle(
             title: l10n.settingsExportFormat,
             helpBody: l10n.settingsHelpExportFormat,
           ),
@@ -2302,7 +2349,7 @@ class _ExportFormatChecklist extends ConsumerWidget {
         for (final fmt in formats)
           CheckboxListTile(
             dense: true,
-            title: _TitleWithHelp(title: fmt.$2, helpBody: fmt.$3),
+            title: SettingHelpTitle(title: fmt.$2, helpBody: fmt.$3),
             value: selection.contains(fmt.$1),
             onChanged:
                 (v) => ref

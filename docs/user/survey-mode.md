@@ -4,7 +4,7 @@ Survey Mode is the route-based workflow for long-running moving surveys.
 
 ## How to Open It
 
-From Home, tap the **Survey Mode** card with the :material-routes: icon.
+From Home, tap the **Survey Mode** card with the :app-routeRounded: icon.
 
 ## Setup Flow
 
@@ -17,7 +17,9 @@ You can enter:
 - survey name
 - transect ID
 - observer name
-- GPS, manual coordinates, or no starting location
+- GPS :app-myLocation:, manual coordinates
+  :app-editLocationAlt:, or no starting location
+  :app-locationOff:. The map picker uses :app-mapSheet:.
 
 This step also exposes the map picker, refreshes GPS when you return from
 system permission screens, and shows the background-GPS permission reminder
@@ -40,6 +42,22 @@ This step contains Survey-specific parameters such as:
 - detection sampling mode
 - top-N-per-species limit when sampling is limited
 
+| Setup control | Icon |
+|---|---|
+| Microphone | :app-micRounded: |
+| Inference rate | :app-speedRounded: |
+| Confidence threshold | :app-verifiedRounded: |
+| GPS interval | :app-myLocation: |
+| Maximum duration | :app-timerOutlined: |
+| Recording mode | :app-fiberManualRecordRounded: |
+| Clip context | :app-timerOutlined: |
+| Detection sampling | :app-filterAltRounded: |
+| Top N per species | :app-formatListNumberedRounded: |
+
+Tap the :app-helpOutline: button beside a setup control for an explanation.
+The name, transect, observer, location, and alert controls have help buttons
+as well.
+
 New Survey settings default to **0.70 Hz** inference. This retains more short
 vocalizations than the lower-rate battery-saving choices while still running
 the model less often than 1.00 Hz. Survey and Live Mode share one inference
@@ -59,7 +77,7 @@ Three modes are available:
 |---|---|
 | **All** | Keep every clip. Most disk usage. Recommended for short surveys or when you want every detection's audio for later analysis. |
 | **Top N** | Keep only the **N highest-confidence clips per species**. Other clips are deleted as the survey runs. Default N is 10, configurable from 1 to 50. |
-| **Smart** | Same per-species cap of N as Top N, **plus** spatial distribution: if a new detection lands at the same "spot" as an already-kept clip (within ~500 m and ~2 min of each other), only the higher-confidence one keeps its clip. This prevents one stationary singer from monopolizing all N slots and biases the kept clips toward covering the full transect. |
+| **Smart** | Same per-species cap of N as Top N, **plus** spatial distribution: if a new detection lands at the same "spot" as an already-kept clip (within ~250 m and ~2 min of each other), only the higher-confidence one keeps its clip. This prevents one stationary singer from monopolizing all N slots and biases the kept clips toward covering the full transect. |
 
 The N limit is **per species, not global** — if you record 10 robins and 10 chaffinches, you keep 20 clips. There is no overall cap on the number of clips a survey can produce.
 
@@ -84,7 +102,7 @@ A short pre-start checklist inside the setup flow.
 
 ### 5. Ready
 
-The ready screen summarizes the active survey configuration before you start with :material-play:.
+The ready screen summarizes the active survey configuration before you start with :app-playArrowRounded:.
 
 ## Live Survey Dashboard
 
@@ -92,28 +110,28 @@ The live Survey screen has three main tabs plus a recent detections list.
 
 ### Top bar
 
-- :material-stop: — end the survey
-- :material-timer: — elapsed time
-- :material-help-circle-outline: — open the Survey help sheet
-- :material-tune: — open Survey settings
+- :app-stopRounded: — end the survey
+- :app-timerOutlined: — elapsed time
+- :app-helpOutlineRounded: — open the Survey help sheet
+- :app-tuneRounded: — open Survey settings
 
 ### Tabs
 
-- :material-map-outline: — route map and mapped detections
-- :material-equalizer: — spectrogram
+- :app-map: — route map and mapped detections
+- :app-graphicEq: — spectrogram
 - chart icon — summary statistics and species breakdown
 
 ### Stats and detections
 
 Below the tab content, the survey dashboard shows a stats bar and a recent detections list. Tapping a detection opens the species details overlay.
 
-Each detection row also exposes the same per-detection actions used in [Session Review](session-review.md): a one-tap :material-check: **Confirm** checkmark and a :material-dots-vertical: **More** overflow with **Share detection** and **Delete detection** (with SnackBar undo) — so you can validate, share, or remove a noisy hit mid-capture instead of waiting for the post-session review.
+Each detection row also exposes the same per-detection actions used in [Session Review](session-review.md): a one-tap :app-checkCircleOutline: **Confirm** checkmark and a :app-moreVert: **More** overflow with **Share detection** and **Delete detection** (with SnackBar undo) — so you can validate, share, or remove a noisy hit mid-capture instead of waiting for the post-session review.
 
 The same actions are available from the **live route map**: tap a detection marker to open the clip player sheet with confirm, share, and delete. Sharing during a survey works even when you've opted for one continuous WAV recording instead of per-detection clips — the relevant audio window is sliced out of the in-progress file on the fly. See [Session Review → Sharing a single detection](session-review.md#sharing-a-single-detection) for details.
 
 ### Logging an observation
 
-The :material-plus-circle-outline: button on the live survey opens a small menu with **Add Species** and **Add note**. **Add Species** opens the same picker used in [Session Review](session-review.md#adding-a-species-by-hand), choose a species, then tick :material-ear-hearing: **Heard** and/or :material-eye: **Seen** on the confirmation sheet and tap **Add**. The entry is timestamped to that moment, tagged with the current GPS fix, and appears immediately in the detection list and on the route map with the manual badge and the matching ear / eye glyphs.
+The :app-addCircleOutline: button on the live survey opens a small menu with **Add Species** and **Add note**. **Add Species** opens the same picker used in [Session Review](session-review.md#adding-a-species-by-hand), choose a species, then tick :app-hearing: **Heard** and/or :app-visibility: **Seen** on the confirmation sheet and tap **Add**. The entry is timestamped to that moment, tagged with the current GPS fix, and appears immediately in the detection list and on the route map with the manual badge and the matching ear / eye glyphs.
 
 Voice memos are deliberately absent here: the microphone is busy with the survey's own capture. Attach them in Session Review after the survey ends.
 
@@ -128,12 +146,16 @@ The notification — title, recent detections, and stats footer — is fully tra
 
 Species alerts (when enabled) appear on a separate Android notification channel so you can mute alerts independently of the silent ongoing recording notification. The alert icon matches the foreground notification icon (a monochrome bird), and alert bodies show only the *reason* — *"First detection of this survey"*, *"On your watchlist"*, *"Detected at this location with under 4% likelihood"*, *"New for your life list"* — leaving the species name in the bold notification title where Android renders it largest.
 
-When you **resume** an unfinished survey from Session Library, the alert pipeline is re-armed from your *current* notification preferences — not whatever you had configured the day you started the survey. Toggle alerts off (or change the mode, watchlist, or throttling) before tapping Resume and the resumed survey will respect the new settings immediately.
+A Survey that was not recorded with full audio, including one recovered after a crash, can be continued from its Session Review with **Continue Survey**. When you **resume** one, the alert pipeline is re-armed from your *current* notification preferences — not whatever you had configured the day you started the survey. Toggle alerts off (or change the mode, watchlist, or throttling) before tapping Resume and the resumed survey will respect the new settings immediately.
 
 ## Reviewing on the Map
 
-The fullscreen Survey map view (the :material-fullscreen: button in Session Review) opens a clip player when you tap a marker. The transport row has skip-previous and skip-next buttons flanking the play control — they walk through detections in chronological order, but **only those currently visible on the map**, so any active species, confidence, or mode-chip filter narrows the playlist accordingly. The buttons grey out at the first/last detection in the filtered list.
+The fullscreen Survey map view (the :app-fullscreen: button in Session Review) opens a clip player when you tap a marker. The transport row has skip-previous and skip-next buttons flanking the play control — they walk through detections in chronological order, but **only those currently visible on the map**, so any active species, confidence, or mode-chip filter narrows the playlist accordingly. The buttons grey out at the first/last detection in the filtered list.
 
 ## After Stopping
 
 BirdNET Live saves the finished survey and opens [Session Review](session-review.md).
+The active Survey is saved at the start, every 30 seconds, and when the app
+leaves the foreground. After a crash or power loss, the latest partial Survey
+appears in Session Library as an ended Session. Recording does not restart.
+Observations since the last checkpoint may be missing.

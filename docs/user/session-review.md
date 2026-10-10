@@ -27,7 +27,7 @@ The spectrogram strip above the player is interactive: tap to seek, drag with on
 
 Species are grouped into expandable rows. You can inspect detections by species and move through the recording while reviewing them. Cluster rows under an expanded species are indented so the parent species card stays visually distinct from its children.
 
-A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :material-sort: button next to it changes the species order:
+A search field above the list filters species by common or scientific name, so finding one specific bird in a 100-species session is a few keystrokes instead of a long scroll. The :app-sort: button next to it changes the species order:
 
 - **Highest confidence** (default) — species with the highest single-detection confidence first. Good for triaging the most certain identifications. When you expand a species in this mode, detections with playable audio clips appear before clipless detections, then by confidence.
 - **Most detections** — species with the highest detection count first. Good for spotting the dominant choristers.
@@ -38,10 +38,10 @@ The chosen sort persists across sessions.
 
 ### Adding a species by hand
 
-The :material-plus-circle-outline: toolbar button opens the species picker for birds BirdNET missed. Picking a search result does not insert it straight away — a confirmation sheet slides up first, showing the species you chose and two checkboxes:
+The :app-addCircleOutline: toolbar button opens the species picker for birds BirdNET missed. Picking a search result does not insert it straight away — a confirmation sheet slides up first, showing the species you chose and two checkboxes:
 
-- :material-ear-hearing: **Heard** — you heard the bird.
-- :material-eye: **Seen** — you saw the bird.
+- :app-hearing: **Heard** — you heard the bird.
+- :app-visibility: **Seen** — you saw the bird.
 
 Tick either, both, or neither, then tap **Add**. **Cancel** — or a swipe down — returns you to the search, so a mistap costs nothing. **Heard** is ticked by default, and your choice carries over to the next species you add, so logging a run of birds you only saw means ticking **Seen** once. Leaving both unticked saves the entry with no observation type rather than with "neither".
 
@@ -51,12 +51,12 @@ The choice is stored on the detection and shown as a small ear and/or eye glyph 
 
 Every place a detection appears — the species list, the clip player sheet, the live survey list, and the survey map markers — uses the same set of actions:
 
-- :material-check: **Confirm** — a one-tap inline checkmark that flags a detection as visually or acoustically verified. Confirmed clusters and map markers gain a small green check so they stand out at a glance, and the flag travels with every export format.
-- :material-dots-vertical: **More** — opens an overflow menu with:
-    - :material-share-variant: **Share detection** — see *Sharing* below.
-    - :material-swap-horizontal: **Replace species** — pick a different species for this detection.
-    - :material-delete-outline: **Delete detection** — removes the row immediately. An undo SnackBar appears for a few seconds so misfires are reversible. No confirmation dialog.
-    - :material-delete-sweep-outline: **Delete species** — removes every detection of that species from the session in one shot, with the same SnackBar undo. Useful for sweeping out a misidentified noise source without expanding the species and deleting clusters one by one.
+- :app-checkCircleOutline: **Confirm** — a one-tap inline checkmark that flags a detection as visually or acoustically verified. Confirmed clusters and map markers gain a small green check so they stand out at a glance, and the flag travels with every export format.
+- :app-moreVert: **More** — opens an overflow menu with:
+    - :app-share: **Share detection** — see *Sharing* below.
+    - :app-swapHoriz: **Replace species** — pick a different species for this detection.
+    - :app-deleteOutline: **Delete detection** — removes the row immediately. An undo SnackBar appears for a few seconds so misfires are reversible. No confirmation dialog.
+    - :app-deleteSweep: **Delete species** — removes every detection of that species from the session in one shot, with the same SnackBar undo. Useful for sweeping out a misidentified noise source without expanding the species and deleting clusters one by one.
 
 #### Swipe shortcuts on review rows
 
@@ -71,7 +71,7 @@ Swiping a **species header** row (left or right) deletes every detection of that
 
 ### Sharing a single detection
 
-The :material-share-variant: **Share detection** entry uses the same choices as **Settings → Export & Sync**. It exports only that detection in the selected Raven, CSV, JSON, GPX, HTML, and app-metadata artifacts. When **Include audio files** is on, the bundle also carries the detection audio; **Always share audio as WAV** is honored. With every companion format, HTML, and app-metadata option off, the platform share sheet receives the raw audio clip instead of a ZIP.
+The :app-share: **Share detection** entry uses the same choices as **Settings → Export & Sync**. It exports only that detection in the selected Raven, CSV, JSON, GPX, HTML, and app-metadata artifacts. When **Include audio files** is on, the bundle also carries the detection audio; **Always share audio as WAV** is honored. With every companion format, HTML, and app-metadata option off, the platform share sheet receives the raw audio clip instead of a ZIP.
 
 The audio attachment is resolved in this order:
 
@@ -83,7 +83,7 @@ The audio attachment is resolved in this order:
 
 You can attach short, spoken voice commentary to individual detection records:
 
-- **Record**: Tap the :material-dots-vertical: button on a detection cluster and select **Record voice memo** to open the voice memo dialog. Tap the large microphone button to start recording. A live waveform reflects your voice in real time. Tap the stop button when finished.
+- **Record**: Tap the :app-moreVert: button on a detection cluster and select **Record voice memo** to open the voice memo dialog. Tap the large microphone button to start recording. A live waveform reflects your voice in real time. Tap the stop button when finished.
 - **Review**: Once recorded, you can listen to the memo using the inline player. To replace the memo, tap the **Re-record** button. To save it, tap the **Save** button.
 - **Delete**: If a detection already has an attached voice memo, you can delete it from either the overflow menu or the voice memo dialog.
 - **Platform-Specific Formats**: On Android and other platforms, voice memos are recorded in highly-compressed AAC (`.m4a`) format at 16 kHz. On iOS, they automatically use WAV/PCM16 format (`.wav`) to prevent CoreAudio compatibility issues with the app's active audio sessions. Both formats are fully supported by the export ZIP packaging.
@@ -91,7 +91,7 @@ You can attach short, spoken voice commentary to individual detection records:
 
 ### Survey track map
 
-Survey sessions show a small inline map of the GPS track and detection markers. Tap a marker on the inline map to focus a detection — the inline map centers on it. Tap the :material-fullscreen: **expand** button (top-right of the inline map) to open the **fullscreen map**; if a detection was focused, the fullscreen map opens centered and zoomed in on that detection so you keep your place.
+Survey sessions show a small inline map of the GPS track and detection markers. Tap a marker on the inline map to focus a detection — the inline map centers on it. Tap the :app-fullscreen: **expand** button (top-right of the inline map) to open the **fullscreen map**; if a detection was focused, the fullscreen map opens centered and zoomed in on that detection so you keep your place.
 
 #### Marker encoding
 
@@ -119,15 +119,15 @@ When a filter is active, the app-bar title gains a match-count subtitle (e.g. *"
 
 The toolbar uses the same icon meanings described in [Icons & Controls](icons-and-controls.md):
 
-- :material-plus-circle-outline: — add content
-- :material-undo-variant: / :material-redo-variant: — step through edits
-- :material-content-cut: — trim mode
-- :material-content-save: — save edits
-- :material-share-variant: — export or share
-- :material-delete-outline: — discard session
-- :material-play: — continue a survey when that action is available
-- :material-help-circle-outline: — open the Session Review help sheet
-- :material-tune: — open Settings
+- :app-addCircleOutline: — add content
+- :app-undo: / :app-redo: — step through edits
+- :app-contentCut: — trim mode
+- :app-save: — save edits
+- :app-share: — export or share
+- :app-deleteOutline: — discard session
+- :app-playArrowRounded: — continue a survey when that action is available
+- :app-helpOutlineRounded: — open the Session Review help sheet
+- :app-tuneRounded: — open Settings
 
 ## Typical Review Tasks
 
@@ -139,6 +139,8 @@ The toolbar uses the same icon meanings described in [Icons & Controls](icons-an
 ## Export
 
 Export behavior depends on the options selected in [Settings](settings.md). The app can package detections and, optionally, audio into the chosen export format. Every export ships with provenance metadata — the app version, model name and version, species locale, export timestamp, settings retained with the session, plus relevant export options — written to a `<prefix>.metadata.json` side-file (ZIP) or a top-level `meta` block (JSON) so that exports are self-describing and reproducible.
+
+When the device supplies altitude with a GPS fix, exports include its height in meters, available vertical accuracy, reference surface, and fix time. JSON carries all of it with the related coordinates, and GPX carries it on Survey track points and detection waypoints. CSV and Raven add only an `Altitude (m)` column next to latitude and longitude. Manual and map-picked coordinates have no inferred altitude. A detection added at a timestamp during Survey review takes a position interpolated between the surrounding track points; it has no fix time of its own. Device heights can use different reference surfaces, so compare values only after checking the exported `altitudeReference` field. An `unknown` reference means the platform did not identify the surface.
 
 The JSON export's `settings` block records the values that were *actually applied to this session* — sensitivity, score-pooling mode and window count, microphone gain, and the high-pass cutoff — not whatever happens to be set in Settings now. This means you can reproduce a result months later, or compare two surveys, without remembering which sliders were where when you ran them.
 

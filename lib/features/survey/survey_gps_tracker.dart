@@ -40,8 +40,15 @@ class SurveyGpsTracker {
   /// Total distance walked in meters.
   double distanceMeters = 0;
 
-  /// Latest position (for tagging detections).
-  GpsPoint? get lastPoint => track.isEmpty ? null : track.last;
+  /// Latest accepted fix (for tagging detections).
+  ///
+  /// Includes fixes too close to [track]'s last point to be recorded, so a
+  /// stationary observer still gets the freshest height; speed outliers are
+  /// excluded. Not age-gated: with a distance filter, standing still emits no
+  /// new fixes, and the exported fix time lets consumers judge staleness.
+  GpsPoint? get lastPoint => _latestFix;
+
+  GpsPoint? _latestFix;
 
   StreamSubscription<Position>? _positionSub;
 
@@ -58,6 +65,7 @@ class SurveyGpsTracker {
     track
       ..clear()
       ..addAll(existingTrack);
+    _latestFix = track.where((point) => point.measured).lastOrNull;
     distanceMeters = 0;
     for (var i = 1; i < track.length; i++) {
       distanceMeters += const Distance().as(
@@ -76,24 +84,25 @@ class SurveyGpsTracker {
   Future<void> startTracking() async {
     if (_positionSub != null) return;
 
-    _positionSub = Geolocator.getPositionStream(
-      locationSettings: buildLocationSettings(
-        distanceFilter: distanceFilterMeters,
-        intervalDuration: Duration(seconds: intervalSeconds),
-        background: true,
-      ),
-    ).listen(
-      _onPosition,
-      onError: (Object error, StackTrace stackTrace) {
-        debugPrint('[SurveyGpsTracker] position stream error: $error');
-        _positionSub = null;
-      },
-      onDone: () {
-        debugPrint('[SurveyGpsTracker] position stream ended');
-        _positionSub = null;
-      },
-      cancelOnError: true,
-    );
+    _positionSub =
+        Geolocator.getPositionStream(
+          locationSettings: buildLocationSettings(
+            distanceFilter: distanceFilterMeters,
+            intervalDuration: Duration(seconds: intervalSeconds),
+            background: true,
+          ),
+        ).listen(
+          _onPosition,
+          onError: (Object error, StackTrace stackTrace) {
+            debugPrint('[SurveyGpsTracker] position stream error: $error');
+            _positionSub = null;
+          },
+          onDone: () {
+            debugPrint('[SurveyGpsTracker] position stream ended');
+            _positionSub = null;
+          },
+          cancelOnError: true,
+        );
 
     debugPrint(
       '[SurveyGpsTracker] tracking started '
@@ -153,55 +162,50 @@ class SurveyGpsTracker {
     );
   }
 
-  /// Interpolate detection locations between measured GPS points.
+  /// Position at [timestamp], linearly interpolated between the nearest
+  /// measured fixes before and after it.
   ///
-  /// For detections that have no GPS fix, linearly interpolate between
-  /// the nearest preceding and following measured points.
-  static void interpolateDetectionLocations({
-    required List<GpsPoint> measuredTrack,
-    required List<({DateTime timestamp, double? lat, double? lon})> detections,
-    required void Function(int index, double lat, double lon) onInterpolated,
-  }) {
-    if (measuredTrack.isEmpty) return;
-
-    for (var i = 0; i < detections.length; i++) {
-      final det = detections[i];
-      if (det.lat != null && det.lon != null) continue;
-
-      // Find bracketing measured points.
-      GpsPoint? before;
-      GpsPoint? after;
-      for (final p in measuredTrack) {
-        if (!p.measured) continue;
-        if (!p.timestamp.isAfter(det.timestamp)) {
-          before = p;
-        } else {
-          after ??= p;
-        }
-      }
-
-      if (before != null && after != null) {
-        final totalMs =
-            after.timestamp.difference(before.timestamp).inMilliseconds;
-        if (totalMs > 0) {
-          final fraction =
-              det.timestamp.difference(before.timestamp).inMilliseconds /
-              totalMs;
-          final lat =
-              before.latitude + (after.latitude - before.latitude) * fraction;
-          final lon =
-              before.longitude +
-              (after.longitude - before.longitude) * fraction;
-          onInterpolated(i, lat, lon);
-        }
-      } else if (before != null) {
-        // After the last known point — use last position.
-        onInterpolated(i, before.latitude, before.longitude);
-      } else if (after != null) {
-        // Before the first known point — use first position.
-        onInterpolated(i, after.latitude, after.longitude);
+  /// Outside the track, the first or last measured fix is returned as-is.
+  /// An interpolated result has `measured: false`; its height is only set
+  /// when both neighbors report one against the same reference surface.
+  static GpsPoint? positionAt(List<GpsPoint> track, DateTime timestamp) {
+    GpsPoint? before;
+    GpsPoint? after;
+    for (final p in track) {
+      if (!p.measured) continue;
+      if (!p.timestamp.isAfter(timestamp)) {
+        before = p;
+      } else {
+        after ??= p;
       }
     }
+    if (before == null || after == null) return before ?? after;
+
+    final totalMs = after.timestamp.difference(before.timestamp).inMilliseconds;
+    if (totalMs <= 0 || before.timestamp == timestamp) return before;
+    final fraction =
+        timestamp.difference(before.timestamp).inMilliseconds / totalMs;
+    double lerp(double a, double b) => a + (b - a) * fraction;
+
+    final hasHeight =
+        before.altitude != null &&
+        after.altitude != null &&
+        before.altitudeReference == after.altitudeReference;
+    final beforeAccuracy = before.altitudeAccuracy;
+    final afterAccuracy = after.altitudeAccuracy;
+    return GpsPoint(
+      latitude: lerp(before.latitude, after.latitude),
+      longitude: lerp(before.longitude, after.longitude),
+      timestamp: timestamp,
+      altitude: hasHeight ? lerp(before.altitude!, after.altitude!) : null,
+      // Report the looser of the two uncertainties.
+      altitudeAccuracy:
+          hasHeight && beforeAccuracy != null && afterAccuracy != null
+          ? math.max(beforeAccuracy, afterAccuracy)
+          : null,
+      altitudeReference: hasHeight ? before.altitudeReference : null,
+      measured: false,
+    );
   }
 
   // ── Private ─────────────────────────────────────────────────────────────
@@ -241,7 +245,10 @@ class SurveyGpsTracker {
         LatLng(point.latitude, point.longitude),
       );
       // Skip points that are within jitter distance.
-      if (d < _jitterThresholdMeters) return;
+      if (d < _jitterThresholdMeters) {
+        _latestFix = point;
+        return;
+      }
 
       // Speed gate: reject implausible jumps.
       final dtSeconds =
@@ -257,15 +264,19 @@ class SurveyGpsTracker {
 
       distanceMeters += d;
     }
+    _latestFix = point;
     track.add(point);
     onPoint?.call(point);
   }
 
   GpsPoint _positionToGpsPoint(Position position, {required bool measured}) {
+    final location = AppLocation.fromPosition(position);
     return GpsPoint(
       latitude: position.latitude,
       longitude: position.longitude,
-      altitude: position.altitude,
+      altitude: location.altitude,
+      altitudeAccuracy: location.altitudeAccuracy,
+      altitudeReference: location.altitudeReference,
       accuracy: position.accuracy,
       timestamp: position.timestamp,
       measured: measured,
@@ -286,7 +297,10 @@ class SurveyGpsTracker {
     final last = points.last;
 
     for (var i = 1; i < points.length - 1; i++) {
-      final d = _perpendicularDistance(points[i], first, last);
+      final d = math.max(
+        _perpendicularDistance(points[i], first, last),
+        _verticalDeviation(points[i], first, last),
+      );
       if (d > maxDist) {
         maxDist = d;
         maxIndex = i;
@@ -303,6 +317,29 @@ class SurveyGpsTracker {
     } else {
       return [first, last];
     }
+  }
+
+  /// Preserve significant changes in height even on an almost straight path.
+  static double _verticalDeviation(
+    GpsPoint point,
+    GpsPoint start,
+    GpsPoint end,
+  ) {
+    if (point.altitude == null ||
+        start.altitude == null ||
+        end.altitude == null ||
+        point.altitudeReference != start.altitudeReference ||
+        point.altitudeReference != end.altitudeReference) {
+      return 0;
+    }
+    final duration = end.timestamp.difference(start.timestamp).inMilliseconds;
+    if (duration <= 0) return 0;
+    final fraction =
+        point.timestamp.difference(start.timestamp).inMilliseconds / duration;
+    final expected =
+        start.altitude! + (end.altitude! - start.altitude!) * fraction;
+    final uncertainty = point.altitudeAccuracy ?? 0;
+    return math.max(0, (point.altitude! - expected).abs() - uncertainty);
   }
 
   /// Approximate perpendicular distance from a point to a line segment

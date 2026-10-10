@@ -2,6 +2,7 @@
 // GpsPoint Tests — Serialization and equality
 // =============================================================================
 
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,6 +15,8 @@ void main() {
         latitude: 52.52,
         longitude: 13.405,
         altitude: 34.5,
+        altitudeAccuracy: 6.2,
+        altitudeReference: AltitudeReference.meanSeaLevel,
         accuracy: 4.2,
         timestamp: ts,
       );
@@ -24,6 +27,8 @@ void main() {
       expect(restored.latitude, 52.52);
       expect(restored.longitude, 13.405);
       expect(restored.altitude, 34.5);
+      expect(restored.altitudeAccuracy, 6.2);
+      expect(restored.altitudeReference, AltitudeReference.meanSeaLevel);
       expect(restored.accuracy, 4.2);
       expect(restored.timestamp, ts);
       expect(restored.measured, isTrue);

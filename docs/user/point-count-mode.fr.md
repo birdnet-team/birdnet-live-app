@@ -4,7 +4,7 @@ Le mode Point d'écoute est le flux de travail stationnaire et minuté de BirdNE
 
 ## Comment l'ouvrir
 
-Depuis l'accueil, appuyez sur la carte **Mode Point d'écoute** avec l'icône :material-map-marker:.
+Depuis l'accueil, appuyez sur la carte **Mode Point d'écoute** avec l'icône :app-locationOnRounded:.
 
 ## Flux de configuration
 
@@ -14,11 +14,12 @@ La configuration du point d'écoute comporte quatre étapes.
 
 Choisissez :
 
-- l'une des durées proposées
-- la position GPS actuelle avec :material-crosshairs-gps:
-- des coordonnées manuelles avec :material-map-marker-plus:
-- aucune localisation avec :material-map-marker-off:
-- le sélecteur de carte avec :material-map:
+- l’une des durées proposées : 3, 5, 10, 15, 20, 25 ou 30 minutes
+- si le comptage continue avec l’écran éteint (activé par défaut)
+- la position GPS actuelle avec :app-myLocation:
+- des coordonnées manuelles avec :app-editLocationAlt:
+- aucune localisation avec :app-locationOff:
+- le sélecteur de carte avec :app-mapSheet:
 
 L'écran de configuration actualise le GPS lorsque vous revenez de la boîte de
 dialogue d'autorisation du système ou des paramètres de l'application : une
@@ -32,10 +33,23 @@ du point d'écoute.
 
 ### 2. Paramètres d'inférence
 
-Choisissez les réglages d'analyse propres à la session, comme la durée de la
-fenêtre, la fréquence d'inférence, le seuil de confiance et le mode de filtre
+Choisissez les réglages d'analyse propres à la session, comme la fréquence d'inférence, le seuil de confiance et le mode de filtre
 d'espèces. Ils partent de vos paramètres globaux, mais peuvent être ajustés pour
 ce comptage sans modifier vos valeurs par défaut.
+
+| Contrôle de configuration | Icône |
+|---|---|
+| Microphone | :app-micRounded: |
+| Mode d'enregistrement | :app-fiberManualRecordRounded: |
+| Contexte du clip | :app-timerOutlined: |
+| Fréquence d'inférence | :app-speedRounded: |
+| Seuil de confiance | :app-verifiedRounded: |
+| Sensibilité | :app-hearing: |
+| Filtre d'espèces | :app-filterAltRounded: |
+
+Le bouton :app-helpOutline: à côté de chaque contrôle explique son effet. Le contrôle de durée :app-timerRounded: et le sélecteur de localisation ont le même bouton d'aide à la première étape.
+
+Choisissez **Complet** pour enregistrer en continu (par défaut), **Extraits** pour garder un extrait de chaque vocalisation détectée ou **Désactivé** pour ne pas enregistrer d’audio. Ce choix est indépendant du réglage de Live Mode et mémorisé pour le prochain Point Count. Les extraits utilisent la même sélection de fenêtre au score maximal et le même contexte que Live Mode, sans réduction selon la localisation. Avec **Extraits**, le curseur **Contexte du clip** fixe les secondes conservées avant et après chaque fenêtre analysée ; il met aussi à jour le contexte de Live Mode.
 
 ### 3. Conseils de terrain
 
@@ -43,7 +57,7 @@ Cet écran présente une courte liste de vérification dans l'application à par
 
 ### 4. Prêt
 
-L'écran prêt récapitule la durée sélectionnée et vous permet de démarrer avec :material-play:.
+L’écran prêt récapitule la durée, le choix d’enregistrement et le comportement avec l’écran éteint. Démarrez avec :app-playArrowRounded:.
 
 ## Écran du point d'écoute en direct
 
@@ -51,9 +65,10 @@ L'écran du point d'écoute en direct se concentre sur un tableau de bord minut�
 
 ### Barre supérieure
 
-- :material-stop: — arrêter le point d'écoute prématurément
-- :material-timer: — afficher le temps restant
-- :material-tune: — ouvrir les paramètres du Point d'écoute
+- :app-stopRounded: — arrêter le point d'écoute prématurément
+- :app-timerRounded: — afficher le temps restant
+- :app-helpOutlineRounded: — ouvrir l'aide du Point Count
+- :app-tuneRounded: — ouvrir les paramètres du Point d'écoute
 
 ### Principaux indicateurs
 
@@ -64,4 +79,8 @@ L'écran du point d'écoute en direct se concentre sur un tableau de bord minut�
 
 ## Après le comptage
 
-Lorsque le point d'écoute se termine, BirdNET Live enregistre la session et ouvre le [Résumé de la session](session-review.md).
+Avec **Continuer avec l’écran éteint** activé dans la configuration de Point Count, le comptage continue lorsque vous verrouillez l’écran ou changez d’application, même si l’écran reste allumé. Il s’arrête après la durée choisie ; le compte à rebours utilise le temps réellement écoulé, donc un écran suspendu ne prolonge pas le comptage. Android affiche une notification persistante avec Ouvrir et Arrêter. Désactivez le commutateur pour que ces actions terminent le comptage plus tôt. Point Count ne se met pas en pause pour reprendre ensuite, car cela interromprait le comptage chronométré. Si vous quittez pendant le démarrage, il est annulé avec un message ; configurez-le à nouveau. Sous Windows, réduire la fenêtre ne termine pas le comptage.
+
+À la fin du Point Count, BirdNET Live ouvre [Résumé de la session](session-review.md). La Session est enregistrée automatiquement si cette option est activée ; sinon, enregistrez-la depuis le résumé pour la conserver.
+
+Lorsque l'enregistrement automatique est activé, un comptage en cours est aussi enregistré au démarrage, toutes les 30 secondes et lorsque l'application quitte le premier plan. Après un plantage ou une coupure de courant, le dernier comptage partiel est disponible dans la Bibliothèque de sessions.

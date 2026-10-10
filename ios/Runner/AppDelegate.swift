@@ -2,7 +2,7 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   /// Directory name holding the most recent shared recording, both in the
   /// legacy App Group container and in this app's temporary directory it is
   /// imported into.
@@ -18,24 +18,32 @@ import UIKit
   private var sharedMediaChannel: FlutterMethodChannel?
   private var lastQueuedStagedURI: String?
 
-  /// A document URL queued straight out of `launchOptions`.
-  ///
-  /// iOS delivers the same URL again through `application(_:open:)` moments
-  /// after launch. This lets that second delivery be recognised and dropped
-  /// once, without suppressing a genuine re-open of the same document later.
-  private var launchDocumentURI: String?
+  /// Register only after the implicit engine exists. Under the scene lifecycle,
+  /// AppDelegate's window is not available during application launch.
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    let messenger = engineBridge.applicationRegistrar.messenger()
 
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-
-    let controller = window?.rootViewController as! FlutterViewController
+    let deviceDescriptionChannel = FlutterMethodChannel(
+      name: "com.birdnet/device_description",
+      binaryMessenger: messenger
+    )
+    deviceDescriptionChannel.setMethodCallHandler { (call, result) in
+      guard call.method == "getInfo" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let device = UIDevice.current
+      result([
+        "model": device.model,
+        "os": device.userInterfaceIdiom == .pad ? "iPadOS" : "iOS",
+        "version": device.systemVersion,
+      ])
+    }
 
     let wakelockChannel = FlutterMethodChannel(
       name: "com.birdnet/wakelock",
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: messenger
     )
     wakelockChannel.setMethodCallHandler { (call, result) in
       switch call.method {
@@ -53,7 +61,7 @@ import UIKit
     // Audio decoder channel — decode compressed audio to PCM via AVFoundation.
     let audioChannel = FlutterMethodChannel(
       name: "com.birdnet/audio_decoder",
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: messenger
     )
     audioChannel.setMethodCallHandler { (call, result) in
       if call.method == "cancelDecode" {
@@ -115,7 +123,7 @@ import UIKit
     // to open the file after all.
     let sharedMediaChannel = FlutterMethodChannel(
       name: "com.birdnet/shared_media",
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: messenger
     )
     sharedMediaChannel.setMethodCallHandler { [weak self] (call, result) in
       guard let self = self else {
@@ -124,9 +132,7 @@ import UIKit
       }
       switch call.method {
       case "takePendingSharedFile":
-        let pending = self.pendingSharedFile
-        self.pendingSharedFile = nil
-        result(pending)
+        result(self.takePendingSharedFile())
       case "importSharedFile":
         guard let args = call.arguments as? [String: Any],
               let uri = args["uri"] as? String, !uri.isEmpty else {
@@ -163,53 +169,22 @@ import UIKit
       }
     }
     self.sharedMediaChannel = sharedMediaChannel
-
-    // A document that launched the app is queued here rather than waiting for
-    // `application(_:open:)`, which iOS calls only after this returns. Dart
-    // reads the hand-off before its first frame, and that read is dispatched to
-    // this thread — so it cannot be served until this method finishes, but it
-    // can easily be served before the later callback runs. Queueing here is
-    // what lets a cold "Open With" land on File Analysis directly.
-    if let url = launchOptions?[.url] as? URL, url.isFileURL {
-      launchDocumentURI = url.absoluteString
-      queueDocument(url)
-    }
-    queueStagedSharedFile()
-
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  override func applicationDidBecomeActive(_ application: UIApplication) {
-    super.applicationDidBecomeActive(application)
-    // Nothing writes to the App Group any more; this only drains a file the
-    // 1.1.2 Share extension staged before the user updated.
-    queueStagedSharedFile()
+  /// Drains the same queue whether Dart reads at launch or after a notification.
+  func takePendingSharedFile() -> [String: String]? {
+    let pending = pendingSharedFile
+    pendingSharedFile = nil
+    return pending
   }
 
-  override func application(
-    _ app: UIApplication,
-    open url: URL,
-    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-  ) -> Bool {
-    // A document opened through CFBundleDocumentTypes (Files' "Open With", or
-    // a share source that hands over a document instead of using the
-    // extension). Other custom schemes still belong to the plugins registered
-    // on the superclass.
-    guard url.isFileURL else {
-      return super.application(app, open: url, options: options)
-    }
-    // Drop the replay of a document already queued from `launchOptions`, once.
-    if let queued = launchDocumentURI {
-      launchDocumentURI = nil
-      if queued == url.absoluteString { return true }
-    }
-    queueDocument(url)
-    return true
-  }
-
-  private func queueDocument(_ url: URL) {
+  /// Called by SceneDelegate before forwarding the scene event to Flutter.
+  @discardableResult
+  func queueDocument(_ url: URL) -> Bool {
+    guard url.isFileURL else { return false }
     pendingSharedFile = ["uri": url.absoluteString, "name": url.lastPathComponent]
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
+    return true
   }
 
   /// Picks up a recording the 1.1.2 Share extension left in the App Group.
@@ -218,7 +193,7 @@ import UIKit
   /// who shared just before updating would otherwise never see the file, and
   /// nothing else prunes the App Group container. Remove this together with the
   /// entitlement once an update has had time to reach those users.
-  private func queueStagedSharedFile() {
+  func queueStagedSharedFile() {
     // Do not overwrite a document URL that was delivered during the same app
     // activation. It should be handled before any older abandoned share.
     guard pendingSharedFile == nil,

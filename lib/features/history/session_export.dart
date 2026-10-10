@@ -34,18 +34,24 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/models/altitude_reference.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
 import '../recording/wav_writer.dart';
+import 'export_device_info.dart';
 import 'html_report.dart';
 import 'services/audio_share_extension.dart';
 import 'services/detection_audio_window.dart';
+import 'services/export_zip_writer.dart';
 import 'services/session_audio_trim.dart';
 
+/// Lower frequency bound for Raven annotations.
+const double _lowFreqHz = 0.0;
+
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
-const int _highFreqHz = 16000;
+const double _highFreqHz = 16000.0;
 
 /// How long a staged trim is left alone before it counts as garbage.
 ///
@@ -130,15 +136,14 @@ Future<Uint8List?> _flacToWavBytes(String flacPath) async {
 ///   `BirdNET_Live_2026-04-15_08-00-00_#3`
 ///   `BirdNET_Live_2026-04-15_08-00-00_Morning_walk`
 String _exportPrefix(LiveSession session) {
-  final dt = DateFormat(
-    'yyyy-MM-dd_HH-mm-ss',
-  ).format(session.startTime.toLocal());
-  final suffix =
-      session.sessionNumber != null ? '_#${session.sessionNumber}' : '';
-  final name =
-      session.customName != null && session.customName!.isNotEmpty
-          ? '_${_sanitizeFilename(session.customName!)}'
-          : '';
+  final dt = DateFormat('yyyy-MM-dd_HH-mm-ss')
+      .format(session.startTime.toLocal());
+  final suffix = session.sessionNumber != null
+      ? '_#${session.sessionNumber}'
+      : '';
+  final name = session.customName != null && session.customName!.isNotEmpty
+      ? '_${_sanitizeFilename(session.customName!)}'
+      : '';
   return 'BirdNET_Live_$dt$suffix$name';
 }
 
@@ -201,27 +206,13 @@ String _evidenceField(DetectionRecord d) => switch (d.evidence) {
 String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
     taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName;
 
-/// Generates a Raven Pro-compatible selection table from session detections.
+/// Generates a Raven-compatible selection table from session detections.
 ///
-/// When [audioFileName] is provided every row references that single file.
-/// When [clipFileMap] is provided (detection index → clip filename), rows with
-/// a clip reference that file; rows without a clip get an empty `Begin File`.
-///
-/// Time semantics:
-///   • For rows referencing a per-detection **clip**, `Begin/End Time` are
-///     offsets *within the clip*. With pre/post context of
-///     [SessionSettings.clipContextSeconds] seconds, the detection starts
-///     after the available pre-roll and ends at [DetectionRecord.endTimestamp]
-///     when present, otherwise after one inference window.
-///   • For rows referencing the **full recording** (or no audio), `Begin/End
-///     Time` are session-relative offsets.
-///   • A `Survey Time` column is always appended so analysts can recover the
-///     timeline of every detection regardless of file layout. By default this
-///     is `Survey Time (s)` (seconds since session start). When
-///     [useAbsoluteSurveyTime] is true the column becomes `Survey Time (UTC)`
-///     and carries the detection's wall-clock timestamp as an ISO-8601 UTC
-///     string — useful when correlating across surveys, devices, or external
-///     data sources that work in absolute time.
+/// [clipFileMap] maps detection indices to exported filenames in sound-file
+/// sequence order. Only those detections are emitted, with Begin/End Time
+/// measured along the cumulative clip sequence. Without a clip map, times
+/// index the full recording (including gap removal and export trimming).
+/// Survey Time always carries the detection's absolute UTC timestamp.
 ///
 /// Common Name is rendered in the user's species locale when [taxonomy] is
 /// supplied; Scientific Name is always emitted regardless of any UI toggle
@@ -236,12 +227,12 @@ String buildRavenSelectionTable(
   TaxonomyService? taxonomy,
   String speciesLocale = 'en',
   int? clipContextSecondsOverride,
-  bool useAbsoluteSurveyTime = false,
 }) {
   final buf = StringBuffer();
   final hasCoords = session.detections.any(
     (d) => d.latitude != null && d.longitude != null,
   );
+  final hasAltitude = session.detections.any((d) => d.altitude != null);
   final hasNotes = session.detections.any((d) => d.hasNote);
   final hasEvidence = session.detections.any((d) => d.evidence != null);
   // Prefer the per-session value, but allow callers to override (e.g. legacy
@@ -252,25 +243,16 @@ String buildRavenSelectionTable(
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
 
-  // Header row — 'Begin File' is a standard Raven column for multi-file
-  // selection tables. 'Survey Time' is non-standard but harmless to Raven
-  // (extra columns are ignored on import) and lets analysts cross-reference
-  // detections back to the survey timeline. We always emit it: when no clips
-  // are involved it duplicates Begin Time, but having a stable column name
-  // makes downstream tooling simpler than conditionally including it.
-  // 'Review Status' / 'Reviewed At (UTC)' are likewise always emitted so the
-  // schema is stable regardless of whether the session has any reviewed
-  // detections; unreviewed rows carry an empty 'Reviewed At'.
-  final surveyTimeHeader =
-      useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
+  // Raven requires its seven default fields before any additional fields.
   buf.writeln(
-    'Selection\tView\tChannel\tBegin File\t'
+    'Selection\tView\tChannel\t'
     'Begin Time (s)\tEnd Time (s)\t'
-    'Low Freq (Hz)\tHigh Freq (Hz)\t'
+    'Low Freq (Hz)\tHigh Freq (Hz)\tBegin File\t'
     'Common Name\tScientific Name\tConfidence'
-    '\t$surveyTimeHeader'
+    '\tSurvey Time (UTC)'
     '\tReview Status\tReviewed At (UTC)'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}'
+    '${hasAltitude ? '\tAltitude (m)' : ''}'
     '${hasEvidence ? '\tEvidence' : ''}'
     '${hasNotes ? '\tNote' : ''}',
   );
@@ -280,11 +262,14 @@ String buildRavenSelectionTable(
   // gap-removed timeline so resumed sessions don't include stopped time.
   final sessionDurationSec = _recordedTimelineDurationSeconds(session);
 
-  for (var i = 0; i < session.detections.length; i++) {
+  final indices =
+      clipFileMap?.keys ?? Iterable<int>.generate(session.detections.length);
+  var selection = 0;
+  var clipSequenceOffset = 0.0;
+  for (final i in indices) {
     final d = session.detections[i];
     final isGlobal = d.source == DetectionSource.manualGlobal;
 
-    // File reference: clip name (if available) > full recording > empty.
     final clipName = clipFileMap?[i];
     final beginFile = clipName ?? audioFileName ?? '';
     final referencesClip = clipName != null;
@@ -295,26 +280,18 @@ String buildRavenSelectionTable(
       clipContextSeconds: clipContext,
       referencesDetectionClip: referencesClip,
     );
-    // Session-relative offset (always computed; used for either Begin Time
-    // or the auxiliary Survey Time column), rebased onto the exported
-    // (possibly trimmed) audio so it indexes the file the row references.
-    final surveySec =
-        isGlobal
-            ? 0.0
-            : _exportTimelineOffset(session, timing.detectionStartSec);
-
     // Begin/End times depend on whether the row references a clip file.
     final double beginSec;
     final double endSec;
     if (referencesClip) {
-      // Inside the clip: detection sits after the pre-roll context.
-      beginSec = timing.clipDetectionStartSec;
-      endSec = timing.clipDetectionEndSec;
+      beginSec = clipSequenceOffset + timing.clipDetectionStartSec;
+      endSec = clipSequenceOffset + timing.clipDetectionEndSec;
+      clipSequenceOffset += timing.clipDurationSec;
     } else if (isGlobal) {
       beginSec = 0.0;
       endSec = sessionDurationSec;
     } else {
-      beginSec = surveySec;
+      beginSec = _exportTimelineOffset(session, timing.detectionStartSec);
       endSec = _exportTimelineOffset(session, timing.detectionEndSec);
     }
 
@@ -324,44 +301,42 @@ String buildRavenSelectionTable(
       speciesLocale: speciesLocale,
     );
 
-    final surveyTimeValue =
-        useAbsoluteSurveyTime
-            ? d.timestamp.toUtc().toIso8601String()
-            : surveySec.toStringAsFixed(3);
-    final surveyTimeSuffix = '\t$surveyTimeValue';
+    final surveyTimeSuffix = '\t${d.timestamp.toUtc().toIso8601String()}';
     final reviewSuffix =
         '\t${d.reviewStatus.name}'
         '\t${d.reviewedAt?.toUtc().toIso8601String() ?? ''}';
-    final coordSuffix =
-        hasCoords
-            ? '\t${d.latitude?.toStringAsFixed(6) ?? ''}'
-                '\t${d.longitude?.toStringAsFixed(6) ?? ''}'
-            : '';
+    final coordSuffix = hasCoords
+        ? '\t${d.latitude?.toStringAsFixed(6) ?? ''}'
+              '\t${d.longitude?.toStringAsFixed(6) ?? ''}'
+        : '';
+    final altitudeSuffix = hasAltitude
+        ? '\t${d.altitude?.toStringAsFixed(1) ?? ''}'
+        : '';
     final evidenceSuffix = hasEvidence ? '\t${_evidenceField(d)}' : '';
     // Raven selection tables are tab-separated, so collapse any embedded
     // tabs/newlines from a free-form note to spaces to keep one row per
     // detection. Notes longer than ~200 chars are not truncated; Raven
     // tolerates wide cells.
-    final noteSuffix =
-        hasNotes
-            ? '\t${(d.note ?? '').replaceAll(RegExp(r"[\t\r\n]+"), ' ').trim()}'
-            : '';
+    final noteSuffix = hasNotes
+        ? '\t${(d.note ?? '').replaceAll(RegExp(r"[\t\r\n]+"), ' ').trim()}'
+        : '';
 
     buf.writeln(
-      '${i + 1}\t'
+      '${++selection}\t'
       'Spectrogram 1\t'
       '1\t'
-      '$beginFile\t'
       '${beginSec.toStringAsFixed(3)}\t'
       '${endSec.toStringAsFixed(3)}\t'
-      '0\t'
+      '$_lowFreqHz\t'
       '$_highFreqHz\t'
+      '$beginFile\t'
       '$commonName\t'
       '${_displaySci(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
       '$surveyTimeSuffix'
       '$reviewSuffix'
       '$coordSuffix'
+      '$altitudeSuffix'
       '$evidenceSuffix'
       '$noteSuffix',
     );
@@ -397,6 +372,7 @@ String buildCsvExport(
   final hasCoords = session.detections.any(
     (d) => d.latitude != null && d.longitude != null,
   );
+  final hasAltitude = session.detections.any((d) => d.altitude != null);
   final hasNotes = session.detections.any((d) => d.hasNote);
   final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final hasEvidence = session.detections.any((d) => d.evidence != null);
@@ -404,14 +380,14 @@ String buildCsvExport(
       (clipContextSecondsOverride ?? session.settings.clipContextSeconds)
           .toDouble();
 
-  // Survey Time is always included (see [buildRavenSelectionTable] for the
-  // rationale). When [useAbsoluteSurveyTime] is true the column becomes
-  // 'Survey Time (UTC)' and carries an ISO-8601 wall-clock timestamp.
+  // Survey Time is always included. When [useAbsoluteSurveyTime] is true,
+  // the column becomes 'Survey Time (UTC)' with an ISO-8601 timestamp.
   // 'Review Status' / 'Reviewed At (UTC)' are always emitted so downstream
   // pipelines see a stable schema; unreviewed rows carry an empty
   // 'Reviewed At'.
-  final surveyTimeHeader =
-      useAbsoluteSurveyTime ? 'Survey Time (UTC)' : 'Survey Time (s)';
+  final surveyTimeHeader = useAbsoluteSurveyTime
+      ? 'Survey Time (UTC)'
+      : 'Survey Time (s)';
   buf.writeln(
     'Timestamp (UTC),Begin Time (s),End Time (s),'
     'Common Name,Scientific Name,Confidence'
@@ -419,6 +395,7 @@ String buildCsvExport(
     ',$surveyTimeHeader'
     ',Review Status,Reviewed At (UTC)'
     '${hasCoords ? ',Latitude,Longitude' : ''}'
+    '${hasAltitude ? ',Altitude (m)' : ''}'
     '${hasEvidence ? ',Evidence' : ''}'
     '${hasNotes ? ',Note' : ''}'
     '${hasMemos ? ',Voice Memo' : ''}',
@@ -444,10 +421,9 @@ String buildCsvExport(
     );
     // Session-relative offset, rebased onto the exported (possibly trimmed)
     // audio so it indexes the file the row references.
-    final surveySec =
-        isGlobal
-            ? 0.0
-            : _exportTimelineOffset(session, timing.detectionStartSec);
+    final surveySec = isGlobal
+        ? 0.0
+        : _exportTimelineOffset(session, timing.detectionStartSec);
 
     final double beginSec;
     final double endSec;
@@ -467,31 +443,32 @@ String buildCsvExport(
       taxonomy: taxonomy,
       speciesLocale: speciesLocale,
     );
-    final commonName =
-        localizedCommon.contains(',') ? '"$localizedCommon"' : localizedCommon;
+    final commonName = localizedCommon.contains(',')
+        ? '"$localizedCommon"'
+        : localizedCommon;
     final displaySci = _displaySci(d, taxonomy: taxonomy);
     final sciName = displaySci.contains(',') ? '"$displaySci"' : displaySci;
 
     final fileRef = hasFileRefs ? ',${clipName ?? audioFileName ?? ''}' : '';
-    final surveyTimeValue =
-        useAbsoluteSurveyTime
-            ? d.timestamp.toUtc().toIso8601String()
-            : surveySec.toStringAsFixed(3);
+    final surveyTimeValue = useAbsoluteSurveyTime
+        ? d.timestamp.toUtc().toIso8601String()
+        : surveySec.toStringAsFixed(3);
     final surveyTimeRef = ',$surveyTimeValue';
     final reviewRef =
         ',${d.reviewStatus.name}'
         ',${d.reviewedAt?.toUtc().toIso8601String() ?? ''}';
-    final coordRef =
-        hasCoords
-            ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
-                ',${d.longitude?.toStringAsFixed(6) ?? ''}'
-            : '';
+    final coordRef = hasCoords
+        ? ',${d.latitude?.toStringAsFixed(6) ?? ''}'
+              ',${d.longitude?.toStringAsFixed(6) ?? ''}'
+        : '';
+    final altitudeRef = hasAltitude
+        ? ',${d.altitude?.toStringAsFixed(1) ?? ''}'
+        : '';
     final evidenceRef = hasEvidence ? ',${_evidenceField(d)}' : '';
     final noteRef = hasNotes ? ',${_csvField(d.note ?? '')}' : '';
-    final memoRef =
-        hasMemos
-            ? ',${d.hasVoiceMemo ? 'memos/${p.basename(d.voiceMemoPath!)}' : ''}'
-            : '';
+    final memoRef = hasMemos
+        ? ',${d.hasVoiceMemo ? 'memos/${p.basename(d.voiceMemoPath!)}' : ''}'
+        : '';
 
     buf.writeln(
       '${d.timestamp.toUtc().toIso8601String()},'
@@ -504,6 +481,7 @@ String buildCsvExport(
       '$surveyTimeRef'
       '$reviewRef'
       '$coordRef'
+      '$altitudeRef'
       '$evidenceRef'
       '$noteRef'
       '$memoRef',
@@ -526,6 +504,8 @@ String buildCsvExport(
 /// contains `name`, `version`, `description`, `speciesCount`, `sampleRate` from
 /// `model_config.json`.
 Map<String, dynamic> buildExportMetadata({
+  String? device,
+  String? os,
   String? appVersion,
   String? appBuildNumber,
   String? appPackageName,
@@ -542,11 +522,10 @@ Map<String, dynamic> buildExportMetadata({
   // applied values live in `appliedSettings` below.
   Map<String, dynamic>? slimAudioModel;
   if (audioModel != null) {
-    slimAudioModel =
-        Map<String, dynamic>.from(audioModel)
-          ..remove('inference')
-          ..remove('onnx')
-          ..remove('labels');
+    slimAudioModel = Map<String, dynamic>.from(audioModel)
+      ..remove('inference')
+      ..remove('onnx')
+      ..remove('labels');
   }
   Map<String, dynamic>? slimGeoModel;
   if (geoModel != null) {
@@ -554,10 +533,12 @@ Map<String, dynamic> buildExportMetadata({
       ..remove('defaultThreshold');
   }
 
-  final sessionMetadata =
-      session == null ? null : _commonSessionExportMetadata(session);
-  final typeMetadata =
-      session == null ? null : _typeSpecificExportMetadata(session);
+  final sessionMetadata = session == null
+      ? null
+      : _commonSessionExportMetadata(session);
+  final typeMetadata = session == null
+      ? null
+      : _typeSpecificExportMetadata(session);
   final settingsMetadata = _settingsExportMetadata(session, prefs);
 
   return {
@@ -568,6 +549,8 @@ Map<String, dynamic> buildExportMetadata({
       if (appBuildNumber != null) 'buildNumber': appBuildNumber,
       if (appPackageName != null) 'packageName': appPackageName,
     },
+    if (device != null) 'device': device,
+    if (os != null) 'os': os,
     if (sessionMetadata != null) 'session': sessionMetadata,
     if (typeMetadata != null && typeMetadata.isNotEmpty)
       'typeMetadata': typeMetadata,
@@ -672,10 +655,9 @@ Map<String, dynamic> _pickPrefs(
 
 Map<String, dynamic> _commonSessionExportMetadata(LiveSession session) {
   final endTime = session.endTime;
-  final durationSeconds =
-      endTime == null
-          ? null
-          : endTime.difference(session.startTime).inMilliseconds / 1000.0;
+  final durationSeconds = endTime == null
+      ? null
+      : endTime.difference(session.startTime).inMilliseconds / 1000.0;
   return {
     'id': session.id,
     'type': session.type.name,
@@ -693,6 +675,13 @@ Map<String, dynamic> _commonSessionExportMetadata(LiveSession session) {
       'observerName': session.observerName,
     if (session.latitude != null) 'latitude': session.latitude,
     if (session.longitude != null) 'longitude': session.longitude,
+    if (session.altitude != null) 'altitude': session.altitude,
+    if (session.altitudeAccuracy != null)
+      'altitudeAccuracy': session.altitudeAccuracy,
+    if (session.altitudeReference != null)
+      'altitudeReference': session.altitudeReference!.name,
+    if (session.locationFixTime != null)
+      'locationFixTime': session.locationFixTime!.toUtc().toIso8601String(),
     if (session.locationName != null && session.locationName!.isNotEmpty)
       'locationName': session.locationName,
     if (session.stopReason != null) 'stopReason': session.stopReason!.name,
@@ -743,10 +732,9 @@ Map<String, dynamic>? _surveyExportMetadata(LiveSession session) {
 
 Map<String, dynamic> _pointCountExportMetadata(LiveSession session) {
   final endTime = session.endTime;
-  final durationSeconds =
-      endTime == null
-          ? null
-          : endTime.difference(session.startTime).inMilliseconds / 1000.0;
+  final durationSeconds = endTime == null
+      ? null
+      : endTime.difference(session.startTime).inMilliseconds / 1000.0;
   return {
     if (durationSeconds != null)
       'countDurationSeconds': num.parse(durationSeconds.toStringAsFixed(3)),
@@ -796,6 +784,13 @@ String buildJsonExport(
       'transectId': session.transectId,
     if (session.latitude != null) 'latitude': session.latitude,
     if (session.longitude != null) 'longitude': session.longitude,
+    if (session.altitude != null) 'altitude': session.altitude,
+    if (session.altitudeAccuracy != null)
+      'altitudeAccuracy': session.altitudeAccuracy,
+    if (session.altitudeReference != null)
+      'altitudeReference': session.altitudeReference!.name,
+    if (session.locationFixTime != null)
+      'locationFixTime': session.locationFixTime!.toUtc().toIso8601String(),
     if (session.locationName != null) 'locationName': session.locationName,
     if (session.distanceMeters != null)
       'distanceMeters': session.distanceMeters,
@@ -817,52 +812,56 @@ String buildJsonExport(
     if (session.segments.isNotEmpty)
       'segments': session.segments.map((s) => s.toJson()).toList(),
     if (session.aruMetadata != null) 'aru': session.aruMetadata!.toJson(),
-    'detections':
-        session.detections.map((d) {
-          // Gap-removed offset into the recorded audio (see
-          // absoluteToRelative), rebased onto the trimmed extent when the
-          // session was trimmed; keeps resumed sessions aligned.
-          final beginSec = session.trimmedRelative(d.timestamp);
-          return {
-            'timestamp': d.timestamp.toUtc().toIso8601String(),
-            'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
-            'commonName': _localizedCommon(
-              d,
-              taxonomy: taxonomy,
-              speciesLocale: speciesLocale,
-            ),
-            'scientificName': _displaySci(d, taxonomy: taxonomy),
-            'confidence': num.parse(d.confidence.toStringAsFixed(4)),
-            if (d.latitude != null) 'latitude': d.latitude,
-            if (d.longitude != null) 'longitude': d.longitude,
-            if (d.source != DetectionSource.auto) 'source': d.source.name,
-            if (d.evidence != null) 'evidence': d.evidence!.name,
-            // Always emitted so the schema is stable, and three-valued so an
-            // untouched detection reads as 'unreviewed' rather than claiming
-            // a reviewer judged the identification wrong.
-            'reviewStatus': d.reviewStatus.name,
-            if (d.reviewedAt != null)
-              'reviewedAt': d.reviewedAt!.toUtc().toIso8601String(),
-            if (d.hasNote) 'note': d.note,
-            if (d.hasVoiceMemo)
-              'voiceMemo': 'memos/${p.basename(d.voiceMemoPath!)}',
-          };
-        }).toList(),
+    'detections': session.detections.map((d) {
+      // Gap-removed offset into the recorded audio (see
+      // absoluteToRelative), rebased onto the trimmed extent when the
+      // session was trimmed; keeps resumed sessions aligned.
+      final beginSec = session.trimmedRelative(d.timestamp);
+      return {
+        'timestamp': d.timestamp.toUtc().toIso8601String(),
+        'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
+        'commonName': _localizedCommon(
+          d,
+          taxonomy: taxonomy,
+          speciesLocale: speciesLocale,
+        ),
+        'scientificName': _displaySci(d, taxonomy: taxonomy),
+        'confidence': num.parse(d.confidence.toStringAsFixed(4)),
+        if (d.latitude != null) 'latitude': d.latitude,
+        if (d.longitude != null) 'longitude': d.longitude,
+        if (d.altitude != null) 'altitude': d.altitude,
+        if (d.altitudeAccuracy != null) 'altitudeAccuracy': d.altitudeAccuracy,
+        if (d.altitudeReference != null)
+          'altitudeReference': d.altitudeReference!.name,
+        if (d.locationFixTime != null)
+          'locationFixTime': d.locationFixTime!.toUtc().toIso8601String(),
+        if (d.source != DetectionSource.auto) 'source': d.source.name,
+        if (d.evidence != null) 'evidence': d.evidence!.name,
+        // Always emitted so the schema is stable, and three-valued so an
+        // untouched detection reads as 'unreviewed' rather than claiming
+        // a reviewer judged the identification wrong.
+        'reviewStatus': d.reviewStatus.name,
+        if (d.reviewedAt != null)
+          'reviewedAt': d.reviewedAt!.toUtc().toIso8601String(),
+        if (d.hasNote) 'note': d.note,
+        if (d.hasVoiceMemo)
+          'voiceMemo': 'memos/${p.basename(d.voiceMemoPath!)}',
+      };
+    }).toList(),
     if (session.annotations.isNotEmpty)
-      'annotations':
-          session.annotations.map((annotation) {
-            final json = annotation.toJson();
-            final offset = _exportAnnotationOffset(
-              session,
-              annotation.offsetInRecording,
-            );
-            if (offset == null) {
-              json.remove('offsetInRecording');
-            } else {
-              json['offsetInRecording'] = offset;
-            }
-            return json;
-          }).toList(),
+      'annotations': session.annotations.map((annotation) {
+        final json = annotation.toJson();
+        final offset = _exportAnnotationOffset(
+          session,
+          annotation.offsetInRecording,
+        );
+        if (offset == null) {
+          json.remove('offsetInRecording');
+        } else {
+          json['offsetInRecording'] = offset;
+        }
+        return json;
+      }).toList(),
   };
 
   return const JsonEncoder.withIndent('  ').convert(map);
@@ -877,13 +876,12 @@ Future<Map<String, dynamic>?> _withAudioIntegrityMetadata(
 
   try {
     final canDart = await AudioDecoder.canDecodeDart(audioPath);
-    final audio =
-        canDart
-            ? await AudioDecoder.inspectFile(audioPath)
-            : await NativeAudioDecoder.inspectFile(
-              audioPath,
-              _formatLabelForPath(audioPath),
-            );
+    final audio = canDart
+        ? await AudioDecoder.inspectFile(audioPath)
+        : await NativeAudioDecoder.inspectFile(
+            audioPath,
+            _formatLabelForPath(audioPath),
+          );
     final audioSec = audio.duration.inMicroseconds / 1e6;
     final expectedSec = session.expectedRecordedAudioSeconds;
     if (expectedSec <= 0 || audioSec + 5 >= expectedSec) return metadata;
@@ -988,20 +986,28 @@ Future<String?> buildSessionExport(
   // Full recording: single finalized file, or a session directory containing
   // the finalized `full.wav` / `full.flac` recording.
   final hasFullRecording = fullRecordingPath != null;
-  final fullRecordingFile =
-      fullRecordingPath == null ? null : File(fullRecordingPath);
-  final fullRecordingSourceExt =
-      fullRecordingFile == null
-          ? ''
-          : await sourceAudioExtensionForFile(fullRecordingFile);
+  final fullRecordingFile = fullRecordingPath == null
+      ? null
+      : File(fullRecordingPath);
+  final fullRecordingSourceExt = fullRecordingFile == null
+      ? ''
+      : await sourceAudioExtensionForFile(fullRecordingFile);
   final fullRecordingExportExt = sharedAudioExtensionForSource(
     fullRecordingSourceExt,
     shareAudioAsWav: shareAudioAsWav,
   );
+  final fallbackDeviceInfo = metadata == null && session.aruMetadata != null
+      ? await exportDeviceInfo()
+      : null;
   final baseMetadata =
       metadata ??
       (session.aruMetadata != null
-          ? buildExportMetadata(session: session, speciesLocale: speciesLocale)
+          ? buildExportMetadata(
+              session: session,
+              speciesLocale: speciesLocale,
+              device: fallbackDeviceInfo?.device,
+              os: fallbackDeviceInfo?.os,
+            )
           : null);
   var exportMetadata = await _withAudioIntegrityMetadata(
     session,
@@ -1029,16 +1035,19 @@ Future<String?> buildSessionExport(
     }
   }
   final hasClips = clipEntries.isNotEmpty;
+  final usesDetectionClips =
+      !hasFullRecording &&
+      (session.settings.recordingMode == 'detections' ||
+          session.detections.any((d) => (d.audioClipPath ?? '').isNotEmpty));
   final hasAnyAudio = hasFullRecording || hasClips;
 
   // ── Build export clip names (sequential, 1-indexed, zero-padded) ────
-  final audioExt =
-      hasFullRecording
-          ? fullRecordingExportExt
-          : (hasClips
-              ? clipAudioExts[clipEntries.keys.first] ??
+  final audioExt = hasFullRecording
+      ? fullRecordingExportExt
+      : (hasClips
+            ? clipAudioExts[clipEntries.keys.first] ??
                   fallbackAudioShareExtension
-              : fallbackAudioShareExtension);
+            : fallbackAudioShareExtension);
   final audioFileName = '$prefix$audioExt';
 
   // ── Apply the session's trim to the exported audio ────────────────
@@ -1086,6 +1095,16 @@ Future<String?> buildSessionExport(
     }
     clipFileMap = clipExportNames;
   }
+
+  // Unbundled Raven audio references identify the existing source files.
+  final ravenClipFileMap = usesDetectionClips
+      ? (includeAudio
+            ? clipExportNames
+            : <int, String>{
+                for (final i in clipExportNames.keys)
+                  i: p.basename(clipEntries[i]!.path),
+              })
+      : null;
 
   final aruCycleAudioEntries = <int, ({File file, String name})>{};
   final aruCycles = session.aruMetadata?.cycles ?? const <AruCycleMetadata>[];
@@ -1162,11 +1181,10 @@ Future<String?> buildSessionExport(
           content: buildRavenSelectionTable(
             session,
             audioFileName: hasFullRecording ? audioFileName : null,
-            clipFileMap: clipFileMap,
+            clipFileMap: ravenClipFileMap,
             taxonomy: taxonomy,
             speciesLocale: speciesLocale,
             clipContextSecondsOverride: clipContextSecondsOverride,
-            useAbsoluteSurveyTime: useAbsoluteSurveyTime,
           ),
         );
         break;
@@ -1225,10 +1243,9 @@ Future<String?> buildSessionExport(
       }
     }
 
-    final fallbackName =
-        shareAudioAsWav && fullRecordingSourceExt == '.flac'
-            ? '$prefix$fullRecordingSourceExt'
-            : audioFileName;
+    final fallbackName = shareAudioAsWav && fullRecordingSourceExt == '.flac'
+        ? '$prefix$fullRecordingSourceExt'
+        : audioFileName;
     final dest = p.join(p.dirname(fullRecordingPath), fallbackName);
     final destFile = File(dest);
     if (await destFile.exists()) {
@@ -1246,48 +1263,39 @@ Future<String?> buildSessionExport(
   // ── Bundle into ZIP ───────────────────────────────────────────────
   if (mustZip) {
     final archive = Archive();
+    final archiveFiles = <String, String>{};
 
-    Future<Uint8List> audioBytes(String path) async {
+    Future<void> addAudio(String name, String path) async {
       final sourceExt = await sourceAudioExtensionForFile(File(path));
       if (shareAudioAsWav && sourceExt == '.flac') {
         final bytes = await _flacToWavBytes(path);
         if (bytes == null) {
           throw FormatException('Could not convert FLAC to WAV: $path');
         }
-        return bytes;
+        archive.addFile(ArchiveFile(name, bytes.length, bytes));
+      } else {
+        archiveFiles[name] = path;
       }
-      return File(path).readAsBytes();
     }
 
     if (includeAudio && hasAnyAudio) {
       if (hasFullRecording) {
         // A materialized trim is already in the requested container.
-        final bytes =
-            trimmedRecording != null
-                ? await trimmedRecording.file.readAsBytes()
-                : await audioBytes(fullRecordingPath);
-        archive.addFile(ArchiveFile(audioFileName, bytes.length, bytes));
         if (trimmedRecording != null) {
-          // The bytes are in the archive now; don't leave a second copy of
-          // the recording sitting in the temp directory.
-          try {
-            await trimmedRecording.file.delete();
-          } catch (_) {
-            // Best-effort cleanup.
-          }
+          archiveFiles[audioFileName] = trimmedRecording.file.path;
+        } else {
+          await addAudio(audioFileName, fullRecordingPath);
         }
       } else {
         for (final entry in clipExportNames.entries) {
-          final bytes = await audioBytes(clipEntries[entry.key]!.path);
-          archive.addFile(ArchiveFile(entry.value, bytes.length, bytes));
+          await addAudio(entry.value, clipEntries[entry.key]!.path);
         }
       }
     }
 
     if (includeAudio && hasAruCycleAudio) {
       for (final entry in aruCycleAudioEntries.values) {
-        final bytes = await audioBytes(entry.file.path);
-        archive.addFile(ArchiveFile(entry.name, bytes.length, bytes));
+        await addAudio(entry.name, entry.file.path);
       }
     }
 
@@ -1311,14 +1319,7 @@ Future<String?> buildSessionExport(
       if (memoPath == null) continue;
       final memoFile = File(memoPath);
       if (!await memoFile.exists()) continue;
-      final memoBytes = await memoFile.readAsBytes();
-      archive.addFile(
-        ArchiveFile(
-          'memos/${p.basename(memoPath)}',
-          memoBytes.length,
-          memoBytes,
-        ),
-      );
+      archiveFiles['memos/${p.basename(memoPath)}'] = memoPath;
     }
 
     // Same treatment for session-level annotation memos.
@@ -1327,14 +1328,7 @@ Future<String?> buildSessionExport(
       if (memoPath == null) continue;
       final memoFile = File(memoPath);
       if (!await memoFile.exists()) continue;
-      final memoBytes = await memoFile.readAsBytes();
-      archive.addFile(
-        ArchiveFile(
-          'memos/${p.basename(memoPath)}',
-          memoBytes.length,
-          memoBytes,
-        ),
-      );
+      archiveFiles['memos/${p.basename(memoPath)}'] = memoPath;
     }
 
     // Always drop a metadata side-file when the caller provided one and
@@ -1342,9 +1336,8 @@ Future<String?> buildSessionExport(
     // travels with the bundle regardless of which document format the
     // user picked.
     if (includeAppMetadata && exportMetadata != null) {
-      final metaJson = const JsonEncoder.withIndent(
-        '  ',
-      ).convert(exportMetadata);
+      final metaJson = const JsonEncoder.withIndent('  ')
+          .convert(exportMetadata);
       final metaBytes = Uint8List.fromList(utf8.encode(metaJson));
       archive.addFile(
         ArchiveFile('$prefix.metadata.json', metaBytes.length, metaBytes),
@@ -1400,32 +1393,43 @@ Future<String?> buildSessionExport(
       );
     }
 
-    final zipBytes = ZipEncoder().encode(archive);
-    final zipDir =
-        hasFullRecording
-            ? p.dirname(fullRecordingPath)
-            : (hasClips
-                ? p.dirname(clipEntries.values.first.path)
-                : (hasAruCycleAudio
+    final zipDir = hasFullRecording
+        ? p.dirname(fullRecordingPath)
+        : (hasClips
+              ? p.dirname(clipEntries.values.first.path)
+              : (hasAruCycleAudio
                     ? p.dirname(aruCycleAudioEntries.values.first.file.path)
                     : Directory.systemTemp.path));
     final zipPath = p.join(zipDir, '$prefix.zip');
-    await File(zipPath).writeAsBytes(zipBytes);
+    try {
+      await writeExportZip(
+        outputPath: zipPath,
+        files: archiveFiles,
+        contents: archive,
+      );
+    } finally {
+      if (trimmedRecording != null) {
+        // Keep the staged trim until the worker has finished reading it.
+        try {
+          await trimmedRecording.file.delete();
+        } catch (_) {
+          // Best-effort cleanup.
+        }
+      }
+    }
 
     return zipPath;
   } else {
     // Single-document, no audio, no HTML, no ZIP.
     final entry = docs.values.first;
-    final dir =
-        hasFullRecording
-            ? p.dirname(fullRecordingPath)
-            : (hasClips
-                ? p.dirname(clipEntries.values.first.path)
-                : Directory.systemTemp.path);
+    final dir = hasFullRecording
+        ? p.dirname(fullRecordingPath)
+        : (hasClips
+              ? p.dirname(clipEntries.values.first.path)
+              : Directory.systemTemp.path);
     final filePath = p.join(dir, '$prefix${entry.extension}');
-    await File(
-      filePath,
-    ).writeAsBytes(Uint8List.fromList(utf8.encode(entry.content)));
+    await File(filePath)
+        .writeAsBytes(Uint8List.fromList(utf8.encode(entry.content)));
     return filePath;
   }
 }
@@ -1496,6 +1500,9 @@ String buildGpxExport(
   buf.writeln('<?xml version="1.0" encoding="UTF-8"?>');
   buf.writeln('<gpx version="1.1" creator="BirdNET Live"');
   buf.writeln('  xmlns="http://www.topografix.com/GPX/1/1"');
+  buf.writeln(
+    '  xmlns:birdnet="https://birdnet-team.github.io/birdnet-live-app/gpx"',
+  );
   buf.writeln('  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"');
   buf.writeln(
     '  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 '
@@ -1504,13 +1511,20 @@ String buildGpxExport(
 
   // Metadata.
   buf.writeln('  <metadata>');
+  // GPX 1.1 fixes the child order: name, desc, author, ..., time, ...,
+  // extensions. Strict validators reject anything else.
   buf.writeln('    <name>${_xmlEscape(session.displayName)}</name>');
-  buf.writeln(
-    '    <time>${session.startTime.toUtc().toIso8601String()}</time>',
-  );
   if (session.observerName != null && session.observerName!.isNotEmpty) {
     buf.writeln(
       '    <author><name>${_xmlEscape(session.observerName!)}</name></author>',
+    );
+  }
+  buf.writeln(
+    '    <time>${session.startTime.toUtc().toIso8601String()}</time>',
+  );
+  if (session.altitude != null) {
+    buf.writeln(
+      '    <extensions>${_gpxAltitudeExtension(session.altitude!, session.altitudeReference, session.altitudeAccuracy, session.locationFixTime)}</extensions>',
     );
   }
   buf.writeln('  </metadata>');
@@ -1519,6 +1533,9 @@ String buildGpxExport(
   for (final d in session.detections) {
     if (d.latitude == null || d.longitude == null) continue;
     buf.writeln('  <wpt lat="${d.latitude}" lon="${d.longitude}">');
+    if (d.altitude != null) {
+      buf.writeln('    <ele>${d.altitude!.toStringAsFixed(1)}</ele>');
+    }
     buf.writeln('    <time>${d.timestamp.toUtc().toIso8601String()}</time>');
     final commonName = _localizedCommon(
       d,
@@ -1526,9 +1543,6 @@ String buildGpxExport(
       speciesLocale: speciesLocale,
     );
     buf.writeln('    <name>${_xmlEscape(commonName)}</name>');
-    buf.writeln(
-      '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
-    );
     if (d.isReviewed) {
       // GPX <sym> is a free-form symbol hint; downstream tools (QGIS,
       // GPSBabel, Garmin BaseCamp) treat unknown values as a tag rather
@@ -1538,12 +1552,22 @@ String buildGpxExport(
       // waypoints get neither tag — absence is the honest encoding of
       // "nobody has judged this".
       final verb = d.isConfirmed ? 'Confirmed' : 'Rejected';
-      buf.writeln('    <sym>${d.reviewStatus.name}</sym>');
       if (d.reviewedAt != null) {
         buf.writeln(
           '    <cmt>$verb at ${d.reviewedAt!.toUtc().toIso8601String()}</cmt>',
         );
       }
+    }
+    buf.writeln(
+      '    <desc>${_xmlEscape(_displaySci(d, taxonomy: taxonomy))} (${(d.confidence * 100).toStringAsFixed(1)}%)</desc>',
+    );
+    if (d.isReviewed) {
+      buf.writeln('    <sym>${d.reviewStatus.name}</sym>');
+    }
+    if (d.altitude != null) {
+      buf.writeln(
+        '    <extensions>${_gpxAltitudeExtension(d.altitude!, d.altitudeReference, d.altitudeAccuracy, d.locationFixTime)}</extensions>',
+      );
     }
     buf.writeln('  </wpt>');
   }
@@ -1560,6 +1584,11 @@ String buildGpxExport(
         buf.write('<ele>${pt.altitude!.toStringAsFixed(1)}</ele>');
       }
       buf.write('<time>${pt.timestamp.toUtc().toIso8601String()}</time>');
+      if (pt.altitude != null) {
+        buf.write(
+          '<extensions>${_gpxAltitudeExtension(pt.altitude!, pt.altitudeReference, pt.altitudeAccuracy, pt.timestamp)}</extensions>',
+        );
+      }
       buf.writeln('</trkpt>');
     }
     buf.writeln('    </trkseg>');
@@ -1569,6 +1598,17 @@ String buildGpxExport(
   buf.writeln('</gpx>');
   return buf.toString();
 }
+
+String _gpxAltitudeExtension(
+  double altitude,
+  AltitudeReference? reference,
+  double? accuracy,
+  DateTime? fixTime,
+) =>
+    '<birdnet:altitude reference="${reference?.name ?? 'unknown'}"'
+    '${accuracy != null ? ' accuracyMeters="$accuracy"' : ''}'
+    '${fixTime != null ? ' fixTime="${fixTime.toUtc().toIso8601String()}"' : ''}>'
+    '$altitude</birdnet:altitude>';
 
 /// XML-safe escaping for attribute and text content.
 String _xmlEscape(String input) {
@@ -1603,7 +1643,7 @@ Future<String?> buildMultiSessionExport(
 }) async {
   if (sessions.isEmpty) return null;
 
-  final archive = Archive();
+  final archiveFiles = <String, String>{};
   final timestamp = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
   final bulkPrefix = 'BirdNET_Live_Bulk_Export_$timestamp';
 
@@ -1648,17 +1688,19 @@ Future<String?> buildMultiSessionExport(
 
     final file = File(path);
     if (file.existsSync()) {
-      final bytes = await file.readAsBytes();
       final filename = p.basename(path);
-      archive.addFile(ArchiveFile(filename, bytes.length, bytes));
+      archiveFiles[filename] = path;
     }
   }
 
-  if (archive.isEmpty) return null;
+  if (archiveFiles.isEmpty) return null;
 
-  final zipBytes = ZipEncoder().encode(archive);
   final tempDir = Directory.systemTemp.path;
   final zipPath = p.join(tempDir, '$bulkPrefix.zip');
-  await File(zipPath).writeAsBytes(zipBytes);
+  await writeExportZip(
+    outputPath: zipPath,
+    files: archiveFiles,
+    contents: Archive(),
+  );
   return zipPath;
 }

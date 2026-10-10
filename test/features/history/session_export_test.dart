@@ -12,6 +12,7 @@ import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
@@ -22,6 +23,7 @@ LiveSession _makeSession({
   String? recordingPath,
   int windowDuration = 3,
   int clipContextSeconds = 0,
+  String? recordingMode,
   SessionType type = SessionType.live,
 }) {
   final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
@@ -38,6 +40,7 @@ LiveSession _makeSession({
       inferenceRate: 1.0,
       speciesFilterMode: 'off',
       clipContextSeconds: clipContextSeconds,
+      recordingMode: recordingMode,
     ),
   );
 }
@@ -76,6 +79,62 @@ final _prefix =
     'BirdNET_Live_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.utc(2025, 6, 15, 8, 0, 0).toLocal())}';
 
 void main() {
+  test('altitude survives persistence and every tabular/JSON export', () {
+    final start = DateTime.utc(2025, 6, 15, 8);
+    final session =
+        _makeSession(
+            detections: [
+              DetectionRecord(
+                scientificName: 'Turdus merula',
+                commonName: 'Eurasian Blackbird',
+                confidence: 0.9,
+                timestamp: start.add(const Duration(seconds: 10)),
+                latitude: 52.52,
+                longitude: 13.405,
+                altitude: 42.25,
+                altitudeAccuracy: 7.5,
+                altitudeReference: AltitudeReference.meanSeaLevel,
+                locationFixTime: start,
+              ),
+            ],
+          )
+          ..latitude = 52.52
+          ..longitude = 13.405
+          ..altitude = 42.25
+          ..altitudeAccuracy = 7.5
+          ..altitudeReference = AltitudeReference.meanSeaLevel
+          ..locationFixTime = start;
+
+    final restored = LiveSession.fromJson(session.toJson());
+    expect(restored.altitude, 42.25);
+    expect(restored.detections.single.altitude, 42.25);
+    expect(
+      restored.detections.single.altitudeReference,
+      AltitudeReference.meanSeaLevel,
+    );
+    expect(restored.locationFixTime, start);
+    expect(restored.detections.single.locationFixTime, start);
+
+    final csv = buildCsvExport(session);
+    final raven = buildRavenSelectionTable(session);
+    final json = jsonDecode(buildJsonExport(session)) as Map<String, dynamic>;
+    // Tabular exports add exactly one column; reference and uncertainty
+    // live in JSON and GPX.
+    expect(csv, contains(',Latitude,Longitude,Altitude (m)'));
+    expect(csv, contains('52.520000,13.405000,42.3'));
+    expect(csv, isNot(contains('Altitude Reference')));
+    expect(csv, isNot(contains('Session')));
+    expect(raven, contains('\tLatitude\tLongitude\tAltitude (m)'));
+    expect(raven, contains('52.520000\t13.405000\t42.3'));
+    expect(raven, isNot(contains('Altitude Reference')));
+    expect(json['altitude'], 42.25);
+    expect((json['detections'] as List).single['altitude'], 42.25);
+    expect(json['locationFixTime'], start.toIso8601String());
+    expect(
+      (json['detections'] as List).single['locationFixTime'],
+      start.toIso8601String(),
+    );
+  });
   test('common names are localized consistently in every export format', () {
     final start = DateTime.utc(2025, 6, 15, 8);
     final session = _makeSession(
@@ -120,6 +179,16 @@ void main() {
       final table = buildRavenSelectionTable(session);
       final header = table.split('\n').first;
 
+      expect(header.split('\t').take(8), [
+        'Selection',
+        'View',
+        'Channel',
+        'Begin Time (s)',
+        'End Time (s)',
+        'Low Freq (Hz)',
+        'High Freq (Hz)',
+        'Begin File',
+      ]);
       expect(header, contains('Selection'));
       expect(header, contains('View'));
       expect(header, contains('Channel'));
@@ -184,8 +253,20 @@ void main() {
           .toList()[1]
           .split('\t');
 
-      expect(cols[4], '310.000'); // Begin Time (gap removed)
-      expect(cols[5], '313.000'); // End Time (310 + 3)
+      expect(cols[3], '310.000'); // Begin Time (gap removed)
+      expect(cols[4], '313.000'); // End Time (310 + 3)
+
+      session.detections.insert(
+        0,
+        _det('Parus major', 'Great Tit', 0.8, Duration.zero, start),
+      );
+      final clipRows = buildRavenSelectionTable(
+        session,
+        clipFileMap: {0: 'first.wav', 1: 'resumed.wav'},
+        clipContextSecondsOverride: 1,
+      ).split('\n');
+      expect(clipRows[2].split('\t').sublist(3, 5), ['6.000', '9.000']);
+      expect(clipRows[2].split('\t')[11], '2025-06-15T08:35:10.000Z');
     });
 
     test('resumed session: global annotation ends at recorded duration', () {
@@ -224,8 +305,8 @@ void main() {
       );
 
       final cols = buildRavenSelectionTable(session).split('\n')[1].split('\t');
-      expect(cols[4], '0.000');
-      expect(cols[5], '600.000');
+      expect(cols[3], '0.000');
+      expect(cols[4], '600.000');
     });
 
     test('empty detections produces header only', () {
@@ -266,16 +347,16 @@ void main() {
 
       expect(lines.length, 3); // header + 2 detections
 
-      // First detection â€” columns shifted by Begin File.
+      // First detection.
       final cols1 = lines[1].split('\t');
       expect(cols1[0], '1'); // Selection
       expect(cols1[1], 'Spectrogram 1'); // View
       expect(cols1[2], '1'); // Channel
-      expect(cols1[3], '$_prefix.wav'); // Begin File
-      expect(cols1[4], '10.000'); // Begin Time
-      expect(cols1[5], '13.000'); // End Time (10 + 3)
-      expect(cols1[6], '0'); // Low Freq
-      expect(cols1[7], '16000'); // High Freq
+      expect(cols1[7], '$_prefix.wav'); // Begin File
+      expect(cols1[3], '10.000'); // Begin Time
+      expect(cols1[4], '13.000'); // End Time (10 + 3)
+      expect(cols1[5], '0.0'); // Low Freq
+      expect(cols1[6], '16000.0'); // High Freq
       expect(cols1[8], 'Eurasian Blackbird'); // Common Name
       expect(cols1[9], 'Turdus merula'); // Scientific Name
       expect(cols1[10], '0.9500'); // Confidence
@@ -283,64 +364,153 @@ void main() {
       // Second detection.
       final cols2 = lines[2].split('\t');
       expect(cols2[0], '2');
-      expect(cols2[3], '$_prefix.wav');
-      expect(cols2[4], '25.500'); // 25.5 seconds
-      expect(cols2[5], '28.500'); // 25.5 + 3
+      expect(cols2[7], '$_prefix.wav');
+      expect(cols2[3], '25.500'); // 25.5 seconds
+      expect(cols2[4], '28.500'); // 25.5 + 3
+      expect(cols2.sublist(5, 7), ['0.0', '16000.0']);
       expect(cols2[8], 'European Robin');
     });
 
-    test(
-      'clip mode: Begin/End Time are in-clip offsets and a Survey Time column is added',
-      () {
-        final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
-        final session = _makeSession(
-          windowDuration: 3,
-          clipContextSeconds: 1,
-          detections: [
-            _det(
-              'Turdus merula',
-              'Eurasian Blackbird',
-              0.95,
-              const Duration(seconds: 10),
-              start,
-            ),
-            _det(
-              'Erithacus rubecula',
-              'European Robin',
-              0.72,
-              const Duration(seconds: 25),
-              start,
-            ),
-          ],
-        );
+    test('clip mode: Begin/End Time follow the sound-file sequence', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+      final session = _makeSession(
+        windowDuration: 3,
+        clipContextSeconds: 1,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.95,
+            const Duration(seconds: 10),
+            start,
+          ),
+          _det(
+            'Erithacus rubecula',
+            'European Robin',
+            0.72,
+            const Duration(seconds: 25),
+            start,
+          ),
+        ],
+      );
 
-        final table = buildRavenSelectionTable(
+      final table = buildRavenSelectionTable(
+        session,
+        clipFileMap: {
+          0: '${_prefix}_clip_001_Eurasian_Blackbird.flac',
+          1: '${_prefix}_clip_002_European_Robin.flac',
+        },
+      );
+      final lines = table.split('\n').where((l) => l.isNotEmpty).toList();
+
+      expect(lines.first, contains('Survey Time (UTC)'));
+
+      final cols1 = lines[1].split('\t');
+      expect(cols1[7], '${_prefix}_clip_001_Eurasian_Blackbird.flac');
+      expect(cols1.sublist(5, 7), ['0.0', '16000.0']);
+      // Detection sits at [clipContext, clipContext + window] inside the clip.
+      expect(cols1[3], '1.000');
+      expect(cols1[4], '4.000');
+      // Survey Time retains the absolute detection timestamp.
+      expect(cols1[11], '2025-06-15T08:00:10.000Z');
+
+      final cols2 = lines[2].split('\t');
+      expect(cols2[7], '${_prefix}_clip_002_European_Robin.flac');
+      expect(cols2[3], '6.000');
+      expect(cols2[4], '9.000');
+      expect(cols2[11], '2025-06-15T08:00:25.000Z');
+    });
+
+    test('clip sequence follows map order and the context override', () {
+      final start = DateTime.utc(2025, 6, 15, 8);
+      final session = _makeSession(
+        windowDuration: 5,
+        detections: List.generate(
+          4,
+          (i) => _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.9,
+            Duration(seconds: i * 20),
+            start,
+            endOffset: Duration(seconds: i * 20 + 15),
+          ),
+        ),
+      );
+      session.trimStartSec = 10;
+      session.trimEndSec = 50;
+      final rows = buildRavenSelectionTable(
+        session,
+        clipFileMap: {3: 'first.wav', 0: 'second.wav'},
+        clipContextSecondsOverride: 2,
+      ).split('\n');
+      expect(rows[1].split('\t').sublist(3, 5), ['2.000', '7.000']);
+      expect(rows[2].split('\t').sublist(3, 5), ['11.000', '16.000']);
+      expect(rows[1].split('\t')[7], 'first.wav');
+      expect(rows[2].split('\t')[7], 'second.wav');
+      expect(rows.where((row) => row.isNotEmpty).length, 3);
+      expect(
+        buildRavenSelectionTable(
           session,
-          clipFileMap: {
-            0: '${_prefix}_clip_001_Eurasian_Blackbird.flac',
-            1: '${_prefix}_clip_002_European_Robin.flac',
-          },
+          clipFileMap: {},
+        ).split('\n').where((row) => row.isNotEmpty).length,
+        1,
+      );
+    });
+
+    test('optional fields keep every Raven row structurally valid', () {
+      final start = DateTime.utc(2025, 6, 15, 8);
+      final plain = _det('Parus major', 'Great Tit', 0.8, Duration.zero, start);
+      final annotated = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.9,
+        timestamp: start.add(const Duration(seconds: 10)),
+        latitude: 52.52,
+        longitude: 13.405,
+        note: ' first\tsecond\r\nthird\nfourth ',
+        evidence: DetectionEvidence.heardAndSeen,
+        reviewStatus: ReviewStatus.confirmed,
+        reviewedAt: start,
+      );
+      for (final detections in [
+        [plain],
+        [annotated, plain],
+      ]) {
+        final table = buildRavenSelectionTable(
+          _makeSession(detections: detections),
         );
-        final lines = table.split('\n').where((l) => l.isNotEmpty).toList();
-
-        // Header gains 'Survey Time (s)' when any row references a clip.
-        expect(lines.first, contains('Survey Time (s)'));
-
-        final cols1 = lines[1].split('\t');
-        expect(cols1[3], '${_prefix}_clip_001_Eurasian_Blackbird.flac');
-        // Detection sits at [clipContext, clipContext + window] inside the clip.
-        expect(cols1[4], '1.000');
-        expect(cols1[5], '4.000');
-        // Survey Time column carries the session-relative offset.
-        expect(cols1[11], '10.000');
-
-        final cols2 = lines[2].split('\t');
-        expect(cols2[3], '${_prefix}_clip_002_European_Robin.flac');
-        expect(cols2[4], '1.000');
-        expect(cols2[5], '4.000');
-        expect(cols2[11], '25.000');
-      },
-    );
+        final lines = table.split('\n');
+        expect(lines.removeLast(), ''); // One final line terminator.
+        final header = lines.first.split('\t');
+        for (final line in lines) {
+          expect(line, isNotEmpty);
+          expect(line.split('\t').length, header.length);
+        }
+        for (final line in lines.skip(1)) {
+          final fields = line.split('\t');
+          for (final index in [0, 2, 3, 4, 5, 6]) {
+            expect(double.parse(fields[index]).isFinite, isTrue);
+          }
+        }
+        if (header.contains('Note')) {
+          expect(
+            lines[1].split('\t')[header.indexOf('Note')],
+            'first second third fourth',
+          );
+          final empty = lines[2].split('\t');
+          for (final column in [
+            'Latitude',
+            'Longitude',
+            'Note',
+            'Evidence',
+            'Reviewed At (UTC)',
+          ]) {
+            expect(empty[header.indexOf(column)], '');
+          }
+        }
+      }
+    });
 
     test('no file refs: Begin File column is empty', () {
       final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
@@ -358,8 +528,8 @@ void main() {
 
       final table = buildRavenSelectionTable(session);
       final cols = table.split('\n')[1].split('\t');
-      expect(cols[3], ''); // Begin File empty
-      expect(cols[4], '7.000'); // Begin Time still works
+      expect(cols[7], ''); // Begin File empty
+      expect(cols[3], '7.000'); // Begin Time still works
     });
 
     test('uses session window duration for end time', () {
@@ -381,8 +551,8 @@ void main() {
       final lines = table.split('\n').where((l) => l.isNotEmpty).toList();
       final cols = lines[1].split('\t');
 
-      expect(cols[4], '7.000'); // Begin
-      expect(cols[5], '12.000'); // End (7 + 5)
+      expect(cols[3], '7.000'); // Begin
+      expect(cols[4], '12.000'); // End (7 + 5)
     });
 
     test('uses endTimestamp for continuous detections in full recordings', () {
@@ -407,8 +577,8 @@ void main() {
       );
       final cols = table.split('\n')[1].split('\t');
 
-      expect(cols[4], '5.000');
-      expect(cols[5], '19.000');
+      expect(cols[3], '5.000');
+      expect(cols[4], '19.000');
     });
 
     test('clip rows cover one analysis window for continuous detections', () {
@@ -434,9 +604,9 @@ void main() {
       );
       final cols = table.split('\n')[1].split('\t');
 
-      expect(cols[4], '1.000');
-      expect(cols[5], '4.000');
-      expect(cols[11], '5.000');
+      expect(cols[3], '1.000');
+      expect(cols[4], '4.000');
+      expect(cols[11], '2025-06-15T08:00:05.000Z');
     });
 
     test('includes Latitude/Longitude when detections have coordinates', () {
@@ -504,13 +674,13 @@ void main() {
         session,
         audioFileName: '$_prefix.wav',
       );
-      expect(table.split('\n').first, contains('Survey Time (s)'));
+      expect(table.split('\n').first, contains('Survey Time (UTC)'));
       final cols = table.split('\n')[1].split('\t');
-      expect(cols[11], '10.000');
+      expect(cols[11], '2025-06-15T08:00:10.000Z');
     });
 
-    test('useAbsoluteSurveyTime renames column and emits ISO UTC value', () {
-      final start = DateTime.utc(2025, 6, 15, 8, 0, 0);
+    test('Survey Time emits ISO UTC without a display preference', () {
+      final start = DateTime.utc(2025, 6, 15, 8, 0, 0).toLocal();
       final session = _makeSession(
         detections: [
           _det(
@@ -526,7 +696,6 @@ void main() {
       final table = buildRavenSelectionTable(
         session,
         audioFileName: '$_prefix.wav',
-        useAbsoluteSurveyTime: true,
       );
       final header = table.split('\n').first;
       expect(header, contains('Survey Time (UTC)'));
@@ -679,6 +848,34 @@ void main() {
       },
     );
 
+    test('clip mode without saved paths exports a Raven header only', () async {
+      final session = _makeSession(
+        recordingMode: 'detections',
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.9,
+            Duration.zero,
+            DateTime.utc(2025, 6, 15, 8),
+          ),
+        ],
+      );
+      final path = await buildSessionExport(
+        session,
+        formats: const {'raven'},
+        includeAudio: true,
+      );
+      expect(path, isNotNull);
+      final lines = File(path!)
+          .readAsStringSync()
+          .split('\n')
+          .where((row) => row.isNotEmpty)
+          .toList();
+      expect(lines, hasLength(1));
+      expect(lines.single, startsWith('Selection\t'));
+    });
+
     test(
       'creates a ZIP with wav and selection table (full recording)',
       () async {
@@ -785,6 +982,111 @@ void main() {
       expect(tableContent, contains('_clip_001_Eurasian_Blackbird.flac'));
       expect(tableContent, contains('_clip_002_European_Robin.flac'));
     });
+
+    for (final retained in [
+      List.generate(10, (i) => i),
+      [0, 3, 8],
+      <int>[],
+    ]) {
+      test('Raven ZIP sequence with ${retained.length} of 10 clips', () async {
+        final start = DateTime.utc(2025, 6, 15, 8);
+        final detections = <DetectionRecord>[];
+        for (var i = 0; i < 10; i++) {
+          final path = p.join(tempDir.path, 'source_${10 - i}.wav');
+          if (retained.contains(i)) {
+            await WavWriter.writePcm16File(
+              filePath: path,
+              samples: Int16List(32000 * 5),
+              sampleRate: 32000,
+            );
+          }
+          detections.add(
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.9,
+              Duration(seconds: i * 10),
+              start,
+              audioClipPath: i == 1 && !retained.contains(i) ? null : path,
+            ),
+          );
+        }
+        final session = _makeSession(
+          recordingPath: tempDir.path,
+          clipContextSeconds: 1,
+          detections: detections,
+        );
+        String? previousTable;
+        for (final absolute in [false, true]) {
+          final zipPath = await buildSessionExport(
+            session,
+            formats: const {'raven', 'csv', 'json'},
+            includeAudio: true,
+            useAbsoluteSurveyTime: absolute,
+          );
+          expect(zipPath, isNotNull);
+          final archive = ZipDecoder().decodeBytes(
+            File(zipPath!).readAsBytesSync(),
+          );
+          String document(String extension) => utf8.decode(
+            archive.firstWhere((f) => f.name.endsWith(extension)).content
+                as List<int>,
+          );
+          final table = document('.selections.txt');
+          if (previousTable != null) expect(table, previousTable);
+          previousTable = table;
+          final rows = table
+              .split('\n')
+              .where((row) => row.isNotEmpty)
+              .map((row) => row.split('\t'))
+              .toList();
+          final header = rows.removeAt(0);
+          expect(rows.length, retained.length);
+          final audioNames = archive
+              .where((f) => f.name.endsWith('.wav'))
+              .map((f) => f.name)
+              .toList();
+          expect(rows.map((row) => row[7]).toList(), audioNames);
+          expect(header[11], 'Survey Time (UTC)');
+          for (var i = 0; i < rows.length; i++) {
+            final row = rows[i];
+            expect(row.length, header.length);
+            expect(row[0], '${i + 1}');
+            expect(row[3], (i * 5 + 1).toStringAsFixed(3));
+            expect(row[4], (i * 5 + 4).toStringAsFixed(3));
+            expect(
+              row[7],
+              '${_prefix}_clip_${(i + 1).toString().padLeft(3, '0')}_Eurasian_Blackbird.wav',
+            );
+            expect(
+              row[11],
+              detections[retained[i]].timestamp.toUtc().toIso8601String(),
+            );
+            final audio = archive.firstWhere((f) => f.name == row[7]);
+            final extracted = File(p.join(tempDir.path, 'check.wav'))
+              ..writeAsBytesSync(audio.content as List<int>);
+            final info = await AudioDecoder.inspectFile(extracted.path);
+            expect(info.totalSamples / info.sampleRate, 5);
+          }
+          if (retained.length == 10) {
+            expect(rows.last.sublist(3, 5), ['46.000', '49.000']);
+          }
+          final csv = document('.csv')
+              .split('\n')
+              .where((row) => row.isNotEmpty)
+              .toList();
+          expect(csv.length, 11);
+          expect(
+            csv.first,
+            contains(absolute ? 'Survey Time (UTC)' : 'Survey Time (s)'),
+          );
+          expect(
+            (jsonDecode(document('.json')) as Map)['detections'],
+            hasLength(10),
+          );
+        }
+      });
+    }
 
     test('converts FLAC clips to valid WAV files in ZIP exports', () async {
       final clipDir = '${tempDir.path}/clips_wav';
@@ -1444,9 +1746,9 @@ void main() {
       final metaFile = archive.firstWhere(
         (f) => f.name.endsWith('.metadata.json'),
       );
-      final meta =
-          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
-              as Map<String, dynamic>;
+      final meta = jsonDecode(
+        String.fromCharCodes(metaFile.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(
         (meta['aruCycleAudioFiles'] as Map<String, dynamic>)['0'],
         startsWith('aru_cycles/'),
@@ -1484,9 +1786,9 @@ void main() {
       final metaFile = archive.firstWhere(
         (f) => f.name.endsWith('.metadata.json'),
       );
-      final meta =
-          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
-              as Map<String, dynamic>;
+      final meta = jsonDecode(
+        String.fromCharCodes(metaFile.content as List<int>),
+      ) as Map<String, dynamic>;
       final sessionMeta = meta['session'] as Map<String, dynamic>;
       expect(sessionMeta['type'], 'aru');
       expect(sessionMeta['displayName'], session.displayName);
@@ -2030,6 +2332,33 @@ void main() {
         isTrue,
       );
     });
+
+    test('carries per-session device metadata into bulk bundles', () async {
+      final session = _makeSession(detections: []);
+      final bulkZipPath = await buildMultiSessionExport(
+        [session],
+        formats: const {'json'},
+        includeAudio: false,
+        metadataProvider: (session) async => buildExportMetadata(
+          session: session,
+          device: 'Pixel 10',
+          os: 'Android 17',
+        ),
+      );
+
+      final outer = ZipDecoder().decodeBytes(
+        File(bulkZipPath!).readAsBytesSync(),
+      );
+      final inner = ZipDecoder().decodeBytes(outer.single.content as List<int>);
+      final metadataFile = inner.singleWhere(
+        (file) => file.name.endsWith('.metadata.json'),
+      );
+      final metadata = jsonDecode(
+        utf8.decode(metadataFile.content as List<int>),
+      ) as Map<String, dynamic>;
+      expect(metadata['device'], 'Pixel 10');
+      expect(metadata['os'], 'Android 17');
+    });
   });
 
   // ── Trimmed sessions (issue #177) ───────────────────────────────────────
@@ -2131,7 +2460,7 @@ void main() {
           .firstWhere((l) => l.contains('Turdus merula'))
           .split('\t');
       // Detection at 30 s of the recording is 20 s into a trim at 10 s.
-      expect(double.parse(ravenRow[4]), closeTo(20.0, 0.001));
+      expect(double.parse(ravenRow[3]), closeTo(20.0, 0.001));
 
       final csv = buildCsvExport(session, audioFileName: '$_prefix.wav');
       final csvRow = csv
@@ -2146,7 +2475,7 @@ void main() {
           .split('\n')
           .firstWhere((l) => l.contains('Erithacus rubecula'))
           .split('\t');
-      expect(double.parse(earlyRow[4]), 0.0);
+      expect(double.parse(earlyRow[3]), 0.0);
     });
 
     test('JSON offsets and trimmed duration follow the trim', () async {
@@ -2171,11 +2500,9 @@ void main() {
       expect(map['trimmedDurationSec'], closeTo(30.0, 0.001));
 
       final detections = map['detections'] as List<dynamic>;
-      final blackbird =
-          detections.firstWhere(
-                (d) => (d as Map)['scientificName'] == 'Turdus merula',
-              )
-              as Map<String, dynamic>;
+      final blackbird = detections.firstWhere(
+        (d) => (d as Map)['scientificName'] == 'Turdus merula',
+      ) as Map<String, dynamic>;
       expect(blackbird['beginTimeSec'], closeTo(20.0, 0.001));
 
       final annotations = map['annotations'] as List<dynamic>;
@@ -2231,12 +2558,11 @@ void main() {
       )..createSync(recursive: true);
       // The audio-only share path returns its staged file to the share sheet
       // and can't delete it; the next export is what reclaims the space.
-      final stale =
-          File(p.join(staging.path, 'sweep_test_stale.wav'))
-            ..writeAsBytesSync(List<int>.filled(2048, 1))
-            ..setLastModifiedSync(
-              DateTime.now().subtract(const Duration(hours: 6)),
-            );
+      final stale = File(p.join(staging.path, 'sweep_test_stale.wav'))
+        ..writeAsBytesSync(List<int>.filled(2048, 1))
+        ..setLastModifiedSync(
+          DateTime.now().subtract(const Duration(hours: 6)),
+        );
       final recent = File(p.join(staging.path, 'sweep_test_recent.wav'))
         ..writeAsBytesSync(List<int>.filled(2048, 1));
       addTearDown(() {

@@ -4,13 +4,13 @@ O Explorar mostra as espécies previstas para a localização e a estação atua
 
 ## Como abrir
 
-Abra o **Explorar** no rodapé do Início usando o botão :material-magnify:.
+Abra o **Explorar** no rodapé do Início usando o botão :app-searchRounded:.
 
 ## Barra de aplicativo e cabeçalho
 
 ### Barra de aplicativo
 
-- :material-refresh: — atualiza a localização e reconstrói a lista de espécies previstas
+- :app-refresh: — atualiza a localização e reconstrói a lista de espécies previstas
 
 ### Cabeçalho de localização
 
@@ -18,7 +18,7 @@ O cabeçalho mostra:
 
 - o nome do local obtido por geocodificação reversa, quando disponível
 - as coordenadas abaixo do nome do local
-- :material-help-circle-outline: — abre o painel de ajuda do Explorar
+- :app-helpOutlineRounded: — abre o painel de ajuda do Explorar
 
 ## Lista de espécies
 

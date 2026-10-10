@@ -4,7 +4,7 @@ Le mode Relevé est le flux de travail basé sur l'itinéraire, destiné aux rel
 
 ## Comment l'ouvrir
 
-Depuis l'accueil, appuyez sur la carte **Mode Relevé** avec l'icône :material-routes:.
+Depuis l'accueil, appuyez sur la carte **Mode Relevé** avec l'icône :app-routeRounded:.
 
 ## Flux de configuration
 
@@ -17,7 +17,7 @@ Vous pouvez saisir :
 - le nom du relevé
 - l'identifiant du transect
 - le nom de l'observateur
-- le GPS, des coordonnées manuelles ou aucun point de départ
+- le GPS :app-myLocation:, des coordonnées manuelles :app-editLocationAlt: ou aucun point de départ :app-locationOff:. Le sélecteur de carte utilise :app-mapSheet:.
 
 Cette étape donne aussi accès au sélecteur de carte, actualise le GPS lorsque
 vous revenez des écrans d'autorisation du système et affiche le rappel
@@ -42,6 +42,20 @@ Cette étape contient des paramètres propres au Relevé, tels que :
 - le mode d'échantillonnage des détections
 - la limite Top N par espèce lorsque l'échantillonnage est limité
 
+| Contrôle de configuration | Icône |
+|---|---|
+| Microphone | :app-micRounded: |
+| Fréquence d'inférence | :app-speedRounded: |
+| Seuil de confiance | :app-verifiedRounded: |
+| Intervalle GPS | :app-myLocation: |
+| Durée maximale | :app-timerOutlined: |
+| Mode d'enregistrement | :app-fiberManualRecordRounded: |
+| Contexte du clip | :app-timerOutlined: |
+| Échantillonnage des détections | :app-filterAltRounded: |
+| Top N par espèce | :app-formatListNumberedRounded: |
+
+Touchez le bouton :app-helpOutline: à côté d'un contrôle de configuration pour afficher une explication. Les champs nom, transect, observateur, localisation et alertes ont aussi des boutons d'aide.
+
 Les nouveaux réglages Survey utilisent une inférence de **0,70 Hz** par
 défaut. Cela conserve davantage de vocalisations brèves que les options plus
 économes, tout en faisant tourner le modèle moins souvent qu'à 1,00 Hz.
@@ -63,7 +77,7 @@ Trois modes sont disponibles :
 |---|---|
 | **Toutes** | Conserve tous les clips. Utilisation maximale du disque. Recommandé pour les relevés courts ou lorsque vous souhaitez disposer de l'audio de chaque détection pour une analyse ultérieure. |
 | **Top N** | Conserve uniquement les **N clips ayant la confiance la plus élevée par espèce**. Les autres clips sont supprimés au fur et à mesure du relevé. La valeur N par défaut est 10, configurable de 1 à 50. |
-| **Smart** | Même plafond de N par espèce que Top N, **plus** une distribution spatiale : si une nouvelle détection se situe au même « endroit » qu'un clip déjà conservé (à environ 500 m et 2 min l'un de l'autre), seul celui ayant la confiance la plus élevée conserve son clip. Cela évite qu'un chanteur stationnaire monopolise les N créneaux et oriente les clips conservés vers une couverture du transect entier. |
+| **Smart** | Même plafond de N par espèce que Top N, **plus** une distribution spatiale : si une nouvelle détection se situe au même « endroit » qu'un clip déjà conservé (à environ 250 m et 2 min l'un de l'autre), seul celui ayant la confiance la plus élevée conserve son clip. Cela évite qu'un chanteur stationnaire monopolise les N créneaux et oriente les clips conservés vers une couverture du transect entier. |
 
 La limite N est **par espèce, pas globale** — si vous enregistrez 10 rougegorges et 10 pinsons, vous conservez 20 clips. Il n'y a aucune limite globale au nombre de clips qu'un relevé peut produire.
 
@@ -87,7 +101,7 @@ Une courte liste de vérification avant le départ, intégrée au flux de config
 
 ### 5. Prêt
 
-L'écran prêt récapitule la configuration active du relevé avant de démarrer avec :material-play:.
+L'écran prêt récapitule la configuration active du relevé avant de démarrer avec :app-playArrowRounded:.
 
 ## Tableau de bord du relevé en direct
 
@@ -95,28 +109,28 @@ L'écran du Relevé en direct comporte trois onglets principaux ainsi qu'une lis
 
 ### Barre supérieure
 
-- :material-stop: — terminer le relevé
-- :material-timer: — temps écoulé
-- :material-help-circle-outline: — ouvrir la fiche d'aide du Relevé
-- :material-tune: — ouvrir les paramètres du Relevé
+- :app-stopRounded: — terminer le relevé
+- :app-timerOutlined: — temps écoulé
+- :app-helpOutlineRounded: — ouvrir la fiche d'aide du Relevé
+- :app-tuneRounded: — ouvrir les paramètres du Relevé
 
 ### Onglets
 
-- :material-map-outline: — carte de l'itinéraire et détections cartographiées
-- :material-equalizer: — spectrogramme
+- :app-map: — carte de l'itinéraire et détections cartographiées
+- :app-graphicEq: — spectrogramme
 - icône de graphique — statistiques récapitulatives et répartition des espèces
 
 ### Statistiques et détections
 
 Sous le contenu de l'onglet, le tableau de bord du relevé affiche une barre de statistiques et une liste des détections récentes. Appuyer sur une détection ouvre le panneau de détails de l'espèce.
 
-Chaque ligne de détection donne aussi accès aux mêmes actions par détection que dans le [Résumé de la session](session-review.md) : une coche :material-check: **Confirmer** en un toucher et un menu :material-dots-vertical: **Plus** avec **Partager la détection** et **Supprimer la détection** (avec annulation par notification) — vous pouvez ainsi valider, partager ou supprimer une détection bruitée en pleine capture, sans attendre la révision après la session.
+Chaque ligne de détection donne aussi accès aux mêmes actions par détection que dans le [Résumé de la session](session-review.md) : une coche :app-checkCircleOutline: **Confirmer** en un toucher et un menu :app-moreVert: **Plus** avec **Partager la détection** et **Supprimer la détection** (avec annulation par notification) — vous pouvez ainsi valider, partager ou supprimer une détection bruitée en pleine capture, sans attendre la révision après la session.
 
 Les mêmes actions sont disponibles depuis la **carte de l'itinéraire en direct** : appuyez sur un marqueur de détection pour ouvrir le lecteur de clips avec confirmation, partage et suppression. Le partage pendant un relevé fonctionne même si vous avez choisi un seul enregistrement WAV continu au lieu de clips par détection — la fenêtre audio correspondante est extraite à la volée du fichier en cours. Voir [Résumé de la session → Partage d'une seule détection](session-review.md#partage-dune-seule-détection) pour plus de détails.
 
 ### Enregistrer une observation
 
-Le bouton :material-plus-circle-outline: du survey en direct ouvre un petit menu avec **Ajouter une espèce** et **Ajouter une note**. **Ajouter une espèce** ouvre le même sélecteur que [Session Review](session-review.md#ajouter-une-espèce-à-la-main), choisissez une espèce, puis cochez :material-ear-hearing: **Entendu** et/ou :material-eye: **Vu** sur la fiche de confirmation et touchez **Ajouter**. L'entrée est horodatée à cet instant, associée au point GPS courant, et apparaît immédiatement dans la liste des détections et sur la carte de l'itinéraire, avec le badge « manuel » et les icônes oreille / œil correspondantes.
+Le bouton :app-addCircleOutline: du survey en direct ouvre un petit menu avec **Ajouter une espèce** et **Ajouter une note**. **Ajouter une espèce** ouvre le même sélecteur que [Session Review](session-review.md#ajouter-une-espèce-à-la-main), choisissez une espèce, puis cochez :app-hearing: **Entendu** et/ou :app-visibility: **Vu** sur la fiche de confirmation et touchez **Ajouter**. L'entrée est horodatée à cet instant, associée au point GPS courant, et apparaît immédiatement dans la liste des détections et sur la carte de l'itinéraire, avec le badge « manuel » et les icônes oreille / œil correspondantes.
 
 Les mémos vocaux sont volontairement absents ici : le microphone est occupé par la capture du survey. Ajoutez-les dans Session Review une fois le survey terminé.
 
@@ -135,8 +149,10 @@ Lorsque vous **reprenez** un relevé inachevé depuis la Bibliothèque de sessio
 
 ## Révision sur la carte
 
-La vue carte plein écran du relevé (le bouton :material-fullscreen: dans le Résumé de la session) ouvre un lecteur de clips lorsque vous appuyez sur un marqueur. La barre de transport comporte des boutons précédent et suivant de part et d'autre de la commande de lecture — ils parcourent les détections par ordre chronologique, mais **uniquement celles actuellement visibles sur la carte** : tout filtre actif d'espèce, de confiance ou de mode restreint donc la liste de lecture en conséquence. Les boutons se grisent à la première et à la dernière détection de la liste filtrée.
+La vue carte plein écran du relevé (le bouton :app-fullscreen: dans le Résumé de la session) ouvre un lecteur de clips lorsque vous appuyez sur un marqueur. La barre de transport comporte des boutons précédent et suivant de part et d'autre de la commande de lecture — ils parcourent les détections par ordre chronologique, mais **uniquement celles actuellement visibles sur la carte** : tout filtre actif d'espèce, de confiance ou de mode restreint donc la liste de lecture en conséquence. Les boutons se grisent à la première et à la dernière détection de la liste filtrée.
 
 ## Après l'arrêt
 
 BirdNET Live enregistre le relevé terminé et ouvre le [Résumé de la session](session-review.md).
+
+Le relevé en cours est enregistré au démarrage, toutes les 30 secondes et lorsque l'application quitte le premier plan. Après un plantage ou une coupure de courant, le dernier relevé partiel apparaît dans la Bibliothèque de sessions comme une session terminée. L'enregistrement ne redémarre pas. Les observations postérieures à la dernière sauvegarde peuvent manquer.
