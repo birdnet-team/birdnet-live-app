@@ -47,8 +47,11 @@ import 'services/detection_audio_window.dart';
 import 'services/export_zip_writer.dart';
 import 'services/session_audio_trim.dart';
 
+/// Lower frequency bound for Raven annotations.
+const double _lowFreqHz = 0.0;
+
 /// Upper frequency bound for Raven annotations (Nyquist of 32 kHz).
-const int _highFreqHz = 16000;
+const double _highFreqHz = 16000.0;
 
 /// How long a staged trim is left alone before it counts as garbage.
 ///
@@ -324,7 +327,7 @@ String buildRavenSelectionTable(
       '1\t'
       '${beginSec.toStringAsFixed(3)}\t'
       '${endSec.toStringAsFixed(3)}\t'
-      '0\t'
+      '$_lowFreqHz\t'
       '$_highFreqHz\t'
       '$beginFile\t'
       '$commonName\t'

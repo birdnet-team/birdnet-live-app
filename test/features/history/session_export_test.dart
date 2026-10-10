@@ -355,8 +355,8 @@ void main() {
       expect(cols1[7], '$_prefix.wav'); // Begin File
       expect(cols1[3], '10.000'); // Begin Time
       expect(cols1[4], '13.000'); // End Time (10 + 3)
-      expect(cols1[5], '0'); // Low Freq
-      expect(cols1[6], '16000'); // High Freq
+      expect(cols1[5], '0.0'); // Low Freq
+      expect(cols1[6], '16000.0'); // High Freq
       expect(cols1[8], 'Eurasian Blackbird'); // Common Name
       expect(cols1[9], 'Turdus merula'); // Scientific Name
       expect(cols1[10], '0.9500'); // Confidence
@@ -367,6 +367,7 @@ void main() {
       expect(cols2[7], '$_prefix.wav');
       expect(cols2[3], '25.500'); // 25.5 seconds
       expect(cols2[4], '28.500'); // 25.5 + 3
+      expect(cols2.sublist(5, 7), ['0.0', '16000.0']);
       expect(cols2[8], 'European Robin');
     });
 
@@ -406,6 +407,7 @@ void main() {
 
       final cols1 = lines[1].split('\t');
       expect(cols1[7], '${_prefix}_clip_001_Eurasian_Blackbird.flac');
+      expect(cols1.sublist(5, 7), ['0.0', '16000.0']);
       // Detection sits at [clipContext, clipContext + window] inside the clip.
       expect(cols1[3], '1.000');
       expect(cols1[4], '4.000');
