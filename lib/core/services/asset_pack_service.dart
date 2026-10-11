@@ -45,6 +45,7 @@
 //      behind.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -59,6 +60,11 @@ class AssetPackService {
   AssetPackService._();
 
   static const MethodChannel _channel = MethodChannel('com.birdnet/asset_pack');
+
+  /// Longest a native extraction may take before the resolver moves on to
+  /// the next source. Copying the classifier is seconds on any device that
+  /// can run it; minutes means the reply is not coming.
+  static const Duration _nativeExtractTimeout = Duration(minutes: 3);
 
   /// Bytes written per `RandomAccessFile.writeFrom` call in the fallback
   /// extraction. Each call copies only its slice into native memory, so the
@@ -84,24 +90,35 @@ class AssetPackService {
     // asset packs, since they're merged into the app namespace, and the
     // sideload APK's flutter_assets).
     if (_isAndroid) {
-      for (final assetPath in [
-        'models/$fileName',
-        'flutter_assets/$assetKey',
-      ]) {
-        final extracted = await _extractNative(assetPath, destName);
-        if (extracted != null) {
-          debugPrint(
-            '[AssetPackService] resolved $fileName via AssetManager '
-            '($assetPath): $extracted',
-          );
-          await _removeStaleBundleExtractions(fileName);
-          return extracted;
+      try {
+        for (final assetPath in [
+          'models/$fileName',
+          'flutter_assets/$assetKey',
+        ]) {
+          final extracted = await _extractNative(assetPath, destName);
+          if (extracted != null) {
+            debugPrint(
+              '[AssetPackService] resolved $fileName via AssetManager '
+              '($assetPath): $extracted',
+            );
+            await _removeStaleBundleExtractions(fileName);
+            return extracted;
+          }
         }
+        debugPrint(
+          '[AssetPackService] $fileName not in AssetManager — '
+          'falling back to rootBundle',
+        );
+      } on TimeoutException {
+        // The native copy may still be running against the same destination.
+        // A second extraction would share its temporary file and could
+        // rename a truncated copy into place, so no other AssetManager source
+        // is tried; the bundle fallback writes somewhere else entirely.
+        debugPrint(
+          '[AssetPackService] extractAsset timed out — '
+          'falling back to rootBundle',
+        );
       }
-      debugPrint(
-        '[AssetPackService] $fileName not in AssetManager — '
-        'falling back to rootBundle',
-      );
     } else {
       // Path 2 — the bundled file itself (iOS, macOS, Windows, Linux).
       final bundled = _bundledAssetFile(assetKey);
@@ -119,17 +136,24 @@ class AssetPackService {
   /// Ask the Android side to stream [assetPath] into `filesDir/<destName>`.
   ///
   /// Returns null when the asset is not present or the call is unavailable,
-  /// so the caller can try the next source.
+  /// so the caller can try the next source. A [TimeoutException] propagates:
+  /// the copy may still be running, so the caller must not start another one
+  /// against the same destination.
   static Future<String?> _extractNative(
     String assetPath,
     String destName,
   ) async {
     try {
-      final extracted = await _channel.invokeMethod<String>('extractAsset', {
-        'assetPath': assetPath,
-        'destName': destName,
-      });
+      final extracted = await _channel
+          .invokeMethod<String>('extractAsset', {
+            'assetPath': assetPath,
+            'destName': destName,
+          })
+          .timeout(_nativeExtractTimeout);
       if (extracted != null && extracted.isNotEmpty) return extracted;
+    } on TimeoutException {
+      debugPrint('[AssetPackService] extractAsset timed out ($assetPath)');
+      rethrow;
     } on MissingPluginException catch (e) {
       // Old build / hot-restart against an APK without the new
       // method handler. Fall through to the bundle path.
