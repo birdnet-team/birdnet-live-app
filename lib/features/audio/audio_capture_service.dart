@@ -330,9 +330,15 @@ class AudioCaptureService with WidgetsBindingObserver {
   /// slow chunk doesn't trip it.
   static const Duration _stallTimeout = Duration(seconds: 3);
 
-  /// How long to wait for the platform to acknowledge a stop/dispose before
-  /// abandoning the recorder (see [_teardownCapture]).
-  static const Duration _teardownTimeout = Duration(seconds: 2);
+  /// Overall budget for releasing a recorder in [_teardownCapture]. The
+  /// stream cancel, `stop()` and `dispose()` share it, so a recorder that
+  /// answers none of them costs one deadline rather than three in a row —
+  /// that wait sits directly in front of the next session start.
+  static const Duration _teardownTimeout = Duration(seconds: 3);
+
+  /// Floor on each step's share of the budget, so a slow-but-alive call still
+  /// gets a real chance after an earlier step used most of it.
+  static const Duration _teardownStepFloor = Duration(milliseconds: 500);
 
   Duration _retryBackoff = _minRetryBackoff;
   DateTime? _nextRetryAt;
@@ -414,15 +420,14 @@ class AudioCaptureService with WidgetsBindingObserver {
 
     // Foreground: retry with capped exponential back-off.
     if (_nextRetryAt != null && now.isBefore(_nextRetryAt!)) return;
-    _retryBackoff =
-        _nextRetryAt == null
-            ? _minRetryBackoff
-            : Duration(
-              milliseconds: math.min(
-                _retryBackoff.inMilliseconds * 2,
-                _maxRetryBackoff.inMilliseconds,
-              ),
-            );
+    _retryBackoff = _nextRetryAt == null
+        ? _minRetryBackoff
+        : Duration(
+            milliseconds: math.min(
+              _retryBackoff.inMilliseconds * 2,
+              _maxRetryBackoff.inMilliseconds,
+            ),
+          );
     _nextRetryAt = now.add(_retryBackoff);
     debugPrint(
       'Watchdog: mic lost in foreground (stalled: $isStalled, '
@@ -649,11 +654,17 @@ class AudioCaptureService with WidgetsBindingObserver {
     _levelTimer?.cancel();
     _levelTimer = null;
 
+    final deadline = DateTime.now().add(_teardownTimeout);
+    Duration remaining() {
+      final left = deadline.difference(DateTime.now());
+      return left > _teardownStepFloor ? left : _teardownStepFloor;
+    }
+
     final streamSub = _streamSub;
     _streamSub = null;
     if (streamSub != null) {
       try {
-        await streamSub.cancel().timeout(_teardownTimeout);
+        await streamSub.cancel().timeout(remaining());
       } catch (_) {
         // A platform audio stream that never acknowledges cancellation must
         // not wedge the serialized lifecycle queue and block session saving.
@@ -670,12 +681,12 @@ class AudioCaptureService with WidgetsBindingObserver {
       // queue, so abandon the recorder instead — `dispose()` on the platform
       // side tears it down regardless.
       try {
-        await rec.stop().timeout(_teardownTimeout);
+        await rec.stop().timeout(remaining());
       } catch (_) {
         // Recorder may already be stopped or wedged; ignore.
       }
       try {
-        await rec.dispose().timeout(_teardownTimeout);
+        await rec.dispose().timeout(remaining());
       } catch (_) {
         // Best-effort native release.
       }
