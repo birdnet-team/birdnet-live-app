@@ -75,6 +75,15 @@ The review spectrogram is computed dynamically to balance RAM usage and CPU perf
   2. Up to 12 chunks are cached in memory; older/farthest chunks are evicted dynamically.
   3. The decode and FFT calculations run inside a background isolate (`Isolate.run` / `_runSpectrogramChunkIsolate`) to prevent the UI thread from dropping frames during scroll or pinch-to-zoom actions.
 
+- **Trim editor image**:
+  The trim editor needs one image spanning the whole recording. It is rendered
+  through `renderSpectrogramInBatches()`, which decodes the file a minute at a
+  time (reusing the FLAC seek index when there is one) and renders each batch
+  with the same `renderSpectrogram()`; batch boundaries fall on exact source
+  samples, so the result is pixel-identical to a single pass while only one
+  batch of PCM is ever resident. Recordings above 128 MB of decoded PCM
+  (`_maxFullSpectrogramPcmBytes`) still use the overlay editor.
+
 - **FLAC-to-WAV Transcoding Optimization**:
   FLAC files have neither a constant-bitrate layout nor a seek table, so range-decoding requires sequentially decoding the file from the beginning—leading to O(N²) time complexity for lazy chunk loading on long sessions. To avoid this:
   1. If a session is large (≥ 128 MB PCM) and recorded in FLAC format, the app runs a one-time sequential transcode to a temporary WAV file in a background isolate (`_runFlacTranscodeIsolate`).

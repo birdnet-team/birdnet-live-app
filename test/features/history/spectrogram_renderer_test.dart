@@ -93,9 +93,10 @@ SpectrogramPixels? _referenceRender(
       }
       power /= (binEnd - binStart);
       final db = 10 * math.log(power + 1e-10) / math.ln10;
-      final norm = ((db - kSpectrogramDbFloor) /
-              (kSpectrogramDbCeiling - kSpectrogramDbFloor))
-          .clamp(0.0, 1.0);
+      final norm =
+          ((db - kSpectrogramDbFloor) /
+                  (kSpectrogramDbCeiling - kSpectrogramDbFloor))
+              .clamp(0.0, 1.0);
       final y = displayBins - 1 - row;
       final offset = (y * numCols + c) * 4;
       final color = lut[(norm * 255).round().clamp(0, 255)];
@@ -163,24 +164,22 @@ void main() {
         sampleRate: _targetRate,
       );
 
-      final actual =
-          renderSpectrogram(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 512,
-            colorMapName: 'viridis',
-          )!;
-      final expected =
-          _referenceRender(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 512,
-            colorMapName: 'viridis',
-          )!;
+      final actual = renderSpectrogram(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 512,
+        colorMapName: 'viridis',
+      )!;
+      final expected = _referenceRender(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 512,
+        colorMapName: 'viridis',
+      )!;
 
       expect(actual.width, expected.width);
       expect(actual.height, expected.height);
@@ -196,24 +195,22 @@ void main() {
         sampleRate: _targetRate,
       );
 
-      final actual =
-          renderSpectrogram(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 16384,
-            maxDisplayBins: 128,
-            colorMapName: 'viridis',
-          )!;
-      final expected =
-          _referenceRender(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 16384,
-            maxDisplayBins: 128,
-            colorMapName: 'viridis',
-          )!;
+      final actual = renderSpectrogram(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 16384,
+        maxDisplayBins: 128,
+        colorMapName: 'viridis',
+      )!;
+      final expected = _referenceRender(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 16384,
+        maxDisplayBins: 128,
+        colorMapName: 'viridis',
+      )!;
 
       expect(actual.width, expected.width);
       expect(actual.height, expected.height);
@@ -225,24 +222,22 @@ void main() {
       // could most easily shift the time axis.
       final audio = _signal(sampleCount: 44100 * 10, sampleRate: 44100);
 
-      final actual =
-          renderSpectrogram(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 4096,
-            maxDisplayBins: 256,
-            colorMapName: 'viridis',
-          )!;
-      final expected =
-          _referenceRender(
-            audio,
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 4096,
-            maxDisplayBins: 256,
-            colorMapName: 'viridis',
-          )!;
+      final actual = renderSpectrogram(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 4096,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      )!;
+      final expected = _referenceRender(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 4096,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      )!;
 
       expect(actual.width, expected.width);
       expect(actual.height, expected.height);
@@ -254,24 +249,22 @@ void main() {
     test('column count follows the target grid, not the source rate', () {
       // Same duration at two source rates must yield the same tile width, or
       // tiles from a resampled source would not line up on the timeline.
-      final at32k =
-          renderSpectrogram(
-            _signal(sampleCount: _targetRate * 20, sampleRate: _targetRate),
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 256,
-            colorMapName: 'viridis',
-          )!;
-      final at44k =
-          renderSpectrogram(
-            _signal(sampleCount: 44100 * 20, sampleRate: 44100),
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 256,
-            colorMapName: 'viridis',
-          )!;
+      final at32k = renderSpectrogram(
+        _signal(sampleCount: _targetRate * 20, sampleRate: _targetRate),
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      )!;
+      final at44k = renderSpectrogram(
+        _signal(sampleCount: 44100 * 20, sampleRate: 44100),
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      )!;
 
       expect(at44k.width, at32k.width);
       expect(at44k.height, at32k.height);
@@ -279,24 +272,22 @@ void main() {
 
     test('frequency axis is capped at the display ceiling', () {
       // 16 kHz of a 16 kHz nyquist is every bin; at 32 kHz nyquist it is half.
-      final full =
-          renderSpectrogram(
-            _signal(sampleCount: _targetRate * 4, sampleRate: _targetRate),
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 4096,
-            colorMapName: 'viridis',
-          )!;
-      final halved =
-          renderSpectrogram(
-            _signal(sampleCount: 64000 * 4, sampleRate: 64000),
-            targetSampleRate: 64000,
-            fftSize: _fftSize,
-            hop: 1024,
-            maxDisplayBins: 4096,
-            colorMapName: 'viridis',
-          )!;
+      final full = renderSpectrogram(
+        _signal(sampleCount: _targetRate * 4, sampleRate: _targetRate),
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 4096,
+        colorMapName: 'viridis',
+      )!;
+      final halved = renderSpectrogram(
+        _signal(sampleCount: 64000 * 4, sampleRate: 64000),
+        targetSampleRate: 64000,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 4096,
+        colorMapName: 'viridis',
+      )!;
 
       expect(full.height, _fftSize ~/ 2 + 1);
       expect(halved.height, closeTo((_fftSize ~/ 2 + 1) / 2, 1));
@@ -337,18 +328,118 @@ void main() {
       }
     });
 
+    for (final sourceRate in [_targetRate, 44100, 48000, 22050]) {
+      test(
+        'batched render matches the single pass at $sourceRate Hz',
+        () async {
+          final audio = _signal(
+            sampleCount: sourceRate * 7,
+            sampleRate: sourceRate,
+            seed: 5,
+          );
+          final whole = renderSpectrogram(
+            audio,
+            targetSampleRate: _targetRate,
+            fftSize: _fftSize,
+            hop: 1024,
+            maxDisplayBins: 256,
+            colorMapName: 'viridis',
+          )!;
+
+          var decodes = 0;
+          final batched = (await renderSpectrogramInBatches(
+            sourceSampleRate: sourceRate,
+            sourceTotalSamples: audio.totalSamples,
+            decode: (start, count) async {
+              decodes++;
+              final end = math.min(audio.totalSamples, start + count);
+              return DecodedAudio(
+                samples: Int16List.sublistView(audio.samples, start, end),
+                sampleRate: sourceRate,
+              );
+            },
+            targetSampleRate: _targetRate,
+            fftSize: _fftSize,
+            hop: 1024,
+            maxDisplayBins: 256,
+            colorMapName: 'viridis',
+            batchSeconds: 2,
+          ))!;
+
+          expect(decodes, greaterThan(1));
+          expect(batched.width, whole.width);
+          expect(batched.height, whole.height);
+          expect(batched.pixels, whole.pixels);
+        },
+      );
+    }
+
+    test('batched render crops to the audio that exists', () async {
+      final audio = _signal(
+        sampleCount: _targetRate * 3,
+        sampleRate: _targetRate,
+      );
+      final whole = renderSpectrogram(
+        audio,
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      )!;
+
+      // The header promises twice the audio the decoder can deliver.
+      final batched = (await renderSpectrogramInBatches(
+        sourceSampleRate: _targetRate,
+        sourceTotalSamples: audio.totalSamples * 2,
+        decode: (start, count) async {
+          final end = math.min(audio.totalSamples, start + count);
+          return DecodedAudio(
+            samples: start >= end
+                ? Int16List(0)
+                : Int16List.sublistView(audio.samples, start, end),
+            sampleRate: _targetRate,
+          );
+        },
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+        batchSeconds: 1,
+      ))!;
+
+      expect(batched.width, whole.width);
+      expect(batched.height, whole.height);
+      expect(batched.pixels, whole.pixels);
+    });
+
+    test('batched render of audio shorter than one window is null', () async {
+      final result = await renderSpectrogramInBatches(
+        sourceSampleRate: _targetRate,
+        sourceTotalSamples: _fftSize - 1,
+        decode: (start, count) async =>
+            DecodedAudio(samples: Int16List(count), sampleRate: _targetRate),
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 1024,
+        maxDisplayBins: 256,
+        colorMapName: 'viridis',
+      );
+      expect(result, isNull);
+    });
+
     test('the buffer is fully written — no uninitialized pixels', () {
       // The renderer reuses one complex buffer across columns; a missed reset
       // would leave the previous column's tail smeared into the next.
-      final result =
-          renderSpectrogram(
-            _signal(sampleCount: _targetRate * 6, sampleRate: _targetRate),
-            targetSampleRate: _targetRate,
-            fftSize: _fftSize,
-            hop: 2048,
-            maxDisplayBins: 128,
-            colorMapName: 'viridis',
-          )!;
+      final result = renderSpectrogram(
+        _signal(sampleCount: _targetRate * 6, sampleRate: _targetRate),
+        targetSampleRate: _targetRate,
+        fftSize: _fftSize,
+        hop: 2048,
+        maxDisplayBins: 128,
+        colorMapName: 'viridis',
+      )!;
 
       expect(result.pixels.length, result.width * result.height * 4);
       // Every pixel must be opaque: alpha comes from the color map, so a

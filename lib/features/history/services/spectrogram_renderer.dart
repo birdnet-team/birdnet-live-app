@@ -26,6 +26,7 @@
 // difference is that samples no longer round-trip through Int16.
 // =============================================================================
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -78,8 +79,9 @@ SpectrogramPixels? renderSpectrogram(
   final ratio = audio.sampleRate / targetSampleRate;
   // What the tile would contain after resampling — matches
   // [DecodedAudio.resampleTo] so tile widths are unchanged.
-  final targetTotal =
-      ratio == 1.0 ? samples.length : (samples.length / ratio).floor();
+  final targetTotal = ratio == 1.0
+      ? samples.length
+      : (samples.length / ratio).floor();
   if (targetTotal < fftSize) return null;
 
   final numCols = (targetTotal - fftSize) ~/ hop + 1;
@@ -170,4 +172,130 @@ SpectrogramPixels? renderSpectrogram(
   }
 
   return SpectrogramPixels(pixels: pixels, width: numCols, height: displayBins);
+}
+
+/// Decodes `[startSample, startSample + count)` of a recording at its own
+/// sample rate. May return fewer samples when the recording ends early.
+typedef AudioRangeDecoder = Future<DecodedAudio> Function(
+  int startSample,
+  int count,
+);
+
+/// Render a whole recording in bounded memory.
+///
+/// Decodes the source in batches of columns through [decode] and renders each
+/// batch with [renderSpectrogram], so a recording of any length holds one
+/// batch of PCM at a time instead of the whole file. The output is the image
+/// a single [renderSpectrogram] over the entire recording would produce: a
+/// batch always starts on an exact source sample, so every column reads the
+/// same window it would in one pass, and the interpolation's right-hand
+/// neighbour is included at the end of each batch.
+///
+/// [sourceTotalSamples] comes from the container header; if the audio ends
+/// earlier the image is cropped to the columns that could be rendered.
+/// Returns null when the recording is shorter than one FFT window.
+Future<SpectrogramPixels?> renderSpectrogramInBatches({
+  required int sourceSampleRate,
+  required int sourceTotalSamples,
+  required AudioRangeDecoder decode,
+  required int targetSampleRate,
+  required int fftSize,
+  required int hop,
+  required int maxDisplayBins,
+  required String colorMapName,
+  int batchSeconds = 60,
+}) async {
+  if (fftSize <= 0 ||
+      hop <= 0 ||
+      targetSampleRate <= 0 ||
+      sourceSampleRate <= 0 ||
+      batchSeconds <= 0) {
+    return null;
+  }
+  final ratio = sourceSampleRate / targetSampleRate;
+  final targetTotal = ratio == 1.0
+      ? sourceTotalSamples
+      : (sourceTotalSamples / ratio).floor();
+  if (targetTotal < fftSize) return null;
+  final numCols = (targetTotal - fftSize) ~/ hop + 1;
+  if (numCols <= 0) return null;
+
+  // Columns per batch, as a multiple of `k`: the smallest column count whose
+  // start maps onto a whole source sample, since k * hop * sourceRate is a
+  // multiple of targetRate by construction.
+  final k = targetSampleRate ~/ _gcd(hop * sourceSampleRate, targetSampleRate);
+  final wanted = math.max(1, (batchSeconds * targetSampleRate) ~/ hop);
+  final batchCols = math.max(k, (wanted ~/ k) * k);
+
+  Uint8List? pixels;
+  var height = 0;
+  var renderedCols = 0;
+  for (var c0 = 0; c0 < numCols; c0 += batchCols) {
+    final cols = math.min(batchCols, numCols - c0);
+    final targetStart = c0 * hop;
+    final targetSpan = (cols - 1) * hop + fftSize;
+    final sourceStart = (targetStart * sourceSampleRate) ~/ targetSampleRate;
+    // One extra sample for the interpolation's right-hand neighbour, as the
+    // single-pass render would see it.
+    final sourceCount = math.min(
+      sourceTotalSamples - sourceStart,
+      (targetSpan * ratio).ceil() + 2,
+    );
+    if (sourceCount <= 0) break;
+
+    final chunk = await decode(sourceStart, sourceCount);
+    final part = renderSpectrogram(
+      chunk,
+      targetSampleRate: targetSampleRate,
+      fftSize: fftSize,
+      hop: hop,
+      maxDisplayBins: maxDisplayBins,
+      colorMapName: colorMapName,
+    );
+    if (part == null) break;
+
+    pixels ??= Uint8List(numCols * part.height * 4);
+    height = part.height;
+    final copyCols = math.min(cols, part.width);
+    for (var row = 0; row < height; row++) {
+      final src = row * part.width * 4;
+      final dst = (row * numCols + c0) * 4;
+      pixels.setRange(dst, dst + copyCols * 4, part.pixels, src);
+    }
+    renderedCols = c0 + copyCols;
+    // The audio ended before the header said it would.
+    if (copyCols < cols) break;
+  }
+
+  if (pixels == null || renderedCols <= 0) return null;
+  if (renderedCols == numCols) {
+    return SpectrogramPixels(pixels: pixels, width: numCols, height: height);
+  }
+  // Crop to the columns that exist.
+  final cropped = Uint8List(renderedCols * height * 4);
+  for (var row = 0; row < height; row++) {
+    final src = row * numCols * 4;
+    cropped.setRange(
+      row * renderedCols * 4,
+      (row + 1) * renderedCols * 4,
+      pixels,
+      src,
+    );
+  }
+  return SpectrogramPixels(
+    pixels: cropped,
+    width: renderedCols,
+    height: height,
+  );
+}
+
+int _gcd(int a, int b) {
+  var x = a.abs();
+  var y = b.abs();
+  while (y != 0) {
+    final t = x % y;
+    x = y;
+    y = t;
+  }
+  return x == 0 ? 1 : x;
 }

@@ -516,9 +516,14 @@ class _FullSpectrogramRequest {
     required this.hop,
     required this.colorMapName,
     required this.maxColumns,
+    this.seekIndex,
   });
 
   final String path;
+
+  /// Frame index for FLAC sources, so each decoded batch starts near its
+  /// first sample instead of walking the stream from byte zero.
+  final FlacSeekIndex? seekIndex;
   final int targetSampleRate;
   final int maxDisplayBins;
   final int hop;
@@ -529,35 +534,53 @@ class _FullSpectrogramRequest {
   final int maxColumns;
 }
 
-/// Decode a whole recording and render its spectrogram in one shot.
+/// Render a whole recording's spectrogram for the trim editor.
 ///
-/// Only used for the trim editor, which needs a single image spanning the
-/// entire file. The main strip uses [_decodeAndRenderSpectrogramChunk]
-/// instead — tiled, so nothing ever holds the full PCM.
+/// The trim editor needs a single image spanning the entire file; the main
+/// strip uses [_decodeAndRenderSpectrogramChunk] instead — tiled, so nothing
+/// ever holds the full PCM. This render is batched too: the recording is
+/// decoded a minute at a time through [renderSpectrogramInBatches], so an
+/// hour-long file costs one batch of PCM rather than the whole decode (which
+/// for a native format also meant reading the entire transcoded file into
+/// memory).
 Future<SpectrogramPixels?> _decodeAndRenderFullSpectrogram(
   _FullSpectrogramRequest req,
 ) async {
-  final DecodedAudio decoded;
-  if (await AudioDecoder.canDecodeDart(req.path)) {
-    decoded = await AudioDecoder.decodeFile(req.path);
-  } else {
-    decoded = await NativeAudioDecoder.decodeFile(req.path);
-  }
+  final canDart = await AudioDecoder.canDecodeDart(req.path);
+  final metadata = canDart
+      ? await AudioDecoder.inspectFile(req.path)
+      : await NativeAudioDecoder.inspectFile(req.path, 'AUDIO');
   const fftSize = 2048;
   // Column count is measured on the target grid the renderer will resample
   // onto, without materializing it.
-  final ratio = decoded.sampleRate / req.targetSampleRate;
+  final ratio = metadata.sampleRate / req.targetSampleRate;
   final targetTotal = ratio == 1.0
-      ? decoded.totalSamples
-      : (decoded.totalSamples / ratio).floor();
+      ? metadata.totalSamples
+      : (metadata.totalSamples / ratio).floor();
   if (targetTotal < fftSize) return null;
   // Stretch the hop rather than the column count so a long recording costs
   // the same as a short one to render.
   final rawCols = (targetTotal - fftSize) ~/ req.hop + 1;
   final stride = math.max(1, (rawCols / req.maxColumns).ceil());
 
-  return renderSpectrogram(
-    decoded,
+  return renderSpectrogramInBatches(
+    sourceSampleRate: metadata.sampleRate,
+    sourceTotalSamples: metadata.totalSamples,
+    decode: (startSample, count) => canDart
+        ? AudioDecoder.decodeRange(
+            req.path,
+            startSample: startSample,
+            count: count,
+            seekIndex: req.seekIndex,
+          )
+        // Concurrent on purpose: the strip's transcode of the same file may
+        // still be running, and a non-concurrent request would cancel it.
+        : NativeAudioDecoder.decodeRange(
+            req.path,
+            startSample: startSample,
+            count: count,
+            allowConcurrent: true,
+          ),
     targetSampleRate: req.targetSampleRate,
     fftSize: fftSize,
     hop: req.hop * stride,
@@ -1714,6 +1737,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           hop: hop,
           colorMapName: ref.read(colorMapProvider),
           maxColumns: 6000,
+          // Only an index of this very file helps: the strip indexes the
+          // tile source, which for a native format is its PCM cache.
+          seekIndex: _spectrogramAudioPath == path ? _flacSeekIndex : null,
         ),
       );
       if (pixelData == null) return;
