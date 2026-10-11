@@ -36,6 +36,24 @@ All classification runs locally using ONNX Runtime, so no audio data ever leaves
 
 `flutter_onnxruntime` runs native inference on a platform background queue. The historical `InferenceIsolate` class name is kept to avoid churn, but it now delegates to `InferenceService` on the root isolate and serializes calls into the native session.
 
+### Android Foreground Services
+
+Background operation on Android runs under one shared `ForegroundService`
+(declared in `AndroidManifest.xml` with `microphone|location`), driven through
+`flutter_foreground_task`. Only one mode owns it at a time, enforced by
+`ForegroundServiceGuard`:
+
+| Mode | Wrapper | Service ID | Declared types |
+|------|---------|------------|----------------|
+| Live Mode, Point Count | `AudioBackgroundNotificationService` | 384 | `microphone` |
+| Survey | `SurveyNotificationService` | 256 | `microphone`, plus `location` only while the Survey tracks GPS and the location permission is granted |
+| ARU | `AruNotificationService` | 512 | `microphone` |
+
+Every wrapper passes its types explicitly. Android 14+ refuses to start a
+service that declares `location` without a granted location permission, so
+inheriting both manifest types would leave a Survey or ARU deployment without
+its service whenever GPS is off or denied.
+
 ### Ring Buffer Audio Pipeline
 
 Audio flows through a shared `RingBuffer`:

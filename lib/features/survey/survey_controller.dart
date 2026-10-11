@@ -601,6 +601,7 @@ class SurveyController {
       await _notificationService.start(
         title: _notificationTitle,
         text: _buildNotificationText(),
+        includeLocation: _useGps && (backgroundGps || foregroundGps),
       );
       if (await _cancelStartIfRequested()) return;
 
@@ -757,6 +758,7 @@ class SurveyController {
       await _notificationService.start(
         title: _notificationTitle,
         text: _buildNotificationText(),
+        includeLocation: _useGps && (backgroundGps || foregroundGps),
       );
       if (await _cancelStartIfRequested()) return;
 

@@ -150,6 +150,11 @@ class AruNotificationService {
 
       final result = await FlutterForegroundTask.startService(
         serviceId: serviceId,
+        // Explicit rather than the manifest's `microphone|location`: an ARU
+        // deployment records at a fixed position and never tracks GPS, and on
+        // Android 14+ declaring `location` without a granted location
+        // permission makes the service fail to start.
+        serviceTypes: const [ForegroundServiceTypes.microphone],
         notificationTitle: title,
         notificationText: text,
         notificationInitialRoute: openRoute,

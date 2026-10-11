@@ -31,6 +31,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 
@@ -150,8 +151,44 @@ class SurveyNotificationService {
     return result == NotificationPermission.granted;
   }
 
+  /// Android foreground service types for a Survey.
+  ///
+  /// Declared explicitly rather than inherited from the manifest's
+  /// `microphone|location`: on Android 14+ a service that declares the
+  /// `location` type without a granted location permission fails to start
+  /// (`SecurityException`), which used to leave a Survey without its
+  /// notification and without audio once the screen turned off. The location
+  /// type is only added when the Survey actually tracks GPS and the
+  /// permission is granted.
+  @visibleForTesting
+  static List<ForegroundServiceTypes> serviceTypesFor({
+    required bool includeLocation,
+    required bool locationGranted,
+  }) => [
+    ForegroundServiceTypes.microphone,
+    if (includeLocation && locationGranted) ForegroundServiceTypes.location,
+  ];
+
+  static Future<bool> _hasLocationPermission() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
+    } catch (error) {
+      debugPrint('[SurveyNotification] location permission check: $error');
+      return false;
+    }
+  }
+
   /// Start the foreground service with an initial notification.
-  Future<void> start({required String title, required String text}) async {
+  ///
+  /// [includeLocation] asks for the `location` service type so GPS tracking
+  /// keeps running with the screen off; see [serviceTypesFor].
+  Future<void> start({
+    required String title,
+    required String text,
+    bool includeLocation = false,
+  }) async {
     if (!Platform.isAndroid) return;
     final generation = ++_lifecycleGeneration;
     await init();
@@ -178,9 +215,15 @@ class SurveyNotificationService {
         'attempting startService anyway',
       );
     }
+    final serviceTypes = serviceTypesFor(
+      includeLocation: includeLocation,
+      locationGranted: includeLocation && await _hasLocationPermission(),
+    );
+    if (generation != _lifecycleGeneration) return;
 
     final request = FlutterForegroundTask.startService(
       serviceId: 256,
+      serviceTypes: serviceTypes,
       notificationTitle: title,
       notificationText: text,
       notificationIcon: const NotificationIcon(
