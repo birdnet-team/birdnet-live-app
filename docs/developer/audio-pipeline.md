@@ -41,7 +41,7 @@ recorder is released once and reclaimed on the next foreground transition.
 
 `RecordingService` supports two modes:
 
-- **Full**: Continuously flushes the ring buffer to an audio file (WAV or FLAC, depending on user settings) at 1-second intervals via `AudioFileWriter` (implemented by `WavWriter` and `FlacEncoder`).
-- **Detections Only**: Saves audio clips centered on detection timestamps (pre-context + inference window + post-context) in the chosen format (WAV or FLAC).
+- **Full**: Continuously flushes the ring buffer to an audio file (WAV or FLAC, depending on user settings) at 1-second intervals via `AudioFileWriter`. The service writes through `IsolateAudioFileWriter`, which hosts the real `WavWriter` / `FlacEncoder` on a worker isolate and forwards each call: the FLAC encoder is pure Dart, and the UI isolate is also the platform thread on Android and iOS, so a second of encoding every second must not run there. Each call completes when the worker has finished it, which preserves the flush loop's back-pressure.
+- **Detections Only**: Saves audio clips centered on detection timestamps (pre-context + inference window + post-context) in the chosen format (WAV or FLAC). Every clip of a detection round is encoded from one snapshot in a single `Isolate.run` (`writeClipFiles`).
 
 On iOS, voice memos automatically fall back to `.wav` (PCM16) format to avoid Apple CoreAudio AAC compression collisions, while preserving full file-sharing and packaging compatibility.
