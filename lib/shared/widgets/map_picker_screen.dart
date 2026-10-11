@@ -111,6 +111,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
       options: MapOptions(
         initialCenter: center,
         initialZoom: _picked != null ? 10 : 3,
+        minZoom: kOsmMinZoom,
         onTap: (_, point) => setState(() => _picked = point),
       ),
       children: [

@@ -515,6 +515,7 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
       options: MapOptions(
         initialCenter: center,
         initialZoom: zoom,
+        minZoom: kOsmMinZoom,
         maxZoom: 19,
         interactionOptions:
             widget.interactionOptions ?? const InteractionOptions(),

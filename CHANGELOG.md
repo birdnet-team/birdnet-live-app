@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
 - Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
+- Maps can no longer be pinched out below zoom 2. Zooming out past the whole world made the marker layer build millions of widgets in one frame, which froze the app and triggered an Android ANR.
 
 ## [1.2.0] - 2026-10-06
 

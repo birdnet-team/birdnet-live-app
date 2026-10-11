@@ -52,6 +52,18 @@ const Duration kOsmTileFreshAge = Duration(days: 180);
 /// species image set.
 const int kOsmTileCacheMaxBytes = 200 * 1024 * 1024;
 
+/// Lowest zoom level any map in the app may reach. Every [MapOptions] must
+/// pass this as `minZoom`.
+///
+/// flutter_map does not clamp zoom by default, so a pinch-out can drive the
+/// camera far below zoom 0. The world then shrinks to a fraction of a pixel
+/// and [MarkerLayer] replicates every marker once per world copy that fits
+/// the viewport — millions of widgets built in a single frame, which showed
+/// up as an Android ANR inside `_MarkerLayerState.build`. Zoom 2 keeps the
+/// whole world about 1024 px wide, so a marker repeats at most a few times
+/// on even the widest desktop window.
+const double kOsmMinZoom = 2;
+
 Map<String, String> _openStreetMapTileHeaders() => {
   'User-Agent': kOpenStreetMapUserAgent,
 };
