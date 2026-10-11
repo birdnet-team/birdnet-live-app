@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Species descriptions are now decompressed and parsed off the UI thread, removing a visible hitch the first time a species card opens in a session.
 - ARU deployments and Surveys no longer stall when an Android foreground service call never answers: every notification start, update, and stop is now bounded, and a failed update is retried on the next tick. An ARU service that starts after its timeout is adopted instead of being left running unattended.
 - Fixed a rare case on Android where a model load or a shared-file import could wait forever after the app's activity was recreated mid-way: native replies now always reach the app, and the model loader moves on to its fallback after a timeout.
+- On iOS and Windows, cancelling an audio decode (leaving Session Review, cancelling File Analysis) no longer revives or silently loses decodes that started a moment later; on Windows a cancelled decode is reported as cancelled instead of as a shorter recording.
 - Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
 - Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
 - Maps can no longer be pinched out below zoom 2. Zooming out past the whole world made the marker layer build millions of widgets in one frame, which froze the app and triggered an Android ANR.

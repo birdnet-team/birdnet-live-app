@@ -70,7 +70,7 @@ import UIKit
     )
     audioChannel.setMethodCallHandler { (call, result) in
       if call.method == "cancelDecode" {
-        NativeAudioDecoder.isCancelled = true
+        NativeAudioDecoder.cancelAll()
         result(nil)
         return
       }

@@ -137,7 +137,8 @@ using AudioResult =
 
 void RespondInfo(const AudioResult& result, const NativeAudioDecoder::Info& info) {
   if (!info.ok) {
-    result->Error("DECODE_ERROR", info.error);
+    result->Error(info.cancelled ? "DECODE_CANCELLED" : "DECODE_ERROR",
+                  info.error);
     return;
   }
   flutter::EncodableMap map;
@@ -164,7 +165,7 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         const std::string& method = call.method_name();
 
         if (method == "cancelDecode") {
-          audio_decode_cancelled_.store(true);
+          audio_decode_generation_.fetch_add(1);
           result->Success();
           return;
         }
@@ -177,7 +178,15 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         }
 
         AudioResult shared_result(result.release());
-        auto* cancelled = &audio_decode_cancelled_;
+        // Captured by value: a decode compares against the generation it
+        // started under, so a later cancelDecode stops it and a later decode
+        // does not revive it.
+        std::atomic<uint64_t>* generation = &audio_decode_generation_;
+        const uint64_t started_under = generation->load();
+        NativeAudioDecoder::CancelCheck is_cancelled =
+            [generation, started_under]() {
+              return generation->load() != started_under;
+            };
 
         if (method == "inspect") {
           std::string path = GetStringArg(*args, "path");
@@ -192,10 +201,9 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         if (method == "decode") {
           std::string path = GetStringArg(*args, "path");
           std::string temp_path = GetStringArg(*args, "tempPcmPath");
-          audio_decode_cancelled_.store(false);
-          std::thread([this, path, temp_path, shared_result, cancelled]() {
-            auto info =
-                NativeAudioDecoder::DecodeToFile(path, temp_path, cancelled);
+          std::thread([this, path, temp_path, shared_result, is_cancelled]() {
+            auto info = NativeAudioDecoder::DecodeToFile(path, temp_path,
+                                                         is_cancelled);
             this->RunOnMainThread(
                 [shared_result, info]() { RespondInfo(shared_result, info); });
           }).detach();
@@ -206,14 +214,15 @@ void FlutterWindow::SetupAudioDecoderChannel() {
           std::string path = GetStringArg(*args, "path");
           int64_t start_sample = GetIntArg(*args, "startSample");
           int64_t count = GetIntArg(*args, "count");
-          audio_decode_cancelled_.store(false);
           std::thread([this, path, start_sample, count, shared_result,
-                       cancelled]() {
+                       is_cancelled]() {
             auto range = NativeAudioDecoder::DecodeRange(
-                path, start_sample, count, cancelled);
+                path, start_sample, count, is_cancelled);
             this->RunOnMainThread([shared_result, range]() {
               if (!range.ok) {
-                shared_result->Error("DECODE_ERROR", range.error);
+                shared_result->Error(
+                    range.cancelled ? "DECODE_CANCELLED" : "DECODE_ERROR",
+                    range.error);
                 return;
               }
               flutter::EncodableMap map;

@@ -7,6 +7,7 @@
 #include <flutter/standard_method_codec.h>
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -55,7 +56,13 @@ class FlutterWindow : public Win32Window {
   // `com.birdnet/tts`: spoken announcements. Destroyed before the Flutter
   // controller in OnDestroy so no reply can reach a torn-down engine.
   std::unique_ptr<TtsChannel> tts_channel_;
-  std::atomic<bool> audio_decode_cancelled_{false};
+
+  // Cancellation for the audio decoder is a generation counter: cancelDecode
+  // bumps it and every decode compares the value it started under. A flag
+  // reset at the start of each decode (the previous design) revived decodes
+  // cancelled a moment earlier and lost a cancel that raced a new call. New
+  // decodes never cancel running ones, matching the iOS decoder.
+  std::atomic<uint64_t> audio_decode_generation_{0};
 
   std::queue<std::function<void()>> main_thread_callbacks_;
   std::mutex main_thread_callbacks_mutex_;
