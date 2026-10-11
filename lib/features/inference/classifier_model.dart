@@ -41,6 +41,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
+import 'ort_session_options.dart';
+
 /// Low-level wrapper around an ONNX classification model.
 ///
 /// Handles session creation, input tensor construction, inference, and
@@ -114,14 +116,7 @@ class ClassifierModel {
 
     _session = await _ort.createSession(
       modelPath,
-      options:
-          intraOpNumThreads == null
-              ? null
-              : OrtSessionOptions(
-                intraOpNumThreads: intraOpNumThreads,
-                interOpNumThreads: 1,
-                useArena: true,
-              ),
+      options: buildOrtSessionOptions(intraOpNumThreads: intraOpNumThreads),
     );
 
     debugPrint(
