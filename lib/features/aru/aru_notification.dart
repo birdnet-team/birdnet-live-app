@@ -2,6 +2,7 @@
 // ARU Notification Service - Foreground notification for scheduled deployments
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -74,8 +75,17 @@ class AruNotificationService {
   static String _stopButtonText = '';
   static String _openButtonText = '';
   static const Duration _startRetryDelay = Duration(minutes: 1);
+
+  /// Ceiling on every platform call made from the ARU drive loop.
+  ///
+  /// The runner awaits these inside its tick, so a service call that never
+  /// answers (observed on some Android builds) would otherwise freeze the
+  /// whole deployment schedule. The plugin's own start check already gives up
+  /// after 5 s; the update and stop calls have no bound of their own.
+  static const Duration _serviceCallTimeout = Duration(seconds: 5);
   bool _running = false;
   bool _starting = false;
+  int _generation = 0;
   DateTime? _nextStartAttempt;
   String? _lastTitle;
   String? _lastText;
@@ -138,6 +148,7 @@ class AruNotificationService {
     }
 
     _starting = true;
+    final generation = _generation;
     try {
       await init();
 
@@ -148,8 +159,13 @@ class AruNotificationService {
         );
       }
 
-      final result = await FlutterForegroundTask.startService(
+      final request = FlutterForegroundTask.startService(
         serviceId: serviceId,
+        // Explicit rather than the manifest's `microphone|location`: an ARU
+        // deployment records at a fixed position and never tracks GPS, and
+        // on Android 14+ declaring `location` without a granted location
+        // permission makes the service fail to start.
+        serviceTypes: const [ForegroundServiceTypes.microphone],
         notificationTitle: title,
         notificationText: text,
         notificationInitialRoute: openRoute,
@@ -158,6 +174,13 @@ class AruNotificationService {
         ),
         callback: aruTaskCallback,
       );
+      ServiceRequestResult result;
+      try {
+        result = await request.timeout(const Duration(seconds: 10));
+      } on TimeoutException catch (error) {
+        result = ServiceRequestFailure(error: error);
+        _reconcileLateStart(request, generation, title: title, text: text);
+      }
       if (result is ServiceRequestSuccess) {
         _running = true;
         _lastTitle = title;
@@ -179,30 +202,94 @@ class AruNotificationService {
     }
   }
 
+  /// Settle a start that is still pending after its timeout.
+  ///
+  /// The platform request cannot be canceled, and one that answers late has
+  /// still started the service. By then this wrapper reports not running,
+  /// has released the shared-service claim, and retries in a minute — but the
+  /// plugin's service is a singleton, so every retry would fail with "already
+  /// started": the deployment would run under a notification nobody updates,
+  /// and without the claim that lets a lost microphone be reclaimed in the
+  /// background. Adopt the late service while the deployment still wants it;
+  /// stop it when nothing does anymore.
+  void _reconcileLateStart(
+    Future<ServiceRequestResult> request,
+    int generation, {
+    required String title,
+    required String text,
+  }) {
+    unawaited(() async {
+      try {
+        final result = await request;
+        if (result is! ServiceRequestSuccess) return;
+        if (generation == _generation &&
+            !_running &&
+            ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.aru)) {
+          _running = true;
+          _nextStartAttempt = null;
+          _lastTitle = title;
+          _lastText = text;
+          await _updateNativeNotificationActions(title: title, text: text);
+          debugPrint('[AruNotification] started after timeout');
+        } else if (ForegroundServiceGuard.owner == null) {
+          // stop() ran meanwhile, or a retry already owns the service; a
+          // service nobody claims must not keep running on its own.
+          await _stopServiceQuietly();
+        }
+      } catch (error) {
+        debugPrint('[AruNotification] late start failed: $error');
+      }
+    }());
+  }
+
+  /// Stops a service this wrapper does not want, without letting a wedged
+  /// platform call hold up anything.
+  static Future<void> _stopServiceQuietly() async {
+    try {
+      await FlutterForegroundTask.stopService().timeout(_serviceCallTimeout);
+    } catch (error) {
+      debugPrint('[AruNotification] late service stop failed: $error');
+    }
+  }
+
   Future<void> update({required String title, required String text}) async {
     if (!_running) return;
     if (_lastTitle == title && _lastText == text) return;
-    await FlutterForegroundTask.updateService(
-      notificationTitle: title,
-      notificationText: text,
-      notificationInitialRoute: openRoute,
-      notificationIcon: const NotificationIcon(
-        metaDataName: 'com.birdnet.live.notification_icon',
-      ),
-    );
+    try {
+      await FlutterForegroundTask.updateService(
+        notificationTitle: title,
+        notificationText: text,
+        notificationInitialRoute: openRoute,
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.birdnet.live.notification_icon',
+        ),
+      ).timeout(_serviceCallTimeout);
+    } catch (error) {
+      // Best-effort: the next tick retries with fresh text.
+      debugPrint('[AruNotification] update failed: $error');
+      return;
+    }
     await _updateNativeNotificationActions(title: title, text: text);
     _lastTitle = title;
     _lastText = text;
   }
 
   Future<void> stop() async {
-    await FlutterForegroundTask.stopService();
-    _running = false;
-    _lastTitle = null;
-    _lastText = null;
-    _nextStartAttempt = null;
-    ForegroundServiceGuard.release(ForegroundServiceOwner.aru);
-    debugPrint('[AruNotification] stopped');
+    ++_generation;
+    try {
+      await FlutterForegroundTask.stopService().timeout(_serviceCallTimeout);
+      debugPrint('[AruNotification] stopped');
+    } catch (error) {
+      // The service state is reset either way; a wedged stop must not keep
+      // the deployment from finishing.
+      debugPrint('[AruNotification] stop failed: $error');
+    } finally {
+      _running = false;
+      _lastTitle = null;
+      _lastText = null;
+      _nextStartAttempt = null;
+      ForegroundServiceGuard.release(ForegroundServiceOwner.aru);
+    }
   }
 
   static void updateLocalizedStrings(AppLocalizations l10n) {
@@ -234,18 +321,20 @@ class AruNotificationService {
   }) async {
     if (!Platform.isAndroid) return;
     try {
-      await _notificationChannel.invokeMethod<void>('update', {
-        'serviceId': serviceId,
-        'channelId': 'birdnet_aru_fg',
-        'title': title,
-        'text': text,
-        'stopText': _stopButtonText,
-        'openText': _openButtonText,
-        'openAction': openActionId,
-        'stopAction': stopActionId,
-        'openRoute': openRoute,
-        'stopRoute': stopRoute,
-      });
+      await _notificationChannel
+          .invokeMethod<void>('update', {
+            'serviceId': serviceId,
+            'channelId': 'birdnet_aru_fg',
+            'title': title,
+            'text': text,
+            'stopText': _stopButtonText,
+            'openText': _openButtonText,
+            'openAction': openActionId,
+            'stopAction': stopActionId,
+            'openRoute': openRoute,
+            'stopRoute': stopRoute,
+          })
+          .timeout(_serviceCallTimeout);
     } catch (error, stackTrace) {
       debugPrint('[AruNotification] native update failed: $error\n$stackTrace');
     }

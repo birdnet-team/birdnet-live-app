@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Trimming a recording and normalizing quiet shared audio now run in a background isolate, so long recordings no longer freeze the app (an Android ANR) while they are cut or re-encoded.
+- Exporting FLAC audio as WAV now streams the conversion through a temporary file in a background isolate instead of decoding the whole recording in memory. Long recordings no longer freeze the app or run out of memory during export.
+- Survey and ARU now declare their Android foreground service types explicitly. On Android 14 and newer the service previously failed to start whenever location permission was not granted, so recording stopped as soon as the screen turned off.
+- The classifier model is no longer copied through memory on first launch. iOS and Windows load it straight from the app bundle, sideloaded Android builds copy it natively, and the remaining fallback writes through a temporary file so an interrupted first launch cannot leave a corrupt model behind. Model copies that earlier versions left in the app's documents folder are removed on the next launch.
+- Species descriptions are now decompressed and parsed off the UI thread, removing a visible hitch the first time a species card opens in a session.
+- ARU deployments and Surveys no longer stall when an Android foreground service call never answers: every notification start, update, and stop is now bounded, and a failed update is retried on the next tick. An ARU service that starts after its timeout is adopted instead of being left running unattended.
+- Fixed a rare case on Android where a model load or a shared-file import could wait forever after the app's activity was recreated mid-way: native replies now always reach the app, and the model loader moves on to its fallback after a timeout.
+- On iOS and Windows, cancelling an audio decode (leaving Session Review, cancelling File Analysis) no longer revives or silently loses decodes that started a moment later; on Windows a cancelled decode is reported as cancelled instead of as a shorter recording.
+- Releasing a microphone that stopped answering now takes at most about three seconds in total before a new session starts, instead of up to six.
+- A Survey, ARU deployment, or background Live Mode / Point Count session that loses the microphone while the screen is off (a phone call, a Bluetooth microphone dropping out) now tries to reclaim it instead of staying silent until the app is opened again. iOS retries at the usual pace; Android probes the microphone slowly, a few times per hour, to stay clear of a device audio bug.
+- On Windows, closing the app while a long File Analysis decode is still running no longer risks a crash on exit, and a system font change can no longer crash the app during shutdown.
+- The app now keeps a small on-device log of unexpected errors (under the app's support directory, capped at 256 KB, rate-limited, never uploaded) so field reports have something to go on.
+- Recording encoding (FLAC and WAV, full recordings and detection clips) now runs on a worker isolate instead of the UI thread, removing a steady source of stutter during long Live Mode and Survey sessions on slower devices.
+- Normalizing quiet shared audio and building the trim editor's whole-recording spectrogram now stream the recording in bounded chunks instead of holding all of its audio in memory, so long recordings no longer risk running out of memory in Session Review or on share.
 - Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
 - Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
 - Maps can no longer be pinched out below zoom 2. Zooming out past the whole world made the marker layer build millions of widgets in one frame, which froze the app and triggered an Android ANR.

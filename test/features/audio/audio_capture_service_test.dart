@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:record/record.dart';
 
@@ -8,6 +8,7 @@ import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:birdnet_live/features/audio/audio_capture_service.dart';
 import 'package:birdnet_live/features/audio/audio_providers.dart';
 import 'package:birdnet_live/features/audio/ring_buffer.dart';
+import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 
 /// Stand-in for the `record` platform channel that enforces the one native
 /// invariant we crashed on: `startStream` must never reach a recorder that is
@@ -335,6 +336,89 @@ void main() {
       });
     });
 
+    // A lost microphone while the app is not in the foreground: the watchdog
+    // releases the recorder unless something legitimately keeps the app
+    // capturing in the background (an Android microphone foreground service,
+    // or iOS under the `audio` background mode).
+    group('watchdog in the background', () {
+      late RecordPlatform original;
+      late _FakeRecordPlatform fake;
+      late AudioCaptureService service;
+
+      setUp(() {
+        original = RecordPlatform.instance;
+        fake = _FakeRecordPlatform();
+        RecordPlatform.instance = fake;
+        service = AudioCaptureService(ringBuffer: RingBuffer(capacity: 1000));
+      });
+
+      tearDown(() async {
+        debugDefaultTargetPlatformOverride = null;
+        final owner = ForegroundServiceGuard.owner;
+        if (owner != null) ForegroundServiceGuard.release(owner);
+        await service.dispose();
+        RecordPlatform.instance = original;
+      });
+
+      Future<void> loseMicInBackground() async {
+        await service.start();
+        service.setForeground(false);
+        fake.emitStreamError(Exception('mic lost'));
+        await pumpEventQueue();
+        expect(service.state, CaptureState.error);
+        fake.calls.clear();
+        service.checkWatchdogNow();
+        await pumpEventQueue();
+      }
+
+      test('releases the recorder on Android without a service', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
+        await loseMicInBackground();
+
+        expect(fake.calls, contains('dispose'));
+        expect(fake.calls, isNot(contains('startStream')));
+        expect(service.state, CaptureState.stopped);
+        expect(service.isMicContested, isTrue);
+      });
+
+      test('reclaims the microphone on Android under a service', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        expect(
+          ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey),
+          isTrue,
+        );
+
+        await loseMicInBackground();
+
+        expect(fake.sawStartWhileRecording, isFalse);
+        expect(fake.calls, containsAllInOrder(['dispose', 'startStream']));
+        expect(service.state, CaptureState.capturing);
+      });
+
+      test('reclaims the microphone on iOS', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+
+        await loseMicInBackground();
+
+        expect(fake.sawStartWhileRecording, isFalse);
+        expect(fake.calls, containsAllInOrder(['dispose', 'startStream']));
+        expect(service.state, CaptureState.capturing);
+      });
+
+      test('a released recorder is reclaimed on the next foreground', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+
+        await loseMicInBackground();
+        fake.calls.clear();
+        service.setForeground(true);
+        await pumpEventQueue();
+
+        expect(fake.calls, contains('startStream'));
+        expect(service.state, CaptureState.capturing);
+      });
+    });
+
     // Regression tests for external (USB-C) mics rendering as a spectrogram
     // mirrored about its middle with wrong-sounding audio. `record` clamps
     // `numChannels` to the channel counts the chosen input device advertises,
@@ -524,20 +608,17 @@ void main() {
       }
     });
 
-    test(
-      'fromName falls back to systemDefault for unknown or missing values',
-      () {
-        // A profile persisted by a newer build, or a fresh install with no value.
-        expect(
-          AudioSourceProfile.fromName('camcorder'),
-          AudioSourceProfile.systemDefault,
-        );
-        expect(
-          AudioSourceProfile.fromName(null),
-          AudioSourceProfile.systemDefault,
-        );
-      },
-    );
+    test('fromName falls back to systemDefault for unknown or missing values', () {
+      // A profile persisted by a newer build, or a fresh install with no value.
+      expect(
+        AudioSourceProfile.fromName('camcorder'),
+        AudioSourceProfile.systemDefault,
+      );
+      expect(
+        AudioSourceProfile.fromName(null),
+        AudioSourceProfile.systemDefault,
+      );
+    });
   });
 
   group('AudioSourceSelection', () {
@@ -586,9 +667,8 @@ void main() {
     });
 
     test('a profile change keeps the selected device', () {
-      final selection = const AudioSourceSelection(
-        deviceId: 'usb-1',
-      ).withProfile(AudioSourceProfile.voiceRecognition);
+      final selection = const AudioSourceSelection(deviceId: 'usb-1')
+          .withProfile(AudioSourceProfile.voiceRecognition);
 
       expect(selection.deviceId, 'usb-1');
       expect(selection.profile, AudioSourceProfile.voiceRecognition);

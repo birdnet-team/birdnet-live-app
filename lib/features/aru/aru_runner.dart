@@ -187,7 +187,12 @@ class AruRunner {
           }
         }
       }
-      await _syncNotification();
+      try {
+        await _syncNotification();
+      } catch (error, stack) {
+        // The notification is a courtesy; the schedule must keep advancing.
+        debugPrint('ARU notification sync failed: $error\n$stack');
+      }
     } finally {
       _tickBusy = false;
       _scheduleNextTick();

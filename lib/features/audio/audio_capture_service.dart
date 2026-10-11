@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart'
 import 'package:record/record.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../shared/services/foreground_service_guard.dart';
 import 'audio_source.dart';
 import 'ring_buffer.dart';
 
@@ -312,27 +313,65 @@ class AudioCaptureService with WidgetsBindingObserver {
   //   • Foreground — retry with a capped exponential back-off so we reclaim
   //     the mic the moment the other app releases it, without hammering.
   //
-  //   • Background — DO NOT retry. Android will not grant the mic to a
-  //     backgrounded app while a foreground app holds it, and repeatedly
-  //     re-opening `AudioRecord` against a contended mic wedges the device
-  //     audio HAL (the whole phone loses mic access until it reboots). We
-  //     release our handle cleanly and wait until the app is foregrounded
-  //     again (see [setForeground]).
+  //   • Background without a reason to be capturing — DO NOT retry. Android
+  //     will not grant the mic to a backgrounded app while a foreground app
+  //     holds it, and repeatedly re-opening `AudioRecord` against a contended
+  //     mic wedges the device audio HAL (the whole phone loses mic access
+  //     until it reboots). We release our handle cleanly and wait until the
+  //     app is foregrounded again (see [setForeground]).
+  //
+  //   • Background with a microphone foreground service (Survey, ARU,
+  //     background Live Mode / Point Count), or on iOS under the `audio`
+  //     background mode — retry, see [_canRetryInBackground]. The mode that
+  //     owns the service is exactly the one that must keep capturing, and a
+  //     phone call would otherwise end its audio for good: the iOS recorder
+  //     pauses on an interruption and never resumes by itself. Android keeps
+  //     a slow cadence here — a handful of reopen attempts per hour, not one
+  //     every two seconds — so a contended mic is probed, not hammered.
   //
   // Either way we surface [isMicContested] / [micContestedStream] so the UI
   // can show an "X" on the signal meter and the foreground notification can
   // explain why audio appears frozen.
   static const Duration _minRetryBackoff = Duration(seconds: 2);
   static const Duration _maxRetryBackoff = Duration(seconds: 20);
+  static const Duration _backgroundMinRetryBackoff = Duration(seconds: 30);
+  static const Duration _backgroundMaxRetryBackoff = Duration(minutes: 2);
+
+  /// Whether a lost microphone is worth reclaiming while the app is not in
+  /// the foreground; see the note above.
+  bool get _canRetryInBackground {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return ForegroundServiceGuard.owner != null;
+      case TargetPlatform.iOS:
+        return true;
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+        // Desktop never reports a background state; nothing to decide.
+        return true;
+    }
+  }
+
+  /// Android probes a contended microphone slowly from the background.
+  bool get _slowBackgroundRetry =>
+      defaultTargetPlatform == TargetPlatform.android;
 
   /// How long a running stream may go without delivering audio before we
   /// treat the mic as lost. Kept above the watchdog period so a single
   /// slow chunk doesn't trip it.
   static const Duration _stallTimeout = Duration(seconds: 3);
 
-  /// How long to wait for the platform to acknowledge a stop/dispose before
-  /// abandoning the recorder (see [_teardownCapture]).
-  static const Duration _teardownTimeout = Duration(seconds: 2);
+  /// Overall budget for releasing a recorder in [_teardownCapture]. The
+  /// stream cancel, `stop()` and `dispose()` share it, so a recorder that
+  /// answers none of them costs one deadline rather than three in a row —
+  /// that wait sits directly in front of the next session start.
+  static const Duration _teardownTimeout = Duration(seconds: 3);
+
+  /// Floor on each step's share of the budget, so a slow-but-alive call still
+  /// gets a real chance after an earlier step used most of it.
+  static const Duration _teardownStepFloor = Duration(milliseconds: 500);
 
   Duration _retryBackoff = _minRetryBackoff;
   DateTime? _nextRetryAt;
@@ -399,7 +438,8 @@ class AudioCaptureService with WidgetsBindingObserver {
     // flips to "X" without waiting for a retry to fail.
     _setMicContested(true);
 
-    if (!_isForeground) {
+    final background = !_isForeground;
+    if (background && !_canRetryInBackground) {
       // Background: stop fighting for the mic. Release our handle once and
       // wait for the foreground transition to try again.
       if (!_backgroundReleased) {
@@ -412,25 +452,35 @@ class AudioCaptureService with WidgetsBindingObserver {
       return;
     }
 
-    // Foreground: retry with capped exponential back-off.
+    // Retry with capped exponential back-off — the usual cadence in the
+    // foreground and on iOS, the slow one for an Android background mode.
+    final slow = background && _slowBackgroundRetry;
+    final minBackoff = slow ? _backgroundMinRetryBackoff : _minRetryBackoff;
+    final maxBackoff = slow ? _backgroundMaxRetryBackoff : _maxRetryBackoff;
     if (_nextRetryAt != null && now.isBefore(_nextRetryAt!)) return;
-    _retryBackoff =
-        _nextRetryAt == null
-            ? _minRetryBackoff
-            : Duration(
-              milliseconds: math.min(
+    _retryBackoff = _nextRetryAt == null
+        ? minBackoff
+        : Duration(
+            milliseconds: math.min(
+              math.max(
                 _retryBackoff.inMilliseconds * 2,
-                _maxRetryBackoff.inMilliseconds,
+                minBackoff.inMilliseconds,
               ),
-            );
+              maxBackoff.inMilliseconds,
+            ),
+          );
     _nextRetryAt = now.add(_retryBackoff);
     debugPrint(
-      'Watchdog: mic lost in foreground (stalled: $isStalled, '
-      'failed: $isFailed) — reclaiming, next retry in '
+      'Watchdog: mic lost in the ${background ? 'background' : 'foreground'} '
+      '(stalled: $isStalled, failed: $isFailed) — reclaiming, next retry in '
       '${_retryBackoff.inSeconds}s',
     );
     _restart();
   }
+
+  /// Run one watchdog pass now instead of waiting for its 2 s timer.
+  @visibleForTesting
+  void checkWatchdogNow() => _checkWatchdog();
 
   /// Reset all lost/retry bookkeeping when audio is confirmed flowing.
   void _onCaptureHealthy() {
@@ -649,11 +699,17 @@ class AudioCaptureService with WidgetsBindingObserver {
     _levelTimer?.cancel();
     _levelTimer = null;
 
+    final deadline = DateTime.now().add(_teardownTimeout);
+    Duration remaining() {
+      final left = deadline.difference(DateTime.now());
+      return left > _teardownStepFloor ? left : _teardownStepFloor;
+    }
+
     final streamSub = _streamSub;
     _streamSub = null;
     if (streamSub != null) {
       try {
-        await streamSub.cancel().timeout(_teardownTimeout);
+        await streamSub.cancel().timeout(remaining());
       } catch (_) {
         // A platform audio stream that never acknowledges cancellation must
         // not wedge the serialized lifecycle queue and block session saving.
@@ -670,12 +726,12 @@ class AudioCaptureService with WidgetsBindingObserver {
       // queue, so abandon the recorder instead — `dispose()` on the platform
       // side tears it down regardless.
       try {
-        await rec.stop().timeout(_teardownTimeout);
+        await rec.stop().timeout(remaining());
       } catch (_) {
         // Recorder may already be stopped or wedged; ignore.
       }
       try {
-        await rec.dispose().timeout(_teardownTimeout);
+        await rec.dispose().timeout(remaining());
       } catch (_) {
         // Best-effort native release.
       }

@@ -13,7 +13,9 @@
 //     rename so an interrupted cut can't lose the recording.
 //   • [writeTrimmedAudioFile] — materializes the trimmed extent of a WAV or
 //     FLAC recording into a new file, streaming so an hour-long source never
-//     lands in memory all at once.
+//     lands in memory all at once. The slicer runs in a background isolate:
+//     re-encoding an hour of FLAC is tens of seconds of pure Dart work, and
+//     the UI isolate is also the platform thread on Android and iOS.
 //   • [SessionTrimTimeline] — the trim-aware view of the session's recorded
 //     timeline. Still needed after the fact: sessions saved before the commit
 //     existed, and recordings in containers the slicer can't cut, keep their
@@ -25,6 +27,7 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -73,10 +76,9 @@ extension SessionTrimTimeline on LiveSession {
   /// Length of the audio timeline as the user sees it: the trimmed extent
   /// when a trim is set, otherwise the full recorded timeline.
   double get trimmedTimelineSeconds {
-    final full =
-        segments.isNotEmpty
-            ? absoluteToRelative(endTime ?? DateTime.now())
-            : duration.inMicroseconds / 1e6;
+    final full = segments.isNotEmpty
+        ? absoluteToRelative(endTime ?? DateTime.now())
+        : duration.inMicroseconds / 1e6;
     if (!hasAudioTrim) return full;
     // The trim handles are placed against the *audio file*, which can run
     // slightly past the session's own clock, so the stored end is the more
@@ -116,14 +118,9 @@ List<DetectionRecord> detectionsOverlappingTrim({
           detection.timestamp,
           endSec,
         );
-        final detectionEnd =
-            detection.endTimestamp == null
-                ? detectionStart + windowSec
-                : _absoluteToTrimRelative(
-                  session,
-                  detection.endTimestamp!,
-                  endSec,
-                );
+        final detectionEnd = detection.endTimestamp == null
+            ? detectionStart + windowSec
+            : _absoluteToTrimRelative(session, detection.endTimestamp!, endSec);
         return detectionEnd > startSec && detectionStart < endSec;
       }())
         detection,
@@ -386,6 +383,37 @@ Future<TrimmedAudioFile?> writeTrimmedAudioFile({
   // separate staged files, but this public helper should be safe on its own.
   if (p.equals(p.absolute(sourcePath), p.absolute(destPath))) return null;
 
+  // Pure file I/O and arithmetic over the paths — nothing that needs the UI
+  // isolate — so the whole cut runs off it. Only primitives cross the
+  // boundary: the closure captures strings and numbers, and the result comes
+  // back as a record rather than a [File].
+  final written = await Isolate.run(
+    () => _writeTrimmedAudioFileInIsolate(
+      sourcePath: sourcePath,
+      destPath: destPath,
+      startSec: startSec,
+      endSec: endSec,
+      asWav: asWav,
+    ),
+    debugName: 'session-audio-trim',
+  );
+  if (written == null) return null;
+  return TrimmedAudioFile(
+    file: File(written.path),
+    durationSeconds: written.durationSeconds,
+    extension: written.extension,
+  );
+}
+
+/// The slicer proper; see [writeTrimmedAudioFile] for the contract.
+Future<({String path, double durationSeconds, String extension})?>
+_writeTrimmedAudioFileInIsolate({
+  required String sourcePath,
+  required String destPath,
+  required double startSec,
+  required double? endSec,
+  required bool asWav,
+}) async {
   final source = File(sourcePath);
   if (!await source.exists()) return null;
   if (startSec < 0) startSec = 0;
@@ -425,8 +453,15 @@ Future<TrimmedAudioFile?> writeTrimmedAudioFile({
   } on FileSystemException {
     // Source vanished or the destination isn't writable.
   }
-  if (result == null) await _deleteQuietly(dest);
-  return result;
+  if (result == null) {
+    await _deleteQuietly(dest);
+    return null;
+  }
+  return (
+    path: result.file.path,
+    durationSeconds: result.durationSeconds,
+    extension: result.extension,
+  );
 }
 
 /// Copies the requested frame range out of a WAV payload verbatim.
@@ -449,10 +484,11 @@ Future<TrimmedAudioFile?> _trimWav({
     0,
     totalFrames,
   );
-  final endFrame = (endSec == null
-          ? totalFrames
-          : (endSec * layout.sampleRate).round().clamp(0, totalFrames))
-      .clamp(startFrame, totalFrames);
+  final endFrame =
+      (endSec == null
+              ? totalFrames
+              : (endSec * layout.sampleRate).round().clamp(0, totalFrames))
+          .clamp(startFrame, totalFrames);
   final frameCount = endFrame - startFrame;
   if (frameCount <= 0) return null;
 
@@ -549,16 +585,17 @@ Future<TrimmedAudioFile?> _trimFlac({
   if (sampleRate <= 0) return null;
 
   final startSample = math.max(0, (startSec * sampleRate).floor());
-  final endSample =
-      endSec == null
-          ? null
-          : math.max(startSample, (endSec * sampleRate).round());
+  final endSample = endSec == null
+      ? null
+      : math.max(startSample, (endSec * sampleRate).round());
   if (endSample != null && endSample <= startSample) return null;
 
-  final wavWriter =
-      asWav ? WavWriter(filePath: dest.path, sampleRate: sampleRate) : null;
-  final flacEncoder =
-      asWav ? null : FlacEncoder(filePath: dest.path, sampleRate: sampleRate);
+  final wavWriter = asWav
+      ? WavWriter(filePath: dest.path, sampleRate: sampleRate)
+      : null;
+  final flacEncoder = asWav
+      ? null
+      : FlacEncoder(filePath: dest.path, sampleRate: sampleRate);
   await (wavWriter?.open() ?? flacEncoder!.open());
 
   // A trim that starts well into the recording would otherwise bit-decode
@@ -566,10 +603,9 @@ Future<TrimmedAudioFile?> _trimFlac({
   // The index costs one linear scan (~0.6 s for an hour), so only reach for
   // it when there is meaningfully more than that to skip; exports that start
   // at zero, which is most of them, take the untouched path.
-  final seekIndex =
-      startSample > sampleRate * 60
-          ? await AudioDecoder.buildFlacSeekIndex(sourcePath)
-          : null;
+  final seekIndex = startSample > sampleRate * 60
+      ? await AudioDecoder.buildFlacSeekIndex(sourcePath)
+      : null;
 
   var written = 0;
   var failed = false;
@@ -584,16 +620,14 @@ Future<TrimmedAudioFile?> _trimFlac({
         if (endSample != null && frameStart >= endSample) return false; // Past.
 
         final from = math.max(0, startSample - frameStart);
-        final to =
-            endSample == null
-                ? samples.length
-                : math.min(samples.length, endSample - frameStart);
+        final to = endSample == null
+            ? samples.length
+            : math.min(samples.length, endSample - frameStart);
         if (to <= from) return endSample == null || frameEnd < endSample;
 
-        final slice =
-            (from == 0 && to == samples.length)
-                ? samples
-                : Int16List.sublistView(samples, from, to);
+        final slice = (from == 0 && to == samples.length)
+            ? samples
+            : Int16List.sublistView(samples, from, to);
         if (wavWriter != null) {
           await wavWriter.writeSamplesPcm16(slice);
         } else {

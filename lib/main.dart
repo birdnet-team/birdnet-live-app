@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/error_log.dart';
 import 'features/aru/aru_notification.dart';
 import 'features/survey/survey_notification.dart';
 import 'shared/providers/app_providers.dart';
@@ -17,6 +18,11 @@ import 'shared/widgets/open_street_map_tile_layer.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Keep a bounded on-device record of uncaught errors. Installed before any
+  // other startup work so the earliest failures are captured too; default
+  // console reporting is unchanged.
+  ErrorLog.install();
 
   // Initialize foreground task communication for survey background service.
   FlutterForegroundTask.initCommunicationPort();

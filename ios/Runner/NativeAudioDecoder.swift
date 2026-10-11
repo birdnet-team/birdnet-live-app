@@ -19,7 +19,28 @@ import Flutter
 ///   - "sampleRate": Int — output sample rate in Hz
 ///   - "totalSamples": Int — number of mono samples
 enum NativeAudioDecoder {
-    static var isCancelled = false
+    /// Cancellation is a generation counter, not a flag. `cancelAll()` bumps
+    /// it and every decode compares the generation it started under. The
+    /// flag this replaces was reset at the start of each new decode, which
+    /// revived decodes cancelled a moment earlier (Session Review scrubbing
+    /// after leaving a screen), and a cancel that raced a new call was lost.
+    /// New decodes never cancel running ones — the dispatch queue has always
+    /// allowed them to overlap, and callers rely on that.
+    private static let generationLock = NSLock()
+    private static var generation: UInt64 = 0
+
+    /// Cancels every decode in flight.
+    static func cancelAll() {
+        generationLock.lock()
+        generation &+= 1
+        generationLock.unlock()
+    }
+
+    private static func currentGeneration() -> UInt64 {
+        generationLock.lock()
+        defer { generationLock.unlock() }
+        return generation
+    }
 
     static func inspect(path: String) throws -> [String: Any] {
         let url = URL(fileURLWithPath: path)
@@ -48,7 +69,7 @@ enum NativeAudioDecoder {
     }
 
     static func decode(path: String, tempPcmPath: String) throws -> [String: Any] {
-        isCancelled = false
+        let startedUnder = currentGeneration()
         let url = URL(fileURLWithPath: path)
         let tempUrl = URL(fileURLWithPath: tempPcmPath)
 
@@ -106,7 +127,7 @@ enum NativeAudioDecoder {
         var totalBytes = 0
 
         while reader.status == .reading {
-            if isCancelled {
+            if currentGeneration() != startedUnder {
                 reader.cancelReading()
                 throw DecoderError.readerFailed("Cancelled")
             }
@@ -146,7 +167,7 @@ enum NativeAudioDecoder {
     }
 
     static func decodeRange(path: String, startSample: Int, count: Int) throws -> [String: Any] {
-        isCancelled = false
+        let startedUnder = currentGeneration()
         let url = URL(fileURLWithPath: path)
 
         guard FileManager.default.fileExists(atPath: path) else {
@@ -197,7 +218,7 @@ enum NativeAudioDecoder {
         data.reserveCapacity(count * 2)
 
         while reader.status == .reading {
-            if isCancelled {
+            if currentGeneration() != startedUnder {
                 reader.cancelReading()
                 throw DecoderError.readerFailed("Cancelled")
             }
