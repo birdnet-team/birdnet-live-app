@@ -54,6 +54,19 @@ service that declares `location` without a granted location permission, so
 inheriting both manifest types would leave a Survey or ARU deployment without
 its service whenever GPS is off or denied.
 
+The service is `stopWithTask` and `START_NOT_STICKY`: when Android kills the
+process (memory pressure, a crash, the user swiping the task away), nothing
+restarts a Survey or an ARU deployment. Both checkpoint their session every
+30 s (`SessionCheckpointWriter`, `AruController.checkpoint`), so the Session
+Library shows the last snapshot as an ended Session; a Survey can be continued
+from its review with **Continue Survey**, an ARU deployment cannot be resumed.
+`AruNotificationRoute` decides from in-memory state only, so a notification tap
+that arrives after process death lands on the library rather than on a
+deployment that no longer exists. This is deliberate: restarting microphone
+capture from the background is not permitted on Android 14+, and silently
+resuming a deployment the user believes has stopped would be worse than
+stopping it.
+
 ### Ring Buffer Audio Pipeline
 
 Audio flows through a shared `RingBuffer`:
