@@ -24,6 +24,19 @@ Microphone (Oboe / AVAudioEngine)
 
 `AudioCaptureService` wraps the platform microphone and pushes PCM16 data into the ring buffer. It also exposes an RMS level stream (~15 Hz) for UI metering.
 
+## Microphone-loss handling
+
+A lost microphone (stalled stream or stream error) is retried with a capped
+exponential back-off while the app is in the foreground. In the background
+the watchdog only retries when something legitimately keeps the app capturing:
+on Android a mode must own the shared microphone foreground service
+(`ForegroundServiceGuard.owner != null`), and the retry cadence drops to a
+probe every 30 s to 2 min so a contended microphone is never hammered (that
+wedged the audio HAL on some devices); on iOS the `audio` background mode keeps
+the app alive and the `record` plugin pauses on an interruption without
+resuming, so the normal cadence applies. Without a reason to capture, the
+recorder is released once and reclaimed on the next foreground transition.
+
 ## Recording Service
 
 `RecordingService` supports two modes:
