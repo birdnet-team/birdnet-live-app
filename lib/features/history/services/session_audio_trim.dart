@@ -76,10 +76,9 @@ extension SessionTrimTimeline on LiveSession {
   /// Length of the audio timeline as the user sees it: the trimmed extent
   /// when a trim is set, otherwise the full recorded timeline.
   double get trimmedTimelineSeconds {
-    final full =
-        segments.isNotEmpty
-            ? absoluteToRelative(endTime ?? DateTime.now())
-            : duration.inMicroseconds / 1e6;
+    final full = segments.isNotEmpty
+        ? absoluteToRelative(endTime ?? DateTime.now())
+        : duration.inMicroseconds / 1e6;
     if (!hasAudioTrim) return full;
     // The trim handles are placed against the *audio file*, which can run
     // slightly past the session's own clock, so the stored end is the more
@@ -119,14 +118,9 @@ List<DetectionRecord> detectionsOverlappingTrim({
           detection.timestamp,
           endSec,
         );
-        final detectionEnd =
-            detection.endTimestamp == null
-                ? detectionStart + windowSec
-                : _absoluteToTrimRelative(
-                  session,
-                  detection.endTimestamp!,
-                  endSec,
-                );
+        final detectionEnd = detection.endTimestamp == null
+            ? detectionStart + windowSec
+            : _absoluteToTrimRelative(session, detection.endTimestamp!, endSec);
         return detectionEnd > startSec && detectionStart < endSec;
       }())
         detection,
@@ -420,7 +414,6 @@ _writeTrimmedAudioFileInIsolate({
   required double? endSec,
   required bool asWav,
 }) async {
-
   final source = File(sourcePath);
   if (!await source.exists()) return null;
   if (startSec < 0) startSec = 0;
@@ -491,10 +484,11 @@ Future<TrimmedAudioFile?> _trimWav({
     0,
     totalFrames,
   );
-  final endFrame = (endSec == null
-          ? totalFrames
-          : (endSec * layout.sampleRate).round().clamp(0, totalFrames))
-      .clamp(startFrame, totalFrames);
+  final endFrame =
+      (endSec == null
+              ? totalFrames
+              : (endSec * layout.sampleRate).round().clamp(0, totalFrames))
+          .clamp(startFrame, totalFrames);
   final frameCount = endFrame - startFrame;
   if (frameCount <= 0) return null;
 
@@ -591,16 +585,17 @@ Future<TrimmedAudioFile?> _trimFlac({
   if (sampleRate <= 0) return null;
 
   final startSample = math.max(0, (startSec * sampleRate).floor());
-  final endSample =
-      endSec == null
-          ? null
-          : math.max(startSample, (endSec * sampleRate).round());
+  final endSample = endSec == null
+      ? null
+      : math.max(startSample, (endSec * sampleRate).round());
   if (endSample != null && endSample <= startSample) return null;
 
-  final wavWriter =
-      asWav ? WavWriter(filePath: dest.path, sampleRate: sampleRate) : null;
-  final flacEncoder =
-      asWav ? null : FlacEncoder(filePath: dest.path, sampleRate: sampleRate);
+  final wavWriter = asWav
+      ? WavWriter(filePath: dest.path, sampleRate: sampleRate)
+      : null;
+  final flacEncoder = asWav
+      ? null
+      : FlacEncoder(filePath: dest.path, sampleRate: sampleRate);
   await (wavWriter?.open() ?? flacEncoder!.open());
 
   // A trim that starts well into the recording would otherwise bit-decode
@@ -608,10 +603,9 @@ Future<TrimmedAudioFile?> _trimFlac({
   // The index costs one linear scan (~0.6 s for an hour), so only reach for
   // it when there is meaningfully more than that to skip; exports that start
   // at zero, which is most of them, take the untouched path.
-  final seekIndex =
-      startSample > sampleRate * 60
-          ? await AudioDecoder.buildFlacSeekIndex(sourcePath)
-          : null;
+  final seekIndex = startSample > sampleRate * 60
+      ? await AudioDecoder.buildFlacSeekIndex(sourcePath)
+      : null;
 
   var written = 0;
   var failed = false;
@@ -626,16 +620,14 @@ Future<TrimmedAudioFile?> _trimFlac({
         if (endSample != null && frameStart >= endSample) return false; // Past.
 
         final from = math.max(0, startSample - frameStart);
-        final to =
-            endSample == null
-                ? samples.length
-                : math.min(samples.length, endSample - frameStart);
+        final to = endSample == null
+            ? samples.length
+            : math.min(samples.length, endSample - frameStart);
         if (to <= from) return endSample == null || frameEnd < endSample;
 
-        final slice =
-            (from == 0 && to == samples.length)
-                ? samples
-                : Int16List.sublistView(samples, from, to);
+        final slice = (from == 0 && to == samples.length)
+            ? samples
+            : Int16List.sublistView(samples, from, to);
         if (wavWriter != null) {
           await wavWriter.writeSamplesPcm16(slice);
         } else {
