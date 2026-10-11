@@ -289,15 +289,23 @@ class SurveyNotificationService {
   }
 
   /// Update the notification text with current survey stats.
+  ///
+  /// Bounded and best-effort: this runs once a second from the Survey
+  /// controller, and a platform call that never answers must not pile up
+  /// behind itself or stall the controller's teardown.
   Future<void> update({required String title, required String text}) async {
     if (!_running) return;
-    await FlutterForegroundTask.updateService(
-      notificationTitle: title,
-      notificationText: text,
-      notificationIcon: const NotificationIcon(
-        metaDataName: 'com.birdnet.live.notification_icon',
-      ),
-    );
+    try {
+      await FlutterForegroundTask.updateService(
+        notificationTitle: title,
+        notificationText: text,
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.birdnet.live.notification_icon',
+        ),
+      ).timeout(const Duration(seconds: 5));
+    } catch (error) {
+      debugPrint('[SurveyNotification] update failed: $error');
+    }
   }
 
   /// Stop the foreground service.
