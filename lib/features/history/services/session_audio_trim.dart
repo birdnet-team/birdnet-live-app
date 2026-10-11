@@ -13,7 +13,9 @@
 //     rename so an interrupted cut can't lose the recording.
 //   • [writeTrimmedAudioFile] — materializes the trimmed extent of a WAV or
 //     FLAC recording into a new file, streaming so an hour-long source never
-//     lands in memory all at once.
+//     lands in memory all at once. The slicer runs in a background isolate:
+//     re-encoding an hour of FLAC is tens of seconds of pure Dart work, and
+//     the UI isolate is also the platform thread on Android and iOS.
 //   • [SessionTrimTimeline] — the trim-aware view of the session's recorded
 //     timeline. Still needed after the fact: sessions saved before the commit
 //     existed, and recordings in containers the slicer can't cut, keep their
@@ -25,6 +27,7 @@
 // =============================================================================
 
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -386,6 +389,38 @@ Future<TrimmedAudioFile?> writeTrimmedAudioFile({
   // separate staged files, but this public helper should be safe on its own.
   if (p.equals(p.absolute(sourcePath), p.absolute(destPath))) return null;
 
+  // Pure file I/O and arithmetic over the paths — nothing that needs the UI
+  // isolate — so the whole cut runs off it. Only primitives cross the
+  // boundary: the closure captures strings and numbers, and the result comes
+  // back as a record rather than a [File].
+  final written = await Isolate.run(
+    () => _writeTrimmedAudioFileInIsolate(
+      sourcePath: sourcePath,
+      destPath: destPath,
+      startSec: startSec,
+      endSec: endSec,
+      asWav: asWav,
+    ),
+    debugName: 'session-audio-trim',
+  );
+  if (written == null) return null;
+  return TrimmedAudioFile(
+    file: File(written.path),
+    durationSeconds: written.durationSeconds,
+    extension: written.extension,
+  );
+}
+
+/// The slicer proper; see [writeTrimmedAudioFile] for the contract.
+Future<({String path, double durationSeconds, String extension})?>
+_writeTrimmedAudioFileInIsolate({
+  required String sourcePath,
+  required String destPath,
+  required double startSec,
+  required double? endSec,
+  required bool asWav,
+}) async {
+
   final source = File(sourcePath);
   if (!await source.exists()) return null;
   if (startSec < 0) startSec = 0;
@@ -425,8 +460,15 @@ Future<TrimmedAudioFile?> writeTrimmedAudioFile({
   } on FileSystemException {
     // Source vanished or the destination isn't writable.
   }
-  if (result == null) await _deleteQuietly(dest);
-  return result;
+  if (result == null) {
+    await _deleteQuietly(dest);
+    return null;
+  }
+  return (
+    path: result.file.path,
+    durationSeconds: result.durationSeconds,
+    extension: result.extension,
+  );
 }
 
 /// Copies the requested frame range out of a WAV payload verbatim.

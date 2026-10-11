@@ -90,6 +90,13 @@ Trimming is metadata-only — the original recording is not modified:
 3. **Apply Trim**: removes detections outside `[trimStartSec, trimEndSec]` from `_detections`, updates `_speciesGroups`, marks dirty.
 4. **Reset Trim**: sets both offsets to null.
 5. The export system includes `trimStartSec`/`trimEndSec` in JSON output.
+6. `commitSessionTrim()` (on save) and `writeTrimmedAudioFile()` (on export and
+   detection share) turn the range into real audio. The slicer streams the
+   source frame by frame and runs inside `Isolate.run`: the UI isolate is the
+   platform thread on Android and iOS, and re-encoding an hour of FLAC takes
+   tens of seconds of pure Dart work. Only paths and numbers cross the isolate
+   boundary. `AudioExportNormalizer.normalizeFileInPlace()` (quiet shared
+   audio) follows the same rule.
 
 ## Add Species Overlay
 
