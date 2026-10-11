@@ -31,8 +31,8 @@ dependencies:
   # Require the native Bluetooth startup callback guard against duplicate replies.
   record_android: ^2.2.0
   fftea: ^1.2.0
-  # Spoken detection announcements (TTS + audio session routing)
-  flutter_tts: ^4.2.0
+  # Spoken detection announcements: audio session routing. Speech itself
+  # goes through the app's own `com.birdnet/tts` platform channel.
   audio_session: ^0.2.3
   # Inference
   #

@@ -18,11 +18,16 @@ import UIKit
   private var sharedMediaChannel: FlutterMethodChannel?
   private var lastQueuedStagedURI: String?
 
+  /// Text-to-speech for spoken announcements; see TtsChannel.swift.
+  private var ttsChannel: TtsChannel?
+
   /// Register only after the implicit engine exists. Under the scene lifecycle,
   /// AppDelegate's window is not available during application launch.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
+
+    ttsChannel = TtsChannel(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",
