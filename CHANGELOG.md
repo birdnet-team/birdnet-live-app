@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - On iOS and Windows, cancelling an audio decode (leaving Session Review, cancelling File Analysis) no longer revives or silently loses decodes that started a moment later; on Windows a cancelled decode is reported as cancelled instead of as a shorter recording.
 - Releasing a microphone that stopped answering now takes at most about three seconds in total before a new session starts, instead of up to six.
 - A Survey, ARU deployment, or background Live Mode / Point Count session that loses the microphone while the screen is off (a phone call, a Bluetooth microphone dropping out) now tries to reclaim it instead of staying silent until the app is opened again. iOS retries at the usual pace; Android probes the microphone slowly, a few times per hour, to stay clear of a device audio bug.
+- On Windows, closing the app while a long File Analysis decode is still running no longer risks a crash on exit, and a system font change can no longer crash the app during shutdown.
 - Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
 - Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
 - Maps can no longer be pinched out below zoom 2. Zooming out past the whole world made the marker layer build millions of widgets in one frame, which froze the app and triggered an Android ANR.

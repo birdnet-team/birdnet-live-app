@@ -41,8 +41,15 @@ class FlutterWindow : public Win32Window {
   // it with a posted message. Decoding runs on a worker thread (mirroring the
   // Kotlin coroutine / GCD dispatch used on Android/iOS), but Flutter method
   // results must be completed on the platform thread — this mirrors the
-  // RunOnMainThread pattern in the record_windows plugin dependency.
+  // RunOnMainThread pattern in the record_windows plugin dependency. A
+  // callback posted after the window is destroyed is dropped.
   void RunOnMainThread(std::function<void()> callback);
+
+  // State shared with the audio decoder's worker threads. They hold it by
+  // shared_ptr and never touch the window itself, so a decode that is still
+  // running when the window closes finishes on its own, finds the queue
+  // closed, and drops its reply instead of reaching into a destroyed object.
+  struct MainThreadQueue;
 
   // The project to run.
   flutter::DartProject project_;
@@ -57,15 +64,7 @@ class FlutterWindow : public Win32Window {
   // controller in OnDestroy so no reply can reach a torn-down engine.
   std::unique_ptr<TtsChannel> tts_channel_;
 
-  // Cancellation for the audio decoder is a generation counter: cancelDecode
-  // bumps it and every decode compares the value it started under. A flag
-  // reset at the start of each decode (the previous design) revived decodes
-  // cancelled a moment earlier and lost a cancel that raced a new call. New
-  // decodes never cancel running ones, matching the iOS decoder.
-  std::atomic<uint64_t> audio_decode_generation_{0};
-
-  std::queue<std::function<void()>> main_thread_callbacks_;
-  std::mutex main_thread_callbacks_mutex_;
+  std::shared_ptr<MainThreadQueue> main_thread_queue_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_
