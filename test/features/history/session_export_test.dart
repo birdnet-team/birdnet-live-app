@@ -1467,6 +1467,94 @@ void main() {
       },
     );
 
+    test('audio-only WAV conversion streams a real FLAC next to it', () async {
+      final sessionDir = Directory(p.join(tempDir.path, 'audio_only_wav'))
+        ..createSync();
+      final flacPath = p.join(sessionDir.path, 'full.flac');
+      final sourceSamples = _pcmLikeFloatSamples(32000);
+      await FlacEncoder.writeFile(filePath: flacPath, samples: sourceSamples);
+
+      final session = _makeSession(
+        recordingPath: flacPath,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            DateTime.utc(2025, 6, 15, 8, 0, 0),
+          ),
+        ],
+      );
+
+      final result = await buildSessionExport(
+        session,
+        formats: const <String>{},
+        includeAudio: true,
+        shareAudioAsWav: true,
+        includeHtmlReport: false,
+        includeAppMetadata: false,
+      );
+
+      expect(result, isNotNull);
+      expect(p.basename(result!), '$_prefix.wav');
+      expect(p.dirname(result), sessionDir.path);
+      final decoded = await AudioDecoder.decodeFile(result);
+      expect(decoded.sampleRate, 32000);
+      expect(decoded.samples, _expectedPcm16(sourceSamples));
+      // The source is left untouched.
+      expect(File(flacPath).existsSync(), isTrue);
+    });
+
+    test('staged WAV conversions are removed once the ZIP is written',
+        () async {
+      final sessionDir = Directory(p.join(tempDir.path, 'staged_wav'))
+        ..createSync();
+      final flacPath = p.join(sessionDir.path, 'full.flac');
+      await FlacEncoder.writeFile(
+        filePath: flacPath,
+        samples: _pcmLikeFloatSamples(32000),
+      );
+
+      final session = _makeSession(
+        recordingPath: sessionDir.path,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            DateTime.utc(2025, 6, 15, 8, 0, 0),
+          ),
+        ],
+      );
+
+      final zipPath = await buildSessionExport(
+        session,
+        formats: const {'csv'},
+        includeAudio: true,
+        shareAudioAsWav: true,
+      );
+      expect(zipPath, isNotNull);
+
+      final staging = Directory(
+        p.join(Directory.systemTemp.path, 'birdnet_export_trim'),
+      );
+      final leftovers = staging.existsSync()
+          ? staging
+                .listSync()
+                .whereType<File>()
+                .where((f) => p.basename(f.path) == '$_prefix.wav')
+                .toList()
+          : const <File>[];
+      expect(leftovers, isEmpty);
+
+      final archive = ZipDecoder().decodeBytes(
+        File(zipPath!).readAsBytesSync(),
+      );
+      expect(archive.map((f) => f.name), contains('$_prefix.wav'));
+    });
+
     test(
       'audio-only WAV conversion fallback keeps original FLAC extension',
       () async {

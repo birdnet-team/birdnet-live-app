@@ -141,6 +141,12 @@ some detection carries one) and as an `evidence` key in JSON.
 
 The `_buildAnnotationsText()` helper formats annotations as plain text with timestamp labels.
 
+Audio never passes through memory as a whole. A trimmed recording and any
+FLAC-to-WAV conversion (the "share audio as WAV" setting) are written to a
+staging directory by the streaming slicer in `session_audio_trim.dart`, added
+to the ZIP by path, and deleted once `writeExportZip()` has streamed them into
+the archive in its own isolate. Only generated documents are held in memory.
+
 ## Session Lifecycle (App Focus)
 
 `WidgetsBindingObserver` on `_LiveScreenState`:
