@@ -52,7 +52,7 @@ flutter build windows --release
 ## Notes
 
 - The two ONNX models are tracked with Git LFS. Run `git lfs pull` before building from a fresh clone.
-- APK builds keep the models in `flutter_assets`; AAB builds ship them via the install-time `models_pack` asset pack.
+- APK builds keep the models in `flutter_assets`; AAB builds ship them via the install-time `models_pack` asset pack. At runtime `AssetPackService` reads both locations through the Android `AssetManager`, so neither flow loads the model into Dart memory.
 - ONNX Runtime native libraries are platform-specific and handled by the `flutter_onnxruntime` package.
 
 ## Forking and Re-releasing
