@@ -42,7 +42,7 @@ dependencies:
   # SME/SME2 kernels). That path segfaults inside `OrtSession.run` on arm64 and
   # shipped as the v1.0.2 "crashes when starting a recording" bug.
   # See docs/developer/onnxruntime-pin.md before changing this line.
-  flutter_onnxruntime: 1.7.1
+  flutter_onnxruntime: 1.9.0
 
   # UI & UX
   url_launcher: ^6.3.1
@@ -62,7 +62,7 @@ dependencies:
   just_audio_windows: ^0.2.3
 
   # Background service
-  flutter_foreground_task: ^10.0.0
+  flutter_foreground_task: ^11.0.3
   battery_plus: ^7.0.0
 
   # Notifications (heads-up species alerts during surveys)
