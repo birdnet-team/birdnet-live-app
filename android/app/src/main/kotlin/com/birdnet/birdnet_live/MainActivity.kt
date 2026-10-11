@@ -41,6 +41,7 @@ class MainActivity: FlutterActivity() {
     private var quickActionIntentChannel: MethodChannel? = null
     private var pendingSharedMedia: Map<String, String?>? = null
     private var sharedMediaChannel: MethodChannel? = null
+    private var ttsChannel: TtsChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -65,6 +66,12 @@ class MainActivity: FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Text-to-speech for spoken announcements. Lazy: the engine is only
+        // bound on the first call, and all engine calls stay off the main
+        // thread (see TtsChannel.kt).
+        ttsChannel?.dispose()
+        ttsChannel = TtsChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
@@ -428,6 +435,8 @@ class MainActivity: FlutterActivity() {
     }
 
     override fun onDestroy() {
+        ttsChannel?.dispose()
+        ttsChannel = null
         aruNotificationIntentChannel = null
         quickActionIntentChannel = null
         sharedMediaChannel = null

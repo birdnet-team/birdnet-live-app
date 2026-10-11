@@ -376,8 +376,8 @@ abstract final class PrefKeys {
   static const String announcementsVoiceLanguage =
       'announcements_voice_language';
 
-  /// Engine-specific identifier of a pinned voice (as reported by
-  /// `flutter_tts.getVoices`). Empty string ⇒ the platform default voice
+  /// Engine-specific identifier of a pinned voice (as reported by the
+  /// platform voice list). Empty string ⇒ the platform default voice
   /// for the resolved language. Lets users escape a poor default voice.
   static const String announcementsVoiceName = 'announcements_voice_name';
 

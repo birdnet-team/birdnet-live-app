@@ -36,6 +36,11 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   SetupAudioDecoderChannel();
+  tts_channel_ = std::make_unique<TtsChannel>(
+      flutter_controller_->engine()->messenger(),
+      [this](std::function<void()> callback) {
+        RunOnMainThread(std::move(callback));
+      });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -51,6 +56,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  tts_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

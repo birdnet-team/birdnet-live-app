@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 
+#include "tts_channel.h"
 #include "win32_window.h"
 
 // A window that does nothing but host a Flutter view.
@@ -50,6 +51,10 @@ class FlutterWindow : public Win32Window {
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       audio_decoder_channel_;
+
+  // `com.birdnet/tts`: spoken announcements. Destroyed before the Flutter
+  // controller in OnDestroy so no reply can reach a torn-down engine.
+  std::unique_ptr<TtsChannel> tts_channel_;
   std::atomic<bool> audio_decode_cancelled_{false};
 
   std::queue<std::function<void()>> main_thread_callbacks_;

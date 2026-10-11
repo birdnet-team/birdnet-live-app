@@ -119,7 +119,9 @@ Future versions of Flutter will fail to build if your app uses plugins that appl
 ```
 
 `android.builtInKotlin=false` is therefore load-bearing: we cannot migrate to
-Built-in Kotlin until those four plugins stop applying KGP themselves. One of
+Built-in Kotlin until those plugins stop applying KGP themselves (`flutter_tts`
+has since been replaced by the in-house `com.birdnet/tts` channel, so three
+remain). One of
 them, `flutter_onnxruntime`, is deliberately pinned to an old version (see
 [ONNX Runtime Pin](onnxruntime-pin.md)), so that plugin is blocked on two fronts
 at once. This is a "watch the plugin changelogs" item, not something we can fix
