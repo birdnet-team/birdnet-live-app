@@ -68,6 +68,17 @@ Multiple consumers read from the same buffer without copying the data.
 
 All model parameters (tensor names, sample rate, inference defaults, label format) come from `assets/models/model_config.json`. No model-specific values are hardcoded.
 
+### Error Log
+
+`ErrorLog` (`lib/core/services/error_log.dart`) hooks `FlutterError.onError`
+and `PlatformDispatcher.instance.onError` at startup and appends every
+uncaught error to `<app support>/logs/errors.log`, chaining to the previous
+handlers so console output is unchanged. The file is capped at 256 KB (the
+oldest entries are dropped), holds only timestamps, messages, and stack
+traces, and never leaves the device. In release builds uncaught Dart errors
+do not crash the app, so without this file a field report has nothing to go
+on.
+
 ### Riverpod State Management
 
 Providers bridge services to the widget tree. Settings use generic `StateNotifierProvider` types (`DoubleSettingNotifier`, `IntSettingNotifier`) backed by `SharedPreferences`.
