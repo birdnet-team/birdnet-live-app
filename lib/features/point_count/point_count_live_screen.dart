@@ -220,13 +220,16 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final audioSource = ref.read(audioSourceProvider);
     final repo = ref.read(sessionRepositoryProvider);
 
-    // Load model if not ready.
-    if (controller.state == LiveState.idle) {
+    // Bring the model up first. `loadModel` is a no-op when ready, joins a
+    // load the menu's warm-up still has in flight, and retries after a
+    // failure — so a count started during the warm-up no longer opens the
+    // mic and runs its countdown without a session.
+    if (controller.state != LiveState.ready) {
       await controller.loadModel();
       _onControllerStateChanged();
     }
     if (await _abortPendingStart(captureNotifier)) return;
-    if (controller.state == LiveState.error) return;
+    if (controller.state != LiveState.ready) return;
 
     await WakelockService.enable();
 
@@ -253,11 +256,15 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final recordingMode = recordingModeFromString(widget.recordingMode);
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
-    final geoScores = await ref.read(geoScoresProvider.future);
-    final ignoredSpeciesNames = await ref.read(
-      ignoredSpeciesNamesProvider.future,
+    final geoInputs = await readGeoFilterInputs(
+      read: ref.read,
+      invalidate: (provider) {
+        if (mounted) ref.invalidate(provider);
+      },
     );
-    final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    final geoScores = geoInputs.geoScores;
+    final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+    final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
     if (await _abortPendingStart(captureNotifier)) return;
 
     double? startLat = widget.latitude;
@@ -498,15 +505,24 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       } catch (error, stack) {
         debugPrint('PointCount: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('PointCount: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('PointCount: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -517,6 +533,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         }
         return;
       }
+      final session = finalized;
 
       if (endedEarlyByBackground) {
         session.stopReason = SessionStopReason.backgrounded;

@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -20,6 +21,18 @@ import UIKit
 
   /// Text-to-speech for spoken announcements; see TtsChannel.swift.
   private var ttsChannel: TtsChannel?
+
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    // flutter_local_notifications relies on the app delegate to forward
+    // foreground presentation and taps (FlutterAppDelegate implements the
+    // callbacks and hands them to the plugin). Without this, Survey species
+    // alerts are never shown while the app is open.
+    UNUserNotificationCenter.current().delegate = self
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
 
   /// Register only after the implicit engine exists. Under the scene lifecycle,
   /// AppDelegate's window is not available during application launch.
@@ -83,6 +96,10 @@ import UIKit
         result(FlutterError(code: "INVALID_ARG", message: "Missing 'path' argument", details: nil))
         return
       }
+      // Read the cancellation generation here, on the main thread, so a
+      // `cancelDecode` that arrives before the block below runs still
+      // cancels this request.
+      let generation = NativeAudioDecoder.currentGeneration()
       DispatchQueue.global(qos: .userInitiated).async {
         do {
           let decoded: [String: Any]
@@ -96,7 +113,9 @@ import UIKit
               }
               return
             }
-            decoded = try NativeAudioDecoder.decodeRange(path: path, startSample: startSample, count: count)
+            decoded = try NativeAudioDecoder.decodeRange(
+              path: path, startSample: startSample, count: count, generation: generation
+            )
           } else {
             guard let tempPcmPath = args["tempPcmPath"] as? String else {
               DispatchQueue.main.async {
@@ -104,7 +123,9 @@ import UIKit
               }
               return
             }
-            decoded = try NativeAudioDecoder.decode(path: path, tempPcmPath: tempPcmPath)
+            decoded = try NativeAudioDecoder.decode(
+              path: path, tempPcmPath: tempPcmPath, generation: generation
+            )
           }
           DispatchQueue.main.async {
             result(decoded)
@@ -187,6 +208,12 @@ import UIKit
   @discardableResult
   func queueDocument(_ url: URL) -> Bool {
     guard url.isFileURL else { return false }
+    // Only the latest hand-off is kept. A replaced one Dart never took would
+    // otherwise leave its Documents/Inbox copy behind, counted against the
+    // user's storage and backed up.
+    if let previous = pendingSharedFile?["uri"], previous != url.absoluteString {
+      AppDelegate.removeStagedFile(uri: previous)
+    }
     pendingSharedFile = ["uri": url.absoluteString, "name": url.lastPathComponent]
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
     return true
@@ -343,6 +370,11 @@ import UIKit
     }
     if base.count > 120 {
       base = String(base.suffix(120))
+    }
+    // The filesystem limit is 255 *bytes*; 120 CJK characters are ~360.
+    // Trim from the front so the extension survives.
+    while base.utf8.count > 200 {
+      base = String(base.dropFirst())
     }
     if !(base as NSString).pathExtension.isEmpty { return base }
     let fallback = fallbackExtension?

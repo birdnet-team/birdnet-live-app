@@ -64,13 +64,21 @@ final aruStorageEstimatorProvider = Provider<AruStorageEstimator>((ref) {
 /// Recording service used by ARU cycle recordings.
 final aruRecordingServiceProvider = Provider<RecordingService>((ref) {
   final ringBuffer = ref.watch(ringBufferProvider);
-  final clipContext = ref.watch(clipContextProvider);
-  final windowSeconds = ref.watch(windowDurationProvider);
   final service = RecordingService(
     ringBuffer: ringBuffer,
     sampleRate: AppConstants.sampleRate,
-    clipContextSeconds: clipContext,
-    windowSeconds: windowSeconds,
+    clipContextSeconds: ref.read(clipContextProvider),
+    windowSeconds: ref.read(windowDurationProvider),
+  );
+  // Follow the settings without rebuilding, so a change can never dispose
+  // this service and the [AruController] built on it during a deployment.
+  ref.listen(
+    clipContextProvider,
+    (_, value) => service.setClipContextSeconds(value),
+  );
+  ref.listen(
+    windowDurationProvider,
+    (_, value) => service.setWindowSeconds(value),
   );
   ref.onDispose(service.dispose);
   return service;

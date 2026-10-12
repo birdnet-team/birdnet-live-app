@@ -123,6 +123,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   int _backgroundEpisode = 0;
   DateTime? _backgroundDeadline;
   Timer? _backgroundLimitTimer;
+  StreamSubscription<bool>? _micContestedSub;
+
+  /// Set while the session is paused because the microphone was lost (see
+  /// [_onMicContested]); cleared when audio flows again or the user resumes.
+  bool _pausedByMicLoss = false;
   bool _autoStartAttempted = false;
   bool _startScheduled = false;
   bool _forceAutoStartRequested = false;
@@ -151,6 +156,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final controller = ref.read(liveControllerProvider);
     _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
+    _micContestedSub = ref
+        .read(audioCaptureServiceProvider)
+        .micContestedStream
+        .listen(_onMicContested);
 
     // Deferred to post-frame so provider updates don't fire during build.
     SchedulerBinding.instance.addPostFrameCallback((_) => _initLiveScreen());
@@ -316,6 +325,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       }
       await controller.resumeSession();
       _pausedByLifecycle = false;
+      // The user chose to run on while the mic is still lost; don't undo it.
+      _pausedByMicLoss = false;
       _onControllerStateChanged();
       await _syncBackgroundSupport();
     } else {
@@ -328,6 +339,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       _isStarting = true;
       _durationWarningShown = false;
       _pausedByLifecycle = false;
+      _pausedByMicLoss = false;
       setState(() {});
 
       // No-op when already ready; otherwise joins the in-flight load, or
@@ -388,13 +400,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       if (useGps) {
         ref.invalidate(currentLocationProvider);
       }
-      final geoScores = await ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
       );
-      final geoSpeciesNames = await ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+      final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
       // The geo-model futures can take seconds; the user may have left the
       // Live screen in the meantime. Bail out before touching [ref] again so
       // we never read providers on an unmounted widget.
@@ -515,6 +529,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _sessionTimer?.cancel();
+    _micContestedSub?.cancel();
     _checkpointWriter?.dispose();
     _backgroundLimitTimer?.cancel();
     _backgroundDeadline = null;
@@ -664,6 +679,35 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
   }
 
+  /// Pause while the microphone is held by someone else; resume when audio
+  /// flows again.
+  ///
+  /// Left alone, the session timeline runs straight through the gap: the
+  /// recording receives no samples, so Session Review later reports audio
+  /// shorter than the Session, and score pooling would date a detection
+  /// inside the silence. [LiveController.pauseSession] closes the recorded
+  /// segment and [LiveController.resumeSession] resets pooling, exactly as
+  /// for a lifecycle pause. Capture itself is not touched: the capture
+  /// service is the one reclaiming the mic, and it keeps doing so while the
+  /// session waits.
+  Future<void> _onMicContested(bool contested) async {
+    if (!mounted || _finalizing) return;
+    final controller = ref.read(liveControllerProvider);
+    if (contested) {
+      if (controller.state != LiveState.active) return;
+      _pausedByMicLoss = true;
+      await controller.pauseSession();
+      if (mounted) _onControllerStateChanged();
+      return;
+    }
+    if (!_pausedByMicLoss) return;
+    _pausedByMicLoss = false;
+    // A lifecycle pause stopped capture itself and owns the resume.
+    if (_pausedByLifecycle || controller.state != LiveState.paused) return;
+    await controller.resumeSession();
+    if (mounted) _onControllerStateChanged();
+  }
+
   Future<void> _pauseSessionForBackground([
     DateTime? backgroundedAt,
     int? episode,
@@ -729,6 +773,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // the flag down, so no later `resumed` event could retry it.
     _pausedByLifecycle = false;
     _onControllerStateChanged();
+    // The contested stream is edge-triggered and the fresh recorder keeps
+    // the mic marked lost until audio arrives, so a mic that is still held
+    // after the background pause would otherwise run the timeline on silence.
+    if (ref.read(audioCaptureServiceProvider).isMicContested) {
+      await _onMicContested(true);
+    }
     await _syncBackgroundSupport();
     // Do not hold the lifecycle queue open for a dialog. A second lock while
     // the dialog is visible must still pause foreground-only capture.
@@ -906,15 +956,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       } catch (error, stack) {
         debugPrint('LiveScreen: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('LiveScreen: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('LiveScreen: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -925,6 +984,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
         return;
       }
+      final session = finalized;
       if (backgroundLimitReached) {
         session.stopReason = SessionStopReason.backgroundLimit;
         session.stopReasonValue = backgroundMinutes;

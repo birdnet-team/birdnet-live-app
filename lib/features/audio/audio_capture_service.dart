@@ -323,11 +323,21 @@ class AudioCaptureService with WidgetsBindingObserver {
   //   • Background with a microphone foreground service (Survey, ARU,
   //     background Live Mode / Point Count), or on iOS under the `audio`
   //     background mode — retry, see [_canRetryInBackground]. The mode that
-  //     owns the service is exactly the one that must keep capturing, and a
-  //     phone call would otherwise end its audio for good: the iOS recorder
-  //     pauses on an interruption and never resumes by itself. Android keeps
-  //     a slow cadence here — a handful of reopen attempts per hour, not one
-  //     every two seconds — so a contended mic is probed, not hammered.
+  //     owns the service is exactly the one that must keep capturing. Android
+  //     keeps a slow cadence here — a handful of reopen attempts per hour,
+  //     not one every two seconds — so a contended mic is probed, not
+  //     hammered.
+  //
+  //   • iOS audio interruptions (phone call, Siri, alarm) are the exception
+  //     to retrying. The recorder runs in `pauseResume` mode, so the system
+  //     pauses it and `record` resumes it when the interruption ends — the
+  //     only restart iOS allows a suspended background app. That needs the
+  //     paused recorder to still exist: tearing it down removes the plugin's
+  //     interruption observer, and a replacement cannot open the session
+  //     while the call holds it. So the watchdog leaves a paused recorder
+  //     alone for [interruptionGraceTicks] of its own ticks (which do not
+  //     advance while iOS has the app suspended) before falling back to a
+  //     restart, and returning to the foreground reclaims it right away.
   //
   // Either way we surface [isMicContested] / [micContestedStream] so the UI
   // can show an "X" on the signal meter and the foreground notification can
@@ -357,6 +367,36 @@ class AudioCaptureService with WidgetsBindingObserver {
   /// Android probes a contended microphone slowly from the background.
   bool get _slowBackgroundRetry =>
       defaultTargetPlatform == TargetPlatform.android;
+
+  /// iOS lets `record` resume the recorder after an audio interruption; see
+  /// the note above. Other platforms keep the plugin's default `pause` mode.
+  bool get _resumesAfterInterruption =>
+      defaultTargetPlatform == TargetPlatform.iOS;
+
+  /// Watchdog ticks (2 s each) a recorder paused by an audio interruption is
+  /// left alone before the watchdog falls back to restarting it.
+  @visibleForTesting
+  int interruptionGraceTicks = 15;
+
+  /// Set while the platform reports the recorder paused by an interruption.
+  bool _interrupted = false;
+
+  /// Watchdog ticks spent with [_interrupted] set.
+  int _interruptedTicks = 0;
+
+  StreamSubscription<RecordState>? _stateSub;
+
+  void _onRecorderState(RecordState state) {
+    final interrupted = state == RecordState.pause;
+    if (interrupted == _interrupted) return;
+    _interrupted = interrupted;
+    _interruptedTicks = 0;
+    debugPrint(
+      interrupted
+          ? 'AudioCapture: recorder paused by an audio interruption'
+          : 'AudioCapture: recorder no longer paused ($state)',
+    );
+  }
 
   /// How long a running stream may go without delivering audio before we
   /// treat the mic as lost. Kept above the watchdog period so a single
@@ -412,13 +452,22 @@ class AudioCaptureService with WidgetsBindingObserver {
     _backgroundReleased = false;
     _retryBackoff = _minRetryBackoff;
     _nextRetryAt = null;
-    if (_shouldBeCapturing && _state != CaptureState.capturing) {
+    if (_shouldBeCapturing &&
+        (_state != CaptureState.capturing || _interrupted)) {
       _restart();
     }
   }
 
   void _checkWatchdog() {
     if (!_shouldBeCapturing || _lifecycleBusy) return;
+
+    if (_interrupted && _interruptedTicks < interruptionGraceTicks) {
+      // Paused by an iOS audio interruption; the recorder resumes itself when
+      // it ends. See the note on microphone-loss handling.
+      _interruptedTicks++;
+      _setMicContested(true);
+      return;
+    }
 
     final now = DateTime.now();
 
@@ -644,6 +693,9 @@ class AudioCaptureService with WidgetsBindingObserver {
         androidConfig: AndroidRecordConfig(
           audioSource: _androidAudioSource(_currentSource.profile),
         ),
+        audioInterruption: _resumesAfterInterruption
+            ? AudioInterruptionMode.pauseResume
+            : AudioInterruptionMode.pause,
       );
 
       // Register before starting: the platform reports the adjusted config
@@ -658,6 +710,12 @@ class AudioCaptureService with WidgetsBindingObserver {
         onError: _onStreamError,
         onDone: _onStreamDone,
       );
+      if (_resumesAfterInterruption) {
+        _stateSub = _rec.onStateChanged().listen(
+          _onRecorderState,
+          onError: (Object _) {},
+        );
+      }
 
       // Periodic level metering (~15 Hz).
       _levelTimer = Timer.periodic(
@@ -714,6 +772,16 @@ class AudioCaptureService with WidgetsBindingObserver {
         // A platform audio stream that never acknowledges cancellation must
         // not wedge the serialized lifecycle queue and block session saving.
       }
+    }
+
+    final stateSub = _stateSub;
+    _stateSub = null;
+    _interrupted = false;
+    _interruptedTicks = 0;
+    if (stateSub != null) {
+      try {
+        await stateSub.cancel().timeout(remaining());
+      } catch (_) {}
     }
 
     final rec = _recorder;

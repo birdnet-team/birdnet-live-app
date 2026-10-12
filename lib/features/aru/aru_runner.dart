@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../core/services/location_service.dart';
+import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
@@ -128,8 +129,16 @@ class AruRunner {
     _running = true;
     _timer?.cancel();
     _timer = null;
+    // iOS has no foreground service and cannot wake a suspended app on a
+    // timer: capture stops between cycles, so once Auto-Lock suspends the
+    // app the schedule never fires again. Keeping the screen on is what
+    // keeps the deployment running there. Android keeps its service.
+    if (_keepsScreenOn) unawaited(WakelockService.enable());
     unawaited(_kickoff());
   }
+
+  static bool get _keepsScreenOn =>
+      defaultTargetPlatform == TargetPlatform.iOS;
 
   Future<void> _kickoff() async {
     await _tick();
@@ -301,20 +310,23 @@ class AruRunner {
     _inferenceStarting = true;
     try {
       final controller = _ref.read(liveControllerProvider);
-      if (controller.state == LiveState.idle) {
+      // No-op when ready; joins an in-flight warm-up or retries a failed load,
+      // so a cycle no longer records without inference just because the
+      // model was still loading (or failed once) when it began.
+      if (controller.state != LiveState.ready) {
         await controller.loadModel();
       }
       if (controller.state != LiveState.ready) return;
       if (!_running) return;
 
-      final geoScores = await _ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await _ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: _ref.read,
+        invalidate: _ref.invalidate,
       );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
       final geoThreshold = _ref.read(geoThresholdProvider);
-      final geoModelSpeciesNames = await _ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoModelSpeciesNames = geoInputs.geoModelSpeciesNames;
       if (!_running) return;
 
       await controller.startSession(
@@ -533,6 +545,7 @@ class AruRunner {
   void _stopLoop() {
     _timer?.cancel();
     _timer = null;
+    if (_running && _keepsScreenOn) unawaited(WakelockService.disable());
     _running = false;
     final liveController = _ref.read(liveControllerProvider);
     if (liveController.onStateChanged == _onInferenceStateChanged) {

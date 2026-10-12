@@ -130,6 +130,14 @@ void main() {
       final result = await service.saveDetectionClips(clipNames: ['a', 'b']);
       expect(result, isEmpty);
     });
+
+    test('setClipContextSeconds follows the setting between sessions', () {
+      expect(service.clipContextSeconds, 0);
+      service.setClipContextSeconds(2);
+      expect(service.clipContextSeconds, 2);
+      service.setClipContextSeconds(-1);
+      expect(service.clipContextSeconds, 2);
+    });
   });
 
   // ── Clip naming ────────────────────────────────────────────────────────
