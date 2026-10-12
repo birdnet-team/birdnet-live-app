@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -20,6 +21,18 @@ import UIKit
 
   /// Text-to-speech for spoken announcements; see TtsChannel.swift.
   private var ttsChannel: TtsChannel?
+
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    // flutter_local_notifications relies on the app delegate to forward
+    // foreground presentation and taps (FlutterAppDelegate implements the
+    // callbacks and hands them to the plugin). Without this, Survey species
+    // alerts are never shown while the app is open.
+    UNUserNotificationCenter.current().delegate = self
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
 
   /// Register only after the implicit engine exists. Under the scene lifecycle,
   /// AppDelegate's window is not available during application launch.
