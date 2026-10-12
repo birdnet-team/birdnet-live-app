@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.2.1] - 2026-10-12
+
 ### Changed
 
 - Updated the on-device inference runtime from ONNX Runtime 1.22 to 1.28 and the Android background-service plugin to its current major version. The Arm KleidiAI kernels behind the 1.0.2 inference crash are now switched off explicitly for every model session, so inference keeps running on the same CPU code path as before.
