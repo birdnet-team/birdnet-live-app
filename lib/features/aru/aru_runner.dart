@@ -301,7 +301,10 @@ class AruRunner {
     _inferenceStarting = true;
     try {
       final controller = _ref.read(liveControllerProvider);
-      if (controller.state == LiveState.idle) {
+      // No-op when ready; joins an in-flight warm-up or retries a failed load,
+      // so a cycle no longer records without inference just because the
+      // model was still loading (or failed once) when it began.
+      if (controller.state != LiveState.ready) {
         await controller.loadModel();
       }
       if (controller.state != LiveState.ready) return;

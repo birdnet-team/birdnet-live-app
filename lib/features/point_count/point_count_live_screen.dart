@@ -220,13 +220,16 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final audioSource = ref.read(audioSourceProvider);
     final repo = ref.read(sessionRepositoryProvider);
 
-    // Load model if not ready.
-    if (controller.state == LiveState.idle) {
+    // Bring the model up first. `loadModel` is a no-op when ready, joins a
+    // load the menu's warm-up still has in flight, and retries after a
+    // failure — so a count started during the warm-up no longer opens the
+    // mic and runs its countdown without a session.
+    if (controller.state != LiveState.ready) {
       await controller.loadModel();
       _onControllerStateChanged();
     }
     if (await _abortPendingStart(captureNotifier)) return;
-    if (controller.state == LiveState.error) return;
+    if (controller.state != LiveState.ready) return;
 
     await WakelockService.enable();
 
