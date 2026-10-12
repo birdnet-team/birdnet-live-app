@@ -388,13 +388,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       if (useGps) {
         ref.invalidate(currentLocationProvider);
       }
-      final geoScores = await ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
       );
-      final geoSpeciesNames = await ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+      final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
       // The geo-model futures can take seconds; the user may have left the
       // Live screen in the meantime. Bail out before touching [ref] again so
       // we never read providers on an unmounted widget.

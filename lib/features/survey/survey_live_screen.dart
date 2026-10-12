@@ -484,7 +484,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     final history = ref.read(globalSpeciesHistoryProvider);
     history.load();
-    final geoScores = await ref.read(geoScoresProvider.future);
+    // Rare-species alerts need geo scores; without a geo model the other
+    // alert modes still work, so a failed load must not block the Survey.
+    Map<String, double>? geoScores;
+    try {
+      geoScores = await ref.read(geoScoresProvider.future);
+    } catch (error) {
+      debugPrint('[SurveyLive] alerts start without geo scores: $error');
+    }
 
     Set<String>? watchlist;
     final wlName = ref.read(surveyAlertWatchlistNameProvider);
@@ -624,13 +631,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
       final clipContext = ref.read(surveyClipContextProvider);
 
-      final geoScores = await ref.read(geoScoresProvider.future);
-      final geoSpeciesNames = await ref.read(
-        geoModelSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
       );
-      final ignoredSpeciesNames = await ref.read(
-        ignoredSpeciesNamesProvider.future,
-      );
+      final geoScores = geoInputs.geoScores;
+      final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
       if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
 
       // Build the species-alert pipeline before starting the controller so
@@ -975,11 +984,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ref.read(surveyControllerProvider).setSensitivity(next);
     });
     ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
-      final names = await ref.read(ignoredSpeciesNamesProvider.future);
-      final geoScores = await ref.read(geoScoresProvider.future);
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
+      );
+      if (!mounted) return;
       ref
           .read(surveyControllerProvider)
-          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
+          .setSpeciesIgnoreFilter(
+            scientificNames: geoInputs.ignoredSpeciesNames,
+            geoScores: geoInputs.geoScores,
+          );
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

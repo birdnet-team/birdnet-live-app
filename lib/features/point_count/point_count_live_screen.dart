@@ -256,11 +256,15 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final recordingMode = recordingModeFromString(widget.recordingMode);
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
-    final geoScores = await ref.read(geoScoresProvider.future);
-    final ignoredSpeciesNames = await ref.read(
-      ignoredSpeciesNamesProvider.future,
+    final geoInputs = await readGeoFilterInputs(
+      read: ref.read,
+      invalidate: (provider) {
+        if (mounted) ref.invalidate(provider);
+      },
     );
-    final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    final geoScores = geoInputs.geoScores;
+    final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+    final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
     if (await _abortPendingStart(captureNotifier)) return;
 
     double? startLat = widget.latitude;

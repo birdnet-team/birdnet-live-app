@@ -310,14 +310,14 @@ class AruRunner {
       if (controller.state != LiveState.ready) return;
       if (!_running) return;
 
-      final geoScores = await _ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await _ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: _ref.read,
+        invalidate: _ref.invalidate,
       );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
       final geoThreshold = _ref.read(geoThresholdProvider);
-      final geoModelSpeciesNames = await _ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoModelSpeciesNames = geoInputs.geoModelSpeciesNames;
       if (!_running) return;
 
       await controller.startSession(

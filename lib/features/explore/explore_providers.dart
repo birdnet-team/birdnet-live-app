@@ -31,6 +31,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart' show BuildContext;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart'
+    show ProviderListenable, ProviderOrFamily;
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/score_colors.dart';
@@ -404,6 +406,62 @@ final geoScoresProvider = FutureProvider<Map<String, double>?>((ref) async {
   final ignoredNames = await ref.watch(ignoredSpeciesNamesProvider.future);
   return SpeciesIgnoreFilter.applyToGeoScores(rawScores, ignoredNames);
 });
+
+/// What a session start needs from the geo model; see [readGeoFilterInputs].
+class GeoFilterInputs {
+  const GeoFilterInputs({
+    this.geoScores,
+    this.ignoredSpeciesNames = const <String>{},
+    this.geoModelSpeciesNames,
+  });
+
+  /// [geoScoresProvider], or null without a location or a geo model.
+  final Map<String, double>? geoScores;
+
+  /// [ignoredSpeciesNamesProvider]; without a geo model only the taxon rules.
+  final Set<String> ignoredSpeciesNames;
+
+  /// [geoModelSpeciesNamesProvider], or null without a geo model.
+  final Set<String>? geoModelSpeciesNames;
+}
+
+/// Reads the geo-model inputs a session start needs, failing open.
+///
+/// [geoModelProvider] caches a failed load as an error, and every provider
+/// above rethrows it — so one failure (a session the runtime refused to
+/// create under memory pressure, say) would fail every later Live, Point
+/// Count, Survey and ARU start until the app is restarted. Instead the
+/// session starts without the geo filter, keeping the taxon-based ignore
+/// rules, and the cached failure is dropped so the next start retries the
+/// load. [read] and [invalidate] are the caller's `ref.read` / `ref.invalidate`.
+Future<GeoFilterInputs> readGeoFilterInputs({
+  required T Function<T>(ProviderListenable<T> provider) read,
+  required void Function(ProviderOrFamily provider) invalidate,
+}) async {
+  try {
+    return GeoFilterInputs(
+      geoScores: await read(geoScoresProvider.future),
+      ignoredSpeciesNames: await read(ignoredSpeciesNamesProvider.future),
+      geoModelSpeciesNames: await read(geoModelSpeciesNamesProvider.future),
+    );
+  } catch (error, stack) {
+    debugPrint(
+      '[GeoModel] unavailable, starting without the geo filter: $error\n$stack',
+    );
+    invalidate(geoModelProvider);
+    var ignored = const <String>{};
+    try {
+      ignored = SpeciesIgnoreFilter.ignoredScientificNames(
+        classByScientificName: await read(audioLabelClassesProvider.future),
+        settings: read(speciesIgnoreSettingsProvider),
+      );
+    } catch (_) {
+      // The labels are part of the classifier load; without them the session
+      // cannot start anyway, and the caller reports that.
+    }
+    return GeoFilterInputs(ignoredSpeciesNames: ignored);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Probability category mapping
