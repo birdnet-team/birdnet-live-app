@@ -27,7 +27,16 @@ class _FakeRecordPlatform extends RecordPlatform {
   bool sawStartWhileRecording = false;
 
   final _streams = <String, StreamController<Uint8List>>{};
+  final _states = <String, StreamController<RecordState>>{};
   final _recording = <String>{};
+
+  /// Replay the platform reporting a recorder state change, e.g. iOS pausing
+  /// the recorder for an audio interruption.
+  void emitState(RecordState state) {
+    for (final ctrl in _states.values) {
+      ctrl.add(state);
+    }
+  }
 
   /// Config-changed handlers registered per recorder, so tests can replay what
   /// the platform does when it could not honour the requested format.
@@ -95,11 +104,13 @@ class _FakeRecordPlatform extends RecordPlatform {
   Future<void> _release(String recorderId) async {
     _recording.remove(recorderId);
     await _streams.remove(recorderId)?.close();
+    await _states.remove(recorderId)?.close();
   }
 
   @override
-  Stream<RecordState> onStateChanged(String recorderId) =>
-      const Stream<RecordState>.empty();
+  Stream<RecordState> onStateChanged(String recorderId) => _states
+      .putIfAbsent(recorderId, StreamController<RecordState>.broadcast)
+      .stream;
 
   // Unused by [AudioCaptureService]; present to satisfy the interface.
 
@@ -416,6 +427,139 @@ void main() {
 
         expect(fake.calls, contains('startStream'));
         expect(service.state, CaptureState.capturing);
+      });
+    });
+
+    // iOS pauses the recorder for an audio interruption (phone call, Siri,
+    // alarm) and `record` resumes it when the interruption ends — but only if
+    // the paused recorder still exists. Tearing it down to "reclaim" the mic
+    // removed the plugin's interruption observer while the call still held
+    // the session, so background capture never came back.
+    group('iOS audio interruptions', () {
+      late RecordPlatform original;
+      late _FakeRecordPlatform fake;
+      late AudioCaptureService service;
+
+      setUp(() {
+        original = RecordPlatform.instance;
+        fake = _FakeRecordPlatform();
+        RecordPlatform.instance = fake;
+        service = AudioCaptureService(ringBuffer: RingBuffer(capacity: 1000))
+          ..interruptionGraceTicks = 3;
+      });
+
+      tearDown(() async {
+        debugDefaultTargetPlatformOverride = null;
+        final owner = ForegroundServiceGuard.owner;
+        if (owner != null) ForegroundServiceGuard.release(owner);
+        await service.dispose();
+        RecordPlatform.instance = original;
+      });
+
+      Future<void> interruptInBackground() async {
+        await service.start();
+        service.setForeground(false);
+        await pumpEventQueue();
+        fake.emitState(RecordState.pause);
+        await pumpEventQueue();
+        fake.calls.clear();
+      }
+
+      test('iOS asks the recorder to resume after interruptions', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await service.start();
+        expect(
+          fake.startedConfigs.single.audioInterruption,
+          AudioInterruptionMode.pauseResume,
+        );
+      });
+
+      test('Android keeps the default interruption mode', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        await service.start();
+        expect(
+          fake.startedConfigs.single.audioInterruption,
+          AudioInterruptionMode.pause,
+        );
+      });
+
+      test('leaves a paused recorder alone while interrupted', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await interruptInBackground();
+
+        service.checkWatchdogNow();
+        service.checkWatchdogNow();
+        await pumpEventQueue();
+
+        expect(fake.calls, isEmpty);
+        expect(service.state, CaptureState.capturing);
+        expect(service.isMicContested, isTrue);
+      });
+
+      test('recovers once the recorder resumes and audio flows', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await interruptInBackground();
+        service.checkWatchdogNow();
+        expect(service.isMicContested, isTrue);
+
+        fake.emitState(RecordState.record);
+        fake.emitAudio(_interleavedPcm16(List.filled(64, [100])));
+        await pumpEventQueue();
+        service.checkWatchdogNow();
+        await pumpEventQueue();
+
+        expect(fake.calls, isEmpty);
+        expect(service.isMicContested, isFalse);
+      });
+
+      test('falls back to a restart after the grace period', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await interruptInBackground();
+
+        for (var i = 0; i < 3; i++) {
+          service.checkWatchdogNow();
+        }
+        await pumpEventQueue();
+        expect(fake.calls, isEmpty);
+
+        // Past the grace period the stalled stream is handled like any other
+        // lost mic. Emit an error so the next pass sees it as failed without
+        // waiting out the real-time stall timeout.
+        fake.emitStreamError(Exception('still interrupted'));
+        await pumpEventQueue();
+        service.checkWatchdogNow();
+        await pumpEventQueue();
+
+        expect(fake.sawStartWhileRecording, isFalse);
+        expect(fake.calls, containsAllInOrder(['dispose', 'startStream']));
+      });
+
+      test('returning to the foreground reclaims a paused recorder', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+        await interruptInBackground();
+
+        service.setForeground(true);
+        await pumpEventQueue();
+
+        expect(fake.sawStartWhileRecording, isFalse);
+        expect(fake.calls, containsAllInOrder(['dispose', 'startStream']));
+        expect(service.state, CaptureState.capturing);
+      });
+
+      test('Android does not treat recorder states as interruptions', () async {
+        debugDefaultTargetPlatformOverride = TargetPlatform.android;
+        expect(
+          ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey),
+          isTrue,
+        );
+        await interruptInBackground();
+        fake.emitStreamError(Exception('mic lost'));
+        await pumpEventQueue();
+
+        service.checkWatchdogNow();
+        await pumpEventQueue();
+
+        expect(fake.calls, containsAllInOrder(['dispose', 'startStream']));
       });
     });
 
