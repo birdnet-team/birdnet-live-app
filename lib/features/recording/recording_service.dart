@@ -257,9 +257,10 @@ class RecordingService {
   RecordingService({
     required this.ringBuffer,
     this.sampleRate = 32000,
-    this.clipContextSeconds = 1,
+    int clipContextSeconds = 1,
     int windowSeconds = 3,
-  }) : _windowSeconds = windowSeconds;
+  }) : _clipContextSeconds = clipContextSeconds,
+       _windowSeconds = windowSeconds;
 
   /// The shared ring buffer to read audio from.
   final RingBuffer ringBuffer;
@@ -270,8 +271,21 @@ class RecordingService {
   /// Seconds of audio captured before AND after each detection window.
   ///
   /// A clip is `windowSeconds + 2 * clipContextSeconds` long, centered on
-  /// the analyzed audio window that triggered the detection.
-  final int clipContextSeconds;
+  /// the analyzed audio window that triggered the detection. Follows the
+  /// clip-context setting between sessions (see [setClipContextSeconds]).
+  int get clipContextSeconds => _clipContextSeconds;
+  int _clipContextSeconds;
+
+  /// Follow a change of the clip-context setting.
+  ///
+  /// Ignored while a recording is open, for the same reason as
+  /// [setWindowSeconds]: the clip length has to stay put for the lifetime of
+  /// a session. Letting the setting rebuild the service instead would dispose
+  /// it — and the controller built on it — underneath a running session.
+  void setClipContextSeconds(int value) {
+    if (_isRecording || value < 0) return;
+    _clipContextSeconds = value;
+  }
 
   /// Length of the inference window in seconds (typically 3).
   ///

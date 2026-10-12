@@ -39,11 +39,16 @@ import 'survey_controller.dart';
 /// Recording service for survey mode, with survey-specific buffer settings.
 final surveyRecordingServiceProvider = Provider<RecordingService>((ref) {
   final ringBuffer = ref.watch(ringBufferProvider);
-  final clipContext = ref.watch(surveyClipContextProvider);
   final service = RecordingService(
     ringBuffer: ringBuffer,
     sampleRate: AppConstants.sampleRate,
-    clipContextSeconds: clipContext,
+    clipContextSeconds: ref.read(surveyClipContextProvider),
+  );
+  // Follow the setting without rebuilding, so a change can never dispose
+  // this service and the [SurveyController] built on it mid-session.
+  ref.listen(
+    surveyClipContextProvider,
+    (_, value) => service.setClipContextSeconds(value),
   );
   ref.onDispose(service.dispose);
   return service;
