@@ -96,6 +96,10 @@ import UserNotifications
         result(FlutterError(code: "INVALID_ARG", message: "Missing 'path' argument", details: nil))
         return
       }
+      // Read the cancellation generation here, on the main thread, so a
+      // `cancelDecode` that arrives before the block below runs still
+      // cancels this request.
+      let generation = NativeAudioDecoder.currentGeneration()
       DispatchQueue.global(qos: .userInitiated).async {
         do {
           let decoded: [String: Any]
@@ -109,7 +113,9 @@ import UserNotifications
               }
               return
             }
-            decoded = try NativeAudioDecoder.decodeRange(path: path, startSample: startSample, count: count)
+            decoded = try NativeAudioDecoder.decodeRange(
+              path: path, startSample: startSample, count: count, generation: generation
+            )
           } else {
             guard let tempPcmPath = args["tempPcmPath"] as? String else {
               DispatchQueue.main.async {
@@ -117,7 +123,9 @@ import UserNotifications
               }
               return
             }
-            decoded = try NativeAudioDecoder.decode(path: path, tempPcmPath: tempPcmPath)
+            decoded = try NativeAudioDecoder.decode(
+              path: path, tempPcmPath: tempPcmPath, generation: generation
+            )
           }
           DispatchQueue.main.async {
             result(decoded)
