@@ -176,3 +176,10 @@ than deleting it.
 reproducible, and a native runtime swap must show up as a reviewable diff.
 Always commit `pubspec.lock` changes deliberately, and re-read this document
 when the diff touches `flutter_onnxruntime`.
+
+On iOS the runtime arrives through Swift Package Manager, so the same applies
+to the two `xcshareddata/swiftpm/Package.resolved` files under
+`ios/Runner.xcworkspace` and `ios/Runner.xcodeproj/project.xcworkspace`. They
+pin the exact `onnxruntime-swift-package-manager` revision the plugin's
+`exact:` version resolved to; Xcode rewrites them on every build, so a change
+there is a runtime change to review, not noise.
