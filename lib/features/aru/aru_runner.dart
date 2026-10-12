@@ -24,6 +24,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../core/services/location_service.dart';
+import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
@@ -128,8 +129,16 @@ class AruRunner {
     _running = true;
     _timer?.cancel();
     _timer = null;
+    // iOS has no foreground service and cannot wake a suspended app on a
+    // timer: capture stops between cycles, so once Auto-Lock suspends the
+    // app the schedule never fires again. Keeping the screen on is what
+    // keeps the deployment running there. Android keeps its service.
+    if (_keepsScreenOn) unawaited(WakelockService.enable());
     unawaited(_kickoff());
   }
+
+  static bool get _keepsScreenOn =>
+      defaultTargetPlatform == TargetPlatform.iOS;
 
   Future<void> _kickoff() async {
     await _tick();
@@ -536,6 +545,7 @@ class AruRunner {
   void _stopLoop() {
     _timer?.cancel();
     _timer = null;
+    if (_running && _keepsScreenOn) unawaited(WakelockService.disable());
     _running = false;
     final liveController = _ref.read(liveControllerProvider);
     if (liveController.onStateChanged == _onInferenceStateChanged) {
