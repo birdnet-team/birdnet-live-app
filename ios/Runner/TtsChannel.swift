@@ -77,7 +77,13 @@ final class TtsChannel: NSObject, AVSpeechSynthesizerDelegate {
   }
 
   /// An installed voice for `tag`: an exact (case-insensitive) language match
-  /// wins, otherwise a region-less tag such as `de` matches any `de-*` voice.
+  /// wins. A region-less tag such as `de` — which is what the species locale
+  /// is, except for Chinese — prefers the user's own region, then the voice
+  /// the system picks for the language (what flutter_tts resolved before the
+  /// custom channel), and only then the first installed `de-*` voice.
+  /// `speechVoices()` is ordered alphabetically, so that last fallback alone
+  /// would read English species names in Australian and French ones in
+  /// Canadian French.
   private static func voice(forLanguage tag: String) -> AVSpeechSynthesisVoice? {
     let wanted = tag.lowercased()
     if wanted.isEmpty { return nil }
@@ -86,6 +92,13 @@ final class TtsChannel: NSObject, AVSpeechSynthesizerDelegate {
       return exact
     }
     if !wanted.contains("-") {
+      if let region = Locale.current.region?.identifier.lowercased(),
+         let regional = voices.first(where: { $0.language.lowercased() == "\(wanted)-\(region)" }) {
+        return regional
+      }
+      if let system = AVSpeechSynthesisVoice(language: tag) {
+        return system
+      }
       return voices.first(where: { $0.language.lowercased().hasPrefix(wanted + "-") })
     }
     return nil
