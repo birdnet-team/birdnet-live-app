@@ -498,15 +498,24 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       } catch (error, stack) {
         debugPrint('PointCount: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('PointCount: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('PointCount: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -517,6 +526,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         }
         return;
       }
+      final session = finalized;
 
       if (endedEarlyByBackground) {
         session.stopReason = SessionStopReason.backgrounded;

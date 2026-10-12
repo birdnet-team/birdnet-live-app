@@ -906,15 +906,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       } catch (error, stack) {
         debugPrint('LiveScreen: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('LiveScreen: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('LiveScreen: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -925,6 +934,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
         return;
       }
+      final session = finalized;
       if (backgroundLimitReached) {
         session.stopReason = SessionStopReason.backgroundLimit;
         session.stopReasonValue = backgroundMinutes;
