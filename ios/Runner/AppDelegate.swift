@@ -208,6 +208,12 @@ import UserNotifications
   @discardableResult
   func queueDocument(_ url: URL) -> Bool {
     guard url.isFileURL else { return false }
+    // Only the latest hand-off is kept. A replaced one Dart never took would
+    // otherwise leave its Documents/Inbox copy behind, counted against the
+    // user's storage and backed up.
+    if let previous = pendingSharedFile?["uri"], previous != url.absoluteString {
+      AppDelegate.removeStagedFile(uri: previous)
+    }
     pendingSharedFile = ["uri": url.absoluteString, "name": url.lastPathComponent]
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
     return true
@@ -364,6 +370,11 @@ import UserNotifications
     }
     if base.count > 120 {
       base = String(base.suffix(120))
+    }
+    // The filesystem limit is 255 *bytes*; 120 CJK characters are ~360.
+    // Trim from the front so the extension survives.
+    while base.utf8.count > 200 {
+      base = String(base.dropFirst())
     }
     if !(base as NSString).pathExtension.isEmpty { return base }
     let fallback = fallbackExtension?
