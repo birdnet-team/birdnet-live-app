@@ -1242,10 +1242,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       await session.configure(
         AudioSessionConfiguration(
           avAudioSessionCategory: AVAudioSessionCategory.playback,
+          // Bluetooth A2DP and AirPlay are implicit for `playback`; the
+          // explicit options are only valid with `playAndRecord`, and
+          // passing them made iOS reject the whole call (error -50), so the
+          // review kept the category the last recording left behind.
           avAudioSessionCategoryOptions:
-              AVAudioSessionCategoryOptions.mixWithOthers |
-              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-              AVAudioSessionCategoryOptions.allowAirPlay,
+              AVAudioSessionCategoryOptions.mixWithOthers,
           avAudioSessionMode: AVAudioSessionMode.defaultMode,
           avAudioSessionRouteSharingPolicy:
               AVAudioSessionRouteSharingPolicy.defaultPolicy,
