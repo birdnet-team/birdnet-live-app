@@ -170,6 +170,11 @@ abstract final class PrefKeys {
   /// ready (kiosk-style / hands-free use). Default: false.
   static const String liveAutoStart = 'live_auto_start';
 
+  /// Allow Live Mode to keep listening while the app is backgrounded.
+  static const String liveBackgroundEnabled = 'live_background_enabled';
+  static const String liveBackgroundMaxMinutes = 'live_background_max_minutes';
+  static const String liveBackgroundTipShown = 'live_background_tip_shown';
+
   /// When true (default), completed Live and Point Count sessions are saved
   /// to the library automatically. When false, the session opens in review as
   /// unsaved and is only kept if the user explicitly saves it.
@@ -253,6 +258,9 @@ abstract final class PrefKeys {
 
   // Point count settings
   static const String pointCountDuration = 'point_count_duration';
+  static const String pointCountRecordingMode = 'point_count_recording_mode';
+  static const String pointCountBackgroundEnabled =
+      'point_count_background_enabled';
 
   // Shared field-session identity settings
   static const String lastObserver = 'last_observer';
@@ -368,8 +376,8 @@ abstract final class PrefKeys {
   static const String announcementsVoiceLanguage =
       'announcements_voice_language';
 
-  /// Engine-specific identifier of a pinned voice (as reported by
-  /// `flutter_tts.getVoices`). Empty string ⇒ the platform default voice
+  /// Engine-specific identifier of a pinned voice (as reported by the
+  /// platform voice list). Empty string ⇒ the platform default voice
   /// for the resolved language. Lets users escape a poor default voice.
   static const String announcementsVoiceName = 'announcements_voice_name';
 

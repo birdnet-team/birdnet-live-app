@@ -57,9 +57,8 @@ String buildHtmlReport(
   String speciesLocale = 'en',
   Map<String, dynamic>? metadata,
 }) {
-  final dt = DateFormat(
-    'EEEE, MMMM d, yyyy HH:mm',
-  ).format(session.startTime.toLocal());
+  final dt = DateFormat('EEEE, MMMM d, yyyy HH:mm')
+      .format(session.startTime.toLocal());
   final title = _esc(session.displayName);
   final modeLabel = _modeLabel(session.type);
   final durationText = _fmtDuration(session.duration);
@@ -90,8 +89,9 @@ String buildHtmlReport(
   }
   String topSpeciesHtml = '';
   if (speciesCounts.isNotEmpty) {
-    final topSci =
-        speciesCounts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+    final topSci = speciesCounts.entries
+        .reduce((a, b) => a.value >= b.value ? a : b)
+        .key;
     final topDet = detections.firstWhere((d) => d.scientificName == topSci);
     final topCommon = _localizedCommon(topDet, taxonomy, speciesLocale);
     topSpeciesHtml = '<span>Top: <strong>${_esc(topCommon)}</strong></span>';
@@ -1169,6 +1169,10 @@ String _buildDataPayload(
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
+      'alt': d.altitude,
+      'altRef': d.altitudeReference?.name,
+      'altAccuracy': d.altitudeAccuracy,
+      'fixTime': d.locationFixTime?.toUtc().toIso8601String(),
       'clip': clipName != null ? Uri.encodeComponent(clipName) : null,
       'img':
           'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb',
@@ -1176,6 +1180,15 @@ String _buildDataPayload(
   }
 
   final track = session.gpsTrack.map((p) => [p.latitude, p.longitude]).toList();
+  final trackAltitude = [
+    for (final point in session.gpsTrack)
+      {
+        'alt': point.altitude,
+        'altRef': point.altitudeReference?.name,
+        'altAccuracy': point.altitudeAccuracy,
+        'fixTime': point.timestamp.toUtc().toIso8601String(),
+      },
+  ];
   final center = _sessionCenter(session);
 
   final timeline = _buildTimelinePayload(session);
@@ -1183,6 +1196,13 @@ String _buildDataPayload(
   return jsonEncode({
     'detections': dets,
     'track': track,
+    'trackAltitude': trackAltitude,
+    'sessionAltitude': session.altitude,
+    'sessionAltitudeReference': session.altitudeReference?.name,
+    'sessionAltitudeAccuracy': session.altitudeAccuracy,
+    'sessionLocationFixTime': session.locationFixTime
+        ?.toUtc()
+        .toIso8601String(),
     if (center != null) 'center': [center.$1, center.$2],
     if (timeline != null) 'timeline': timeline,
   });
@@ -1194,25 +1214,28 @@ Map<String, dynamic>? _buildTimelinePayload(LiveSession session) {
   final durationSeconds = _timelineDurationSeconds(session);
   if (durationSeconds <= 0) return null;
 
-  final targetBins =
-      durationSeconds <= 60
-          ? durationSeconds
-          : durationSeconds <= 600
-          ? 20
-          : durationSeconds <= 3600
-          ? 30
-          : 48;
+  final targetBins = durationSeconds <= 60
+      ? durationSeconds
+      : durationSeconds <= 600
+      ? 20
+      : durationSeconds <= 3600
+      ? 30
+      : 48;
   final binCount = targetBins.clamp(1, 48).toInt();
-  final binSeconds =
-      (durationSeconds / binCount).ceil().clamp(1, 86400).toInt();
+  final binSeconds = (durationSeconds / binCount)
+      .ceil()
+      .clamp(1, 86400)
+      .toInt();
   final actualBins = (durationSeconds / binSeconds).ceil().clamp(1, 48).toInt();
   final bins = List<int>.filled(actualBins, 0, growable: false);
 
   for (final d in session.detections) {
     final offset = session.trimmedRelative(d.timestamp);
     final clampedOffset = offset.clamp(0, durationSeconds.toDouble());
-    final index =
-        (clampedOffset / binSeconds).floor().clamp(0, actualBins - 1).toInt();
+    final index = (clampedOffset / binSeconds)
+        .floor()
+        .clamp(0, actualBins - 1)
+        .toInt();
     bins[index]++;
   }
 
@@ -1275,16 +1298,16 @@ String _buildDetectionsHtml(
 
   // Default order matches the toolbar: species with audio first, then
   // highest-confidence species.
-  final orderedSpecies =
-      indices.keys.toList()..sort((a, b) {
-        final sa = speciesStats[a]!;
-        final sb = speciesStats[b]!;
-        final audioCompare = (sb.hasAudio ? 1 : 0) - (sa.hasAudio ? 1 : 0);
-        if (audioCompare != 0) return audioCompare;
-        final confCompare = sb.bestConf.compareTo(sa.bestConf);
-        if (confCompare != 0) return confCompare;
-        return sa.firstTime.compareTo(sb.firstTime);
-      });
+  final orderedSpecies = indices.keys.toList()
+    ..sort((a, b) {
+      final sa = speciesStats[a]!;
+      final sb = speciesStats[b]!;
+      final audioCompare = (sb.hasAudio ? 1 : 0) - (sa.hasAudio ? 1 : 0);
+      if (audioCompare != 0) return audioCompare;
+      final confCompare = sb.bestConf.compareTo(sa.bestConf);
+      if (confCompare != 0) return confCompare;
+      return sa.firstTime.compareTo(sb.firstTime);
+    });
 
   final buf = StringBuffer();
   for (final sci in orderedSpecies) {
@@ -1375,31 +1398,33 @@ String _buildDetectionsHtml(
     // -- Collapsible body ------------------------------------------
     buf.writeln('  <div class="det-body">');
     buf.writeln('    <div class="occurrences">');
-    final orderedIds =
-        ids.toList()..sort((a, b) {
-          final aHasAudio = clipFileMap?[a] != null;
-          final bHasAudio = clipFileMap?[b] != null;
-          final audioCompare = (bHasAudio ? 1 : 0) - (aHasAudio ? 1 : 0);
-          if (audioCompare != 0) return audioCompare;
-          final confCompare = session.detections[b].confidence.compareTo(
-            session.detections[a].confidence,
-          );
-          if (confCompare != 0) return confCompare;
-          return session.detections[a].timestamp.compareTo(
-            session.detections[b].timestamp,
-          );
-        });
+    final orderedIds = ids.toList()
+      ..sort((a, b) {
+        final aHasAudio = clipFileMap?[a] != null;
+        final bHasAudio = clipFileMap?[b] != null;
+        final audioCompare = (bHasAudio ? 1 : 0) - (aHasAudio ? 1 : 0);
+        if (audioCompare != 0) return audioCompare;
+        final confCompare = session.detections[b].confidence.compareTo(
+          session.detections[a].confidence,
+        );
+        if (confCompare != 0) return confCompare;
+        return session.detections[a].timestamp.compareTo(
+          session.detections[b].timestamp,
+        );
+      });
     for (final i in orderedIds) {
       final d = session.detections[i];
       final confPct = (d.confidence * 100).round();
-      final scoreClass =
-          d.confidence >= 0.7 ? 'high' : (d.confidence < 0.4 ? 'low' : '');
+      final scoreClass = d.confidence >= 0.7
+          ? 'high'
+          : (d.confidence < 0.4 ? 'low' : '');
       final relSec = session.trimmedRelative(d.timestamp).round();
       final relText = _fmtRelative(relSec);
       final wallText = timeFmt.format(d.timestamp.toLocal());
       final clipNameRaw = clipFileMap?[i];
-      final clipNameEncoded =
-          clipNameRaw != null ? Uri.encodeComponent(clipNameRaw) : null;
+      final clipNameEncoded = clipNameRaw != null
+          ? Uri.encodeComponent(clipNameRaw)
+          : null;
       final noteTrimmed = d.note?.trim() ?? '';
       final hasNote = noteTrimmed.isNotEmpty;
 
@@ -1495,16 +1520,15 @@ String _buildFooterContextHtml(
   items.add(('Analysis settings', _analysisSettingsSummary(session, metadata)));
 
   if (items.isEmpty) return '';
-  final rows =
-      items
-          .map(
-            (item) =>
-                '<div class="footer-context-item">'
-                '<span class="label">${_esc(item.$1)}</span>'
-                '<span class="value">${_esc(item.$2)}</span>'
-                '</div>',
-          )
-          .join();
+  final rows = items
+      .map(
+        (item) =>
+            '<div class="footer-context-item">'
+            '<span class="label">${_esc(item.$1)}</span>'
+            '<span class="value">${_esc(item.$2)}</span>'
+            '</div>',
+      )
+      .join();
   return '<div class="footer-context">'
       '<h2>Analysis context</h2>'
       '<div class="footer-context-grid">$rows</div>'
@@ -1569,7 +1593,8 @@ String _buildMetadataRows(LiveSession session) {
     rows.add((
       'Coordinates',
       '${session.latitude!.toStringAsFixed(4)}, '
-          '${session.longitude!.toStringAsFixed(4)}',
+          '${session.longitude!.toStringAsFixed(4)}'
+          '${session.altitude != null ? ', ${session.altitude!.toStringAsFixed(1)} m' : ''}',
     ));
   }
   if (session.observerName != null && session.observerName!.isNotEmpty) {
@@ -1681,7 +1706,8 @@ String _buildOsmLinkHtml((double, double)? center) {
   if (center == null) return '';
   final lat = center.$1.toStringAsFixed(5);
   final lon = center.$2.toStringAsFixed(5);
-  final url = 'https://www.openstreetmap.org/?mlat=$lat&mlon=$lon#map=14/$lat/$lon';
+  final url =
+      'https://www.openstreetmap.org/?mlat=$lat&mlon=$lon#map=14/$lat/$lon';
   return '<a class="map-osm-link" href="${_esc(url)}" target="_blank" '
       'rel="noopener">View on OpenStreetMap &rarr;</a>';
 }
@@ -1737,6 +1763,10 @@ String _stopReasonLabel(SessionStopReason? reason) {
       return 'Manual stop';
     case SessionStopReason.maxDuration:
       return 'Max duration reached';
+    case SessionStopReason.backgroundLimit:
+      return 'Background time limit reached';
+    case SessionStopReason.backgrounded:
+      return 'App went to background';
     case SessionStopReason.lowBattery:
       return 'Low battery';
     case null:
@@ -1759,10 +1789,9 @@ String _fmtRelative(int seconds) {
   final h = abs ~/ 3600;
   final m = (abs % 3600) ~/ 60;
   final s = abs % 60;
-  final body =
-      h > 0
-          ? '${h}h${m.toString().padLeft(2, '0')}m${s.toString().padLeft(2, '0')}s'
-          : '$m:${s.toString().padLeft(2, '0')}';
+  final body = h > 0
+      ? '${h}h${m.toString().padLeft(2, '0')}m${s.toString().padLeft(2, '0')}s'
+      : '$m:${s.toString().padLeft(2, '0')}';
   return neg ? '-$body' : '+$body';
 }
 

@@ -13,7 +13,7 @@
 
 - Flutter app (Android/iOS/Windows) for on-device wildlife sound ID with live spectrogram.
 - Main modes: Live, Point Count, Survey, File Analysis.
-- Stack: Flutter 3.27+, Dart ^3.7.0, Riverpod, ONNX Runtime, Geolocator, SharedPreferences.
+- Stack: Flutter 3.47+, Dart ^3.13.0, Riverpod, ONNX Runtime, Geolocator, SharedPreferences.
 
 ## Structure
 

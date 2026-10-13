@@ -4,13 +4,13 @@ Prozkoumat ukazuje druhy předpovězené pro aktuální polohu a roční období
 
 ## Jak jej otevřít
 
-Otevřete **Prozkoumat** v zápatí Domů tlačítkem :material-magnify:.
+Otevřete **Prozkoumat** v zápatí Domů tlačítkem :app-searchRounded:.
 
 ## Horní lišta a záhlaví
 
 ### Horní lišta
 
-- :material-refresh: — obnoví polohu a znovu sestaví předpovězený seznam druhů
+- :app-refresh: — obnoví polohu a znovu sestaví předpovězený seznam druhů
 
 ### Záhlaví polohy
 
@@ -18,7 +18,7 @@ V záhlaví se zobrazuje:
 
 - aktuální reverzně geokódovaný název místa, je-li k dispozici
 - souřadnice pod názvem místa
-- :material-help-circle-outline: — otevře panel nápovědy Prozkoumat
+- :app-helpOutlineRounded: — otevře panel nápovědy Prozkoumat
 
 ## Seznam druhů
 

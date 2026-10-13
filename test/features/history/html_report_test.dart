@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/history/html_report.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
 import 'package:birdnet_live/shared/models/weather_snapshot.dart';
 
@@ -59,6 +60,46 @@ LiveSession _sessionWithDetections() {
 
 void main() {
   group('buildHtmlReport', () {
+    test('includes altitude metadata for session, detection, and track', () {
+      final session = _sessionWithDetections()..altitude = 42.5;
+      session.altitudeReference = AltitudeReference.meanSeaLevel;
+      session.detections[0] = DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Blackbird',
+        confidence: 0.8,
+        timestamp: DateTime.utc(2026, 5, 28, 10, 1),
+        latitude: 50.1234,
+        longitude: 8.5678,
+        altitude: 41.5,
+        altitudeReference: AltitudeReference.meanSeaLevel,
+      );
+      session.gpsTrack[0] = GpsPoint(
+        latitude: 50.1234,
+        longitude: 8.5678,
+        timestamp: DateTime.utc(2026, 5, 28, 10),
+        altitude: 42.5,
+        altitudeReference: AltitudeReference.meanSeaLevel,
+      );
+
+      final html = buildHtmlReport(session);
+      expect(html, contains('"sessionAltitude":42.5'));
+      expect(html, contains('"alt":41.5'));
+      expect(html, contains('"trackAltitude":[{"alt":42.5'));
+      expect(html, contains('"altRef":"meanSeaLevel"'));
+    });
+
+    test('explains background stop reasons in the report', () {
+      final live = _sessionWithDetections()
+        ..type = SessionType.live
+        ..stopReason = SessionStopReason.backgroundLimit;
+      final count = _sessionWithDetections()
+        ..type = SessionType.pointCount
+        ..stopReason = SessionStopReason.backgrounded;
+
+      expect(buildHtmlReport(live), contains('Background time limit reached'));
+      expect(buildHtmlReport(count), contains('App went to background'));
+    });
+
     test('renders escaped fields, map section, and encoded clip names', () {
       final html = buildHtmlReport(
         _sessionWithDetections(),
@@ -249,7 +290,10 @@ void main() {
 
         // Plain anchor: must not depend on Leaflet or the tile service.
         expect(html, contains('class="map-osm-link"'));
-        expect(html, contains('openstreetmap.org/?mlat=50.12340&amp;mlon=8.56780'));
+        expect(
+          html,
+          contains('openstreetmap.org/?mlat=50.12340&amp;mlon=8.56780'),
+        );
         expect(html, contains('id="map-notice"'));
         // Tile requests are made identical across browsers.
         expect(html, contains("referrerPolicy: 'no-referrer'"));

@@ -1,6 +1,8 @@
 # Configurações
 
-O BirdNET Live reutiliza uma única tela de Configurações em vários fluxos de trabalho. O botão :material-tune: abre as seções relevantes para a tela de onde você veio.
+O BirdNET Live reutiliza uma única tela de Configurações em vários fluxos de trabalho. O botão :app-tuneRounded: abre as seções relevantes para a tela de onde você veio.
+
+O botão :app-helpOutline: ao lado de uma configuração abre uma breve explicação. Os assistentes de configuração de Point Count, Survey, ARU e Análise de arquivos usam o mesmo botão e os mesmos ícones para os controles que compartilham com as Configurações ou entre si.
 
 ## Como funciona o escopo das configurações
 
@@ -118,6 +120,14 @@ configurações de Survey usam **0,70 Hz** por padrão como meio-termo;
 arquivos não tem taxa de inferência — ela usa uma configuração de
 [sobreposição](file-analysis.md).
 
+### Ignorar espécies
+
+Abre um painel com filtros binários de inferência. Marque **Aves**, **Mamíferos**, **Anfíbios** ou **Insetos** para suprimir toda a classe taxonômica. As quatro caixas ficam desmarcadas por padrão.
+
+**Ignorar espécies comuns acima de** vai de **80–100%** e suprime espécies cuja pontuação atual do modelo geográfico está estritamente acima do limite escolhido. O padrão **100%** não ignora espécies pela abundância; reduzir o valor ignora mais espécies comuns. O painel executa o modelo geográfico uma vez para a localização atual e mostra o total de espécies ignoradas. As alterações reutilizam essa previsão em cache, sem repetir a inferência. A regra de abundância precisa de localização; o filtro taxonômico funciona sem ela.
+
+O filtro zera exatamente as probabilidades ignoradas dos modelos geográfico e de áudio logo após a ativação sigmoide e antes da agregação temporal. Elas não contribuem para resultados posteriores nem viram detecções exibidas, salvas, anunciadas ou exportadas. Alterações durante uma Session ativa de Live Mode, Point Count, Survey ou ARU valem na próxima janela; a análise de arquivos usa os valores selecionados no início.
+
 O BirdNET Live suaviza internamente as pontuações ao longo das janelas de
 inferência recentes para reduzir falsos positivos isolados. Esse agrupamento
 não é exposto como configuração de usuário; por padrão usa agrupamento
@@ -191,13 +201,15 @@ Uma seção expansível que expõe alguns botões de roteamento de áudio mais o
 
 ### Modo
 
+Esta configuração controla Live Mode. Point Count tem sua própria opção de gravação no passo de configurações de análise; novas contagens usam **Completa** por padrão. Survey também tem uma opção separada na configuração.
+
 - **Completa** — salvar a gravação inteira
 - **Somente detecções** — salvar trechos ao redor das detecções
 - **Desativada** — sem gravação de áudio
 
 ### Contexto do trecho
 
-Quando **Somente detecções** está ativo, o aplicativo mostra um único controle **Contexto do trecho** (0–5 s) que define quanto áudio é preservado em **ambos os lados** de cada detecção. Cada trecho dura `janela de análise + 2 × contexto do trecho`, então com uma janela de análise de 3 s e o contexto padrão de 1 s o trecho salvo tem 5 s. Definir o contexto em 2 s resulta em um trecho de 7 s (2 s antes + 3 s de áudio analisado + 2 s depois). Valores maiores dão mais margem para inspeção visual ou ferramentas externas de revisão ao custo de espaço em disco; 0 salva apenas a janela analisada.
+Quando **Somente detecções** está ativo, o aplicativo mostra um único controle **Contexto do trecho** (0–5 s) que define quanto áudio é preservado em **ambos os lados** de cada detecção. Point Count usa esse mesmo valor ao selecionar **Apenas clipes** na configuração e permite alterá-lo ali. Cada trecho dura `janela de análise + 2 × contexto do trecho`, então com uma janela de análise de 3 s e o contexto padrão de 1 s o trecho salvo tem 5 s. Definir o contexto em 2 s resulta em um trecho de 7 s (2 s antes + 3 s de áudio analisado + 2 s depois). Valores maiores dão mais margem para inspeção visual ou ferramentas externas de revisão ao custo de espaço em disco; 0 salva apenas a janela analisada.
 
 ### Formato
 
@@ -211,9 +223,19 @@ Quando ativado, o modo Live começa a gravar assim que a tela abre e o modelo te
 
 Esta configuração vale para abrir o modo Live de dentro do aplicativo. O [widget Quick Listen](live-mode.md) começa a ouvir quando tocado, independentemente desta configuração, e não a altera. Se uma Session de Point Count, Survey, Análise de arquivos ou modo ARU já estiver em execução ou iniciando, essa Session é preservada e o aplicativo pede que você a interrompa primeiro.
 
+### Continuar com a tela desligada
+
+**Live Mode** pausa a captura e a identificação ao bloquear a tela ou sair do aplicativo e retoma a mesma Session ao voltar. A continuação em segundo plano fica desativada por padrão. Após o primeiro retorno, um diálogo explica como ativar; o controle também fica nas configurações de Live Mode. Escolha um **Tempo máximo em segundo plano** de 15, 30, 60 ou 120 minutos (30 por padrão). O cronômetro começa ao sair, é cancelado se você voltar antes do limite e reinicia a cada nova saída. O limite encerra a Session e abre o resumo com o motivo. O salvamento automático continua determinando se ela é mantida imediatamente ou aparece como não salva.
+
+**Point Count** continua por padrão ao bloquear a tela ou mudar de aplicativo com a tela acesa e termina após a duração escolhida. Seu controle **Continuar com a tela desligada** aparece apenas no primeiro passo da configuração. Desative-o para encerrar antes nessas situações. O ponto de interrogação explica o comportamento. Pausar e retomar deixaria uma lacuna no protocolo cronometrado. A tela de pronto resume a escolha e o resumo da Session mostra o motivo de um término antecipado.
+
+Android mostra uma notificação persistente com Abrir e Parar durante o funcionamento em segundo plano; a tela pode apagar normalmente. Se não for possível iniciar esse funcionamento, mantenha o aplicativo aberto: em segundo plano Live Mode pausa e Point Count termina. Sair durante a inicialização de um Point Count o cancela com uma mensagem; configure-o novamente. No Windows, minimizar nunca pausa Live Mode nem encerra Point Count, independentemente desses controles.
+
 ### Salvar Sessions automaticamente (Live e Point Count)
 
 Quando ativado (o padrão), uma Session de Live ou Point Count concluída é adicionada à sua biblioteca automaticamente no momento em que termina. Quando desativado, uma Session finalizada abre no resumo marcada como **não salva**: o ícone de salvar fica destacado e você precisa tocá-lo para manter a Session. Sair do resumo sem salvar descarta a Session e suas gravações. Isso combina com escutas rápidas em que você só quer guardar um resultado notável de vez em quando, em vez de acumular cada gravação curta. Implantações de Survey e ARU sempre salvam automaticamente — uma execução longa e sem supervisão é valiosa demais para se perder por esquecer de tocar em Salvar —, então esse botão não se aplica ali.
+
+Enquanto o salvamento automático estiver ativado, o modo Live e o Point Count também salvam uma Session parcial no início, a cada 30 segundos e quando o aplicativo sai do primeiro plano. Isso limita a perda de dados após uma falha ou queda de energia. Com a configuração desativada, esses salvamentos intermediários não são mantidos. Survey e ARU salvam seus pontos de controle independentemente desta configuração.
 
 ## Reprodução
 
@@ -355,6 +377,6 @@ Use isso antes de entregar um dispositivo a outro observador, aposentar um celul
 
 Alguns parâmetros são configurados nas próprias telas de configuração, e não na tela de Configurações compartilhada.
 
-- [Modo Point Count](point-count-mode.md) tem sua própria configuração de duração e localização.
+- [Modo Point Count](point-count-mode.md) tem sua própria configuração de duração e localização. Escolha 3, 5, 10, 15, 20, 25 ou 30 minutos conforme seu protocolo; a última escolha é lembrada, com 5 minutos como padrão.
 - [Modo Survey](survey-mode.md) tem sua própria tela de parâmetros do levantamento.
 - [Análise de arquivos](file-analysis.md) tem sua própria etapa de parâmetros de análise.

@@ -23,6 +23,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../../core/services/location_service.dart';
+import '../../core/services/wakelock_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
@@ -60,6 +62,7 @@ class AruRunner {
   AruRunner(this._ref);
 
   static const Duration _recordingTick = Duration(seconds: 1);
+  static const Duration _checkpointInterval = Duration(seconds: 30);
   static const Duration _waitingMaxTick = Duration(minutes: 1);
   static const Duration _boundaryLeadTime = Duration(seconds: 1);
   static const Duration _minTick = Duration(milliseconds: 500);
@@ -78,6 +81,7 @@ class AruRunner {
   bool _aruInferenceActive = false;
   bool _batteryPaused = false;
   DateTime? _lastBatteryCheck;
+  DateTime? _lastCheckpoint;
   Future<void> _syncDetectionsTail = Future<void>.value();
 
   AppLocalizations? _l10n;
@@ -100,8 +104,8 @@ class AruRunner {
   }
 
   /// Start (or re-confirm) the drive loop. Idempotent: safe to call from every
-  /// entry point that activates a deployment (fresh start, restore, notification
-  /// relaunch). The caller must have already started/restored the
+  /// entry point that activates a deployment (fresh start, notification
+  /// relaunch). The caller must have already started the
   /// [AruController] and published its state to [aruStateProvider]/
   /// [aruSessionProvider].
   void attach(AppLocalizations l10n, {required bool use24Hour}) {
@@ -125,8 +129,16 @@ class AruRunner {
     _running = true;
     _timer?.cancel();
     _timer = null;
+    // iOS has no foreground service and cannot wake a suspended app on a
+    // timer: capture stops between cycles, so once Auto-Lock suspends the
+    // app the schedule never fires again. Keeping the screen on is what
+    // keeps the deployment running there. Android keeps its service.
+    if (_keepsScreenOn) unawaited(WakelockService.enable());
     unawaited(_kickoff());
   }
+
+  static bool get _keepsScreenOn =>
+      defaultTargetPlatform == TargetPlatform.iOS;
 
   Future<void> _kickoff() async {
     await _tick();
@@ -172,7 +184,24 @@ class AruRunner {
         return;
       }
       await _syncInferenceSession(controller.state, controller.session);
-      await _syncNotification();
+      if (controller.state == AruControllerState.recording) {
+        final now = DateTime.now();
+        if (_lastCheckpoint == null ||
+            now.difference(_lastCheckpoint!) >= _checkpointInterval) {
+          _lastCheckpoint = now;
+          try {
+            await controller.checkpoint();
+          } catch (error, stack) {
+            debugPrint('ARU checkpoint failed: $error\n$stack');
+          }
+        }
+      }
+      try {
+        await _syncNotification();
+      } catch (error, stack) {
+        // The notification is a courtesy; the schedule must keep advancing.
+        debugPrint('ARU notification sync failed: $error\n$stack');
+      }
     } finally {
       _tickBusy = false;
       _scheduleNextTick();
@@ -195,7 +224,6 @@ class AruRunner {
     if (session == null) return _waitingMaxTick;
     if (controller.state == AruControllerState.recording ||
         controller.state == AruControllerState.preparing ||
-        controller.state == AruControllerState.recovering ||
         controller.state == AruControllerState.finalizingCycle) {
       return _recordingTick;
     }
@@ -282,20 +310,23 @@ class AruRunner {
     _inferenceStarting = true;
     try {
       final controller = _ref.read(liveControllerProvider);
-      if (controller.state == LiveState.idle) {
+      // No-op when ready; joins an in-flight warm-up or retries a failed load,
+      // so a cycle no longer records without inference just because the
+      // model was still loading (or failed once) when it began.
+      if (controller.state != LiveState.ready) {
         await controller.loadModel();
       }
       if (controller.state != LiveState.ready) return;
       if (!_running) return;
 
-      final geoScores = await _ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await _ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: _ref.read,
+        invalidate: _ref.invalidate,
       );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
       final geoThreshold = _ref.read(geoThresholdProvider);
-      final geoModelSpeciesNames = await _ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoModelSpeciesNames = geoInputs.geoModelSpeciesNames;
       if (!_running) return;
 
       await controller.startSession(
@@ -326,6 +357,17 @@ class AruRunner {
         highPassHz: session.settings.highPassHz,
         latitude: session.latitude,
         longitude: session.longitude,
+        startLocation: session.latitude != null && session.longitude != null
+            ? AppLocation(
+                latitude: session.latitude!,
+                longitude: session.longitude!,
+                altitude: session.altitude,
+                altitudeAccuracy: session.altitudeAccuracy,
+                altitudeReference: session.altitudeReference,
+                timestamp: session.locationFixTime,
+              )
+            : null,
+        fixedLocationForDetections: true,
         clearRingBuffer: false,
       );
       _aruInferenceActive = controller.state == LiveState.active;
@@ -426,14 +468,13 @@ class AruRunner {
     AruControllerState state,
     LiveSession session,
   ) {
-    final status =
-        _batteryPaused
-            ? l10n.aruBatteryPaused
-            : switch (state) {
-              AruControllerState.recording => l10n.aruActiveRecording,
-              AruControllerState.completed => l10n.aruActiveCompleted,
-              _ => l10n.aruActiveWaiting,
-            };
+    final status = _batteryPaused
+        ? l10n.aruBatteryPaused
+        : switch (state) {
+            AruControllerState.recording => l10n.aruActiveRecording,
+            AruControllerState.completed => l10n.aruActiveCompleted,
+            _ => l10n.aruActiveWaiting,
+          };
     final snapshot = _scheduleSnapshot(session);
     final current = snapshot?.currentWindow;
     final next = snapshot?.nextWindow;
@@ -457,8 +498,10 @@ class AruRunner {
   String _notificationStats(AppLocalizations l10n, LiveSession session) {
     final cycles = _completedCycleCount(session);
     final detections = session.detections.length;
-    final species =
-        session.detections.map((d) => d.scientificName).toSet().length;
+    final species = session.detections
+        .map((d) => d.scientificName)
+        .toSet()
+        .length;
     return l10n.aruNotificationStats(cycles, species, detections);
   }
 
@@ -502,6 +545,7 @@ class AruRunner {
   void _stopLoop() {
     _timer?.cancel();
     _timer = null;
+    if (_running && _keepsScreenOn) unawaited(WakelockService.disable());
     _running = false;
     final liveController = _ref.read(liveControllerProvider);
     if (liveController.onStateChanged == _onInferenceStateChanged) {
@@ -521,9 +565,8 @@ class AruRunner {
 AruScheduleSnapshot? _scheduleSnapshot(LiveSession session) {
   final metadata = session.aruMetadata;
   if (metadata == null) return null;
-  return AruScheduleCalculator(
-    metadata.toScheduleConfig(),
-  ).snapshotAt(DateTime.now());
+  return AruScheduleCalculator(metadata.toScheduleConfig())
+      .snapshotAt(DateTime.now());
 }
 
 int _completedCycleCount(LiveSession session) {

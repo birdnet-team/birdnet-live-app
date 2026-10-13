@@ -1,6 +1,8 @@
 # Nastavení
 
-BirdNET Live používá jednu obrazovku Nastavení napříč více pracovními postupy. Tlačítko :material-tune: otevírá sekce, které jsou relevantní pro obrazovku, ze které jste přišli.
+BirdNET Live používá jednu obrazovku Nastavení napříč více pracovními postupy. Tlačítko :app-tuneRounded: otevírá sekce, které jsou relevantní pro obrazovku, ze které jste přišli.
+
+Tlačítko :app-helpOutline: vedle nastavení otevře krátké vysvětlení. Průvodci nastavením Point Count, Survey, ARU a analýzy souborů používají stejné tlačítko a stejné ikony pro ovládací prvky, které sdílejí s Nastavením nebo navzájem.
 
 ## Jak funguje rozsah nastavení
 
@@ -116,6 +118,14 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
+### Ignorovat druhy
+
+Otevře panel s binárními filtry inference. Zaškrtnutím **Ptáci**, **Savci**, **Obojživelníci** nebo **Hmyz** potlačíte celou taxonomickou třídu. Ve výchozím nastavení jsou všechna čtyři políčka vypnutá.
+
+Posuvník **Ignorovat běžné druhy nad** má rozsah **80–100 %** a potlačuje druhy s aktuálním skóre geografického modelu přísně nad zvolenou mezí. Výchozích **100 %** neignoruje žádný druh podle běžnosti; nižší hodnoty ignorují více běžných druhů. Panel jednou spustí geografický model pro aktuální polohu a zobrazí celkový počet ignorovaných druhů. Změny posuvníku či políček používají tuto uloženou předpověď bez nové inference. Pravidlo běžnosti vyžaduje polohu, filtr taxonomických skupin funguje i bez ní.
+
+Filtr nastavuje ignorované pravděpodobnosti geografického i zvukového modelu přesně na nulu hned po sigmoidní aktivaci a před časovým sdružováním skóre. Nemohou ovlivnit pozdější sdružený výsledek ani se zobrazit, uložit, oznámit či exportovat jako detekce. Změny během aktivní Session v Live Mode, Point Count, Survey nebo ARU platí od příštího okna inference; analýza souborů používá hodnoty zvolené při spuštění.
+
 BirdNET Live interně vyhlazuje skóre napříč nedávnými okny odvozování, aby
 omezil jednorázové falešně pozitivní nálezy. Toto sdružování není dostupné
 jako uživatelské nastavení; ve výchozím stavu se používá adaptivní sdružování
@@ -188,13 +198,15 @@ Rozbalovací část s několika přepínači směrování zvuku a výběrem rež
 
 ### Režim
 
+Tato volba řídí Live Mode. Point Count má vlastní volbu nahrávání v kroku nastavení analýzy; nové Point Count používají výchozí **Úplné**. Survey má také samostatnou volbu nahrávání v průvodci.
+
 - **Úplné** – uložit celou nahrávku
 - **Jen detekce** – uložit úseky kolem detekcí
 - **Vypnuto** – bez nahrávání zvuku
 
 ### Kontext úseku
 
-Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext úseku** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
+Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext úseku** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Point Count používá stejnou hodnotu při volbě **Jen klipy** v nastavení a umožňuje ji tam změnit. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
 
 ### Formát
 
@@ -208,9 +220,19 @@ Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model s
 
 Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Widget Quick Listen](live-mode.md) při klepnutí začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
 
+### Pokračovat při vypnuté obrazovce
+
+**Live Mode** při zamknutí obrazovky nebo opuštění aplikace pozastaví záznam i rozpoznávání a po návratu pokračuje ve stejné Session. Pokračování na pozadí je ve výchozím nastavení vypnuté. Po prvním návratu jednorázový dialog vysvětlí zapnutí; přepínač je také v nastavení Live Mode. Po zapnutí zvolte **Maximální dobu na pozadí** 15, 30, 60 nebo 120 minut (výchozí: 30). Časovač začíná při přechodu na pozadí, včasný návrat jej zruší a další odchod spustí nový. Dosažení limitu ukončí Session a otevře přehled s důvodem ukončení. Automatické ukládání nadále určuje, zda se Session ihned uchová, nebo zobrazí jako neuložená.
+
+**Point Count** ve výchozím nastavení pokračuje při zamknutí i přepnutí do jiné aplikace se zapnutou obrazovkou a končí po zvolené době. Přepínač **Pokračovat při vypnuté obrazovce** je pouze v prvním kroku nastavení. Vypněte jej, pokud mají tyto akce sčítání předčasně ukončit. Otazník vysvětluje chování. Pozastavení a obnovení by vytvořilo mezeru v časovaném protokolu. Obrazovka připravenosti shrnuje volbu a přehled Session ukazuje důvod předčasného konce.
+
+Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit; obrazovka se může normálně vypnout. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
+
 ### Automaticky ukládat Sessions (Live a Point Count)
 
 Po zapnutí (výchozí) se dokončená Session režimu Live nebo Point Count přidá do vaší knihovny automaticky ve chvíli, kdy skončí. Po vypnutí se dokončená Session otevře v přehledu s označením **neuloženo**: ikona uložení je zvýrazněná a musíte na ni klepnout, aby se Session zachovala. Odchod z přehledu bez uložení Session i s nahrávkami zahodí. To se hodí pro krátký poslech, kdy chcete uchovat jen občasný pozoruhodný výsledek místo hromadění každé krátké nahrávky. Nasazení Survey a ARU se ukládají vždy automaticky – dlouhý běh bez dozoru je příliš cenný, aby se ztratil kvůli zapomenutému uložení – takže tam se tento přepínač neuplatní.
+
+Dokud je automatické ukládání zapnuté, režim Live a Point Count navíc ukládají rozpracovanou Session při spuštění, každých 30 sekund a když aplikace opustí popředí. Tím se omezí ztráta dat po pádu aplikace nebo výpadku napájení. Při vypnutém nastavení se tato průběžná uložení neuchovávají. Survey a ARU ukládají průběžný stav nezávisle na tomto nastavení.
 
 ## Přehrávání
 
@@ -351,6 +373,6 @@ Použijte to, než zařízení předáte jinému pozorovateli, vyřadíte terén
 
 Některé parametry se konfigurují na vlastních obrazovkách nastavení, nikoli na sdílené obrazovce nastavení.
 
-- [Režim Point Count](point-count-mode.md) má vlastní nastavení délky a polohy.
+- [Režim Point Count](point-count-mode.md) má vlastní nastavení délky a polohy. Podle protokolu vyberte 3, 5, 10, 15, 20, 25 nebo 30 minut; poslední volba se pamatuje, výchozí je 5 minut.
 - [Režim Survey](survey-mode.md) má vlastní obrazovku parametrů Survey.
 - [Analýza souborů](file-analysis.md) má vlastní krok s parametry analýzy.

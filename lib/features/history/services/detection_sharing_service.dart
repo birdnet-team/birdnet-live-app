@@ -204,30 +204,44 @@ LiveSession _singleDetectionSession({
       );
   final end =
       detection.endTimestamp != null &&
-              detection.endTimestamp!.isAfter(detection.timestamp)
-          ? detection.endTimestamp!
-          : detection.timestamp.add(Duration(seconds: settings.windowDuration));
+          detection.endTimestamp!.isAfter(detection.timestamp)
+      ? detection.endTimestamp!
+      : detection.timestamp.add(Duration(seconds: settings.windowDuration));
+  // Document-only exports still need the source clip reference.
   final exportDetection = _copyDetection(
     detection,
-    audioClipPath:
-        audioFile != null && !audioIsFullDetectionSpan ? audioFile.path : null,
+    audioClipPath: audioIsFullDetectionSpan
+        ? null
+        : audioFile?.path ?? detection.audioClipPath,
   );
+  final hasDetectionLocation =
+      detection.latitude != null && detection.longitude != null;
 
   return LiveSession(
     id: source?.id ?? 'detection-${detection.timestamp.microsecondsSinceEpoch}',
     startTime: detection.timestamp,
     endTime: end,
     type: source?.type ?? SessionType.live,
-    customName:
-        detection.commonName.trim().isNotEmpty
-            ? detection.commonName
-            : detection.scientificName,
+    customName: detection.commonName.trim().isNotEmpty
+        ? detection.commonName
+        : detection.scientificName,
     detections: [exportDetection],
-    recordingPath:
-        audioFile != null && audioIsFullDetectionSpan ? audioFile.path : null,
+    recordingPath: audioFile != null && audioIsFullDetectionSpan
+        ? audioFile.path
+        : null,
     settings: settings,
-    latitude: detection.latitude ?? source?.latitude,
-    longitude: detection.longitude ?? source?.longitude,
+    latitude: hasDetectionLocation ? detection.latitude : source?.latitude,
+    longitude: hasDetectionLocation ? detection.longitude : source?.longitude,
+    altitude: hasDetectionLocation ? detection.altitude : source?.altitude,
+    altitudeAccuracy: hasDetectionLocation
+        ? detection.altitudeAccuracy
+        : source?.altitudeAccuracy,
+    altitudeReference: hasDetectionLocation
+        ? detection.altitudeReference
+        : source?.altitudeReference,
+    locationFixTime: hasDetectionLocation
+        ? detection.locationFixTime
+        : source?.locationFixTime,
     locationName: source?.locationName,
     observerName: source?.observerName,
     weather: source?.weather,
@@ -249,6 +263,10 @@ DetectionRecord _copyDetection(
   evidence: source.evidence,
   latitude: source.latitude,
   longitude: source.longitude,
+  altitude: source.altitude,
+  altitudeAccuracy: source.altitudeAccuracy,
+  altitudeReference: source.altitudeReference,
+  locationFixTime: source.locationFixTime,
   reviewStatus: source.reviewStatus,
   reviewedAt: source.reviewedAt,
   note: source.note,
@@ -370,13 +388,12 @@ Future<File?> _extractClipFromFullAudio(
   final canDecodeDart = await AudioDecoder.canDecodeDart(fullPath);
   AudioMetadata? sourceMetadata;
   try {
-    sourceMetadata =
-        canDecodeDart
-            ? await AudioDecoder.inspectFile(fullPath)
-            : await NativeAudioDecoder.inspectFile(
-              fullPath,
-              _audioFormatLabel(fullPath),
-            );
+    sourceMetadata = canDecodeDart
+        ? await AudioDecoder.inspectFile(fullPath)
+        : await NativeAudioDecoder.inspectFile(
+            fullPath,
+            _audioFormatLabel(fullPath),
+          );
     final sourceDurationSec = sourceMetadata.duration.inMicroseconds / 1e6;
     if (sourceDurationSec > 0) {
       final expectedDurationSec = session.expectedRecordedAudioSeconds;
@@ -398,17 +415,15 @@ Future<File?> _extractClipFromFullAudio(
     // slicer below still walks every available frame and clamps at EOF.
   }
 
-  final ext =
-      canDecodeDart
-          ? (await AudioDecoder.isWav(fullPath) ? '.wav' : '.flac')
-          : p.extension(fullPath).toLowerCase();
+  final ext = canDecodeDart
+      ? (await AudioDecoder.isWav(fullPath) ? '.wav' : '.flac')
+      : p.extension(fullPath).toLowerCase();
   // Native compressed formats are decoded only for the requested range and
   // written as WAV. Re-encoding MP3/AAC/OGG would require a second platform
   // encoder and would introduce another lossy generation.
-  final outExt =
-      canDecodeDart
-          ? sharedAudioExtensionForSource(ext, shareAudioAsWav: shareAudioAsWav)
-          : '.wav';
+  final outExt = canDecodeDart
+      ? sharedAudioExtensionForSource(ext, shareAudioAsWav: shareAudioAsWav)
+      : '.wav';
   final tmp = await getTemporaryDirectory();
   final shareDir = Directory(p.join(tmp.path, 'shared_clips'));
   if (!shareDir.existsSync()) shareDir.createSync(recursive: true);
@@ -500,19 +515,18 @@ Future<File?> _extractClipFromFullAudio(
   }
 }
 
-String _audioFormatLabel(String path) => switch (p
-    .extension(path)
-    .toLowerCase()) {
-  '.wav' || '.wave' => 'WAV',
-  '.flac' => 'FLAC',
-  '.mp3' => 'MP3',
-  '.ogg' || '.oga' => 'OGG',
-  '.m4a' || '.aac' || '.mp4' => 'AAC',
-  '.opus' => 'OPUS',
-  '.wma' => 'WMA',
-  '.amr' => 'AMR',
-  final ext => ext.replaceFirst('.', '').toUpperCase(),
-};
+String _audioFormatLabel(String path) =>
+    switch (p.extension(path).toLowerCase()) {
+      '.wav' || '.wave' => 'WAV',
+      '.flac' => 'FLAC',
+      '.mp3' => 'MP3',
+      '.ogg' || '.oga' => 'OGG',
+      '.m4a' || '.aac' || '.mp4' => 'AAC',
+      '.opus' => 'OPUS',
+      '.wma' => 'WMA',
+      '.amr' => 'AMR',
+      final ext => ext.replaceFirst('.', '').toUpperCase(),
+    };
 
 /// Slices `[startSec, startSec+durationSec)` out of [src] (a 16-bit PCM
 /// WAV) and returns a self-contained WAV file as bytes.
@@ -724,6 +738,13 @@ String _buildBody(DetectionRecord d) {
   if (d.latitude != null && d.longitude != null) {
     lines.add(
       'geo:${d.latitude!.toStringAsFixed(4)},${d.longitude!.toStringAsFixed(4)}',
+    );
+  }
+  if (d.altitude != null) {
+    lines.add(
+      'altitudeMeters=${d.altitude};reference=${d.altitudeReference?.name ?? 'unknown'}'
+      '${d.altitudeAccuracy != null ? ';accuracyMeters=${d.altitudeAccuracy}' : ''}'
+      '${d.locationFixTime != null ? ';fixTime=${d.locationFixTime!.toUtc().toIso8601String()}' : ''}',
     );
   }
   // Heard / seen, when the user recorded it on a manual entry. Plain

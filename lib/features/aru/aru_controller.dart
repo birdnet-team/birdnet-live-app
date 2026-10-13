@@ -3,6 +3,7 @@
 // =============================================================================
 
 import '../live/live_session.dart';
+import '../../shared/models/altitude_reference.dart';
 import '../recording/recording_service.dart';
 import '../survey/detection_sampler.dart';
 import 'aru_detection_sampler.dart';
@@ -15,7 +16,6 @@ enum AruControllerState {
   waiting,
   recording,
   finalizingCycle,
-  recovering,
   stopping,
   completed,
   error,
@@ -28,16 +28,17 @@ typedef AruSessionSaver = Future<void> Function(LiveSession session);
 typedef AruSessionDiscarder = Future<void> Function(String sessionId);
 
 /// Starts audio capture for a scheduled ARU cycle.
-typedef AruCycleRecordingStarter =
-    Future<String?> Function(LiveSession session, AruCycleWindow window);
+typedef AruCycleRecordingStarter = Future<String?> Function(
+  LiveSession session,
+  AruCycleWindow window,
+);
 
 /// Stops audio capture for the active ARU cycle.
-typedef AruCycleRecordingStopper =
-    Future<String?> Function(
-      LiveSession session,
-      AruCycleMetadata cycle,
-      DateTime endedAt,
-    );
+typedef AruCycleRecordingStopper = Future<String?> Function(
+  LiveSession session,
+  AruCycleMetadata cycle,
+  DateTime endedAt,
+);
 
 /// Cuts detection-only clips for a batch of records while a cycle is
 /// recording, all from the same slice of audio.
@@ -46,11 +47,10 @@ typedef AruCycleRecordingStopper =
 /// anchors every clip in the round to the same moment — the Live and Survey
 /// inference loops cut their clips the same way. Returns the written path per
 /// record; records whose clip could not be written are absent from the map.
-typedef AruDetectionClipSaver =
-    Future<Map<DetectionRecord, String>> Function(
-      LiveSession session,
-      List<DetectionRecord> records,
-    );
+typedef AruDetectionClipSaver = Future<Map<DetectionRecord, String>> Function(
+  LiveSession session,
+  List<DetectionRecord> records,
+);
 
 /// Minimal ARU controller that owns schedule transitions and session metadata.
 ///
@@ -115,39 +115,6 @@ class AruController {
     return candidate;
   }
 
-  Future<void> restoreDeployment(LiveSession session, {DateTime? now}) async {
-    if (session.type != SessionType.aru || session.aruMetadata == null) {
-      throw ArgumentError('Session is not an ARU deployment');
-    }
-    if (session.endTime != null) {
-      throw ArgumentError('ARU deployment is already completed');
-    }
-    if (_state != AruControllerState.idle &&
-        _state != AruControllerState.completed &&
-        _state != AruControllerState.error) {
-      throw StateError('ARU deployment already started');
-    }
-
-    _state = AruControllerState.recovering;
-    _errorMessage = null;
-    _session = session;
-    _calculator = AruScheduleCalculator(
-      session.aruMetadata!.toScheduleConfig(),
-    );
-    _activeCycleIndex = null;
-    _activeCycleStart = null;
-    _clipPeakTracker.clear();
-    _lastReviewSession = session;
-    _sampler = AruDetectionSampler(
-      mode: samplingModeFromString(session.aruMetadata!.samplingMode),
-      topN: session.aruMetadata!.topNPerSpecies,
-      scopeKeyFor: _samplingScopeKeyFor,
-    );
-
-    _normalizeRecoveredCycles(now ?? _now());
-    await evaluate(now: now ?? _now());
-  }
-
   Future<void> startDeployment({
     required String sessionId,
     required SessionSettings settings,
@@ -155,6 +122,10 @@ class AruController {
     String? observerName,
     double? latitude,
     double? longitude,
+    double? altitude,
+    double? altitudeAccuracy,
+    AltitudeReference? altitudeReference,
+    DateTime? locationFixTime,
     int? sessionNumber,
   }) async {
     if (_state != AruControllerState.idle &&
@@ -180,6 +151,10 @@ class AruController {
         observerName: observerName,
         latitude: latitude,
         longitude: longitude,
+        altitude: altitude,
+        altitudeAccuracy: altitudeAccuracy,
+        altitudeReference: altitudeReference,
+        locationFixTime: locationFixTime,
         aruMetadata: metadata,
         sessionNumber: sessionNumber,
       );
@@ -305,11 +280,10 @@ class AruController {
     final clipWindowStart = _now().subtract(
       Duration(seconds: session.settings.windowDuration),
     );
-    final clips =
-        wantsClip.isEmpty
-            ? const <DetectionRecord, String>{}
-            : await _saveDetectionClips?.call(session, wantsClip) ??
-                const <DetectionRecord, String>{};
+    final clips = wantsClip.isEmpty
+        ? const <DetectionRecord, String>{}
+        : await _saveDetectionClips?.call(session, wantsClip) ??
+              const <DetectionRecord, String>{};
 
     // Pass 2 — apply. `addDetection` appends, so the indices captured above
     // still point at the same records.
@@ -377,6 +351,11 @@ class AruController {
   ) async {
     final record = pair.record;
     final existing = pair.existing;
+    final locationRecord = record.latitude != null && record.longitude != null
+        ? record
+        : existing?.latitude != null && existing?.longitude != null
+        ? existing
+        : null;
     var audioClipPath = existing?.audioClipPath ?? record.audioClipPath;
     var clipTimestamp = existing?.clipTimestamp ?? record.clipTimestamp;
     final clipKey = _detectionClipKey(record);
@@ -401,28 +380,37 @@ class AruController {
     final synced = DetectionRecord(
       scientificName: record.scientificName,
       commonName: record.commonName,
-      confidence:
-          existing != null && existing.confidence > record.confidence
-              ? existing.confidence
-              : record.confidence,
+      confidence: existing != null && existing.confidence > record.confidence
+          ? existing.confidence
+          : record.confidence,
       timestamp: record.timestamp,
       endTimestamp: record.endTimestamp ?? existing?.endTimestamp,
       audioClipPath: audioClipPath,
       clipTimestamp: audioClipPath == null ? null : clipTimestamp,
       source: record.source,
-      latitude: record.latitude ?? existing?.latitude,
-      longitude: record.longitude ?? existing?.longitude,
+      latitude: locationRecord?.latitude ?? _session?.latitude,
+      longitude: locationRecord?.longitude ?? _session?.longitude,
+      altitude: locationRecord != null
+          ? locationRecord.altitude
+          : _session?.altitude,
+      altitudeAccuracy: locationRecord != null
+          ? locationRecord.altitudeAccuracy
+          : _session?.altitudeAccuracy,
+      altitudeReference: locationRecord != null
+          ? locationRecord.altitudeReference
+          : _session?.altitudeReference,
+      locationFixTime: locationRecord != null
+          ? locationRecord.locationFixTime
+          : _session?.locationFixTime,
       // A reviewer decision on the record already in the session wins over
       // whatever the incoming record carries; fall back to the incoming one
       // only when the existing record is still unreviewed.
-      reviewStatus:
-          (existing != null && existing.isReviewed)
-              ? existing.reviewStatus
-              : record.reviewStatus,
-      reviewedAt:
-          (existing != null && existing.isReviewed)
-              ? existing.reviewedAt
-              : record.reviewedAt,
+      reviewStatus: (existing != null && existing.isReviewed)
+          ? existing.reviewStatus
+          : record.reviewStatus,
+      reviewedAt: (existing != null && existing.isReviewed)
+          ? existing.reviewedAt
+          : record.reviewedAt,
       note: existing?.note ?? record.note,
       voiceMemoPath: existing?.voiceMemoPath ?? record.voiceMemoPath,
     );
@@ -457,6 +445,10 @@ class AruController {
         a.clipTimestamp == b.clipTimestamp &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude &&
+        a.altitude == b.altitude &&
+        a.altitudeAccuracy == b.altitudeAccuracy &&
+        a.altitudeReference == b.altitudeReference &&
+        a.locationFixTime == b.locationFixTime &&
         a.reviewStatus == b.reviewStatus &&
         a.reviewedAt == b.reviewedAt &&
         a.note == b.note &&
@@ -478,10 +470,9 @@ class AruController {
         cycle.plannedStart,
         cycle.plannedEnd,
       );
-      final retainedClipCount =
-          detections
-              .where((detection) => detection.audioClipPath != null)
-              .length;
+      final retainedClipCount = detections
+          .where((detection) => detection.audioClipPath != null)
+          .length;
       _upsertCycle(
         AruCycleMetadata(
           index: cycle.index,
@@ -493,13 +484,12 @@ class AruController {
           recordingPath: cycle.recordingPath,
           detectionCount: detections.length,
           retainedClipCount: retainedClipCount,
-          droppedClipCount:
-              tracksClips
-                  ? (detections.length - retainedClipCount).clamp(
-                    0,
-                    detections.length,
-                  )
-                  : cycle.droppedClipCount,
+          droppedClipCount: tracksClips
+              ? (detections.length - retainedClipCount).clamp(
+                  0,
+                  detections.length,
+                )
+              : cycle.droppedClipCount,
           note: cycle.note,
         ),
       );
@@ -564,10 +554,9 @@ class AruController {
     final recordingMode = recordingModeFromString(
       session.aruMetadata?.recordingMode ?? RecordingMode.off.name,
     );
-    final recordingPath =
-        recordingMode == RecordingMode.off
-            ? null
-            : await _startCycleRecording?.call(session, window);
+    final recordingPath = recordingMode == RecordingMode.off
+        ? null
+        : await _startCycleRecording?.call(session, window);
     _upsertCycle(
       AruCycleMetadata(
         index: window.index,
@@ -623,10 +612,10 @@ class AruController {
     final existing = _cycleAt(index);
     final effectiveEnd =
         status == AruCycleStatus.completed &&
-                existing != null &&
-                endedAt.isAfter(existing.plannedEnd)
-            ? existing.plannedEnd
-            : endedAt;
+            existing != null &&
+            endedAt.isAfter(existing.plannedEnd)
+        ? existing.plannedEnd
+        : endedAt;
 
     if (session.segments.isNotEmpty) {
       final last = session.segments.last;
@@ -692,6 +681,10 @@ class AruController {
         observerName: session.observerName,
         latitude: session.latitude,
         longitude: session.longitude,
+        altitude: session.altitude,
+        altitudeAccuracy: session.altitudeAccuracy,
+        altitudeReference: session.altitudeReference,
+        locationFixTime: session.locationFixTime,
         recordingPath: stoppedPath ?? existing?.recordingPath,
         detections: cycleDetections,
         aruMetadata: _cycleDeploymentMetadata(
@@ -747,8 +740,8 @@ class AruController {
     if (metadata == null) return false;
     // "One session per cycle" deployments keep only their per-cycle sessions;
     // the aggregate is never part of the final library, regardless of recording
-    // mode. (It is still persisted while the deployment runs so it can be
-    // restored after a process kill — see _persist.)
+    // mode. (It is still checkpointed while the deployment runs so a process
+    // kill leaves the unfinished cycle in the library — see _persist.)
     return metadata.eachCycleIsSession;
   }
 
@@ -770,43 +763,13 @@ class AruController {
     }
   }
 
-  void _normalizeRecoveredCycles(DateTime now) {
-    final cycles = _session?.aruMetadata?.cycles;
-    if (cycles == null) return;
-
-    for (final cycle in cycles.toList()) {
-      if (cycle.status != AruCycleStatus.recording) continue;
-      // If the recording window is still active, leave the cycle marked as
-      // recording so evaluate() resumes capture in the same cycle instead of
-      // abandoning it and waiting for the next window. Only cycles whose window
-      // already elapsed while the app was down are finalized as partial.
-      if (now.isBefore(cycle.plannedEnd)) continue;
-      final end = now.isAfter(cycle.plannedEnd) ? cycle.plannedEnd : now;
-      _upsertCycle(
-        AruCycleMetadata(
-          index: cycle.index,
-          plannedStart: cycle.plannedStart,
-          plannedEnd: cycle.plannedEnd,
-          actualStart: cycle.actualStart,
-          actualEnd: end,
-          status: AruCycleStatus.partial,
-          recordingPath: cycle.recordingPath,
-          detectionCount: cycle.detectionCount,
-          retainedClipCount: cycle.retainedClipCount,
-          droppedClipCount: cycle.droppedClipCount,
-          note: cycle.note,
-        ),
-      );
-    }
-  }
-
   Future<void> _persist() async {
     final session = _session;
     if (session == null) return;
     // Per-cycle deployments persist the aggregate while in progress so an
-    // interrupted deployment can be restored from disk (restore looks for an
-    // ARU session with endTime == null). Once completed, the aggregate is
-    // discarded so only the per-cycle sessions remain in the library.
+    // interrupted deployment keeps its unfinished cycle in the library. Once
+    // completed, the aggregate is discarded so only the per-cycle sessions
+    // remain.
     if (_shouldDiscardAggregateSession(session)) {
       if (_state == AruControllerState.completed) {
         await _discardAggregateSession(session);
@@ -817,6 +780,9 @@ class AruController {
     }
     await _saveSession(session);
   }
+
+  /// Periodic checkpoint for a recording window with no new detections.
+  Future<void> checkpoint() => _persist();
 
   AruDeploymentMetadata? _cycleDeploymentMetadata(
     LiveSession session,
@@ -829,8 +795,9 @@ class AruController {
       deploymentName: metadata.deploymentName,
       stationId: metadata.stationId,
       scheduleStart: cycle.plannedStart,
-      cycleDurationSeconds:
-          cycle.plannedEnd.difference(cycle.plannedStart).inSeconds,
+      cycleDurationSeconds: cycle.plannedEnd
+          .difference(cycle.plannedStart)
+          .inSeconds,
       repeatIntervalSeconds: metadata.repeatIntervalSeconds,
       scheduleEnd: cycle.actualEnd,
       maxCycles: 1,
@@ -839,6 +806,10 @@ class AruController {
       dielPattern: metadata.dielPattern,
       latitude: metadata.latitude,
       longitude: metadata.longitude,
+      altitude: metadata.altitude,
+      altitudeAccuracy: metadata.altitudeAccuracy,
+      altitudeReference: metadata.altitudeReference,
+      locationFixTime: metadata.locationFixTime,
       recordingMode: metadata.recordingMode,
       recordingFormat: metadata.recordingFormat,
       samplingMode: metadata.samplingMode,
@@ -865,20 +836,18 @@ class AruController {
 
   String _cycleSessionName(LiveSession session, int cycleIndex) {
     final isTestRun = _isTestCycle(session, cycleIndex);
-    final cyclePart =
-        isTestRun
-            ? 'Test Run'
-            : 'Cycle ${_displayCycleNumber(session, cycleIndex)}';
+    final cyclePart = isTestRun
+        ? 'Test Run'
+        : 'Cycle ${_displayCycleNumber(session, cycleIndex)}';
     final name = session.customName?.trim();
     if (name != null && name.isNotEmpty) {
       return '$name - $cyclePart';
     }
 
     final deploymentNumber = session.sessionNumber;
-    final deploymentPart =
-        deploymentNumber != null
-            ? 'Deployment #$deploymentNumber'
-            : 'Deployment';
+    final deploymentPart = deploymentNumber != null
+        ? 'Deployment #$deploymentNumber'
+        : 'Deployment';
     return 'ARU $deploymentPart - $cyclePart';
   }
 

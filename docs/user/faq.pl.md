@@ -35,7 +35,7 @@ O: Tak. Otwórz Analizę plików z ekranu startowego, wybierz plik dźwiękowy, 
 ## Point Count
 
 **P: Czym jest tryb Point Count?**
-O: To tryb liczenia na czas, przeznaczony do formalnych liczeń punktowych ptaków. Ustawiasz stały czas trwania (3–20 minut) i lokalizację, a aplikacja pracuje nieprzerwanie i zatrzymuje się automatycznie, gdy licznik dojdzie do zera.
+O: To tryb liczenia na czas, przeznaczony do formalnych liczeń punktowych ptaków. Ustawiasz stały czas trwania (3–30 minut) i lokalizację, a aplikacja pracuje nieprzerwanie i zatrzymuje się automatycznie, gdy licznik dojdzie do zera.
 
 **P: Czy mogę wstrzymać liczenie punktowe?**
 O: Nie. Zgodność z protokołem wymaga nieprzerwanego nagrywania. Możesz natomiast zakończyć liczenie wcześniej przyciskiem stop.

@@ -1,0 +1,58 @@
+name: Upload release assets
+description: Upload release files after removing case-insensitive filename conflicts.
+
+inputs:
+  files:
+    description: Newline-separated file paths (no globs).
+    required: true
+  tag-name:
+    description: Existing release tag.
+    required: true
+  token:
+    description: GitHub token with contents write permission.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Remove conflicting asset names
+      uses: actions/github-script@v8
+      env:
+        RELEASE_FILES: ${{ inputs.files }}
+        RELEASE_TAG: ${{ inputs.tag-name }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          const files = process.env.RELEASE_FILES.split(/\r?\n/).map(file => file.trim()).filter(Boolean);
+          const names = new Map();
+          for (const file of files) {
+            if (!fs.statSync(file).isFile()) throw new Error(`Not a file: ${file}`);
+            const name = path.basename(file);
+            if (names.has(name.toLowerCase())) throw new Error(`Duplicate asset name: ${name}`);
+            names.set(name.toLowerCase(), name);
+          }
+          const { owner, repo } = context.repo;
+          const { data: release } = await github.rest.repos.getReleaseByTag({
+            owner, repo, tag: process.env.RELEASE_TAG,
+          });
+          const assets = await github.paginate(github.rest.repos.listReleaseAssets, {
+            owner, repo, release_id: release.id,
+          });
+          for (const asset of assets) {
+            const name = names.get(asset.name.toLowerCase());
+            // The uploader already replaces exact matches, but misses case variants.
+            if (name && asset.name !== name) {
+              core.info(`Removing conflicting asset ${asset.name} before uploading ${name}`);
+              await github.rest.repos.deleteReleaseAsset({ owner, repo, asset_id: asset.id });
+            }
+          }
+
+    - name: Upload files
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ inputs.tag-name }}
+        token: ${{ inputs.token }}
+        files: ${{ inputs.files }}
+        fail_on_unmatched_files: true

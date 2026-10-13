@@ -40,18 +40,20 @@ A tela de Início é o hub principal.
 
 ### Cartões dos modos principais
 
-- :material-microphone: **Modo Live**
-- :material-map-marker: **Modo Point Count**
-- :material-routes: **Modo Survey**
-- :material-file-music: **Análise de arquivos**
+- :app-micRounded: **Modo Live**
+- :app-locationOnRounded: **Modo Point Count**
+- :app-routeRounded: **Modo Survey**
+- :app-audioFileRounded: **Análise de arquivos**
+- :app-timerRounded: **Modo ARU**
+- :app-sdStorage: **Análise em lote** (Em breve)
 
 ### Botões do rodapé
 
-- :material-tune: **Configurações**
-- :material-magnify: **Explorar**
-- :material-music-box-multiple-outline: **Sessões**
-- :material-help-circle-outline: **Ajuda**
-- :material-information-outline: **Sobre**
+- :app-tuneRounded: **Configurações**
+- :app-searchRounded: **Explorar**
+- :app-libraryMusic: **Sessões**
+- :app-helpOutlineRounded: **Ajuda**
+- :app-infoOutline: **Sobre**
 
 ## O que é salvo
 

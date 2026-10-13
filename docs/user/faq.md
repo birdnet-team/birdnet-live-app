@@ -35,7 +35,7 @@ A: Yes. Open File Analysis from the home screen, pick an audio file, set locatio
 ## Point Count
 
 **Q: What is Point Count Mode?**
-A: A timed survey mode for formal avian point-count observations. You set a fixed duration (3–20 minutes) and a location, and the app then runs continuously and stops automatically when the timer reaches zero.
+A: A timed survey mode for formal avian point-count observations. You set a fixed duration (3–30 minutes) and a location, and the app then runs continuously and stops automatically when the timer reaches zero.
 
 **Q: Can I pause a point count?**
 A: No. Protocol compliance requires uninterrupted recording. You can, however, end a count early with the stop button.

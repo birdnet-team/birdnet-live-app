@@ -5,6 +5,8 @@
 import 'dart:convert';
 
 import 'package:birdnet_live/features/live/live_session.dart';
+import 'package:birdnet_live/features/survey/survey_gps_tracker.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -16,6 +18,127 @@ void main() {
     inferenceRate: 1.0,
     speciesFilterMode: 'off',
   );
+
+  test('track simplification keeps a significant altitude change', () {
+    final tracker = SurveyGpsTracker();
+    tracker.seedTrack([
+      GpsPoint(
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: start,
+        altitude: 0,
+        altitudeAccuracy: 2,
+      ),
+      GpsPoint(
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: start.add(const Duration(seconds: 10)),
+        altitude: 30,
+        altitudeAccuracy: 2,
+      ),
+      GpsPoint(
+        latitude: 52.52,
+        longitude: 13.405,
+        timestamp: start.add(const Duration(seconds: 20)),
+        altitude: 0,
+        altitudeAccuracy: 2,
+      ),
+    ]);
+
+    tracker.simplifyTrack(toleranceMeters: 10);
+    expect(tracker.track, hasLength(3));
+  });
+
+  test('last fix keeps tagging a stationary observer', () {
+    // A distance-filtered stream emits nothing while standing still, so the
+    // latest fix must not expire; detections would otherwise fall back to
+    // the survey start coordinates.
+    final fix = GpsPoint(
+      latitude: 52.52,
+      longitude: 13.405,
+      timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
+      altitude: 34.5,
+    );
+    final tracker = SurveyGpsTracker()..seedTrack([fix]);
+    expect(tracker.lastPoint, same(fix));
+  });
+
+  test('resumed track only uses measured points as the latest fix', () {
+    final measured = GpsPoint(
+      latitude: 52.52,
+      longitude: 13.405,
+      timestamp: start,
+      altitude: 34.5,
+    );
+    final interpolated = GpsPoint(
+      latitude: 52.53,
+      longitude: 13.406,
+      timestamp: start.add(const Duration(seconds: 10)),
+      measured: false,
+    );
+    final tracker = SurveyGpsTracker()..seedTrack([measured, interpolated]);
+    expect(tracker.lastPoint, same(measured));
+
+    tracker.seedTrack([interpolated]);
+    expect(tracker.lastPoint, isNull);
+  });
+
+  group('SurveyGpsTracker.positionAt', () {
+    final a = GpsPoint(
+      latitude: 52.0,
+      longitude: 13.0,
+      timestamp: start,
+      altitude: 100,
+      altitudeAccuracy: 4,
+      altitudeReference: AltitudeReference.meanSeaLevel,
+    );
+    final b = GpsPoint(
+      latitude: 52.1,
+      longitude: 13.2,
+      timestamp: start.add(const Duration(seconds: 100)),
+      altitude: 120,
+      altitudeAccuracy: 6,
+      altitudeReference: AltitudeReference.meanSeaLevel,
+    );
+
+    test('interpolates position and height between fixes', () {
+      final p = SurveyGpsTracker.positionAt([
+        a,
+        b,
+      ], start.add(const Duration(seconds: 25)))!;
+      expect(p.latitude, closeTo(52.025, 1e-9));
+      expect(p.longitude, closeTo(13.05, 1e-9));
+      expect(p.altitude, closeTo(105, 1e-9));
+      expect(p.altitudeAccuracy, 6);
+      expect(p.altitudeReference, AltitudeReference.meanSeaLevel);
+      expect(p.measured, isFalse);
+    });
+
+    test('clamps to the track ends and returns null without a track', () {
+      final before = start.subtract(const Duration(minutes: 1));
+      final after = start.add(const Duration(hours: 1));
+      expect(SurveyGpsTracker.positionAt([a, b], before), same(a));
+      expect(SurveyGpsTracker.positionAt([a, b], after), same(b));
+      expect(SurveyGpsTracker.positionAt([], start), isNull);
+    });
+
+    test('omits height when the references differ', () {
+      final c = GpsPoint(
+        latitude: b.latitude,
+        longitude: b.longitude,
+        timestamp: b.timestamp,
+        altitude: 120,
+        altitudeReference: AltitudeReference.unknown,
+      );
+      final p = SurveyGpsTracker.positionAt([
+        a,
+        c,
+      ], start.add(const Duration(seconds: 50)))!;
+      expect(p.latitude, closeTo(52.05, 1e-9));
+      expect(p.altitude, isNull);
+      expect(p.altitudeReference, isNull);
+    });
+  });
 
   group('LiveSession survey fields', () {
     test('roundtrips gpsTrack through JSON', () {

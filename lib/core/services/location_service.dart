@@ -33,6 +33,8 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../shared/models/altitude_reference.dart';
+
 /// Build the platform [LocationSettings] used for **every** fix this app
 /// requests — one-shot reads and continuous survey tracking alike.
 ///
@@ -99,12 +101,71 @@ Future<bool> isPlatformLocationServiceEnabled() {
   return Geolocator.isLocationServiceEnabled();
 }
 
-/// Simplified location data — lat/lon only.
+/// Coordinates and optional height from one location fix.
 class AppLocation {
-  const AppLocation({required this.latitude, required this.longitude});
+  const AppLocation({
+    required this.latitude,
+    required this.longitude,
+    this.altitude,
+    this.altitudeAccuracy,
+    this.altitudeReference,
+    this.timestamp,
+  });
+
+  /// Height is validated once, here: it stays paired with these coordinates
+  /// for as long as they are used, and [timestamp] travels with it so
+  /// consumers can judge staleness.
+  factory AppLocation.fromPosition(Position position) {
+    // Geolocator's Windows implementation reports zero when height is missing,
+    // even with hasAltitude. Require a positive uncertainty there to avoid
+    // recording a fabricated sea-level measurement. A cached fix older than
+    // two minutes keeps its coordinates but not its height.
+    final hasHeight =
+        position.hasAltitude &&
+        position.altitude.isFinite &&
+        (defaultTargetPlatform != TargetPlatform.windows ||
+            (position.hasAltitudeAccuracy &&
+                position.altitudeAccuracy.isFinite &&
+                position.altitudeAccuracy > 0));
+    final fixAge = DateTime.now().difference(position.timestamp).abs();
+    final validHeight = hasHeight && fixAge <= const Duration(minutes: 2);
+    return AppLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      altitude: validHeight ? position.altitude : null,
+      altitudeAccuracy:
+          validHeight &&
+              position.hasAltitudeAccuracy &&
+              position.altitudeAccuracy.isFinite &&
+              position.altitudeAccuracy > 0
+          ? position.altitudeAccuracy
+          : null,
+      // Core Location reports approximate mean-sea-level altitude. Android
+      // can report either ellipsoid or MSL height through Geolocator's mapper;
+      // Windows hardware also varies. Keep their datum explicit as unknown.
+      altitudeReference: validHeight
+          ? (defaultTargetPlatform == TargetPlatform.iOS
+                ? AltitudeReference.meanSeaLevel
+                : AltitudeReference.unknown)
+          : null,
+      timestamp: position.timestamp,
+    );
+  }
 
   final double latitude;
   final double longitude;
+
+  /// Device-reported height in meters (null if unavailable).
+  final double? altitude;
+
+  /// Estimated vertical uncertainty in meters, when reported.
+  final double? altitudeAccuracy;
+
+  /// Reference surface for [altitude].
+  final AltitudeReference? altitudeReference;
+
+  /// When the fix was taken (null for manual coordinates).
+  final DateTime? timestamp;
 
   @override
   String toString() =>
@@ -263,10 +324,7 @@ class LocationService {
             timeLimit: const Duration(seconds: 10),
           ),
         );
-        _lastKnownLocation = AppLocation(
-          latitude: position.latitude,
-          longitude: position.longitude,
-        );
+        _lastKnownLocation = AppLocation.fromPosition(position);
         _lastFetchAt = DateTime.now();
         _lastFetchUsedCachedFallback = false;
         _lastFixWasManual = false;
@@ -283,10 +341,7 @@ class LocationService {
           forceAndroidLocationManager: true,
         );
         if (cached != null) {
-          _lastKnownLocation = AppLocation(
-            latitude: cached.latitude,
-            longitude: cached.longitude,
-          );
+          _lastKnownLocation = AppLocation.fromPosition(cached);
           _lastFetchAt = DateTime.now();
           _lastFixWasManual = false;
         }

@@ -27,8 +27,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../shared/services/taxonomy_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
@@ -72,6 +74,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
+  AppLocation? _gpsLocation;
   bool _gpsFetching = false;
   bool _hasBackgroundGps = false;
   bool _awaitingSettingsReturn = false;
@@ -169,6 +172,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
+          _gpsLocation = location;
           _gpsFetching = false;
         });
         if (service.lastFetchUsedCachedFallback) {
@@ -313,18 +317,22 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder:
-            (_) => SurveyLiveScreen(
-              customName:
-                  _nameController.text.trim().isEmpty
-                      ? null
-                      : _nameController.text.trim(),
-              transectId: transect.isEmpty ? null : transect,
-              observerName: observer.isEmpty ? null : observer,
-              startLatitude: lat,
-              startLongitude: lon,
-              backgroundGps: _hasBackgroundGps,
-            ),
+        builder: (_) => SurveyLiveScreen(
+          customName: _nameController.text.trim().isEmpty
+              ? null
+              : _nameController.text.trim(),
+          transectId: transect.isEmpty ? null : transect,
+          observerName: observer.isEmpty ? null : observer,
+          startLatitude: lat,
+          startLongitude: lon,
+          startLocation:
+              _locationChoice == _LocationChoice.gps &&
+                  _gpsLocation?.latitude == lat &&
+                  _gpsLocation?.longitude == lon
+              ? _gpsLocation
+              : null,
+          backgroundGps: _hasBackgroundGps,
+        ),
       ),
     );
   }
@@ -336,24 +344,23 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.surveySetupHelpTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.routeRounded,
-                body: l10n.surveySetupHelpSteps,
-              ),
-              AppHelpSection(
-                icon: AppIcons.locationOnRounded,
-                body: l10n.surveySetupHelpLocation,
-              ),
-              AppHelpSection(
-                icon: AppIcons.playArrowRounded,
-                body: l10n.surveySetupHelpStart,
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.surveySetupHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: AppIcons.routeRounded,
+            body: l10n.surveySetupHelpSteps,
           ),
+          AppHelpSection(
+            icon: AppIcons.locationOnRounded,
+            body: l10n.surveySetupHelpLocation,
+          ),
+          AppHelpSection(
+            icon: AppIcons.playArrowRounded,
+            body: l10n.surveySetupHelpStart,
+          ),
+        ],
+      ),
     );
   }
 
@@ -377,10 +384,9 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder:
-                    (_) => const SettingsScreen(
-                      settingsContext: SettingsContext.survey,
-                    ),
+                builder: (_) => const SettingsScreen(
+                  settingsContext: SettingsContext.survey,
+                ),
               ),
             );
           },
@@ -421,6 +427,7 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
               setState(() {
                 _latitude = lat;
                 _longitude = lon;
+                _gpsLocation = null;
               });
             },
           ),
@@ -493,6 +500,10 @@ class _DetailsStep extends ConsumerWidget {
             labelText: l10n.surveyName,
             hintText: l10n.surveyNameHint,
             prefixIcon: const Icon(AppIcons.edit),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.surveyName,
+              body: l10n.setupHelpSessionName,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -504,6 +515,10 @@ class _DetailsStep extends ConsumerWidget {
             labelText: l10n.surveyTransectId,
             hintText: l10n.surveyTransectIdHint,
             prefixIcon: const Icon(AppIcons.routeRounded),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.surveyTransectId,
+              body: l10n.setupHelpTransectId,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -515,30 +530,44 @@ class _DetailsStep extends ConsumerWidget {
             labelText: l10n.surveyObserverName,
             hintText: l10n.surveyObserverNameHint,
             prefixIcon: const Icon(AppIcons.personRounded),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.surveyObserverName,
+              body: l10n.setupHelpObserverName,
+            ),
           ),
         ),
         const SizedBox(height: 24),
 
         // Location section
-        Text(l10n.surveyLocation, style: theme.textTheme.titleSmall),
+        SettingHelpTitle(
+          title: l10n.surveyLocation,
+          helpBody: locationChoice == _LocationChoice.manual
+              ? l10n.settingsHelpManualCoordinates
+              : l10n.surveySetupHelpLocation,
+          style: theme.textTheme.titleSmall,
+        ),
         const SizedBox(height: 8),
         SegmentedButton<_LocationChoice>(
           segments: [
             ButtonSegment(
               value: _LocationChoice.gps,
               label: Text(l10n.surveyLocationGps),
+              icon: const Icon(AppIcons.myLocation, size: 18),
               enabled: useGps,
             ),
             ButtonSegment(
               value: _LocationChoice.manual,
               label: Text(l10n.surveyLocationManual),
+              icon: const Icon(AppIcons.editLocationAlt, size: 18),
             ),
             ButtonSegment(
               value: _LocationChoice.skip,
               label: Text(l10n.surveyLocationSkip),
+              icon: const Icon(AppIcons.locationOff, size: 18),
             ),
           ],
           selected: {locationChoice},
+          showSelectedIcon: false,
           onSelectionChanged: (s) {
             HapticFeedback.selectionClick();
             onLocationChoiceChanged(s.first);
@@ -651,8 +680,8 @@ class _DetailsStep extends ConsumerWidget {
                       child: Text(
                         l10n.surveyBackgroundGpsNotice,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color:
-                              AppSemanticColors.of(context).onSuccessContainer,
+                          color: AppSemanticColors.of(context)
+                              .onSuccessContainer,
                         ),
                       ),
                     ),
@@ -701,7 +730,7 @@ class _DetailsStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(AppIcons.map),
+            icon: const Icon(AppIcons.mapSheet),
             label: Text(l10n.surveyPickOnMap),
           ),
         ],
@@ -721,8 +750,9 @@ class _DetailsStep extends ConsumerWidget {
           const SizedBox(height: 12),
           WeatherSetupCard(
             latitude: locationChoice == _LocationChoice.skip ? null : latitude,
-            longitude:
-                locationChoice == _LocationChoice.skip ? null : longitude,
+            longitude: locationChoice == _LocationChoice.skip
+                ? null
+                : longitude,
             locationUnavailableLabel: l10n.surveyLocationUnavailable,
           ),
         ],
@@ -765,7 +795,10 @@ class _ParametersStep extends ConsumerWidget {
         // Inference rate
         ListTile(
           leading: const Icon(AppIcons.speedRounded),
-          title: Text(l10n.surveyInferenceRate),
+          title: SettingHelpTitle(
+            title: l10n.surveyInferenceRate,
+            helpBody: l10n.settingsHelpInferenceRate,
+          ),
           subtitle: Text('${inferenceRate.toStringAsFixed(2)} Hz'),
         ),
         Slider(
@@ -774,14 +807,17 @@ class _ParametersStep extends ConsumerWidget {
           max: inferenceRateHzValues.last,
           divisions: inferenceRateHzValues.length - 1,
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
-          onChanged:
-              (v) => ref.read(surveyInferenceRateProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(surveyInferenceRateProvider.notifier).set(v),
         ),
 
         // Confidence threshold
         ListTile(
           leading: const Icon(AppIcons.verifiedRounded),
-          title: Text(l10n.settingsConfidenceThreshold),
+          title: SettingHelpTitle(
+            title: l10n.settingsConfidenceThreshold,
+            helpBody: l10n.settingsHelpConfidenceThreshold,
+          ),
           subtitle: Text('$confidenceThreshold %'),
         ),
         Slider(
@@ -790,15 +826,17 @@ class _ParametersStep extends ConsumerWidget {
           max: 90,
           divisions: 17,
           label: '$confidenceThreshold %',
-          onChanged:
-              (v) =>
-                  ref.read(confidenceThresholdProvider.notifier).set(v.round()),
+          onChanged: (v) =>
+              ref.read(confidenceThresholdProvider.notifier).set(v.round()),
         ),
 
         // GPS interval
         ListTile(
           leading: const Icon(AppIcons.myLocation),
-          title: Text(l10n.surveyGpsInterval),
+          title: SettingHelpTitle(
+            title: l10n.surveyGpsInterval,
+            helpBody: l10n.setupHelpGpsInterval,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -820,7 +858,10 @@ class _ParametersStep extends ConsumerWidget {
         // Max duration
         ListTile(
           leading: const Icon(AppIcons.timerRounded),
-          title: Text(l10n.surveyMaxDuration),
+          title: SettingHelpTitle(
+            title: l10n.surveyMaxDuration,
+            helpBody: l10n.setupHelpMaxDuration,
+          ),
           subtitle: Text('$maxDuration ${l10n.surveyHours}'),
         ),
         Slider(
@@ -829,9 +870,8 @@ class _ParametersStep extends ConsumerWidget {
           max: 24,
           divisions: 23,
           label: '$maxDuration h',
-          onChanged:
-              (v) =>
-                  ref.read(surveyMaxDurationProvider.notifier).set(v.round()),
+          onChanged: (v) =>
+              ref.read(surveyMaxDurationProvider.notifier).set(v.round()),
         ),
 
         const Divider(height: 32),
@@ -839,7 +879,10 @@ class _ParametersStep extends ConsumerWidget {
         // Recording mode
         ListTile(
           leading: const Icon(AppIcons.fiberManualRecordRounded),
-          title: Text(l10n.surveyRecordingMode),
+          title: SettingHelpTitle(
+            title: l10n.surveyRecordingMode,
+            helpBody: l10n.setupHelpRecordingMode,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -870,7 +913,10 @@ class _ParametersStep extends ConsumerWidget {
         if (recordingMode == 'detections') ...[
           ListTile(
             leading: const Icon(AppIcons.timerOutlined),
-            title: Text(l10n.surveyClipContext),
+            title: SettingHelpTitle(
+              title: l10n.surveyClipContext,
+              helpBody: l10n.setupHelpClipContext,
+            ),
             subtitle: Text(l10n.surveyClipContextDescription),
           ),
           Padding(
@@ -881,17 +927,18 @@ class _ParametersStep extends ConsumerWidget {
               max: 5,
               divisions: 5,
               label: '±${clipContext}s',
-              onChanged:
-                  (v) => ref
-                      .read(surveyClipContextProvider.notifier)
-                      .set(v.round()),
+              onChanged: (v) =>
+                  ref.read(surveyClipContextProvider.notifier).set(v.round()),
             ),
           ),
 
           // Detection sampling
           ListTile(
             leading: const Icon(AppIcons.filterAltRounded),
-            title: Text(l10n.surveyDetectionSampling),
+            title: SettingHelpTitle(
+              title: l10n.surveyDetectionSampling,
+              helpBody: l10n.setupHelpDetectionSampling,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -922,7 +969,10 @@ class _ParametersStep extends ConsumerWidget {
           if (sampling != 'all') ...[
             ListTile(
               leading: const Icon(AppIcons.formatListNumberedRounded),
-              title: Text(l10n.surveyTopNPerSpecies),
+              title: SettingHelpTitle(
+                title: l10n.surveyTopNPerSpecies,
+                helpBody: l10n.setupHelpTopNPerSpecies,
+              ),
               subtitle: Text('$topN'),
             ),
             Slider(
@@ -931,10 +981,9 @@ class _ParametersStep extends ConsumerWidget {
               max: 50,
               divisions: 49,
               label: '$topN',
-              onChanged:
-                  (v) => ref
-                      .read(surveyTopNPerSpeciesProvider.notifier)
-                      .set(v.round()),
+              onChanged: (v) => ref
+                  .read(surveyTopNPerSpeciesProvider.notifier)
+                  .set(v.round()),
             ),
           ],
         ],
@@ -1173,18 +1222,24 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
           _MinConfidenceControl(),
           const SizedBox(height: 8),
           SwitchListTile(
-            title: Text(l10n.surveyAlertSoundLabel),
+            title: SettingHelpTitle(
+              title: l10n.surveyAlertSoundLabel,
+              helpBody: l10n.setupHelpAlertSound,
+            ),
             secondary: const Icon(AppIcons.volumeUpRounded),
             value: ref.watch(surveyAlertSoundProvider),
-            onChanged:
-                (v) => ref.read(surveyAlertSoundProvider.notifier).set(v),
+            onChanged: (v) =>
+                ref.read(surveyAlertSoundProvider.notifier).set(v),
           ),
           SwitchListTile(
-            title: Text(l10n.surveyAlertVibrateLabel),
+            title: SettingHelpTitle(
+              title: l10n.surveyAlertVibrateLabel,
+              helpBody: l10n.setupHelpAlertVibrate,
+            ),
             secondary: const Icon(AppIcons.vibrationRounded),
             value: ref.watch(surveyAlertVibrateProvider),
-            onChanged:
-                (v) => ref.read(surveyAlertVibrateProvider.notifier).set(v),
+            onChanged: (v) =>
+                ref.read(surveyAlertVibrateProvider.notifier).set(v),
           ),
           ExpansionTile(
             title: Text(l10n.surveyAlertAdvancedTitle),
@@ -1200,10 +1255,9 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
                 value: ref.watch(surveyAlertStartupGraceSecondsProvider),
                 options: const [0, 30, 60, 120, 300],
                 offLabel: l10n.surveyAlertModeOff,
-                onChanged:
-                    (v) => ref
-                        .read(surveyAlertStartupGraceSecondsProvider.notifier)
-                        .set(v),
+                onChanged: (v) => ref
+                    .read(surveyAlertStartupGraceSecondsProvider.notifier)
+                    .set(v),
               ),
               _SegmentedSecondsControl(
                 label: l10n.surveyAlertMinIntervalLabel,
@@ -1212,10 +1266,9 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
                 value: ref.watch(surveyAlertMinIntervalSecondsProvider),
                 options: const [0, 5, 15, 30, 60],
                 offLabel: l10n.surveyAlertModeOff,
-                onChanged:
-                    (v) => ref
-                        .read(surveyAlertMinIntervalSecondsProvider.notifier)
-                        .set(v),
+                onChanged: (v) => ref
+                    .read(surveyAlertMinIntervalSecondsProvider.notifier)
+                    .set(v),
               ),
               _SegmentedCountControl(
                 label: l10n.surveyAlertMaxPerMinuteLabel,
@@ -1225,18 +1278,18 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
                 options: const [1, 3, 5, 10, 0],
                 unlimitedValue: 0,
                 unlimitedLabel: l10n.surveyAlertUnlimited,
-                onChanged:
-                    (v) => ref
-                        .read(surveyAlertMaxPerMinuteProvider.notifier)
-                        .set(v),
+                onChanged: (v) =>
+                    ref.read(surveyAlertMaxPerMinuteProvider.notifier).set(v),
               ),
               SwitchListTile(
-                title: Text(l10n.surveyAlertCoalesceLabel),
+                title: SettingHelpTitle(
+                  title: l10n.surveyAlertCoalesceLabel,
+                  helpBody: l10n.surveyAlertCoalesceHelp,
+                ),
                 subtitle: Text(l10n.surveyAlertCoalesceHelp),
                 value: ref.watch(surveyAlertCoalesceProvider),
-                onChanged:
-                    (v) =>
-                        ref.read(surveyAlertCoalesceProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(surveyAlertCoalesceProvider.notifier).set(v),
               ),
             ],
           ),
@@ -1250,22 +1303,21 @@ class _AlertsStepState extends ConsumerState<_AlertsStep> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.surveyAlertsTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.notificationsActiveRounded,
-                body:
-                    '${l10n.surveyAlertHelpModesTitle}\n\n${l10n.surveyAlertHelpModesBody}',
-              ),
-              AppHelpSection(
-                icon: AppIcons.scheduleRounded,
-                body:
-                    '${l10n.surveyAlertHelpThrottlingTitle}\n\n${l10n.surveyAlertHelpThrottlingBody}',
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.surveyAlertsTitle,
+        sections: [
+          AppHelpSection(
+            icon: AppIcons.notificationsActiveRounded,
+            body:
+                '${l10n.surveyAlertHelpModesTitle}\n\n${l10n.surveyAlertHelpModesBody}',
           ),
+          AppHelpSection(
+            icon: AppIcons.scheduleRounded,
+            body:
+                '${l10n.surveyAlertHelpThrottlingTitle}\n\n${l10n.surveyAlertHelpThrottlingBody}',
+          ),
+        ],
+      ),
     );
   }
 
@@ -1308,7 +1360,10 @@ class _RareThresholdControl extends ConsumerWidget {
       children: [
         ListTile(
           leading: const Icon(AppIcons.publicOffRounded),
-          title: Text(l10n.surveyAlertRareThresholdLabel),
+          title: SettingHelpTitle(
+            title: l10n.surveyAlertRareThresholdLabel,
+            helpBody: l10n.surveyAlertRareThresholdHelp,
+          ),
           subtitle: Text(
             l10n.surveyAlertRareThresholdHelp,
             style: theme.textTheme.bodySmall,
@@ -1321,8 +1376,8 @@ class _RareThresholdControl extends ConsumerWidget {
           max: 0.5,
           divisions: 50,
           label: '$pct%',
-          onChanged:
-              (v) => ref.read(surveyAlertRareThresholdProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(surveyAlertRareThresholdProvider.notifier).set(v),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1363,7 +1418,10 @@ class _MinConfidenceControl extends ConsumerWidget {
       children: [
         ListTile(
           leading: const Icon(AppIcons.verifiedRounded),
-          title: Text(l10n.surveyAlertMinConfidenceLabel),
+          title: SettingHelpTitle(
+            title: l10n.surveyAlertMinConfidenceLabel,
+            helpBody: l10n.surveyAlertMinConfidenceHelp,
+          ),
           subtitle: Text(
             l10n.surveyAlertMinConfidenceHelp,
             style: theme.textTheme.bodySmall,
@@ -1376,8 +1434,8 @@ class _MinConfidenceControl extends ConsumerWidget {
           max: 1.0,
           divisions: ((1.0 - sessionFloor) * 100).round().clamp(1, 100),
           label: '$pct%',
-          onChanged:
-              (v) => ref.read(surveyAlertMinConfidenceProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(surveyAlertMinConfidenceProvider.notifier).set(v),
         ),
       ],
     );
@@ -1406,8 +1464,9 @@ class _WatchlistControl extends ConsumerWidget {
               const Icon(AppIcons.listAltRounded),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  l10n.surveyAlertWatchlistLabel,
+                child: SettingHelpTitle(
+                  title: l10n.surveyAlertWatchlistLabel,
+                  helpBody: l10n.surveyAlertModeWatchlistDescription,
                   style: theme.textTheme.titleSmall,
                 ),
               ),
@@ -1437,29 +1496,24 @@ class _WatchlistControl extends ConsumerWidget {
             (name) => _WatchlistTile(
               name: name,
               selected: selected == name,
-              onSelect:
-                  () => ref
-                      .read(surveyAlertWatchlistNameProvider.notifier)
-                      .set(name),
+              onSelect: () =>
+                  ref.read(surveyAlertWatchlistNameProvider.notifier).set(name),
               onDelete: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
-                  builder:
-                      (ctx) => AlertDialog(
-                        content: Text(
-                          l10n.surveyAlertWatchlistDeleteConfirm(name),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(ctx).pop(false),
-                            child: Text(l10n.surveyAlertCreateListCancel),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.of(ctx).pop(true),
-                            child: Text(l10n.sessionRemove),
-                          ),
-                        ],
+                  builder: (ctx) => AlertDialog(
+                    content: Text(l10n.surveyAlertWatchlistDeleteConfirm(name)),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: Text(l10n.surveyAlertCreateListCancel),
                       ),
+                      FilledButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: Text(l10n.sessionRemove),
+                      ),
+                    ],
+                  ),
                 );
                 if (confirmed == true) {
                   await CustomSpeciesList.delete(name);
@@ -1514,10 +1568,9 @@ class _WatchlistTile extends StatelessWidget {
           child: RadioListTile<bool?>(
             value: true,
             title: Text(name),
-            subtitle:
-                snap.connectionState == ConnectionState.done
-                    ? Text(l10n.surveyAlertSpeciesCount(count))
-                    : const Text('…'),
+            subtitle: snap.connectionState == ConnectionState.done
+                ? Text(l10n.surveyAlertSpeciesCount(count))
+                : const Text('…'),
             secondary: IconButton(
               icon: const Icon(AppIcons.deleteOutlineRounded),
               onPressed: onDelete,
@@ -1562,8 +1615,17 @@ class _CreateWatchlistScreenState
   void _onSearchChanged(String query) {
     final svc = ref.read(taxonomyServiceProvider).value;
     if (svc == null) return;
+    final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
+    final geoScores = ref.read(rawGeoScoresProvider).value;
     setState(() {
-      _results = query.trim().isEmpty ? const [] : svc.search(query, limit: 60);
+      _results = query.trim().isEmpty
+          ? const []
+          : svc.search(
+              query,
+              locale: speciesLocale,
+              geoScores: geoScores,
+              limit: 60,
+            );
     });
   }
 
@@ -1650,10 +1712,37 @@ class _CreateWatchlistScreenState
     final theme = Theme.of(context);
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
     final showSci = ref.watch(showSciNamesProvider);
+    final split = TaxonomyService.splitByGeoLikelihood(
+      _results,
+      geoScores: ref.watch(rawGeoScoresProvider).value,
+      threshold: ref.watch(geoThresholdProvider),
+    );
 
     String labelFor(TaxonomySpecies sp) {
       if (showSci) return sp.displayScientificName;
       return sp.commonNameForLocale(speciesLocale);
+    }
+
+    Widget resultTile(TaxonomySpecies sp) {
+      final label = labelFor(sp);
+      return CheckboxListTile(
+        value: _selected.contains(sp.scientificName),
+        onChanged: (_) => _toggle(sp, label),
+        title: Text(label),
+        subtitle: showSci
+            ? Text(
+                sp.commonNameForLocale(speciesLocale),
+                style: theme.textTheme.bodySmall,
+              )
+            : Text(
+                sp.displayScientificName,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+        dense: true,
+        controlAffinity: ListTileControlAffinity.leading,
+      );
     }
 
     return Scaffold(
@@ -1696,17 +1785,16 @@ class _CreateWatchlistScreenState
                     decoration: InputDecoration(
                       hintText: l10n.surveyAlertCreateListSearchHint,
                       prefixIcon: const Icon(AppIcons.searchRounded),
-                      suffixIcon:
-                          _searchCtrl.text.isEmpty
-                              ? null
-                              : IconButton(
-                                icon: const Icon(AppIcons.clearRounded),
-                                tooltip: l10n.tooltipClearSearch,
-                                onPressed: () {
-                                  _searchCtrl.clear();
-                                  _onSearchChanged('');
-                                },
-                              ),
+                      suffixIcon: _searchCtrl.text.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(AppIcons.clearRounded),
+                              tooltip: l10n.tooltipClearSearch,
+                              onPressed: () {
+                                _searchCtrl.clear();
+                                _onSearchChanged('');
+                              },
+                            ),
                       border: const OutlineInputBorder(),
                       isDense: true,
                     ),
@@ -1724,46 +1812,44 @@ class _CreateWatchlistScreenState
             ),
             const SizedBox(height: 12),
             Expanded(
-              child:
-                  _results.isEmpty
-                      ? _SelectedSpeciesList(
-                        selected: _selected,
-                        labels: _labels,
-                        onRemove:
-                            (sci) => setState(() {
-                              _selected.remove(sci);
-                            }),
-                      )
-                      : ListView.builder(
-                        itemCount: _results.length,
-                        itemBuilder: (context, i) {
-                          final sp = _results[i];
-                          final label = labelFor(sp);
-                          final isSelected = _selected.contains(
-                            sp.scientificName,
-                          );
-                          return CheckboxListTile(
-                            value: isSelected,
-                            onChanged: (_) => _toggle(sp, label),
-                            title: Text(label),
-                            subtitle:
-                                showSci
-                                    ? Text(
-                                      sp.commonNameForLocale(speciesLocale),
-                                      style: theme.textTheme.bodySmall,
-                                    )
-                                    : Text(
-                                      sp.displayScientificName,
-                                      style: theme.textTheme.bodySmall
-                                          ?.copyWith(
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                    ),
-                            dense: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                          );
-                        },
-                      ),
+              child: _results.isEmpty
+                  ? _SelectedSpeciesList(
+                      selected: _selected,
+                      labels: _labels,
+                      onRemove: (sci) => setState(() {
+                        _selected.remove(sci);
+                      }),
+                    )
+                  : ListView(
+                      children: [
+                        if (split == null)
+                          ..._results.map(resultTile)
+                        else ...[
+                          if (split.likely.isNotEmpty)
+                            ListTile(
+                              dense: true,
+                              leading: const Icon(AppIcons.locationOn),
+                              title: Text(
+                                l10n.exploreSectionAtLocation(
+                                  split.likely.length,
+                                ),
+                              ),
+                            ),
+                          ...split.likely.map(resultTile),
+                          if (split.other.isNotEmpty)
+                            ListTile(
+                              dense: true,
+                              leading: const Icon(AppIcons.public),
+                              title: Text(
+                                l10n.exploreSectionElsewhere(
+                                  split.other.length,
+                                ),
+                              ),
+                            ),
+                          ...split.other.map(resultTile),
+                        ],
+                      ],
+                    ),
             ),
             if (_error != null)
               Padding(
@@ -1880,7 +1966,13 @@ class _SegmentedSecondsControl extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
-              Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: label,
+                  helpBody: helper,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -1935,7 +2027,13 @@ class _SegmentedCountControl extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
               const SizedBox(width: 8),
-              Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: label,
+                  helpBody: helper,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 4),

@@ -4,7 +4,7 @@ Live 模式是通过手机麦克风聆听并实时查看检测结果的最快方
 
 ## 如何打开
 
-在主界面点按带 :material-microphone: 图标的 **Live 模式**卡片。
+在主界面点按带 :app-micRounded: 图标的 **Live 模式**卡片。
 
 ## Quick Listen 小组件
 
@@ -25,17 +25,17 @@ Quick Listen 绝不会取代正在运行的其他模式。如果 Point Count、S
 
 顶部栏包含三个元素：
 
-- :material-arrow-left: — 退出 Live 模式
+- :app-arrowBackRounded: — 退出 Live 模式
 - 中间的状态文字 — `正在初始化`、`正在加载模型`、`就绪`、`正在识别物种`、`已暂停`或`错误`
-- :material-tune: — 打开 Live 模式相关的设置
+- :app-tuneRounded: — 打开 Live 模式相关的设置
 
 ## 主操作按钮
 
 底部中间的大圆形按钮会切换状态：
 
-- :material-microphone: — 开始聆听
-- :material-stop: — 停止当前 Session
-- :material-play: — 从暂停就绪状态继续
+- :app-mic: — 开始聆听
+- :app-stopRounded: — 停止当前 Session
+- :app-playArrowRounded: — 从暂停就绪状态继续
 
 ## 聆听时您会看到什么
 
@@ -73,3 +73,9 @@ Quick Listen 绝不会取代正在运行的其他模式。如果 Point Count、S
 - **关闭**则不录音。
 
 停止 Live 模式后，BirdNET Live 会保存 Session 并打开 [Session 回顾](session-review.md)。
+
+启用自动保存 Session 时，Live 模式还会在开始时、每 30 秒以及应用转入后台时保存一个部分 Session。发生崩溃或断电后，最近保存的快照可在 Session 库中找到。该快照之后的更改可能会丢失。关闭自动保存也会同时关闭这些中间保存。
+
+## 屏幕关闭后继续聆听
+
+Live Mode 通常会在锁屏或离开应用时暂停，并在返回时继续同一个 Session。第一次发生这种情况时，对话框会提供限时后台聆听选项。在[录音设置](settings.md)中开启**熄屏后继续运行**，并选择最长 15、30、60 或 120 分钟（默认 30 分钟）。每次离开应用都会单独计算时间；达到上限会结束 Session。Android 会显示带有打开和停止操作的常驻通知。Windows 上，Live Mode 在窗口最小化后仍会继续聆听。

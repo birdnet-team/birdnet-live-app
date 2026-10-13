@@ -4,7 +4,7 @@
 //
 // A four-step setup wizard following standard point-count protocol:
 //
-//   1. **Duration & Context** — Select count duration (3–20 min), choose
+//   1. **Duration & Context** — Select count duration (3–30 min), choose
 //      location (GPS / Manual with map picker / Skip), and display date.
 //   2. **Inference Parameters** — Tweak window duration, inference rate,
 //      confidence threshold, and species filter mode for this session.
@@ -27,6 +27,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../core/services/location_service.dart';
+import '../../shared/services/audio_background_notification.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/map_picker_screen.dart';
@@ -56,7 +58,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   static const _totalSteps = 4;
 
   /// Available durations in minutes.
-  static const _durations = [3, 5, 10, 15, 20];
+  static const _durations = [3, 5, 10, 15, 20, 25, 30];
 
   // Auto-retry GPS until a fix is acquired or we give up.
   static const _maxGpsAttempts = 5;
@@ -70,6 +72,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
+  AppLocation? _gpsLocation;
   bool _gpsFetching = false;
   int _gpsAttempts = 0;
   int _gpsRequestSerial = 0;
@@ -172,6 +175,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
+          _gpsLocation = location;
           _gpsFetching = false;
         });
         if (service.lastFetchUsedCachedFallback) {
@@ -236,7 +240,16 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     }
   }
 
-  void _start() {
+  bool _startPending = false;
+
+  Future<void> _start() async {
+    if (_startPending) return;
+    _startPending = true;
+    final continueWithScreenOff = ref.read(pointCountBackgroundEnabledProvider);
+    if (continueWithScreenOff) {
+      await AudioBackgroundNotificationService.ensureNotificationPermission();
+    }
+    if (!mounted) return;
     final durationMin = ref.read(pointCountDurationProvider);
     final lat = _locationChoice == _LocationChoice.skip ? null : _latitude;
     final lon = _locationChoice == _LocationChoice.skip ? null : _longitude;
@@ -250,19 +263,26 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder:
-            (_) => PointCountLiveScreen(
-              durationMinutes: durationMin,
-              latitude: lat,
-              longitude: lon,
-              customName: name.isEmpty ? null : name,
-              observerName: observer.isEmpty ? null : observer,
-              windowDurationOverride: _windowDuration,
-              inferenceRateOverride: _inferenceRate,
-              confidenceThresholdOverride: _confidenceThreshold,
-              speciesFilterModeOverride: _speciesFilterMode,
-              sensitivityOverride: _sensitivity,
-            ),
+        builder: (_) => PointCountLiveScreen(
+          durationMinutes: durationMin,
+          continueWithScreenOff: continueWithScreenOff,
+          latitude: lat,
+          longitude: lon,
+          startLocation:
+              _locationChoice == _LocationChoice.gps &&
+                  _gpsLocation?.latitude == lat &&
+                  _gpsLocation?.longitude == lon
+              ? _gpsLocation
+              : null,
+          customName: name.isEmpty ? null : name,
+          observerName: observer.isEmpty ? null : observer,
+          windowDurationOverride: _windowDuration,
+          inferenceRateOverride: _inferenceRate,
+          confidenceThresholdOverride: _confidenceThreshold,
+          speciesFilterModeOverride: _speciesFilterMode,
+          sensitivityOverride: _sensitivity,
+          recordingMode: ref.read(pointCountRecordingModeProvider),
+        ),
       ),
     );
   }
@@ -274,24 +294,23 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.pointCountSetupHelpTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.timerRounded,
-                body: l10n.pointCountSetupHelpSteps,
-              ),
-              AppHelpSection(
-                icon: AppIcons.locationOnRounded,
-                body: l10n.pointCountSetupHelpLocation,
-              ),
-              AppHelpSection(
-                icon: AppIcons.playArrowRounded,
-                body: l10n.pointCountSetupHelpStart,
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.pointCountSetupHelpTitle,
+        sections: [
+          AppHelpSection(
+            icon: AppIcons.timerRounded,
+            body: l10n.pointCountSetupHelpSteps,
           ),
+          AppHelpSection(
+            icon: AppIcons.locationOnRounded,
+            body: l10n.pointCountSetupHelpLocation,
+          ),
+          AppHelpSection(
+            icon: AppIcons.playArrowRounded,
+            body: l10n.pointCountSetupHelpStart,
+          ),
+        ],
+      ),
     );
   }
 
@@ -315,10 +334,9 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder:
-                    (_) => const SettingsScreen(
-                      settingsContext: SettingsContext.pointCount,
-                    ),
+                builder: (_) => const SettingsScreen(
+                  settingsContext: SettingsContext.pointCount,
+                ),
               ),
             );
           },
@@ -357,6 +375,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
               setState(() {
                 _latitude = lat;
                 _longitude = lon;
+                _gpsLocation = null;
               });
             },
           ),
@@ -367,8 +386,8 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
             sensitivity: _sensitivity,
             speciesFilterMode: _speciesFilterMode,
             onInferenceRateChanged: (v) => setState(() => _inferenceRate = v),
-            onConfidenceChanged:
-                (v) => setState(() => _confidenceThreshold = v),
+            onConfidenceChanged: (v) =>
+                setState(() => _confidenceThreshold = v),
             onSensitivityChanged: (v) => setState(() => _sensitivity = v),
             onFilterModeChanged: (v) => setState(() => _speciesFilterMode = v),
           ),
@@ -436,6 +455,10 @@ class _DurationStep extends ConsumerWidget {
             labelText: l10n.pointCountName,
             hintText: l10n.pointCountNameHint,
             prefixIcon: const Icon(AppIcons.edit),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.pointCountName,
+              body: l10n.setupHelpSessionName,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -445,39 +468,68 @@ class _DurationStep extends ConsumerWidget {
             labelText: l10n.surveyObserverName,
             hintText: l10n.surveyObserverNameHint,
             prefixIcon: const Icon(AppIcons.personRounded),
+            suffixIcon: SettingHelpIconButton(
+              title: l10n.surveyObserverName,
+              body: l10n.setupHelpObserverName,
+            ),
           ),
         ),
         const SizedBox(height: 24),
 
         // Duration picker
-        Text(
-          l10n.pointCountDuration,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            const Icon(AppIcons.timerRounded),
+            const SizedBox(width: 16),
+            Flexible(
+              child: SettingHelpTitle(
+                title: l10n.pointCountDuration,
+                helpBody: l10n.setupHelpPointCountDuration,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              durations.map((min) {
-                final isSelected = min == selected;
-                return ChoiceChip(
-                  label: Text(l10n.pointCountDurationMinutes(min)),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    ref.read(pointCountDurationProvider.notifier).set(min);
-                  },
-                );
-              }).toList(),
+          children: durations.map((min) {
+            final isSelected = min == selected;
+            return ChoiceChip(
+              label: Text(l10n.pointCountDurationMinutes(min)),
+              selected: isSelected,
+              onSelected: (_) {
+                ref.read(pointCountDurationProvider.notifier).set(min);
+              },
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 20),
+        Card(
+          child: SwitchListTile(
+            title: SettingHelpTitle(
+              title: l10n.settingsLiveBackground,
+              helpBody: l10n.settingsHelpPointCountBackground,
+            ),
+            value: ref.watch(pointCountBackgroundEnabledProvider),
+            onChanged: (value) => ref
+                .read(pointCountBackgroundEnabledProvider.notifier)
+                .set(value),
+          ),
         ),
 
         const SizedBox(height: 32),
 
         // Location & date
-        Text(
-          l10n.pointCountLocationDate,
+        SettingHelpTitle(
+          title: l10n.pointCountLocationDate,
+          helpBody: locationChoice == _LocationChoice.manual
+              ? l10n.settingsHelpManualCoordinates
+              : l10n.pointCountSetupHelpLocation,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -501,8 +553,8 @@ class _DurationStep extends ConsumerWidget {
                     DateTime.now(),
                     l10n.localeName,
                     longMonth: true,
-                    alwaysUse24HourFormat:
-                        MediaQuery.of(context).alwaysUse24HourFormat,
+                    alwaysUse24HourFormat: MediaQuery.of(context)
+                        .alwaysUse24HourFormat,
                   ),
                   style: theme.textTheme.bodyMedium,
                 ),
@@ -534,11 +586,11 @@ class _DurationStep extends ConsumerWidget {
             ),
           ],
           selected: {locationChoice},
+          showSelectedIcon: false,
           onSelectionChanged: (s) {
             HapticFeedback.selectionClick();
             onLocationChoiceChanged(s.first);
           },
-          showSelectedIcon: false,
         ),
 
         // ── GPS result ───────────────────────────────────────
@@ -671,11 +723,10 @@ class _DurationStep extends ConsumerWidget {
             onPressed: () async {
               final result = await Navigator.of(context).push<LatLng>(
                 MaterialPageRoute<LatLng>(
-                  builder:
-                      (_) => MapPickerScreen(
-                        initialLat: double.tryParse(latController.text),
-                        initialLon: double.tryParse(lonController.text),
-                      ),
+                  builder: (_) => MapPickerScreen(
+                    initialLat: double.tryParse(latController.text),
+                    initialLon: double.tryParse(lonController.text),
+                  ),
                 ),
               );
               if (result != null) {
@@ -684,7 +735,7 @@ class _DurationStep extends ConsumerWidget {
                 onMapPick(result.latitude, result.longitude);
               }
             },
-            icon: const Icon(AppIcons.map, size: 18),
+            icon: const Icon(AppIcons.mapSheet, size: 18),
             label: Text(l10n.pointCountPickOnMap),
           ),
         ],
@@ -715,7 +766,7 @@ class _DurationStep extends ConsumerWidget {
 // Step 2: Inference Parameters
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _ParametersStep extends StatelessWidget {
+class _ParametersStep extends ConsumerWidget {
   const _ParametersStep({
     super.key,
     required this.inferenceRate,
@@ -738,9 +789,11 @@ class _ParametersStep extends StatelessWidget {
   final ValueChanged<String> onFilterModeChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final recordingMode = ref.watch(pointCountRecordingModeProvider);
+    final clipContext = ref.watch(clipContextProvider);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -770,9 +823,74 @@ class _ParametersStep extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(AppIcons.fiberManualRecordRounded),
+            title: SettingHelpTitle(
+              title: l10n.surveyRecordingMode,
+              helpBody: l10n.setupHelpRecordingMode,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                  value: 'full',
+                  label: Text(l10n.surveyRecordingFull),
+                ),
+                ButtonSegment(
+                  value: 'detections',
+                  label: Text(l10n.surveyRecordingDetections),
+                ),
+                ButtonSegment(
+                  value: 'off',
+                  label: Text(l10n.surveyRecordingOff),
+                ),
+              ],
+              selected: {recordingMode},
+              onSelectionChanged: (selection) {
+                HapticFeedback.selectionClick();
+                ref
+                    .read(pointCountRecordingModeProvider.notifier)
+                    .set(selection.first);
+              },
+            ),
+          ),
+          if (recordingMode == 'detections') ...[
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(AppIcons.timerOutlined),
+              title: SettingHelpTitle(
+                title: l10n.surveyClipContext,
+                helpBody: l10n.setupHelpClipContext,
+              ),
+              subtitle: Text(l10n.surveyClipContextDescription),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Semantics(
+                label: l10n.surveyClipContext,
+                value: '±${clipContext}s',
+                child: Slider(
+                  value: clipContext.toDouble(),
+                  min: 0,
+                  max: 5,
+                  divisions: 5,
+                  label: '±${clipContext}s',
+                  onChanged: (value) =>
+                      ref.read(clipContextProvider.notifier).set(value.round()),
+                ),
+              ),
+            ),
+          ],
+          const Divider(height: 32),
+
           // ── Inference rate ───────────────────────────────────
           _ParamTile(
             title: l10n.settingsInferenceRate,
+            helpBody: l10n.settingsHelpInferenceRate,
+            icon: AppIcons.speedRounded,
             value: '${inferenceRate.toStringAsFixed(2)} Hz',
             child: Slider(
               value: inferenceRate,
@@ -787,6 +905,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Confidence threshold ─────────────────────────────
           _ParamTile(
             title: l10n.settingsConfidenceThreshold,
+            helpBody: l10n.settingsHelpConfidenceThreshold,
+            icon: AppIcons.verifiedRounded,
             value: '$confidenceThreshold%',
             child: Slider(
               value: confidenceThreshold.toDouble(),
@@ -800,6 +920,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Sensitivity ──────────────────────────────────────
           _ParamTile(
             title: l10n.settingsSensitivity,
+            helpBody: l10n.settingsHelpSensitivity,
+            icon: AppIcons.hearing,
             value: sensitivity.toStringAsFixed(1),
             child: Slider(
               value: sensitivity,
@@ -813,6 +935,8 @@ class _ParametersStep extends StatelessWidget {
           // ── Species filter mode ──────────────────────────────
           _ParamTile(
             title: l10n.settingsSpeciesFilter,
+            helpBody: l10n.settingsHelpSpeciesFilter,
+            icon: AppIcons.filterAltRounded,
             value: '',
             child: DropdownButton<String>(
               value: speciesFilterMode,
@@ -849,11 +973,15 @@ class _ParametersStep extends StatelessWidget {
 class _ParamTile extends StatelessWidget {
   const _ParamTile({
     required this.title,
+    required this.helpBody,
+    required this.icon,
     required this.value,
     required this.child,
   });
 
   final String title;
+  final String helpBody;
+  final IconData icon;
   final String value;
   final Widget child;
 
@@ -867,14 +995,19 @@ class _ParamTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+              Icon(icon),
+              const SizedBox(width: 16),
+              Expanded(
+                child: SettingHelpTitle(
+                  title: title,
+                  helpBody: helpBody,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               if (value.isNotEmpty) ...[
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   value,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -961,48 +1094,74 @@ class _ReadyStep extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final durationMin = ref.watch(pointCountDurationProvider);
+    final recordingMode = ref.watch(pointCountRecordingModeProvider);
+    final backgroundEnabled = ref.watch(pointCountBackgroundEnabledProvider);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            AppIcons.timerRounded,
-            size: 64,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.pointCountReady,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            l10n.pointCountReadyMessage(durationMin),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface.withAlpha(180),
-            ),
-          ),
-          // Site context: place name + current weather, fetched live so
-          // the user knows what the session will record before pressing
-          // Start. Hidden when no GPS coordinates are set.
-          if (latitude != null && longitude != null) ...[
-            const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: SiteContextCard(
-                  latitude: latitude!,
-                  longitude: longitude!,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  AppIcons.timerRounded,
+                  size: 64,
+                  color: theme.colorScheme.primary,
                 ),
-              ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.pointCountReady,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.pointCountReadyMessage(durationMin),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(180),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '${l10n.surveyRecordingMode}: ${switch (recordingMode) {
+                    'detections' => l10n.surveyRecordingDetections,
+                    'off' => l10n.surveyRecordingOff,
+                    _ => l10n.surveyRecordingFull,
+                  }}',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  backgroundEnabled
+                      ? l10n.pointCountBackgroundReadyOn
+                      : l10n.pointCountBackgroundReadyOff,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium,
+                ),
+                // Site context: place name + current weather, fetched live so
+                // the user knows what the session will record before pressing
+                // Start. Hidden when no GPS coordinates are set.
+                if (latitude != null && longitude != null) ...[
+                  const SizedBox(height: 24),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SiteContextCard(
+                        latitude: latitude!,
+                        longitude: longitude!,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }

@@ -24,3 +24,23 @@ species assets without relying on ignored `dev/` files.
    ```
 
 Full documentation: `docs/developer/species-bundle.md`.
+
+## User Guide Icons
+
+Guide content uses `:app-<AppIcons member>:` tokens, for example
+`:app-libraryMusic:`. The committed SVGs in `docs/overrides/.icons/app/` come
+from the app's installed icon fonts, including outlined and rounded variants.
+They inherit the surrounding text color; the guide does not assign a fixed
+color to controls whose color changes with the app theme.
+
+After changing a documented icon in `lib/shared/utils/app_icons.dart`, run:
+
+```bash
+flutter pub get
+python -m pip install fonttools
+python tools/sync_doc_icons.py
+python tools/sync_doc_icons.py --check
+```
+
+Fonttools is local build tooling; it is not an app dependency. MkDocs uses the
+committed SVGs without downloading fonts or requiring Flutter or fonttools.

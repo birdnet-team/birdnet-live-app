@@ -9,10 +9,49 @@
 #include "native_audio_decoder.h"
 
 namespace {
-// Custom window message used to drain FlutterWindow::main_thread_callbacks_.
+// Custom window message used to drain FlutterWindow::MainThreadQueue.
 // WM_APP is the start of the range reserved for application-defined messages.
 constexpr UINT kWmRunOnMainThread = WM_APP + 1;
 }  // namespace
+
+struct FlutterWindow::MainThreadQueue {
+  std::mutex mutex;
+  std::queue<std::function<void()>> callbacks;
+  // Window to wake; null once the window has been destroyed.
+  HWND hwnd = nullptr;
+
+  // Cancellation for the audio decoder is a generation counter: cancelDecode
+  // bumps it and every decode compares the value it started under. A flag
+  // reset at the start of each decode (the previous design) revived decodes
+  // cancelled a moment earlier and lost a cancel that raced a new call. New
+  // decodes never cancel running ones, matching the iOS decoder.
+  std::atomic<uint64_t> decode_generation{0};
+
+  // Queues |callback| for the window's message loop. Dropped once the window
+  // is gone: there is no engine left to deliver a reply to.
+  void Post(std::function<void()> callback) {
+    std::lock_guard<std::mutex> lock(mutex);
+    if (!hwnd) return;
+    callbacks.push(std::move(callback));
+    PostMessage(hwnd, kWmRunOnMainThread, 0, 0);
+  }
+
+  // Takes the next queued callback, or an empty function when there is none.
+  std::function<void()> Take() {
+    std::lock_guard<std::mutex> lock(mutex);
+    if (callbacks.empty()) return nullptr;
+    std::function<void()> callback = std::move(callbacks.front());
+    callbacks.pop();
+    return callback;
+  }
+
+  // Detaches the queue from the window; later posts are dropped.
+  void Close() {
+    std::lock_guard<std::mutex> lock(mutex);
+    hwnd = nullptr;
+    while (!callbacks.empty()) callbacks.pop();
+  }
+};
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -26,6 +65,9 @@ bool FlutterWindow::OnCreate() {
 
   RECT frame = GetClientArea();
 
+  main_thread_queue_ = std::make_shared<MainThreadQueue>();
+  main_thread_queue_->hwnd = GetHandle();
+
   // The size here must match the window dimensions to avoid unnecessary surface
   // creation / destruction in the startup path.
   flutter_controller_ = std::make_unique<flutter::FlutterViewController>(
@@ -36,6 +78,11 @@ bool FlutterWindow::OnCreate() {
   }
   RegisterPlugins(flutter_controller_->engine());
   SetupAudioDecoderChannel();
+  tts_channel_ = std::make_unique<TtsChannel>(
+      flutter_controller_->engine()->messenger(),
+      [this](std::function<void()> callback) {
+        RunOnMainThread(std::move(callback));
+      });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -51,6 +98,13 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  // Close the queue first: a decode thread that finishes from here on finds
+  // no window to post to and drops its reply.
+  if (main_thread_queue_) {
+    main_thread_queue_->decode_generation.fetch_add(1);
+    main_thread_queue_->Close();
+  }
+  tts_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
@@ -74,18 +128,15 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 
   switch (message) {
     case WM_FONTCHANGE:
-      flutter_controller_->engine()->ReloadSystemFonts();
+      if (flutter_controller_) {
+        flutter_controller_->engine()->ReloadSystemFonts();
+      }
       break;
     case kWmRunOnMainThread: {
-      std::function<void()> callback;
-      {
-        std::lock_guard<std::mutex> lock(main_thread_callbacks_mutex_);
-        if (!main_thread_callbacks_.empty()) {
-          callback = std::move(main_thread_callbacks_.front());
-          main_thread_callbacks_.pop();
-        }
+      if (main_thread_queue_) {
+        std::function<void()> callback = main_thread_queue_->Take();
+        if (callback) callback();
       }
-      if (callback) callback();
       break;
     }
   }
@@ -94,11 +145,7 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
 }
 
 void FlutterWindow::RunOnMainThread(std::function<void()> callback) {
-  {
-    std::lock_guard<std::mutex> lock(main_thread_callbacks_mutex_);
-    main_thread_callbacks_.push(std::move(callback));
-  }
-  PostMessage(GetHandle(), kWmRunOnMainThread, 0, 0);
+  if (main_thread_queue_) main_thread_queue_->Post(std::move(callback));
 }
 
 namespace {
@@ -131,7 +178,8 @@ using AudioResult =
 
 void RespondInfo(const AudioResult& result, const NativeAudioDecoder::Info& info) {
   if (!info.ok) {
-    result->Error("DECODE_ERROR", info.error);
+    result->Error(info.cancelled ? "DECODE_CANCELLED" : "DECODE_ERROR",
+                  info.error);
     return;
   }
   flutter::EncodableMap map;
@@ -158,7 +206,7 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         const std::string& method = call.method_name();
 
         if (method == "cancelDecode") {
-          audio_decode_cancelled_.store(true);
+          main_thread_queue_->decode_generation.fetch_add(1);
           result->Success();
           return;
         }
@@ -171,13 +219,23 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         }
 
         AudioResult shared_result(result.release());
-        auto* cancelled = &audio_decode_cancelled_;
+        // The worker threads below hold the queue, never `this`: the window
+        // may be gone by the time a decode finishes.
+        std::shared_ptr<MainThreadQueue> queue = main_thread_queue_;
+        // Captured by value: a decode compares against the generation it
+        // started under, so a later cancelDecode stops it and a later decode
+        // does not revive it.
+        const uint64_t started_under = queue->decode_generation.load();
+        NativeAudioDecoder::CancelCheck is_cancelled =
+            [queue, started_under]() {
+              return queue->decode_generation.load() != started_under;
+            };
 
         if (method == "inspect") {
           std::string path = GetStringArg(*args, "path");
-          std::thread([this, path, shared_result]() {
+          std::thread([queue, path, shared_result]() {
             auto info = NativeAudioDecoder::Inspect(path);
-            this->RunOnMainThread(
+            queue->Post(
                 [shared_result, info]() { RespondInfo(shared_result, info); });
           }).detach();
           return;
@@ -186,11 +244,10 @@ void FlutterWindow::SetupAudioDecoderChannel() {
         if (method == "decode") {
           std::string path = GetStringArg(*args, "path");
           std::string temp_path = GetStringArg(*args, "tempPcmPath");
-          audio_decode_cancelled_.store(false);
-          std::thread([this, path, temp_path, shared_result, cancelled]() {
-            auto info =
-                NativeAudioDecoder::DecodeToFile(path, temp_path, cancelled);
-            this->RunOnMainThread(
+          std::thread([queue, path, temp_path, shared_result, is_cancelled]() {
+            auto info = NativeAudioDecoder::DecodeToFile(path, temp_path,
+                                                         is_cancelled);
+            queue->Post(
                 [shared_result, info]() { RespondInfo(shared_result, info); });
           }).detach();
           return;
@@ -200,14 +257,15 @@ void FlutterWindow::SetupAudioDecoderChannel() {
           std::string path = GetStringArg(*args, "path");
           int64_t start_sample = GetIntArg(*args, "startSample");
           int64_t count = GetIntArg(*args, "count");
-          audio_decode_cancelled_.store(false);
-          std::thread([this, path, start_sample, count, shared_result,
-                       cancelled]() {
+          std::thread([queue, path, start_sample, count, shared_result,
+                       is_cancelled]() {
             auto range = NativeAudioDecoder::DecodeRange(
-                path, start_sample, count, cancelled);
-            this->RunOnMainThread([shared_result, range]() {
+                path, start_sample, count, is_cancelled);
+            queue->Post([shared_result, range]() {
               if (!range.ok) {
-                shared_result->Error("DECODE_ERROR", range.error);
+                shared_result->Error(
+                    range.cancelled ? "DECODE_CANCELLED" : "DECODE_ERROR",
+                    range.error);
                 return;
               }
               flutter::EncodableMap map;

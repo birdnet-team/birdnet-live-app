@@ -4,7 +4,7 @@ Režim Survey je pracovní postup založený na trase pro dlouhotrvající pohyb
 
 ## Jak jej otevřít
 
-Na domovské obrazovce klepněte na kartu **Survey** s ikonou :material-routes:.
+Na domovské obrazovce klepněte na kartu **Survey** s ikonou :app-routeRounded:.
 
 ## Postup nastavení
 
@@ -17,7 +17,7 @@ Můžete zadat:
 - název survey
 - ID transektu
 - jméno pozorovatele
-- GPS, ruční souřadnice nebo žádnou výchozí polohu
+- GPS :app-myLocation:, ruční souřadnice :app-editLocationAlt: nebo žádnou výchozí polohu :app-locationOff:. Výběr na mapě používá :app-mapSheet:.
 
 Tento krok také zpřístupní výběr na mapě, obnoví GPS, když se vrátíte ze systémových obrazovek oprávnění, a v případě potřeby zobrazí připomenutí oprávnění ke GPS na pozadí. Ve stejné sekci polohy je k dispozici karta počasí. Pokud je přístup k počasí vypnutý, požádá o souhlas **Povolit vyhledání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení survey.
 
@@ -34,6 +34,20 @@ Tento krok obsahuje parametry specifické pro Survey, například:
 - kontext klipu pro nahrávání jen klipů
 - režim vzorkování detekcí
 - limit Top N na druh, je-li vzorkování omezené
+
+| Ovládací prvek nastavení | Ikona |
+|---|---|
+| Mikrofon | :app-micRounded: |
+| Rychlost inference | :app-speedRounded: |
+| Práh spolehlivosti | :app-verifiedRounded: |
+| GPS interval | :app-myLocation: |
+| Maximální doba trvání | :app-timerOutlined: |
+| Režim nahrávání | :app-fiberManualRecordRounded: |
+| Kontext klipu | :app-timerOutlined: |
+| Vzorkování detekcí | :app-filterAltRounded: |
+| Top N na druh | :app-formatListNumberedRounded: |
+
+Klepnutím na tlačítko :app-helpOutline: vedle ovládacího prvku zobrazíte vysvětlení. Tlačítka nápovědy mají také název, transekt, pozorovatel, poloha a upozornění.
 
 Nová nastavení Survey používají ve výchozím stavu odvozování **0,70 Hz**.
 Zachová se tak více krátkých hlasových projevů než při nižších úsporných
@@ -54,7 +68,7 @@ K dispozici jsou tři režimy:
 |---|---|
 | **Všechny** | Uchová každý klip. Největší využití disku. Doporučeno pro krátké surveye nebo když chcete zvuk každé detekce pro pozdější analýzu. |
 | **Top N** | Uchová pouze **N klipů s nejvyšší konfidencí na druh**. Ostatní klipy se během survey mažou. Výchozí N je 10, nastavitelné od 1 do 50. |
-| **Smart** | Stejný strop N na druh jako Top N, **navíc** prostorové rozložení: pokud nová detekce padne na stejné „místo“ jako už uchovaný klip (do ~500 m a ~2 min od sebe), klip si ponechá jen ta s vyšší konfidencí. To brání jednomu stacionárnímu zpěvákovi v zabrání všech N míst a vychyluje uchovávané klipy směrem k pokrytí celého transektu. |
+| **Smart** | Stejný strop N na druh jako Top N, **navíc** prostorové rozložení: pokud nová detekce padne na stejné „místo“ jako už uchovaný klip (do ~250 m a ~2 min od sebe), klip si ponechá jen ta s vyšší konfidencí. To brání jednomu stacionárnímu zpěvákovi v zabrání všech N míst a vychyluje uchovávané klipy směrem k pokrytí celého transektu. |
 
 Limit N je **na druh, nikoli globální** — pokud zaznamenáte 10 červenek a 10 pěnkav, ponecháte si 20 klipů. Neexistuje žádný celkový strop počtu klipů, které survey může vytvořit.
 
@@ -78,7 +92,7 @@ Krátký kontrolní seznam před spuštěním v rámci postupu nastavení.
 
 ### 5. Připraveno
 
-Obrazovka připravenosti shrnuje aktivní konfiguraci survey, než začnete pomocí :material-play:.
+Obrazovka připravenosti shrnuje aktivní konfiguraci survey, než začnete pomocí :app-playArrowRounded:.
 
 ## Živý panel Survey
 
@@ -86,28 +100,28 @@ Obrazovka připravenosti shrnuje aktivní konfiguraci survey, než začnete pomo
 
 ### Horní lišta
 
-- :material-stop: — ukončit survey
-- :material-timer: — uplynulý čas
-- :material-help-circle-outline: — otevřít panel nápovědy Survey
-- :material-tune: — otevřít nastavení Survey
+- :app-stopRounded: — ukončit survey
+- :app-timerOutlined: — uplynulý čas
+- :app-helpOutlineRounded: — otevřít panel nápovědy Survey
+- :app-tuneRounded: — otevřít nastavení Survey
 
 ### Karty
 
-- :material-map-outline: — mapa trasy a detekce na mapě
-- :material-equalizer: — spektrogram
+- :app-map: — mapa trasy a detekce na mapě
+- :app-graphicEq: — spektrogram
 - ikona grafu — souhrnné statistiky a rozdělení druhů
 
 ### Statistiky a detekce
 
 Pod obsahem karty zobrazuje panel Survey lištu statistik a seznam nedávných detekcí. Klepnutím na detekci otevřete překryvný panel s podrobnostmi o druhu.
 
-Každý řádek detekce také nabízí stejné akce u jednotlivých detekcí jako [Přehled Session](session-review.md): zaškrtnutí :material-check: **Potvrdit** jedním klepnutím a nabídku dalších akcí :material-dots-vertical: **Více** s položkami **Sdílet detekci** a **Smazat detekci** (s vrácením přes SnackBar) — takže můžete hlučnou detekci ověřit, sdílet nebo odebrat už během snímání, místo abyste čekali na kontrolu po session.
+Každý řádek detekce také nabízí stejné akce u jednotlivých detekcí jako [Přehled Session](session-review.md): zaškrtnutí :app-checkCircleOutline: **Potvrdit** jedním klepnutím a nabídku dalších akcí :app-moreVert: **Více** s položkami **Sdílet detekci** a **Smazat detekci** (s vrácením přes SnackBar) — takže můžete hlučnou detekci ověřit, sdílet nebo odebrat už během snímání, místo abyste čekali na kontrolu po session.
 
 Stejné akce jsou dostupné z **živé mapy trasy**: klepnutím na značku detekce otevřete panel přehrávače klipu s potvrzením, sdílením a smazáním. Sdílení během survey funguje i tehdy, když jste zvolili jedno souvislé nahrávání WAV místo klipů u jednotlivých detekcí — příslušné zvukové okno se za běhu vyřízne z právě nahrávaného souboru. Podrobnosti viz [Přehled Session → Sdílení jedné detekce](session-review.md#sdílení-jedné-detekce).
 
 ### Zaznamenání pozorování
 
-Tlačítko :material-plus-circle-outline: v živém Survey otevře malou nabídku s položkami **Přidat druh** a **Přidat poznámku**. **Přidat druh** otevře stejné vyhledávání jako [Session Review](session-review.md#ruční-přidání-druhu), vyberte druh, poté v potvrzovacím panelu zaškrtněte :material-ear-hearing: **Slyšeno** a/nebo :material-eye: **Viděno** a klepněte na **Přidat**. Záznam dostane časové razítko daného okamžiku, aktuální GPS pozici a ihned se objeví v seznamu detekcí i na mapě trasy s odznakem ručního zadání a odpovídajícími ikonami ucha / oka.
+Tlačítko :app-addCircleOutline: v živém Survey otevře malou nabídku s položkami **Přidat druh** a **Přidat poznámku**. **Přidat druh** otevře stejné vyhledávání jako [Session Review](session-review.md#ruční-přidání-druhu), vyberte druh, poté v potvrzovacím panelu zaškrtněte :app-hearing: **Slyšeno** a/nebo :app-visibility: **Viděno** a klepněte na **Přidat**. Záznam dostane časové razítko daného okamžiku, aktuální GPS pozici a ihned se objeví v seznamu detekcí i na mapě trasy s odznakem ručního zadání a odpovídajícími ikonami ucha / oka.
 
 Hlasové poznámky zde záměrně chybí: mikrofon je zaneprázdněn vlastním nahráváním Survey. Připojte je v Session Review po skončení Survey.
 
@@ -126,8 +140,10 @@ Když nedokončenou survey **obnovíte** z Knihovny Sessions, systém upozorněn
 
 ## Kontrola na mapě
 
-Celoobrazovkové zobrazení mapy Survey (tlačítko :material-fullscreen: v Přehledu Session) otevře přehrávač klipu, když klepnete na značku. Řádek ovládání přehrávání má tlačítka přeskočit na předchozí a další po stranách ovládání přehrávání — procházejí detekce v chronologickém pořadí, ale **jen ty, které jsou právě viditelné na mapě**, takže jakýkoli aktivní filtr druhu, konfidence nebo čipu režimu seznam k přehrání odpovídajícím způsobem zúží. Tlačítka zešednou u první/poslední detekce v odfiltrovaném seznamu.
+Celoobrazovkové zobrazení mapy Survey (tlačítko :app-fullscreen: v Přehledu Session) otevře přehrávač klipu, když klepnete na značku. Řádek ovládání přehrávání má tlačítka přeskočit na předchozí a další po stranách ovládání přehrávání — procházejí detekce v chronologickém pořadí, ale **jen ty, které jsou právě viditelné na mapě**, takže jakýkoli aktivní filtr druhu, konfidence nebo čipu režimu seznam k přehrání odpovídajícím způsobem zúží. Tlačítka zešednou u první/poslední detekce v odfiltrovaném seznamu.
 
 ## Po zastavení
 
 BirdNET Live uloží dokončenou survey a otevře [Přehled Session](session-review.md).
+
+Probíhající survey se ukládá při spuštění, každých 30 sekund a když aplikace opustí popředí. Po pádu aplikace nebo výpadku napájení se poslední uložená část survey objeví v Knihovně Sessions jako ukončená Session. Nahrávání se znovu nespustí. Pozorování od posledního uložení mohou chybět.

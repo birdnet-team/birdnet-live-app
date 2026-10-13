@@ -120,7 +120,11 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
 
   Widget _buildMap(LatLng center, ThemeData theme) {
     return FlutterMap(
-      options: MapOptions(initialCenter: center, initialZoom: 13),
+      options: MapOptions(
+        initialCenter: center,
+        initialZoom: 13,
+        minZoom: kOsmMinZoom,
+      ),
       children: [
         buildOpenStreetMapTileLayer(),
         MarkerLayer(

@@ -1,15 +1,16 @@
 # Mode ARU
 
 !!! note "Implémentation préliminaire"
-    Le mode ARU crée actuellement une Session de déploiement planifiée et récupérable, enregistre les cycles planifiés, exécute l'inférence en direct pendant les cycles actifs, enregistre les clips de détection conservés lorsque ce mode d'enregistrement est sélectionné et affiche des contrôles de notification de premier plan sur Android. Le comportement en arrière-plan sur iOS doit encore être validé sur le terrain.
+    Le mode ARU enregistre actuellement des sauvegardes intermédiaires du déploiement planifié, enregistre les cycles planifiés, exécute l'inférence en direct pendant les cycles actifs, enregistre les clips de détection conservés lorsque ce mode d'enregistrement est sélectionné et affiche des contrôles de notification de premier plan sur Android. Le comportement en arrière-plan sur iOS doit encore être validé sur le terrain.
 
 Le mode ARU (Autonomous Recording Unit) est le flux de travail pour les déploiements acoustiques planifiés sur site fixe.
 
 ## Flux de configuration actuel
 
-- **Déploiement et audio** : 
+- **Détails et réglages d’analyse** :
     - **Métadonnées** : saisissez le nom de déploiement, l'ID ARU/station et le nom de l'observateur.
-    - **Localisation** : renseignez les coordonnées du site à l'aide de l'acquisition GPS automatique, de la saisie manuelle de latitude/longitude ou passez l'étape. La latitude et la longitude sont requises si vous utilisez un planning basé sur la position du soleil.
+    - **Localisation** : renseignez les coordonnées du site à l'aide de l'acquisition GPS automatique, de la saisie manuelle de latitude/longitude ou passez l'étape. La latitude et la longitude sont requises si vous utilisez un planning basé sur la position du soleil. Icônes : GPS :app-myLocation:, coordonnées manuelles :app-editLocationAlt:, ignorer la localisation :app-locationOff: et sélecteur de carte :app-mapSheet:.
+    - **Analyse** : choisissez le microphone, la fréquence d’inférence, le seuil de confiance et la sensibilité.
     - **Format d'enregistrement** : choisissez entre les formats FLAC (compressé sans perte) et WAV (non compressé).
     - **Mode d'enregistrement** :
         - *Complet* : enregistre toute la durée de chaque cycle actif.
@@ -24,7 +25,9 @@ Le mode ARU (Autonomous Recording Unit) est le flux de travail pour les déploie
     - **Regroupement des Sessions** : configurez s'il faut enregistrer chaque cycle dans une Session distincte (recommandé pour des temps de chargement plus rapides et un affichage modulaire) ou combiner tous les cycles au sein d'une seule Session multisegment.
 - **Prêt** : passez en revue le planning, l'estimation de stockage audio et les contraintes liées au soleil, puis lancez le déploiement.
 
-Au démarrage, une Session `SessionType.aru` est immédiatement enregistrée avec les métadonnées du planning ARU afin que l'état des cycles puisse être récupéré plus tard.
+Les contrôles de configuration utilisent les mêmes icônes que les autres assistants : :app-micRounded: microphone, :app-speedRounded: fréquence d'inférence, :app-verifiedRounded: confiance, :app-hearing: sensibilité, :app-fiberManualRecordRounded: mode d'enregistrement, :app-timerOutlined: contexte du clip et durée du cycle, :app-filterAltRounded: échantillonnage des détections et :app-formatListNumberedRounded: limite de clips par espèce. L'intervalle de répétition utilise :app-repeatRounded:, les contrôles de batterie faible :app-batteryAlert: et :app-batteryChargingFull:, le test et le regroupement des Sessions :app-scienceRounded: et :app-libraryBooks:. Touchez le bouton :app-helpOutline: à côté d'un contrôle pour afficher son explication.
+
+Au démarrage, une Session `SessionType.aru` est immédiatement enregistrée avec les métadonnées du planning ARU. Les cycles d'enregistrement sont en outre sauvegardés toutes les 30 secondes, y compris ceux sans détection. Après un plantage ou une coupure de courant, le dernier déploiement partiel apparaît dans la Bibliothèque de sessions comme une Session terminée ; l'enregistrement ne redémarre pas. Ce qui a été capté depuis la dernière sauvegarde peut être perdu.
 
 Les exports JSON et ZIP incluent les métadonnées du déploiement ARU. Les exports ZIP regroupent les fichiers d'enregistrement par cycle enregistrés sous `aru_cycles/`.
 

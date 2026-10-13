@@ -368,8 +368,7 @@ final recordingFormatProvider =
 
 /// Recording mode ('full', 'detections', 'off' — default 'full').
 ///
-/// Used by live and point-count sessions.  Surveys use their own
-/// [surveyRecordingModeProvider] configured in the survey-setup screen.
+/// Used by live sessions. Point Count and Survey have their own setup choices.
 final recordingModeProvider =
     StateNotifierProvider<StringSettingNotifier, String>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -397,6 +396,39 @@ final liveAutoStartProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   final prefs = ref.watch(sharedPreferencesProvider);
   return BoolSettingNotifier(prefs, PrefKeys.liveAutoStart, false);
 });
+
+/// Opt-in background listening for Live Mode. Point Count is independent.
+final liveBackgroundEnabledProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.liveBackgroundEnabled, false);
+    });
+
+/// Maximum length of one unattended Live Mode background interval.
+const liveBackgroundMaxMinuteOptions = [15, 30, 60, 120];
+
+final liveBackgroundMaxMinutesProvider =
+    StateNotifierProvider<LiveBackgroundMaxMinutesNotifier, int>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return LiveBackgroundMaxMinutesNotifier(prefs);
+    });
+
+class LiveBackgroundMaxMinutesNotifier extends StateNotifier<int> {
+  LiveBackgroundMaxMinutesNotifier(this._prefs) : super(_read(_prefs));
+
+  final SharedPreferences _prefs;
+
+  static int _read(SharedPreferences prefs) {
+    final value = prefs.getInt(PrefKeys.liveBackgroundMaxMinutes);
+    return liveBackgroundMaxMinuteOptions.contains(value) ? value! : 30;
+  }
+
+  Future<void> set(int minutes) async {
+    if (!liveBackgroundMaxMinuteOptions.contains(minutes)) return;
+    state = minutes;
+    await _prefs.setInt(PrefKeys.liveBackgroundMaxMinutes, minutes);
+  }
+}
 
 /// When true (default), completed Live and Point Count sessions are saved to
 /// the library automatically as soon as they finish. When false, the session
@@ -741,6 +773,28 @@ final pointCountDurationProvider =
     StateNotifierProvider<IntSettingNotifier, int>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return IntSettingNotifier(prefs, PrefKeys.pointCountDuration, 5);
+    });
+
+/// Point Counts are continuous and timed; background operation is on by default.
+final pointCountBackgroundEnabledProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(
+        prefs,
+        PrefKeys.pointCountBackgroundEnabled,
+        true,
+      );
+    });
+
+/// Point Count recording mode ('full', 'detections', 'off'; default 'full').
+final pointCountRecordingModeProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(
+        prefs,
+        PrefKeys.pointCountRecordingMode,
+        'full',
+      );
     });
 
 /// Last used observer name in Point Count (shared across field modes).

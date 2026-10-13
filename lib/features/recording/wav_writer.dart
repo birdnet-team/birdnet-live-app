@@ -65,6 +65,7 @@ class WavWriter implements AudioFileWriter {
 
   RandomAccessFile? _file;
   int _dataSize = 0;
+  int _headerDataSize = 0;
   bool _closed = false;
 
   /// Whether the writer has been opened.
@@ -89,6 +90,7 @@ class WavWriter implements AudioFileWriter {
     await file.parent.create(recursive: true);
     _file = await file.open(mode: FileMode.write);
     _dataSize = 0;
+    _headerDataSize = 0;
     _closed = false;
     await _writeHeader(
       _file!,
@@ -132,6 +134,25 @@ class WavWriter implements AudioFileWriter {
     await _file!
         .flush(); // Prevent OS file caching from causing OOM on long recordings
     _dataSize += pcm.length;
+    // Keep the header usable if power is lost before close() rewrites it.
+    final checkpointBytes = sampleRate * channels * bitsPerSample ~/ 8 * 30;
+    if (_dataSize - _headerDataSize >= checkpointBytes) {
+      final endPosition = await _file!.position();
+      try {
+        await _file!.setPosition(0);
+        await _writeHeader(
+          _file!,
+          _dataSize,
+          sampleRate: sampleRate,
+          channels: channels,
+          bitsPerSample: bitsPerSample,
+        );
+        await _file!.flush();
+        _headerDataSize = _dataSize;
+      } finally {
+        await _file!.setPosition(endPosition);
+      }
+    }
   }
 
   /// Finalize the WAV header and close the file.

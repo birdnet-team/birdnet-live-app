@@ -75,6 +75,15 @@ The review spectrogram is computed dynamically to balance RAM usage and CPU perf
   2. Up to 12 chunks are cached in memory; older/farthest chunks are evicted dynamically.
   3. The decode and FFT calculations run inside a background isolate (`Isolate.run` / `_runSpectrogramChunkIsolate`) to prevent the UI thread from dropping frames during scroll or pinch-to-zoom actions.
 
+- **Trim editor image**:
+  The trim editor needs one image spanning the whole recording. It is rendered
+  through `renderSpectrogramInBatches()`, which decodes the file a minute at a
+  time (reusing the FLAC seek index when there is one) and renders each batch
+  with the same `renderSpectrogram()`; batch boundaries fall on exact source
+  samples, so the result is pixel-identical to a single pass while only one
+  batch of PCM is ever resident. Recordings above 128 MB of decoded PCM
+  (`_maxFullSpectrogramPcmBytes`) still use the overlay editor.
+
 - **FLAC-to-WAV Transcoding Optimization**:
   FLAC files have neither a constant-bitrate layout nor a seek table, so range-decoding requires sequentially decoding the file from the beginning—leading to O(N²) time complexity for lazy chunk loading on long sessions. To avoid this:
   1. If a session is large (≥ 128 MB PCM) and recorded in FLAC format, the app runs a one-time sequential transcode to a temporary WAV file in a background isolate (`_runFlacTranscodeIsolate`).
@@ -90,6 +99,13 @@ Trimming is metadata-only — the original recording is not modified:
 3. **Apply Trim**: removes detections outside `[trimStartSec, trimEndSec]` from `_detections`, updates `_speciesGroups`, marks dirty.
 4. **Reset Trim**: sets both offsets to null.
 5. The export system includes `trimStartSec`/`trimEndSec` in JSON output.
+6. `commitSessionTrim()` (on save) and `writeTrimmedAudioFile()` (on export and
+   detection share) turn the range into real audio. The slicer streams the
+   source frame by frame and runs inside `Isolate.run`: the UI isolate is the
+   platform thread on Android and iOS, and re-encoding an hour of FLAC takes
+   tens of seconds of pure Dart work. Only paths and numbers cross the isolate
+   boundary. `AudioExportNormalizer.normalizeFileInPlace()` (quiet shared
+   audio) follows the same rule.
 
 ## Add Species Overlay
 
@@ -133,6 +149,12 @@ some detection carries one) and as an `evidence` key in JSON.
 | ZIP | Bundle mode | Recording + CSV + JSON + Raven + annotations.txt |
 
 The `_buildAnnotationsText()` helper formats annotations as plain text with timestamp labels.
+
+Audio never passes through memory as a whole. A trimmed recording and any
+FLAC-to-WAV conversion (the "share audio as WAV" setting) are written to a
+staging directory by the streaming slicer in `session_audio_trim.dart`, added
+to the ZIP by path, and deleted once `writeExportZip()` has streamed them into
+the archive in its own isolate. Only generated documents are held in memory.
 
 ## Session Lifecycle (App Focus)
 

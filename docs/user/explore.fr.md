@@ -4,13 +4,13 @@ Explorer affiche les espèces prévues pour la position et la saison actuelles �
 
 ## Comment l'ouvrir
 
-Ouvrez **Explorer** depuis le bas de l'écran d'accueil à l'aide du bouton :material-magnify:.
+Ouvrez **Explorer** depuis le bas de l'écran d'accueil à l'aide du bouton :app-searchRounded:.
 
 ## Barre supérieure et en-tête
 
 ### Barre supérieure
 
-- :material-refresh: — actualiser la position et reconstruire la liste des espèces prédites
+- :app-refresh: — actualiser la position et reconstruire la liste des espèces prédites
 
 ### En-tête de localisation
 
@@ -18,7 +18,7 @@ L'en-tête affiche :
 
 - le nom du lieu obtenu par géocodage inverse lorsqu'il est disponible
 - les coordonnées sous le nom du lieu
-- :material-help-circle-outline: — ouvrir la fiche d'aide d'Explorer
+- :app-helpOutlineRounded: — ouvrir la fiche d'aide d'Explorer
 
 ## Liste des espèces
 

@@ -25,11 +25,13 @@
 //   await svc.stop();                          // on survey stop
 // =============================================================================
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/services/foreground_service_guard.dart';
 
@@ -92,6 +94,7 @@ class SurveyNotificationService {
   static String _stopButtonText = '';
   static String _openButtonText = '';
   bool _running = false;
+  int _lifecycleGeneration = 0;
 
   /// Localized title used for foreground notification updates.
   static String get notificationTitle => _notificationTitle;
@@ -148,10 +151,48 @@ class SurveyNotificationService {
     return result == NotificationPermission.granted;
   }
 
+  /// Android foreground service types for a Survey.
+  ///
+  /// Declared explicitly rather than inherited from the manifest's
+  /// `microphone|location`: on Android 14+ a service that declares the
+  /// `location` type without a granted location permission fails to start
+  /// (`SecurityException`), which used to leave a Survey without its
+  /// notification and without audio once the screen turned off. The location
+  /// type is only added when the Survey actually tracks GPS and the
+  /// permission is granted.
+  @visibleForTesting
+  static List<ForegroundServiceTypes> serviceTypesFor({
+    required bool includeLocation,
+    required bool locationGranted,
+  }) => [
+    ForegroundServiceTypes.microphone,
+    if (includeLocation && locationGranted) ForegroundServiceTypes.location,
+  ];
+
+  static Future<bool> _hasLocationPermission() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      return permission == LocationPermission.whileInUse ||
+          permission == LocationPermission.always;
+    } catch (error) {
+      debugPrint('[SurveyNotification] location permission check: $error');
+      return false;
+    }
+  }
+
   /// Start the foreground service with an initial notification.
-  Future<void> start({required String title, required String text}) async {
+  ///
+  /// [includeLocation] asks for the `location` service type so GPS tracking
+  /// keeps running with the screen off; see [serviceTypesFor].
+  Future<void> start({
+    required String title,
+    required String text,
+    bool includeLocation = false,
+  }) async {
     if (!Platform.isAndroid) return;
+    final generation = ++_lifecycleGeneration;
     await init();
+    if (generation != _lifecycleGeneration) return;
 
     if (!ForegroundServiceGuard.tryClaim(ForegroundServiceOwner.survey)) {
       debugPrint(
@@ -165,15 +206,24 @@ class SurveyNotificationService {
     // still create a foreground service (just with a default notification
     // on some OEMs).
     final granted = await ensurePermission();
+    // stop() has already released the claim. If a newer start() superseded
+    // this one instead, the shared survey claim is now its claim to keep.
+    if (generation != _lifecycleGeneration) return;
     if (!granted) {
       debugPrint(
         '[SurveyNotification] permission not granted — '
         'attempting startService anyway',
       );
     }
+    final serviceTypes = serviceTypesFor(
+      includeLocation: includeLocation,
+      locationGranted: includeLocation && await _hasLocationPermission(),
+    );
+    if (generation != _lifecycleGeneration) return;
 
-    final result = await FlutterForegroundTask.startService(
+    final request = FlutterForegroundTask.startService(
       serviceId: 256,
+      serviceTypes: serviceTypes,
       notificationTitle: title,
       notificationText: text,
       notificationIcon: const NotificationIcon(
@@ -185,6 +235,49 @@ class SurveyNotificationService {
       ],
       callback: surveyTaskCallback,
     );
+    late final Object result;
+    try {
+      // Starting the secondary Flutter engine has occasionally taken tens of
+      // seconds on recent Android versions. The Survey itself must not wait
+      // indefinitely for this best-effort background notification.
+      result = await request.timeout(const Duration(seconds: 3));
+    } on TimeoutException {
+      debugPrint('[SurveyNotification] start timed out; continuing Survey');
+      // The platform request cannot be cancelled. Reconcile its eventual
+      // result without holding up Survey startup. If stop() ran meanwhile,
+      // tear down the late service unless a newer Survey now owns it.
+      unawaited(() async {
+        try {
+          final lateResult = await request;
+          if (lateResult is ServiceRequestSuccess &&
+              generation == _lifecycleGeneration) {
+            _running = true;
+            debugPrint('[SurveyNotification] started after timeout');
+          } else if (lateResult is ServiceRequestSuccess &&
+              ForegroundServiceGuard.owner != ForegroundServiceOwner.survey) {
+            await FlutterForegroundTask.stopService().timeout(
+              const Duration(seconds: 2),
+            );
+          } else if (generation == _lifecycleGeneration) {
+            ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+          }
+        } catch (error) {
+          if (generation == _lifecycleGeneration) {
+            ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+          }
+          debugPrint('[SurveyNotification] late start failed: $error');
+        }
+      }());
+      return;
+    }
+
+    if (generation != _lifecycleGeneration) {
+      if (result is ServiceRequestSuccess &&
+          ForegroundServiceGuard.owner != ForegroundServiceOwner.survey) {
+        unawaited(FlutterForegroundTask.stopService());
+      }
+      return;
+    }
     if (result is ServiceRequestSuccess) {
       _running = true;
       debugPrint('[SurveyNotification] started');
@@ -196,24 +289,45 @@ class SurveyNotificationService {
   }
 
   /// Update the notification text with current survey stats.
+  ///
+  /// Bounded and best-effort: this runs once a second from the Survey
+  /// controller, and a platform call that never answers must not pile up
+  /// behind itself or stall the controller's teardown.
   Future<void> update({required String title, required String text}) async {
     if (!_running) return;
-    await FlutterForegroundTask.updateService(
-      notificationTitle: title,
-      notificationText: text,
-      notificationIcon: const NotificationIcon(
-        metaDataName: 'com.birdnet.live.notification_icon',
-      ),
-    );
+    try {
+      await FlutterForegroundTask.updateService(
+        notificationTitle: title,
+        notificationText: text,
+        notificationIcon: const NotificationIcon(
+          metaDataName: 'com.birdnet.live.notification_icon',
+        ),
+      ).timeout(const Duration(seconds: 5));
+    } catch (error) {
+      debugPrint('[SurveyNotification] update failed: $error');
+    }
   }
 
   /// Stop the foreground service.
   Future<void> stop() async {
-    if (!_running) return;
-    await FlutterForegroundTask.stopService();
-    _running = false;
-    ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
-    debugPrint('[SurveyNotification] stopped');
+    ++_lifecycleGeneration;
+    if (!_running) {
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+      return;
+    }
+    try {
+      await FlutterForegroundTask.stopService().timeout(
+        const Duration(seconds: 2),
+      );
+      debugPrint('[SurveyNotification] stopped');
+    } on TimeoutException {
+      debugPrint('[SurveyNotification] stop timed out');
+    } catch (error) {
+      debugPrint('[SurveyNotification] stop failed: $error');
+    } finally {
+      _running = false;
+      ForegroundServiceGuard.release(ForegroundServiceOwner.survey);
+    }
   }
 }
 

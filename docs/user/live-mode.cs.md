@@ -4,7 +4,7 @@ Režim Live je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a 
 
 ## Jak jej otevřít
 
-Na domovské obrazovce klepněte na kartu **Live** s ikonou :material-microphone:.
+Na domovské obrazovce klepněte na kartu **Live** s ikonou :app-micRounded:.
 
 ## Widget „Rychlý poslech“
 
@@ -25,17 +25,17 @@ Rychlý poslech nikdy nenahrazuje jiný běžící režim. Pokud běží nebo se
 
 Horní lišta obsahuje tři prvky:
 
-- :material-arrow-left: — opuštění režimu Live
+- :app-arrowBackRounded: — opuštění režimu Live
 - středový text stavu — `Inicializace`, `Načítání modelu`, `Připraveno`, `Identifikace druhů`, `Pozastaveno` nebo `Chyba`
-- :material-tune: — otevření zobrazení Nastavení specifického pro Live
+- :app-tuneRounded: — otevření zobrazení Nastavení specifického pro Live
 
 ## Hlavní akční tlačítko
 
 Velké kruhové tlačítko dole uprostřed mění stav:
 
-- :material-microphone: — spustit poslech
-- :material-stop: — zastavit aktivní session
-- :material-play: — pokračovat ze stavu pozastaveno-připraveno
+- :app-mic: — spustit poslech
+- :app-stopRounded: — zastavit aktivní session
+- :app-playArrowRounded: — pokračovat ze stavu pozastaveno-připraveno
 
 ## Co vidíte při poslechu
 
@@ -73,3 +73,9 @@ Nahrávání se ovládá v [Nastavení](settings.md).
 - **Vypnuto** nahrávání zakáže.
 
 Když režim Live zastavíte, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).
+
+Když je zapnuté automatické ukládání Sessions, režim Live navíc ukládá rozpracovanou Session při spuštění, každých 30 sekund a při přechodu aplikace do pozadí. Po pádu aplikace nebo výpadku napájení najdete poslední uložený stav v Knihovně Sessions. Změny od tohoto uložení mohou být ztraceny. Vypnutím automatického ukládání vypnete i tato průběžná ukládání.
+
+## Poslech s vypnutou obrazovkou
+
+Live Mode se běžně pozastaví při zamknutí obrazovky nebo opuštění aplikace a po návratu pokračuje ve stejné Session. Při prvním návratu dialog nabídne omezený poslech na pozadí. V [nastavení nahrávání](settings.md) zapněte **Pokračovat při vypnuté obrazovce** a vyberte maximum 15, 30, 60 nebo 120 minut (výchozí: 30 minut). Limit platí pro každý pobyt mimo aplikaci a po jeho dosažení Session skončí. Android zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit. Ve Windows Live Mode poslouchá i při minimalizovaném okně.

@@ -32,6 +32,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -41,12 +42,58 @@ import '../../core/constants/app_constants.dart';
 import '../models/weather_snapshot.dart';
 
 class WeatherService {
-  WeatherService({http.Client? httpClient})
-    : _client = httpClient ?? http.Client();
+  WeatherService({
+    http.Client? httpClient,
+    Future<bool> Function()? networkAvailable,
+  }) : _client = httpClient ?? http.Client(),
+       _networkAvailable = networkAvailable ?? _probeNetwork;
 
   final http.Client _client;
+  final Future<bool> Function() _networkAvailable;
   final Map<String, WeatherSnapshot> _cache = {};
   final Map<String, Future<WeatherSnapshot?>> _inFlight = {};
+  DateTime? _networkProbeAt;
+  bool _lastNetworkProbe = false;
+
+  static const Duration _networkProbeTtl = Duration(seconds: 15);
+
+  /// Returns quickly when the device has no usable route to Open-Meteo.
+  ///
+  /// The connection probe is intentionally bounded much more tightly than the
+  /// weather request. This prevents every missing historical snapshot from
+  /// paying the HTTP timeout when a session list is opened without internet.
+  Future<bool> canAttemptNetwork() async {
+    final now = DateTime.now();
+    final probedAt = _networkProbeAt;
+    if (probedAt != null && now.difference(probedAt) < _networkProbeTtl) {
+      return _lastNetworkProbe;
+    }
+
+    try {
+      _lastNetworkProbe = await _networkAvailable().timeout(
+        const Duration(seconds: 1),
+        onTimeout: () => false,
+      );
+    } catch (_) {
+      _lastNetworkProbe = false;
+    }
+    _networkProbeAt = now;
+    return _lastNetworkProbe;
+  }
+
+  static Future<bool> _probeNetwork() async {
+    Socket? socket;
+    try {
+      socket = await Socket.connect(
+        'api.open-meteo.com',
+        443,
+        timeout: const Duration(seconds: 1),
+      );
+      return true;
+    } finally {
+      socket?.destroy();
+    }
+  }
 
   /// Open-Meteo forecast endpoint. Returns hourly observations for the
   /// current day; we extract the hour closest to [observedAt].
@@ -131,6 +178,11 @@ class WeatherService {
         }
       }
     }
+
+    // Weather is optional session metadata. Fail fast before opening an HTTP
+    // request when the device is offline; saving and navigation must never be
+    // coupled to the platform's much longer DNS/socket retry budget.
+    if (!await canAttemptNetwork()) return null;
 
     // Determine query parameters and endpoint.
     final daysAgo = DateTime.now().toUtc().difference(at).inDays;

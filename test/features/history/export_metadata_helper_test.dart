@@ -82,6 +82,10 @@ void main() {
       expect(app['version'], '1.2.3');
       expect(app['buildNumber'], '123');
       expect(app['packageName'], 'org.birdnet.live');
+      expect(metadata['device'], isA<String>());
+      expect((metadata['device'] as String), isNotEmpty);
+      expect(metadata['os'], isA<String>());
+      expect((metadata['os'] as String), isNotEmpty);
       expect(metadata['speciesLocale'], 'en');
       final settings = metadata['settings'] as Map<String, dynamic>;
       final analysis = settings['analysis'] as Map<String, dynamic>;

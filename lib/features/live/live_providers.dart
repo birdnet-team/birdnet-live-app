@@ -43,11 +43,18 @@ import 'live_session.dart';
 /// The [RecordingService] instance, connected to the shared ring buffer.
 final recordingServiceProvider = Provider<RecordingService>((ref) {
   final ringBuffer = ref.watch(ringBufferProvider);
-  final clipContext = ref.watch(clipContextProvider);
   final service = RecordingService(
     ringBuffer: ringBuffer,
     sampleRate: AppConstants.sampleRate,
-    clipContextSeconds: clipContext,
+    clipContextSeconds: ref.read(clipContextProvider),
+  );
+  // Follow the setting without rebuilding. The clip-context slider is
+  // reachable from the Live screen's settings while a session runs, and a
+  // rebuild here would dispose this service and, through
+  // [liveControllerProvider], the running controller.
+  ref.listen(
+    clipContextProvider,
+    (_, value) => service.setClipContextSeconds(value),
   );
   ref.onDispose(service.dispose);
   return service;
@@ -192,6 +199,11 @@ void _resolvePendingWeather(Ref ref, List<LiveSession> sessions) async {
             .toList();
 
     if (missing.isEmpty) return;
+
+    // Avoid walking the entire missing-session list while offline. The
+    // service repeats this guard for direct callers, but probing once here
+    // also skips the per-session delay below.
+    if (!await svc.canAttemptNetwork()) return;
 
     var updatedAny = false;
     for (final s in missing) {

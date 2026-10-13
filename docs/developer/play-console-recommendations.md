@@ -108,9 +108,9 @@ Notes on our specific configuration:
   defaults to AGP 9.0.1 + Gradle 9.1.0, so this is a well-trodden path rather
   than bleeding edge.
 
-### Still outstanding: Built-in Kotlin
+### Built-in Kotlin (migrated 2026-10-11)
 
-The upgrade surfaced a separate warning that is *not* fixed:
+The AGP 9 upgrade surfaced a second warning:
 
 ```
 WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP):
@@ -118,12 +118,43 @@ dynamic_color, flutter_foreground_task, flutter_onnxruntime, flutter_tts
 Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
 ```
 
-`android.builtInKotlin=false` is therefore load-bearing: we cannot migrate to
-Built-in Kotlin until those four plugins stop applying KGP themselves. One of
-them, `flutter_onnxruntime`, is deliberately pinned to an old version (see
-[ONNX Runtime Pin](onnxruntime-pin.md)), so that plugin is blocked on two fronts
-at once. This is a "watch the plugin changelogs" item, not something we can fix
-locally.
+Flutter's `android.builtInKotlin=false` is a temporary compatibility mode: the
+Flutter Gradle plugin applies KGP to every Android module that does not declare
+it, and Flutter has announced the mode will be removed. Each named plugin
+needed its own resolution:
+
+| Plugin | Resolution |
+| ------ | ---------- |
+| `flutter_tts` | replaced by the in-house `com.birdnet/tts` channel |
+| `dynamic_color` | 1.9.0 dropped KGP |
+| `flutter_foreground_task` | 11.0.0 dropped KGP; we ship 11.0.3 |
+| `flutter_onnxruntime` | 1.8.5 applies KGP only when built-in Kotlin is off; we ship 1.9.0 (see [ONNX Runtime Pin](onnxruntime-pin.md)) |
+
+With all four resolved, `android/app/build.gradle` no longer declares
+`kotlin-android` or `kotlinOptions`; the `jvmTarget` moved into a top-level
+`kotlin { compilerOptions { … } }` block, which both KGP and AGP's built-in
+Kotlin register. `android.builtInKotlin=true` in `gradle.properties` lets AGP
+compile Kotlin itself (Flutter 3.47+ required). `org.jetbrains.kotlin.android`
+stays declared in `settings.gradle`: Flutter's template still declares it, and
+the compatibility mode needs it on the classpath if it ever has to be
+re-enabled.
+
+One warning line remains and is a false positive:
+
+```
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_onnxruntime
+```
+
+Flutter detects KGP by regex-scanning each plugin's `build.gradle` for the
+literal `apply plugin: "kotlin-android"` without evaluating the `if` around it.
+`flutter_onnxruntime` keeps that literal deliberately: when the text is absent,
+Flutter applies KGP to the module itself whenever built-in Kotlin is off, which
+is exactly the fatal AGP 9 error the guard prevents
+(masicai/flutter_onnxruntime#76). Flutter closed the false-positive report
+(flutter/flutter#189770, 2026-10-02) saying the regex will be patched in a
+future release. Until that lands, or the plugin drops the guard in favor of the
+unconditional migration Flutter recommends, the line is expected and nothing in
+this repository can remove it.
 
 ### Ship it separately from a crash hotfix
 

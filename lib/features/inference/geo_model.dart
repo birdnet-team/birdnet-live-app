@@ -44,6 +44,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
+import 'ort_session_options.dart';
+
 /// A species entry from the geo-model's own labels file.
 class GeoSpecies {
   const GeoSpecies({
@@ -185,7 +187,10 @@ class GeoModel {
       await old.close();
     }
 
-    _session = await _ort.createSession(modelPath);
+    _session = await _ort.createSession(
+      modelPath,
+      options: buildOrtSessionOptions(),
+    );
 
     debugPrint('[GeoModel] model loaded from $modelPath');
     debugPrint('[GeoModel] input: $_inputName, output: $_outputName');

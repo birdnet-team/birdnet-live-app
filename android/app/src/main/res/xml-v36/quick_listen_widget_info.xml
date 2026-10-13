@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API 36+ variant of xml/quick_listen_widget_info.xml. Identical except for
+     the added "not_keyguard" category: from Android 16, widgets are eligible
+     for lock-screen slots unless they opt out, and this one launches an
+     activity, which the lock screen cannot do without authenticating first.
+     Offering the tile there would only ever produce an unlock prompt. See
+     https://android-developers.googleblog.com/2025/03/widgets-on-lock-screen-faq.html
+
+     This file must stay a full copy — a qualified resource replaces the
+     unqualified one outright rather than merging with it. Keep the two in
+     sync when editing either. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/quick_listen_widget"
+    android:previewLayout="@layout/quick_listen_widget"
+    android:description="@string/quick_listen_widget_description"
+    android:resizeMode="horizontal"
+    android:widgetCategory="home_screen|not_keyguard"
+    android:previewImage="@mipmap/ic_launcher" />

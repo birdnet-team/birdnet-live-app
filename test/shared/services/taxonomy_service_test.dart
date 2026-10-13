@@ -151,34 +151,134 @@ void main() {
     });
 
     test('finds by common name substring', () {
-      final results = service.search('Blackbird');
+      final results = service.search('Blackbird', locale: 'en');
       expect(results.length, 1);
       expect(results[0].scientificName, 'Turdus merula');
     });
 
     test('finds by scientific name substring', () {
-      final results = service.search('Erithacus');
+      final results = service.search('Erithacus', locale: 'en');
       expect(results.length, 1);
       expect(results[0].commonName, 'European Robin');
     });
 
     test('search is case-insensitive', () {
-      final results = service.search('great tit');
+      final results = service.search('great tit', locale: 'en');
       expect(results.length, 1);
       expect(results[0].scientificName, 'Parus major');
     });
 
     test('empty query returns empty list', () {
-      expect(service.search(''), isEmpty);
+      expect(service.search('', locale: 'en'), isEmpty);
     });
 
     test('no match returns empty list', () {
-      expect(service.search('Dinosaur'), isEmpty);
+      expect(service.search('Dinosaur', locale: 'en'), isEmpty);
     });
 
     test('respects limit parameter', () {
-      final results = service.search('a', limit: 2);
+      final results = service.search('a', locale: 'en', limit: 2);
       expect(results.length, lessThanOrEqualTo(2));
+    });
+
+    test('searches only the selected common-name locale', () {
+      expect(service.search('Kohlmeise', locale: 'de'), hasLength(1));
+      expect(service.search('Kohlmeise', locale: 'en'), isEmpty);
+      expect(service.search('Great Tit', locale: 'de'), isEmpty);
+    });
+
+    test('sorts partial matches by descending geo score', () {
+      final results = service.search(
+        'e',
+        locale: 'en',
+        geoScores: const {
+          'Parus major': 0.1,
+          'Turdus merula': 0.9,
+          'Erithacus rubecula': 0.5,
+        },
+      );
+
+      expect(results.map((species) => species.scientificName), [
+        'Turdus merula',
+        'Erithacus rubecula',
+        'Parus major',
+      ]);
+    });
+
+    test('exact matches precede geo-ranked partial matches', () {
+      final ranked =
+          TaxonomyService()
+            ..loadFromCsv('''birdnet_id,scientific_name,common_name,taxon_group
+BN1,Parus major,Great Tit,Aves
+BN2,Poecile montanus,Willow Tit,Aves
+BN3,Baeolophus bicolor,Tufted Titmouse,Aves
+BN4,Notiomystis cincta,Stitchbird,Aves
+BN5,Titanus giganteus,Titan Beetle,Insecta
+BN6,Tit exactus,Tit,Aves''');
+
+      final results = ranked.search(
+        'tit',
+        locale: 'en',
+        geoScores: const {
+          'Notiomystis cincta': 0.9,
+          'Baeolophus bicolor': 0.8,
+          'Parus major': 0.3,
+          'Poecile montanus': 0.2,
+          'Titanus giganteus': 0.1,
+        },
+      );
+
+      expect(results.map((species) => species.commonName), [
+        'Tit', // exact, despite no geo score
+        'Stitchbird',
+        'Tufted Titmouse',
+        'Great Tit',
+        'Willow Tit',
+        'Titan Beetle',
+      ]);
+    });
+  });
+
+  group('TaxonomyService.splitByGeoLikelihood', () {
+    final service = TaxonomyService()..loadFromCsv(_testCsv);
+    final species = service.lookupAll([
+      'Parus major',
+      'Turdus merula',
+      'Erithacus rubecula',
+    ]);
+
+    test('returns null without geo scores', () {
+      expect(
+        TaxonomyService.splitByGeoLikelihood(
+          species,
+          geoScores: null,
+          threshold: 0.03,
+        ),
+        isNull,
+      );
+      expect(
+        TaxonomyService.splitByGeoLikelihood(
+          species,
+          geoScores: const {},
+          threshold: 0.03,
+        ),
+        isNull,
+      );
+    });
+
+    test('splits at the threshold and keeps order', () {
+      final split =
+          TaxonomyService.splitByGeoLikelihood(
+            species,
+            geoScores: const {'Parus major': 0.5, 'Erithacus rubecula': 0.03},
+            threshold: 0.03,
+          )!;
+
+      expect(split.likely.map((s) => s.scientificName), [
+        'Parus major',
+        'Erithacus rubecula',
+      ]);
+      expect(split.other.map((s) => s.scientificName), ['Turdus merula']);
     });
   });
 

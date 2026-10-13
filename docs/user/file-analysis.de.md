@@ -4,7 +4,7 @@ Die Dateianalyse verarbeitet eine vorhandene Aufnahme über dieselbe BirdNET-Pip
 
 ## So öffnen Sie sie
 
-Tippen Sie auf der Startseite auf die Karte **Dateianalyse** mit dem Symbol :material-file-music:.
+Tippen Sie auf der Startseite auf die Karte **Dateianalyse** mit dem Symbol :app-audioFileRounded:.
 
 ### Aus einer anderen App
 
@@ -12,8 +12,9 @@ Sie können eine Aufnahme auch aus einer anderen App übergeben. Unter Android �
 
 ## App-Leiste
 
-- :material-tune: — Dateianalyse-Einstellungen öffnen
-- :material-close: — einen laufenden Analyselauf abbrechen
+- :app-tuneRounded: — Dateianalyse-Einstellungen öffnen
+- :app-helpOutlineRounded: — Dateianalyse-Hilfe öffnen
+- :app-close: — einen laufenden Analyselauf abbrechen
 
 ## Unterstützte Eingaben
 
@@ -42,11 +43,11 @@ Wählen Sie eine Datei und prüfen Sie ihre Metadatenkarte:
 
 Sie können:
 
-- aktuelles GPS verwenden
-- Koordinaten manuell eingeben
-- den Standort überspringen
-- einen Punkt auf der Karte wählen
-- ein optionales Aufnahmedatum festlegen
+- aktuelles GPS verwenden :app-myLocation:
+- Koordinaten manuell eingeben :app-editLocationAlt:
+- den Standort überspringen :app-locationOff:
+- einen Punkt auf der Karte wählen :app-mapSheet:
+- ein optionales Aufnahmedatum festlegen :app-calendarTodayRounded:
 
 ### 3. Parameter
 
@@ -57,6 +58,16 @@ Der Assistent zeigt:
 - Empfindlichkeit
 - Konfidenzschwelle
 - Modus des Artenfilters
+
+| Einrichtungselement | Symbol |
+|---|---|
+| Fensterdauer | :app-timerOutlined: |
+| Überlappung | :app-swapHoriz: |
+| Empfindlichkeit | :app-hearing: |
+| Konfidenzschwelle | :app-verifiedRounded: |
+| Artenfilter | :app-filterAltRounded: |
+
+Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch die Schritte für Datei, Standort und Aufnahmedatum haben Hilfeschaltflächen.
 
 Die Überlappung bestimmt, um wie viel jedes Analysefenster vorrückt, und ist
 spezifisch für die Dateianalyse: Die gesamte Datei wird immer untersucht, mehr

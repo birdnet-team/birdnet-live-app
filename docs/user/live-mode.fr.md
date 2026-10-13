@@ -4,7 +4,7 @@ Le mode En direct est le moyen le plus rapide d'écouter via le microphone du t�
 
 ## Comment l'ouvrir
 
-Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :material-microphone:.
+Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :app-micRounded:.
 
 ## Widget « Écoute rapide »
 
@@ -25,17 +25,17 @@ Si le mode En direct est déjà ouvert, le widget revient à ce même écran au 
 
 La barre supérieure contient trois éléments :
 
-- :material-arrow-left: — quitter le mode En direct
+- :app-arrowBackRounded: — quitter le mode En direct
 - texte d'état central — « Initialisation », « Chargement du modèle », « Prêt », « Identification des espèces », « En pause » ou « Erreur »
-- :material-tune: — ouvrir la vue Paramètres propre au mode En direct
+- :app-tuneRounded: — ouvrir la vue Paramètres propre au mode En direct
 
 ## Bouton d'action principal
 
 Le grand bouton circulaire en bas au centre change d'état :
 
-- :material-microphone: — démarrer l'écoute
-- :material-stop: — arrêter la session active
-- :material-play: — reprendre depuis un état en pause
+- :app-mic: — démarrer l'écoute
+- :app-stopRounded: — arrêter la session active
+- :app-playArrowRounded: — reprendre depuis un état en pause
 
 ## Ce que vous voyez pendant l'écoute
 
@@ -73,3 +73,9 @@ L'enregistrement est contrôlé dans les [Paramètres](settings.md).
 - **Désactivé** désactive l'enregistrement.
 
 Lorsque vous arrêtez le mode En direct, BirdNET Live enregistre la session et ouvre le [Résumé de la session](session-review.md).
+
+Lorsque l'enregistrement automatique des sessions est activé, le mode En direct enregistre aussi une session partielle au démarrage, toutes les 30 secondes et lorsque l'application passe en arrière-plan. Après un plantage ou une coupure de courant, la dernière sauvegarde est disponible dans la Bibliothèque de sessions. Les changements postérieurs à cette sauvegarde peuvent être perdus. Désactiver l'enregistrement automatique désactive aussi ces sauvegardes intermédiaires.
+
+## Écoute avec l’écran éteint
+
+Live Mode se met normalement en pause lorsque vous verrouillez l’écran ou quittez l’application, puis reprend la même Session à votre retour. La première fois, un dialogue propose une écoute limitée en arrière-plan. Dans les [réglages d’enregistrement](settings.md), activez **Continuer avec l’écran éteint** et choisissez un maximum de 15, 30, 60 ou 120 minutes (30 par défaut). La limite s’applique à chaque période hors de l’application ; elle termine la Session lorsqu’elle est atteinte. Android affiche une notification persistante avec Ouvrir et Arrêter. Sous Windows, Live Mode continue avec la fenêtre réduite.

@@ -4,7 +4,7 @@ L'Analyse de fichiers traite un enregistrement existant via le même pipeline Bi
 
 ## Comment l'ouvrir
 
-Depuis l'accueil, appuyez sur la carte **Analyse de fichiers** avec l'icône :material-file-music:.
+Depuis l'accueil, appuyez sur la carte **Analyse de fichiers** avec l'icône :app-audioFileRounded:.
 
 ### Depuis une autre application
 
@@ -12,8 +12,9 @@ Vous pouvez aussi transmettre un enregistrement depuis une autre application. Su
 
 ## Barre supérieure
 
-- :material-tune: — ouvrir les paramètres de l'Analyse de fichiers
-- :material-close: — annuler une analyse en cours
+- :app-tuneRounded: — ouvrir les paramètres de l'Analyse de fichiers
+- :app-helpOutlineRounded: — ouvrir l'aide de l'Analyse de fichiers
+- :app-close: — annuler une analyse en cours
 
 ## Formats pris en charge
 
@@ -42,11 +43,11 @@ Choisissez un fichier et examinez sa fiche de métadonnées :
 
 Vous pouvez :
 
-- utiliser le GPS actuel
-- saisir les coordonnées manuellement
-- ignorer la localisation
-- choisir un point sur la carte
-- définir une date d'enregistrement facultative
+- utiliser le GPS actuel :app-myLocation:
+- saisir les coordonnées manuellement :app-editLocationAlt:
+- ignorer la localisation :app-locationOff:
+- choisir un point sur la carte :app-mapSheet:
+- définir une date d'enregistrement facultative :app-calendarTodayRounded:
 
 ### 3. Paramètres
 
@@ -57,6 +58,16 @@ L'assistant donne accès à :
 - la sensibilité
 - le seuil de confiance
 - le mode de filtre d'espèces
+
+| Contrôle de configuration | Icône |
+|---|---|
+| Durée de la fenêtre | :app-timerOutlined: |
+| Chevauchement | :app-swapHoriz: |
+| Sensibilité | :app-hearing: |
+| Seuil de confiance | :app-verifiedRounded: |
+| Filtre d'espèces | :app-filterAltRounded: |
+
+Touchez le bouton :app-helpOutline: à côté d'un contrôle de configuration pour afficher son explication. Les étapes du fichier, de la localisation et de la date d'enregistrement ont aussi des boutons d'aide.
 
 Le chevauchement détermine de combien avance chaque fenêtre d'analyse ; il est
 propre à l'analyse de fichiers : le fichier entier est toujours examiné, et

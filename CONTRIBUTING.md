@@ -6,7 +6,7 @@ Thank you for your interest in contributing to BirdNET Live! This guide will hel
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.27+ with Dart 3.7+)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.47+ with Dart 3.13+)
 - [Git LFS](https://git-lfs.com/) for the large ONNX model files
 - [Android Studio](https://developer.android.com/studio) (for Android SDK & emulator)
 - [Xcode](https://developer.apple.com/xcode/) (macOS only, for iOS development)

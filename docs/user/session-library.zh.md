@@ -4,7 +4,7 @@ Session 库是已保存 Session 和已处理文件的归档。
 
 ## 如何打开
 
-使用主界面底栏的 :material-music-box-multiple-outline: 按钮。
+使用主界面底栏的 :app-libraryMusic: 按钮。
 
 ## 库中显示什么
 
@@ -12,16 +12,16 @@ Session 库是已保存 Session 和已处理文件的归档。
 
 Session 类型使用与主界面相同的图标：
 
-- :material-microphone: — Live 模式的 Session
-- :material-file-music: — 文件分析的 Session
-- :material-map-marker: — Point Count 模式的 Session
-- :material-routes: — Survey 模式的 Session
+- :app-micRounded: — Live 模式的 Session
+- :app-audioFileRounded: — 文件分析的 Session
+- :app-locationOnRounded: — Point Count 模式的 Session
+- :app-routeRounded: — Survey 模式的 Session
 
 ## 应用栏控件
 
-- :material-magnify: — 按日期、Session 类型、地名、坐标、常用名或学名搜索
+- :app-searchRounded: — 按日期、Session 类型、地名、坐标、常用名或学名搜索
 - 视图模式菜单 — 在**详细**、**紧凑**和**按物种**之间切换
-- :material-swap-vertical: — 更改排序方式
+- :app-filterList: — 更改排序方式
 
 ## 视图模式
 
@@ -31,7 +31,7 @@ Session 类型使用与主界面相同的图标：
 
 ### 紧凑
 
-显示更紧密的行，便于快速浏览。每行右侧有一个 :material-chevron-down: 按钮，可就地展开为详细视图的完整卡片内容——当您想快速看一眼某个 Session 的统计数据又不想丢失滚动位置时很方便。
+显示更紧密的行，便于快速浏览。每行右侧有一个 :app-expandMore: 按钮，可就地展开为详细视图的完整卡片内容——当您想快速看一眼某个 Session 的统计数据又不想丢失滚动位置时很方便。
 
 ### 按物种
 
@@ -41,7 +41,7 @@ Session 类型使用与主界面相同的图标：
 
 可按**日期**（最新或最早在前）、**名称**（A–Z 或 Z–A）或**时长**（最长或最短在前）排序 Session。按时长排序在您想找出本周最长的 Survey，或那段不小心保存下来的 30 秒测试录音时很有用。
 
-当 Session 按天分组时，每个日期标题行先显示用于整天操作的菜单（:material-dots-vertical:），展开/折叠箭头位于行尾。箭头是*最后*一个元素——与应用中其他所有可展开列表的约定一致——因此在靠右边缘点按总是会展开或折叠该分组。
+当 Session 按天分组时，每个日期标题行先显示用于整天操作的菜单（:app-moreVert:），展开/折叠箭头位于行尾。箭头是*最后*一个元素——与应用中其他所有可展开列表的约定一致——因此在靠右边缘点按总是会展开或折叠该分组。
 
 ## 本地时间
 
@@ -51,7 +51,7 @@ Session 库中显示的每个时间戳——列表行、日期分组标题、"�
 
 每个 Session 行都有两种操作方式：
 
-- 每张卡片右侧的**三点菜单**（:material-dots-vertical:）会打开一个小菜单，包含**打开**、**分享**和**删除**。分享使用您当前在"设置 → 导出"中的偏好（格式和"包含音频"），并直接打开系统分享面板——不必为了把 Session 发给同事而先打开 Session 回顾。
+- 每张卡片右侧的**三点菜单**（:app-moreVert:）会打开一个小菜单，包含**打开**、**分享**和**删除**。分享使用您当前在"设置 → 导出"中的偏好（格式和"包含音频"），并直接打开系统分享面板——不必为了把 Session 发给同事而先打开 Session 回顾。
 - 把行向左或向右**滑动**即可删除。删除前仍会弹出确认对话框，因此误滑动是可以挽回的。
 
 ## 接下来会发生什么

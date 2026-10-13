@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import '../../shared/models/weather_snapshot.dart';
 
 import '../../shared/models/gps_point.dart';
+import '../../shared/models/altitude_reference.dart';
 import '../aru/aru_schedule.dart';
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
@@ -228,14 +229,14 @@ class SessionSettings {
       ignoreMammals: json['ignoreMammals'] as bool?,
       ignoreAmphibians: json['ignoreAmphibians'] as bool?,
       ignoreInsects: json['ignoreInsects'] as bool?,
-      ignoreCommonGeoScoreCutoff:
-          (json['ignoreCommonGeoScoreCutoff'] as num?)?.toDouble(),
+      ignoreCommonGeoScoreCutoff: (json['ignoreCommonGeoScoreCutoff'] as num?)
+          ?.toDouble(),
       poolingMode: json['poolingMode'] as String?,
       poolingWindows: (json['poolingWindows'] as num?)?.toInt(),
       poolingMaxAgeSeconds: (json['poolingMaxAgeSeconds'] as num?)?.toDouble(),
       poolingAlpha: (json['poolingAlpha'] as num?)?.toDouble(),
-      poolingMinSupportWindows:
-          (json['poolingMinSupportWindows'] as num?)?.toInt(),
+      poolingMinSupportWindows: (json['poolingMinSupportWindows'] as num?)
+          ?.toInt(),
       poolingSupportThresholdFraction:
           (json['poolingSupportThresholdFraction'] as num?)?.toDouble(),
       poolingSupportThresholdFloor:
@@ -331,15 +332,20 @@ enum SessionType {
 
 /// Why a session ended.
 ///
-/// Used primarily for survey sessions that can auto-stop on max duration
-/// or low battery, but applicable to any session type. `null` means the
-/// session was stopped manually or pre-dates this field.
+/// Used by timed and unattended sessions. `null` means the session was
+/// stopped manually or pre-dates this field.
 enum SessionStopReason {
   /// User tapped Stop.
   manual,
 
   /// Configured maximum duration was reached.
   maxDuration,
+
+  /// Live Mode reached its selected background time limit.
+  backgroundLimit,
+
+  /// Point Count ended because background operation was disabled.
+  backgrounded,
 
   /// Battery dropped below the configured auto-stop threshold.
   lowBattery,
@@ -461,6 +467,10 @@ class DetectionRecord {
     this.evidence,
     this.latitude,
     this.longitude,
+    this.altitude,
+    this.altitudeAccuracy,
+    this.altitudeReference,
+    this.locationFixTime,
     this.reviewStatus = ReviewStatus.unreviewed,
     this.reviewedAt,
     this.note,
@@ -539,6 +549,12 @@ class DetectionRecord {
 
   /// GPS longitude at the time of detection (null if unavailable).
   final double? longitude;
+
+  /// Height recorded with this detection's coordinates, in meters.
+  final double? altitude;
+  final double? altitudeAccuracy;
+  final AltitudeReference? altitudeReference;
+  final DateTime? locationFixTime;
 
   /// What a reviewer has decided about this detection's identification.
   ///
@@ -647,15 +663,13 @@ class DetectionRecord {
       commonName: json['commonName'] as String,
       confidence: (json['confidence'] as num).toDouble(),
       timestamp: DateTime.parse(json['timestamp'] as String),
-      endTimestamp:
-          json['endTimestamp'] != null
-              ? DateTime.parse(json['endTimestamp'] as String)
-              : null,
+      endTimestamp: json['endTimestamp'] != null
+          ? DateTime.parse(json['endTimestamp'] as String)
+          : null,
       audioClipPath: audioClipPath,
-      clipTimestamp:
-          audioClipPath != null && json['clipTimestamp'] != null
-              ? DateTime.parse(json['clipTimestamp'] as String)
-              : null,
+      clipTimestamp: audioClipPath != null && json['clipTimestamp'] != null
+          ? DateTime.parse(json['clipTimestamp'] as String)
+          : null,
       source: switch (json['source'] as String?) {
         'manual' => DetectionSource.manual,
         'manualGlobal' => DetectionSource.manualGlobal,
@@ -665,16 +679,23 @@ class DetectionRecord {
       evidence: DetectionEvidence.fromName(json['evidence'] as String?),
       latitude: (json['detLat'] as num?)?.toDouble(),
       longitude: (json['detLon'] as num?)?.toDouble(),
+      altitude: (json['detAlt'] as num?)?.toDouble(),
+      altitudeAccuracy: (json['detAltAcc'] as num?)?.toDouble(),
+      altitudeReference: AltitudeReference.fromName(
+        json['detAltRef'] as String?,
+      ),
+      locationFixTime: json['detFixTime'] is String
+          ? DateTime.parse(json['detFixTime'] as String)
+          : null,
       // Sessions written before review became three-valued carry only
       // `confirmedAt`, where a non-null value meant confirmed. Prefer the
       // explicit status when present and fall back to that legacy shape so
       // older sessions keep their confirmations.
-      reviewStatus:
-          json['reviewStatus'] != null
-              ? ReviewStatus.fromName(json['reviewStatus'] as String?)
-              : (json['confirmedAt'] != null
-                  ? ReviewStatus.confirmed
-                  : ReviewStatus.unreviewed),
+      reviewStatus: json['reviewStatus'] != null
+          ? ReviewStatus.fromName(json['reviewStatus'] as String?)
+          : (json['confirmedAt'] != null
+                ? ReviewStatus.confirmed
+                : ReviewStatus.unreviewed),
       reviewedAt: switch (json['reviewedAt'] ?? json['confirmedAt']) {
         final String stamp => DateTime.parse(stamp),
         _ => null,
@@ -699,6 +720,11 @@ class DetectionRecord {
     if (evidence != null) 'evidence': evidence!.name,
     if (latitude != null) 'detLat': latitude,
     if (longitude != null) 'detLon': longitude,
+    if (altitude != null) 'detAlt': altitude,
+    if (altitudeAccuracy != null) 'detAltAcc': altitudeAccuracy,
+    if (altitudeReference != null) 'detAltRef': altitudeReference!.name,
+    if (locationFixTime != null)
+      'detFixTime': locationFixTime!.toUtc().toIso8601String(),
     if (isReviewed) 'reviewStatus': reviewStatus.name,
     if (reviewedAt != null) 'reviewedAt': reviewedAt!.toUtc().toIso8601String(),
     // Legacy mirror: a build older than the three-state change reads only
@@ -845,14 +871,12 @@ class AruCycleMetadata {
       index: (json['index'] as num).toInt(),
       plannedStart: DateTime.parse(json['plannedStart'] as String),
       plannedEnd: DateTime.parse(json['plannedEnd'] as String),
-      actualStart:
-          json['actualStart'] != null
-              ? DateTime.parse(json['actualStart'] as String)
-              : null,
-      actualEnd:
-          json['actualEnd'] != null
-              ? DateTime.parse(json['actualEnd'] as String)
-              : null,
+      actualStart: json['actualStart'] != null
+          ? DateTime.parse(json['actualStart'] as String)
+          : null,
+      actualEnd: json['actualEnd'] != null
+          ? DateTime.parse(json['actualEnd'] as String)
+          : null,
       status: AruCycleStatus.values.firstWhere(
         (s) => s.name == (json['status'] as String?),
         orElse: () => AruCycleStatus.scheduled,
@@ -896,6 +920,10 @@ class AruDeploymentMetadata {
     this.dielPattern = AruDielPattern.anyTime,
     this.latitude,
     this.longitude,
+    this.altitude,
+    this.altitudeAccuracy,
+    this.altitudeReference,
+    this.locationFixTime,
     this.recordingMode = 'full',
     this.recordingFormat = 'flac',
     this.samplingMode = 'smart',
@@ -917,6 +945,10 @@ class AruDeploymentMetadata {
   final AruDielPattern dielPattern;
   final double? latitude;
   final double? longitude;
+  final double? altitude;
+  final double? altitudeAccuracy;
+  final AltitudeReference? altitudeReference;
+  final DateTime? locationFixTime;
   final String recordingMode;
   final String recordingFormat;
   final String samplingMode;
@@ -947,20 +979,27 @@ class AruDeploymentMetadata {
       scheduleStart: DateTime.parse(json['scheduleStart'] as String),
       cycleDurationSeconds: (json['cycleDurationSeconds'] as num).toInt(),
       repeatIntervalSeconds: (json['repeatIntervalSeconds'] as num).toInt(),
-      scheduleEnd:
-          json['scheduleEnd'] != null
-              ? DateTime.parse(json['scheduleEnd'] as String)
-              : null,
+      scheduleEnd: json['scheduleEnd'] != null
+          ? DateTime.parse(json['scheduleEnd'] as String)
+          : null,
       maxCycles: (json['maxCycles'] as num?)?.toInt(),
       lowBatteryStopPercent: (json['lowBatteryStopPercent'] as num?)?.toInt(),
-      lowBatteryResumePercent:
-          (json['lowBatteryResumePercent'] as num?)?.toInt(),
+      lowBatteryResumePercent: (json['lowBatteryResumePercent'] as num?)
+          ?.toInt(),
       dielPattern: AruDielPattern.values.firstWhere(
         (p) => p.name == (json['dielPattern'] as String?),
         orElse: () => AruDielPattern.anyTime,
       ),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      altitude: (json['altitude'] as num?)?.toDouble(),
+      altitudeAccuracy: (json['altitudeAccuracy'] as num?)?.toDouble(),
+      altitudeReference: AltitudeReference.fromName(
+        json['altitudeReference'] as String?,
+      ),
+      locationFixTime: json['locationFixTime'] is String
+          ? DateTime.parse(json['locationFixTime'] as String)
+          : null,
       recordingMode: json['recordingMode'] as String? ?? 'full',
       recordingFormat: json['recordingFormat'] as String? ?? 'flac',
       samplingMode: json['samplingMode'] as String? ?? 'smart',
@@ -993,6 +1032,11 @@ class AruDeploymentMetadata {
     if (dielPattern != AruDielPattern.anyTime) 'dielPattern': dielPattern.name,
     if (latitude != null) 'latitude': latitude,
     if (longitude != null) 'longitude': longitude,
+    if (altitude != null) 'altitude': altitude,
+    if (altitudeAccuracy != null) 'altitudeAccuracy': altitudeAccuracy,
+    if (altitudeReference != null) 'altitudeReference': altitudeReference!.name,
+    if (locationFixTime != null)
+      'locationFixTime': locationFixTime!.toUtc().toIso8601String(),
     'recordingMode': recordingMode,
     'recordingFormat': recordingFormat,
     'samplingMode': samplingMode,
@@ -1020,6 +1064,10 @@ class LiveSession {
     this.trimEndSec,
     this.latitude,
     this.longitude,
+    this.altitude,
+    this.altitudeAccuracy,
+    this.altitudeReference,
+    this.locationFixTime,
     this.locationName,
     List<GpsPoint>? gpsTrack,
     this.distanceMeters,
@@ -1090,6 +1138,12 @@ class LiveSession {
   /// Recording location longitude (null if location unavailable).
   double? longitude;
 
+  /// Height paired with this session's representative coordinates.
+  double? altitude;
+  double? altitudeAccuracy;
+  AltitudeReference? altitudeReference;
+  DateTime? locationFixTime;
+
   /// Reverse-geocoded location name (e.g. "Berlin, Germany").
   ///
   /// Populated on first review when internet is available.
@@ -1112,8 +1166,9 @@ class LiveSession {
   SessionStopReason? stopReason;
 
   /// Numeric value associated with [stopReason] (e.g. battery % for
-  /// [SessionStopReason.lowBattery], or duration hours for
-  /// [SessionStopReason.maxDuration]). `null` when not applicable.
+  /// [SessionStopReason.lowBattery], duration hours for
+  /// [SessionStopReason.maxDuration], or background limit minutes for
+  /// [SessionStopReason.backgroundLimit]). `null` when not applicable.
   num? stopReasonValue;
 
   /// Optional weather snapshot captured once at session save time when
@@ -1208,12 +1263,11 @@ class LiveSession {
     // wall-clock span, then extend to cover any detection that ends later.
     final recorded = _recordedDurationSeconds?.toDouble();
     final end = endTime;
-    var expected =
-        recorded != null && recorded > 0
-            ? recorded
-            : end == null
-            ? 0.0
-            : end.difference(startTime).inMicroseconds / 1e6;
+    var expected = recorded != null && recorded > 0
+        ? recorded
+        : end == null
+        ? 0.0
+        : end.difference(startTime).inMicroseconds / 1e6;
     for (final detection in detections) {
       final eventEnd = detection.endTimestamp ?? detection.timestamp;
       final rel = absoluteToRelative(eventEnd);
@@ -1277,6 +1331,10 @@ class LiveSession {
       evidence: r.evidence,
       latitude: r.latitude,
       longitude: r.longitude,
+      altitude: r.altitude,
+      altitudeAccuracy: r.altitudeAccuracy,
+      altitudeReference: r.altitudeReference,
+      locationFixTime: r.locationFixTime,
       reviewStatus: r.reviewStatus,
       reviewedAt: r.reviewedAt,
       note: r.note,
@@ -1299,10 +1357,9 @@ class LiveSession {
       ),
       sessionNumber: json['sessionNumber'] as int?,
       startTime: DateTime.parse(json['startTime'] as String),
-      endTime:
-          json['endTime'] != null
-              ? DateTime.parse(json['endTime'] as String)
-              : null,
+      endTime: json['endTime'] != null
+          ? DateTime.parse(json['endTime'] as String)
+          : null,
       detections:
           (json['detections'] as List<dynamic>?)
               ?.map((d) => DetectionRecord.fromJson(d as Map<String, dynamic>))
@@ -1323,6 +1380,14 @@ class LiveSession {
       trimEndSec: (json['trimEndSec'] as num?)?.toDouble(),
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      altitude: (json['altitude'] as num?)?.toDouble(),
+      altitudeAccuracy: (json['altitudeAccuracy'] as num?)?.toDouble(),
+      altitudeReference: AltitudeReference.fromName(
+        json['altitudeReference'] as String?,
+      ),
+      locationFixTime: json['locationFixTime'] is String
+          ? DateTime.parse(json['locationFixTime'] as String)
+          : null,
       locationName: json['locationName'] as String?,
       customName: json['customName'] as String?,
       gpsTrack:
@@ -1333,27 +1398,23 @@ class LiveSession {
       distanceMeters: (json['distanceMeters'] as num?)?.toDouble(),
       transectId: json['transectId'] as String?,
       observerName: json['observerName'] as String?,
-      stopReason:
-          json['stopReason'] != null
-              ? SessionStopReason.values.firstWhere(
-                (r) => r.name == (json['stopReason'] as String),
-                orElse: () => SessionStopReason.manual,
-              )
-              : null,
+      stopReason: json['stopReason'] != null
+          ? SessionStopReason.values.firstWhere(
+              (r) => r.name == (json['stopReason'] as String),
+              orElse: () => SessionStopReason.manual,
+            )
+          : null,
       stopReasonValue: json['stopReasonValue'] as num?,
-      recordedDurationSeconds:
-          (json['recordedDurationSeconds'] as num?)?.toInt(),
+      recordedDurationSeconds: (json['recordedDurationSeconds'] as num?)
+          ?.toInt(),
       segments:
           (json['segments'] as List<dynamic>?)
               ?.map((s) => SessionSegment.fromJson(s as Map<String, dynamic>))
               .toList() ??
           [],
-      aruMetadata:
-          json['aru'] != null
-              ? AruDeploymentMetadata.fromJson(
-                json['aru'] as Map<String, dynamic>,
-              )
-              : null,
+      aruMetadata: json['aru'] != null
+          ? AruDeploymentMetadata.fromJson(json['aru'] as Map<String, dynamic>)
+          : null,
     )..weather = WeatherSnapshot.fromJson(json['weather']);
   }
 
@@ -1373,6 +1434,11 @@ class LiveSession {
     if (trimEndSec != null) 'trimEndSec': trimEndSec,
     if (latitude != null) 'latitude': latitude,
     if (longitude != null) 'longitude': longitude,
+    if (altitude != null) 'altitude': altitude,
+    if (altitudeAccuracy != null) 'altitudeAccuracy': altitudeAccuracy,
+    if (altitudeReference != null) 'altitudeReference': altitudeReference!.name,
+    if (locationFixTime != null)
+      'locationFixTime': locationFixTime!.toUtc().toIso8601String(),
     if (locationName != null) 'locationName': locationName,
     if (customName != null) 'customName': customName,
     if (gpsTrack.isNotEmpty)
@@ -1395,13 +1461,15 @@ class LiveSession {
       '$uniqueSpeciesCount species)';
 
   /// Starts a new active recording segment.
-  void startSegment() {
+  void startSegment({bool mergeRecent = true}) {
     if (endTime != null) return;
     final now = DateTime.now();
     if (segments.isNotEmpty) {
       final last = segments.last;
       final lastEnd = last.endTime;
-      if (lastEnd != null && now.difference(lastEnd).inSeconds <= 2) {
+      if (mergeRecent &&
+          lastEnd != null &&
+          now.difference(lastEnd).inSeconds <= 2) {
         // Resume/extend the last segment instead of starting a new one,
         // because it was closed just for a periodic persist tick or a very brief pause.
         last.endTime = null;
@@ -1475,10 +1543,9 @@ class LiveSession {
 
     // A session with no segments has the trivial timeline `ts - startTime`;
     // model it as one synthetic segment so both shapes share the walk below.
-    final source =
-        segments.isNotEmpty
-            ? List<SessionSegment>.of(segments)
-            : [SessionSegment(startTime: startTime, endTime: endTime)];
+    final source = segments.isNotEmpty
+        ? List<SessionSegment>.of(segments)
+        : [SessionSegment(startTime: startTime, endTime: endTime)];
 
     // The recorder can flush a small tail beyond the session clock. The
     // caller passes the end of the audio that was actually written, so extend
@@ -1488,9 +1555,9 @@ class LiveSession {
     var sourceSeconds = 0.0;
     for (final segment in source) {
       final length =
-          _effectiveSegmentEnd(
-            segment,
-          ).difference(segment.startTime).inMicroseconds /
+          _effectiveSegmentEnd(segment)
+              .difference(segment.startTime)
+              .inMicroseconds /
           1e6;
       if (length > 0) sourceSeconds += length;
     }
@@ -1501,9 +1568,8 @@ class LiveSession {
         clockTailSeconds <= maxRecorderClockTailSeconds) {
       final lastIndex = source.length - 1;
       final last = source[lastIndex];
-      final extendedEnd = _effectiveSegmentEnd(
-        last,
-      ).add(Duration(microseconds: (clockTailSeconds * 1e6).round()));
+      final extendedEnd = _effectiveSegmentEnd(last)
+          .add(Duration(microseconds: (clockTailSeconds * 1e6).round()));
       source[lastIndex] = SessionSegment(
         startTime: last.startTime,
         endTime: extendedEnd,
@@ -1566,10 +1632,9 @@ class LiveSession {
       for (final detection in detections)
         if (() {
           final detectionStart = sourceRelative(detection.timestamp);
-          final detectionEnd =
-              detection.endTimestamp == null
-                  ? detectionStart + windowSec
-                  : sourceRelative(detection.endTimestamp!);
+          final detectionEnd = detection.endTimestamp == null
+              ? detectionStart + windowSec
+              : sourceRelative(detection.endTimestamp!);
           return detectionEnd > start && detectionStart < end;
         }())
           detection,
@@ -1592,8 +1657,9 @@ class LiveSession {
       // Keep retained markers aligned with the shorter file. Markers whose
       // audio was removed become session-global so their note or voice memo
       // is preserved without pointing at an unrelated sample.
-      final rebasedOffset =
-          offset >= start && offset < end ? offset - start : null;
+      final rebasedOffset = offset >= start && offset < end
+          ? offset - start
+          : null;
       annotations[i] = SessionAnnotation(
         text: annotation.text,
         createdAt: annotation.createdAt,
@@ -1691,10 +1757,9 @@ class SessionSegment {
   factory SessionSegment.fromJson(Map<String, dynamic> json) {
     return SessionSegment(
       startTime: DateTime.parse(json['startTime'] as String),
-      endTime:
-          json['endTime'] != null
-              ? DateTime.parse(json['endTime'] as String)
-              : null,
+      endTime: json['endTime'] != null
+          ? DateTime.parse(json['endTime'] as String)
+          : null,
     );
   }
 

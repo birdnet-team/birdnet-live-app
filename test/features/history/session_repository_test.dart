@@ -6,9 +6,12 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:birdnet_live/features/history/session_repository.dart';
+import 'package:birdnet_live/features/live/live_providers.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 
 void main() {
@@ -125,6 +128,176 @@ void main() {
 
       final loaded = await repo.load('test-session-1');
       expect(loaded!.detections.length, 2);
+    });
+
+    test(
+      'checkpoint is recoverable without ending the running session',
+      () async {
+        final active = LiveSession(
+          id: 'active-checkpoint',
+          startTime: DateTime.now().subtract(const Duration(minutes: 2)),
+          settings: const SessionSettings(
+            windowDuration: 3,
+            confidenceThreshold: 25,
+            inferenceRate: 1,
+            speciesFilterMode: 'off',
+          ),
+        )..startSegment();
+
+        await repo.saveCheckpoint(active);
+
+        expect(active.endTime, isNull);
+        final recovered = await repo.load(active.id);
+        expect(recovered?.endTime, isNotNull);
+        expect((await repo.listAll()).single.id, active.id);
+      },
+    );
+
+    test('ARU checkpoint appears ended with an interrupted cycle', () async {
+      final start = DateTime.now().subtract(const Duration(seconds: 20));
+      final session = makeSession(id: 'aru-checkpoint')
+        ..type = SessionType.aru
+        ..endTime = null
+        ..aruMetadata = AruDeploymentMetadata(
+          scheduleStart: start,
+          cycleDurationSeconds: 60,
+          repeatIntervalSeconds: 120,
+          eachCycleIsSession: false,
+          cycles: [
+            AruCycleMetadata(
+              index: 1,
+              plannedStart: start,
+              plannedEnd: start.add(const Duration(seconds: 60)),
+              actualStart: start,
+              status: AruCycleStatus.recording,
+            ),
+          ],
+        );
+
+      await repo.saveCheckpoint(session);
+
+      final recovered = await repo.load(session.id);
+      expect(session.endTime, isNull);
+      expect(
+        session.aruMetadata!.cycles.single.status,
+        AruCycleStatus.recording,
+      );
+      expect(recovered?.endTime, isNotNull);
+      expect(
+        recovered?.aruMetadata?.cycles.single.status,
+        AruCycleStatus.partial,
+      );
+      expect(recovered?.aruMetadata?.cycles.single.actualEnd, isNotNull);
+    });
+
+    test('recovers an interrupted replacement from the backup', () async {
+      final session = makeSession();
+      await repo.save(session);
+      final primary = File(p.join(tempDir.path, '${session.id}.json'));
+      final backup = File(p.join(tempDir.path, '${session.id}.recovery.json'));
+      await primary.rename(backup.path);
+
+      expect((await repo.load(session.id))?.id, session.id);
+      expect((await repo.listAll()).map((item) => item.id), [session.id]);
+      expect(await repo.count(), 1);
+    });
+
+    test('recovers the first checkpoint from a flushed pending file', () async {
+      final session = makeSession(id: 'first-checkpoint');
+      await repo.saveCheckpoint(session);
+      final primary = File(p.join(tempDir.path, '${session.id}.json'));
+      await primary.rename(p.join(tempDir.path, '${session.id}.pending'));
+
+      expect((await repo.load(session.id))?.id, session.id);
+      expect((await repo.listAll()).map((item) => item.id), [session.id]);
+      expect(await repo.count(), 1);
+    });
+
+    test('prefers a newer pending snapshot over the old primary', () async {
+      final session = makeSession()..customName = 'old';
+      await repo.save(session);
+      final primary = File(p.join(tempDir.path, '${session.id}.json'));
+      final oldPrimary = File(p.join(tempDir.path, '${session.id}.old'));
+      await primary.copy(oldPrimary.path);
+
+      session.customName = 'new';
+      await repo.save(session);
+      await primary.rename(p.join(tempDir.path, '${session.id}.pending'));
+      await oldPrimary.rename(primary.path);
+
+      expect((await repo.load(session.id))?.customName, 'new');
+      expect((await repo.listAll()).single.customName, 'new');
+    });
+
+    test('uses backup when the primary is corrupt', () async {
+      final session = makeSession();
+      await repo.save(session);
+      final primary = File(p.join(tempDir.path, '${session.id}.json'));
+      final backup = File(p.join(tempDir.path, '${session.id}.recovery.json'));
+      await primary.copy(backup.path);
+      await primary.writeAsString('{broken', flush: true);
+
+      expect((await repo.load(session.id))?.id, session.id);
+      expect((await repo.listAll()).map((item) => item.id), [session.id]);
+    });
+
+    test('deleteAll drains saves that already started', () async {
+      final session = makeSession(
+        id: 'concurrent-save',
+        detections: List.generate(2000, (_) => makeDetection()),
+      );
+
+      final save = repo.saveCheckpoint(session);
+      await repo.deleteAll();
+      await save;
+
+      expect(await repo.count(), 0);
+      expect(await repo.listAll(), isEmpty);
+    });
+
+    test('an early Point Count remains alongside the previous count', () async {
+      final previous = makeSession(id: 'point-count-previous')
+        ..type = SessionType.pointCount
+        ..sessionNumber = 1;
+      await repo.save(previous);
+
+      final current = makeSession(
+        id: 'point-count-current',
+        startTime: DateTime(2025, 6, 15, 11),
+        endTime: DateTime(2025, 6, 15, 11, 3),
+      )..type = SessionType.pointCount;
+      current.sessionNumber = await repo.nextSessionNumber(current.type);
+      await repo.save(current);
+
+      final listed = await repo.listAll();
+      expect(listed.map((session) => session.id), [current.id, previous.id]);
+      expect((await repo.load(current.id))?.sessionNumber, 2);
+    });
+
+    test('library refresh includes the newly saved Point Count', () async {
+      SharedPreferences.setMockInitialValues({});
+      final container = ProviderContainer(
+        overrides: [sessionRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+
+      final previous = makeSession(id: 'previous')
+        ..type = SessionType.pointCount;
+      await repo.save(previous);
+      expect(
+        (await container.read(sessionListProvider.future)).map((s) => s.id),
+        [previous.id],
+      );
+
+      final current = makeSession(
+        id: 'current',
+        startTime: DateTime(2025, 6, 15, 11),
+      )..type = SessionType.pointCount;
+      await repo.save(current);
+      expect(
+        (await container.refresh(sessionListProvider.future)).map((s) => s.id),
+        [current.id, previous.id],
+      );
     });
 
     test('preserves session without detections', () async {
@@ -271,18 +444,17 @@ void main() {
       final staleIosPath =
           '/var/mobile/Containers/Data/Application/OLD-UUID/Documents/'
           'recordings/legacy/full.flac';
-      final json =
-          makeSession(
-            id: 'legacy',
-            recordingPath: staleIosPath,
-            detections: [
-              makeDetection(
-                audioClipPath:
-                    '/var/mobile/Containers/Data/Application/OLD-UUID/Documents/'
-                    'recordings/legacy/clip_1.flac',
-              ),
-            ],
-          ).toJson();
+      final json = makeSession(
+        id: 'legacy',
+        recordingPath: staleIosPath,
+        detections: [
+          makeDetection(
+            audioClipPath:
+                '/var/mobile/Containers/Data/Application/OLD-UUID/Documents/'
+                'recordings/legacy/clip_1.flac',
+          ),
+        ],
+      ).toJson();
       await File('${tempDir.path}/legacy.json').writeAsString(jsonEncode(json));
 
       final loaded = await repo.load('legacy');

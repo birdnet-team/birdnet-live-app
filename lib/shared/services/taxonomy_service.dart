@@ -184,92 +184,81 @@ class TaxonomyService {
         .toList();
   }
 
-  /// Search species by common name (any locale), alt name, or scientific name.
+  /// Search by the user's localized common name or scientific name.
   ///
-  /// Matches all whitespace-separated tokens (AND semantics) and ranks results
-  /// so that exact prefix matches come before word-prefix matches, which come
-  /// before substring matches. Ties are broken by observation count (more
-  /// commonly observed species first), then alphabetical common name.
-  List<TaxonomySpecies> search(String query, {int limit = 50}) {
+  /// Exact full-name matches sort alphabetically first. Every other match
+  /// sorts by descending geo score, then alphabetically. Searching only the
+  /// two names visible to the user avoids scanning every bundled locale on
+  /// each edit.
+  List<TaxonomySpecies> search(
+    String query, {
+    required String locale,
+    Map<String, double>? geoScores,
+    int limit = 50,
+  }) {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
 
+    final normalizedQuery = trimmed.toLowerCase();
     final tokens =
-        trimmed
-            .toLowerCase()
+        normalizedQuery
             .split(RegExp(r'\s+'))
             .where((t) => t.isNotEmpty)
             .toList();
     if (tokens.isEmpty) return const [];
 
-    // Score: 0 = full string starts with query, 1 = any word starts with a
-    // token, 2 = substring only. Lower is better. Returns null if any token
-    // fails to match anywhere.
-    int? scoreSpecies(TaxonomySpecies species) {
-      // Build the searchable haystacks: scientific name, English common
-      // name, alt name, and every localized common name.
-      final haystacks = <String>[
-        species.scientificName.toLowerCase(),
-        species.commonName.toLowerCase(),
-        if (species.commonNameAlt != null) species.commonNameAlt!.toLowerCase(),
-        if (species.commonNames != null)
-          ...species.commonNames!.values.map((n) => n.toLowerCase()),
-      ];
-
-      var bestScore = 3;
-      // Full-query prefix bonus: any haystack that starts with the full
-      // (untokenized) query is the strongest signal.
-      final fullLower = trimmed.toLowerCase();
-      for (final h in haystacks) {
-        if (h.startsWith(fullLower)) {
-          bestScore = 0;
-          break;
-        }
-      }
-
-      // All tokens must match somewhere; track the worst per-token score.
-      var worstTokenScore = 0;
-      for (final token in tokens) {
-        var tokenScore = 3;
-        for (final h in haystacks) {
-          if (h.startsWith(token)) {
-            tokenScore = 1;
-            break;
-          }
-          // Word-boundary prefix match (e.g. "owl" in "barn owl").
-          for (final word in h.split(RegExp(r'\s+'))) {
-            if (word.startsWith(token)) {
-              tokenScore = 1;
-              break;
-            }
-          }
-          if (tokenScore == 1) break;
-          if (h.contains(token)) tokenScore = 2;
-        }
-        if (tokenScore == 3) return null; // token unmatched: reject
-        if (tokenScore > worstTokenScore) worstTokenScore = tokenScore;
-      }
-
-      if (bestScore == 3) bestScore = worstTokenScore;
-      return bestScore;
-    }
-
-    final scored = <(int score, TaxonomySpecies species)>[];
+    final matches = <({bool exact, String name, TaxonomySpecies species})>[];
     for (final species in _csvIndex.values) {
-      final score = scoreSpecies(species);
-      if (score != null) scored.add((score, species));
+      final localizedName = species.commonNameForLocale(locale).toLowerCase();
+      final names = <String>[
+        species.scientificName.toLowerCase(),
+        species.displayScientificName.toLowerCase(),
+        localizedName,
+      ];
+      if (!tokens.every((token) => names.any((name) => name.contains(token)))) {
+        continue;
+      }
+      matches.add((
+        exact: names.any((name) => name == normalizedQuery),
+        name: localizedName,
+        species: species,
+      ));
     }
 
-    scored.sort((a, b) {
-      if (a.$1 != b.$1) return a.$1.compareTo(b.$1);
-      final obsA = a.$2.observationsCount ?? 0;
-      final obsB = b.$2.observationsCount ?? 0;
-      if (obsA != obsB) return obsB.compareTo(obsA);
-      return a.$2.commonName.compareTo(b.$2.commonName);
+    matches.sort((a, b) {
+      if (a.exact != b.exact) return a.exact ? -1 : 1;
+      if (!a.exact) {
+        final geo = (geoScores?[b.species.scientificName] ?? 0).compareTo(
+          geoScores?[a.species.scientificName] ?? 0,
+        );
+        if (geo != 0) return geo;
+      }
+      return a.name.compareTo(b.name);
     });
 
-    if (scored.length > limit) scored.length = limit;
-    return scored.map((e) => e.$2).toList();
+    if (matches.length > limit) matches.length = limit;
+    return matches.map((match) => match.species).toList();
+  }
+
+  /// Splits ordered search [results] into species at or above [threshold] in
+  /// [geoScores] and the rest, keeping their order.
+  ///
+  /// Returns null when no geo scores are available (no location yet), so
+  /// callers can show one unsectioned list instead of a misleading split.
+  static ({List<TaxonomySpecies> likely, List<TaxonomySpecies> other})?
+  splitByGeoLikelihood(
+    List<TaxonomySpecies> results, {
+    required Map<String, double>? geoScores,
+    required double threshold,
+  }) {
+    if (geoScores == null || geoScores.isEmpty) return null;
+    final likely = <TaxonomySpecies>[];
+    final other = <TaxonomySpecies>[];
+    for (final species in results) {
+      final score = geoScores[species.scientificName] ?? 0;
+      (score >= threshold ? likely : other).add(species);
+    }
+    return (likely: likely, other: other);
   }
 
   // ---------------------------------------------------------------------------

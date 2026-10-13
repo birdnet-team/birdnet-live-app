@@ -40,18 +40,20 @@ BirdNET Live доступно для Android, iOS и Windows.
 
 ### Карточки основных режимов
 
-- :material-microphone: **Режим Live**
-- :material-map-marker: **Режим Point Count**
-- :material-routes: **Режим Survey**
-- :material-file-music: **Анализ файлов**
+- :app-micRounded: **Режим Live**
+- :app-locationOnRounded: **Режим Point Count**
+- :app-routeRounded: **Режим Survey**
+- :app-audioFileRounded: **Анализ файлов**
+- :app-timerRounded: **Режим ARU**
+- :app-sdStorage: **Пакетный анализ** (Скоро)
 
 ### Кнопки внизу
 
-- :material-tune: **Настройки**
-- :material-magnify: **Обзор**
-- :material-music-box-multiple-outline: **Библиотека Sessions**
-- :material-help-circle-outline: **Справка**
-- :material-information-outline: **О приложении**
+- :app-tuneRounded: **Настройки**
+- :app-searchRounded: **Обзор**
+- :app-libraryMusic: **Библиотека Sessions**
+- :app-helpOutlineRounded: **Справка**
+- :app-infoOutline: **О приложении**
 
 ## Что сохраняется
 

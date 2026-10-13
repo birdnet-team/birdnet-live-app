@@ -7,6 +7,7 @@
 // =============================================================================
 
 import 'package:birdnet_live/core/services/location_service.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,6 +33,69 @@ void main() {
       final str = loc.toString();
       expect(str, contains('52.5200'));
       expect(str, contains('13.4050'));
+    });
+
+    Position fix({
+      required double altitude,
+      bool hasAltitude = true,
+      double altitudeAccuracy = 8,
+      bool hasAltitudeAccuracy = true,
+      DateTime? timestamp,
+    }) => Position(
+      longitude: 13.405,
+      latitude: 52.52,
+      timestamp: timestamp ?? DateTime.now(),
+      accuracy: 5,
+      altitude: altitude,
+      altitudeAccuracy: altitudeAccuracy,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+      hasAltitude: hasAltitude,
+      hasAltitudeAccuracy: hasAltitudeAccuracy,
+    );
+
+    test('keeps a measured zero and omits an unavailable zero', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(AppLocation.fromPosition(fix(altitude: 0)).altitude, 0);
+      expect(
+        AppLocation.fromPosition(fix(altitude: 0, hasAltitude: false)).altitude,
+        isNull,
+      );
+    });
+
+    test('stores uncertainty and the iOS reference', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final location = AppLocation.fromPosition(fix(altitude: -4.5));
+      expect(location.altitude, -4.5);
+      expect(location.altitudeAccuracy, 8);
+      expect(location.altitudeReference, AltitudeReference.meanSeaLevel);
+    });
+
+    test('omits stale height and ambiguous Windows zero', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      expect(
+        AppLocation.fromPosition(
+          fix(
+            altitude: 123,
+            timestamp: DateTime.now().subtract(const Duration(hours: 1)),
+          ),
+        ).altitude,
+        isNull,
+      );
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      expect(
+        AppLocation.fromPosition(fix(altitude: 0, altitudeAccuracy: 0))
+            .altitude,
+        isNull,
+      );
+      expect(
+        AppLocation.fromPosition(
+          fix(altitude: 0, altitudeAccuracy: double.infinity),
+        ).altitude,
+        isNull,
+      );
     });
   });
 
@@ -77,8 +141,8 @@ void main() {
   group('LocationService with GPS disabled', () {
     LocationService build() => LocationService(
       gpsEnabled: () => false,
-      manualLocation:
-          () => const AppLocation(latitude: 48.137, longitude: 11.576),
+      manualLocation: () =>
+          const AppLocation(latitude: 48.137, longitude: 11.576),
     );
 
     test('getCurrentLocation returns the manual coordinates', () async {

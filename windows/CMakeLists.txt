@@ -54,6 +54,16 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 add_subdirectory("runner")
 
 
+# ONNX Runtime version for the flutter_onnxruntime plugin's Windows build.
+# The plugin downloads a prebuilt runtime at configure time and only applies
+# its own default when this variable is empty. Plugin versions up to 1.8.x
+# stored the version in the CMake cache, so an incremental build would
+# otherwise keep linking whatever runtime the cache remembers (this quietly
+# shipped 1.22.0 after the plugin had moved on to 1.28.x). A normal variable
+# set here takes precedence over any cached value. Keep it at the default the
+# pinned plugin version ships with; see docs/developer/onnxruntime-pin.md.
+set(ONNXRUNTIME_VERSION "1.28.3")
+
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)

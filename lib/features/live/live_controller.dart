@@ -41,6 +41,7 @@ import 'package:just_audio/just_audio.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
 import '../../core/services/memory_monitor.dart';
+import '../../core/services/location_service.dart';
 import '../audio/ring_buffer.dart';
 import '../announcements/announcements_controller.dart'
     show AnnouncementDetection;
@@ -160,6 +161,7 @@ class LiveController {
 
   /// Whether per-detection audio clips should be saved.
   bool _saveDetectionClips = false;
+  bool _fixedLocationForDetections = false;
 
   /// Live-tunable confidence threshold (0–100 scale). Captured at
   /// session start; updated by [setConfidenceThreshold] without
@@ -338,12 +340,11 @@ class LiveController {
       debugPrint('[LiveController] labels loaded (${labelsCsv.length} chars)');
 
       final blacklistFile = _config!.scoreBlacklistFile;
-      final scoreBlacklistJson =
-          blacklistFile == null
-              ? null
-              : await rootBundle.loadString(
-                '${AppConstants.modelAssetsDir}/$blacklistFile',
-              );
+      final scoreBlacklistJson = blacklistFile == null
+          ? null
+          : await rootBundle.loadString(
+              '${AppConstants.modelAssetsDir}/$blacklistFile',
+            );
 
       // Start isolate with file path (not bytes).
       await _isolate.start(
@@ -418,17 +419,29 @@ class LiveController {
     int? targetDurationSeconds,
     double? latitude,
     double? longitude,
+    AppLocation? startLocation,
+    bool fixedLocationForDetections = false,
     bool clearRingBuffer = true,
   }) async {
     if (_state != LiveState.ready) return;
 
     final sessionId = DateTime.now().toIso8601String().replaceAll(':', '-');
+    // Height is only meaningful with the coordinates of the same fix.
+    final startFix =
+        startLocation?.latitude == latitude &&
+            startLocation?.longitude == longitude
+        ? startLocation
+        : null;
 
     _session = LiveSession(
       id: sessionId,
       startTime: DateTime.now(),
       latitude: latitude,
       longitude: longitude,
+      altitude: startFix?.altitude,
+      altitudeAccuracy: startFix?.altitudeAccuracy,
+      altitudeReference: startFix?.altitudeReference,
+      locationFixTime: startFix?.timestamp,
       settings: SessionSettings(
         windowDuration: windowDuration,
         confidenceThreshold: confidenceThreshold,
@@ -453,11 +466,15 @@ class LiveController {
         gainLinear: gainLinear,
         highPassHz: highPassHz,
         recordingMode: recordingMode.name,
+        clipContextSeconds: recordingMode == RecordingMode.detectionsOnly
+            ? recordingService.clipContextSeconds
+            : 0,
         recordingFormat: recordingFormat,
         targetDurationSeconds: targetDurationSeconds,
       ),
     );
     final startingSession = _session!;
+    _fixedLocationForDetections = fixedLocationForDetections;
 
     _sessionDetections.clear();
     _latestDetections = const [];
@@ -558,7 +575,8 @@ class LiveController {
     _windowDriver.cancelPendingWakeup();
 
     _sessionGeneration++;
-    for (final closed in _accumulator?.closeAll() ?? const <DetectionRecord>[]) {
+    for (final closed
+        in _accumulator?.closeAll() ?? const <DetectionRecord>[]) {
       _clipWriter.forget(closed);
     }
     _syncSessionDetections();
@@ -583,7 +601,8 @@ class LiveController {
     _state = LiveState.active;
     _notifyListeners();
 
-    _session?.startSegment();
+    // The closed segment is already included in recordedDurationSeconds.
+    _session?.startSegment(mergeRecent: false);
     _segmentStart = DateTime.now();
 
     debugPrint('[LiveController] session resumed');
@@ -618,12 +637,24 @@ class LiveController {
 
     // Finish already-requested post-roll clips while capture and recording
     // are still available. These tasks never block inference or UI updates.
-    await _clipWriter.drain();
+    try {
+      await _clipWriter.drain();
+    } catch (error, stack) {
+      // A failed optional clip must not discard the entire Session.
+      debugPrint('[LiveController] clip finalization failed: $error\n$stack');
+    }
 
     // Stop recording.
-    final recordingPath = await recordingService.stopRecording();
-    if (recordingPath != null) {
-      _session!.recordingPath = recordingPath;
+    try {
+      final recordingPath = await recordingService.stopRecording();
+      if (recordingPath != null) {
+        _session!.recordingPath = recordingPath;
+      }
+    } catch (error, stack) {
+      // Keep detections and timing even if closing the audio file fails.
+      debugPrint(
+        '[LiveController] recording finalization failed: $error\n$stack',
+      );
     }
 
     // Stop memory monitoring (debug builds only).
@@ -810,12 +841,11 @@ class LiveController {
       // Restrict to the intersection of both models: only keep detections
       // for species the geo-model also knows, regardless of filter mode.
       final geoNames = _geoModelSpeciesNames;
-      final filteredDetections =
-          geoNames == null
-              ? speciesFiltered
-              : speciesFiltered
-                  .where((d) => geoNames.contains(d.species.scientificName))
-                  .toList();
+      final filteredDetections = geoNames == null
+          ? speciesFiltered
+          : speciesFiltered
+                .where((d) => geoNames.contains(d.species.scientificName))
+                .toList();
 
       // Update the live detection list (replaced each cycle, like the PWA).
       // Each species appears at most once with its current score.
@@ -827,6 +857,20 @@ class LiveController {
         final cycle = _accumulator!.processCycle(
           detections: filteredDetections,
           windowEnd: audioReadAt,
+          createRecord: _fixedLocationForDetections
+              ? (detection, timestamp) => DetectionRecord(
+                  scientificName: detection.species.scientificName,
+                  commonName: detection.species.commonName,
+                  confidence: detection.confidence,
+                  timestamp: timestamp,
+                  latitude: _session!.latitude,
+                  longitude: _session!.longitude,
+                  altitude: _session!.altitude,
+                  altitudeAccuracy: _session!.altitudeAccuracy,
+                  altitudeReference: _session!.altitudeReference,
+                  locationFixTime: _session!.locationFixTime,
+                )
+              : null,
         );
         for (final closed in cycle.closedRecords) {
           _clipWriter.forget(closed);

@@ -40,18 +40,20 @@ Ekran startowy to główny punkt wyjścia.
 
 ### Karty głównych trybów
 
-- :material-microphone: **Tryb Live**
-- :material-map-marker: **Tryb Point Count**
-- :material-routes: **Tryb Survey**
-- :material-file-music: **Analiza plików**
+- :app-micRounded: **Tryb Live**
+- :app-locationOnRounded: **Tryb Point Count**
+- :app-routeRounded: **Tryb Survey**
+- :app-audioFileRounded: **Analiza plików**
+- :app-timerRounded: **Tryb ARU**
+- :app-sdStorage: **Analiza partii** (Już wkrótce)
 
 ### Przyciski na dole
 
-- :material-tune: **Ustawienia**
-- :material-magnify: **Przeglądaj**
-- :material-music-box-multiple-outline: **Biblioteka Sessions**
-- :material-help-circle-outline: **Pomoc**
-- :material-information-outline: **O aplikacji**
+- :app-tuneRounded: **Ustawienia**
+- :app-searchRounded: **Przeglądaj**
+- :app-libraryMusic: **Biblioteka Sessions**
+- :app-helpOutlineRounded: **Pomoc**
+- :app-infoOutline: **O aplikacji**
 
 ## Co jest zapisywane
 

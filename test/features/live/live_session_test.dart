@@ -234,8 +234,14 @@ void main() {
         'commonName': 'Eurasian Blackbird',
         'confidence': 0.85,
         'timestamp': DateTime.utc(2026, 2, 28, 14, 30).toIso8601String(),
-        'clipTimestamp':
-            DateTime.utc(2026, 2, 28, 14, 30, 12).toIso8601String(),
+        'clipTimestamp': DateTime.utc(
+          2026,
+          2,
+          28,
+          14,
+          30,
+          12,
+        ).toIso8601String(),
       });
 
       expect(restored.audioClipPath, isNull);
@@ -733,6 +739,27 @@ void main() {
       expect(session.segments.single.endTime, isNotNull);
     });
 
+    test('rolling a checkpoint does not count the previous segment twice', () {
+      final now = DateTime.now();
+      final session = LiveSession(
+        id: 'rolling-survey',
+        startTime: now.subtract(const Duration(seconds: 30)),
+        settings: testSettings,
+        recordedDurationSeconds: 30,
+        segments: [
+          SessionSegment(
+            startTime: now.subtract(const Duration(seconds: 30)),
+            endTime: now,
+          ),
+        ],
+      );
+
+      session.startSegment(mergeRecent: false);
+
+      expect(session.segments, hasLength(2));
+      expect(session.duration.inSeconds, inInclusiveRange(30, 31));
+    });
+
     test('resume opens a distinct segment and keeps accumulated time', () {
       final start = DateTime(2026, 2, 28, 14, 0);
       final session = LiveSession(
@@ -862,6 +889,27 @@ void main() {
       expect(roundTripped.detections[0].audioClipPath, '/clips/clip1.wav');
       expect(roundTripped.recordingPath, '/recordings/full.wav');
       expect(roundTripped.settings.windowDuration, 3);
+    });
+
+    test('background stop reasons survive saving and reopening', () {
+      for (final reason in [
+        SessionStopReason.backgroundLimit,
+        SessionStopReason.backgrounded,
+      ]) {
+        final session = LiveSession(
+          id: reason.name,
+          startTime: DateTime(2026, 2, 28),
+          settings: testSettings,
+          stopReason: reason,
+          stopReasonValue: reason == SessionStopReason.backgroundLimit
+              ? 30
+              : null,
+        );
+
+        final restored = LiveSession.fromJson(session.toJson());
+        expect(restored.stopReason, reason);
+        expect(restored.stopReasonValue, session.stopReasonValue);
+      }
     });
 
     test('toJson omits null fields', () {

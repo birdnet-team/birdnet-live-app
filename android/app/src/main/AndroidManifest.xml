@@ -85,7 +85,7 @@
         <meta-data
             android:name="com.birdnet.live.notification_icon"
             android:resource="@drawable/ic_notification" />
-        <!-- Survey foreground service -->
+        <!-- Shared Survey, ARU, Live Mode, and Point Count foreground service -->
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:foregroundServiceType="microphone|location"
@@ -143,6 +143,11 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="mailto"/>
+        </intent>
+        <!-- Lets TextToSpeech enumerate and bind installed speech engines
+             under Android 11+ package visibility (TtsChannel.kt). -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

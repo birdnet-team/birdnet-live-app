@@ -1,0 +1,6 @@
+Material Symbols and Material Icons glyphs are provided by Google under the
+Apache License, Version 2.0 (see LICENSE in this directory).
+
+These SVGs are exported from the fonts already used by BirdNET Live. Each SVG
+records the corresponding AppIcons member and source glyph. The generation
+script is tools/sync_doc_icons.py; the SVGs inherit the surrounding text color.

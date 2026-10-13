@@ -4,7 +4,7 @@ Live Mode is the fastest way to listen through the phone microphone and review d
 
 ## How to Open It
 
-From the Home screen, tap the **Live Mode** card with the :material-microphone: icon.
+From the Home screen, tap the **Live Mode** card with the :app-micRounded: icon.
 
 ## Quick Listen Widget
 
@@ -25,17 +25,17 @@ Quick Listen never replaces another running mode. If a Point Count, Survey, File
 
 The top bar contains three elements:
 
-- :material-arrow-left: — leave Live Mode
+- :app-arrowBackRounded: — leave Live Mode
 - center status text — `Initializing`, `Loading model`, `Ready`, `Identifying species`, `Paused`, or `Error`
-- :material-tune: — open the Live-specific Settings view
+- :app-tuneRounded: — open the Live-specific Settings view
 
 ## Main Action Button
 
 The large circular button at the bottom center changes state:
 
-- :material-microphone: — start listening
-- :material-stop: — stop the active session
-- :material-play: — resume from a paused-ready state
+- :app-mic: — start listening
+- :app-stopRounded: — stop the active session
+- :app-playArrowRounded: — resume from a paused-ready state
 
 ## What You See While Listening
 
@@ -73,3 +73,9 @@ Recording is controlled in [Settings](settings.md).
 - **Off** disables recording.
 
 When you stop Live Mode, BirdNET Live saves the session and opens [Session Review](session-review.md).
+
+When automatic Session saving is enabled, Live Mode also saves a partial Session at the start, every 30 seconds, and when the app goes into the background. After a crash or power loss, the latest saved snapshot is available in Session Library. Changes since that snapshot can be lost. Turning automatic saving off also turns off these checkpoints.
+
+## Screen-off listening
+
+Live Mode normally pauses when you lock the screen or leave the app and resumes the same Session when you return. The first time this happens, a dialog offers limited background listening. In [Recording settings](settings.md), turn on **Continue with screen off** and choose a 15, 30, 60, or 120 minute maximum (30 minutes by default). The time limit applies to each period away from the app; reaching it ends the Session. On Android, a persistent notification shows that listening is active and offers Open and Stop actions. On Windows, Live Mode keeps listening while its window is minimized.
