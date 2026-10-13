@@ -4,13 +4,13 @@ Tryb Przeglądaj pokazuje gatunki przewidywane dla bieżącej lokalizacji i pory
 
 ## Jak go otworzyć
 
-Otwórz **Przeglądaj** ze stopki ekranu startowego przyciskiem :material-magnify:.
+Otwórz **Przeglądaj** ze stopki ekranu startowego przyciskiem :app-searchRounded:.
 
 ## Pasek aplikacji i nagłówek
 
 ### Pasek aplikacji
 
-- :material-refresh: — odśwież lokalizację i zbuduj od nowa listę przewidywanych gatunków
+- :app-refresh: — odśwież lokalizację i zbuduj od nowa listę przewidywanych gatunków
 
 ### Nagłówek lokalizacji
 
@@ -18,7 +18,7 @@ Nagłówek pokazuje:
 
 - bieżącą nazwę miejsca uzyskaną z geokodowania odwrotnego, jeśli jest dostępna
 - współrzędne pod nazwą miejsca
-- :material-help-circle-outline: — otwarcie panelu pomocy trybu Przeglądaj
+- :app-helpOutlineRounded: — otwarcie panelu pomocy trybu Przeglądaj
 
 ## Lista gatunków
 

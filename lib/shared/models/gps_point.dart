@@ -12,6 +12,8 @@
 // interpolated during finalization (when background location was denied).
 // =============================================================================
 
+import 'altitude_reference.dart';
+
 /// A single point on the GPS track with timestamp.
 class GpsPoint {
   const GpsPoint({
@@ -19,6 +21,8 @@ class GpsPoint {
     required this.longitude,
     required this.timestamp,
     this.altitude,
+    this.altitudeAccuracy,
+    this.altitudeReference,
     this.accuracy,
     this.measured = true,
   });
@@ -29,8 +33,14 @@ class GpsPoint {
   /// Longitude in decimal degrees.
   final double longitude;
 
-  /// Meters above sea level (null if unavailable).
+  /// Device-reported height in meters (null if unavailable).
   final double? altitude;
+
+  /// Estimated vertical uncertainty in meters, when reported.
+  final double? altitudeAccuracy;
+
+  /// Reference surface for [altitude].
+  final AltitudeReference? altitudeReference;
 
   /// Horizontal accuracy in meters (null if unavailable).
   final double? accuracy;
@@ -47,6 +57,8 @@ class GpsPoint {
       latitude: (json['lat'] as num).toDouble(),
       longitude: (json['lon'] as num).toDouble(),
       altitude: (json['alt'] as num?)?.toDouble(),
+      altitudeAccuracy: (json['vAcc'] as num?)?.toDouble(),
+      altitudeReference: AltitudeReference.fromName(json['altRef'] as String?),
       accuracy: (json['acc'] as num?)?.toDouble(),
       timestamp: DateTime.parse(json['t'] as String),
       measured: json['m'] as bool? ?? true,
@@ -58,6 +70,8 @@ class GpsPoint {
     'lat': latitude,
     'lon': longitude,
     if (altitude != null) 'alt': altitude,
+    if (altitudeAccuracy != null) 'vAcc': altitudeAccuracy,
+    if (altitudeReference != null) 'altRef': altitudeReference!.name,
     if (accuracy != null) 'acc': accuracy,
     't': timestamp.toUtc().toIso8601String(),
     if (!measured) 'm': false,

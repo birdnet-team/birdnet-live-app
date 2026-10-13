@@ -4,7 +4,7 @@ O Modo Live é a forma mais rápida de escutar pelo microfone do telefone e revi
 
 ## Como abrir
 
-Na tela de Início, toque no cartão **Modo Live** com o ícone :material-microphone:.
+Na tela de Início, toque no cartão **Modo Live** com o ícone :app-micRounded:.
 
 ## Widget «Escuta rápida»
 
@@ -25,17 +25,17 @@ A Escuta rápida nunca substitui outro modo em execução. Se uma Session de Poi
 
 A barra superior contém três elementos:
 
-- :material-arrow-left: — sai do Modo Live
+- :app-arrowBackRounded: — sai do Modo Live
 - texto de estado central — `Inicializando`, `Carregando modelo`, `Pronto`, `Identificando espécies`, `Pausado` ou `Erro`
-- :material-tune: — abre a visualização de Configurações específica do Live
+- :app-tuneRounded: — abre a visualização de Configurações específica do Live
 
 ## Botão de ação principal
 
 O grande botão circular na parte inferior central muda de estado:
 
-- :material-microphone: — inicia a escuta
-- :material-stop: — para a Session ativa
-- :material-play: — retoma a partir de um estado pausado e pronto
+- :app-mic: — inicia a escuta
+- :app-stopRounded: — para a Session ativa
+- :app-playArrowRounded: — retoma a partir de um estado pausado e pronto
 
 ## O que você vê durante a escuta
 
@@ -73,3 +73,9 @@ A gravação é controlada nas [Configurações](settings.md).
 - **Desativado** desativa a gravação.
 
 Ao parar o Modo Live, o BirdNET Live salva a Session e abre o [Resumo da Session](session-review.md).
+
+Quando o salvamento automático de Sessions está ativado, o Modo Live também salva uma Session parcial no início, a cada 30 segundos e quando o aplicativo vai para segundo plano. Após uma falha ou queda de energia, o último salvamento fica disponível na Biblioteca de Sessions. Alterações posteriores a esse salvamento podem ser perdidas. Desativar o salvamento automático também desativa esses salvamentos intermediários.
+
+## Escuta com a tela apagada
+
+Live Mode normalmente pausa ao bloquear a tela ou sair do aplicativo e retoma a mesma Session quando você volta. Na primeira vez, um diálogo oferece escuta limitada em segundo plano. Nas [configurações de gravação](settings.md), ative **Continuar com a tela desligada** e escolha um máximo de 15, 30, 60 ou 120 minutos (30 por padrão). O limite vale para cada período fora do aplicativo; atingi-lo encerra a Session. Android mostra uma notificação persistente com Abrir e Parar. No Windows, Live Mode continua escutando com a janela minimizada.

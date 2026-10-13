@@ -4,13 +4,13 @@ Explorar muestra las especies previstas para la ubicación y la temporada actual
 
 ## Cómo abrirlo
 
-Abre **Explorar** desde el pie de página de Inicio con el botón :material-magnify:.
+Abre **Explorar** desde el pie de página de Inicio con el botón :app-searchRounded:.
 
 ## Barra de la aplicación y encabezado
 
 ### Barra de la aplicación
 
-- :material-refresh: — actualiza la ubicación y reconstruye la lista de especies previstas
+- :app-refresh: — actualiza la ubicación y reconstruye la lista de especies previstas
 
 ### Encabezado de ubicación
 
@@ -18,7 +18,7 @@ El encabezado muestra:
 
 - el nombre del lugar actual mediante geocodificación inversa cuando está disponible
 - las coordenadas debajo del nombre del lugar
-- :material-help-circle-outline: — abre la hoja de ayuda de Explorar
+- :app-helpOutlineRounded: — abre la hoja de ayuda de Explorar
 
 ## Lista de especies
 

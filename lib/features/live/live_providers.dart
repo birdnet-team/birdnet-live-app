@@ -43,11 +43,18 @@ import 'live_session.dart';
 /// The [RecordingService] instance, connected to the shared ring buffer.
 final recordingServiceProvider = Provider<RecordingService>((ref) {
   final ringBuffer = ref.watch(ringBufferProvider);
-  final clipContext = ref.watch(clipContextProvider);
   final service = RecordingService(
     ringBuffer: ringBuffer,
     sampleRate: AppConstants.sampleRate,
-    clipContextSeconds: clipContext,
+    clipContextSeconds: ref.read(clipContextProvider),
+  );
+  // Follow the setting without rebuilding. The clip-context slider is
+  // reachable from the Live screen's settings while a session runs, and a
+  // rebuild here would dispose this service and, through
+  // [liveControllerProvider], the running controller.
+  ref.listen(
+    clipContextProvider,
+    (_, value) => service.setClipContextSeconds(value),
   );
   ref.onDispose(service.dispose);
   return service;

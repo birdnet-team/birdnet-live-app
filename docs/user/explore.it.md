@@ -4,13 +4,13 @@ Esplora mostra le specie previste per la posizione e la stagione attuali usando 
 
 ## Come aprirlo
 
-Apri **Esplora** dal piè di pagina della Home usando il pulsante :material-magnify:.
+Apri **Esplora** dal piè di pagina della Home usando il pulsante :app-searchRounded:.
 
 ## Barra dell'app e intestazione
 
 ### Barra dell'app
 
-- :material-refresh: — aggiorna la posizione e ricostruisce l'elenco delle specie previste
+- :app-refresh: — aggiorna la posizione e ricostruisce l'elenco delle specie previste
 
 ### Intestazione della posizione
 
@@ -18,7 +18,7 @@ L'intestazione mostra:
 
 - il nome del luogo ottenuto tramite geocoding inverso, quando disponibile
 - le coordinate sotto il nome del luogo
-- :material-help-circle-outline: — apre il pannello di aiuto di Esplora
+- :app-helpOutlineRounded: — apre il pannello di aiuto di Esplora
 
 ## Elenco delle specie
 

@@ -150,48 +150,37 @@ void main() {
   );
 
   testWidgets(
-    'restores an in-progress deployment from disk into the recording state',
+    'leaves an ended partial deployment on disk while a cycle records',
     (tester) async {
-      // First controller starts and enters cycle 0, persisting to disk.
-      final first = AruController(
-        saveSession: repository.save,
+      // Same routing as aruControllerProvider: unfinished sessions are
+      // written as checkpoints so a process kill leaves an ended Session.
+      final controller = AruController(
+        saveSession: (session) => session.endTime == null
+            ? repository.saveCheckpoint(session)
+            : repository.save(session),
         now: () => scheduleStart.subtract(const Duration(minutes: 5)),
       );
-      await first.startDeployment(
-        sessionId: 'aru-it-restore',
+      await controller.startDeployment(
+        sessionId: 'aru-it-checkpoint',
         settings: settings,
         metadata: combinedMetadata(maxCycles: 2),
       );
-      await first.evaluate(
+      await controller.evaluate(
         now: scheduleStart.add(const Duration(minutes: 5)),
       );
-      expect(first.state, AruControllerState.recording);
+      expect(controller.state, AruControllerState.recording);
 
-      // Simulate a process restart: reload the persisted session from disk.
-      final reloaded = await repository.load('aru-it-restore');
-      expect(reloaded, isNotNull);
-      expect(reloaded!.endTime, isNull);
+      // Simulate a crash: only what is on disk survives.
+      final recovered = await repository.load('aru-it-checkpoint');
+      expect(recovered, isNotNull);
+      expect(recovered!.endTime, isNotNull);
+      final cycle = recovered.aruMetadata!.cycles.single;
+      expect(cycle.index, 0);
+      expect(cycle.status, AruCycleStatus.partial);
+      expect(cycle.actualEnd, isNotNull);
 
-      // A fresh controller restores it and resumes inside the live cycle.
-      final restored = AruController(saveSession: repository.save);
-      await restored.restoreDeployment(
-        reloaded,
-        now: scheduleStart.add(const Duration(minutes: 6)),
-      );
-      expect(restored.state, AruControllerState.recording);
-      expect(restored.session!.id, 'aru-it-restore');
-      expect(
-        restored.session!.aruMetadata!.cycles.map((c) => c.index),
-        contains(0),
-      );
-
-      // Driving the restored controller to completion still persists cleanly.
-      await restored.evaluate(
-        now: scheduleStart.add(const Duration(hours: 2)),
-      );
-      expect(restored.state, AruControllerState.completed);
-      final finalState = await repository.load('aru-it-restore');
-      expect(finalState!.endTime, isNotNull);
+      // The running deployment itself is not ended by the checkpoint.
+      expect(controller.session!.endTime, isNull);
     },
   );
 

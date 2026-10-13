@@ -4,7 +4,7 @@ Analiza plików przetwarza istniejące nagranie tym samym potokiem BirdNET, któ
 
 ## Jak ją otworzyć
 
-Na ekranie startowym dotknij karty **Analiza plików** z ikoną :material-file-music:.
+Na ekranie startowym dotknij karty **Analiza plików** z ikoną :app-audioFileRounded:.
 
 ### Z innej aplikacji
 
@@ -12,8 +12,9 @@ Nagranie możesz też przekazać z innej aplikacji. W systemie Android udostępn
 
 ## Pasek aplikacji
 
-- :material-tune: — otwórz ustawienia analizy plików
-- :material-close: — anuluj trwającą analizę
+- :app-tuneRounded: — otwórz ustawienia analizy plików
+- :app-helpOutlineRounded: — otwórz pomoc analizy plików
+- :app-close: — anuluj trwającą analizę
 
 ## Obsługiwane pliki wejściowe
 
@@ -42,11 +43,11 @@ Wybierz plik i sprawdź jego kartę metadanych:
 
 Możesz:
 
-- użyć bieżącej pozycji GPS
-- wprowadzić współrzędne ręcznie
-- pominąć lokalizację
-- wskazać punkt na mapie
-- opcjonalnie ustawić datę nagrania
+- użyć bieżącej pozycji GPS :app-myLocation:
+- wprowadzić współrzędne ręcznie :app-editLocationAlt:
+- pominąć lokalizację :app-locationOff:
+- wskazać punkt na mapie :app-mapSheet:
+- opcjonalnie ustawić datę nagrania :app-calendarTodayRounded:
 
 ### 3. Parametry
 
@@ -57,6 +58,16 @@ Kreator udostępnia:
 - czułość
 - próg pewności
 - tryb filtra gatunków
+
+| Element konfiguracji | Ikona |
+|---|---|
+| Czas trwania okna | :app-timerOutlined: |
+| Nakładanie | :app-swapHoriz: |
+| Czułość | :app-hearing: |
+| Próg pewności | :app-verifiedRounded: |
+| Filtr gatunków | :app-filterAltRounded: |
+
+Stuknij przycisk :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Kroki pliku, lokalizacji i daty nagrania także mają przyciski pomocy.
 
 Nakładanie określa, o ile przesuwa się każde okno analizy, i jest właściwe dla
 analizy plików: cały plik jest zawsze przeglądany, a większe nakładanie

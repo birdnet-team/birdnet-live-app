@@ -40,18 +40,20 @@ L'écran d'accueil est le point central de l'application.
 
 ### Cartes des modes principaux
 
-- :material-microphone: **Mode En direct**
-- :material-map-marker: **Mode Point d'écoute**
-- :material-routes: **Mode Relevé**
-- :material-file-music: **Analyse de fichiers**
+- :app-micRounded: **Mode En direct**
+- :app-locationOnRounded: **Mode Point d'écoute**
+- :app-routeRounded: **Mode Relevé**
+- :app-audioFileRounded: **Analyse de fichiers**
+- :app-timerRounded: **Mode ARU**
+- :app-sdStorage: **Analyse par lots** (Prochainement)
 
 ### Boutons du bas
 
-- :material-tune: **Paramètres**
-- :material-magnify: **Explorer**
-- :material-music-box-multiple-outline: **Bibliothèque de sessions**
-- :material-help-circle-outline: **Aide**
-- :material-information-outline: **À propos**
+- :app-tuneRounded: **Paramètres**
+- :app-searchRounded: **Explorer**
+- :app-libraryMusic: **Bibliothèque de sessions**
+- :app-helpOutlineRounded: **Aide**
+- :app-infoOutline: **À propos**
 
 ## Ce qui est enregistré
 

@@ -259,6 +259,31 @@ void main() {
       expect(view.getUint32(4, Endian.little), 44);
     });
 
+    test('long recording has a valid header before close', () async {
+      final filePath = '${tempDir.path}/crash.wav';
+      final writer = WavWriter(filePath: filePath, sampleRate: 10);
+      await writer.open();
+      await writer.writeSamplesPcm16(Int16List(300));
+
+      final header = await File(filePath)
+          .openRead(0, 44)
+          .fold<List<int>>(<int>[], (bytes, chunk) => bytes..addAll(chunk));
+      final view = ByteData.sublistView(Uint8List.fromList(header));
+      expect(view.getUint32(40, Endian.little), 600);
+      expect(view.getUint32(4, Endian.little), 636);
+
+      await writer.writeSamplesPcm16(Int16List(10));
+      await writer.close();
+      final closedHeader = await File(filePath)
+          .openRead(0, 44)
+          .fold<List<int>>(<int>[], (bytes, chunk) => bytes..addAll(chunk));
+      expect(
+        ByteData.sublistView(Uint8List.fromList(closedHeader))
+            .getUint32(40, Endian.little),
+        620,
+      );
+    });
+
     test(
       'streaming writer preserves configured sample rate in header',
       () async {

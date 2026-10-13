@@ -7,8 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.2.1] - 2026-10-12
+
+### Changed
+
+- Updated the on-device inference runtime from ONNX Runtime 1.22 to 1.28 and the Android background-service plugin to its current major version. The Arm KleidiAI kernels behind the 1.0.2 inference crash are now switched off explicitly for every model session, so inference keeps running on the same CPU code path as before.
+
+### Fixed
+
+- Trimming a recording and normalizing quiet shared audio now run in a background isolate, so long recordings no longer freeze the app (an Android ANR) while they are cut or re-encoded.
+- Exporting FLAC audio as WAV now streams the conversion through a temporary file in a background isolate instead of decoding the whole recording in memory. Long recordings no longer freeze the app or run out of memory during export.
+- Survey and ARU now declare their Android foreground service types explicitly. On Android 14 and newer the service previously failed to start whenever location permission was not granted, so recording stopped as soon as the screen turned off.
+- The classifier model is no longer copied through memory on first launch. iOS and Windows load it straight from the app bundle, sideloaded Android builds copy it natively, and the remaining fallback writes through a temporary file so an interrupted first launch cannot leave a corrupt model behind. Model copies that earlier versions left in the app's documents folder are removed on the next launch.
+- Species descriptions are now decompressed and parsed off the UI thread, removing a visible hitch the first time a species card opens in a session.
+- ARU deployments and Surveys no longer stall when an Android foreground service call never answers: every notification start, update, and stop is now bounded, and a failed update is retried on the next tick. An ARU service that starts after its timeout is adopted instead of being left running unattended.
+- Fixed a rare case on Android where a model load or a shared-file import could wait forever after the app's activity was recreated mid-way: native replies now always reach the app, and the model loader moves on to its fallback after a timeout.
+- On iOS and Windows, cancelling an audio decode (leaving Session Review, cancelling File Analysis) no longer revives or silently loses decodes that started a moment later; on Windows a cancelled decode is reported as cancelled instead of as a shorter recording.
+- Releasing a microphone that stopped answering now takes at most about three seconds in total before a new session starts, instead of up to six.
+- A Survey, ARU deployment, or background Live Mode / Point Count session that loses the microphone while the screen is off (a phone call, a Bluetooth microphone dropping out) now tries to reclaim it instead of staying silent until the app is opened again. iOS retries at the usual pace; Android probes the microphone slowly, a few times per hour, to stay clear of a device audio bug.
+- On Windows, closing the app while a long File Analysis decode is still running no longer risks a crash on exit, and a system font change can no longer crash the app during shutdown.
+- The app now keeps a small on-device log of unexpected errors (under the app's support directory, capped at 256 KB, rate-limited, never uploaded) so field reports have something to go on.
+- Recording encoding (FLAC and WAV, full recordings and detection clips) now runs on a worker isolate instead of the UI thread, removing a steady source of stutter during long Live Mode and Survey sessions on slower devices.
+- Normalizing quiet shared audio and building the trim editor's whole-recording spectrogram now stream the recording in bounded chunks instead of holding all of its audio in memory, so long recordings no longer risk running out of memory in Session Review or on share.
+- Raven selection tables now write Low Freq (Hz) and High Freq (Hz) as `0.0` and `16000.0` for compatibility with parsers that require floating-point values (#265).
+- Fixed the app closing immediately on launch on iOS 27; iOS startup now uses the scene lifecycle the iOS 27 SDK requires (#262).
+- Maps can no longer be pinched out below zoom 2. Zooming out past the whole world made the marker layer build millions of widgets in one frame, which froze the app and triggered an Android ANR.
+- Changing the clip-context setting while a Live Mode Session is running no longer silently ends the session: the running recorder now keeps its clip length until the session ends, instead of being rebuilt underneath it. The same guard now covers Survey and ARU.
+- Ending a Live Mode or Point Count Session now keeps the microphone open until the Session is finalized, as Survey already did. Detections from the last few seconds no longer lose their clips, and on iOS a Session that ends in the background (the background limit, a Point Count ending with the screen off) is saved before the system can suspend the app.
+- Point Count and ARU now wait for the classifier to finish loading before they start, like Live Mode does. Starting a count while the model was still warming up, or after a failed load, previously opened the microphone and ran the countdown without identifying anything.
+- A geo-model that fails to load once no longer leaves Live Mode, Point Count, Survey, and ARU unable to start until the app is restarted. The Session now starts without the location filter (taxon ignore rules still apply) and the next start retries the load.
+- Survey species alerts now work on iOS. Choosing an alert mode asks for notification permission (as it already did on Android), and alerts are shown while the app is open; previously iOS never asked and never displayed them.
+- On iOS, an active ARU deployment now keeps the screen on. iOS cannot wake the app for a scheduled cycle once Auto-Lock has suspended it, so deployments previously stopped silently after the first cycle.
+- The iOS audio decoder no longer crashes the app when the device runs out of disk space while a long recording is converted for Session Review; the conversion now fails with an error instead. Durations and seeks for variable-bitrate MP3 files are now exact, so File Analysis no longer skips the end of such recordings, and a decode cancelled the instant it was requested is now actually cancelled.
+- Spoken announcements on iOS now use the voice the system picks for the species language (preferring the device's own region) instead of the first installed regional voice in alphabetical order, which read English names in Australian English and French names in Canadian French.
+- On iOS, sharing a second audio file before the first one was opened no longer leaves the first copy behind in the app's storage, and shared files with long non-Latin names now import instead of failing on the filename length.
+- A Live Mode Session now pauses while another app holds the microphone (a camera recording, a call, an iOS audio interruption) and resumes by itself once audio flows again. The session clock previously ran through the gap, so Session Review reported audio shorter than the Session and detections could be dated inside the silence.
+- On iOS, Session Review now actually switches the audio session to playback. The configuration call was rejected by the system (it passed options only valid while recording), so review playback ran under whatever audio session the last recording left behind.
+- On iOS, a phone call, Siri, or an alarm during a background Survey, ARU deployment, or background Live Mode / Point Count session no longer ends recording for good. The recorder is now paused for the interruption and resumed when it ends, instead of being torn down while the call still holds the microphone.
+- Fixed an Android ANR at launch when the system text-to-speech engine answered slowly. Spoken announcements now use the app's own text-to-speech bridge instead of the flutter_tts plugin: the engine is only started when announcements are used, and every engine call stays off the UI thread.
+
+## [1.2.0] - 2026-10-06
+
+### Changed
+
+- Redesigned Help as a quick reference with mode purposes, audio-model and geomodel explanations, essential settings, field tips, guide links, and a floating back-to-top button. User-guide icons now match the app's actual glyphs across translated pages.
+- German app text now consistently uses the formal “Sie” address, including Help, Live Mode tips, and remaining informal prompts.
+- Refreshed the pre-recording Live Mode tips with practical field advice, microphone checks, and current recording and background-listening settings.
+- Development and release builds now require Flutter 3.47 or later with Dart 3.13 or later.
+
 ### Added
 
+- Point Count duration selection now includes 25 and 30 minutes.
+- GPS heights now follow session and detection coordinates into saved metadata and exports: CSV and Raven gain one Altitude (m) column, while JSON and GPX also carry vertical accuracy, reference surface, and fix time. Detections added in Survey review take a position interpolated along the track.
 - Live Mode can keep listening with the screen off or while another app is open for a selectable 15–120 minute interval; a one-time return dialog explains the option. Point Count setup now makes its default background behavior explicit and can end a count early when the option is off; on Windows, a minimized window never pauses either mode.
 - Setup controls in Point Count, Survey, ARU, and File Analysis now have matching help buttons and consistent icons for shared settings; the user guide reflects the same icons.
 - Point Count setup now offers Full, Clips, and Off recording choices independently of Live Mode. Full is the default; Clips use Live Mode's clip context and keep every detection clip.
@@ -16,10 +66,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Session and bulk exports now compress ZIP bundles in a background isolate, preventing Android ANRs while exporting large recordings.
+- Fixed an Android recording crash caused by a late Bluetooth connection event triggering startup twice ("Reply already submitted").
+- Active Sessions now save a partial snapshot every 30 seconds (Live Mode and Point Count only when automatic saving is enabled), so a crash or power loss leaves the latest snapshot in the Session Library; recording does not restart. Session saves keep a recovery copy during replacement, and long WAV recordings refresh their header while recording (#240).
 - The Session Library back arrow and system back action now return directly to the main menu, even after starting several sessions from the library.
 - Ending a Point Count or Live Mode Session while returning from the background now keeps the screen open until saving finishes, refreshes the Session Library, and completes background notification stops reliably.
 - The Russian Stop label on the Survey screen and in Survey, ARU, Live Mode, and Point Count notifications now uses the correct imperative, “Остановить”.
 - Live Mode and Point Count Sessions now record their clip context, so Raven and CSV exports place detections at the right offset within each clip.
+- File Analysis now respects manual and skipped location choices when a pending GPS lookup finishes.
+- GPX exports now put the observer before the start time and reviewed waypoint fields in GPX 1.1 order, so strict validators accept them.
 - Raven selection tables now use cumulative clip-sequence times, omit detections without exported clips, always report Survey Time in UTC, and keep Raven’s default columns first. Document-only Raven clip exports reference the original audio filenames (#229).
 
 ## [1.1.3] - 2026-09-10
@@ -2023,4 +2078,3 @@ defaults to off and the feature has no UI surface in this commit.
 - LiveSession data model with settings snapshot and detection records
 - Audio playback for detection clips (just_audio integration)
 - Session info bar showing species and detection counts during active sessions
-

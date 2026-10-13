@@ -1,15 +1,16 @@
 # Modo ARU
 
 !!! note "Implementación temprana"
-    El modo ARU actualmente crea una Session de despliegue programada y recuperable, graba ciclos programados, ejecuta inferencia en vivo durante los ciclos activos, guarda clips de detección retenidos cuando se selecciona ese modo de grabación y muestra controles de notificación en primer plano en Android. El comportamiento en segundo plano en iOS aún necesita validación de campo.
+    El modo ARU actualmente guarda puntos de control del despliegue programado, graba ciclos programados, ejecuta inferencia en vivo durante los ciclos activos, guarda clips de detección retenidos cuando se selecciona ese modo de grabación y muestra controles de notificación en primer plano en Android. El comportamiento en segundo plano en iOS aún necesita validación de campo.
 
 El modo ARU (Autonomous Recording Unit) es el flujo de trabajo para despliegues acústicos programados en una ubicación fija.
 
 ## Flujo de configuración actual
 
-- **Despliegue y audio**: 
+- **Detalles y ajustes de análisis**:
     - **Metadatos**: Introduzca un nombre de despliegue, ID de ARU/estación y nombre del observador.
-    - **Ubicación**: Proporcione las coordenadas del sitio usando la adquisición automática de GPS, la entrada manual de latitud/longitud o salte la configuración de ubicación. La latitud y la longitud son requeridas si se utiliza la programación vinculada al sol.
+    - **Ubicación**: Proporcione las coordenadas del sitio usando la adquisición automática de GPS, la entrada manual de latitud/longitud o salte la configuración de ubicación. La latitud y la longitud son requeridas si se utiliza la programación vinculada al sol. Iconos: GPS :app-myLocation:, coordenadas manuales :app-editLocationAlt:, omitir ubicación :app-locationOff: y selector de mapa :app-mapSheet:.
+    - **Análisis**: Elige el micrófono, la tasa de inferencia, el umbral de confianza y la sensibilidad.
     - **Formato de grabación**: Elija entre los formatos FLAC (comprimido sin pérdidas) y WAV (sin comprimir).
     - **Modo de grabación**:
         - *Completo*: Graba la duración total de cada ciclo activo.
@@ -24,7 +25,9 @@ El modo ARU (Autonomous Recording Unit) es el flujo de trabajo para despliegues 
     - **Agrupación de Sessions**: Configure si desea guardar cada ciclo como una Session separada (recomendado para tiempos de carga más rápidos y visualización modular) o combinar todos los ciclos en una única Session de múltiples segmentos.
 - **Listo**: Revise el horario, el consumo estimado de almacenamiento de audio y las restricciones diurnas/nocturnas, luego inicie el despliegue.
 
-Al iniciar, se guarda inmediatamente una Session `SessionType.aru` con metadatos del horario ARU para poder recuperar el estado de los ciclos más tarde.
+Los controles de configuración usan los mismos iconos que los demás asistentes: :app-micRounded: micrófono, :app-speedRounded: tasa de inferencia, :app-verifiedRounded: confianza, :app-hearing: sensibilidad, :app-fiberManualRecordRounded: modo de grabación, :app-timerOutlined: contexto del clip y duración del ciclo, :app-filterAltRounded: muestreo de detecciones y :app-formatListNumberedRounded: límite de clips por especie. El intervalo de repetición usa :app-repeatRounded:, los controles de batería baja :app-batteryAlert: y :app-batteryChargingFull:, y la prueba y la agrupación de Sessions :app-scienceRounded: y :app-libraryBooks:. Toque el botón :app-helpOutline: junto a un control para ver su explicación.
+
+Al iniciar, se guarda inmediatamente una Session `SessionType.aru` con metadatos del horario ARU. Además, los ciclos de grabación se guardan cada 30 segundos, incluidos los ciclos sin detecciones. Tras un cierre inesperado o un corte de energía, el último despliegue parcial aparece en la Biblioteca de sesiones como una Session finalizada; la grabación no se reinicia. Puede perderse lo registrado desde el último guardado.
 
 Las exportaciones JSON y ZIP incluyen metadatos del despliegue ARU. Las exportaciones ZIP agrupan los archivos de grabación por ciclo guardados en `aru_cycles/`.
 

@@ -4,7 +4,7 @@ Analýza souborů zpracovává existující nahrávku prostřednictvím stejnéh
 
 ## Jak to otevřít
 
-Na domovské stránce klepněte na kartu **Analýza souborů** s ikonou :material-file-music:.
+Na domovské stránce klepněte na kartu **Analýza souborů** s ikonou :app-audioFileRounded:.
 
 ### Z jiné aplikace
 
@@ -12,8 +12,9 @@ Nahrávku můžete předat i odjinud. V systému Android se po sdílení zvukov�
 
 ## Lišta aplikací
 
-- :material-tune: — otevřete nastavení analýzy souborů
-- :material-close: — zrušení aktivního běhu analýzy
+- :app-tuneRounded: — otevřete nastavení analýzy souborů
+- :app-helpOutlineRounded: — otevření nápovědy k analýze souborů
+- :app-close: — zrušení aktivního běhu analýzy
 
 ## Podporované vstupy
 
@@ -42,11 +43,11 @@ Vyberte soubor a zkontrolujte jeho kartu metadat:
 
 Můžete:
 
-- použít aktuální GPS
-- zadejte souřadnice ručně
-- přeskočit umístění
-- vyberte bod na mapě
-- nastavit volitelné datum záznamu
+- použít aktuální GPS :app-myLocation:
+- zadejte souřadnice ručně :app-editLocationAlt:
+- přeskočit umístění :app-locationOff:
+- vyberte bod na mapě :app-mapSheet:
+- nastavit volitelné datum záznamu :app-calendarTodayRounded:
 
 ### 3. Parametry
 
@@ -57,6 +58,16 @@ Průvodce odhalí:
 - citlivost
 - práh spolehlivosti
 - režim filtrování druhů
+
+| Ovládací prvek nastavení | Ikona |
+|---|---|
+| Trvání okna | :app-timerOutlined: |
+| Překrývání | :app-swapHoriz: |
+| Citlivost | :app-hearing: |
+| Práh spolehlivosti | :app-verifiedRounded: |
+| Filtr druhů | :app-filterAltRounded: |
+
+Klepnutím na tlačítko :app-helpOutline: vedle ovládacího prvku zobrazíte jeho vysvětlení. Tlačítka nápovědy mají také kroky pro soubor, polohu a datum záznamu.
 
 Překryv určuje, o kolik se posune každé analytické okno, a je specifický pro
 analýzu souborů: celý soubor se prochází vždy, více překryvu jej jen prochází

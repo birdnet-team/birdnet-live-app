@@ -6,11 +6,11 @@ A guide for contributing to BirdNET Live.
 
 | Component | Technology |
 |-----------|-----------|
-| **Framework** | Flutter 3.27+ / Dart 3.7+ |
+| **Framework** | Flutter 3.47+ / Dart 3.13+ |
 | **State Management** | flutter_riverpod 3.4.2+ |
 | **Inference** | flutter_onnxruntime 1.7.1, pinned (on-device ONNX) — see [ONNX Runtime Pin](onnxruntime-pin.md) |
 | **Location** | geolocator 14.0.2 |
-| **Audio** | record, just_audio, fftea, flutter_tts |
+| **Audio** | record, just_audio, fftea; spoken announcements use an in-house `com.birdnet/tts` platform channel |
 | **Persistence** | shared_preferences, JSON session files |
 | **Maps & Context** | flutter_map, OpenStreetMap tiles, Nominatim, Open-Meteo |
 | **Images & Species Data** | bundled species images/data, http, flutter_cache_manager |

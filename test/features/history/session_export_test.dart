@@ -12,6 +12,7 @@ import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
@@ -78,6 +79,62 @@ final _prefix =
     'BirdNET_Live_${DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.utc(2025, 6, 15, 8, 0, 0).toLocal())}';
 
 void main() {
+  test('altitude survives persistence and every tabular/JSON export', () {
+    final start = DateTime.utc(2025, 6, 15, 8);
+    final session =
+        _makeSession(
+            detections: [
+              DetectionRecord(
+                scientificName: 'Turdus merula',
+                commonName: 'Eurasian Blackbird',
+                confidence: 0.9,
+                timestamp: start.add(const Duration(seconds: 10)),
+                latitude: 52.52,
+                longitude: 13.405,
+                altitude: 42.25,
+                altitudeAccuracy: 7.5,
+                altitudeReference: AltitudeReference.meanSeaLevel,
+                locationFixTime: start,
+              ),
+            ],
+          )
+          ..latitude = 52.52
+          ..longitude = 13.405
+          ..altitude = 42.25
+          ..altitudeAccuracy = 7.5
+          ..altitudeReference = AltitudeReference.meanSeaLevel
+          ..locationFixTime = start;
+
+    final restored = LiveSession.fromJson(session.toJson());
+    expect(restored.altitude, 42.25);
+    expect(restored.detections.single.altitude, 42.25);
+    expect(
+      restored.detections.single.altitudeReference,
+      AltitudeReference.meanSeaLevel,
+    );
+    expect(restored.locationFixTime, start);
+    expect(restored.detections.single.locationFixTime, start);
+
+    final csv = buildCsvExport(session);
+    final raven = buildRavenSelectionTable(session);
+    final json = jsonDecode(buildJsonExport(session)) as Map<String, dynamic>;
+    // Tabular exports add exactly one column; reference and uncertainty
+    // live in JSON and GPX.
+    expect(csv, contains(',Latitude,Longitude,Altitude (m)'));
+    expect(csv, contains('52.520000,13.405000,42.3'));
+    expect(csv, isNot(contains('Altitude Reference')));
+    expect(csv, isNot(contains('Session')));
+    expect(raven, contains('\tLatitude\tLongitude\tAltitude (m)'));
+    expect(raven, contains('52.520000\t13.405000\t42.3'));
+    expect(raven, isNot(contains('Altitude Reference')));
+    expect(json['altitude'], 42.25);
+    expect((json['detections'] as List).single['altitude'], 42.25);
+    expect(json['locationFixTime'], start.toIso8601String());
+    expect(
+      (json['detections'] as List).single['locationFixTime'],
+      start.toIso8601String(),
+    );
+  });
   test('common names are localized consistently in every export format', () {
     final start = DateTime.utc(2025, 6, 15, 8);
     final session = _makeSession(
@@ -298,8 +355,8 @@ void main() {
       expect(cols1[7], '$_prefix.wav'); // Begin File
       expect(cols1[3], '10.000'); // Begin Time
       expect(cols1[4], '13.000'); // End Time (10 + 3)
-      expect(cols1[5], '0'); // Low Freq
-      expect(cols1[6], '16000'); // High Freq
+      expect(cols1[5], '0.0'); // Low Freq
+      expect(cols1[6], '16000.0'); // High Freq
       expect(cols1[8], 'Eurasian Blackbird'); // Common Name
       expect(cols1[9], 'Turdus merula'); // Scientific Name
       expect(cols1[10], '0.9500'); // Confidence
@@ -310,6 +367,7 @@ void main() {
       expect(cols2[7], '$_prefix.wav');
       expect(cols2[3], '25.500'); // 25.5 seconds
       expect(cols2[4], '28.500'); // 25.5 + 3
+      expect(cols2.sublist(5, 7), ['0.0', '16000.0']);
       expect(cols2[8], 'European Robin');
     });
 
@@ -349,6 +407,7 @@ void main() {
 
       final cols1 = lines[1].split('\t');
       expect(cols1[7], '${_prefix}_clip_001_Eurasian_Blackbird.flac');
+      expect(cols1.sublist(5, 7), ['0.0', '16000.0']);
       // Detection sits at [clipContext, clipContext + window] inside the clip.
       expect(cols1[3], '1.000');
       expect(cols1[4], '4.000');
@@ -808,12 +867,11 @@ void main() {
         includeAudio: true,
       );
       expect(path, isNotNull);
-      final lines =
-          File(path!)
-              .readAsStringSync()
-              .split('\n')
-              .where((row) => row.isNotEmpty)
-              .toList();
+      final lines = File(path!)
+          .readAsStringSync()
+          .split('\n')
+          .where((row) => row.isNotEmpty)
+          .toList();
       expect(lines, hasLength(1));
       expect(lines.single, startsWith('Selection\t'));
     });
@@ -977,19 +1035,17 @@ void main() {
           final table = document('.selections.txt');
           if (previousTable != null) expect(table, previousTable);
           previousTable = table;
-          final rows =
-              table
-                  .split('\n')
-                  .where((row) => row.isNotEmpty)
-                  .map((row) => row.split('\t'))
-                  .toList();
+          final rows = table
+              .split('\n')
+              .where((row) => row.isNotEmpty)
+              .map((row) => row.split('\t'))
+              .toList();
           final header = rows.removeAt(0);
           expect(rows.length, retained.length);
-          final audioNames =
-              archive
-                  .where((f) => f.name.endsWith('.wav'))
-                  .map((f) => f.name)
-                  .toList();
+          final audioNames = archive
+              .where((f) => f.name.endsWith('.wav'))
+              .map((f) => f.name)
+              .toList();
           expect(rows.map((row) => row[7]).toList(), audioNames);
           expect(header[11], 'Survey Time (UTC)');
           for (var i = 0; i < rows.length; i++) {
@@ -1015,10 +1071,10 @@ void main() {
           if (retained.length == 10) {
             expect(rows.last.sublist(3, 5), ['46.000', '49.000']);
           }
-          final csv =
-              document(
-                '.csv',
-              ).split('\n').where((row) => row.isNotEmpty).toList();
+          final csv = document('.csv')
+              .split('\n')
+              .where((row) => row.isNotEmpty)
+              .toList();
           expect(csv.length, 11);
           expect(
             csv.first,
@@ -1411,6 +1467,96 @@ void main() {
       },
     );
 
+    test('audio-only WAV conversion streams a real FLAC next to it', () async {
+      final sessionDir = Directory(p.join(tempDir.path, 'audio_only_wav'))
+        ..createSync();
+      final flacPath = p.join(sessionDir.path, 'full.flac');
+      final sourceSamples = _pcmLikeFloatSamples(32000);
+      await FlacEncoder.writeFile(filePath: flacPath, samples: sourceSamples);
+
+      final session = _makeSession(
+        recordingPath: flacPath,
+        detections: [
+          _det(
+            'Turdus merula',
+            'Eurasian Blackbird',
+            0.91,
+            const Duration(seconds: 5),
+            DateTime.utc(2025, 6, 15, 8, 0, 0),
+          ),
+        ],
+      );
+
+      final result = await buildSessionExport(
+        session,
+        formats: const <String>{},
+        includeAudio: true,
+        shareAudioAsWav: true,
+        includeHtmlReport: false,
+        includeAppMetadata: false,
+      );
+
+      expect(result, isNotNull);
+      expect(p.basename(result!), '$_prefix.wav');
+      expect(p.dirname(result), sessionDir.path);
+      final decoded = await AudioDecoder.decodeFile(result);
+      expect(decoded.sampleRate, 32000);
+      expect(decoded.samples, _expectedPcm16(sourceSamples));
+      // The source is left untouched.
+      expect(File(flacPath).existsSync(), isTrue);
+    });
+
+    test(
+      'staged WAV conversions are removed once the ZIP is written',
+      () async {
+        final sessionDir = Directory(p.join(tempDir.path, 'staged_wav'))
+          ..createSync();
+        final flacPath = p.join(sessionDir.path, 'full.flac');
+        await FlacEncoder.writeFile(
+          filePath: flacPath,
+          samples: _pcmLikeFloatSamples(32000),
+        );
+
+        final session = _makeSession(
+          recordingPath: sessionDir.path,
+          detections: [
+            _det(
+              'Turdus merula',
+              'Eurasian Blackbird',
+              0.91,
+              const Duration(seconds: 5),
+              DateTime.utc(2025, 6, 15, 8, 0, 0),
+            ),
+          ],
+        );
+
+        final zipPath = await buildSessionExport(
+          session,
+          formats: const {'csv'},
+          includeAudio: true,
+          shareAudioAsWav: true,
+        );
+        expect(zipPath, isNotNull);
+
+        final staging = Directory(
+          p.join(Directory.systemTemp.path, 'birdnet_export_trim'),
+        );
+        final leftovers = staging.existsSync()
+            ? staging
+                  .listSync()
+                  .whereType<File>()
+                  .where((f) => p.basename(f.path) == '$_prefix.wav')
+                  .toList()
+            : const <File>[];
+        expect(leftovers, isEmpty);
+
+        final archive = ZipDecoder().decodeBytes(
+          File(zipPath!).readAsBytesSync(),
+        );
+        expect(archive.map((f) => f.name), contains('$_prefix.wav'));
+      },
+    );
+
     test(
       'audio-only WAV conversion fallback keeps original FLAC extension',
       () async {
@@ -1690,9 +1836,9 @@ void main() {
       final metaFile = archive.firstWhere(
         (f) => f.name.endsWith('.metadata.json'),
       );
-      final meta =
-          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
-              as Map<String, dynamic>;
+      final meta = jsonDecode(
+        String.fromCharCodes(metaFile.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(
         (meta['aruCycleAudioFiles'] as Map<String, dynamic>)['0'],
         startsWith('aru_cycles/'),
@@ -1730,9 +1876,9 @@ void main() {
       final metaFile = archive.firstWhere(
         (f) => f.name.endsWith('.metadata.json'),
       );
-      final meta =
-          jsonDecode(String.fromCharCodes(metaFile.content as List<int>))
-              as Map<String, dynamic>;
+      final meta = jsonDecode(
+        String.fromCharCodes(metaFile.content as List<int>),
+      ) as Map<String, dynamic>;
       final sessionMeta = meta['session'] as Map<String, dynamic>;
       expect(sessionMeta['type'], 'aru');
       expect(sessionMeta['displayName'], session.displayName);
@@ -2283,12 +2429,11 @@ void main() {
         [session],
         formats: const {'json'},
         includeAudio: false,
-        metadataProvider:
-            (session) async => buildExportMetadata(
-              session: session,
-              device: 'Pixel 10',
-              os: 'Android 17',
-            ),
+        metadataProvider: (session) async => buildExportMetadata(
+          session: session,
+          device: 'Pixel 10',
+          os: 'Android 17',
+        ),
       );
 
       final outer = ZipDecoder().decodeBytes(
@@ -2298,9 +2443,9 @@ void main() {
       final metadataFile = inner.singleWhere(
         (file) => file.name.endsWith('.metadata.json'),
       );
-      final metadata =
-          jsonDecode(utf8.decode(metadataFile.content as List<int>))
-              as Map<String, dynamic>;
+      final metadata = jsonDecode(
+        utf8.decode(metadataFile.content as List<int>),
+      ) as Map<String, dynamic>;
       expect(metadata['device'], 'Pixel 10');
       expect(metadata['os'], 'Android 17');
     });
@@ -2445,11 +2590,9 @@ void main() {
       expect(map['trimmedDurationSec'], closeTo(30.0, 0.001));
 
       final detections = map['detections'] as List<dynamic>;
-      final blackbird =
-          detections.firstWhere(
-                (d) => (d as Map)['scientificName'] == 'Turdus merula',
-              )
-              as Map<String, dynamic>;
+      final blackbird = detections.firstWhere(
+        (d) => (d as Map)['scientificName'] == 'Turdus merula',
+      ) as Map<String, dynamic>;
       expect(blackbird['beginTimeSec'], closeTo(20.0, 0.001));
 
       final annotations = map['annotations'] as List<dynamic>;
@@ -2505,12 +2648,11 @@ void main() {
       )..createSync(recursive: true);
       // The audio-only share path returns its staged file to the share sheet
       // and can't delete it; the next export is what reclaims the space.
-      final stale =
-          File(p.join(staging.path, 'sweep_test_stale.wav'))
-            ..writeAsBytesSync(List<int>.filled(2048, 1))
-            ..setLastModifiedSync(
-              DateTime.now().subtract(const Duration(hours: 6)),
-            );
+      final stale = File(p.join(staging.path, 'sweep_test_stale.wav'))
+        ..writeAsBytesSync(List<int>.filled(2048, 1))
+        ..setLastModifiedSync(
+          DateTime.now().subtract(const Duration(hours: 6)),
+        );
       final recent = File(p.join(staging.path, 'sweep_test_recent.wav'))
         ..writeAsBytesSync(List<int>.filled(2048, 1));
       addTearDown(() {

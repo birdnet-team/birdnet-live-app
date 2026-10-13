@@ -21,6 +21,7 @@ abstract final class AppIcons {
   static const IconData airplaneTicket = Symbols.airplane_ticket;
   static const IconData arrowBackRounded = Symbols.arrow_back_rounded;
   static const IconData arrowDownward = Symbols.arrow_downward;
+  static const IconData arrowUpwardRounded = Symbols.arrow_upward_rounded;
   static const IconData arrowDropUpRounded = Symbols.arrow_drop_up_rounded;
   // Keep style-explicit names when outlined and rounded variants are both used.
   static const IconData audioFileOutlined = Symbols.audio_file;

@@ -1,18 +1,15 @@
 // =============================================================================
-// Live Tips — Rotating hints shown while listening with no detections yet
+// Live Tips — Rotating field and usage tips shown before listening starts
 // =============================================================================
 //
-// When a live session is recording but the detection list is empty, the
-// detection panel has a lot of unused vertical space. Instead of showing a
-// static "listening for species" placeholder, this widget cycles through a
-// short list of practical tips and feature pointers so newcomers discover
-// announcements, wind handling, watchlists, the spectrogram, etc.
+// Before a live session starts, the empty detection panel cycles through
+// practical tips on field recording, settings, and reviewing identifications.
 //
 // Design choices:
 //
 //   • Pure presentation — tips are localized strings, no state beyond the
 //     current index. Easy to extend by adding entries to [buildLiveTips].
-//   • Auto-advances every ~10s with a soft fade. Tapping the card jumps to
+//   • Auto-advances every 15s with a soft fade. Tapping the card jumps to
 //     the next tip immediately for users who want to read at their own pace.
 //   • Random starting index per build so opening a new session does not
 //     always show "tip 1" first.
@@ -51,9 +48,9 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipWindBody,
   ),
   LiveTip(
-    icon: AppIcons.volumeUpOutlined,
-    title: l10n.liveTipQuietPlaybackTitle,
-    body: l10n.liveTipQuietPlaybackBody,
+    icon: AppIcons.micRounded,
+    title: l10n.liveTipHandlingTitle,
+    body: l10n.liveTipHandlingBody,
   ),
   LiveTip(
     icon: AppIcons.public,
@@ -81,9 +78,9 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipThresholdBody,
   ),
   LiveTip(
-    icon: AppIcons.bookmarkAdded,
-    title: l10n.liveTipWatchlistTitle,
-    body: l10n.liveTipWatchlistBody,
+    icon: AppIcons.hearing,
+    title: l10n.liveTipRespectWildlifeTitle,
+    body: l10n.liveTipRespectWildlifeBody,
   ),
   LiveTip(
     icon: AppIcons.audioFileOutlined,
@@ -96,9 +93,9 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
     body: l10n.liveTipBluetoothMicBody,
   ),
   LiveTip(
-    icon: AppIcons.notificationsActiveOutlined,
-    title: l10n.liveTipSurveyNotificationsTitle,
-    body: l10n.liveTipSurveyNotificationsBody,
+    icon: AppIcons.batterySaverRounded,
+    title: l10n.liveTipBackgroundTitle,
+    body: l10n.liveTipBackgroundBody,
   ),
   LiveTip(
     icon: AppIcons.scienceOutlined,
@@ -122,12 +119,12 @@ List<LiveTip> buildLiveTips(AppLocalizations l10n) => <LiveTip>[
   ),
   LiveTip(
     icon: AppIcons.volumeDown,
-    title: l10n.liveTipDistanceTitle,
-    body: l10n.liveTipDistanceBody,
+    title: l10n.liveTipQuietSpotTitle,
+    body: l10n.liveTipQuietSpotBody,
   ),
 ];
 
-/// Rotating tip card. Auto-advances every [interval] (default 10s) with
+/// Rotating tip card. Auto-advances every [interval] (default 15s) with
 /// a fade transition. Tap to skip to the next tip.
 class LiveTipsCarousel extends StatefulWidget {
   const LiveTipsCarousel({
@@ -199,8 +196,10 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
     // "Listening…" headline above it.
     final faint = theme.colorScheme.onSurface.withAlpha(170);
     final fainter = theme.colorScheme.onSurface.withAlpha(145);
-    final textScale =
-        MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.4).toDouble();
+    final textScale = MediaQuery.textScalerOf(context)
+        .scale(1)
+        .clamp(1.0, 1.4)
+        .toDouble();
     final tipHeight = 140.0 + ((textScale - 1.0) * 70.0);
 
     return Padding(
@@ -227,9 +226,8 @@ class _LiveTipsCarouselState extends State<LiveTipsCarousel> {
                 height: tipHeight,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 350),
-                  transitionBuilder:
-                      (child, anim) =>
-                          FadeTransition(opacity: anim, child: child),
+                  transitionBuilder: (child, anim) =>
+                      FadeTransition(opacity: anim, child: child),
                   child: Padding(
                     key: ValueKey<int>(_index % _tipCount),
                     padding: const EdgeInsets.symmetric(

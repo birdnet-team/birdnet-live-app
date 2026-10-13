@@ -27,7 +27,7 @@ Der Spektrogrammstreifen über dem Player ist interaktiv: Tippen Sie, um zu spri
 
 Die Arten sind in aufklappbaren Zeilen gruppiert. Sie können Detektionen pro Art untersuchen und sich dabei durch die Aufnahme bewegen. Die Cluster-Zeilen unter einer aufgeklappten Art sind eingerückt, damit sich die übergeordnete Artenkarte optisch von ihren Untereinträgen abhebt.
 
-Ein Suchfeld über der Liste filtert die Arten nach gebräuchlichem oder wissenschaftlichem Namen, sodass das Finden eines bestimmten Vogels in einer Session mit 100 Arten nur wenige Tastenanschläge statt langes Scrollen erfordert. Die Schaltfläche :material-sort: daneben ändert die Reihenfolge der Arten:
+Ein Suchfeld über der Liste filtert die Arten nach gebräuchlichem oder wissenschaftlichem Namen, sodass das Finden eines bestimmten Vogels in einer Session mit 100 Arten nur wenige Tastenanschläge statt langes Scrollen erfordert. Die Schaltfläche :app-sort: daneben ändert die Reihenfolge der Arten:
 
 - **Höchste Konfidenz** (Standard) – Arten mit der höchsten Einzeldetektions-Konfidenz zuerst. Gut, um die sichersten Bestimmungen zu sichten. Wenn Sie in diesem Modus eine Art aufklappen, erscheinen Detektionen mit abspielbaren Audioclips vor solchen ohne Clip, danach nach Konfidenz.
 - **Meiste Detektionen** – Arten mit der höchsten Anzahl an Detektionen zuerst. Gut, um die dominanten Sänger zu erkennen.
@@ -38,10 +38,10 @@ Die gewählte Sortierung bleibt über Sessions hinweg erhalten.
 
 ### Arten manuell hinzufügen
 
-Die Schaltfläche :material-plus-circle-outline: in der Werkzeugleiste öffnet die Artensuche für Vögel, die BirdNET übersehen hat. Ein Tipp auf ein Suchergebnis fügt die Art nicht sofort ein — zuerst erscheint ein Bestätigungsfenster mit der gewählten Art und zwei Kontrollkästchen:
+Die Schaltfläche :app-addCircleOutline: in der Werkzeugleiste öffnet die Artensuche für Vögel, die BirdNET übersehen hat. Ein Tipp auf ein Suchergebnis fügt die Art nicht sofort ein — zuerst erscheint ein Bestätigungsfenster mit der gewählten Art und zwei Kontrollkästchen:
 
-- :material-ear-hearing: **Gehört** — Sie haben den Vogel gehört.
-- :material-eye: **Gesehen** — Sie haben den Vogel gesehen.
+- :app-hearing: **Gehört** — Sie haben den Vogel gehört.
+- :app-visibility: **Gesehen** — Sie haben den Vogel gesehen.
 
 Wählen Sie eines, beides oder keines aus und tippen Sie auf **Hinzufügen**. **Abbrechen** — oder ein Wisch nach unten — bringt Sie zurück zur Suche, ein Fehltipp kostet also nichts. **Gehört** ist standardmäßig aktiviert, und Ihre Auswahl bleibt für die nächste Art erhalten: Eine Reihe nur gesehener Vögel erfordert nur ein einziges Setzen von **Gesehen**. Bleiben beide leer, wird der Eintrag ohne Beobachtungsart gespeichert — nicht als „weder noch“.
 
@@ -51,12 +51,12 @@ Die Auswahl wird an der Detektion gespeichert und überall als kleines Ohr- und/
 
 Überall dort, wo eine Detektion erscheint – in der Artenliste, im Clip-Player-Blatt, in der Live-Survey-Liste und an den Survey-Kartenmarkierungen –, stehen dieselben Aktionen zur Verfügung:
 
-- :material-check: **Bestätigen** – ein Ein-Tipp-Häkchen direkt in der Zeile, das eine Detektion als visuell oder akustisch überprüft markiert. Bestätigte Cluster und Kartenmarkierungen erhalten ein kleines grünes Häkchen, sodass sie auf einen Blick hervorstechen, und die Markierung wird in jedes Exportformat übernommen.
-- :material-dots-vertical: **Mehr** – öffnet ein Überlaufmenü mit:
-    - :material-share-variant: **Detektion teilen** – siehe *Teilen* weiter unten.
-    - :material-swap-horizontal: **Art ersetzen** – eine andere Art für diese Detektion auswählen.
-    - :material-delete-outline: **Detektion löschen** – entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen, sodass Fehlgriffe umkehrbar sind. Ohne Bestätigungsdialog.
-    - :material-delete-sweep-outline: **Art löschen** – entfernt jede Detektion dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. Praktisch, um eine fehlbestimmte Geräuschquelle auszuräumen, ohne die Art aufzuklappen und die Cluster einzeln zu löschen.
+- :app-checkCircleOutline: **Bestätigen** – ein Ein-Tipp-Häkchen direkt in der Zeile, das eine Detektion als visuell oder akustisch überprüft markiert. Bestätigte Cluster und Kartenmarkierungen erhalten ein kleines grünes Häkchen, sodass sie auf einen Blick hervorstechen, und die Markierung wird in jedes Exportformat übernommen.
+- :app-moreVert: **Mehr** – öffnet ein Überlaufmenü mit:
+    - :app-share: **Detektion teilen** – siehe *Teilen* weiter unten.
+    - :app-swapHoriz: **Art ersetzen** – eine andere Art für diese Detektion auswählen.
+    - :app-deleteOutline: **Detektion löschen** – entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen, sodass Fehlgriffe umkehrbar sind. Ohne Bestätigungsdialog.
+    - :app-deleteSweep: **Art löschen** – entfernt jede Detektion dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. Praktisch, um eine fehlbestimmte Geräuschquelle auszuräumen, ohne die Art aufzuklappen und die Cluster einzeln zu löschen.
 
 #### Wisch-Kürzel in den Übersichtszeilen
 
@@ -71,7 +71,7 @@ Das Wischen einer **Artenkopfzeile** (nach links oder rechts) löscht alle Detek
 
 ### Eine einzelne Detektion teilen
 
-Der Eintrag :material-share-variant: **Detektion teilen** verwendet dieselben Optionen wie **Einstellungen → Export & Synchronisierung**. Er exportiert nur diese Detektion in den ausgewählten Raven-, CSV-, JSON-, GPX-, HTML- und App-Metadaten-Artefakten. Ist **Audiodateien einbeziehen** aktiviert, enthält das Paket auch den Detektions-Audioinhalt; **Audio immer als WAV teilen** wird beachtet. Sind alle Begleitformate, HTML und App-Metadaten deaktiviert, erhält das Teilen-Menü den unverpackten Audioclip statt einer ZIP-Datei.
+Der Eintrag :app-share: **Detektion teilen** verwendet dieselben Optionen wie **Einstellungen → Export & Synchronisierung**. Er exportiert nur diese Detektion in den ausgewählten Raven-, CSV-, JSON-, GPX-, HTML- und App-Metadaten-Artefakten. Ist **Audiodateien einbeziehen** aktiviert, enthält das Paket auch den Detektions-Audioinhalt; **Audio immer als WAV teilen** wird beachtet. Sind alle Begleitformate, HTML und App-Metadaten deaktiviert, erhält das Teilen-Menü den unverpackten Audioclip statt einer ZIP-Datei.
 
 Der Audio-Anhang wird in dieser Reihenfolge ermittelt:
 
@@ -83,7 +83,7 @@ Der Audio-Anhang wird in dieser Reihenfolge ermittelt:
 
 Sie können kurze, gesprochene Kommentare an einzelne Detektionsdatensätze anhängen:
 
-- **Aufnehmen**: Tippen Sie bei einem Detektions-Cluster auf die Schaltfläche :material-dots-vertical: und wählen Sie **Sprachmemo aufnehmen**, um den Sprachmemo-Dialog zu öffnen. Tippen Sie auf die große Mikrofontaste, um die Aufnahme zu starten. Eine Live-Wellenform gibt Ihre Stimme in Echtzeit wieder. Tippen Sie auf die Stopptaste, wenn Sie fertig sind.
+- **Aufnehmen**: Tippen Sie bei einem Detektions-Cluster auf die Schaltfläche :app-moreVert: und wählen Sie **Sprachmemo aufnehmen**, um den Sprachmemo-Dialog zu öffnen. Tippen Sie auf die große Mikrofontaste, um die Aufnahme zu starten. Eine Live-Wellenform gibt Ihre Stimme in Echtzeit wieder. Tippen Sie auf die Stopptaste, wenn Sie fertig sind.
 - **Überprüfen**: Nach der Aufnahme können Sie das Memo mit dem integrierten Player anhören. Um das Memo zu ersetzen, tippen Sie auf die Schaltfläche **Erneut aufnehmen**. Um es zu speichern, tippen Sie auf die Schaltfläche **Speichern**.
 - **Löschen**: Wenn eine Detektion bereits ein Sprachmemo besitzt, können Sie es entweder über das Überlaufmenü oder über den Sprachmemo-Dialog löschen.
 - **Plattformspezifische Formate**: Auf Android und anderen Plattformen werden Sprachmemos im stark komprimierten AAC-Format (`.m4a`) mit 16 kHz aufgenommen. Auf iOS verwenden sie automatisch das WAV/PCM16-Format (`.wav`), um Kompatibilitätsprobleme von CoreAudio mit den aktiven Audio-Sessions der App zu vermeiden. Beide Formate werden vom ZIP-Export vollständig unterstützt.
@@ -91,7 +91,7 @@ Sie können kurze, gesprochene Kommentare an einzelne Detektionsdatensätze anh�
 
 ### Survey-Track-Karte
 
-Survey-Sessions zeigen eine kleine eingebettete Karte des GPS-Tracks samt Detektionsmarkierungen. Tippen Sie auf der eingebetteten Karte auf eine Markierung, um eine Detektion zu fokussieren – die Karte zentriert sich darauf. Tippen Sie auf die Schaltfläche :material-fullscreen: **Vergrößern** (oben rechts auf der eingebetteten Karte), um die **Vollbildkarte** zu öffnen; war eine Detektion fokussiert, öffnet sich die Vollbildkarte zentriert und herangezoomt auf diese Detektion, sodass Sie Ihre Position behalten.
+Survey-Sessions zeigen eine kleine eingebettete Karte des GPS-Tracks samt Detektionsmarkierungen. Tippen Sie auf der eingebetteten Karte auf eine Markierung, um eine Detektion zu fokussieren – die Karte zentriert sich darauf. Tippen Sie auf die Schaltfläche :app-fullscreen: **Vergrößern** (oben rechts auf der eingebetteten Karte), um die **Vollbildkarte** zu öffnen; war eine Detektion fokussiert, öffnet sich die Vollbildkarte zentriert und herangezoomt auf diese Detektion, sodass Sie Ihre Position behalten.
 
 #### Codierung der Markierungen
 
@@ -119,15 +119,15 @@ Ist ein Filter aktiv, erhält der Titel der App-Leiste eine Untertitelzeile mit 
 
 Die Symbolleiste verwendet dieselben Symbolbedeutungen, die unter [Symbole und Steuerelemente](icons-and-controls.md) beschrieben sind:
 
-- :material-plus-circle-outline: — Inhalt hinzufügen
-- :material-undo-variant: / :material-redo-variant: — durch Bearbeitungen schrittweise gehen
-- :material-content-cut: — Zuschneide-Modus
-- :material-content-save: — Bearbeitungen speichern
-- :material-share-variant: — exportieren oder teilen
-- :material-delete-outline: — Session verwerfen
-- :material-play: — einen Survey fortsetzen, sofern diese Aktion verfügbar ist
-- :material-help-circle-outline: — das Hilfeblatt zur Session-Übersicht öffnen
-- :material-tune: — Einstellungen öffnen
+- :app-addCircleOutline: — Inhalt hinzufügen
+- :app-undo: / :app-redo: — durch Bearbeitungen schrittweise gehen
+- :app-contentCut: — Zuschneide-Modus
+- :app-save: — Bearbeitungen speichern
+- :app-share: — exportieren oder teilen
+- :app-deleteOutline: — Session verwerfen
+- :app-playArrowRounded: — einen Survey fortsetzen, sofern diese Aktion verfügbar ist
+- :app-helpOutlineRounded: — das Hilfeblatt zur Session-Übersicht öffnen
+- :app-tuneRounded: — Einstellungen öffnen
 
 ## Typische Aufgaben bei der Durchsicht
 
@@ -139,6 +139,8 @@ Die Symbolleiste verwendet dieselben Symbolbedeutungen, die unter [Symbole und S
 ## Export
 
 Das Exportverhalten hängt von den in den [Einstellungen](settings.md) gewählten Optionen ab. Die App kann Detektionen und optional Audio in das gewählte Exportformat packen. Jeder Export enthält Herkunftsmetadaten – die App-Version, Modellname und -version, Artensprache, Export-Zeitstempel, die mit der Session gespeicherten Einstellungen sowie die relevanten Exportoptionen –, die in eine `<prefix>.metadata.json`-Begleitdatei (ZIP) oder einen `meta`-Block auf oberster Ebene (JSON) geschrieben werden, sodass Exporte selbsterklärend und reproduzierbar sind.
+
+Liefert das Gerät bei einer GPS-Ortung eine Höhe, enthalten Exporte diese in Metern sowie die verfügbare vertikale Genauigkeit, Bezugsfläche und Ortungszeit. JSON enthält alle Angaben mit den zugehörigen Koordinaten; GPX enthält sie an Survey-Spurpunkten und Detektionswegpunkten. CSV und Raven ergänzen nur eine Spalte `Altitude (m)` neben Breiten- und Längengrad. Für manuelle oder auf der Karte gewählte Koordinaten wird keine Höhe abgeleitet. Eine bei der Survey-Übersicht zu einem Zeitpunkt hinzugefügte Detektion erhält eine zwischen den benachbarten Spurpunkten interpolierte Position, aber keine eigene Ortungszeit. Gerätehöhen können unterschiedliche Bezugsflächen verwenden; prüfen Sie vor Vergleichen das exportierte Feld `altitudeReference`. `unknown` bedeutet, dass die Plattform die Bezugsfläche nicht angegeben hat.
 
 Der `settings`-Block des JSON-Exports hält die Werte fest, die *tatsächlich auf diese Session angewendet* wurden – Empfindlichkeit, Modus und Fensteranzahl des Score-Poolings, Mikrofonverstärkung und die Grenzfrequenz des Hochpasses – und nicht das, was gerade in den Einstellungen eingestellt ist. So können Sie ein Ergebnis Monate später reproduzieren oder zwei Surveys vergleichen, ohne sich zu merken, wie die Schieberegler beim Lauf standen.
 

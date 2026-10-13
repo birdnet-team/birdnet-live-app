@@ -386,7 +386,7 @@ class _VoiceGroup extends ConsumerWidget {
   }
 
   Future<void> _speakPreview(WidgetRef ref, AppLocalizations l10n) async {
-    final tts = FlutterTtsEngine();
+    final tts = PlatformTtsEngine();
     try {
       final lang = _resolveVoiceLanguage(ref);
       final verbosity = ref.read(announcementsVerbosityProvider);
@@ -501,13 +501,13 @@ class _VoicePickerSheet extends ConsumerStatefulWidget {
 }
 
 class _VoicePickerSheetState extends ConsumerState<_VoicePickerSheet> {
-  FlutterTtsEngine? _engine;
+  PlatformTtsEngine? _engine;
   late Future<List<TtsVoice>> _voices;
 
   @override
   void initState() {
     super.initState();
-    final engine = FlutterTtsEngine();
+    final engine = PlatformTtsEngine();
     _engine = engine;
     _voices = engine.voicesForLanguage(widget.languageTag);
   }

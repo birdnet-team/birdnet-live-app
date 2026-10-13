@@ -4,13 +4,13 @@ Verkennen toont de soorten die met het BirdNET-geomodel voor de huidige locatie 
 
 ## Zo open je de modus
 
-Open **Verkennen** vanuit de voettekst van het startscherm met de knop :material-magnify:.
+Open **Verkennen** vanuit de voettekst van het startscherm met de knop :app-searchRounded:.
 
 ## Appbalk en kop
 
 ### Appbalk
 
-- :material-refresh: — de locatie vernieuwen en de lijst met voorspelde soorten opnieuw opbouwen
+- :app-refresh: — de locatie vernieuwen en de lijst met voorspelde soorten opnieuw opbouwen
 
 ### Locatiekop
 
@@ -18,7 +18,7 @@ De kop toont:
 
 - de huidige, via reverse geocoding gevonden plaatsnaam wanneer die beschikbaar is
 - de coördinaten onder de plaatsnaam
-- :material-help-circle-outline: — het hulpvenster van Verkennen openen
+- :app-helpOutlineRounded: — het hulpvenster van Verkennen openen
 
 ## Soortenlijst
 

@@ -27,7 +27,7 @@ La franja del espectrograma sobre el reproductor es interactiva: toca para salta
 
 Las especies se agrupan en filas expandibles. Puedes examinar las detecciones por especie y recorrer la grabación mientras las revisas. Las filas de grupo bajo una especie expandida aparecen sangradas para que la tarjeta de la especie principal se distinga visualmente de sus elementos.
 
-Un campo de búsqueda sobre la lista filtra las especies por nombre común o científico, de modo que encontrar un ave concreta en una Session de 100 especies son unas pocas pulsaciones en lugar de un largo desplazamiento. El botón :material-sort: que hay al lado cambia el orden de las especies:
+Un campo de búsqueda sobre la lista filtra las especies por nombre común o científico, de modo que encontrar un ave concreta en una Session de 100 especies son unas pocas pulsaciones en lugar de un largo desplazamiento. El botón :app-sort: que hay al lado cambia el orden de las especies:
 
 - **Mayor confianza** (predeterminado) — primero las especies con la confianza más alta en una sola detección. Útil para priorizar las identificaciones más seguras. Al expandir una especie en este modo, las detecciones con clips de audio reproducibles aparecen antes que las que no tienen clip, y luego por confianza.
 - **Más detecciones** — primero las especies con mayor número de detecciones. Útil para identificar a las que más cantan.
@@ -38,10 +38,10 @@ El orden elegido se mantiene entre Sessions.
 
 ### Agregar una especie a mano
 
-El botón :material-plus-circle-outline: de la barra de herramientas abre el buscador de especies para aves que BirdNET no detectó. Tocar un resultado no la inserta de inmediato: primero aparece una hoja de confirmación con la especie elegida y dos casillas:
+El botón :app-addCircleOutline: de la barra de herramientas abre el buscador de especies para aves que BirdNET no detectó. Tocar un resultado no la inserta de inmediato: primero aparece una hoja de confirmación con la especie elegida y dos casillas:
 
-- :material-ear-hearing: **Oída** — escuchaste el ave.
-- :material-eye: **Vista** — viste el ave.
+- :app-hearing: **Oída** — escuchaste el ave.
+- :app-visibility: **Vista** — viste el ave.
 
 Marca una, ambas o ninguna y luego toca **Agregar**. **Cancelar** —o deslizar hacia abajo— te devuelve a la búsqueda, así que un toque equivocado no cuesta nada. **Oída** viene marcada y tu elección se mantiene para la siguiente especie, de modo que registrar una serie de aves que solo viste requiere marcar **Vista** una sola vez. Si dejas ambas sin marcar, la entrada se guarda sin tipo de observación, no como "ninguna de las dos".
 
@@ -51,12 +51,12 @@ La elección se guarda en la detección y aparece como un pequeño icono de oíd
 
 En todos los lugares donde aparece una detección —la lista de especies, la hoja del reproductor de clips, la lista del Survey en vivo y los marcadores del mapa del Survey— se usa el mismo conjunto de acciones:
 
-- :material-check: **Confirmar** — una marca de verificación de un toque que señala una detección como verificada visual o acústicamente. Los grupos confirmados y los marcadores del mapa muestran una pequeña marca verde para que destaquen de un vistazo, y la marca se conserva en todos los formatos de exportación.
-- :material-dots-vertical: **Más** — abre un menú adicional con:
-    - :material-share-variant: **Compartir detección** — consulta *Compartir* más abajo.
-    - :material-swap-horizontal: **Reemplazar especie** — elige otra especie para esta detección.
-    - :material-delete-outline: **Eliminar detección** — quita la fila de inmediato. Aparece un SnackBar para deshacer durante unos segundos, de modo que los errores son reversibles. Sin cuadro de confirmación.
-    - :material-delete-sweep-outline: **Eliminar especie** — quita de la Session todas las detecciones de esa especie de una sola vez, con el mismo SnackBar para deshacer. Útil para barrer una fuente de ruido mal identificada sin tener que expandir la especie y eliminar los grupos uno a uno.
+- :app-checkCircleOutline: **Confirmar** — una marca de verificación de un toque que señala una detección como verificada visual o acústicamente. Los grupos confirmados y los marcadores del mapa muestran una pequeña marca verde para que destaquen de un vistazo, y la marca se conserva en todos los formatos de exportación.
+- :app-moreVert: **Más** — abre un menú adicional con:
+    - :app-share: **Compartir detección** — consulta *Compartir* más abajo.
+    - :app-swapHoriz: **Reemplazar especie** — elige otra especie para esta detección.
+    - :app-deleteOutline: **Eliminar detección** — quita la fila de inmediato. Aparece un SnackBar para deshacer durante unos segundos, de modo que los errores son reversibles. Sin cuadro de confirmación.
+    - :app-deleteSweep: **Eliminar especie** — quita de la Session todas las detecciones de esa especie de una sola vez, con el mismo SnackBar para deshacer. Útil para barrer una fuente de ruido mal identificada sin tener que expandir la especie y eliminar los grupos uno a uno.
 
 #### Atajos de deslizamiento en las filas de revisión
 
@@ -71,7 +71,7 @@ Al deslizar una fila de **encabezado de especie** (a izquierda o derecha) se eli
 
 ### Compartir una sola detección
 
-La opción :material-share-variant: **Compartir detección** usa las mismas opciones que **Ajustes → Exportar y sincronizar**. Exporta solo esta detección en los artefactos Raven, CSV, JSON, GPX, HTML y metadatos de la app seleccionados. Cuando **Incluir archivos de audio** está activado, el paquete también contiene el audio de la detección; se respeta **Compartir siempre el audio como WAV**. Si se desactivan todos los formatos complementarios, HTML y los metadatos de la app, la hoja de compartir del sistema recibe el clip de audio sin ZIP.
+La opción :app-share: **Compartir detección** usa las mismas opciones que **Ajustes → Exportar y sincronizar**. Exporta solo esta detección en los artefactos Raven, CSV, JSON, GPX, HTML y metadatos de la app seleccionados. Cuando **Incluir archivos de audio** está activado, el paquete también contiene el audio de la detección; se respeta **Compartir siempre el audio como WAV**. Si se desactivan todos los formatos complementarios, HTML y los metadatos de la app, la hoja de compartir del sistema recibe el clip de audio sin ZIP.
 
 El audio adjunto se resuelve en este orden:
 
@@ -83,7 +83,7 @@ El audio adjunto se resuelve en este orden:
 
 Puedes adjuntar breves comentarios de voz a registros de detección individuales:
 
-- **Grabar**: toca el botón :material-dots-vertical: en un grupo de detección y selecciona **Grabar nota de voz** para abrir el diálogo de nota de voz. Toca el botón grande del micrófono para empezar a grabar. Una forma de onda en vivo refleja tu voz en tiempo real. Toca el botón de detener cuando termines.
+- **Grabar**: toca el botón :app-moreVert: en un grupo de detección y selecciona **Grabar nota de voz** para abrir el diálogo de nota de voz. Toca el botón grande del micrófono para empezar a grabar. Una forma de onda en vivo refleja tu voz en tiempo real. Toca el botón de detener cuando termines.
 - **Revisar**: una vez grabada, puedes escuchar la nota con el reproductor integrado. Para reemplazar la nota, toca el botón **Volver a grabar**. Para guardarla, toca el botón **Guardar**.
 - **Eliminar**: si una detección ya tiene una nota de voz adjunta, puedes eliminarla desde el menú adicional o desde el diálogo de nota de voz.
 - **Formatos según la plataforma**: en Android y otras plataformas, las notas de voz se graban en formato AAC (`.m4a`) muy comprimido a 16 kHz. En iOS usan automáticamente el formato WAV/PCM16 (`.wav`) para evitar problemas de compatibilidad de CoreAudio con las sesiones de audio activas de la app. Ambos formatos son totalmente compatibles con el empaquetado ZIP de la exportación.
@@ -91,7 +91,7 @@ Puedes adjuntar breves comentarios de voz a registros de detección individuales
 
 ### Mapa del recorrido del Survey
 
-Las Sessions de Survey muestran un pequeño mapa integrado del recorrido GPS y los marcadores de detección. Toca un marcador del mapa integrado para enfocar una detección: el mapa integrado se centra en ella. Toca el botón :material-fullscreen: **expandir** (arriba a la derecha del mapa integrado) para abrir el **mapa a pantalla completa**; si había una detección enfocada, el mapa a pantalla completa se abre centrado y ampliado sobre esa detección para que no pierdas tu posición.
+Las Sessions de Survey muestran un pequeño mapa integrado del recorrido GPS y los marcadores de detección. Toca un marcador del mapa integrado para enfocar una detección: el mapa integrado se centra en ella. Toca el botón :app-fullscreen: **expandir** (arriba a la derecha del mapa integrado) para abrir el **mapa a pantalla completa**; si había una detección enfocada, el mapa a pantalla completa se abre centrado y ampliado sobre esa detección para que no pierdas tu posición.
 
 #### Codificación de los marcadores
 
@@ -119,15 +119,15 @@ Cuando hay un filtro activo, el título de la barra superior añade un subtítul
 
 La barra de herramientas usa los mismos significados de iconos descritos en [Iconos y controles](icons-and-controls.md):
 
-- :material-plus-circle-outline: — añadir contenido
-- :material-undo-variant: / :material-redo-variant: — avanzar o retroceder por las ediciones
-- :material-content-cut: — modo de recorte
-- :material-content-save: — guardar las ediciones
-- :material-share-variant: — exportar o compartir
-- :material-delete-outline: — descartar la Session
-- :material-play: — continuar un Survey cuando esa acción está disponible
-- :material-help-circle-outline: — abrir la hoja de ayuda del Resumen de la Session
-- :material-tune: — abrir los Ajustes
+- :app-addCircleOutline: — añadir contenido
+- :app-undo: / :app-redo: — avanzar o retroceder por las ediciones
+- :app-contentCut: — modo de recorte
+- :app-save: — guardar las ediciones
+- :app-share: — exportar o compartir
+- :app-deleteOutline: — descartar la Session
+- :app-playArrowRounded: — continuar un Survey cuando esa acción está disponible
+- :app-helpOutlineRounded: — abrir la hoja de ayuda del Resumen de la Session
+- :app-tuneRounded: — abrir los Ajustes
 
 ## Tareas habituales de revisión
 
@@ -139,6 +139,8 @@ La barra de herramientas usa los mismos significados de iconos descritos en [Ico
 ## Exportación
 
 El comportamiento de la exportación depende de las opciones seleccionadas en [Ajustes](settings.md). La app puede empaquetar las detecciones y, opcionalmente, el audio en el formato de exportación elegido. Cada exportación incluye metadatos de procedencia —la versión de la app, el nombre y la versión del modelo, el idioma de las especies, la marca de tiempo de exportación, los ajustes conservados con la Session y las opciones de exportación pertinentes— escritos en un archivo adjunto `<prefix>.metadata.json` (ZIP) o en un bloque `meta` de nivel superior (JSON), de modo que las exportaciones se describen a sí mismas y son reproducibles.
+
+Si el dispositivo proporciona altitud con una posición GPS, las exportaciones incluyen la altura en metros, la precisión vertical disponible, la superficie de referencia y la hora de la medición. JSON incluye todo junto a las coordenadas; GPX lo incluye en puntos de ruta de Survey y puntos de detección. CSV y Raven solo añaden una columna `Altitude (m)` junto a latitud y longitud. No se infiere altitud para coordenadas manuales o elegidas en el mapa. Una detección añadida a una hora en el resumen de Survey recibe una posición interpolada entre los puntos de ruta cercanos, sin hora de medición propia. Los dispositivos pueden usar distintas superficies de referencia; comprueba `altitudeReference` antes de comparar alturas. `unknown` indica que la plataforma no identificó la superficie.
 
 El bloque `settings` de la exportación JSON registra los valores que se *aplicaron realmente a esta Session* —sensibilidad, modo de Score Pooling y número de ventanas, ganancia del micrófono y el corte del filtro de paso alto—, no los que estén configurados ahora en Ajustes. Esto significa que puedes reproducir un resultado meses después, o comparar dos Surveys, sin tener que recordar dónde estaba cada control cuando los ejecutaste.
 

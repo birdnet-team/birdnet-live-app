@@ -38,6 +38,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/services/asset_pack_service.dart';
+import '../../core/services/location_service.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/detection_accumulator.dart';
 import '../inference/inference_isolate.dart';
@@ -224,16 +225,15 @@ class FileAnalysisController {
   /// count so smaller devices do not oversubscribe their CPUs.
   static const int _androidOfflineInferenceThreads = 5;
 
-  static int? get _offlineInferenceThreads =>
-      Platform.isAndroid
-          ? math.max(
-            1,
-            math.min(
-              _androidOfflineInferenceThreads,
-              Platform.numberOfProcessors,
-            ),
-          )
-          : null;
+  static int? get _offlineInferenceThreads => Platform.isAndroid
+      ? math.max(
+          1,
+          math.min(
+            _androidOfflineInferenceThreads,
+            Platform.numberOfProcessors,
+          ),
+        )
+      : null;
 
   // ── Internal state ────────────────────────────────────────────────────
 
@@ -290,12 +290,11 @@ class FileAnalysisController {
       final labelsCsv = await rootBundle.loadString(labelsAssetPath);
 
       final blacklistFile = _config!.scoreBlacklistFile;
-      final scoreBlacklistJson =
-          blacklistFile == null
-              ? null
-              : await rootBundle.loadString(
-                '${AppConstants.modelAssetsDir}/$blacklistFile',
-              );
+      final scoreBlacklistJson = blacklistFile == null
+          ? null
+          : await rootBundle.loadString(
+              '${AppConstants.modelAssetsDir}/$blacklistFile',
+            );
 
       await _isolate.start(
         modelFilePath: modelFilePath,
@@ -343,10 +342,9 @@ class FileAnalysisController {
     // expand to hundreds of megabytes once decoded, so the file picker step
     // must stay lightweight.
     final canDart = await AudioDecoder.canDecodeDart(path);
-    final metadata =
-        canDart
-            ? await AudioDecoder.inspectFile(path)
-            : await NativeAudioDecoder.inspectFile(path, format);
+    final metadata = canDart
+        ? await AudioDecoder.inspectFile(path)
+        : await NativeAudioDecoder.inspectFile(path, format);
 
     return AudioFileInfo(
       path: path,
@@ -394,6 +392,7 @@ class FileAnalysisController {
     Set<String>? geoModelSpeciesNames,
     double? latitude,
     double? longitude,
+    AppLocation? location,
     String? locationName,
     DateTime? recordingDate,
   }) async {
@@ -430,8 +429,7 @@ class FileAnalysisController {
         );
         if (metadata.sampleRate <= 0 || metadata.totalSamples <= 0) {
           _state = FileAnalysisState.error;
-          _errorMessage =
-              'This audio file could not be inspected safely. Try converting it to WAV or FLAC before analysis.';
+          _errorMessage = 'This audio file could not be inspected safely. Try converting it to WAV or FLAC before analysis.';
           _notifyListeners();
           return null;
         }
@@ -454,9 +452,10 @@ class FileAnalysisController {
       // windows always touch and the whole file is examined. Clamping keeps a
       // caller-supplied overlap of 1.0 (or above) from producing a zero step
       // and an unbounded window loop.
-      final stepSamples = (sourceWindowSamples * (1.0 - overlap))
-          .round()
-          .clamp(1, sourceWindowSamples);
+      final stepSamples = (sourceWindowSamples * (1.0 - overlap)).round().clamp(
+        1,
+        sourceWindowSamples,
+      );
       final totalSamples = sourceTotalSamples;
 
       if (sourceTotalSamples == 0) {
@@ -487,6 +486,11 @@ class FileAnalysisController {
       // 3. Create session.
       final sessionId = DateTime.now().toIso8601String().replaceAll(':', '-');
       final fileStartTime = recordingDate ?? DateTime.now();
+      // Height is only meaningful with the coordinates of the same fix.
+      final fix =
+          location?.latitude == latitude && location?.longitude == longitude
+          ? location
+          : null;
       final session = LiveSession(
         id: sessionId,
         startTime: fileStartTime,
@@ -515,6 +519,10 @@ class FileAnalysisController {
         ),
         latitude: latitude,
         longitude: longitude,
+        altitude: fix?.altitude,
+        altitudeAccuracy: fix?.altitudeAccuracy,
+        altitudeReference: fix?.altitudeReference,
+        locationFixTime: fix?.timestamp,
         locationName: locationName,
       );
 
@@ -571,13 +579,11 @@ class FileAnalysisController {
 
         // Restrict to geo-model species intersection.
         if (geoModelSpeciesNames != null) {
-          filtered =
-              filtered
-                  .where(
-                    (d) =>
-                        geoModelSpeciesNames.contains(d.species.scientificName),
-                  )
-                  .toList();
+          filtered = filtered
+              .where(
+                (d) => geoModelSpeciesNames.contains(d.species.scientificName),
+              )
+              .toList();
         }
 
         final windowEnd = windowTimestamp.add(
@@ -586,6 +592,18 @@ class FileAnalysisController {
         final cycle = accumulator.processCycle(
           detections: filtered,
           windowEnd: windowEnd,
+          createRecord: (detection, timestamp) => DetectionRecord(
+            scientificName: detection.species.scientificName,
+            commonName: detection.species.commonName,
+            confidence: detection.confidence,
+            timestamp: timestamp,
+            latitude: session.latitude,
+            longitude: session.longitude,
+            altitude: session.altitude,
+            altitudeAccuracy: session.altitudeAccuracy,
+            altitudeReference: session.altitudeReference,
+            locationFixTime: session.locationFixTime,
+          ),
         );
         for (final change in cycle.changes) {
           if (change.isNew) speciesSet.add(change.record.scientificName);
@@ -675,10 +693,9 @@ class FileAnalysisController {
               debugPrint('[FileAnalysis] canceled at window $w/$totalWindows');
               return false;
             }
-            final modelChunk =
-                sourceChunk.sampleRate != modelSampleRate
-                    ? sourceChunk.resampleTo(modelSampleRate)
-                    : sourceChunk;
+            final modelChunk = sourceChunk.sampleRate != modelSampleRate
+                ? sourceChunk.resampleTo(modelSampleRate)
+                : sourceChunk;
             final audioChunk = modelChunk.readFloat32(0, modelWindowSamples);
             await enqueueWindow(w, startSample, audioChunk);
             return !_cancelRequested;
@@ -825,10 +842,9 @@ class FileAnalysisController {
             }
             consecutiveEmptyChunks = 0;
 
-            final modelChunk =
-                decoded.sampleRate != modelSampleRate
-                    ? decoded.resampleTo(modelSampleRate)
-                    : decoded;
+            final modelChunk = decoded.sampleRate != modelSampleRate
+                ? decoded.resampleTo(modelSampleRate)
+                : decoded;
             for (var w = plan.firstWindow; w < plan.endWindow; w++) {
               if (_cancelRequested) {
                 debugPrint(

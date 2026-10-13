@@ -1,15 +1,16 @@
 # Modalità ARU
 
 !!! note "Implementazione iniziale"
-    La modalità ARU attualmente crea una Session di distribuzione programmata e recuperabile, registra i cicli pianificati, esegue l'inferenza live durante i cicli attivi, salva i clip di rilevazione conservati quando è selezionata quella modalità di registrazione e mostra i controlli di notifica in primo piano su Android. Il comportamento in background su iOS deve ancora essere validato sul campo.
+    La modalità ARU attualmente salva checkpoint della distribuzione programmata, registra i cicli pianificati, esegue l'inferenza live durante i cicli attivi, salva i clip di rilevazione conservati quando è selezionata quella modalità di registrazione e mostra i controlli di notifica in primo piano su Android. Il comportamento in background su iOS deve ancora essere validato sul campo.
 
 La modalità ARU (Autonomous Recording Unit) è il flusso di lavoro per distribuzioni acustiche programmate in una posizione fissa.
 
 ## Flusso di configurazione attuale
 
-- **Distribuzione e audio**: 
+- **Dettagli e impostazioni di analisi**:
     - **Metadati**: inserisci il nome della distribuzione, l'ID ARU/stazione e il nome dell'osservatore.
-    - **Posizione**: fornisci le coordinate del sito tramite acquisizione automatica del GPS, immissione manuale di latitudine/longitudine o salta l'impostazione della posizione. La latitudine e la longitudine sono richieste se utilizzi la pianificazione vincolata al sole.
+    - **Posizione**: fornisci le coordinate del sito tramite acquisizione automatica del GPS, immissione manuale di latitudine/longitudine o salta l'impostazione della posizione. La latitudine e la longitudine sono richieste se utilizzi la pianificazione vincolata al sole. Icone: GPS :app-myLocation:, coordinate manuali :app-editLocationAlt:, salta posizione :app-locationOff: e selettore sulla mappa :app-mapSheet:.
+    - **Analisi**: Scegli microfono, frequenza di inferenza, soglia di confidenza e sensibilità.
     - **Formato di registrazione**: scegli tra i formati FLAC (compresso senza perdita) e WAV (non compresso).
     - **Modalità di registrazione**:
         - *Completa*: registra l'intera durata di ciascun ciclo attivo.
@@ -24,7 +25,9 @@ La modalità ARU (Autonomous Recording Unit) è il flusso di lavoro per distribu
     - **Raggruppamento Session**: configura se salvare ogni ciclo come una Session separata (consigliato per tempi di caricamento più rapidi e visualizzazione modulare) o combinare tutti i cicli in un'unica Session a segmenti multipli.
 - **Pronto**: verifica il programma, la stima del consumo di memoria audio e i vincoli legati al sole, quindi avvia la distribuzione.
 
-All'avvio viene salvata subito una Session `SessionType.aru` con metadati del programma ARU, così lo stato dei cicli potrà essere recuperato in seguito.
+I controlli di configurazione usano le stesse icone delle altre procedure guidate: :app-micRounded: microfono, :app-speedRounded: frequenza di inferenza, :app-verifiedRounded: confidenza, :app-hearing: sensibilità, :app-fiberManualRecordRounded: modalità di registrazione, :app-timerOutlined: contesto del clip e durata del ciclo, :app-filterAltRounded: campionamento delle rilevazioni e :app-formatListNumberedRounded: limite di clip per specie. L'intervallo di ripetizione usa :app-repeatRounded:, i controlli della batteria scarica :app-batteryAlert: e :app-batteryChargingFull:, il test e il raggruppamento delle Session :app-scienceRounded: e :app-libraryBooks:. Tocca il pulsante :app-helpOutline: accanto a un controllo per leggerne la spiegazione.
+
+All'avvio viene salvata subito una Session `SessionType.aru` con metadati del programma ARU. Inoltre i cicli di registrazione vengono salvati ogni 30 secondi, anche quelli senza rilevazioni. Dopo un arresto anomalo o un'interruzione di corrente, l'ultima distribuzione parziale compare nella Libreria Sessions come Session terminata; la registrazione non riparte. Quanto registrato dopo l'ultimo salvataggio può andare perso.
 
 Le esportazioni JSON e ZIP includono i metadati della distribuzione ARU. Le esportazioni ZIP raggruppano i file di registrazione salvati per ciclo sotto `aru_cycles/`.
 

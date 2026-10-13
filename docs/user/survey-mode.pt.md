@@ -4,7 +4,7 @@ O Modo Survey é o fluxo de trabalho baseado em percurso para Surveys móveis de
 
 ## Como abrir
 
-Na tela de Início, toque no cartão **Modo Survey** com o ícone :material-routes:.
+Na tela de Início, toque no cartão **Modo Survey** com o ícone :app-routeRounded:.
 
 ## Fluxo de configuração
 
@@ -17,7 +17,7 @@ Você pode inserir:
 - nome do Survey
 - ID do transecto
 - nome do observador
-- GPS, coordenadas manuais ou nenhum local de partida
+- GPS :app-myLocation:, coordenadas manuais :app-editLocationAlt: ou nenhum local de partida :app-locationOff:. O seletor no mapa usa :app-mapSheet:.
 
 Esta etapa também disponibiliza o seletor de mapa, atualiza o GPS quando você volta das telas de permissão do sistema e mostra o lembrete de permissão de GPS em segundo plano quando necessário. Um cartão de clima está disponível na mesma área de localização. Se o acesso ao clima estiver desativado, ele solicita o consentimento de **Permitir consulta de clima**; uma vez ativado, ele apresenta uma prévia do local apenas com um ícone de clima, a temperatura e o vento. O mesmo instantâneo em cache do Open-Meteo é reutilizado quando o Survey é salvo.
 
@@ -34,6 +34,20 @@ Esta etapa contém parâmetros específicos do Survey, como:
 - contexto do clipe para a gravação somente de detecções
 - modo de amostragem de detecções
 - limite Top N por espécie quando a amostragem é limitada
+
+| Controle de configuração | Ícone |
+|---|---|
+| Microfone | :app-micRounded: |
+| Taxa de inferência | :app-speedRounded: |
+| Limiar de confiança | :app-verifiedRounded: |
+| Intervalo GPS | :app-myLocation: |
+| Duração máxima | :app-timerOutlined: |
+| Modo de gravação | :app-fiberManualRecordRounded: |
+| Contexto do clipe | :app-timerOutlined: |
+| Amostragem de detecções | :app-filterAltRounded: |
+| Top N por espécie | :app-formatListNumberedRounded: |
+
+Toque no botão :app-helpOutline: ao lado de um controle de configuração para ver uma explicação. Os controles de nome, transecto, observador, localização e alertas também têm botões de ajuda.
 
 Novas configurações de Survey usam inferência de **0,70 Hz** por padrão. Isso
 preserva mais vocalizações curtas do que as opções de menor taxa para economia
@@ -56,7 +70,7 @@ Há três modos disponíveis:
 |---|---|
 | **Todas** | Mantém todos os clipes. Maior uso de disco. Recomendado para Surveys curtos ou quando você quer o áudio de cada detecção para análise posterior. |
 | **Top N** | Mantém apenas os **N clipes de maior confiança por espécie**. Os demais clipes são excluídos conforme o Survey avança. O N padrão é 10, configurável de 1 a 50. |
-| **Smart** | O mesmo limite de N por espécie do Top N, **mais** a distribuição espacial: se uma nova detecção cair no mesmo "ponto" de um clipe já mantido (dentro de ~500 m e ~2 min um do outro), apenas a de maior confiança mantém seu clipe. Isso evita que um cantor estacionário monopolize todos os N espaços e direciona os clipes mantidos para cobrir todo o transecto. |
+| **Smart** | O mesmo limite de N por espécie do Top N, **mais** a distribuição espacial: se uma nova detecção cair no mesmo "ponto" de um clipe já mantido (dentro de ~250 m e ~2 min um do outro), apenas a de maior confiança mantém seu clipe. Isso evita que um cantor estacionário monopolize todos os N espaços e direciona os clipes mantidos para cobrir todo o transecto. |
 
 O limite N é **por espécie, não global** — se você registrar 10 sabiás e 10 tentilhões, mantém 20 clipes. Não há limite geral para o número de clipes que um Survey pode produzir.
 
@@ -80,7 +94,7 @@ Uma breve lista de verificação antes do início, dentro do fluxo de configura�
 
 ### 5. Pronto
 
-A tela de pronto resume a configuração do Survey ativo antes de você começar com :material-play:.
+A tela de pronto resume a configuração do Survey ativo antes de você começar com :app-playArrowRounded:.
 
 ## Painel do Survey ao vivo
 
@@ -88,28 +102,28 @@ A tela do Survey ao vivo tem três abas principais, além de uma lista de detec�
 
 ### Barra superior
 
-- :material-stop: — encerra o Survey
-- :material-timer: — tempo decorrido
-- :material-help-circle-outline: — abre o painel de ajuda do Survey
-- :material-tune: — abre as configurações do Survey
+- :app-stopRounded: — encerra o Survey
+- :app-timerOutlined: — tempo decorrido
+- :app-helpOutlineRounded: — abre o painel de ajuda do Survey
+- :app-tuneRounded: — abre as configurações do Survey
 
 ### Abas
 
-- :material-map-outline: — mapa do percurso e detecções mapeadas
-- :material-equalizer: — espectrograma
+- :app-map: — mapa do percurso e detecções mapeadas
+- :app-graphicEq: — espectrograma
 - ícone de gráfico — estatísticas de resumo e detalhamento por espécie
 
 ### Estatísticas e detecções
 
 Abaixo do conteúdo da aba, o painel do Survey mostra uma barra de estatísticas e uma lista de detecções recentes. Tocar em uma detecção abre a sobreposição de detalhes da espécie.
 
-Cada linha de detecção também expõe as mesmas ações por detecção usadas no [Resumo da Session](session-review.md): uma marca de verificação :material-check: **Confirmar** com um toque e um menu adicional :material-dots-vertical: **Mais** com **Compartilhar detecção** e **Excluir detecção** (com SnackBar de desfazer) — para que você possa validar, compartilhar ou remover um acerto ruidoso durante a captura, em vez de esperar a revisão pós-Session.
+Cada linha de detecção também expõe as mesmas ações por detecção usadas no [Resumo da Session](session-review.md): uma marca de verificação :app-checkCircleOutline: **Confirmar** com um toque e um menu adicional :app-moreVert: **Mais** com **Compartilhar detecção** e **Excluir detecção** (com SnackBar de desfazer) — para que você possa validar, compartilhar ou remover um acerto ruidoso durante a captura, em vez de esperar a revisão pós-Session.
 
 As mesmas ações estão disponíveis no **mapa do percurso ao vivo**: toque em um marcador de detecção para abrir o painel do reprodutor de clipe com confirmar, compartilhar e excluir. O compartilhamento durante um Survey funciona mesmo quando você optou por uma única gravação WAV contínua em vez de clipes por detecção — a janela de áudio relevante é recortada do arquivo em andamento em tempo real. Consulte [Resumo da Session → Compartilhar uma única detecção](session-review.md#compartilhar-uma-única-detecção) para detalhes.
 
 ### Registrar uma observação
 
-O botão :material-plus-circle-outline: do survey ao vivo abre um pequeno menu com **Adicionar espécie** e **Adicionar nota**. **Adicionar espécie** abre o mesmo seletor usado em [Session Review](session-review.md#adicionar-uma-espécie-manualmente), escolha uma espécie, depois marque :material-ear-hearing: **Ouvida** e/ou :material-eye: **Vista** na folha de confirmação e toque em **Adicionar**. O registro recebe o carimbo de tempo daquele momento e a posição GPS atual, e aparece imediatamente na lista de detecções e no mapa da rota, com o selo manual e os ícones de orelha / olho correspondentes.
+O botão :app-addCircleOutline: do survey ao vivo abre um pequeno menu com **Adicionar espécie** e **Adicionar nota**. **Adicionar espécie** abre o mesmo seletor usado em [Session Review](session-review.md#adicionar-uma-espécie-manualmente), escolha uma espécie, depois marque :app-hearing: **Ouvida** e/ou :app-visibility: **Vista** na folha de confirmação e toque em **Adicionar**. O registro recebe o carimbo de tempo daquele momento e a posição GPS atual, e aparece imediatamente na lista de detecções e no mapa da rota, com o selo manual e os ícones de orelha / olho correspondentes.
 
 Memos de voz estão ausentes aqui de propósito: o microfone está ocupado com a gravação do próprio survey. Anexe-os em Session Review depois que o survey terminar.
 
@@ -128,8 +142,10 @@ Quando você **retoma** um Survey inacabado a partir das Sessões, o pipeline de
 
 ## Revisão no mapa
 
-A visualização do mapa do Survey em tela cheia (o botão :material-fullscreen: no Resumo da Session) abre um reprodutor de clipe quando você toca em um marcador. A linha de transporte tem botões de retroceder e avançar ao lado do controle de reprodução — eles percorrem as detecções em ordem cronológica, mas **apenas as visíveis no momento no mapa**, de modo que qualquer filtro ativo de espécie, confiança ou chip de modo restringe a lista de reprodução correspondente. Os botões ficam esmaecidos na primeira/última detecção da lista filtrada.
+A visualização do mapa do Survey em tela cheia (o botão :app-fullscreen: no Resumo da Session) abre um reprodutor de clipe quando você toca em um marcador. A linha de transporte tem botões de retroceder e avançar ao lado do controle de reprodução — eles percorrem as detecções em ordem cronológica, mas **apenas as visíveis no momento no mapa**, de modo que qualquer filtro ativo de espécie, confiança ou chip de modo restringe a lista de reprodução correspondente. Os botões ficam esmaecidos na primeira/última detecção da lista filtrada.
 
 ## Após parar
 
 O BirdNET Live salva o Survey concluído e abre o [Resumo da Session](session-review.md).
+
+O Survey ativo é salvo no início, a cada 30 segundos e quando o aplicativo sai do primeiro plano. Após uma falha ou queda de energia, o último Survey parcial aparece na Biblioteca de Sessions como uma Session encerrada. A gravação não é reiniciada. Observações posteriores ao último salvamento podem estar ausentes.

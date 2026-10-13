@@ -35,7 +35,7 @@ A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soub
 ## Počet bodů
 
 **Otázka: Co je režim počítání bodů?**
-A: Časovaný režim pro formální bodové sčítání ptáků (point count). Nastavíte pevnou dobu trvání (3–20 minut) a umístění, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
+A: Časovaný režim pro formální bodové sčítání ptáků (point count). Nastavíte pevnou dobu trvání (3–30 minut) a umístění, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
 
 **Otázka: Mohu pozastavit počítání bodů?**
 Odpověď: Ne. Soulad s protokolem vyžaduje nepřerušované nahrávání. Předčasně můžete ukončit pomocí tlačítka stop.

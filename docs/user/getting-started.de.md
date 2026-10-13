@@ -40,18 +40,20 @@ Der Startbildschirm ist die zentrale Anlaufstelle.
 
 ### Karten der Hauptmodi
 
-- :material-microphone: **Live-Modus**
-- :material-map-marker: **Point-Count-Modus**
-- :material-routes: **Survey-Modus**
-- :material-file-music: **Dateianalyse**
+- :app-micRounded: **Live-Modus**
+- :app-locationOnRounded: **Point-Count-Modus**
+- :app-routeRounded: **Survey-Modus**
+- :app-audioFileRounded: **Dateianalyse**
+- :app-timerRounded: **ARU-Modus**
+- :app-sdStorage: **Batch-Analyse** (Demnächst)
 
 ### Schaltflächen in der Fußzeile
 
-- :material-tune: **Einstellungen**
-- :material-magnify: **Erkunden**
-- :material-music-box-multiple-outline: **Session-Bibliothek**
-- :material-help-circle-outline: **Hilfe**
-- :material-information-outline: **Über**
+- :app-tuneRounded: **Einstellungen**
+- :app-searchRounded: **Erkunden**
+- :app-libraryMusic: **Session-Bibliothek**
+- :app-helpOutlineRounded: **Hilfe**
+- :app-infoOutline: **Über**
 
 ## Was gespeichert wird
 

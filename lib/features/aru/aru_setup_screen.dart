@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../audio/audio_providers.dart';
+import '../../core/services/location_service.dart';
 import '../audio/widgets/audio_source_tile.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../explore/explore_providers.dart';
@@ -57,6 +58,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   _LocationChoice _locationChoice = _LocationChoice.gps;
   double? _latitude;
   double? _longitude;
+  AppLocation? _gpsLocation;
   bool _gpsFetching = false;
   int _gpsAttempts = 0;
   int _gpsRequestSerial = 0;
@@ -76,7 +78,6 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
   bool _testCycleEnabled = true;
   bool _eachCycleIsSession = true;
   bool _starting = false;
-  bool _recovering = false;
 
   @override
   void initState() {
@@ -97,7 +98,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _restoreActiveDeployment();
+      _showActiveDeployment();
     });
   }
 
@@ -175,6 +176,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
         setState(() {
           _latitude = location.latitude;
           _longitude = location.longitude;
+          _gpsLocation = location;
           _gpsFetching = false;
         });
         if (service.lastFetchUsedCachedFallback) {
@@ -223,8 +225,9 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
 
   void _parseManualLocation() {
     _latitude = double.tryParse(_latController.text)?.clamp(-90, 90).toDouble();
-    _longitude =
-        double.tryParse(_lonController.text)?.clamp(-180, 180).toDouble();
+    _longitude = double.tryParse(_lonController.text)
+        ?.clamp(-180, 180)
+        .toDouble();
   }
 
   static DateTime _defaultScheduleEnd() {
@@ -242,55 +245,20 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       _lowBatteryStop > 0 ? _lowBatteryStop : null;
 
   // Resume threshold only applies when battery management (stop) is enabled.
-  int? get _selectedLowBatteryResume =>
-      _lowBatteryStop > 0
-          ? _effectiveLowBatteryResume(_lowBatteryResume, _lowBatteryStop)
-          : null;
+  int? get _selectedLowBatteryResume => _lowBatteryStop > 0
+      ? _effectiveLowBatteryResume(_lowBatteryResume, _lowBatteryStop)
+      : null;
 
-  Future<void> _restoreActiveDeployment() async {
-    if (_recovering) return;
-    _recovering = true;
-    try {
-      final inMemorySession = ref.read(aruSessionProvider);
-      final inMemoryState = ref.read(aruStateProvider);
-      if (inMemorySession != null &&
-          inMemoryState != AruControllerState.completed &&
-          inMemoryState != AruControllerState.idle) {
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
-        );
-        return;
-      }
-
-      final repo = ref.read(sessionRepositoryProvider);
-      final sessions = await repo.listAll();
-      final restorable =
-          sessions
-              .where(
-                (session) =>
-                    session.type == SessionType.aru &&
-                    session.endTime == null &&
-                    session.aruMetadata != null,
-              )
-              .toList()
-            ..sort((a, b) => b.startTime.compareTo(a.startTime));
-      final pendingSession = restorable.firstOrNull;
-      if (pendingSession == null) return;
-
-      final controller = ref.read(aruControllerProvider);
-      await controller.restoreDeployment(pendingSession);
-      ref.read(aruStateProvider.notifier).state = controller.state;
-      ref.read(aruSessionProvider.notifier).state = controller.session;
-
-      if (!mounted || controller.state == AruControllerState.completed) {
-        return;
-      }
+  void _showActiveDeployment() {
+    final inMemorySession = ref.read(aruSessionProvider);
+    final inMemoryState = ref.read(aruStateProvider);
+    if (inMemorySession != null &&
+        inMemoryState != AruControllerState.completed &&
+        inMemoryState != AruControllerState.idle &&
+        mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(builder: (_) => const AruActiveScreen()),
       );
-    } finally {
-      _recovering = false;
     }
   }
 
@@ -303,8 +271,15 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
 
     final now = DateTime.now();
     final latitude = _locationChoice == _LocationChoice.skip ? null : _latitude;
-    final longitude =
-        _locationChoice == _LocationChoice.skip ? null : _longitude;
+    final longitude = _locationChoice == _LocationChoice.skip
+        ? null
+        : _longitude;
+    final gpsLocation =
+        _locationChoice == _LocationChoice.gps &&
+            _gpsLocation?.latitude == latitude &&
+            _gpsLocation?.longitude == longitude
+        ? _gpsLocation
+        : null;
     final observer = _observerController.text.trim();
     if (observer.isNotEmpty) {
       await ref.read(lastObserverProvider.notifier).set(observer);
@@ -336,12 +311,15 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       dielPattern: _dielPattern,
       latitude: latitude,
       longitude: longitude,
+      altitude: gpsLocation?.altitude,
+      altitudeAccuracy: gpsLocation?.altitudeAccuracy,
+      altitudeReference: gpsLocation?.altitudeReference,
+      locationFixTime: gpsLocation?.timestamp,
       recordingMode: finalRecordingMode.name,
       recordingFormat: ref.read(recordingFormatProvider),
-      samplingMode:
-          finalRecordingMode == RecordingMode.detectionsOnly
-              ? finalSamplingMode.name
-              : SamplingMode.all.name,
+      samplingMode: finalRecordingMode == RecordingMode.detectionsOnly
+          ? finalSamplingMode.name
+          : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
       testCycleEnabled: _testCycleEnabled,
       eachCycleIsSession: _eachCycleIsSession,
@@ -377,10 +355,9 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       highPassHz: ref.read(highPassFilterProvider),
       recordingMode: finalRecordingMode.name,
       recordingFormat: ref.read(recordingFormatProvider),
-      detectionSamplingMode:
-          finalRecordingMode == RecordingMode.detectionsOnly
-              ? finalSamplingMode.name
-              : SamplingMode.all.name,
+      detectionSamplingMode: finalRecordingMode == RecordingMode.detectionsOnly
+          ? finalSamplingMode.name
+          : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
     );
 
@@ -396,6 +373,10 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
         observerName: observer.isEmpty ? null : observer,
         latitude: latitude,
         longitude: longitude,
+        altitude: gpsLocation?.altitude,
+        altitudeAccuracy: gpsLocation?.altitudeAccuracy,
+        altitudeReference: gpsLocation?.altitudeReference,
+        locationFixTime: gpsLocation?.timestamp,
         sessionNumber: sessionNumber,
       );
       ref.read(aruStateProvider.notifier).state = controller.state;
@@ -421,16 +402,12 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.aruSetupHelpTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.sdStorage,
-                body: l10n.aruSetupHelpBody,
-              ),
-            ],
-          ),
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.aruSetupHelpTitle,
+        sections: [
+          AppHelpSection(icon: AppIcons.sdStorage, body: l10n.aruSetupHelpBody),
+        ],
+      ),
     );
   }
 
@@ -455,10 +432,8 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder:
-                    (_) => const SettingsScreen(
-                      settingsContext: SettingsContext.aru,
-                    ),
+                builder: (_) =>
+                    const SettingsScreen(settingsContext: SettingsContext.aru),
               ),
             );
           },
@@ -496,6 +471,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
               setState(() {
                 _latitude = lat;
                 _longitude = lon;
+                _gpsLocation = null;
                 _latController.text = lat.toStringAsFixed(6);
                 _lonController.text = lon.toStringAsFixed(6);
               });
@@ -504,17 +480,17 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
           1 => _ParametersStep(
             key: const ValueKey(1),
             recordingMode: _recordingMode,
-            onRecordingModeChanged:
-                (value) => setState(() => _recordingMode = value),
+            onRecordingModeChanged: (value) =>
+                setState(() => _recordingMode = value),
             samplingMode: _samplingMode,
-            onSamplingModeChanged:
-                (value) => setState(() => _samplingMode = value),
+            onSamplingModeChanged: (value) =>
+                setState(() => _samplingMode = value),
             topNPerSpecies: _topNPerSpecies,
-            onTopNPerSpeciesChanged:
-                (value) => setState(() => _topNPerSpecies = value),
+            onTopNPerSpeciesChanged: (value) =>
+                setState(() => _topNPerSpecies = value),
             inferenceRate: _inferenceRate,
-            onInferenceRateChanged:
-                (value) => setState(() => _inferenceRate = value),
+            onInferenceRateChanged: (value) =>
+                setState(() => _inferenceRate = value),
           ),
           2 => _ScheduleStep(
             key: const ValueKey(2),
@@ -526,50 +502,48 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             lowBatteryStop: _lowBatteryStop,
             lowBatteryResume: _lowBatteryResume,
             dielPattern: _dielPattern,
-            latitude:
-                _locationChoice == _LocationChoice.skip ? null : _latitude,
-            longitude:
-                _locationChoice == _LocationChoice.skip ? null : _longitude,
+            latitude: _locationChoice == _LocationChoice.skip
+                ? null
+                : _latitude,
+            longitude: _locationChoice == _LocationChoice.skip
+                ? null
+                : _longitude,
             testCycleEnabled: _testCycleEnabled,
             eachCycleIsSession: _eachCycleIsSession,
             recordingMode: _recordingMode,
             topNPerSpecies: _topNPerSpecies,
-            onCycleDurationChanged:
-                (value) => setState(() {
-                  _cycleDuration = value;
-                  if (_repeatInterval < value) {
-                    _repeatInterval = _nearestRepeatInterval(value);
-                  }
-                }),
-            onRepeatIntervalChanged:
-                (value) => setState(() => _repeatInterval = value),
-            onScheduleEndModeChanged:
-                (value) => setState(() => _scheduleEndMode = value),
-            onScheduleEndChanged:
-                (value) => setState(() => _scheduleEnd = value),
+            onCycleDurationChanged: (value) => setState(() {
+              _cycleDuration = value;
+              if (_repeatInterval < value) {
+                _repeatInterval = _nearestRepeatInterval(value);
+              }
+            }),
+            onRepeatIntervalChanged: (value) =>
+                setState(() => _repeatInterval = value),
+            onScheduleEndModeChanged: (value) =>
+                setState(() => _scheduleEndMode = value),
+            onScheduleEndChanged: (value) =>
+                setState(() => _scheduleEnd = value),
             onMaxCyclesChanged: (value) => setState(() => _maxCycles = value),
-            onLowBatteryStopChanged:
-                (value) => setState(() {
-                  _lowBatteryStop = value;
-                  _lowBatteryResume = _effectiveLowBatteryResume(
-                    _lowBatteryResume,
-                    value,
-                  );
-                }),
-            onLowBatteryResumeChanged:
-                (value) => setState(
-                  () =>
-                      _lowBatteryResume = _effectiveLowBatteryResume(
-                        value,
-                        _lowBatteryStop,
-                      ),
-                ),
-            onDielPatternChanged:
-                (value) => setState(() => _dielPattern = value),
-            onTestCycleEnabledChanged:
-                (value) => setState(() => _testCycleEnabled = value),
-            onEachCycleIsSessionChanged:
-                (value) => setState(() => _eachCycleIsSession = value),
+            onLowBatteryStopChanged: (value) => setState(() {
+              _lowBatteryStop = value;
+              _lowBatteryResume = _effectiveLowBatteryResume(
+                _lowBatteryResume,
+                value,
+              );
+            }),
+            onLowBatteryResumeChanged: (value) => setState(
+              () => _lowBatteryResume = _effectiveLowBatteryResume(
+                value,
+                _lowBatteryStop,
+              ),
+            ),
+            onDielPatternChanged: (value) =>
+                setState(() => _dielPattern = value),
+            onTestCycleEnabledChanged: (value) =>
+                setState(() => _testCycleEnabled = value),
+            onEachCycleIsSessionChanged: (value) =>
+                setState(() => _eachCycleIsSession = value),
           ),
           3 => const _FieldTipsStep(key: ValueKey(3)),
           _ => _ReadyStep(
@@ -577,10 +551,12 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             deploymentName: _deploymentController.text,
             stationId: _stationController.text,
             observerName: _observerController.text,
-            latitude:
-                _locationChoice == _LocationChoice.skip ? null : _latitude,
-            longitude:
-                _locationChoice == _LocationChoice.skip ? null : _longitude,
+            latitude: _locationChoice == _LocationChoice.skip
+                ? null
+                : _latitude,
+            longitude: _locationChoice == _LocationChoice.skip
+                ? null
+                : _longitude,
             cycleDuration: _cycleDuration,
             repeatInterval: _repeatInterval,
             scheduleEndMode: _scheduleEndMode,
@@ -706,10 +682,9 @@ class _DetailsStep extends ConsumerWidget {
         const SizedBox(height: 24),
         SettingHelpTitle(
           title: l10n.surveyLocation,
-          helpBody:
-              locationChoice == _LocationChoice.manual
-                  ? l10n.settingsHelpManualCoordinates
-                  : l10n.pointCountSetupHelpLocation,
+          helpBody: locationChoice == _LocationChoice.manual
+              ? l10n.settingsHelpManualCoordinates
+              : l10n.pointCountSetupHelpLocation,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -943,9 +918,8 @@ class _ParametersStep extends ConsumerWidget {
           max: 90,
           divisions: 17,
           label: '$confidenceThreshold %',
-          onChanged:
-              (v) =>
-                  ref.read(confidenceThresholdProvider.notifier).set(v.round()),
+          onChanged: (v) =>
+              ref.read(confidenceThresholdProvider.notifier).set(v.round()),
         ),
 
         // Sensitivity
@@ -1052,8 +1026,8 @@ class _ParametersStep extends ConsumerWidget {
               max: 5,
               divisions: 5,
               label: '+/-${clipContext}s',
-              onChanged:
-                  (v) => ref.read(clipContextProvider.notifier).set(v.round()),
+              onChanged: (v) =>
+                  ref.read(clipContextProvider.notifier).set(v.round()),
             ),
           ),
         ],
@@ -1177,10 +1151,9 @@ class _ScheduleStep extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final repeatOptions =
-        AruDefaults.repeatIntervalOptions
-            .where((duration) => duration >= cycleDuration)
-            .toList();
+    final repeatOptions = AruDefaults.repeatIntervalOptions
+        .where((duration) => duration >= cycleDuration)
+        .toList();
     final effectiveRecordingMode = _effectiveAruRecordingMode(
       eachCycleIsSession: eachCycleIsSession,
       recordingMode: recordingMode,
@@ -1189,34 +1162,30 @@ class _ScheduleStep extends ConsumerWidget {
     final clipContext = ref.watch(clipContextProvider);
     final assumedRetainedClips =
         effectiveRecordingMode == RecordingMode.detectionsOnly
-            ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
-            : null;
+        ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
+        : null;
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
           AruStorageEstimateInput(
-            schedule:
-                AruDeploymentMetadata(
-                  scheduleStart: DateTime.now(),
-                  eachCycleIsSession: eachCycleIsSession,
-                  cycleDurationSeconds: cycleDuration.inSeconds,
-                  repeatIntervalSeconds: repeatInterval.inSeconds,
-                  scheduleEnd:
-                      scheduleEndMode == _ScheduleEndMode.dateTime
-                          ? scheduleEnd
-                          : null,
-                  maxCycles:
-                      scheduleEndMode == _ScheduleEndMode.cycles
-                          ? maxCycles
-                          : null,
-                  lowBatteryStopPercent:
-                      lowBatteryStop > 0 ? lowBatteryStop : null,
-                  dielPattern: dielPattern,
-                  testCycleEnabled: testCycleEnabled,
-                  latitude: latitude,
-                  longitude: longitude,
-                  recordingMode: effectiveRecordingMode.name,
-                ).toScheduleConfig(),
+            schedule: AruDeploymentMetadata(
+              scheduleStart: DateTime.now(),
+              eachCycleIsSession: eachCycleIsSession,
+              cycleDurationSeconds: cycleDuration.inSeconds,
+              repeatIntervalSeconds: repeatInterval.inSeconds,
+              scheduleEnd: scheduleEndMode == _ScheduleEndMode.dateTime
+                  ? scheduleEnd
+                  : null,
+              maxCycles: scheduleEndMode == _ScheduleEndMode.cycles
+                  ? maxCycles
+                  : null,
+              lowBatteryStopPercent: lowBatteryStop > 0 ? lowBatteryStop : null,
+              dielPattern: dielPattern,
+              testCycleEnabled: testCycleEnabled,
+              latitude: latitude,
+              longitude: longitude,
+              recordingMode: effectiveRecordingMode.name,
+            ).toScheduleConfig(),
             recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
             expectedRetainedClips: assumedRetainedClips,
@@ -1245,10 +1214,9 @@ class _ScheduleStep extends ConsumerWidget {
           label: l10n.aruRepeatInterval,
           helpBody: l10n.setupHelpAruRepeatInterval,
           icon: AppIcons.repeatRounded,
-          value:
-              repeatOptions.contains(repeatInterval)
-                  ? repeatInterval
-                  : repeatOptions.first,
+          value: repeatOptions.contains(repeatInterval)
+              ? repeatInterval
+              : repeatOptions.first,
           options: repeatOptions,
           onChanged: onRepeatIntervalChanged,
         ),
@@ -1258,14 +1226,12 @@ class _ScheduleStep extends ConsumerWidget {
             leading: const Icon(AppIcons.sdStorage),
             title: Text(l10n.aruStorageEstimate),
             subtitle: _StorageEstimateSubtitle(
-              value:
-                  estimate.hasFiniteTotal
-                      ? _formatBytes(estimate.totalBytes ?? 0)
-                      : '${l10n.aruPerDayEstimate}: ${_formatBytes(estimate.bytesPerScheduledDay)}',
-              note:
-                  assumedRetainedClips == null
-                      ? null
-                      : l10n.aruClipStorageEstimateNote(assumedRetainedClips),
+              value: estimate.hasFiniteTotal
+                  ? _formatBytes(estimate.totalBytes ?? 0)
+                  : '${l10n.aruPerDayEstimate}: ${_formatBytes(estimate.bytesPerScheduledDay)}',
+              note: assumedRetainedClips == null
+                  ? null
+                  : l10n.aruClipStorageEstimateNote(assumedRetainedClips),
             ),
           ),
         ),
@@ -1317,9 +1283,8 @@ class _ScheduleStep extends ConsumerWidget {
             cycleDuration: cycleDuration,
             alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
           ),
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
         SettingHelpTitle(
@@ -1407,8 +1372,8 @@ class _ScheduleStep extends ConsumerWidget {
               formatLocaleDateTime(
                 scheduleEnd,
                 l10n.localeName,
-                alwaysUse24HourFormat:
-                    MediaQuery.of(context).alwaysUse24HourFormat,
+                alwaysUse24HourFormat: MediaQuery.of(context)
+                    .alwaysUse24HourFormat,
               ),
             ),
           ),
@@ -1473,8 +1438,8 @@ class _ScheduleStep extends ConsumerWidget {
                     max: AruDefaults.maxLowBatteryResumePercent.toDouble(),
                     divisions: AruDefaults.lowBatteryResumeDivisions,
                     label: '$effectiveResume%',
-                    onChanged:
-                        (value) => onLowBatteryResumeChanged(value.round()),
+                    onChanged: (value) =>
+                        onLowBatteryResumeChanged(value.round()),
                   ),
                 ],
               );
@@ -1700,30 +1665,28 @@ class _ReadyStep extends ConsumerWidget {
     final clipContext = ref.watch(clipContextProvider);
     final assumedRetainedClips =
         effectiveRecordingMode == RecordingMode.detectionsOnly
-            ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
-            : null;
+        ? topNPerSpecies * _aruStorageEstimateSpeciesAssumption
+        : null;
     final estimate = ref
         .watch(aruStorageEstimatorProvider)
         .estimate(
           AruStorageEstimateInput(
-            schedule:
-                AruDeploymentMetadata(
-                  scheduleStart: DateTime.now(),
-                  eachCycleIsSession: eachCycleIsSession,
-                  cycleDurationSeconds: cycleDuration.inSeconds,
-                  repeatIntervalSeconds: repeatInterval.inSeconds,
-                  scheduleEnd: scheduleEnd,
-                  maxCycles: maxCycles,
-                  lowBatteryStopPercent:
-                      lowBatteryStop > 0 ? lowBatteryStop : null,
-                  dielPattern: dielPattern,
-                  latitude: latitude,
-                  longitude: longitude,
-                  recordingMode: effectiveRecordingMode.name,
-                  samplingMode: effectiveSamplingMode.name,
-                  topNPerSpecies: topNPerSpecies,
-                  testCycleEnabled: testCycleEnabled,
-                ).toScheduleConfig(),
+            schedule: AruDeploymentMetadata(
+              scheduleStart: DateTime.now(),
+              eachCycleIsSession: eachCycleIsSession,
+              cycleDurationSeconds: cycleDuration.inSeconds,
+              repeatIntervalSeconds: repeatInterval.inSeconds,
+              scheduleEnd: scheduleEnd,
+              maxCycles: maxCycles,
+              lowBatteryStopPercent: lowBatteryStop > 0 ? lowBatteryStop : null,
+              dielPattern: dielPattern,
+              latitude: latitude,
+              longitude: longitude,
+              recordingMode: effectiveRecordingMode.name,
+              samplingMode: effectiveSamplingMode.name,
+              topNPerSpecies: topNPerSpecies,
+              testCycleEnabled: testCycleEnabled,
+            ).toScheduleConfig(),
             recordingMode: effectiveRecordingMode,
             format: ref.watch(recordingFormatProvider),
             expectedRetainedClips: assumedRetainedClips,
@@ -1731,14 +1694,12 @@ class _ReadyStep extends ConsumerWidget {
           ),
         );
     final micLabel = audioSourceLabel(l10n, devices, audioSource);
-    final primaryStorage =
-        estimate.hasFiniteTotal
-            ? _formatBytes(estimate.totalBytes ?? 0)
-            : _formatBytes(estimate.bytesPerScheduledDay);
-    final primaryStorageLabel =
-        estimate.hasFiniteTotal
-            ? l10n.aruStorageEstimate
-            : l10n.aruPerDayEstimate;
+    final primaryStorage = estimate.hasFiniteTotal
+        ? _formatBytes(estimate.totalBytes ?? 0)
+        : _formatBytes(estimate.bytesPerScheduledDay);
+    final primaryStorageLabel = estimate.hasFiniteTotal
+        ? l10n.aruStorageEstimate
+        : l10n.aruPerDayEstimate;
     final effectiveLowBatteryResume = _effectiveLowBatteryResume(
       lowBatteryResume,
       lowBatteryStop,
@@ -1774,10 +1735,9 @@ class _ReadyStep extends ConsumerWidget {
             if (latitude == null || longitude == null)
               (l10n.surveyLocation, l10n.sessionNoLocation),
           ],
-          footer:
-              latitude != null && longitude != null
-                  ? SiteContextCard(latitude: latitude!, longitude: longitude!)
-                  : null,
+          footer: latitude != null && longitude != null
+              ? SiteContextCard(latitude: latitude!, longitude: longitude!)
+              : null,
         ),
         const SizedBox(height: 12),
         _ReviewCard(
@@ -1794,8 +1754,8 @@ class _ReadyStep extends ConsumerWidget {
                 mode: scheduleEndMode,
                 scheduleEnd: scheduleEnd,
                 maxCycles: maxCycles,
-                alwaysUse24HourFormat:
-                    MediaQuery.of(context).alwaysUse24HourFormat,
+                alwaysUse24HourFormat: MediaQuery.of(context)
+                    .alwaysUse24HourFormat,
               ),
             ),
           ],
@@ -1850,15 +1810,14 @@ class _ReadyStep extends ConsumerWidget {
                   : l10n.aruSessionGroupingAll,
             ),
           ],
-          footer:
-              assumedRetainedClips == null
-                  ? null
-                  : Text(
-                    l10n.aruClipStorageEstimateNote(assumedRetainedClips),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+          footer: assumedRetainedClips == null
+              ? null
+              : Text(
+                  l10n.aruClipStorageEstimateNote(assumedRetainedClips),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
+                ),
         ),
       ],
     );
@@ -2034,10 +1993,9 @@ String _recordingWindowSummary({
   required bool alwaysUse24HourFormat,
 }) {
   if (dielPattern == AruDielPattern.anyTime) {
-    final localMidnight =
-        date.isUtc
-            ? DateTime.utc(date.year, date.month, date.day)
-            : DateTime(date.year, date.month, date.day);
+    final localMidnight = date.isUtc
+        ? DateTime.utc(date.year, date.month, date.day)
+        : DateTime(date.year, date.month, date.day);
     final endOfDay = localMidnight
         .add(const Duration(days: 1))
         .subtract(const Duration(minutes: 1));
@@ -2055,8 +2013,8 @@ String _recordingWindowSummary({
   );
   final visibleWindows =
       dielPattern == AruDielPattern.nightOnly && windows.length > 1
-          ? windows.skip(1)
-          : windows;
+      ? windows.skip(1)
+      : windows;
   final ranges = visibleWindows
       .map((window) {
         final aligned = _alignedRecordingRange(
@@ -2085,10 +2043,9 @@ AruDielWindow _alignedRecordingRange(
 }
 
 DateTime _ceilToInterval(DateTime time, Duration interval) {
-  final midnight =
-      time.isUtc
-          ? DateTime.utc(time.year, time.month, time.day)
-          : DateTime(time.year, time.month, time.day);
+  final midnight = time.isUtc
+      ? DateTime.utc(time.year, time.month, time.day)
+      : DateTime(time.year, time.month, time.day);
   final elapsedMicros = time.difference(midnight).inMicroseconds;
   final intervalMicros = interval.inMicroseconds;
   final remainder = elapsedMicros % intervalMicros;
@@ -2097,10 +2054,9 @@ DateTime _ceilToInterval(DateTime time, Duration interval) {
 }
 
 DateTime? _lastIntervalStartBefore(DateTime time, Duration interval) {
-  final midnight =
-      time.isUtc
-          ? DateTime.utc(time.year, time.month, time.day)
-          : DateTime(time.year, time.month, time.day);
+  final midnight = time.isUtc
+      ? DateTime.utc(time.year, time.month, time.day)
+      : DateTime(time.year, time.month, time.day);
   final elapsedMicros = time.difference(midnight).inMicroseconds;
   if (elapsedMicros <= 0) return null;
   final intervalMicros = interval.inMicroseconds;

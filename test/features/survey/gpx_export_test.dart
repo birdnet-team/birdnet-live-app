@@ -5,6 +5,7 @@
 import 'package:birdnet_live/features/history/session_export.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
+import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 LiveSession _makeSurveySession({
@@ -60,6 +61,15 @@ void main() {
 
       expect(gpx, contains('<author>'));
       expect(gpx, contains('Jane Doe'));
+      // GPX 1.1 requires <author> before <time> inside <metadata>.
+      final metadata = gpx.substring(
+        gpx.indexOf('<metadata>'),
+        gpx.indexOf('</metadata>'),
+      );
+      expect(
+        metadata.indexOf('<author>'),
+        lessThan(metadata.indexOf('<time>')),
+      );
     });
 
     test('omits author when no observer name', () {
@@ -89,6 +99,38 @@ void main() {
       expect(gpx, contains('<name>Great Tit</name>'));
       expect(gpx, contains('Parus major'));
       expect(gpx, contains('85.0%'));
+    });
+
+    test('reviewed waypoint follows GPX 1.1 child order', () {
+      final ts = DateTime.utc(2025, 7, 1, 8);
+      final session = _makeSurveySession(
+        detections: [
+          DetectionRecord(
+            scientificName: 'Parus major',
+            commonName: 'Great Tit',
+            confidence: 0.85,
+            timestamp: ts,
+            latitude: 52.52,
+            longitude: 13.405,
+            altitude: 34.5,
+            reviewStatus: ReviewStatus.confirmed,
+            reviewedAt: ts,
+          ),
+        ],
+      );
+
+      final gpx = buildGpxExport(session);
+      final waypoint = gpx.substring(
+        gpx.indexOf('<wpt'),
+        gpx.indexOf('</wpt>'),
+      );
+      expect(waypoint.indexOf('<name>'), lessThan(waypoint.indexOf('<cmt>')));
+      expect(waypoint.indexOf('<cmt>'), lessThan(waypoint.indexOf('<desc>')));
+      expect(waypoint.indexOf('<desc>'), lessThan(waypoint.indexOf('<sym>')));
+      expect(
+        waypoint.indexOf('<sym>'),
+        lessThan(waypoint.indexOf('<extensions>')),
+      );
     });
 
     test('skips detections without coordinates', () {
@@ -133,6 +175,49 @@ void main() {
       expect(gpx, contains('</trkseg>'));
       expect(gpx, contains('</trk>'));
     });
+
+    test(
+      'exports waypoint and track height with reference and uncertainty',
+      () {
+        final ts = DateTime.utc(2025, 7, 1, 8);
+        final session = _makeSurveySession(
+          detections: [
+            DetectionRecord(
+              scientificName: 'Turdus merula',
+              commonName: 'Eurasian Blackbird',
+              confidence: 0.9,
+              timestamp: ts,
+              latitude: 52.52,
+              longitude: 13.405,
+              altitude: 34.5,
+              altitudeAccuracy: 6,
+              altitudeReference: AltitudeReference.meanSeaLevel,
+              locationFixTime: ts,
+            ),
+          ],
+          gpsTrack: [
+            GpsPoint(
+              latitude: 52.52,
+              longitude: 13.405,
+              timestamp: ts,
+              altitude: 34.5,
+              altitudeAccuracy: 6,
+              altitudeReference: AltitudeReference.meanSeaLevel,
+            ),
+          ],
+        )..altitude = 34.5;
+
+        final gpx = buildGpxExport(session);
+        expect(gpx, contains('<wpt lat="52.52" lon="13.405">'));
+        expect(gpx, contains('<ele>34.5</ele>'));
+        expect(
+          gpx,
+          contains(
+            '<birdnet:altitude reference="meanSeaLevel" accuracyMeters="6.0" fixTime="2025-07-01T08:00:00.000Z">34.5</birdnet:altitude>',
+          ),
+        );
+      },
+    );
 
     test('no track element when gpsTrack is empty', () {
       final session = _makeSurveySession(gpsTrack: []);

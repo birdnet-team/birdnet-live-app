@@ -4,13 +4,13 @@ Erkunden zeigt mithilfe des BirdNET-Geo-Modells die Arten, die für den aktuelle
 
 ## So öffnen Sie es
 
-Öffnen Sie **Erkunden** in der Fußzeile der Startseite über die Schaltfläche :material-magnify:.
+Öffnen Sie **Erkunden** in der Fußzeile der Startseite über die Schaltfläche :app-searchRounded:.
 
 ## App-Leiste und Kopfzeile
 
 ### App-Leiste
 
-- :material-refresh: – Standort aktualisieren und die Liste der vorhergesagten Arten neu aufbauen
+- :app-refresh: – Standort aktualisieren und die Liste der vorhergesagten Arten neu aufbauen
 
 ### Standort-Kopfzeile
 
@@ -18,7 +18,7 @@ Die Kopfzeile zeigt:
 
 - den aktuellen, per Reverse-Geocoding ermittelten Ortsnamen, sofern verfügbar
 - die Koordinaten unter dem Ortsnamen
-- :material-help-circle-outline: – das Hilfeblatt zu Erkunden öffnen
+- :app-helpOutlineRounded: – das Hilfeblatt zu Erkunden öffnen
 
 ## Artenliste
 

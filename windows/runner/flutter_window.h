@@ -7,11 +7,13 @@
 #include <flutter/standard_method_codec.h>
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
 
+#include "tts_channel.h"
 #include "win32_window.h"
 
 // A window that does nothing but host a Flutter view.
@@ -39,8 +41,15 @@ class FlutterWindow : public Win32Window {
   // it with a posted message. Decoding runs on a worker thread (mirroring the
   // Kotlin coroutine / GCD dispatch used on Android/iOS), but Flutter method
   // results must be completed on the platform thread — this mirrors the
-  // RunOnMainThread pattern in the record_windows plugin dependency.
+  // RunOnMainThread pattern in the record_windows plugin dependency. A
+  // callback posted after the window is destroyed is dropped.
   void RunOnMainThread(std::function<void()> callback);
+
+  // State shared with the audio decoder's worker threads. They hold it by
+  // shared_ptr and never touch the window itself, so a decode that is still
+  // running when the window closes finishes on its own, finds the queue
+  // closed, and drops its reply instead of reaching into a destroyed object.
+  struct MainThreadQueue;
 
   // The project to run.
   flutter::DartProject project_;
@@ -50,10 +59,12 @@ class FlutterWindow : public Win32Window {
 
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       audio_decoder_channel_;
-  std::atomic<bool> audio_decode_cancelled_{false};
 
-  std::queue<std::function<void()>> main_thread_callbacks_;
-  std::mutex main_thread_callbacks_mutex_;
+  // `com.birdnet/tts`: spoken announcements. Destroyed before the Flutter
+  // controller in OnDestroy so no reply can reach a torn-down engine.
+  std::unique_ptr<TtsChannel> tts_channel_;
+
+  std::shared_ptr<MainThreadQueue> main_thread_queue_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

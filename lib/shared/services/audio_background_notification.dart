@@ -35,11 +35,9 @@ class _AudioBackgroundTaskHandler extends TaskHandler {
         // screen handles it on resume; the port message is the fast path.
         try {
           await FlutterForegroundTask.saveData(
-            key:
-                id == 'liveStop'
-                    ? AudioBackgroundNotificationService.livePendingStopKey
-                    : AudioBackgroundNotificationService
-                        .pointCountPendingStopKey,
+            key: id == 'liveStop'
+                ? AudioBackgroundNotificationService.livePendingStopKey
+                : AudioBackgroundNotificationService.pointCountPendingStopKey,
             value: id,
           ).timeout(const Duration(seconds: 2));
         } catch (error) {
@@ -77,10 +75,9 @@ class AudioBackgroundNotificationService {
 
   bool get isRunning => _running;
 
-  String get _pendingStopKey =>
-      mode == AudioBackgroundMode.live
-          ? livePendingStopKey
-          : pointCountPendingStopKey;
+  String get _pendingStopKey => mode == AudioBackgroundMode.live
+      ? livePendingStopKey
+      : pointCountPendingStopKey;
 
   Future<bool> hasPendingStop() async {
     if (!Platform.isAndroid) return false;
@@ -211,7 +208,7 @@ class AudioBackgroundNotificationService {
       final result = await request.timeout(const Duration(seconds: 5));
       if (generation != _generation) {
         if (result is ServiceRequestSuccess && lease.isCurrent) {
-          await FlutterForegroundTask.stopService();
+          await _stopServiceQuietly();
         }
         _starting = false;
         lease.release();
@@ -232,7 +229,7 @@ class AudioBackgroundNotificationService {
         try {
           final result = await request;
           if (result is ServiceRequestSuccess && lease.isCurrent) {
-            await FlutterForegroundTask.stopService();
+            await _stopServiceQuietly();
           }
         } catch (error) {
           debugPrint('[AudioBackground] late service start: $error');
@@ -261,9 +258,21 @@ class AudioBackgroundNotificationService {
         notificationIcon: const NotificationIcon(
           metaDataName: 'com.birdnet.live.notification_icon',
         ),
-      );
+      ).timeout(const Duration(seconds: 5));
     } catch (error) {
       debugPrint('[AudioBackground] service update: $error');
+    }
+  }
+
+  /// Stops a service this wrapper no longer wants, without letting a wedged
+  /// platform call hold up the caller.
+  static Future<void> _stopServiceQuietly() async {
+    try {
+      await FlutterForegroundTask.stopService().timeout(
+        const Duration(seconds: 3),
+      );
+    } catch (error) {
+      debugPrint('[AudioBackground] service stop: $error');
     }
   }
 

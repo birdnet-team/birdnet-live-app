@@ -28,6 +28,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/score_colors.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/quick_action_service.dart';
 import '../../shared/utils/app_icons.dart';
@@ -73,6 +74,7 @@ class SurveyLiveScreen extends ConsumerStatefulWidget {
     this.observerName,
     this.startLatitude,
     this.startLongitude,
+    this.startLocation,
     this.backgroundGps = true,
     this.resumeSession,
   });
@@ -82,6 +84,7 @@ class SurveyLiveScreen extends ConsumerStatefulWidget {
   final String? observerName;
   final double? startLatitude;
   final double? startLongitude;
+  final AppLocation? startLocation;
   final bool backgroundGps;
 
   /// If non-null, resume this unfinished session instead of starting fresh.
@@ -215,8 +218,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// over the default world view while the survey warms up.
   LatLng? get _mapFallbackCenter =>
       widget.startLatitude != null && widget.startLongitude != null
-          ? LatLng(widget.startLatitude!, widget.startLongitude!)
-          : null;
+      ? LatLng(widget.startLatitude!, widget.startLongitude!)
+      : null;
 
   /// Open the clip player for a live detection marker. Shared by the inline
   /// map tab and the fullscreen map so both surfaces behave identically.
@@ -239,11 +242,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   void _openFullscreenLiveMap() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => _FullscreenLiveSurveyMapScreen(
-              fallbackCenter: _mapFallbackCenter,
-              onMarkerTap: _openLiveClipPlayer,
-            ),
+        builder: (_) => _FullscreenLiveSurveyMapScreen(
+          fallbackCenter: _mapFallbackCenter,
+          onMarkerTap: _openLiveClipPlayer,
+        ),
       ),
     );
   }
@@ -268,15 +270,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         DateTime.now().difference(session.startTime).inMilliseconds / 1000.0;
     final result = await Navigator.of(context).push<AddSpeciesResult>(
       MaterialPageRoute(
-        builder:
-            (_) => AddSpeciesOverlay(
-              sessionStart: session.startTime,
-              positionSec: positionSec,
-              existingDetections: session.detections,
-              initialMode: AddSpeciesInsertMode.atTimestamp,
-              lockMode: true,
-              titleOverride: l10n.surveyAddObservationTitle,
-            ),
+        builder: (_) => AddSpeciesOverlay(
+          sessionStart: session.startTime,
+          positionSec: positionSec,
+          existingDetections: session.detections,
+          initialMode: AddSpeciesInsertMode.atTimestamp,
+          lockMode: true,
+          titleOverride: l10n.surveyAddObservationTitle,
+        ),
         fullscreenDialog: true,
       ),
     );
@@ -312,24 +313,23 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final value = await showModalBottomSheet<String>(
       context: context,
       useSafeArea: true,
-      builder:
-          (ctx) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(AppIcons.addCircleOutline),
-                  title: Text(l10n.sessionAddSpecies),
-                  onTap: () => Navigator.of(ctx).pop('species'),
-                ),
-                ListTile(
-                  leading: const Icon(AppIcons.noteAdd),
-                  title: Text(l10n.sessionAddAnnotationOption),
-                  onTap: () => Navigator.of(ctx).pop('annotation'),
-                ),
-              ],
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(AppIcons.addCircleOutline),
+              title: Text(l10n.sessionAddSpecies),
+              onTap: () => Navigator.of(ctx).pop('species'),
             ),
-          ),
+            ListTile(
+              leading: const Icon(AppIcons.noteAdd),
+              title: Text(l10n.sessionAddAnnotationOption),
+              onTap: () => Navigator.of(ctx).pop('annotation'),
+            ),
+          ],
+        ),
+      ),
     );
     if (!mounted || value == null) return;
     if (value == 'species') {
@@ -355,61 +355,57 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final bodyController = TextEditingController();
     final saved = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            insetPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 24,
-            ),
-            title: Text(l10n.sessionAddAnnotationOption),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      hintText: l10n.sessionAnnotationName,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
+      builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        title: Text(l10n.sessionAddAnnotationOption),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  hintText: l10n.sessionAnnotationName,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: bodyController,
-                    decoration: InputDecoration(
-                      hintText: l10n.sessionAddAnnotation,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    maxLines: 5,
-                    minLines: 2,
-                    autofocus: true,
+                ),
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: bodyController,
+                decoration: InputDecoration(
+                  hintText: l10n.sessionAddAnnotation,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () {
-                  final text = bodyController.text.trim();
-                  final title = titleController.text.trim();
-                  if (text.isEmpty && title.isEmpty) return;
-                  Navigator.of(ctx).pop(true);
-                },
-                child: Text(l10n.sessionSave),
+                ),
+                maxLines: 5,
+                minLines: 2,
+                autofocus: true,
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final text = bodyController.text.trim();
+              final title = titleController.text.trim();
+              if (text.isEmpty && title.isEmpty) return;
+              Navigator.of(ctx).pop(true);
+            },
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
     );
     final noteTitle = titleController.text.trim();
     final noteBody = bodyController.text.trim();
@@ -488,7 +484,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
     final history = ref.read(globalSpeciesHistoryProvider);
     history.load();
-    final geoScores = await ref.read(geoScoresProvider.future);
+    // Rare-species alerts need geo scores; without a geo model the other
+    // alert modes still work, so a failed load must not block the Survey.
+    Map<String, double>? geoScores;
+    try {
+      geoScores = await ref.read(geoScoresProvider.future);
+    } catch (error) {
+      debugPrint('[SurveyLive] alerts start without geo scores: $error');
+    }
 
     Set<String>? watchlist;
     final wlName = ref.read(surveyAlertWatchlistNameProvider);
@@ -628,13 +631,15 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       final autoStopBattery = ref.read(surveyAutoStopBatteryProvider);
       final clipContext = ref.read(surveyClipContextProvider);
 
-      final geoScores = await ref.read(geoScoresProvider.future);
-      final geoSpeciesNames = await ref.read(
-        geoModelSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
       );
-      final ignoredSpeciesNames = await ref.read(
-        ignoredSpeciesNamesProvider.future,
-      );
+      final geoScores = geoInputs.geoScores;
+      final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
       if (await _cleanUpAbandonedStart(controller, captureNotifier)) return;
 
       // Build the species-alert pipeline before starting the controller so
@@ -652,9 +657,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         secondsAgo: (s) => l10n.surveySecondsAgo(s),
         minutesAgo: (m) => l10n.surveyMinutesAgo(m),
         hoursAgo: (h) => l10n.surveyHoursAgo(h),
-        stats:
-            (elapsed, det, spp, km) =>
-                l10n.surveyNotificationStats(elapsed, det, spp, km),
+        stats: (elapsed, det, spp, km) =>
+            l10n.surveyNotificationStats(elapsed, det, spp, km),
         micContested: l10n.surveyNotificationMicContested,
       );
 
@@ -717,6 +721,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           customName: widget.customName,
           startLatitude: widget.startLatitude,
           startLongitude: widget.startLongitude,
+          startLocation: widget.startLocation,
           backgroundGps: widget.backgroundGps,
           foregroundGps: _foregroundGpsStream,
           autoStopBattery: autoStopBattery,
@@ -892,6 +897,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _wasBackgrounded = true;
+      unawaited(controller.checkpoint());
     } else if (state == AppLifecycleState.resumed) {
       _wasBackgrounded = false;
     }
@@ -978,11 +984,19 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ref.read(surveyControllerProvider).setSensitivity(next);
     });
     ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
-      final names = await ref.read(ignoredSpeciesNamesProvider.future);
-      final geoScores = await ref.read(geoScoresProvider.future);
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
+      );
+      if (!mounted) return;
       ref
           .read(surveyControllerProvider)
-          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
+          .setSpeciesIgnoreFilter(
+            scientificNames: geoInputs.ignoredSpeciesNames,
+            geoScores: geoInputs.geoScores,
+          );
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);
@@ -1017,14 +1031,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
         // Add-menu entry point. Sized .small + endFloat so it doesn't
         // compete visually with the Stop button in the status bar.
         // Hidden when the survey isn't active so it can't fire mid-finalize.
-        floatingActionButton:
-            isActive
-                ? FloatingActionButton.small(
-                  onPressed: _showAddMenu,
-                  tooltip: l10n.surveyAddMenuTitle,
-                  child: const Icon(AppIcons.add),
-                )
-                : null,
+        floatingActionButton: isActive
+            ? FloatingActionButton.small(
+                onPressed: _showAddMenu,
+                tooltip: l10n.surveyAddMenuTitle,
+                child: const Icon(AppIcons.add),
+              )
+            : null,
       ),
     );
   }
@@ -1139,45 +1152,38 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           // and delete in the overflow. Replace stays a review-only
           // action because picking an alternative species needs the
           // full search overlay.
-          actionsBuilder:
-              (detection) => DetectionActions(
-                isConfirmed: detection.isConfirmed,
-                onToggleConfirm: () {
-                  setState(() {
-                    if (detection.isConfirmed) {
-                      detection.clearReview();
-                    } else {
-                      detection.markConfirmed();
-                    }
-                  });
-                },
-                onShare:
-                    (origin) => unawaited(
-                      reportShareFailure(
-                        context,
-                        shareDetection(
-                          detection,
-                          session: session,
-                          formats: ref.read(exportSelectionProvider),
-                          includeAudio: ref.read(includeAudioProvider),
-                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                          includeHtmlReport: ref.read(exportHtmlReportProvider),
-                          includeAppMetadata: ref.read(
-                            includeAppMetadataProvider,
-                          ),
-                          taxonomy: ref.read(taxonomyServiceProvider).value,
-                          speciesLocale: ref.read(
-                            effectiveSpeciesLocaleProvider,
-                          ),
-                          useAbsoluteSurveyTime:
-                              ref.read(timestampDisplayModeProvider) ==
-                              'absolute',
-                          sharePositionOrigin: origin,
-                        ),
-                      ),
-                    ),
-                onDelete: () => _deleteLiveDetectionWithUndo(detection),
+          actionsBuilder: (detection) => DetectionActions(
+            isConfirmed: detection.isConfirmed,
+            onToggleConfirm: () {
+              setState(() {
+                if (detection.isConfirmed) {
+                  detection.clearReview();
+                } else {
+                  detection.markConfirmed();
+                }
+              });
+            },
+            onShare: (origin) => unawaited(
+              reportShareFailure(
+                context,
+                shareDetection(
+                  detection,
+                  session: session,
+                  formats: ref.read(exportSelectionProvider),
+                  includeAudio: ref.read(includeAudioProvider),
+                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
+                  includeHtmlReport: ref.read(exportHtmlReportProvider),
+                  includeAppMetadata: ref.read(includeAppMetadataProvider),
+                  taxonomy: ref.read(taxonomyServiceProvider).value,
+                  speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+                  useAbsoluteSurveyTime:
+                      ref.read(timestampDisplayModeProvider) == 'absolute',
+                  sharePositionOrigin: origin,
+                ),
               ),
+            ),
+            onDelete: () => _deleteLiveDetectionWithUndo(detection),
+          ),
         ),
       ),
     );
@@ -1278,10 +1284,9 @@ class _FullscreenLiveSurveyMapScreenState
   void _recenter() {
     if (!_mapReady) return;
     final track = ref.read(surveyControllerProvider).gpsTracker?.track;
-    final target =
-        track != null && track.isNotEmpty
-            ? LatLng(track.last.latitude, track.last.longitude)
-            : widget.fallbackCenter;
+    final target = track != null && track.isNotEmpty
+        ? LatLng(track.last.latitude, track.last.longitude)
+        : widget.fallbackCenter;
     if (target == null) return;
     // Keep the user's zoom when they're already close in; only pull in when
     // they've zoomed out far enough that the position marker would be lost.
@@ -1416,10 +1421,9 @@ class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
             icon: const Icon(AppIcons.stopRounded, size: 22),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            onPressed:
-                widget.isActive
-                    ? widget.onStop
-                    : () => Navigator.of(context).pop(),
+            onPressed: widget.isActive
+                ? widget.onStop
+                : () => Navigator.of(context).pop(),
             tooltip: l10n.surveyStop,
             color: widget.isActive ? theme.colorScheme.error : null,
           ),
@@ -1488,10 +1492,9 @@ class _SurveyStatusBarState extends ConsumerState<_SurveyStatusBar> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder:
-                      (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.survey,
-                      ),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.survey,
+                  ),
                 ),
               );
             },
@@ -1661,12 +1664,12 @@ class _SurveySummaryTab extends ConsumerWidget {
       }
     }
 
-    final sorted =
-        speciesCounts.values.toList()..sort((a, b) {
-          final cmp = b.count.compareTo(a.count);
-          if (cmp != 0) return cmp;
-          return b.bestConfidence.compareTo(a.bestConfidence);
-        });
+    final sorted = speciesCounts.values.toList()
+      ..sort((a, b) {
+        final cmp = b.count.compareTo(a.count);
+        if (cmp != 0) return cmp;
+        return b.bestConfidence.compareTo(a.bestConfidence);
+      });
 
     // Rate is per minute of *active recording* time, not wall-clock since
     // start — otherwise a resumed session dilutes the rate with the entire
@@ -1674,10 +1677,9 @@ class _SurveySummaryTab extends ConsumerWidget {
     // and matches the on-screen elapsed timer.
     final elapsed = session!.duration;
     final activeMinutes = elapsed.inMilliseconds / 60000.0;
-    final rate =
-        activeMinutes > 0
-            ? (detections.length / activeMinutes).toStringAsFixed(1)
-            : '0';
+    final rate = activeMinutes > 0
+        ? (detections.length / activeMinutes).toStringAsFixed(1)
+        : '0';
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

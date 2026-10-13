@@ -35,7 +35,7 @@ R: Sì. Apri Analisi file dalla schermata principale, seleziona un file audio, i
 ## Conteggio punti
 
 **D: Cos'è la modalità conteggio punti?**
-R: Una modalità di rilevamento a tempo per osservazioni formali di conteggio dei punti aviari. Imposti una durata fissa (3-20 minuti) e una posizione, quindi l'app funziona continuamente e si arresta automaticamente quando il timer raggiunge lo zero.
+R: Una modalità di rilevamento a tempo per osservazioni formali di conteggio dei punti aviari. Imposti una durata fissa (3-30 minuti) e una posizione, quindi l'app funziona continuamente e si arresta automaticamente quando il timer raggiunge lo zero.
 
 **D: Posso mettere in pausa il conteggio dei punti?**
 R: No. La conformità al protocollo richiede una registrazione ininterrotta. Puoi terminare prima tramite il pulsante stop.

@@ -1,8 +1,8 @@
 # Settings
 
-BirdNET Live reuses one Settings screen across multiple workflows. The :material-tune: button opens the sections that are relevant to the screen you came from.
+BirdNET Live reuses one Settings screen across multiple workflows. The :app-tuneRounded: button opens the sections that are relevant to the screen you came from.
 
-The :material-help: button beside a setting opens a short explanation. The
+The :app-helpOutline: button beside a setting opens a short explanation. The
 Point Count, Survey, ARU, and File Analysis setup wizards use the same button
 and the same icons for controls they share with Settings or each other.
 
@@ -235,6 +235,8 @@ Android shows a persistent notification with an Open and Stop action while eithe
 
 When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
 
+While automatic saving is enabled, Live Mode and Point Count also save a partial Session at the start, every 30 seconds, and when the app leaves the foreground. This limits data loss after a crash or power loss. With the setting disabled, these partial checkpoints are not kept. Survey and ARU save checkpoints independently of this setting.
+
 ## Playback
 
 ### Playback overlay in review
@@ -374,6 +376,6 @@ Use this before handing a device to another observer, retiring a field phone, or
 
 Some parameters are configured inside their own setup screens rather than in the shared Settings screen.
 
-- [Point Count Mode](point-count-mode.md) has its own duration and location setup.
+- [Point Count Mode](point-count-mode.md) has its own duration and location setup. Choose 3, 5, 10, 15, 20, 25, or 30 minutes to match your counting protocol; the last selection is remembered, with 5 minutes as the default.
 - [Survey Mode](survey-mode.md) has its own survey parameters screen.
 - [File Analysis](file-analysis.md) has its own analysis-parameter step.
