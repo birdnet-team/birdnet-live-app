@@ -1172,5 +1172,6 @@
   "helpTipReview": "Conservez l’audio des détections incertaines. Écoutez le cri dans son contexte et confirmez ou corrigez l’espèce avant d’utiliser les résultats.",
   "helpSurveySummary": "Marchez les mains libres et cartographiez les détections sur votre parcours.",
   "helpBackToTop": "Retour en haut",
-  "settingsInferenceRateDeviceLimit": "Cet appareil est connu pour être trop lent pour une fréquence d'inférence supérieure à {rate} Hz. La fréquence a été abaissée automatiquement."
+  "settingsInferenceRateDeviceLimit": "Cet appareil est connu pour être trop lent pour une fréquence d'inférence supérieure à {rate} Hz. La fréquence a été abaissée automatiquement.",
+  "sessionInterruptedBySystem": "Le système a fermé l'application avant l'arrêt de cette Session. Les détections et l'audio jusqu'au dernier point de contrôle ont été récupérés."
 }

@@ -557,12 +557,13 @@ class SurveyController {
           recordingFormat: recordingFormat,
         );
       } else if (recordingMode == RecordingMode.full) {
-        final dir = await recordingService.startRecording(
+        // The continuous file itself, so a checkpoint written before the
+        // survey is stopped already points at the audio.
+        _session!.recordingPath = await recordingService.startRecording(
           sessionId: sessionId,
           mode: recordingMode,
           format: recordingFormat,
         );
-        _session!.recordingPath = dir;
       }
       if (await _cancelStartIfRequested()) return;
 
@@ -736,12 +737,13 @@ class SurveyController {
           recordingFormat: recordingFormat,
         );
       } else if (recordingMode == RecordingMode.full) {
-        final dir = await recordingService.startRecording(
+        // The continuous file itself, so a checkpoint written before the
+        // survey is stopped already points at the audio.
+        _session!.recordingPath = await recordingService.startRecording(
           sessionId: existingSession.id,
           mode: recordingMode,
           format: recordingFormat,
         );
-        _session!.recordingPath = dir;
       }
       if (await _cancelStartIfRequested()) return;
 

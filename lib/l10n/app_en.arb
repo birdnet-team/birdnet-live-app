@@ -5107,5 +5107,9 @@
         "type": "String"
       }
     }
+  },
+  "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
+  "@sessionInterruptedBySystem": {
+    "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
   }
 }

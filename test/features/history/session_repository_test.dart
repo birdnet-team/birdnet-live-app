@@ -26,6 +26,7 @@ void main() {
     DateTime? endTime,
     List<DetectionRecord>? detections,
     String? recordingPath,
+    String? recordingMode,
   }) {
     return LiveSession(
       id: id,
@@ -33,11 +34,12 @@ void main() {
       endTime: endTime ?? DateTime(2025, 6, 15, 10, 30),
       detections: detections,
       recordingPath: recordingPath,
-      settings: const SessionSettings(
+      settings: SessionSettings(
         windowDuration: 3,
         confidenceThreshold: 25,
         inferenceRate: 1.0,
         speciesFilterMode: 'off',
+        recordingMode: recordingMode,
       ),
     );
   }
@@ -471,6 +473,91 @@ void main() {
   });
 
   // ── listAll ──────────────────────────────────────────────────────────
+
+  group('interrupted sessions', () {
+    setUp(SessionRepository.resetForNewProcess);
+
+    test('an unfinalized checkpoint loads as interrupted', () async {
+      final session = makeSession(endTime: null);
+      await repo.saveCheckpoint(session);
+      // The process that was running the session is gone.
+      SessionRepository.resetForNewProcess();
+
+      final loaded = (await repo.load(session.id))!;
+      expect(loaded.stopReason, SessionStopReason.interrupted);
+      final listed = await repo.listAll();
+      expect(listed.single.stopReason, SessionStopReason.interrupted);
+    });
+
+    test('a checkpoint this process keeps writing is still running', () async {
+      // Survey and ARU keep going while the library is open.
+      final session = makeSession(endTime: null);
+      await repo.saveCheckpoint(session);
+
+      expect((await repo.load(session.id))!.stopReason, isNull);
+      expect((await repo.listAll()).single.stopReason, isNull);
+    });
+
+    test('the final save clears the checkpoint marker', () async {
+      final session = makeSession(endTime: null);
+      await repo.saveCheckpoint(session);
+      session.endTime = DateTime(2025, 6, 15, 10, 30);
+      await repo.save(session);
+      SessionRepository.resetForNewProcess();
+
+      expect((await repo.load(session.id))!.stopReason, isNull);
+    });
+
+    test('relinks a recording stranded in its session directory', () async {
+      // A checkpoint from before 1.2.2 named the directory, not the file.
+      final dir = Directory(p.join(tempDir.path, 'recordings', 'stranded'))
+        ..createSync(recursive: true);
+      final recording = File(p.join(dir.path, 'full.flac'))
+        ..writeAsBytesSync([0x66, 0x4C, 0x61, 0x43]);
+      await repo.save(
+        makeSession(
+          id: 'stranded',
+          recordingPath: dir.path,
+          recordingMode: 'full',
+        ),
+      );
+
+      final loaded = (await repo.load('stranded'))!;
+      expect(File(loaded.recordingPath!).existsSync(), isTrue);
+      expect(p.equals(loaded.recordingPath!, recording.path), isTrue);
+      expect(loaded.stopReason, SessionStopReason.interrupted);
+      expect((await repo.listAll()).single.recordingPath, loaded.recordingPath);
+    });
+
+    test('leaves clip directories and finished recordings alone', () async {
+      final clipsDir = Directory(p.join(tempDir.path, 'recordings', 'clips'))
+        ..createSync(recursive: true);
+      await repo.save(
+        makeSession(
+          id: 'clips',
+          recordingPath: clipsDir.path,
+          recordingMode: 'detectionsOnly',
+        ),
+      );
+      final recording = File(
+        p.join(tempDir.path, 'recordings', 'done', 'full.flac'),
+      )..createSync(recursive: true);
+      await repo.save(
+        makeSession(
+          id: 'done',
+          recordingPath: recording.path,
+          recordingMode: 'full',
+        ),
+      );
+
+      final clips = (await repo.load('clips'))!;
+      expect(clips.recordingPath, clipsDir.path);
+      expect(clips.stopReason, isNull);
+      final done = (await repo.load('done'))!;
+      expect(done.recordingPath, recording.path);
+      expect(done.stopReason, isNull);
+    });
+  });
 
   group('listAll', () {
     test('returns empty for fresh repo', () async {

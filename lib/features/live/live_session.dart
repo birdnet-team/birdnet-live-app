@@ -358,6 +358,10 @@ enum SessionStopReason {
 
   /// Battery dropped below the configured auto-stop threshold.
   lowBattery,
+
+  /// The system ended the app before the session was stopped. What the
+  /// session holds was recovered from its last checkpoint.
+  interrupted,
 }
 
 /// How a detection was created.

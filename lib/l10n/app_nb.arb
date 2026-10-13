@@ -1172,5 +1172,6 @@
   "helpTipReview": "Behold lyd for usikre funn. Lytt til ropet i sammenheng og bekreft eller rett arten før du bruker resultatene.",
   "helpSurveySummary": "Gå med hendene fri og kartlegg funn langs ruten.",
   "helpBackToTop": "Til toppen",
-  "settingsInferenceRateDeviceLimit": "Denne enheten er kjent for å være for treg for analysefrekvenser over {rate} Hz. Frekvensen ble senket automatisk."
+  "settingsInferenceRateDeviceLimit": "Denne enheten er kjent for å være for treg for analysefrekvenser over {rate} Hz. Frekvensen ble senket automatisk.",
+  "sessionInterruptedBySystem": "Systemet avsluttet appen før denne Session ble stoppet. Deteksjoner og lyd fram til siste sjekkpunkt ble gjenopprettet."
 }

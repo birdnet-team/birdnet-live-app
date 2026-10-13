@@ -539,7 +539,9 @@ class LiveController {
     // analyzes with.
     recordingService.setWindowSeconds(windowDuration);
     if (recordingMode != RecordingMode.off) {
-      final dir = await recordingService.startRecording(
+      // The continuous file itself in full mode, so a checkpoint written
+      // before the session is stopped already points at the audio.
+      final recordingPath = await recordingService.startRecording(
         sessionId: sessionId,
         mode: recordingMode,
         format: recordingFormat,
@@ -548,7 +550,7 @@ class LiveController {
         await recordingService.stopRecording();
         return;
       }
-      startingSession.recordingPath = dir;
+      startingSession.recordingPath = recordingPath;
     }
 
     if (_session != startingSession) return;
