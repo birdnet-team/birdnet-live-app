@@ -156,6 +156,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final controller = ref.read(liveControllerProvider);
     _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
+    controller.onInferenceRateLowered = _onInferenceRateLowered;
     _micContestedSub = ref
         .read(audioCaptureServiceProvider)
         .micContestedStream
@@ -229,6 +230,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     }
 
     _onControllerStateChanged();
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -542,6 +551,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (controller != null &&
         controller.onStateChanged == _onControllerStateChanged) {
       controller.onStateChanged = null;
+    }
+    if (controller != null &&
+        controller.onInferenceRateLowered == _onInferenceRateLowered) {
+      controller.onInferenceRateLowered = null;
     }
 
     // Ensure screen lock is released when leaving the live screen.

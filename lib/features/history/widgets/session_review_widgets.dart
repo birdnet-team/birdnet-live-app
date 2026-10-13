@@ -347,6 +347,10 @@ class _StopReasonBanner extends StatelessWidget {
         icon = AppIcons.batteryAlert;
         text = l10n.sessionAutoStopLowBattery((value ?? 0).round());
         break;
+      case SessionStopReason.interrupted:
+        icon = AppIcons.errorOutline;
+        text = l10n.sessionInterruptedBySystem;
+        break;
       case SessionStopReason.manual:
         return const SizedBox.shrink();
     }

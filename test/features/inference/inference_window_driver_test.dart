@@ -80,6 +80,97 @@ void main() {
     expect(driver.takeReadyWindow(), isNotNull);
   });
 
+  group('falling behind', () {
+    const hop = sampleRate; // 1 Hz
+
+    /// Take the next window after [newSamples] more have been captured.
+    InferenceWindowAudio take(InferenceWindowDriver driver, RingBuffer buffer,
+        int newSamples) {
+      buffer.write(Float32List(newSamples));
+      final window = driver.takeReadyWindow();
+      expect(window, isNotNull);
+      return window!;
+    }
+
+    test('steps the rate down after a growing run of late windows', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+
+      // On time, then one hop late and growing: capture is pulling away
+      // from a model that is slower than the schedule.
+      expect(take(driver, buffer, windowSamples).windowEndSample, 300);
+      expect(take(driver, buffer, 2 * hop).windowEndSample, 400);
+      expect(take(driver, buffer, 2 * hop).windowEndSample, 500);
+      expect(lowered, isEmpty);
+
+      // The third late window in a row is one too many.
+      expect(take(driver, buffer, 2 * hop).windowEndSample, 600);
+
+      expect(lowered, [0.7]);
+      expect(driver.inferenceRateHz, 0.7);
+      // The backlog is abandoned: the next window ends where capture is now,
+      // and the one after that comes a 0.7 Hz hop later.
+      expect(driver.takeReadyWindow()!.windowEndSample, buffer.totalWritten);
+      buffer.write(Float32List(142));
+      expect(driver.takeReadyWindow(), isNull);
+      buffer.write(Float32List(1));
+      expect(driver.takeReadyWindow(), isNotNull);
+    });
+
+    test('a stall that drains on its own leaves the rate alone', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+
+      expect(take(driver, buffer, windowSamples).windowEndSample, 300);
+      // A five-second stall: four windows are late, each less than the last.
+      expect(take(driver, buffer, 5 * hop).windowEndSample, 400);
+      for (final end in [500, 600, 700, 800]) {
+        expect(driver.takeReadyWindow()!.windowEndSample, end);
+      }
+
+      expect(lowered, isEmpty);
+      expect(driver.inferenceRateHz, 1);
+    });
+
+    test('at the floor only the backlog is dropped', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = InferenceWindowDriver(
+        ringBuffer: buffer,
+        debugLabel: 'test',
+      );
+      driver.start(
+        sampleRate: sampleRate,
+        windowDurationSeconds: windowSeconds,
+        inferenceRateHz: 0.1,
+      );
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+      const slowHop = 10 * sampleRate;
+
+      expect(take(driver, buffer, windowSamples).windowEndSample, 300);
+      expect(take(driver, buffer, 2 * slowHop).windowEndSample, 1300);
+      expect(take(driver, buffer, slowHop + 100).windowEndSample, 2300);
+      expect(take(driver, buffer, slowHop + 100).windowEndSample, 3300);
+
+      expect(lowered, isEmpty);
+      expect(driver.inferenceRateHz, 0.1);
+      expect(driver.takeReadyWindow()!.windowEndSample, buffer.totalWritten);
+    });
+  });
+
+  test('loweredInferenceRate steps by 0.3 Hz down to 0.1 Hz', () {
+    expect(loweredInferenceRate(1.0), 0.7);
+    expect(loweredInferenceRate(0.7), 0.4);
+    expect(loweredInferenceRate(0.4), 0.1);
+    expect(loweredInferenceRate(0.5), 0.2);
+    expect(loweredInferenceRate(0.2), 0.1);
+    expect(loweredInferenceRate(0.1), 0.1);
+  });
+
   test('detects a reset even after the sample counter catches up', () {
     final buffer = RingBuffer(capacity: 10000);
     final driver = driverOn(buffer, useBufferedAudio: false);

@@ -9,6 +9,63 @@ import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
 void main() {
+  group('inference rate limit', () {
+    late ProviderContainer container;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+    });
+
+    tearDown(() => container.dispose());
+
+    test('lowers every mode to the rate and remembers it', () async {
+      await applyInferenceRateLimit(0.7, read: container.read);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+      expect(container.read(inferenceRateProvider), 0.7);
+      expect(container.read(surveyInferenceRateProvider), 0.7);
+      // Already below the limit; never raised.
+      expect(container.read(aruInferenceRateProvider), 0.3);
+
+      // A further step tightens everything again.
+      await applyInferenceRateLimit(0.4, read: container.read);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.4);
+      expect(container.read(inferenceRateProvider), 0.4);
+      expect(container.read(surveyInferenceRateProvider), 0.4);
+      expect(container.read(aruInferenceRateProvider), 0.3);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getDouble(PrefKeys.inferenceRateDeviceLimit), 0.4);
+      expect(prefs.getDouble(PrefKeys.inferenceRate), 0.4);
+      expect(prefs.getDouble(PrefKeys.surveyInferenceRate), 0.4);
+    });
+
+    test('never raises a rate or loosens the limit', () async {
+      await container.read(inferenceRateProvider.notifier).set(0.4);
+      await applyInferenceRateLimit(0.7, read: container.read);
+      expect(container.read(inferenceRateProvider), 0.4);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+
+      await applyInferenceRateLimit(0.9, read: container.read);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+    });
+
+    test('the user setting a rate keeps the note', () async {
+      // A device that fell behind once is still a slow device.
+      await applyInferenceRateLimit(0.7, read: container.read);
+
+      await container.read(inferenceRateProvider.notifier).set(1.0);
+
+      expect(container.read(inferenceRateProvider), 1.0);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+    });
+  });
+
   group('Settings providers default values', () {
     late ProviderContainer container;
 

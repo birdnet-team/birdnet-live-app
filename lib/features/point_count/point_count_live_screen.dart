@@ -162,6 +162,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     _liveController = ref.read(liveControllerProvider);
     final controller = _liveController;
     controller.onStateChanged = _onControllerStateChanged;
+    controller.onInferenceRateLowered = _onInferenceRateLowered;
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -178,6 +179,14 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         _startSession();
       }
     });
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -702,6 +711,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     // updates on a defunct/disposed widget state.
     if (_liveController.onStateChanged == _onControllerStateChanged) {
       _liveController.onStateChanged = null;
+    }
+    if (_liveController.onInferenceRateLowered == _onInferenceRateLowered) {
+      _liveController.onInferenceRateLowered = null;
     }
 
     WakelockService.disable();

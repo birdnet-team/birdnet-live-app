@@ -1171,5 +1171,7 @@
   "helpTipRecordingLocation": "导入音频时，请设置实际录音的地点和日期。当前 GPS 位置可能与录音无关。",
   "helpTipReview": "为不确定的检测结果保留音频。结合上下文回听叫声，在使用结果前确认或修正物种。",
   "helpSurveySummary": "无需手持手机，沿步行路线在地图上标记检测结果。",
-  "helpBackToTop": "返回顶部"
+  "helpBackToTop": "返回顶部",
+  "settingsInferenceRateDeviceLimit": "此设备已知无法承受高于 {rate} Hz 的推理频率。频率已自动降低。",
+  "sessionInterruptedBySystem": "系统在此 Session 停止前关闭了应用。已恢复到最后一个检查点为止的检测和音频。"
 }

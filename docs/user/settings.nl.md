@@ -120,6 +120,19 @@ middenweg; **0,30 Hz** blijft de uitdrukkelijke keuze voor maximale
 batterijduur. De bestandsanalyse heeft geen inferentiesnelheid — die gebruikt
 in plaats daarvan een instelling voor [overlap](file-analysis.md).
 
+Als een apparaat de gekozen snelheid niet bijhoudt — de inferentie loopt bij
+meerdere vensters achter elkaar een hele stap achter op de opname —, verlaagt
+de Session de snelheid met 0,30 Hz, en opnieuw zolang het apparaat blijft
+achterlopen, tot minimaal 0,10 Hz. De verlaagde snelheid wordt dan de
+instelling van alle modi: Live, Point Count, Survey en ARU, en dus ook van
+hun setup-wizards, zodat de volgende Session waar dan ook start met een
+snelheid die dit apparaat aankan. Instellingen en de wizards tonen onder de
+schuifregelaar een melding dat het apparaat boven die snelheid te traag is
+gebleken. De melding blijft staan, want een traag apparaat blijft traag; de
+regelaars blijven vrij in te stellen. Zonder dit bouwt een traag apparaat een
+achterstand op die uiteindelijk de audio overschrijft waaruit de
+detectiefragmenten worden geknipt, en blijven detecties zonder audio achter.
+
 ### Soorten negeren
 
 Opent een paneel met binaire inferentiefilters. Vink **Vogels**, **Zoogdieren**, **Amfibieën** of **Insecten** aan om die hele taxonomische klasse te onderdrukken. Alle vier staan standaard uit.

@@ -1171,5 +1171,7 @@
   "helpTipRecordingLocation": "Stel voor geïmporteerde audio de locatie en datum van de opname in. Je huidige GPS-positie hoeft daarmee geen verband te houden.",
   "helpTipReview": "Bewaar audio bij onzekere detecties. Luister naar de roep in context en bevestig of corrigeer de soort voordat je de resultaten gebruikt.",
   "helpSurveySummary": "Wandel met vrije handen en zet detecties op je routekaart.",
-  "helpBackToTop": "Terug naar boven"
+  "helpBackToTop": "Terug naar boven",
+  "settingsInferenceRateDeviceLimit": "Dit apparaat is bekend als te traag voor een inferentiepercentage boven {rate} Hz. Het percentage is automatisch verlaagd.",
+  "sessionInterruptedBySystem": "Het systeem heeft de app afgesloten voordat deze Session werd gestopt. Detecties en audio tot het laatste controlepunt zijn hersteld."
 }

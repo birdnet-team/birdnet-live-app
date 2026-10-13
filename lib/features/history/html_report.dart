@@ -1769,6 +1769,8 @@ String _stopReasonLabel(SessionStopReason? reason) {
       return 'App went to background';
     case SessionStopReason.lowBattery:
       return 'Low battery';
+    case SessionStopReason.interrupted:
+      return 'Ended by the system before the session was stopped';
     case null:
       return '';
   }

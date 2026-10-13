@@ -119,6 +119,19 @@ pośredniego; **0,30 Hz** pozostaje wyraźnym wyborem na maksymalny czas pracy
 baterii. Analiza plików nie ma częstości wnioskowania — zamiast tego używa
 ustawienia [nakładania](file-analysis.md).
 
+Jeśli urządzenie nie nadąża za wybraną częstością — wnioskowanie przez kilka
+kolejnych okien pozostaje o cały krok w tyle za rejestracją — Session obniża
+częstość o 0,30 Hz, i ponownie, dopóki urządzenie wciąż nie nadąża, najniżej
+do 0,10 Hz. Obniżona częstość staje się wtedy ustawieniem wszystkich trybów:
+Live, Point Count, Survey i ARU, a więc także ich kreatorów konfiguracji, aby
+kolejna Session w dowolnym trybie zaczynała się z częstością, którą to
+urządzenie jest w stanie utrzymać. Ustawienia i kreatory pokazują pod
+suwakiem notatkę, że urządzenie jest zbyt wolne powyżej tej częstości.
+Notatka pozostaje, bo wolne urządzenie pozostaje wolne; suwaki nadal można
+dowolnie ustawiać. Bez tego na wolnym urządzeniu narasta zaległość, która w
+końcu nadpisuje dźwięk, z którego wycinane są fragmenty wykryć, i wykrycia
+zostają bez dźwięku.
+
 ### Ignoruj gatunki
 
 Otwiera panel binarnych filtrów wnioskowania. Zaznacz **Ptaki**, **Ssaki**, **Płazy** lub **Owady**, aby wykluczyć całą klasę taksonomiczną. Wszystkie cztery pola są domyślnie wyłączone.

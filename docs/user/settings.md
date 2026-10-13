@@ -119,6 +119,18 @@ miss. New Surveys default to **0.70 Hz** as a middle ground; **0.30 Hz**
 remains an explicit maximum-battery option. File Analysis has no inference rate
 — it uses an [overlap](file-analysis.md) setting instead.
 
+If a device cannot keep up with the selected rate — inference falls a whole
+hop behind capture for several windows in a row — the session lowers the
+rate by 0.30 Hz, and again each time it keeps falling behind, down to
+0.10 Hz. The lowered rate then becomes the rate setting of every mode: Live
+Mode, Point Count, Survey, and ARU, and so of their setup wizards, so the next
+session anywhere starts at a rate this device can sustain. Settings and the
+wizards show a note under the rate slider saying the device is known to be
+too slow above that rate. The note stays, since a slow device stays slow,
+and the sliders remain free to set. Without this, a slow device piles up a
+backlog that eventually overwrites the audio detection clips are cut from,
+and detections end up without audio.
+
 ### Ignore species
 
 Opens an overlay with binary inference filters. Check **Birds**, **Mammals**, **Amphibians**, or **Insects** to suppress that entire taxonomic class. All four checkboxes are off by default.

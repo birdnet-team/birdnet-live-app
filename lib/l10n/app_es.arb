@@ -1171,5 +1171,7 @@
   "helpTipRecordingLocation": "Para audio importado, indica dónde y cuándo se grabó. Tu posición GPS actual puede no estar relacionada.",
   "helpTipReview": "Conserva el audio de detecciones inciertas. Escucha la llamada en contexto y confirma o corrige la especie antes de usar los resultados.",
   "helpSurveySummary": "Camina con las manos libres y sitúa detecciones a lo largo de tu ruta.",
-  "helpBackToTop": "Volver arriba"
+  "helpBackToTop": "Volver arriba",
+  "settingsInferenceRateDeviceLimit": "Se sabe que este dispositivo es demasiado lento para tasas de inferencia superiores a {rate} Hz. La tasa se redujo automáticamente.",
+  "sessionInterruptedBySystem": "El sistema cerró la app antes de detener esta Session. Se recuperaron las detecciones y el audio hasta el último punto de control."
 }

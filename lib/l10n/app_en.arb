@@ -5098,5 +5098,18 @@
   "helpBackToTop": "Back to top",
   "@helpBackToTop": {
     "description": "Quick-reference Help screen: helpBackToTop"
+  },
+  "settingsInferenceRateDeviceLimit": "This device is known to be too slow for inference rates above {rate} Hz. The rate was lowered automatically.",
+  "@settingsInferenceRateDeviceLimit": {
+    "description": "Note under every inference-rate slider (Settings, Point Count, Survey, and ARU setup) once a live mode has had to lower the rate because the device fell behind; stays for good, since a slow device stays slow",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
+  "@sessionInterruptedBySystem": {
+    "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
   }
 }

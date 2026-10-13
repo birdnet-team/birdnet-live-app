@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- When a device cannot keep up, Live Mode, Point Count, Survey, and ARU now lower the inference rate by 0.30 Hz at a time (down to 0.10 Hz) and make the lowered rate the setting of every mode and setup wizard; Settings and the wizards then note the rate this device is known to be too slow above. On slow devices the backlog previously overwrote the audio that detection clips are cut from, so detections were kept without their clips.
+
+### Fixed
+
+- A session the system ended while it was recording in the background now keeps its full recording. Checkpoints point at the audio file, and sessions already stranded this way are repaired when opened and marked as interrupted in the review.
+
 ## [1.2.1] - 2026-10-12
 
 ### Changed
