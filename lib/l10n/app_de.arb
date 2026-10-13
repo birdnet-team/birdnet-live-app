@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "Stellen Sie für importiertes Audio den ursprünglichen Aufnahmeort und das Aufnahmedatum ein. Ihre aktuelle GPS-Position kann damit nichts zu tun haben.",
   "helpTipReview": "Bewahren Sie Audio für unsichere Erkennungen auf. Hören Sie den Ruf im Zusammenhang an und bestätigen oder korrigieren Sie die Art, bevor Sie die Ergebnisse verwenden.",
   "helpSurveySummary": "Gehen Sie freihändig und kartieren Sie Erkennungen entlang Ihrer Route.",
-  "helpBackToTop": "Nach oben"
+  "helpBackToTop": "Nach oben",
+  "settingsInferenceRateDeviceLimit": "Dieses Gerät ist bekanntermaßen zu langsam für Inferenzraten über {rate} Hz. Die Rate wurde automatisch gesenkt."
 }

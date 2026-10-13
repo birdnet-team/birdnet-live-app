@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "For importert lyd angir du stedet og datoen opptaket ble gjort. Din nåværende GPS-posisjon kan være uten sammenheng.",
   "helpTipReview": "Behold lyd for usikre funn. Lytt til ropet i sammenheng og bekreft eller rett arten før du bruker resultatene.",
   "helpSurveySummary": "Gå med hendene fri og kartlegg funn langs ruten.",
-  "helpBackToTop": "Til toppen"
+  "helpBackToTop": "Til toppen",
+  "settingsInferenceRateDeviceLimit": "Denne enheten er kjent for å være for treg for analysefrekvenser over {rate} Hz. Frekvensen ble senket automatisk."
 }

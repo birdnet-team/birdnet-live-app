@@ -121,6 +121,20 @@ pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
 d'inférence — elle utilise un réglage de
 [chevauchement](file-analysis.md) à la place.
 
+Si un appareil ne parvient pas à suivre la fréquence choisie — l'inférence
+prend un pas complet de retard sur la capture pendant plusieurs fenêtres
+d'affilée —, la Session abaisse la fréquence de 0,30 Hz, et de nouveau tant
+que l'appareil continue de prendre du retard, jusqu'à 0,10 Hz au minimum. La
+fréquence abaissée devient alors le réglage de tous les modes : Live, Point
+Count, Survey et ARU, et donc de leurs assistants de configuration, afin que
+la Session suivante, quel que soit le mode, démarre à une fréquence que cet
+appareil peut tenir. Les réglages et les assistants affichent sous le curseur
+une note indiquant que l'appareil est connu pour être trop lent au-delà de
+cette fréquence. La note reste, car un appareil lent reste lent ; les curseurs
+restent librement réglables. Sans cela, un appareil lent accumule un retard
+qui finit par écraser l'audio dont sont extraits les extraits de détection,
+et les détections restent sans audio.
+
 ### Ignorer des espèces
 
 Ouvre un panneau de filtres binaires d’inférence. Cochez **Oiseaux**, **Mammifères**, **Amphibiens** ou **Insectes** pour supprimer toute cette classe taxonomique. Les quatre cases sont décochées par défaut.

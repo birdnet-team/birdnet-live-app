@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "Dla importowanego dźwięku ustaw miejsce i datę jego nagrania. Obecna pozycja GPS może nie mieć z nim związku.",
   "helpTipReview": "Zachowaj dźwięk niepewnych wykryć. Odsłuchaj głos w kontekście i potwierdź lub popraw gatunek przed wykorzystaniem wyników.",
   "helpSurveySummary": "Spaceruj z wolnymi rękami i mapuj wykrycia wzdłuż trasy.",
-  "helpBackToTop": "Wróć na górę"
+  "helpBackToTop": "Wróć na górę",
+  "settingsInferenceRateDeviceLimit": "Wiadomo, że to urządzenie jest zbyt wolne dla szybkości wnioskowania powyżej {rate} Hz. Szybkość została automatycznie obniżona."
 }

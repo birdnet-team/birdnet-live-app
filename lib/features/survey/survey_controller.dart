@@ -77,7 +77,9 @@ class SurveyController {
     SessionRepository? repository,
     bool Function()? gpsEnabled,
   }) : _gpsEnabled = gpsEnabled,
-       _repository = repository ?? SessionRepository();
+       _repository = repository ?? SessionRepository() {
+    _windowDriver.onInferenceRateLowered = _onInferenceRateLowered;
+  }
 
   final RingBuffer ringBuffer;
   final RecordingService recordingService;
@@ -254,6 +256,10 @@ class SurveyController {
 
   /// Called when auto-stop triggers (max duration or battery).
   void Function(String reason)? onAutoStop;
+
+  /// Called with the new rate after the driver lowered the inference rate
+  /// because the device could not keep up; see [InferenceWindowDriver].
+  void Function(double inferenceRateHz)? onInferenceRateLowered;
 
   /// Called once per inference cycle with the current cycle's full set
   /// of filtered detections (one record per species, with that cycle's
@@ -1601,6 +1607,19 @@ class SurveyController {
       return;
     }
     stopSurvey();
+  }
+
+  /// The driver dropped the rate because inference fell behind capture.
+  ///
+  /// Recorded on the session so the review shows the rate that actually ran;
+  /// the screen then tells the user.
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    final session = _session;
+    if (session != null) {
+      session.settings = session.settings.withInferenceRate(inferenceRateHz);
+    }
+    onInferenceRateLowered?.call(inferenceRateHz);
+    _notifyListeners();
   }
 
   void _notifyListeners() {

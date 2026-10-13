@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "Para áudio importado, defina o local e a data da gravação. A posição GPS atual pode não ter relação com ela.",
   "helpTipReview": "Guarde o áudio de detecções incertas. Ouça a vocalização no contexto e confirme ou corrija a espécie antes de usar os resultados.",
   "helpSurveySummary": "Caminhe com as mãos livres e mapeie detecções ao longo da rota.",
-  "helpBackToTop": "Voltar ao topo"
+  "helpBackToTop": "Voltar ao topo",
+  "settingsInferenceRateDeviceLimit": "Sabe-se que este dispositivo é lento demais para taxas de inferência acima de {rate} Hz. A taxa foi reduzida automaticamente."
 }

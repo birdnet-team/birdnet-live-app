@@ -120,6 +120,21 @@ esplicita per la massima autonomia. L'analisi file non ha una frequenza di
 inferenza: usa invece un'impostazione di
 [sovrapposizione](file-analysis.md).
 
+Se un dispositivo non riesce a stare al passo con la frequenza scelta —
+l'inferenza resta indietro di un intero passo rispetto all'acquisizione per
+diverse finestre consecutive —, la Session riduce la frequenza di 0,30 Hz, e
+di nuovo finché il dispositivo continua a restare indietro, fino a un minimo
+di 0,10 Hz. La frequenza ridotta diventa quindi l'impostazione di tutte le
+modalità: Live, Point Count, Survey e ARU, e dunque delle loro procedure di
+configurazione, così la Session successiva in qualsiasi modalità parte con
+una frequenza che questo dispositivo può sostenere. Le impostazioni e le
+procedure mostrano sotto il cursore una nota che segnala che il dispositivo
+è risultato troppo lento oltre quella frequenza. La nota resta, perché un
+dispositivo lento resta lento; i cursori restano liberamente regolabili.
+Senza questo, un dispositivo lento accumula un ritardo che finisce per
+sovrascrivere l'audio da cui vengono ritagliati i clip delle rilevazioni, e
+le rilevazioni restano senza audio.
+
 ### Ignora specie
 
 Apre un pannello con filtri binari di inferenza. Seleziona **Uccelli**, **Mammiferi**, **Anfibi** o **Insetti** per sopprimere l’intera classe tassonomica. Le quattro caselle sono disattivate per impostazione predefinita.

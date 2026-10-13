@@ -161,4 +161,40 @@ void main() {
     expect(scheduler.nextWindowEndSample, 60);
     expect(scheduler.takeNext(60)!.startSample, 30);
   });
+
+  test('lowering the rate widens the hop and drops the backlog', () {
+    final scheduler = RealtimeInferenceScheduler(
+      sampleRate: 10,
+      windowDurationSeconds: 3,
+      inferenceRateHz: 1,
+      timelineStart: start,
+    );
+    expect(scheduler.takeNext(30)!.endSample, 30);
+
+    // Capture has reached 80 with windows 40..80 still queued: they are the
+    // backlog that was pushing every later window toward the buffer's edge.
+    scheduler.setInferenceRate(0.5, 80);
+
+    expect(scheduler.inferenceRateHz, 0.5);
+    expect(scheduler.hopSamples, 20);
+    expect(scheduler.takeNext(79), isNull);
+    expect(scheduler.takeNext(80)!.endSample, 80);
+    expect(scheduler.takeNext(100)!.endSample, 100);
+  });
+
+  test('lowering the rate while on time keeps the next window', () {
+    final scheduler = RealtimeInferenceScheduler(
+      sampleRate: 10,
+      windowDurationSeconds: 3,
+      inferenceRateHz: 1,
+      timelineStart: start,
+    );
+    expect(scheduler.takeNext(30)!.endSample, 30);
+
+    scheduler.setInferenceRate(0.5, 35);
+
+    expect(scheduler.nextWindowEndSample, 40);
+    expect(scheduler.takeNext(40)!.endSample, 40);
+    expect(scheduler.takeNext(60)!.endSample, 60);
+  });
 }

@@ -139,6 +139,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _captureNotifier = ref.read(captureStateProvider.notifier);
     _surveyController.onStateChanged = _onControllerStateChanged;
     _surveyController.onAutoStop = _onAutoStop;
+    _surveyController.onInferenceRateLowered = _onInferenceRateLowered;
 
     // Listen for "Stop" button pressed in the foreground notification.
     FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
@@ -164,6 +165,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     if (data is Map && data['action'] == 'stop') {
       _confirmStop();
     }
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -935,6 +944,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     }
     if (_surveyController.onAutoStop == _onAutoStop) {
       _surveyController.onAutoStop = null;
+    }
+    if (_surveyController.onInferenceRateLowered == _onInferenceRateLowered) {
+      _surveyController.onInferenceRateLowered = null;
     }
     QuickListenSafety.unregisterIncompatibleSessionOwner(
       _quickListenSafetyOwner,

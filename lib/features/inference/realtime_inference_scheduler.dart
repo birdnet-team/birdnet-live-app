@@ -46,9 +46,11 @@ class RealtimeInferenceScheduler {
 
   final int sampleRate;
   final int windowDurationSeconds;
-  final double inferenceRateHz;
   final int windowSamples;
-  final int hopSamples;
+
+  /// The rate the schedule currently runs at; see [setInferenceRate].
+  double inferenceRateHz;
+  int hopSamples;
 
   DateTime timelineStart;
   int _nextWindowEndSample;
@@ -137,6 +139,23 @@ class RealtimeInferenceScheduler {
       skipped++;
     }
     return skipped;
+  }
+
+  /// Continue at [inferenceRateHz] from the audio captured so far.
+  ///
+  /// The driver lowers the rate when inference cannot keep up with the hop.
+  /// Windows already queued behind [totalWritten] are abandoned rather than
+  /// drained: they are the backlog that was pushing every later window — and
+  /// the detection clips cut from the same audio — toward the buffer's edge,
+  /// and analyzing them late would only push the next window further behind.
+  /// The timeline and its calibration are untouched, so later windows are
+  /// dated like every other window of the session.
+  void setInferenceRate(double inferenceRateHz, int totalWritten) {
+    this.inferenceRateHz = inferenceRateHz;
+    hopSamples = hopSamplesFor(sampleRate, inferenceRateHz);
+    if (totalWritten > _nextWindowEndSample) {
+      _nextWindowEndSample = totalWritten;
+    }
   }
 
   Duration _durationForSamples(int samples) => Duration(

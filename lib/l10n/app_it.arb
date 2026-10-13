@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "Per audio importato, imposta il luogo e la data della registrazione. La posizione GPS attuale potrebbe non essere pertinente.",
   "helpTipReview": "Conserva l’audio dei rilevamenti incerti. Ascolta il richiamo nel contesto e conferma o correggi la specie prima di usare i risultati.",
   "helpSurveySummary": "Cammina a mani libere e mappa i rilevamenti lungo il percorso.",
-  "helpBackToTop": "Torna in alto"
+  "helpBackToTop": "Torna in alto",
+  "settingsInferenceRateDeviceLimit": "Questo dispositivo è noto per essere troppo lento per frequenze di inferenza superiori a {rate} Hz. La frequenza è stata ridotta automaticamente."
 }

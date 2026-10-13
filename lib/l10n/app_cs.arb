@@ -1171,5 +1171,6 @@
   "helpTipRecordingLocation": "U importovaného zvuku nastavte místo a datum pořízení nahrávky. Aktuální poloha GPS s ní nemusí souviset.",
   "helpTipReview": "U nejistých detekcí uchovejte zvuk. Poslechněte si hlas v kontextu a před použitím výsledků potvrďte nebo opravte druh.",
   "helpSurveySummary": "Choďte s volnýma rukama a mapujte detekce podél trasy.",
-  "helpBackToTop": "Zpět nahoru"
+  "helpBackToTop": "Zpět nahoru",
+  "settingsInferenceRateDeviceLimit": "Je známo, že toto zařízení je příliš pomalé pro rychlost inference nad {rate} Hz. Rychlost byla automaticky snížena."
 }

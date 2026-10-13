@@ -10,6 +10,7 @@ import '../../core/services/app_data_clear_service.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/inference_rate_limit_note.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
@@ -404,6 +405,7 @@ class SettingsScreen extends ConsumerWidget {
                 value: ref.watch(inferenceRateProvider),
                 values: inferenceRateHzValues,
                 format: (v) => '${v.toStringAsFixed(2)} Hz',
+                note: const InferenceRateLimitNote(),
                 onChanged:
                     (v) => ref.read(inferenceRateProvider.notifier).set(v),
               ),
@@ -1811,6 +1813,7 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
     required this.format,
     required this.onChanged,
     this.helpBody,
+    this.note,
   }) : assert(values.length > 1);
 
   final String title;
@@ -1819,6 +1822,9 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
   final String Function(T) format;
   final ValueChanged<T> onChanged;
   final String? helpBody;
+
+  /// Shown under the slider.
+  final Widget? note;
 
   int get _selectedIndex {
     final index = values.indexOf(value);
@@ -1829,29 +1835,36 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex;
     final selectedValue = values[selectedIndex];
+    final slider = Semantics(
+      label: title,
+      value: format(selectedValue),
+      child: Slider(
+        value: selectedIndex.toDouble(),
+        min: 0,
+        max: (values.length - 1).toDouble(),
+        divisions: values.length - 1,
+        label: format(selectedValue),
+        onChanged: (raw) {
+          final rounded = raw.round();
+          final index =
+              rounded < 0
+                  ? 0
+                  : rounded >= values.length
+                  ? values.length - 1
+                  : rounded;
+          onChanged(values[index]);
+        },
+      ),
+    );
+    final note = this.note;
     return ListTile(
       title: SettingHelpTitle(title: title, helpBody: helpBody),
-      subtitle: Semantics(
-        label: title,
-        value: format(selectedValue),
-        child: Slider(
-          value: selectedIndex.toDouble(),
-          min: 0,
-          max: (values.length - 1).toDouble(),
-          divisions: values.length - 1,
-          label: format(selectedValue),
-          onChanged: (raw) {
-            final rounded = raw.round();
-            final index =
-                rounded < 0
-                    ? 0
-                    : rounded >= values.length
-                    ? values.length - 1
-                    : rounded;
-            onChanged(values[index]);
-          },
-        ),
-      ),
+      subtitle: note == null
+          ? slider
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [slider, note],
+            ),
       trailing: Text(
         format(selectedValue),
         style: Theme.of(context).textTheme.bodySmall,

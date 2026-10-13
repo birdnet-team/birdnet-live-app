@@ -118,6 +118,18 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
+Pokud zařízení zvolenou frekvenci nestíhá — odvozování za zachytáváním
+zaostává o celý krok u několika oken po sobě —, Session frekvenci sníží o
+0,30 Hz, a dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz.
+Snížená frekvence se pak stane nastavením všech režimů: Live, Point Count,
+Survey i ARU včetně jejich průvodců nastavením, takže další Session kdekoli
+začne frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
+posuvníkem zobrazují poznámku, že zařízení je nad touto frekvencí prokazatelně
+příliš pomalé. Poznámka zůstává, protože pomalé zařízení zůstává pomalé;
+posuvníky lze dál libovolně nastavit. Bez toho se na pomalém zařízení hromadí
+zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují ukázky detekcí, a
+detekce zůstanou bez zvuku.
+
 ### Ignorovat druhy
 
 Otevře panel s binárními filtry inference. Zaškrtnutím **Ptáci**, **Savci**, **Obojživelníci** nebo **Hmyz** potlačíte celou taxonomickou třídu. Ve výchozím nastavení jsou všechna čtyři políčka vypnutá.
