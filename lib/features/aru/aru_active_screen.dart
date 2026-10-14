@@ -24,6 +24,7 @@ import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
 import '../settings/settings_screen.dart';
+import '../spectrogram/spectrogram_size.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'aru_controller.dart';
 import 'aru_providers.dart';
@@ -42,7 +43,11 @@ class AruActiveScreen extends ConsumerStatefulWidget {
 
 class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+  late TabController _tabController;
+
+  /// Tabs currently shown, in display order; the spectrogram tab follows the
+  /// spectrogram size setting.
+  late List<_AruTab> _tabs;
   late final AruRunner _runner;
   bool _stopping = false;
   bool _stopDialogShowing = false;
@@ -55,10 +60,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
-    });
+    _tabs = _AruTab.visible(
+      showSpectrogram: ref.read(spectrogramSizeProvider).isVisible,
+    );
+    _tabController = _createTabController(_tabs.length);
     _runner = ref.read(aruRunnerProvider);
     _runner.onFinished = _onRunnerFinished;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -82,6 +87,41 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     }
     _tabController.dispose();
     super.dispose();
+  }
+
+  TabController _createTabController(int length, {int initialIndex = 0}) {
+    return TabController(
+      length: length,
+      initialIndex: initialIndex,
+      vsync: this,
+    )..addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  _AruTab get _currentTab => _tabs[_tabController.index];
+
+  /// Swaps the tab controller when the spectrogram size setting adds or
+  /// removes the spectrogram tab, keeping the selected tab where it still
+  /// exists.
+  void _syncTabs(bool showSpectrogram) {
+    final tabs = _AruTab.visible(showSpectrogram: showSpectrogram);
+    if (tabs.length == _tabs.length) return;
+    final previous = _tabController;
+    final selected = tabs.indexOf(_currentTab);
+    setState(() {
+      _tabs = tabs;
+      _tabController = _createTabController(
+        tabs.length,
+        initialIndex: selected < 0 ? 0 : selected,
+      );
+    });
+    previous.removeListener(_onTabChanged);
+    // TabBar and TabBarView detach from the old controller on their next
+    // build; dispose it only once that frame is done.
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
   }
 
   void _onRunnerFinished(AruFinishResult result) {
@@ -193,7 +233,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     final spectrogramActive =
         isRecording &&
         captureState == CaptureState.capturing &&
-        _tabController.index == 1;
+        _currentTab == _AruTab.spectrogram;
 
     // Keep the background runner's notification text localized to the
     // current locale / clock format.
@@ -202,6 +242,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       use24Hour: MediaQuery.of(context).alwaysUse24HourFormat,
     );
 
+    ref.listen<SpectrogramSize>(spectrogramSizeProvider, (_, next) {
+      _syncTabs(next.isVisible);
+    });
     ref.listen<int>(confidenceThresholdProvider, (_, next) {
       ref.read(liveControllerProvider).setConfidenceThreshold(next);
     });
@@ -275,10 +318,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }) {
     final isRecording = state == AruControllerState.recording;
     final visibleDetections = _visibleDetections(session, state);
-    final showDetectionPane =
-        _tabController.index == 0 || _tabController.index == 1;
+    final showDetectionPane = _currentTab.showsDetectionPane;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
 
     final statusBar = _AruStatusBar(
       state: state,
@@ -292,36 +335,42 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       indicatorWeight: 2,
       labelStyle: theme.textTheme.labelSmall,
       tabs: [
-        Tab(
-          icon: const Icon(AppIcons.infoOutline, size: 18),
-          text: l10n.aruTabStatus,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.graphicEq, size: 18),
-          text: l10n.aruTabSpectrogram,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.scheduleRounded, size: 18),
-          text: l10n.aruTabSchedule,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.summaryChart, size: 18),
-          text: l10n.aruTabSummary,
-        ),
+        for (final tab in _tabs)
+          switch (tab) {
+            _AruTab.status => Tab(
+              icon: const Icon(AppIcons.infoOutline, size: 18),
+              text: l10n.aruTabStatus,
+            ),
+            _AruTab.spectrogram => Tab(
+              icon: const Icon(AppIcons.graphicEq, size: 18),
+              text: l10n.aruTabSpectrogram,
+            ),
+            _AruTab.schedule => Tab(
+              icon: const Icon(AppIcons.scheduleRounded, size: 18),
+              text: l10n.aruTabSchedule,
+            ),
+            _AruTab.summary => Tab(
+              icon: const Icon(AppIcons.summaryChart, size: 18),
+              text: l10n.aruTabSummary,
+            ),
+          },
       ],
     );
     final tabContent = TabBarView(
       controller: _tabController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        _StatusPanel(session: session, state: state),
-        _SpectrogramPanel(
-          key: _spectrogramKey,
-          isActive: spectrogramActive,
-          state: state,
-        ),
-        _SchedulePanel(session: session),
-        _SummaryPanel(session: session),
+        for (final tab in _tabs)
+          switch (tab) {
+            _AruTab.status => _StatusPanel(session: session, state: state),
+            _AruTab.spectrogram => _SpectrogramPanel(
+              key: _spectrogramKey,
+              isActive: spectrogramActive,
+              state: state,
+            ),
+            _AruTab.schedule => _SchedulePanel(session: session),
+            _AruTab.summary => _SummaryPanel(session: session),
+          },
       ],
     );
     final statsBar = _AruStatsBar(session: session, state: state);
@@ -340,7 +389,15 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       ),
     );
 
+    // The spectrogram size only applies while the spectrogram tab is shown.
+    final paneSize = _currentTab == _AruTab.spectrogram
+        ? spectrogramSize
+        : SpectrogramSize.full;
+
     if (isLandscape && showDetectionPane) {
+      // A smaller spectrogram is shortened within its column; the space
+      // below is left empty for now.
+      final columnFlex = paneSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -351,8 +408,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
                   child: Column(
                     children: [
                       tabBar,
-                      Expanded(child: tabContent),
+                      Expanded(flex: columnFlex.spectrogram, child: tabContent),
                       statsBar,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -364,14 +422,21 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       );
     }
 
+    // Portrait, or a full-page tab in landscape: vertical stack. On the
+    // spectrogram tab a smaller spectrogram hands the height it gives up to
+    // the detection list.
+    final flex = paneSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: showDetectionPane ? 2 : 1, child: tabContent),
+        Expanded(
+          flex: showDetectionPane ? flex.spectrogram : 1,
+          child: tabContent,
+        ),
         if (showDetectionPane) ...[
           statsBar,
-          Expanded(flex: 3, child: detectionPane),
+          Expanded(flex: flex.other, child: detectionPane),
         ],
       ],
     );
@@ -1028,6 +1093,26 @@ class _ScheduleFocusCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Tabs of the ARU session pane, in display order.
+enum _AruTab {
+  status,
+  spectrogram,
+  schedule,
+  summary;
+
+  /// The tabs to show; the spectrogram tab follows the spectrogram size
+  /// setting.
+  static List<_AruTab> visible({required bool showSpectrogram}) => [
+    status,
+    if (showSpectrogram) spectrogram,
+    schedule,
+    summary,
+  ];
+
+  /// Tabs that share the screen with the detection list.
+  bool get showsDetectionPane => this == status || this == spectrogram;
 }
 
 class _SpectrogramPanel extends ConsumerWidget {

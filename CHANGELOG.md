@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- New **Spectrogram size** setting in the Spectrogram section: Full, Medium, Small, or Off. It shrinks or hides the live spectrogram in Live Mode, Point Count, Survey, and ARU so the detection list gets more room (#269).
+
 ### Changed
 
 - When a device cannot keep up, Live Mode, Point Count, Survey, and ARU now lower the inference rate by 0.30 Hz at a time (down to 0.10 Hz) and make the lowered rate the setting of every mode and setup wizard; Settings and the wizards then note the rate this device is known to be too slow above. On slow devices the backlog previously overwrote the audio that detection clips are cut from, so detections were kept without their clips.
