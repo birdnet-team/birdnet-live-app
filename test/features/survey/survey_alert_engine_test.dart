@@ -63,12 +63,14 @@ void main() {
         AlertMode.firstEver,
         AlertMode.rare,
         AlertMode.watchlist,
+        AlertMode.lifer,
       ]) {
         final engine = SurveyAlertEngine(
           mode: m,
           minConfidence: 0.5,
           globalHistory: emptyHistory,
           watchlist: const {'Turdus merula'},
+          lifeList: const {'Parus major'},
         );
         expect(
           engine.evaluate(det(conf: 0.4), firstInSession: true),
@@ -84,12 +86,14 @@ void main() {
         AlertMode.firstEver,
         AlertMode.rare,
         AlertMode.watchlist,
+        AlertMode.lifer,
       ]) {
         final engine = SurveyAlertEngine(
           mode: m,
           minConfidence: 0.0,
           globalHistory: emptyHistory,
           watchlist: const {'Turdus merula'},
+          lifeList: const {'Parus major'},
         );
         expect(
           engine.evaluate(det(), firstInSession: false),
@@ -208,6 +212,35 @@ void main() {
         minConfidence: 0.0,
         globalHistory: emptyHistory,
         watchlist: const {},
+      );
+      expect(engine.evaluate(det(), firstInSession: true), isNull);
+    });
+
+    test('lifer mode fires only when name is absent from the life list', () {
+      final engine = SurveyAlertEngine(
+        mode: AlertMode.lifer,
+        minConfidence: 0.0,
+        globalHistory: emptyHistory,
+        lifeList: const {'Turdus merula'},
+      );
+      // On the life list — not a lifer.
+      expect(engine.evaluate(det(), firstInSession: true), isNull);
+
+      // Not on the life list — a lifer.
+      final c = engine.evaluate(
+        det(name: 'Parus major'),
+        firstInSession: true,
+      );
+      expect(c, isNotNull);
+      expect(c!.reason, AlertReason.lifer);
+    });
+
+    test('lifer mode with empty life list never fires', () {
+      final engine = SurveyAlertEngine(
+        mode: AlertMode.lifer,
+        minConfidence: 0.0,
+        globalHistory: emptyHistory,
+        lifeList: const {},
       );
       expect(engine.evaluate(det(), firstInSession: true), isNull);
     });
