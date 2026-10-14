@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:birdnet_live/core/constants/app_constants.dart';
+import 'package:birdnet_live/features/spectrogram/spectrogram_size.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
@@ -209,6 +210,34 @@ void main() {
     test('logAmplitude defaults to true', () {
       expect(container.read(logAmplitudeProvider), true);
     });
+
+    test('spectrogramSize defaults to full', () {
+      expect(container.read(spectrogramSizeProvider), SpectrogramSize.full);
+    });
+
+    test(
+      'spectrogramSize persists and ignores unknown stored values',
+      () async {
+        await container
+            .read(spectrogramSizeProvider.notifier)
+            .set(SpectrogramSize.small);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(PrefKeys.spectrogramSize), 'small');
+
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.spectrogramSize: 'huge',
+        });
+        final stale = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(
+              await SharedPreferences.getInstance(),
+            ),
+          ],
+        );
+        addTearDown(stale.dispose);
+        expect(stale.read(spectrogramSizeProvider), SpectrogramSize.full);
+      },
+    );
 
     test('useGps defaults to true', () {
       expect(container.read(useGpsProvider), true);

@@ -155,6 +155,10 @@ ondersteunende venster.
 
 ## Spectrogram
 
+### Grootte
+
+Bepaalt hoeveel van het scherm het live spectrogram inneemt in Live Mode, Point Count, Survey en ARU. **Volledig** is de gebruikelijke hoogte. **Gemiddeld** en **Klein** verkleinen die tot 75% en 50% en geven het verschil aan de detectielijst – de juiste keuze als je op een telefoon in portretstand vooral naar de lijst kijkt. **Uit** verwijdert het spectrogram helemaal; in Survey en ARU verdwijnt ook het spectrogramtabblad. In liggende stand maken **Gemiddeld** en **Klein** het spectrogram in zijn schermhelft lager (de ruimte eronder blijft voorlopig leeg), en **Uit** geeft het hele scherm aan de detectielijst. Spectrogrammen van opgeslagen sessies en bij afspelen blijven ongewijzigd.
+
 ### FFT-grootte
 
 Bepaalt de frequentieresolutie in het spectrogram.
