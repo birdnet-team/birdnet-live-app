@@ -153,6 +153,10 @@ kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
 
+### Rozmiar
+
+Określa, ile miejsca na ekranie zajmuje spektrogram na żywo w trybach Live Mode, Point Count, Survey i ARU. **Pełny** to zwykła wysokość. **Średni** i **Mały** zmniejszają ją do 75% i 50%, a różnicę oddają liście wykryć – to właściwy wybór, gdy na telefonie w pionie patrzysz głównie na listę. **Wyłączony** całkowicie usuwa spektrogram; w Survey i ARU znika też karta spektrogramu. W orientacji poziomej **Średni** i **Mały** skracają spektrogram w jego połowie ekranu (miejsce pod nim na razie pozostaje puste), a **Wyłączony** oddaje cały ekran liście wykryć. Spektrogramy zapisanych sesji i odtwarzania pozostają bez zmian.
+
 ### Rozmiar FFT
 
 Steruje rozdzielczością częstotliwościową spektrogramu.

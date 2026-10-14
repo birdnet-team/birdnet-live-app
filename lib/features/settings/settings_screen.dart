@@ -17,6 +17,7 @@ import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_size.dart';
 import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
@@ -421,6 +422,19 @@ class SettingsScreen extends ConsumerWidget {
               _SectionHeader(
                 title: l10n.settingsSpectrogram,
                 subtitle: l10n.settingsSpectrogramDescription,
+              ),
+              _ChoiceTile<SpectrogramSize>(
+                title: l10n.settingsSpectrogramSize,
+                helpBody: l10n.settingsHelpSpectrogramSize,
+                value: ref.watch(spectrogramSizeProvider),
+                options: {
+                  SpectrogramSize.full: l10n.settingsSpectrogramSizeFull,
+                  SpectrogramSize.medium: l10n.settingsSpectrogramSizeMedium,
+                  SpectrogramSize.small: l10n.settingsSpectrogramSizeSmall,
+                  SpectrogramSize.off: l10n.settingsSpectrogramSizeOff,
+                },
+                onChanged: (v) =>
+                    ref.read(spectrogramSizeProvider.notifier).set(v),
               ),
               _ChoiceTile<int>(
                 title: l10n.settingsFftSize,

@@ -151,6 +151,10 @@ of the last supporting window.
 
 ## Spectrogram
 
+### Size
+
+Sets how much of the screen the live scrolling spectrogram takes in Live Mode, Point Count, Survey, and ARU. **Full** is the usual height. **Medium** and **Small** shrink it to 75% and 50% of that and hand the difference to the detection list — the setting to reach for when you mostly watch the list on a phone in portrait. **Off** removes the spectrogram entirely; in Survey and ARU the spectrogram tab disappears as well. In landscape, **Medium** and **Small** shorten the spectrogram within its half of the screen (the space below it stays empty for now), and **Off** hands the whole screen to the detection list. Session Review and other playback spectrograms are not affected.
+
 ### FFT size
 
 Controls frequency resolution in the spectrogram.

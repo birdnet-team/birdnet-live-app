@@ -155,6 +155,10 @@ stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
 
+### Größe
+
+Legt fest, wie viel Platz das live mitlaufende Spektrogramm in Live Mode, Point Count, Survey und ARU auf dem Bildschirm einnimmt. **Voll** ist die gewohnte Höhe. **Mittel** und **Klein** verkleinern sie auf 75 % bzw. 50 % und geben den Unterschied an die Erkennungsliste ab – die richtige Wahl, wenn Sie auf dem Telefon im Hochformat vor allem die Liste im Blick haben. **Aus** entfernt das Spektrogramm ganz; in Survey und ARU verschwindet auch der Spektrogramm-Tab. Im Querformat verkürzen **Mittel** und **Klein** das Spektrogramm in seiner Bildschirmhälfte (der Platz darunter bleibt vorerst leer), und **Aus** überlässt der Erkennungsliste den ganzen Bildschirm. Spektrogramme gespeicherter Sessions und bei der Wiedergabe sind nicht betroffen.
+
 ### FFT-Größe
 
 Steuert die Frequenzauflösung im Spektrogramm.

@@ -157,6 +157,10 @@ más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
 
+### Tamaño
+
+Define cuánto espacio de la pantalla ocupa el espectrograma en vivo en Live Mode, Point Count, Survey y ARU. **Completo** es la altura habitual. **Medio** y **Pequeño** la reducen al 75 % y al 50 % y ceden la diferencia a la lista de detecciones, la opción adecuada cuando en el teléfono en vertical miras sobre todo la lista. **Desactivado** quita el espectrograma por completo; en Survey y ARU desaparece también la pestaña del espectrograma. En horizontal, **Medio** y **Pequeño** acortan el espectrograma en su mitad de la pantalla (el espacio debajo queda vacío por ahora), y **Desactivado** deja toda la pantalla a la lista de detecciones. Los espectrogramas de las sesiones guardadas y de la reproducción no se ven afectados.
+
 ### Tamaño de FFT
 
 Controla la resolución en frecuencia del espectrograma.
