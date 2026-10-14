@@ -115,6 +115,11 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   final Object _quickListenSafetyOwner = Object();
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   /// The long-lived Live controller, resolved once in [initState].
   ///
   /// `ref` is unusable from [dispose] — Riverpod throws, because the element is
@@ -857,6 +862,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ),
     );
     final spectrogram = Container(
+      key: _spectrogramKey,
       color: theme.colorScheme.surfaceContainerLowest,
       child: _PointCountSpectrogram(
         isCapturing: isCapturing && !_spectrogramPaused,

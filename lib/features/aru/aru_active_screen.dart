@@ -47,6 +47,11 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   bool _stopping = false;
   bool _stopDialogShowing = false;
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -310,7 +315,11 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       physics: const NeverScrollableScrollPhysics(),
       children: [
         _StatusPanel(session: session, state: state),
-        _SpectrogramPanel(isActive: spectrogramActive, state: state),
+        _SpectrogramPanel(
+          key: _spectrogramKey,
+          isActive: spectrogramActive,
+          state: state,
+        ),
         _SchedulePanel(session: session),
         _SummaryPanel(session: session),
       ],
@@ -1022,7 +1031,11 @@ class _ScheduleFocusCard extends StatelessWidget {
 }
 
 class _SpectrogramPanel extends ConsumerWidget {
-  const _SpectrogramPanel({required this.isActive, required this.state});
+  const _SpectrogramPanel({
+    super.key,
+    required this.isActive,
+    required this.state,
+  });
 
   final bool isActive;
   final AruControllerState state;

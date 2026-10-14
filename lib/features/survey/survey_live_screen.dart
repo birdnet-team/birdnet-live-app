@@ -122,6 +122,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   late final SurveyController _surveyController;
   late final CaptureStateNotifier _captureNotifier;
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -1138,7 +1143,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
             ),
           ],
         ),
-        _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
+        _SurveySpectrogram(
+          key: _spectrogramKey,
+          ringBuffer: ringBuffer,
+          isActive: isActive,
+        ),
         _SurveySummaryTab(session: session),
         const ExploreScreen(isEmbedded: true),
       ],
@@ -1595,7 +1604,11 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SurveySpectrogram extends ConsumerWidget {
-  const _SurveySpectrogram({required this.ringBuffer, required this.isActive});
+  const _SurveySpectrogram({
+    super.key,
+    required this.ringBuffer,
+    required this.isActive,
+  });
 
   final RingBuffer ringBuffer;
   final bool isActive;

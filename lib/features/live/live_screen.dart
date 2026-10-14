@@ -108,6 +108,11 @@ class LiveScreen extends ConsumerStatefulWidget {
 
 class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   bool _isStarting = false;
   bool _finalizing = false;
   bool _stopDialogOpen = false;
@@ -1235,6 +1240,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         ? _StatusBanner(liveState: liveState, ref: ref)
         : null;
     final spectrogram = Container(
+      key: _spectrogramKey,
       color: theme.colorScheme.surfaceContainerLowest,
       child: _LiveSpectrogram(isCapturing: isCapturing),
     );
