@@ -275,10 +275,9 @@ class ClassifierModel {
     }
 
     final input = Float32List(windowSamples);
-    final copyLen =
-        audioSamples.length < windowSamples
-            ? audioSamples.length
-            : windowSamples;
+    final copyLen = audioSamples.length < windowSamples
+        ? audioSamples.length
+        : windowSamples;
     for (var i = 0; i < copyLen; i++) {
       input[i] = audioSamples[i].clamp(-1.0, 1.0);
     }
@@ -318,8 +317,9 @@ class ModelOutput {
     }
 
     final predictionsPerBatch = predictions.length ~/ batchSize;
-    final embeddingsPerBatch =
-        embeddings == null ? 0 : embeddings.length ~/ batchSize;
+    final embeddingsPerBatch = embeddings == null
+        ? 0
+        : embeddings.length ~/ batchSize;
     return [
       for (var index = 0; index < batchSize; index++)
         ModelOutput(

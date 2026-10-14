@@ -36,23 +36,20 @@ void main() {
   late ModelConfig config;
 
   setUpAll(() async {
-    final configMap =
-        jsonDecode(
-              await rootBundle.loadString('assets/models/model_config.json'),
-            )
-            as Map<String, dynamic>;
+    final configMap = jsonDecode(
+      await rootBundle.loadString('assets/models/model_config.json'),
+    ) as Map<String, dynamic>;
     config = ModelConfig.fromJson(
       configMap['audioModel'] as Map<String, dynamic>,
     );
     final labels = await rootBundle.loadString(
       'assets/models/${config.labels.file}',
     );
-    final blacklist =
-        config.scoreBlacklistFile == null
-            ? null
-            : await rootBundle.loadString(
-              'assets/models/${config.scoreBlacklistFile}',
-            );
+    final blacklist = config.scoreBlacklistFile == null
+        ? null
+        : await rootBundle.loadString(
+            'assets/models/${config.scoreBlacklistFile}',
+          );
 
     final modelFilePath = await AssetPackService.resolveModelPath(
       fileName: config.onnx.modelFile,
@@ -89,10 +86,9 @@ void main() {
     const threshold = 0.35;
     final sampleRate = config.audio.sampleRate;
     final availableSeconds = audio.length ~/ sampleRate;
-    final durationSeconds =
-        availableSeconds < benchmarkSeconds
-            ? availableSeconds
-            : benchmarkSeconds;
+    final durationSeconds = availableSeconds < benchmarkSeconds
+        ? availableSeconds
+        : benchmarkSeconds;
     expect(durationSeconds, greaterThanOrEqualTo(windowSeconds));
 
     final results = <double, _RateResult>{};
@@ -119,8 +115,8 @@ void main() {
       for (var offset = 0; offset + windowSamples <= endSample; offset += hop) {
         final timestamp = startTime.add(
           Duration(
-            microseconds:
-                (offset * Duration.microsecondsPerSecond / sampleRate).round(),
+            microseconds: (offset * Duration.microsecondsPerSecond / sampleRate)
+                .round(),
           ),
         );
         final detections = await service.infer(
@@ -155,11 +151,10 @@ void main() {
           windowSamples: windowSamples,
           hopSamples: hop,
         ),
-        averageConfirmationDelay:
-            confirmationDelays.isEmpty
-                ? 0
-                : confirmationDelays.reduce((a, b) => a + b) /
-                    confirmationDelays.length,
+        averageConfirmationDelay: confirmationDelays.isEmpty
+            ? 0
+            : confirmationDelays.reduce((a, b) => a + b) /
+                  confirmationDelays.length,
         modelTime: stopwatch.elapsed,
       );
     }
@@ -167,16 +162,14 @@ void main() {
     final baseline = results[1.0]!;
     for (final entry in results.entries) {
       final result = entry.value;
-      final matchedBaselineEvents =
-          baseline.detectionRecords.where((expected) {
-            return result.detectionRecords.any(
-              (candidate) => _sameDetectionSpan(expected, candidate),
-            );
-          }).length;
-      final recall =
-          baseline.records == 0
-              ? 1.0
-              : matchedBaselineEvents / baseline.records;
+      final matchedBaselineEvents = baseline.detectionRecords.where((expected) {
+        return result.detectionRecords.any(
+          (candidate) => _sameDetectionSpan(expected, candidate),
+        );
+      }).length;
+      final recall = baseline.records == 0
+          ? 1.0
+          : matchedBaselineEvents / baseline.records;
       // ignore: avoid_print
       print(
         '[RateBenchmark] ${entry.key.toStringAsFixed(1)} Hz: '

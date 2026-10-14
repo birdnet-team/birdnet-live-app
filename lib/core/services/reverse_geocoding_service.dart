@@ -132,8 +132,9 @@ Future<String?> reverseGeocode({
         if (state != null && state != city) state as String,
         if (country != null) country as String,
       ];
-      label =
-          parts.isNotEmpty ? parts.join(', ') : json['display_name'] as String?;
+      label = parts.isNotEmpty
+          ? parts.join(', ')
+          : json['display_name'] as String?;
     }
 
     if (label != null && label.isNotEmpty) {

@@ -159,8 +159,8 @@ class RealtimeInferenceScheduler {
   }
 
   Duration _durationForSamples(int samples) => Duration(
-    microseconds:
-        (samples * Duration.microsecondsPerSecond / sampleRate).round(),
+    microseconds: (samples * Duration.microsecondsPerSecond / sampleRate)
+        .round(),
   );
 
   /// Convert an inference rate to its deterministic sample hop.

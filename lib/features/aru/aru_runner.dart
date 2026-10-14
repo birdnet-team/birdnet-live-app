@@ -138,8 +138,7 @@ class AruRunner {
     unawaited(_kickoff());
   }
 
-  static bool get _keepsScreenOn =>
-      defaultTargetPlatform == TargetPlatform.iOS;
+  static bool get _keepsScreenOn => defaultTargetPlatform == TargetPlatform.iOS;
 
   Future<void> _kickoff() async {
     await _tick();

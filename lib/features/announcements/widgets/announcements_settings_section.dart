@@ -88,8 +88,8 @@ class AnnouncementsSettingsSection extends ConsumerWidget {
           ),
           subtitle: Text(l10n.settingsAnnouncementsEnabledSubtitle),
           value: enabled,
-          onChanged:
-              (v) => ref.read(announcementsEnabledProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(announcementsEnabledProvider.notifier).set(v),
         ),
         if (enabled) ...[
           _VerbosityPicker(titleWithHelp: titleWithHelp),
@@ -219,10 +219,9 @@ class _FrequencyPicker extends ConsumerWidget {
     }
 
     final isCustom = value == AnnouncementFrequency.custom;
-    final sliderPos =
-        isCustom
-            ? presets.indexOf(AnnouncementFrequency.normal).toDouble()
-            : presets.indexOf(value).toDouble();
+    final sliderPos = isCustom
+        ? presets.indexOf(AnnouncementFrequency.normal).toDouble()
+        : presets.indexOf(value).toDouble();
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -339,10 +338,8 @@ class _VoiceGroup extends ConsumerWidget {
                 max: 1.5,
                 divisions: 10,
                 display: '${rate.toStringAsFixed(2)}×',
-                onChanged:
-                    (v) => ref
-                        .read(announcementsVoiceRateProvider.notifier)
-                        .set(v),
+                onChanged: (v) =>
+                    ref.read(announcementsVoiceRateProvider.notifier).set(v),
               ),
               _LabeledSlider(
                 label: l10n.settingsAnnouncementsVoicePitch,
@@ -351,10 +348,8 @@ class _VoiceGroup extends ConsumerWidget {
                 max: 1.3,
                 divisions: 6,
                 display: pitch.toStringAsFixed(2),
-                onChanged:
-                    (v) => ref
-                        .read(announcementsVoicePitchProvider.notifier)
-                        .set(v),
+                onChanged: (v) =>
+                    ref.read(announcementsVoicePitchProvider.notifier).set(v),
               ),
             ],
           ),
@@ -570,10 +565,9 @@ class _VoicePickerSheetState extends ConsumerState<_VoicePickerSheet> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            subtitle:
-                                voice.locale.isEmpty
-                                    ? null
-                                    : Text(voice.locale),
+                            subtitle: voice.locale.isEmpty
+                                ? null
+                                : Text(voice.locale),
                           ),
                         if (voices.isEmpty)
                           Padding(
@@ -621,10 +615,9 @@ class _AdvancedDisclosure extends ConsumerWidget {
             helpBody: l10n.settingsHelpAnnouncementsSpeakerOutputAllowed,
           ),
           value: ref.watch(announcementsSpeakerOutputAllowedProvider),
-          onChanged:
-              (v) => ref
-                  .read(announcementsSpeakerOutputAllowedProvider.notifier)
-                  .set(v),
+          onChanged: (v) => ref
+              .read(announcementsSpeakerOutputAllowedProvider.notifier)
+              .set(v),
         ),
         SwitchListTile(
           title: titleWithHelp(
@@ -632,10 +625,9 @@ class _AdvancedDisclosure extends ConsumerWidget {
             helpBody: l10n.settingsHelpAnnouncementsMuteCaptureDuringSpeech,
           ),
           value: ref.watch(announcementsMuteCaptureDuringSpeechProvider),
-          onChanged:
-              (v) => ref
-                  .read(announcementsMuteCaptureDuringSpeechProvider.notifier)
-                  .set(v),
+          onChanged: (v) => ref
+              .read(announcementsMuteCaptureDuringSpeechProvider.notifier)
+              .set(v),
         ),
         SwitchListTile(
           title: titleWithHelp(
@@ -643,9 +635,8 @@ class _AdvancedDisclosure extends ConsumerWidget {
             helpBody: l10n.settingsHelpAnnouncementsDuckOtherAudio,
           ),
           value: ref.watch(announcementsDuckOtherAudioProvider),
-          onChanged:
-              (v) =>
-                  ref.read(announcementsDuckOtherAudioProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(announcementsDuckOtherAudioProvider.notifier).set(v),
         ),
         SwitchListTile(
           title: titleWithHelp(
@@ -653,8 +644,8 @@ class _AdvancedDisclosure extends ConsumerWidget {
             helpBody: l10n.settingsHelpAnnouncementsPrerollCue,
           ),
           value: ref.watch(announcementsPrerollCueProvider),
-          onChanged:
-              (v) => ref.read(announcementsPrerollCueProvider.notifier).set(v),
+          onChanged: (v) =>
+              ref.read(announcementsPrerollCueProvider.notifier).set(v),
         ),
       ],
     );
