@@ -131,10 +131,9 @@ class AudioSessionRoutingService implements RoutingService {
           flags: AndroidAudioFlags.none,
           usage: AndroidAudioUsage.assistanceAccessibility,
         ),
-        androidAudioFocusGainType:
-            duck
-                ? AndroidAudioFocusGainType.gainTransientMayDuck
-                : AndroidAudioFocusGainType.gain,
+        androidAudioFocusGainType: duck
+            ? AndroidAudioFocusGainType.gainTransientMayDuck
+            : AndroidAudioFocusGainType.gain,
         androidWillPauseWhenDucked: false,
       ),
     );

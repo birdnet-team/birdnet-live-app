@@ -102,8 +102,10 @@ class _SummaryHeader extends ConsumerWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
     final duration = session.duration;
-    final species =
-        session.detections.map((d) => d.scientificName).toSet().length;
+    final species = session.detections
+        .map((d) => d.scientificName)
+        .toSet()
+        .length;
     final dateStr = formatLocaleDateTime(
       session.startTime,
       l10n.localeName,
@@ -264,10 +266,9 @@ class _SummaryHeader extends ConsumerWidget {
                       session.distanceMeters! > 0) ...[
                     StatChip(
                       icon: AppIcons.straighten,
-                      value:
-                          session.distanceMeters! >= 1000
-                              ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
-                              : '${session.distanceMeters!.round()} m',
+                      value: session.distanceMeters! >= 1000
+                          ? '${(session.distanceMeters! / 1000).toStringAsFixed(1)} km'
+                          : '${session.distanceMeters!.round()} m',
                     ),
                     const SizedBox(width: 16),
                   ],
@@ -455,56 +456,55 @@ class _WeatherRow extends StatelessWidget {
     final theme = Theme.of(context);
     showDialog<void>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(weatherConditionIcon(cond)),
-                const SizedBox(width: 8),
-                Text(l10n.sessionWeatherSection),
-              ],
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(weatherConditionIcon(cond)),
+            const SizedBox(width: 8),
+            Text(l10n.sessionWeatherSection),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _kv(l10n.sessionWeatherCondition, _conditionLabel(l10n, cond)),
+            _kv(
+              l10n.sessionWeatherTemperature,
+              formatTemperature(weather.temperatureC),
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _kv(l10n.sessionWeatherCondition, _conditionLabel(l10n, cond)),
-                _kv(
-                  l10n.sessionWeatherTemperature,
-                  formatTemperature(weather.temperatureC),
-                ),
-                _kv(
-                  l10n.sessionWeatherWind,
-                  formatWind(
-                    weather.windSpeedMs,
-                    weather.windDirectionDeg,
-                    l10n: l10n,
-                  ),
-                ),
-                _kv(
-                  l10n.sessionWeatherPrecipitation,
-                  formatPrecipitation(weather.precipitationMm),
-                ),
-                _kv(
-                  l10n.sessionWeatherCloudCover,
-                  formatCloudCover(weather.cloudCoverPercent),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.sessionWeatherAttribution,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withAlpha(140),
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
+            _kv(
+              l10n.sessionWeatherWind,
+              formatWind(
+                weather.windSpeedMs,
+                weather.windDirectionDeg,
+                l10n: l10n,
               ),
-            ],
+            ),
+            _kv(
+              l10n.sessionWeatherPrecipitation,
+              formatPrecipitation(weather.precipitationMm),
+            ),
+            _kv(
+              l10n.sessionWeatherCloudCover,
+              formatCloudCover(weather.cloudCoverPercent),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.sessionWeatherAttribution,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withAlpha(140),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(MaterialLocalizations.of(ctx).okButtonLabel),
           ),
+        ],
+      ),
     );
   }
 
@@ -776,14 +776,12 @@ class SpectrogramTileLayout {
     );
     return SpectrogramTileLayout(
       chunkSeconds: gridChunkSeconds,
-      startSec:
-          (absoluteCenterSec - viewSeconds / 2 - padding)
-              .clamp(0.0, totalSeconds)
-              .toDouble(),
-      endSec:
-          (absoluteCenterSec + viewSeconds / 2 + padding)
-              .clamp(0.0, totalSeconds)
-              .toDouble(),
+      startSec: (absoluteCenterSec - viewSeconds / 2 - padding)
+          .clamp(0.0, totalSeconds)
+          .toDouble(),
+      endSec: (absoluteCenterSec + viewSeconds / 2 + padding)
+          .clamp(0.0, totalSeconds)
+          .toDouble(),
       singleSweep: false,
     );
   }
@@ -1067,20 +1065,18 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
       // black flash reads as something broken, not as something loading.
       return Container(
         height: _kReviewStripHeight,
-        color:
-            widget.singleSweep
-                ? theme.colorScheme.surfaceContainerLow
-                : Colors.black,
-        child:
-            widget.decoding
-                ? const Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-                : null,
+        color: widget.singleSweep
+            ? theme.colorScheme.surfaceContainerLow
+            : Colors.black,
+        child: widget.decoding
+            ? const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            : null,
       );
     }
 
@@ -1187,10 +1183,9 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
     // into the running center. Convert through the current view width so
     // panning speed feels right at any zoom level.
     final secPerPixel = newView / box.size.width;
-    final newCenter =
-        (startCenter - details.focalPointDelta.dx * secPerPixel)
-            .clamp(0.0, durationSec)
-            .toDouble();
+    final newCenter = (startCenter - details.focalPointDelta.dx * secPerPixel)
+        .clamp(0.0, durationSec)
+        .toDouble();
 
     setState(() {
       _viewSeconds = newView;
@@ -1206,21 +1201,19 @@ class _SpectrogramStripState extends ConsumerState<_SpectrogramStrip>
     final callback = widget.onViewportChanged;
     if (callback == null) return;
     final absoluteCenterSec = widget.timelineOffsetSec + _viewCenterSec;
-    final centerDelta =
-        _lastRequestedCenterSec == null
-            ? double.infinity
-            : (absoluteCenterSec - _lastRequestedCenterSec!).abs();
-    final viewDelta =
-        _lastRequestedViewSeconds == null
-            ? double.infinity
-            : (_viewSeconds - _lastRequestedViewSeconds!).abs();
+    final centerDelta = _lastRequestedCenterSec == null
+        ? double.infinity
+        : (absoluteCenterSec - _lastRequestedCenterSec!).abs();
+    final viewDelta = _lastRequestedViewSeconds == null
+        ? double.infinity
+        : (_viewSeconds - _lastRequestedViewSeconds!).abs();
     // Zoom changes scale relatively, so use a ratio against the last
     // requested view: tiny absolute deltas at high zoom should still
     // trigger a refresh, while small jitter at coarse zoom should not.
     final viewRatio =
         _lastRequestedViewSeconds == null || _lastRequestedViewSeconds! <= 0
-            ? double.infinity
-            : viewDelta / _lastRequestedViewSeconds!;
+        ? double.infinity
+        : viewDelta / _lastRequestedViewSeconds!;
     if (!force &&
         centerDelta < _viewSeconds / 4 &&
         viewDelta < 0.25 &&
@@ -1292,10 +1285,9 @@ class _ReviewSpectrogramPainter extends CustomPainter {
 
       // Destination x: offset when the view extends before/after the image.
       final dstX1 = startSec < 0 ? (-startSec / viewSeconds * size.width) : 0.0;
-      final dstX2 =
-          endSec > durationSec
-              ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
-              : size.width;
+      final dstX2 = endSec > durationSec
+          ? size.width - ((endSec - durationSec) / viewSeconds * size.width)
+          : size.width;
 
       if (srcX2 > srcX1 && dstX2 > dstX1) {
         canvas.drawImageRect(
@@ -1317,14 +1309,14 @@ class _ReviewSpectrogramPainter extends CustomPainter {
       final overlapEnd = math.min(absoluteEndSec, chunk.endSec);
       if (overlapEnd <= overlapStart) continue;
 
-      final srcX1 = ((overlapStart - chunk.startSec) *
-              targetSampleRate /
-              chunk.hop)
-          .clamp(0.0, chunkW);
-      final srcX2 = ((overlapEnd - chunk.startSec) *
-              targetSampleRate /
-              chunk.hop)
-          .clamp(0.0, chunkW);
+      final srcX1 =
+          ((overlapStart - chunk.startSec) * targetSampleRate / chunk.hop)
+              .clamp(0.0, chunkW);
+      final srcX2 =
+          ((overlapEnd - chunk.startSec) * targetSampleRate / chunk.hop).clamp(
+            0.0,
+            chunkW,
+          );
 
       final dstX1 =
           (overlapStart - absoluteStartSec) / viewSeconds * size.width;
@@ -1624,15 +1616,14 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
         final relSec = session.absoluteToRelative(r.timestamp);
         final start =
             Duration(microseconds: (relSec * 1e6).round()) - clipOffset;
-        final end =
-            r.endTimestamp != null
-                ? Duration(
-                      microseconds:
-                          (session.absoluteToRelative(r.endTimestamp!) * 1e6)
-                              .round(),
-                    ) -
-                    clipOffset
-                : start + windowDur;
+        final end = r.endTimestamp != null
+            ? Duration(
+                    microseconds:
+                        (session.absoluteToRelative(r.endTimestamp!) * 1e6)
+                            .round(),
+                  ) -
+                  clipOffset
+            : start + windowDur;
         records.add((start, end));
       }
     }
@@ -1645,11 +1636,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       for (final r in widget.group.clusters[i].records) {
         final startSec =
             session.absoluteToRelative(r.timestamp) - widget.clipOffsetSec;
-        final endSec =
-            r.endTimestamp != null
-                ? session.absoluteToRelative(r.endTimestamp!) -
-                    widget.clipOffsetSec
-                : startSec + widget.windowSec;
+        final endSec = r.endTimestamp != null
+            ? session.absoluteToRelative(r.endTimestamp!) - widget.clipOffsetSec
+            : startSec + widget.windowSec;
         final start = Duration(microseconds: (startSec * 1e6).round());
         final end = Duration(microseconds: (endSec * 1e6).round());
         if (minStart == null || start < minStart) minStart = start;
@@ -1784,16 +1773,14 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
-        color:
-            _activeState.isActive
-                ? theme.colorScheme.primaryContainer.withAlpha(90)
-                : Colors.transparent,
-        border:
-            _activeState.isActive
-                ? Border(
-                  left: BorderSide(color: theme.colorScheme.primary, width: 3),
-                )
-                : null,
+        color: _activeState.isActive
+            ? theme.colorScheme.primaryContainer.withAlpha(90)
+            : Colors.transparent,
+        border: _activeState.isActive
+            ? Border(
+                left: BorderSide(color: theme.colorScheme.primary, width: 3),
+              )
+            : null,
       ),
       child: Column(
         children: [
@@ -1828,17 +1815,15 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                     if (widget.audioAvailable ||
                         widget.group.clusters.any((c) => c.hasAudioClip))
                       InkWell(
-                        onTap:
-                            () =>
-                                _activeState.isActive && widget.onPause != null
-                                    ? widget.onPause!()
-                                    : widget.onSeekCluster(
-                                      widget.group.clusters.firstWhere(
-                                        (c) => c.hasAudioClip,
-                                        orElse:
-                                            () => widget.group.clusters.first,
-                                      ),
-                                    ),
+                        onTap: () =>
+                            _activeState.isActive && widget.onPause != null
+                            ? widget.onPause!()
+                            : widget.onSeekCluster(
+                                widget.group.clusters.firstWhere(
+                                  (c) => c.hasAudioClip,
+                                  orElse: () => widget.group.clusters.first,
+                                ),
+                              ),
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
                           width: 48,
@@ -1902,11 +1887,10 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                               ) ??
                               'assets/images/dummy_species.png',
                           fit: BoxFit.cover,
-                          errorBuilder:
-                              (a, b, c) => Image.asset(
-                                'assets/images/dummy_species.png',
-                                fit: BoxFit.cover,
-                              ),
+                          errorBuilder: (a, b, c) => Image.asset(
+                            'assets/images/dummy_species.png',
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
@@ -1937,8 +1921,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                   child: Icon(
                                     AppIcons.checkCircle,
                                     size: 14,
-                                    color:
-                                        AppSemanticColors.of(context).success,
+                                    color: AppSemanticColors.of(context)
+                                        .success,
                                   ),
                                 ),
                               if (widget.group.allRecords.any(
@@ -1950,10 +1934,8 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 4),
                                   child: Tooltip(
-                                    message:
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.detectionSourceManual,
+                                    message: AppLocalizations.of(context)!
+                                        .detectionSourceManual,
                                     child: Icon(
                                       AppIcons.editNote,
                                       size: 16,
@@ -2050,10 +2032,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
                     // Expand chevron interactive area. Covering the entire
                     // right portion of the card with a generous tap target.
                     Tooltip(
-                      message:
-                          widget.isExpanded
-                              ? l10n.sessionLibraryCollapse
-                              : l10n.sessionLibraryExpand,
+                      message: widget.isExpanded
+                          ? l10n.sessionLibraryCollapse
+                          : l10n.sessionLibraryExpand,
                       child: InkWell(
                         onTap: widget.onToggleExpand,
                         borderRadius: BorderRadius.circular(10),
@@ -2124,10 +2105,9 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
       onDeleteVoiceMemo: () => widget.onDeleteVoiceMemoCluster(cluster),
       isSurvey: widget.isSurvey,
       audioAvailable: widget.audioAvailable,
-      onShowOnMap:
-          widget.onShowOnMap != null
-              ? () => widget.onShowOnMap!(cluster.records.first)
-              : null,
+      onShowOnMap: widget.onShowOnMap != null
+          ? () => widget.onShowOnMap!(cluster.records.first)
+          : null,
     );
   }
 
@@ -2276,20 +2256,18 @@ class _ClusterRow extends ConsumerWidget {
   /// the detection start is their correct anchor.
   (DateTime, DateTime)? _clipTimeRange(WidgetRef ref) {
     if (audioAvailable) return null;
-    final clipRecord =
-        cluster.records
-            .where((r) => (r.audioClipPath ?? '').isNotEmpty)
-            .firstOrNull;
+    final clipRecord = cluster.records
+        .where((r) => (r.audioClipPath ?? '').isNotEmpty)
+        .firstOrNull;
     if (clipRecord == null) return null;
 
     // Mirrors the export path: a session with clips but no recorded context
     // value predates the setting, so fall back to the current preference
     // rather than claiming zero padding.
     final recorded = session.settings.clipContextSeconds;
-    final context =
-        recorded == 0 && clipRecord.clipTimestamp == null
-            ? ref.watch(surveyClipContextProvider)
-            : recorded;
+    final context = recorded == 0 && clipRecord.clipTimestamp == null
+        ? ref.watch(surveyClipContextProvider)
+        : recorded;
 
     final windowStart = clipRecord.clipTimestamp ?? clipRecord.timestamp;
     final clipStart = windowStart.subtract(Duration(seconds: context));
@@ -2372,10 +2350,9 @@ class _ClusterRow extends ConsumerWidget {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
-        color:
-            isActive
-                ? theme.colorScheme.primary.withAlpha(28)
-                : Colors.transparent,
+        color: isActive
+            ? theme.colorScheme.primary.withAlpha(28)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 4),
@@ -2392,8 +2369,8 @@ class _ClusterRow extends ConsumerWidget {
                   child: Icon(
                     isActive
                         ? (onPause != null
-                            ? AppIcons.pauseRounded
-                            : AppIcons.graphicEq)
+                              ? AppIcons.pauseRounded
+                              : AppIcons.graphicEq)
                         : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
@@ -2411,8 +2388,8 @@ class _ClusterRow extends ConsumerWidget {
                   child: Icon(
                     isActive
                         ? (onPause != null
-                            ? AppIcons.pauseRounded
-                            : AppIcons.graphicEq)
+                              ? AppIcons.pauseRounded
+                              : AppIcons.graphicEq)
                         : AppIcons.playArrowRounded,
                     size: 24,
                     color: theme.colorScheme.primary,
@@ -2426,10 +2403,9 @@ class _ClusterRow extends ConsumerWidget {
               child: Text(
                 timeStr,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color:
-                      isActive
-                          ? theme.colorScheme.primary
-                          : _reviewOnSurface(theme, 180),
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : _reviewOnSurface(theme, 180),
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
@@ -2519,10 +2495,9 @@ class _ClusterRow extends ConsumerWidget {
                 ),
               ),
             Tooltip(
-              message:
-                  confirmed
-                      ? l10n.detectionUnconfirmTooltip
-                      : l10n.detectionConfirmTooltip,
+              message: confirmed
+                  ? l10n.detectionUnconfirmTooltip
+                  : l10n.detectionConfirmTooltip,
               child: InkWell(
                 onTap: onToggleConfirm,
                 borderRadius: BorderRadius.circular(24),
@@ -2533,10 +2508,9 @@ class _ClusterRow extends ConsumerWidget {
                         ? AppIcons.checkCircle
                         : AppIcons.checkCircleOutline,
                     size: 24,
-                    color:
-                        confirmed
-                            ? AppSemanticColors.of(context).success
-                            : _reviewOnSurface(theme, 100),
+                    color: confirmed
+                        ? AppSemanticColors.of(context).success
+                        : _reviewOnSurface(theme, 100),
                   ),
                 ),
               ),
@@ -2777,8 +2751,9 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
         scientificName: sciName,
         commonName: comName,
         mode: _mode,
-        replaceRecord:
-            _mode == AddSpeciesInsertMode.replace ? _replaceTarget : null,
+        replaceRecord: _mode == AddSpeciesInsertMode.replace
+            ? _replaceTarget
+            : null,
         evidence: _evidence,
       ),
     );
@@ -2798,34 +2773,34 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
   }) async {
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final taxonomy = ref.read(taxonomyServiceProvider).value;
-    final species =
-        scientificName.isEmpty ? null : taxonomy?.lookup(scientificName);
+    final species = scientificName.isEmpty
+        ? null
+        : taxonomy?.lookup(scientificName);
     final displayName =
         species?.commonNameForLocale(speciesLocale).isNotEmpty == true
-            ? species!.commonNameForLocale(speciesLocale)
-            : commonName;
+        ? species!.commonNameForLocale(speciesLocale)
+        : commonName;
 
     final result = await showModalBottomSheet<bool>(
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      builder:
-          (sheetContext) => _ConfirmSpeciesSheet(
-            displayName: displayName,
-            scientificName: species?.displayScientificName ?? scientificName,
-            imagePath: species?.assetImagePath,
-            isReplace: _mode == AddSpeciesInsertMode.replace,
-            heard: _heard,
-            seen: _seen,
-            onEvidenceChanged: (heard, seen) {
-              // Mirror into the overlay so the choice sticks for the next
-              // species even if this sheet is dismissed.
-              setState(() {
-                _heard = heard;
-                _seen = seen;
-              });
-            },
-          ),
+      builder: (sheetContext) => _ConfirmSpeciesSheet(
+        displayName: displayName,
+        scientificName: species?.displayScientificName ?? scientificName,
+        imagePath: species?.assetImagePath,
+        isReplace: _mode == AddSpeciesInsertMode.replace,
+        heard: _heard,
+        seen: _seen,
+        onEvidenceChanged: (heard, seen) {
+          // Mirror into the overlay so the choice sticks for the next
+          // species even if this sheet is dismissed.
+          setState(() {
+            _heard = heard;
+            _seen = seen;
+          });
+        },
+      ),
     );
     return result ?? false;
   }
@@ -2839,29 +2814,26 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
     final controller = TextEditingController();
     final typed = await showDialog<String>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(l10n.sessionOtherSpeciesDialogTitle),
-            content: TextField(
-              controller: controller,
-              autofocus: true,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                hintText: l10n.sessionOtherSpeciesHint,
-              ),
-              onSubmitted: (v) => Navigator.of(ctx).pop(v),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(controller.text),
-                child: Text(l10n.sessionSave),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.sessionOtherSpeciesDialogTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(hintText: l10n.sessionOtherSpeciesHint),
+          onSubmitted: (v) => Navigator.of(ctx).pop(v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: Text(l10n.sessionSave),
+          ),
+        ],
+      ),
     );
     if (typed == null || !mounted) return;
     final trimmed = typed.trim();
@@ -2876,8 +2848,9 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
         scientificName: '',
         commonName: trimmed,
         mode: _mode,
-        replaceRecord:
-            _mode == AddSpeciesInsertMode.replace ? _replaceTarget : null,
+        replaceRecord: _mode == AddSpeciesInsertMode.replace
+            ? _replaceTarget
+            : null,
         userSpecified: true,
         evidence: _evidence,
       ),
@@ -2967,17 +2940,16 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                suffixIcon:
-                    _searchController.text.isNotEmpty
-                        ? IconButton(
-                          icon: const Icon(AppIcons.clear),
-                          tooltip: l10n.tooltipClearSearch,
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearchChanged('');
-                          },
-                        )
-                        : null,
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(AppIcons.clear),
+                        tooltip: l10n.tooltipClearSearch,
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
               ),
               onChanged: _onSearchChanged,
             ),
@@ -2985,51 +2957,47 @@ class _AddSpeciesOverlayState extends ConsumerState<AddSpeciesOverlay> {
 
           // ── Results / empty state ─────────────────────────
           Expanded(
-            child:
-                _searchController.text.trim().isEmpty
-                    ? _SearchEmptyState(
-                      onPickUnknown:
-                          () => _selectSpecies(
-                            DetectionRecord.unknownSpeciesName,
-                            DetectionRecord.unknownCommonName,
+            child: _searchController.text.trim().isEmpty
+                ? _SearchEmptyState(
+                    onPickUnknown: () => _selectSpecies(
+                      DetectionRecord.unknownSpeciesName,
+                      DetectionRecord.unknownCommonName,
+                    ),
+                    onPickOther: _pickOther,
+                  )
+                : _results.isEmpty
+                ? _NoResultsState(query: _searchController.text.trim())
+                : ListView(
+                    children: [
+                      if (split == null)
+                        ..._results.map(resultTile)
+                      else ...[
+                        if (split.likely.isNotEmpty) ...[
+                          ListTile(
+                            dense: true,
+                            leading: const Icon(AppIcons.locationOn),
+                            title: Text(
+                              l10n.exploreSectionAtLocation(
+                                split.likely.length,
+                              ),
+                            ),
                           ),
-                      onPickOther: _pickOther,
-                    )
-                    : _results.isEmpty
-                    ? _NoResultsState(query: _searchController.text.trim())
-                    : ListView(
-                      children: [
-                        if (split == null)
-                          ..._results.map(resultTile)
-                        else ...[
-                          if (split.likely.isNotEmpty) ...[
-                            ListTile(
-                              dense: true,
-                              leading: const Icon(AppIcons.locationOn),
-                              title: Text(
-                                l10n.exploreSectionAtLocation(
-                                  split.likely.length,
-                                ),
-                              ),
+                          ...split.likely.map(resultTile),
+                        ],
+                        if (split.other.isNotEmpty) ...[
+                          Divider(height: 1, color: theme.dividerColor),
+                          ListTile(
+                            dense: true,
+                            leading: const Icon(AppIcons.public),
+                            title: Text(
+                              l10n.exploreSectionElsewhere(split.other.length),
                             ),
-                            ...split.likely.map(resultTile),
-                          ],
-                          if (split.other.isNotEmpty) ...[
-                            Divider(height: 1, color: theme.dividerColor),
-                            ListTile(
-                              dense: true,
-                              leading: const Icon(AppIcons.public),
-                              title: Text(
-                                l10n.exploreSectionElsewhere(
-                                  split.other.length,
-                                ),
-                              ),
-                            ),
-                            ...split.other.map(resultTile),
-                          ],
+                          ),
+                          ...split.other.map(resultTile),
                         ],
                       ],
-                    ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -3130,12 +3098,11 @@ class _ConfirmSpeciesSheetState extends State<_ConfirmSpeciesSheet> {
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
-                    errorBuilder:
-                        (a, b, c) => Container(
-                          width: 56,
-                          height: 56,
-                          color: theme.colorScheme.surfaceContainerHigh,
-                        ),
+                    errorBuilder: (a, b, c) => Container(
+                      width: 56,
+                      height: 56,
+                      color: theme.colorScheme.surfaceContainerHigh,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -3255,8 +3222,9 @@ class _EvidenceCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color =
-        value ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+    final color = value
+        ? theme.colorScheme.primary
+        : theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
       checked: value,
@@ -3330,12 +3298,11 @@ class _ReplaceTargetBanner extends ConsumerWidget {
               width: 56,
               height: 56,
               fit: BoxFit.cover,
-              errorBuilder:
-                  (a, b, c) => Container(
-                    width: 56,
-                    height: 56,
-                    color: theme.colorScheme.surfaceContainerHigh,
-                  ),
+              errorBuilder: (a, b, c) => Container(
+                width: 56,
+                height: 56,
+                color: theme.colorScheme.surfaceContainerHigh,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -3404,30 +3371,28 @@ class _SpeciesResultTile extends ConsumerWidget {
           width: 48,
           height: 48,
           fit: BoxFit.cover,
-          errorBuilder:
-              (a, b, c) => Container(
-                width: 48,
-                height: 48,
-                color: theme.colorScheme.surfaceContainerHighest,
-                child: Icon(
-                  AppIcons.imageNotSupported,
-                  size: 20,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+          errorBuilder: (a, b, c) => Container(
+            width: 48,
+            height: 48,
+            color: theme.colorScheme.surfaceContainerHighest,
+            child: Icon(
+              AppIcons.imageNotSupported,
+              size: 20,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       ),
       title: Text(displayName, overflow: TextOverflow.ellipsis),
-      subtitle:
-          showSciNames
-              ? Text(
-                species.displayScientificName,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-              )
-              : null,
+      subtitle: showSciNames
+          ? Text(
+              species.displayScientificName,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+            )
+          : null,
       onTap: onTap,
     );
   }
@@ -3638,17 +3603,15 @@ class _AnnotationsSectionState extends State<_AnnotationsSection> {
                     icon: Icon(
                       _atTimestamp ? AppIcons.schedule : AppIcons.public,
                       size: 20,
-                      color:
-                          _atTimestamp
-                              ? theme.colorScheme.primary
-                              : _reviewOnSurface(theme, 120),
+                      color: _atTimestamp
+                          ? theme.colorScheme.primary
+                          : _reviewOnSurface(theme, 120),
                     ),
-                    tooltip:
-                        _atTimestamp
-                            ? l10n.sessionInsertAtTimestamp
-                            : l10n.sessionAnnotationGlobal,
-                    onPressed:
-                        () => setState(() => _atTimestamp = !_atTimestamp),
+                    tooltip: _atTimestamp
+                        ? l10n.sessionInsertAtTimestamp
+                        : l10n.sessionAnnotationGlobal,
+                    onPressed: () =>
+                        setState(() => _atTimestamp = !_atTimestamp),
                     constraints: const BoxConstraints(
                       minWidth: 36,
                       minHeight: 36,
@@ -3750,15 +3713,15 @@ class _AnnotationRowState extends State<_AnnotationRow> {
     }
 
     final hasText = annotation.text.trim().isNotEmpty;
-    final displayText =
-        hasText ? annotation.text : l10n.sessionAnnotationVoiceMemoLabel;
-    final textStyle =
-        hasText
-            ? theme.textTheme.bodySmall
-            : theme.textTheme.bodySmall?.copyWith(
-              fontStyle: FontStyle.italic,
-              color: _reviewOnSurface(theme, 160),
-            );
+    final displayText = hasText
+        ? annotation.text
+        : l10n.sessionAnnotationVoiceMemoLabel;
+    final textStyle = hasText
+        ? theme.textTheme.bodySmall
+        : theme.textTheme.bodySmall?.copyWith(
+            fontStyle: FontStyle.italic,
+            color: _reviewOnSurface(theme, 160),
+          );
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -3984,10 +3947,9 @@ class _TrimOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final dimPaint = Paint()..color = Colors.black.withAlpha(140);
-    final handlePaint =
-        Paint()
-          ..color = accentColor
-          ..style = PaintingStyle.fill;
+    final handlePaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.fill;
 
     // Dimmed regions outside the trim.
     canvas.drawRect(
@@ -4000,11 +3962,10 @@ class _TrimOverlayPainter extends CustomPainter {
     );
 
     // Top/bottom borders of the selected region.
-    final borderPaint =
-        Paint()
-          ..color = accentColor
-          ..strokeWidth = 2
-          ..style = PaintingStyle.stroke;
+    final borderPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
     canvas.drawRect(
       Rect.fromLTRB(
         startFrac * size.width,
@@ -4027,10 +3988,9 @@ class _TrimOverlayPainter extends CustomPainter {
       handlePaint,
     );
     // Grip lines on left handle.
-    final gripPaint =
-        Paint()
-          ..color = Colors.white.withAlpha(200)
-          ..strokeWidth = 1.5;
+    final gripPaint = Paint()
+      ..color = Colors.white.withAlpha(200)
+      ..strokeWidth = 1.5;
     for (var i = -1; i <= 1; i++) {
       final cx = startFrac * size.width;
       final cy = size.height / 2 + i * 5.0;
@@ -4323,11 +4283,10 @@ class _TrimSpectrogramPainter extends CustomPainter {
     }
 
     // Border around the selected region.
-    final borderPaint =
-        Paint()
-          ..color = accentColor
-          ..strokeWidth = 2
-          ..style = PaintingStyle.stroke;
+    final borderPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
     canvas.drawRect(
       Rect.fromLTRB(
         trimStartX.clamp(0, size.width),
@@ -4341,14 +4300,12 @@ class _TrimSpectrogramPainter extends CustomPainter {
     // ── Trim handles ──────────────────────────────────────────────
     const hw = 14.0;
     const hh = 32.0;
-    final handlePaint =
-        Paint()
-          ..color = accentColor
-          ..style = PaintingStyle.fill;
-    final gripPaint =
-        Paint()
-          ..color = Colors.white.withAlpha(200)
-          ..strokeWidth = 1.5;
+    final handlePaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.fill;
+    final gripPaint = Paint()
+      ..color = Colors.white.withAlpha(200)
+      ..strokeWidth = 1.5;
     for (final hx in [trimStartX, trimEndX]) {
       if (hx < -hw || hx > size.width + hw) continue;
       final ly = (size.height - hh) / 2;
@@ -4508,14 +4465,13 @@ class _ExpandedSectionState extends State<_ExpandedSection>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      builder:
-          (context, child) => ClipRect(
-            child: Align(
-              alignment: Alignment.topCenter,
-              heightFactor: _heightFactor.value,
-              child: child,
-            ),
-          ),
+      builder: (context, child) => ClipRect(
+        child: Align(
+          alignment: Alignment.topCenter,
+          heightFactor: _heightFactor.value,
+          child: child,
+        ),
+      ),
       child: _showChild ? widget.child : const SizedBox.shrink(),
     );
   }

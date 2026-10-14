@@ -381,10 +381,9 @@ class DetectionTile extends ConsumerWidget {
     return [
       if (actions.onToggleConfirm != null)
         Tooltip(
-          message:
-              actions.isConfirmed
-                  ? l10n.detectionUnconfirmTooltip
-                  : l10n.detectionConfirmTooltip,
+          message: actions.isConfirmed
+              ? l10n.detectionUnconfirmTooltip
+              : l10n.detectionConfirmTooltip,
           child: InkWell(
             onTap: actions.onToggleConfirm,
             borderRadius: BorderRadius.circular(24),
@@ -395,10 +394,9 @@ class DetectionTile extends ConsumerWidget {
                     ? AppIcons.checkCircle
                     : AppIcons.checkCircleOutline,
                 size: 24,
-                color:
-                    actions.isConfirmed
-                        ? AppSemanticColors.of(context).success
-                        : theme.colorScheme.onSurface.withAlpha(120),
+                color: actions.isConfirmed
+                    ? AppSemanticColors.of(context).success
+                    : theme.colorScheme.onSurface.withAlpha(120),
               ),
             ),
           ),
@@ -424,9 +422,8 @@ class DetectionTile extends ConsumerWidget {
     return Image.asset(
       path,
       fit: BoxFit.cover,
-      errorBuilder:
-          (a, b, c) =>
-              Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
+      errorBuilder: (a, b, c) =>
+          Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }
 }

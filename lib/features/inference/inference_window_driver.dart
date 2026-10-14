@@ -130,12 +130,11 @@ class InferenceWindowDriver {
     _timer = null;
 
     final windowSamples = sampleRate * windowDurationSeconds;
-    final buffered =
-        useBufferedAudio
-            ? (ringBuffer.available < windowSamples
-                ? ringBuffer.available
-                : windowSamples)
-            : 0;
+    final buffered = useBufferedAudio
+        ? (ringBuffer.available < windowSamples
+              ? ringBuffer.available
+              : windowSamples)
+        : 0;
     _sampleBase = ringBuffer.totalWritten - buffered;
     _ringBufferResetGeneration = ringBuffer.resetGeneration;
     _resetBacklogTracking();

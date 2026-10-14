@@ -173,10 +173,9 @@ class OnnxConfig {
 
   factory OnnxConfig.fromJson(Map<String, dynamic> json) {
     final rawOutputs = json['outputNames'];
-    final outputNames =
-        rawOutputs is Map
-            ? rawOutputs.map((k, v) => MapEntry(k.toString(), v.toString()))
-            : const {'predictions': 'predictions'};
+    final outputNames = rawOutputs is Map
+        ? rawOutputs.map((k, v) => MapEntry(k.toString(), v.toString()))
+        : const {'predictions': 'predictions'};
 
     return OnnxConfig(
       modelFile: json['modelFile'] as String,
@@ -235,10 +234,9 @@ class LabelsConfig {
 
   factory LabelsConfig.fromJson(Map<String, dynamic> json) {
     final rawCols = json['columns'];
-    final columns =
-        rawCols is Map
-            ? rawCols.map((k, v) => MapEntry(k.toString(), v.toString()))
-            : const <String, String>{'scientificName': 'sci_name'};
+    final columns = rawCols is Map
+        ? rawCols.map((k, v) => MapEntry(k.toString(), v.toString()))
+        : const <String, String>{'scientificName': 'sci_name'};
 
     return LabelsConfig(
       file: json['file'] as String,
@@ -293,16 +291,14 @@ class InferenceDefaults {
 
   factory InferenceDefaults.fromJson(Map<String, dynamic> json) {
     final rawWindows = json['supportedWindowSeconds'];
-    final windows =
-        rawWindows is List
-            ? rawWindows.map((e) => (e as num).toInt()).toList()
-            : const [3];
+    final windows = rawWindows is List
+        ? rawWindows.map((e) => (e as num).toInt()).toList()
+        : const [3];
 
     final rawPooling = json['temporalPooling'];
-    final pooling =
-        rawPooling is Map<String, dynamic>
-            ? TemporalPoolingConfig.fromJson(rawPooling)
-            : const TemporalPoolingConfig();
+    final pooling = rawPooling is Map<String, dynamic>
+        ? TemporalPoolingConfig.fromJson(rawPooling)
+        : const TemporalPoolingConfig();
 
     return InferenceDefaults(
       supportedWindowSeconds: windows,

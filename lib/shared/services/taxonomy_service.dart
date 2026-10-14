@@ -200,11 +200,10 @@ class TaxonomyService {
     if (trimmed.isEmpty) return const [];
 
     final normalizedQuery = trimmed.toLowerCase();
-    final tokens =
-        normalizedQuery
-            .split(RegExp(r'\s+'))
-            .where((t) => t.isNotEmpty)
-            .toList();
+    final tokens = normalizedQuery
+        .split(RegExp(r'\s+'))
+        .where((t) => t.isNotEmpty)
+        .toList();
     if (tokens.isEmpty) return const [];
 
     final matches = <({bool exact, String name, TaxonomySpecies species})>[];

@@ -51,11 +51,10 @@ class SpeciesInfoOverlay {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder:
-          (_) => _SpeciesInfoSheet(
-            scientificName: scientificName,
-            commonName: commonName,
-          ),
+      builder: (_) => _SpeciesInfoSheet(
+        scientificName: scientificName,
+        commonName: commonName,
+      ),
     );
   }
 }
@@ -170,11 +169,10 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                       _detail?.assetImagePath ??
                           'assets/images/dummy_species.png',
                       fit: BoxFit.contain,
-                      errorBuilder:
-                          (a, b, c) => Image.asset(
-                            'assets/images/dummy_species.png',
-                            fit: BoxFit.contain,
-                          ),
+                      errorBuilder: (a, b, c) => Image.asset(
+                        'assets/images/dummy_species.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     if (ref
                         .watch(detectedSpeciesSetProvider)
@@ -196,10 +194,9 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                     '${l10n.speciesPhotoCreditLabel}: ${_detail!.imageAuthor}'
                     '${_detail!.imageSource != null ? ' — ${_detail!.imageSource}' : ''}',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          highContrast
-                              ? theme.colorScheme.onSurface
-                              : theme.colorScheme.onSurface.withAlpha(100),
+                      color: highContrast
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onSurface.withAlpha(100),
                     ),
                   ),
                 ),
@@ -219,17 +216,15 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child:
-                    ref.watch(showSciNamesProvider)
-                        ? Text(
-                          _detail?.displayScientificName ??
-                              widget.scientificName,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: theme.colorScheme.onSurface.withAlpha(170),
-                          ),
-                        )
-                        : const SizedBox.shrink(),
+                child: ref.watch(showSciNamesProvider)
+                    ? Text(
+                        _detail?.displayScientificName ?? widget.scientificName,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: theme.colorScheme.onSurface.withAlpha(170),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ),
 
               // ── Listen on eBird ─────────────────────────────────
@@ -247,11 +242,8 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: FilledButton.tonalIcon(
-                      onPressed:
-                          () => openExternalUrl(
-                            context,
-                            _detail!.ebirdListenUrl!,
-                          ),
+                      onPressed: () =>
+                          openExternalUrl(context, _detail!.ebirdListenUrl!),
                       icon: const Icon(AppIcons.volumeUpRounded),
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -517,14 +509,12 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
         // Use the distribution-adaptive tier from the explore list so the
         // overlay label and color match the compact card chip.
         final tier = match.isNotEmpty ? match.first.tier : null;
-        final category =
-            tier != null
-                ? exploreTierLabel(l10n, tier)
-                : _localizedProbabilityCategory(l10n, currentScore);
-        final categoryColor =
-            tier != null
-                ? exploreTierColor(ScoreColors.of(context), tier)
-                : probabilityCategoryColor(context, currentScore);
+        final category = tier != null
+            ? exploreTierLabel(l10n, tier)
+            : _localizedProbabilityCategory(l10n, currentScore);
+        final categoryColor = tier != null
+            ? exploreTierColor(ScoreColors.of(context), tier)
+            : probabilityCategoryColor(context, currentScore);
 
         // Normalize to 100 (= the #1 species peak from the provider).
         const maxProb = 100.0;
@@ -568,10 +558,9 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
               child: Text(
                 l10n.speciesExpectedFrequencySubtitle,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color:
-                      highContrast
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurface.withAlpha(180),
+                  color: highContrast
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onSurface.withAlpha(180),
                 ),
               ),
             ),
@@ -587,16 +576,14 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                     final normalized = (score / maxProb).clamp(0.0, 1.0);
                     final isCurrentWeek = index == currentWeekIndex;
 
-                    final barHeight =
-                        score > 0 || isCurrentWeek
-                            ? (normalized * 80).clamp(2.0, 80.0)
-                            : 0.0;
+                    final barHeight = score > 0 || isCurrentWeek
+                        ? (normalized * 80).clamp(2.0, 80.0)
+                        : 0.0;
 
                     final baseColor = theme.colorScheme.primary;
-                    final activeColor =
-                        highContrast
-                            ? theme.colorScheme.surface
-                            : theme.colorScheme.tertiary;
+                    final activeColor = highContrast
+                        ? theme.colorScheme.surface
+                        : theme.colorScheme.tertiary;
 
                     return Expanded(
                       child: Center(
@@ -604,25 +591,23 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
                           margin: const EdgeInsets.symmetric(horizontal: 0.5),
                           height: barHeight,
                           decoration: BoxDecoration(
-                            color:
-                                isCurrentWeek
-                                    ? activeColor
-                                    : highContrast
-                                    ? baseColor
-                                    : baseColor.withAlpha(
-                                      (50 + (normalized * 150)).toInt().clamp(
-                                        0,
-                                        255,
-                                      ),
+                            color: isCurrentWeek
+                                ? activeColor
+                                : highContrast
+                                ? baseColor
+                                : baseColor.withAlpha(
+                                    (50 + (normalized * 150)).toInt().clamp(
+                                      0,
+                                      255,
                                     ),
+                                  ),
                             borderRadius: BorderRadius.circular(2),
-                            border:
-                                isCurrentWeek
-                                    ? Border.all(
-                                      color: theme.colorScheme.onSurface,
-                                      width: 1.5,
-                                    )
-                                    : null,
+                            border: isCurrentWeek
+                                ? Border.all(
+                                    color: theme.colorScheme.onSurface,
+                                    width: 1.5,
+                                  )
+                                : null,
                           ),
                         ),
                       ),
@@ -663,16 +648,14 @@ class _WeeklyProbabilityChart extends ConsumerWidget {
           ],
         );
       },
-      loading:
-          () => const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-      error:
-          (a, b) => Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(child: Text(l10n.speciesChartLoadFailed)),
-          ),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      ),
+      error: (a, b) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(child: Text(l10n.speciesChartLoadFailed)),
+      ),
     );
   }
 }
@@ -768,23 +751,22 @@ class _DetectionStatsTile extends ConsumerWidget {
 
         if (totalDetections == 0) return const SizedBox.shrink();
 
-        final lastSeenText =
-            lastSeen != null ? _formatLastSeen(context, lastSeen) : '—';
+        final lastSeenText = lastSeen != null
+            ? _formatLastSeen(context, lastSeen)
+            : '—';
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color:
-                  highContrast
-                      ? Colors.white
-                      : theme.colorScheme.primaryContainer.withAlpha(120),
+              color: highContrast
+                  ? Colors.white
+                  : theme.colorScheme.primaryContainer.withAlpha(120),
               borderRadius: BorderRadius.circular(10),
-              border:
-                  highContrast
-                      ? Border.all(color: Colors.black, width: 1.5)
-                      : null,
+              border: highContrast
+                  ? Border.all(color: Colors.black, width: 1.5)
+                  : null,
             ),
             child: Row(
               children: [
@@ -794,8 +776,9 @@ class _DetectionStatsTile extends ConsumerWidget {
                   // Black keeps maximum contrast against the white
                   // high-contrast panel; normal themes use the vibrant
                   // brand-blue primary.
-                  color:
-                      highContrast ? Colors.black : theme.colorScheme.primary,
+                  color: highContrast
+                      ? Colors.black
+                      : theme.colorScheme.primary,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -816,10 +799,9 @@ class _DetectionStatsTile extends ConsumerWidget {
                       Text(
                         l10n.speciesLastSeen(lastSeenText),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color:
-                              highContrast
-                                  ? Colors.black
-                                  : theme.colorScheme.onSurface.withAlpha(170),
+                          color: highContrast
+                              ? Colors.black
+                              : theme.colorScheme.onSurface.withAlpha(170),
                         ),
                       ),
                     ],
@@ -835,9 +817,10 @@ class _DetectionStatsTile extends ConsumerWidget {
 
   static String _formatLastSeen(BuildContext context, DateTime dt) {
     final locale = Localizations.localeOf(context).toString();
-    return MaterialLocalizations.of(
-          context,
-        ).formatMediumDate(dt.toLocal()).toString().isNotEmpty
+    return MaterialLocalizations.of(context)
+            .formatMediumDate(dt.toLocal())
+            .toString()
+            .isNotEmpty
         // Fall through to a stable yyyy-MM-dd if the platform localization
         // is unavailable for the active locale (rare on supported devices).
         ? MaterialLocalizations.of(context).formatMediumDate(dt.toLocal())
