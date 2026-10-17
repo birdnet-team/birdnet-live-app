@@ -166,23 +166,20 @@ Future<void> main() async {
       );
     });
 
-    test(
-      'uses locale-preferred time without seconds when platform 24-hour preference is false',
-      () {
-        final start = DateTime(2026, 5, 6, 8, 0, 0);
-        final ts = DateTime(2026, 5, 6, 15, 42, 17);
-        expect(
-          formatDetectionTime(
-            ts,
-            start,
-            TimestampDisplayMode.absolute,
-            showSeconds: false,
-            localeName: 'de',
-          ),
-          '15:42',
-        );
-      },
-    );
+    test('uses locale-preferred time without seconds when platform 24-hour preference is false', () {
+      final start = DateTime(2026, 5, 6, 8, 0, 0);
+      final ts = DateTime(2026, 5, 6, 15, 42, 17);
+      expect(
+        formatDetectionTime(
+          ts,
+          start,
+          TimestampDisplayMode.absolute,
+          showSeconds: false,
+          localeName: 'de',
+        ),
+        '15:42',
+      );
+    });
 
     test('platform 24-hour preference applies without seconds', () {
       final start = DateTime(2026, 5, 6, 8, 0, 0);

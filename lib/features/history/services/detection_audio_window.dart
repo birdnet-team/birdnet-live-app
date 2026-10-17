@@ -39,23 +39,24 @@ DetectionAudioWindow detectionAudioWindow(
   // [DetectionRecord.clipTimestamp] predate peak-following clips and were
   // cut on arrival, so the detection start is their correct anchor.
   final clipWindowStart = detection.clipTimestamp;
-  final clipAnchor =
-      clipWindowStart == null
-          ? start
-          : session.absoluteToRelative(clipWindowStart);
+  final clipAnchor = clipWindowStart == null
+      ? start
+      : session.absoluteToRelative(clipWindowStart);
   // A per-detection clip has always held exactly one analysis window plus its
   // padding, including legacy clips without a peak timestamp. Full-recording
   // extraction still uses the complete detection span.
   final hasDetectionClip =
       referencesDetectionClip ?? (detection.audioClipPath ?? '').isNotEmpty;
-  final clipWindowDuration =
-      hasDetectionClip ? session.settings.windowDuration.toDouble() : duration;
+  final clipWindowDuration = hasDetectionClip
+      ? session.settings.windowDuration.toDouble()
+      : duration;
 
   final clipStart = math.max(0.0, clipAnchor - context);
   // Detection clip files keep their zero-padded pre-roll even when the
   // analysis window begins at the session boundary.
-  final detectionStartInClip =
-      hasDetectionClip ? context : clipAnchor - clipStart;
+  final detectionStartInClip = hasDetectionClip
+      ? context
+      : clipAnchor - clipStart;
   return DetectionAudioWindow(
     detectionStartSec: start,
     detectionDurationSec: duration,

@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:birdnet_live/core/theme/app_semantic_colors.dart';
 import 'package:birdnet_live/core/theme/score_colors.dart';
+
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../audio/audio_capture_service.dart';
@@ -23,6 +24,7 @@ import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
 import '../settings/settings_screen.dart';
+import '../spectrogram/spectrogram_size.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'aru_controller.dart';
 import 'aru_providers.dart';
@@ -41,18 +43,27 @@ class AruActiveScreen extends ConsumerStatefulWidget {
 
 class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+  late TabController _tabController;
+
+  /// Tabs currently shown, in display order; the spectrogram tab follows the
+  /// spectrogram size setting.
+  late List<_AruTab> _tabs;
   late final AruRunner _runner;
   bool _stopping = false;
   bool _stopDialogShowing = false;
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
-    });
+    _tabs = _AruTab.visible(
+      showSpectrogram: ref.read(spectrogramSizeProvider).isVisible,
+    );
+    _tabController = _createTabController(_tabs.length);
     _runner = ref.read(aruRunnerProvider);
     _runner.onFinished = _onRunnerFinished;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,6 +89,41 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     super.dispose();
   }
 
+  TabController _createTabController(int length, {int initialIndex = 0}) {
+    return TabController(
+      length: length,
+      initialIndex: initialIndex,
+      vsync: this,
+    )..addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  _AruTab get _currentTab => _tabs[_tabController.index];
+
+  /// Swaps the tab controller when the spectrogram size setting adds or
+  /// removes the spectrogram tab, keeping the selected tab where it still
+  /// exists.
+  void _syncTabs(bool showSpectrogram) {
+    final tabs = _AruTab.visible(showSpectrogram: showSpectrogram);
+    if (tabs.length == _tabs.length) return;
+    final previous = _tabController;
+    final selected = tabs.indexOf(_currentTab);
+    setState(() {
+      _tabs = tabs;
+      _tabController = _createTabController(
+        tabs.length,
+        initialIndex: selected < 0 ? 0 : selected,
+      );
+    });
+    previous.removeListener(_onTabChanged);
+    // TabBar and TabBarView detach from the old controller on their next
+    // build; dispose it only once that frame is done.
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+  }
+
   void _onRunnerFinished(AruFinishResult result) {
     if (!mounted) return;
     setState(() => _stopping = false);
@@ -86,9 +132,8 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(
-              context,
-            )!.sessionAutoStopLowBattery(result.batteryLevel!),
+            AppLocalizations.of(context)!
+                .sessionAutoStopLowBattery(result.batteryLevel!),
           ),
           duration: const Duration(seconds: 3),
         ),
@@ -152,24 +197,23 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.helpAruTitle,
-            sections: [
-              AppHelpSection(
-                icon: AppIcons.scheduleRounded,
-                body: l10n.helpAruBody,
-              ),
-              AppHelpSection(
-                icon: AppIcons.infoOutline,
-                body: l10n.aruHelpStatusIcons,
-              ),
-              AppHelpSection(
-                icon: AppIcons.graphicEqRounded,
-                body: l10n.aruSetupHelpBody,
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.helpAruTitle,
+        sections: [
+          AppHelpSection(
+            icon: AppIcons.scheduleRounded,
+            body: l10n.helpAruBody,
           ),
+          AppHelpSection(
+            icon: AppIcons.infoOutline,
+            body: l10n.aruHelpStatusIcons,
+          ),
+          AppHelpSection(
+            icon: AppIcons.graphicEqRounded,
+            body: l10n.aruSetupHelpBody,
+          ),
+        ],
+      ),
     );
   }
 
@@ -189,7 +233,7 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
     final spectrogramActive =
         isRecording &&
         captureState == CaptureState.capturing &&
-        _tabController.index == 1;
+        _currentTab == _AruTab.spectrogram;
 
     // Keep the background runner's notification text localized to the
     // current locale / clock format.
@@ -198,6 +242,9 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       use24Hour: MediaQuery.of(context).alwaysUse24HourFormat,
     );
 
+    ref.listen<SpectrogramSize>(spectrogramSizeProvider, (_, next) {
+      _syncTabs(next.isVisible);
+    });
     ref.listen<int>(confidenceThresholdProvider, (_, next) {
       ref.read(liveControllerProvider).setConfidenceThreshold(next);
     });
@@ -244,18 +291,17 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       child: Scaffold(
         body: SafeArea(
           bottom: false,
-          child:
-              session == null
-                  ? Center(child: Text(l10n.aruNoActiveDeployment))
-                  : _buildBody(
-                    context,
-                    theme: theme,
-                    l10n: l10n,
-                    state: state,
-                    session: session,
-                    ringBuffer: ringBuffer,
-                    spectrogramActive: spectrogramActive,
-                  ),
+          child: session == null
+              ? Center(child: Text(l10n.aruNoActiveDeployment))
+              : _buildBody(
+                  context,
+                  theme: theme,
+                  l10n: l10n,
+                  state: state,
+                  session: session,
+                  ringBuffer: ringBuffer,
+                  spectrogramActive: spectrogramActive,
+                ),
         ),
       ),
     );
@@ -272,10 +318,10 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
   }) {
     final isRecording = state == AruControllerState.recording;
     final visibleDetections = _visibleDetections(session, state);
-    final showDetectionPane =
-        _tabController.index == 0 || _tabController.index == 1;
+    final showDetectionPane = _currentTab.showsDetectionPane;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
 
     final statusBar = _AruStatusBar(
       state: state,
@@ -289,32 +335,42 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       indicatorWeight: 2,
       labelStyle: theme.textTheme.labelSmall,
       tabs: [
-        Tab(
-          icon: const Icon(AppIcons.infoOutline, size: 18),
-          text: l10n.aruTabStatus,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.graphicEq, size: 18),
-          text: l10n.aruTabSpectrogram,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.scheduleRounded, size: 18),
-          text: l10n.aruTabSchedule,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.summaryChart, size: 18),
-          text: l10n.aruTabSummary,
-        ),
+        for (final tab in _tabs)
+          switch (tab) {
+            _AruTab.status => Tab(
+              icon: const Icon(AppIcons.infoOutline, size: 18),
+              text: l10n.aruTabStatus,
+            ),
+            _AruTab.spectrogram => Tab(
+              icon: const Icon(AppIcons.graphicEq, size: 18),
+              text: l10n.aruTabSpectrogram,
+            ),
+            _AruTab.schedule => Tab(
+              icon: const Icon(AppIcons.scheduleRounded, size: 18),
+              text: l10n.aruTabSchedule,
+            ),
+            _AruTab.summary => Tab(
+              icon: const Icon(AppIcons.summaryChart, size: 18),
+              text: l10n.aruTabSummary,
+            ),
+          },
       ],
     );
     final tabContent = TabBarView(
       controller: _tabController,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        _StatusPanel(session: session, state: state),
-        _SpectrogramPanel(isActive: spectrogramActive, state: state),
-        _SchedulePanel(session: session),
-        _SummaryPanel(session: session),
+        for (final tab in _tabs)
+          switch (tab) {
+            _AruTab.status => _StatusPanel(session: session, state: state),
+            _AruTab.spectrogram => _SpectrogramPanel(
+              key: _spectrogramKey,
+              isActive: spectrogramActive,
+              state: state,
+            ),
+            _AruTab.schedule => _SchedulePanel(session: session),
+            _AruTab.summary => _SummaryPanel(session: session),
+          },
       ],
     );
     final statsBar = _AruStatsBar(session: session, state: state);
@@ -333,7 +389,15 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       ),
     );
 
+    // The spectrogram size only applies while the spectrogram tab is shown.
+    final paneSize = _currentTab == _AruTab.spectrogram
+        ? spectrogramSize
+        : SpectrogramSize.full;
+
     if (isLandscape && showDetectionPane) {
+      // A smaller spectrogram is shortened within its column; the space
+      // below is left empty for now.
+      final columnFlex = paneSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -342,7 +406,12 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
               children: [
                 Expanded(
                   child: Column(
-                    children: [tabBar, Expanded(child: tabContent), statsBar],
+                    children: [
+                      tabBar,
+                      Expanded(flex: columnFlex.spectrogram, child: tabContent),
+                      statsBar,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
+                    ],
                   ),
                 ),
                 Expanded(child: detectionPane),
@@ -353,14 +422,21 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
       );
     }
 
+    // Portrait, or a full-page tab in landscape: vertical stack. On the
+    // spectrogram tab a smaller spectrogram hands the height it gives up to
+    // the detection list.
+    final flex = paneSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: showDetectionPane ? 2 : 1, child: tabContent),
+        Expanded(
+          flex: showDetectionPane ? flex.spectrogram : 1,
+          child: tabContent,
+        ),
         if (showDetectionPane) ...[
           statsBar,
-          Expanded(flex: 3, child: detectionPane),
+          Expanded(flex: flex.other, child: detectionPane),
         ],
       ],
     );
@@ -437,12 +513,11 @@ class _AruStatusBarState extends State<_AruStatusBar> {
       AruControllerState.completed => l10n.aruActiveCompleted,
       _ => l10n.aruStatusWaiting,
     };
-    final detail =
-        current != null
-            ? _formatDuration(current.end.difference(now))
-            : next != null
-            ? _formatDuration(next.start.difference(now))
-            : _formatDuration(widget.session.duration);
+    final detail = current != null
+        ? _formatDuration(current.end.difference(now))
+        : next != null
+        ? _formatDuration(next.start.difference(now))
+        : _formatDuration(widget.session.duration);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 2),
@@ -455,8 +530,9 @@ class _AruStatusBarState extends State<_AruStatusBar> {
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-            onPressed:
-                _isActive ? widget.onStop : () => Navigator.of(context).pop(),
+            onPressed: _isActive
+                ? widget.onStop
+                : () => Navigator.of(context).pop(),
             tooltip: _isActive ? l10n.aruStopDeployment : l10n.tooltipBack,
             color: _isActive ? theme.colorScheme.error : null,
           ),
@@ -470,10 +546,9 @@ class _AruStatusBarState extends State<_AruStatusBar> {
                         ? AppIcons.fiberManualRecordRounded
                         : AppIcons.scheduleRounded,
                     size: 18,
-                    color:
-                        widget.state == AruControllerState.recording
-                            ? AppSemanticColors.of(context).sessionAru
-                            : theme.colorScheme.onSurfaceVariant,
+                    color: widget.state == AruControllerState.recording
+                        ? AppSemanticColors.of(context).sessionAru
+                        : theme.colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 6),
                   Flexible(
@@ -483,10 +558,9 @@ class _AruStatusBarState extends State<_AruStatusBar> {
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         fontFamily: 'monospace',
-                        color:
-                            widget.state == AruControllerState.recording
-                                ? AppSemanticColors.of(context).sessionAru
-                                : theme.colorScheme.onSurfaceVariant,
+                        color: widget.state == AruControllerState.recording
+                            ? AppSemanticColors.of(context).sessionAru
+                            : theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -516,10 +590,9 @@ class _AruStatusBarState extends State<_AruStatusBar> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder:
-                      (_) => const SettingsScreen(
-                        settingsContext: SettingsContext.aru,
-                      ),
+                  builder: (_) => const SettingsScreen(
+                    settingsContext: SettingsContext.aru,
+                  ),
                 ),
               );
             },
@@ -670,14 +743,13 @@ class _AudioLevelChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final filledBars =
-        isActive
-            ? switch (quality) {
-              _AudioQuality.good => 3,
-              _AudioQuality.marginal => 2,
-              _AudioQuality.bad => 1,
-            }
-            : 0;
+    final filledBars = isActive
+        ? switch (quality) {
+            _AudioQuality.good => 3,
+            _AudioQuality.marginal => 2,
+            _AudioQuality.bad => 1,
+          }
+        : 0;
     final muted = theme.colorScheme.onSurface.withAlpha(40);
     final activeColor = isActive ? color : muted;
     return Row(
@@ -717,10 +789,9 @@ class _StatusPanel extends StatelessWidget {
     final elapsed = (session.endTime ?? now).difference(session.startTime);
     final completed = _completedCycleCount(session);
     final totalCycles = _estimatedCycleCount(metadata);
-    final progress =
-        totalCycles == null || totalCycles == 0
-            ? null
-            : (completed / totalCycles).clamp(0.0, 1.0);
+    final progress = totalCycles == null || totalCycles == 0
+        ? null
+        : (completed / totalCycles).clamp(0.0, 1.0);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -734,10 +805,9 @@ class _StatusPanel extends StatelessWidget {
         const SizedBox(height: 8),
         _StatusProgressBlock(
           label: l10n.aruCycleProgress,
-          value:
-              totalCycles == null
-                  ? '$completed / ${l10n.aruScheduleNoLimit}'
-                  : '$completed / $totalCycles',
+          value: totalCycles == null
+              ? '$completed / ${l10n.aruScheduleNoLimit}'
+              : '$completed / $totalCycles',
           progress: progress,
         ),
         const SizedBox(height: 8),
@@ -755,10 +825,9 @@ class _StatusPanel extends StatelessWidget {
                   width: width,
                   icon: AppIcons.scheduleRounded,
                   label: l10n.aruNextIn,
-                  value:
-                      nextWindow == null
-                          ? l10n.aruActiveCompleted
-                          : _formatDuration(nextWindow.start.difference(now)),
+                  value: nextWindow == null
+                      ? l10n.aruActiveCompleted
+                      : _formatDuration(nextWindow.start.difference(now)),
                 ),
                 _StatusMetricTile(
                   width: width,
@@ -911,10 +980,9 @@ class _SchedulePanel extends StatelessWidget {
     final theme = Theme.of(context);
     final alwaysUse24HourFormat = MediaQuery.of(context).alwaysUse24HourFormat;
     final metadata = session.aruMetadata;
-    final schedule =
-        metadata == null
-            ? null
-            : AruScheduleCalculator(metadata.toScheduleConfig());
+    final schedule = metadata == null
+        ? null
+        : AruScheduleCalculator(metadata.toScheduleConfig());
     final now = DateTime.now();
     final windows = schedule?.nextWindows(now, count: 10) ?? const [];
 
@@ -937,19 +1005,18 @@ class _SchedulePanel extends StatelessWidget {
                 window.contains(now)
                     ? AppIcons.fiberManualRecordRounded
                     : AppIcons.scheduleRounded,
-                color:
-                    window.contains(now)
-                        ? AppSemanticColors.of(context).sessionAru
-                        : theme.colorScheme.onSurfaceVariant,
+                color: window.contains(now)
+                    ? AppSemanticColors.of(context).sessionAru
+                    : theme.colorScheme.onSurfaceVariant,
               ),
               title: Text(
                 _isTestWindow(session, window)
                     ? l10n.aruTestRun
                     : formatLocaleDateTime(
-                      window.start,
-                      l10n.localeName,
-                      alwaysUse24HourFormat: alwaysUse24HourFormat,
-                    ),
+                        window.start,
+                        l10n.localeName,
+                        alwaysUse24HourFormat: alwaysUse24HourFormat,
+                      ),
               ),
               subtitle: Text(
                 _windowLabel(
@@ -987,26 +1054,22 @@ class _ScheduleFocusCard extends StatelessWidget {
         currentWindow != null && _isTestWindow(session, currentWindow!);
     final nextIsTest =
         nextWindow != null && _isTestWindow(session, nextWindow!);
-    final icon =
-        isRecording
-            ? AppIcons.fiberManualRecordRounded
-            : AppIcons.scheduleRounded;
-    final color =
-        isRecording
-            ? AppSemanticColors.of(context).sessionAru
-            : theme.colorScheme.onSurfaceVariant;
-    final title =
-        currentIsTest || nextIsTest
-            ? l10n.aruTestRun
-            : isRecording
-            ? l10n.aruActiveRecording
-            : l10n.aruActiveWaiting;
-    final body =
-        currentWindow != null
-            ? '${_windowLabel(l10n.localeName, currentWindow!, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(currentWindow!.end.difference(DateTime.now())))}'
-            : nextWindow != null
-            ? '${formatLocaleDateTime(nextWindow!.start, l10n.localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(nextWindow!.start.difference(DateTime.now())))}'
-            : l10n.aruActiveCompleted;
+    final icon = isRecording
+        ? AppIcons.fiberManualRecordRounded
+        : AppIcons.scheduleRounded;
+    final color = isRecording
+        ? AppSemanticColors.of(context).sessionAru
+        : theme.colorScheme.onSurfaceVariant;
+    final title = currentIsTest || nextIsTest
+        ? l10n.aruTestRun
+        : isRecording
+        ? l10n.aruActiveRecording
+        : l10n.aruActiveWaiting;
+    final body = currentWindow != null
+        ? '${_windowLabel(l10n.localeName, currentWindow!, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(currentWindow!.end.difference(DateTime.now())))}'
+        : nextWindow != null
+        ? '${formatLocaleDateTime(nextWindow!.start, l10n.localeName, alwaysUse24HourFormat: alwaysUse24HourFormat)} - ${l10n.fileAnalysisEtaRemaining(_formatDuration(nextWindow!.start.difference(DateTime.now())))}'
+        : l10n.aruActiveCompleted;
 
     return Card(
       child: Padding(
@@ -1032,8 +1095,32 @@ class _ScheduleFocusCard extends StatelessWidget {
   }
 }
 
+/// Tabs of the ARU session pane, in display order.
+enum _AruTab {
+  status,
+  spectrogram,
+  schedule,
+  summary;
+
+  /// The tabs to show; the spectrogram tab follows the spectrogram size
+  /// setting.
+  static List<_AruTab> visible({required bool showSpectrogram}) => [
+    status,
+    if (showSpectrogram) spectrogram,
+    schedule,
+    summary,
+  ];
+
+  /// Tabs that share the screen with the detection list.
+  bool get showsDetectionPane => this == status || this == spectrogram;
+}
+
 class _SpectrogramPanel extends ConsumerWidget {
-  const _SpectrogramPanel({required this.isActive, required this.state});
+  const _SpectrogramPanel({
+    super.key,
+    required this.isActive,
+    required this.state,
+  });
 
   final bool isActive;
   final AruControllerState state;
@@ -1144,11 +1231,10 @@ class _SummaryPanelState extends ConsumerState<_SummaryPanel> {
     );
     final species = _speciesSummary(session.detections);
     final completed = _completedCycleCount(session);
-    final rate =
-        elapsed.inSeconds > 0
-            ? (session.detections.length / elapsed.inMinutes.clamp(1, 999999))
-                .toStringAsFixed(1)
-            : '0';
+    final rate = elapsed.inSeconds > 0
+        ? (session.detections.length / elapsed.inMinutes.clamp(1, 999999))
+              .toStringAsFixed(1)
+        : '0';
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1352,9 +1438,8 @@ class _SummaryChip extends StatelessWidget {
 AruScheduleSnapshot? _scheduleSnapshot(LiveSession session) {
   final metadata = session.aruMetadata;
   if (metadata == null) return null;
-  return AruScheduleCalculator(
-    metadata.toScheduleConfig(),
-  ).snapshotAt(DateTime.now());
+  return AruScheduleCalculator(metadata.toScheduleConfig())
+      .snapshotAt(DateTime.now());
 }
 
 List<DetectionRecord> _visibleDetections(

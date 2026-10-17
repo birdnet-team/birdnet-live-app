@@ -54,10 +54,9 @@ void main() {
 
         expect(starts, [0, 32000 * 3, 32000 * 6]);
       },
-      skip:
-          fixture.existsSync()
-              ? false
-              : 'Optional large FLAC fixture not found at $fixturePath',
+      skip: fixture.existsSync()
+          ? false
+          : 'Optional large FLAC fixture not found at $fixturePath',
       timeout: const Timeout(Duration(minutes: 2)),
     );
   });

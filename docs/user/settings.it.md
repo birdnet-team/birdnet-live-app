@@ -157,6 +157,10 @@ supporto.
 
 ## Spettrogramma
 
+### Dimensione
+
+Imposta quanto spazio dello schermo occupa lo spettrogramma in tempo reale in Live Mode, Point Count, Survey e ARU. **Intera** è l'altezza abituale. **Media** e **Piccola** la riducono al 75% e al 50% e cedono la differenza all'elenco dei rilevamenti: la scelta giusta quando sul telefono in verticale guardi soprattutto l'elenco. **Disattivato** rimuove del tutto lo spettrogramma; in Survey e ARU scompare anche la scheda dello spettrogramma. In orizzontale **Media** e **Piccola** accorciano lo spettrogramma nella sua metà dello schermo (lo spazio sotto resta vuoto per ora), e **Disattivato** lascia tutto lo schermo all'elenco dei rilevamenti. Gli spettrogrammi delle sessioni salvate e della riproduzione non sono interessati.
+
 ### Dimensione FFT
 
 Controlla la risoluzione in frequenza dello spettrogramma.

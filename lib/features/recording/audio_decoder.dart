@@ -1010,8 +1010,9 @@ class AudioDecoder {
           'Only mono FLAC supported, got ${info.channels} channels',
         );
       }
-      final seekPoint =
-          fromSample > 0 ? seekIndex?.seekPointFor(fromSample) : null;
+      final seekPoint = fromSample > 0
+          ? seekIndex?.seekPointFor(fromSample)
+          : null;
       final reader = _StreamingBitReader(
         file: raf,
         fileLength: await raf.length(),
@@ -1222,6 +1223,7 @@ class AudioDecoder {
     _FlacStreamInfo info, {
     int? rangeStart,
     int? rangeCount,
+
     /// Absolute sample position of the frame [reader] is parked on. Non-zero
     /// only when a [FlacSeekIndex] let the caller skip forward, in which case
     /// the frames before it were never decoded and must still be accounted
@@ -1618,10 +1620,9 @@ class AudioDecoder {
       for (var j = 0; j < order; j++) {
         sum += coefficients[j] * samples[i - j - 1];
       }
-      final predicted =
-          quantizationShift >= 0
-              ? (sum >> quantizationShift)
-              : (sum << -quantizationShift);
+      final predicted = quantizationShift >= 0
+          ? (sum >> quantizationShift)
+          : (sum << -quantizationShift);
       samples[i] = (predicted + residuals[i - order]).clamp(-32768, 32767);
     }
 
@@ -1696,10 +1697,9 @@ class AudioDecoder {
     final residuals = <int>[];
 
     for (var p = 0; p < nPartitions; p++) {
-      final samplesInPartition =
-          p == 0
-              ? (blockSize >> partitionOrder) - predictorOrder
-              : (blockSize >> partitionOrder);
+      final samplesInPartition = p == 0
+          ? (blockSize >> partitionOrder) - predictorOrder
+          : (blockSize >> partitionOrder);
 
       final riceParam = reader.readBits(paramBits);
 
@@ -1721,8 +1721,9 @@ class AudioDecoder {
           final unsigned = (quotient << riceParam) | remainder;
 
           // Undo zigzag encoding.
-          final signed =
-              (unsigned & 1) == 0 ? unsigned >> 1 : -((unsigned >> 1) + 1);
+          final signed = (unsigned & 1) == 0
+              ? unsigned >> 1
+              : -((unsigned >> 1) + 1);
           residuals.add(signed);
         }
       }

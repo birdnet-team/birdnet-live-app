@@ -51,6 +51,7 @@ import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
+import '../spectrogram/spectrogram_size.dart';
 import '../spectrogram/spectrogram_widget.dart';
 import 'detection_sampler.dart';
 import 'alert_throttler.dart';
@@ -118,9 +119,18 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   Future<void>? _disposeReleaseFuture;
 
   StreamSubscription<bool>? _micContestedSub;
-  late final TabController _tabController;
+  late TabController _tabController;
+
+  /// Tabs currently shown, in display order; the spectrogram tab follows the
+  /// spectrogram size setting.
+  late List<_SurveyTab> _tabs;
   late final SurveyController _surveyController;
   late final CaptureStateNotifier _captureNotifier;
+
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
 
   @override
   void initState() {
@@ -129,10 +139,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       _quickListenSafetyOwner,
       QuickListenSessionOwner.survey,
     );
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(() {
-      if (mounted) setState(() {});
-    });
+    _tabs = _SurveyTab.visible(
+      showSpectrogram: ref.read(spectrogramSizeProvider).isVisible,
+    );
+    _tabController = _createTabController(_tabs.length);
     WidgetsBinding.instance.addObserver(this);
 
     _surveyController = ref.read(surveyControllerProvider);
@@ -958,6 +968,41 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     super.dispose();
   }
 
+  TabController _createTabController(int length, {int initialIndex = 0}) {
+    return TabController(
+      length: length,
+      initialIndex: initialIndex,
+      vsync: this,
+    )..addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  _SurveyTab get _currentTab => _tabs[_tabController.index];
+
+  /// Swaps the tab controller when the spectrogram size setting adds or
+  /// removes the spectrogram tab, keeping the selected tab where it still
+  /// exists.
+  void _syncTabs(bool showSpectrogram) {
+    final tabs = _SurveyTab.visible(showSpectrogram: showSpectrogram);
+    if (tabs.length == _tabs.length) return;
+    final previous = _tabController;
+    final selected = tabs.indexOf(_currentTab);
+    setState(() {
+      _tabs = tabs;
+      _tabController = _createTabController(
+        tabs.length,
+        initialIndex: selected < 0 ? 0 : selected,
+      );
+    });
+    previous.removeListener(_onTabChanged);
+    // TabBar and TabBarView detach from the old controller on their next
+    // build; dispose it only once that frame is done.
+    WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+  }
+
   @override
   Widget build(BuildContext context) {
     final surveyState = ref.watch(surveyStateProvider);
@@ -1016,6 +1061,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     ref.listen<double>(highPassFilterProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setHighPassCutoff(next);
     });
+    ref.listen<SpectrogramSize>(spectrogramSizeProvider, (_, next) {
+      _syncTabs(next.isVisible);
+    });
 
     return PopScope(
       canPop: false,
@@ -1065,6 +1113,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   }) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
 
     final statusBar = _SurveyStatusBar(
       isActive: isActive,
@@ -1074,73 +1123,87 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final tabBar = TabBar(
       controller: _tabController,
       tabs: [
-        Tab(icon: const Icon(AppIcons.map, size: 18), text: l10n.surveyTabMap),
-        Tab(
-          icon: const Icon(AppIcons.graphicEq, size: 18),
-          text: l10n.surveyTabSpectrogram,
-        ),
-        Tab(
-          icon: Icon(AppIcons.summaryChart, size: 18),
-          text: l10n.surveyTabSummary,
-        ),
-        Tab(
-          icon: const Icon(AppIcons.search, size: 18),
-          text: l10n.exploreTitle,
-        ),
+        for (final tab in _tabs)
+          switch (tab) {
+            _SurveyTab.map => Tab(
+              icon: const Icon(AppIcons.map, size: 18),
+              text: l10n.surveyTabMap,
+            ),
+            _SurveyTab.spectrogram => Tab(
+              icon: const Icon(AppIcons.graphicEq, size: 18),
+              text: l10n.surveyTabSpectrogram,
+            ),
+            _SurveyTab.summary => Tab(
+              icon: Icon(AppIcons.summaryChart, size: 18),
+              text: l10n.surveyTabSummary,
+            ),
+            _SurveyTab.explore => Tab(
+              icon: const Icon(AppIcons.search, size: 18),
+              text: l10n.exploreTitle,
+            ),
+          },
       ],
       labelPadding: const EdgeInsets.symmetric(horizontal: 8),
       indicatorWeight: 2,
       labelStyle: theme.textTheme.labelSmall,
     );
-    final tabContent = TabBarView(
-      controller: _tabController,
-      physics: const NeverScrollableScrollPhysics(),
+    final mapTab = Stack(
       children: [
-        Stack(
-          children: [
-            Positioned.fill(
-              child: SurveyMapWidget(
-                gpsTrack: controller.gpsTracker?.track ?? [],
-                detections: session?.detections ?? [],
-                initialCenter: _mapFallbackCenter,
-                // Tapping a marker that has a kept clip opens the same
-                // player sheet as the post-session map - so the live and
-                // review surfaces feel like one continuous experience.
-                onMarkerTap: (detection) => _openLiveClipPlayer(detection),
-              ),
-            ),
-            // Expand affordance mirroring Session Review's inline map: the
-            // minimized map keeps auto-following the current position, the
-            // fullscreen one hands panning and zooming to the user.
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Material(
-                color: theme.colorScheme.surface.withValues(alpha: 0.8),
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: _openFullscreenLiveMap,
-                  child: Tooltip(
-                    message: l10n.surveyMapFullscreen,
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(
-                        AppIcons.fullscreen,
-                        size: 20,
-                        color: theme.colorScheme.onSurface,
-                        semanticLabel: l10n.surveyMapFullscreen,
-                      ),
-                    ),
+        Positioned.fill(
+          child: SurveyMapWidget(
+            gpsTrack: controller.gpsTracker?.track ?? [],
+            detections: session?.detections ?? [],
+            initialCenter: _mapFallbackCenter,
+            // Tapping a marker that has a kept clip opens the same
+            // player sheet as the post-session map - so the live and
+            // review surfaces feel like one continuous experience.
+            onMarkerTap: (detection) => _openLiveClipPlayer(detection),
+          ),
+        ),
+        // Expand affordance mirroring Session Review's inline map: the
+        // minimized map keeps auto-following the current position, the
+        // fullscreen one hands panning and zooming to the user.
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: theme.colorScheme.surface.withValues(alpha: 0.8),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: _openFullscreenLiveMap,
+              child: Tooltip(
+                message: l10n.surveyMapFullscreen,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    AppIcons.fullscreen,
+                    size: 20,
+                    color: theme.colorScheme.onSurface,
+                    semanticLabel: l10n.surveyMapFullscreen,
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
-        _SurveySpectrogram(ringBuffer: ringBuffer, isActive: isActive),
-        _SurveySummaryTab(session: session),
-        const ExploreScreen(isEmbedded: true),
+      ],
+    );
+    final tabContent = TabBarView(
+      controller: _tabController,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        for (final tab in _tabs)
+          switch (tab) {
+            _SurveyTab.map => mapTab,
+            _SurveyTab.spectrogram => _SurveySpectrogram(
+              key: _spectrogramKey,
+              ringBuffer: ringBuffer,
+              isActive: isActive,
+            ),
+            _SurveyTab.summary => _SurveySummaryTab(session: session),
+            _SurveyTab.explore => const ExploreScreen(isEmbedded: true),
+          },
       ],
     );
     final statsBar = _LiveSurveyStatsBar(isActive: isActive);
@@ -1200,10 +1263,16 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       ),
     );
 
-    final showFullPageTab =
-        _tabController.index == 2 || _tabController.index == 3;
+    final showFullPageTab = _currentTab.isFullPage;
+    // The spectrogram size only applies while the spectrogram tab is shown.
+    final paneSize = _currentTab == _SurveyTab.spectrogram
+        ? spectrogramSize
+        : SpectrogramSize.full;
 
     if (isLandscape) {
+      // A smaller spectrogram is shortened within its column; the space
+      // below is left empty for now.
+      final columnFlex = paneSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -1216,8 +1285,9 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                   child: Column(
                     children: [
                       tabBar,
-                      Expanded(child: tabContent),
+                      Expanded(flex: columnFlex.spectrogram, child: tabContent),
                       if (!showFullPageTab) statsBar,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -1231,15 +1301,20 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       );
     }
 
-    // Portrait: original vertical stack.
+    // Portrait: original vertical stack. On the spectrogram tab a smaller
+    // spectrogram hands the height it gives up to the detection list.
+    final flex = paneSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         tabBar,
-        Expanded(flex: showFullPageTab ? 1 : 2, child: tabContent),
+        Expanded(
+          flex: showFullPageTab ? 1 : flex.spectrogram,
+          child: tabContent,
+        ),
         if (!showFullPageTab) ...[
           statsBar,
-          Expanded(flex: 3, child: detectionList),
+          Expanded(flex: flex.other, child: detectionList),
         ],
         const SizedBox(height: 16),
       ],
@@ -1590,12 +1665,36 @@ class _LiveSurveyStatsBarState extends ConsumerState<_LiveSurveyStatsBar> {
   }
 }
 
+/// Tabs of the live survey pane, in display order.
+enum _SurveyTab {
+  map,
+  spectrogram,
+  summary,
+  explore;
+
+  /// The tabs to show; the spectrogram tab follows the spectrogram size
+  /// setting.
+  static List<_SurveyTab> visible({required bool showSpectrogram}) => [
+    map,
+    if (showSpectrogram) spectrogram,
+    summary,
+    explore,
+  ];
+
+  /// Tabs that take the whole screen and hide the detection list.
+  bool get isFullPage => this == summary || this == explore;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Survey Spectrogram Tab
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _SurveySpectrogram extends ConsumerWidget {
-  const _SurveySpectrogram({required this.ringBuffer, required this.isActive});
+  const _SurveySpectrogram({
+    super.key,
+    required this.ringBuffer,
+    required this.isActive,
+  });
 
   final RingBuffer ringBuffer;
   final bool isActive;

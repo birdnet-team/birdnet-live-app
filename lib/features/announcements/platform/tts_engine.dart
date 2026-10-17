@@ -163,9 +163,7 @@ class PlatformTtsEngine implements TtsEngine {
     final guard = speakGuard(text, _rate ?? 1.0);
     try {
       // The native side settles this future when the utterance ends.
-      await _channel
-          .invokeMethod<bool>('speak', {'text': text})
-          .timeout(guard);
+      await _channel.invokeMethod<bool>('speak', {'text': text}).timeout(guard);
     } on TimeoutException {
       await stop();
     }
@@ -178,8 +176,8 @@ class PlatformTtsEngine implements TtsEngine {
   @visibleForTesting
   static Duration speakGuard(String text, double rate) {
     final rateMultiplier = rate.clamp(0.5, 1.5);
-    final estMs =
-        (text.length / (_charsPerSecond * rateMultiplier) * 1000).round();
+    final estMs = (text.length / (_charsPerSecond * rateMultiplier) * 1000)
+        .round();
     return Duration(milliseconds: estMs + 6000);
   }
 

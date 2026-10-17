@@ -9,6 +9,7 @@ import '../../core/constants/app_constants.dart';
 import '../../features/aru/aru_defaults.dart';
 import '../../features/inference/advanced_pooling_params.dart';
 import '../../features/inference/species_ignore_filter.dart';
+import '../../features/spectrogram/spectrogram_size.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_providers.dart';
 
@@ -384,6 +385,19 @@ final spectrogramQualityProvider =
         PrefKeys.spectrogramQuality,
         'medium',
       );
+    });
+
+/// Room the live scrolling spectrogram takes on a session screen
+/// (default [SpectrogramSize.full]).
+///
+/// Applies to Live Mode, Point Count, Survey, and ARU. [SpectrogramSize.off]
+/// leaves the spectrogram out of the layout entirely.
+final spectrogramSizeProvider =
+    StateNotifierProvider<SpectrogramSizeSettingNotifier, SpectrogramSize>((
+      ref,
+    ) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return SpectrogramSizeSettingNotifier(prefs);
     });
 
 // ---------------------------------------------------------------------------
@@ -1203,6 +1217,22 @@ class StringSettingNotifier extends StateNotifier<String> {
   Future<void> set(String value) async {
     state = value;
     await _prefs.setString(_key, value);
+  }
+}
+
+class SpectrogramSizeSettingNotifier extends StateNotifier<SpectrogramSize> {
+  SpectrogramSizeSettingNotifier(this._prefs)
+    : super(
+        SpectrogramSize.fromPrefValue(
+          _prefs.getString(PrefKeys.spectrogramSize),
+        ),
+      );
+
+  final SharedPreferences _prefs;
+
+  Future<void> set(SpectrogramSize value) async {
+    state = value;
+    await _prefs.setString(PrefKeys.spectrogramSize, value.prefValue);
   }
 }
 

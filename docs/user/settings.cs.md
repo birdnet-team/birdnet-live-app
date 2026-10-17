@@ -150,6 +150,10 @@ nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
 
+### Velikost
+
+Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
+
 ### Velikost FFT
 
 Řídí frekvenční rozlišení spektrogramu.

@@ -79,8 +79,9 @@ abstract final class SpeciesIgnoreFilter {
     if (ignoredScientificNames.isEmpty) return scores;
 
     final filtered = List<double>.of(scores);
-    final count =
-        filtered.length < labels.length ? filtered.length : labels.length;
+    final count = filtered.length < labels.length
+        ? filtered.length
+        : labels.length;
     for (var i = 0; i < count; i++) {
       if (ignoredScientificNames.contains(labels[i].scientificName)) {
         filtered[i] = 0.0;

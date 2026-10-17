@@ -115,6 +115,11 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   final Object _quickListenSafetyOwner = Object();
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   /// The long-lived Live controller, resolved once in [initState].
   ///
   /// `ref` is unusable from [dispose] — Riverpod throws, because the element is
@@ -856,12 +861,16 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         totalDuration: Duration(minutes: widget.durationMinutes),
       ),
     );
-    final spectrogram = Container(
-      color: theme.colorScheme.surfaceContainerLowest,
-      child: _PointCountSpectrogram(
-        isCapturing: isCapturing && !_spectrogramPaused,
-      ),
-    );
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
+    final spectrogram = spectrogramSize.isVisible
+        ? Container(
+            key: _spectrogramKey,
+            color: theme.colorScheme.surfaceContainerLowest,
+            child: _PointCountSpectrogram(
+              isCapturing: isCapturing && !_spectrogramPaused,
+            ),
+          )
+        : null;
     final sessionInfo = _PointCountInfoBar(
       currentDetectionCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
@@ -873,6 +882,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: DetectionList(
           detections: detections,
+          // Without a spectrogram the list spans the whole landscape width,
+          // so spread the tiles over two columns.
+          columns: isLandscape && spectrogram == null ? 2 : 1,
           isActive: isActive,
           activeDetections: activeDetections,
           speciesDetectionCounts: speciesDetectionCounts,
@@ -888,7 +900,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ),
     );
 
-    if (isLandscape) {
+    if (isLandscape && spectrogram != null) {
+      // A smaller size shortens the spectrogram within its column; the
+      // space below is left empty for now.
+      final columnFlex = spectrogramSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -900,8 +915,12 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
                   flex: 1,
                   child: Column(
                     children: [
-                      Expanded(child: spectrogram),
+                      Expanded(
+                        flex: columnFlex.spectrogram,
+                        child: spectrogram,
+                      ),
                       sessionInfo,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -914,13 +933,17 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       );
     }
 
+    // Portrait, or landscape without a spectrogram: vertical stack. A
+    // smaller spectrogram hands the height it gives up to the detection list.
+    final flex = spectrogramSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         progressBar,
-        Expanded(flex: 2, child: spectrogram),
+        if (spectrogram != null)
+          Expanded(flex: flex.spectrogram, child: spectrogram),
         sessionInfo,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: flex.other, child: detectionList),
         const SizedBox(height: 16),
       ],
     );

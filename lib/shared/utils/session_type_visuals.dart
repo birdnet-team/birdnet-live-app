@@ -62,19 +62,17 @@ SessionTypePalette sessionTypePalette(ThemeData theme, SessionType type) {
   final colorScheme = theme.colorScheme;
   final semantic = AppSemanticColors.fromTheme(theme);
   final accent = _accentForType(semantic, type);
-  final onAccent =
-      isBrandThemeColorScheme(colorScheme)
-          ? Colors.white
-          : (ThemeData.estimateBrightnessForColor(accent) == Brightness.dark
-              ? Colors.white
-              : Colors.black);
-  final container =
-      isBrandThemeColorScheme(colorScheme)
-          ? accent.withAlpha(40)
-          : Color.alphaBlend(
-            accent.withAlpha(theme.brightness == Brightness.dark ? 32 : 14),
-            colorScheme.surfaceContainerHigh,
-          );
+  final onAccent = isBrandThemeColorScheme(colorScheme)
+      ? Colors.white
+      : (ThemeData.estimateBrightnessForColor(accent) == Brightness.dark
+            ? Colors.white
+            : Colors.black);
+  final container = isBrandThemeColorScheme(colorScheme)
+      ? accent.withAlpha(40)
+      : Color.alphaBlend(
+          accent.withAlpha(theme.brightness == Brightness.dark ? 32 : 14),
+          colorScheme.surfaceContainerHigh,
+        );
 
   return SessionTypePalette(
     accent: accent,

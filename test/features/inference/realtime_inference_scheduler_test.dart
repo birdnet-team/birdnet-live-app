@@ -117,7 +117,10 @@ void main() {
       scheduler.calibrate(10, start.add(const Duration(seconds: 1)));
       final anchored = scheduler.timelineStart;
 
-      expect(scheduler.calibrate(500, start.add(const Duration(hours: 1))), isTrue);
+      expect(
+        scheduler.calibrate(500, start.add(const Duration(hours: 1))),
+        isTrue,
+      );
       expect(scheduler.timelineStart, anchored);
     });
 

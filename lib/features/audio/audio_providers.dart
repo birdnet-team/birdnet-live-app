@@ -179,12 +179,11 @@ class _AudioSourceNotifier extends StateNotifier<AudioSourceSelection> {
     // the platform they were written on (a restored backup, a shared codebase),
     // and a profile we silently ignore would still show up on the tile — the
     // app would claim "Unprocessed" while changing nothing.
-    final profile =
-        audioSourceProfilesSupported
-            ? AudioSourceProfile.fromName(
-              prefs.getString(PrefKeys.audioSourceProfile),
-            )
-            : AudioSourceProfile.systemDefault;
+    final profile = audioSourceProfilesSupported
+        ? AudioSourceProfile.fromName(
+            prefs.getString(PrefKeys.audioSourceProfile),
+          )
+        : AudioSourceProfile.systemDefault;
 
     return AudioSourceSelection(
       deviceId: deviceId.isEmpty ? null : deviceId,

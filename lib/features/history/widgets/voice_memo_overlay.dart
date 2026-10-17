@@ -92,11 +92,10 @@ Future<VoiceMemoResult?> showVoiceMemoDialog({
 }) {
   return showDialog<VoiceMemoResult>(
     context: context,
-    builder:
-        (ctx) => _VoiceMemoDialog(
-          sessionId: sessionId,
-          existingMemoPath: existingMemoPath,
-        ),
+    builder: (ctx) => _VoiceMemoDialog(
+      sessionId: sessionId,
+      existingMemoPath: existingMemoPath,
+    ),
   );
 }
 
@@ -243,10 +242,8 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
       final hasPerm = await _recorder.hasPermission();
       if (!hasPerm) {
         setState(() {
-          _errorMessage =
-              AppLocalizations.of(
-                context,
-              )!.detectionVoiceMemoMicPermissionDenied;
+          _errorMessage = AppLocalizations.of(context)!
+              .detectionVoiceMemoMicPermissionDenied;
         });
         return;
       }
@@ -289,10 +286,9 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
           // dampen single-sample spikes.
           final db = amp.current.isFinite ? amp.current : -60.0;
           final normalized = ((db + 50.0) / 50.0).clamp(0.0, 1.0);
-          final smoothed =
-              _waveform.isEmpty
-                  ? normalized
-                  : _waveform.last * 0.35 + normalized * 0.65;
+          final smoothed = _waveform.isEmpty
+              ? normalized
+              : _waveform.last * 0.35 + normalized * 0.65;
           setState(() {
             _waveform.add(smoothed);
             if (_waveform.length > _kMaxWaveBars) {
@@ -348,10 +344,9 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
     }
     if (!mounted) return;
 
-    final resolvedPath =
-        (stoppedPath != null && stoppedPath.isNotEmpty)
-            ? stoppedPath
-            : _pendingPath;
+    final resolvedPath = (stoppedPath != null && stoppedPath.isNotEmpty)
+        ? stoppedPath
+        : _pendingPath;
     if (resolvedPath == null) {
       setState(() {
         _isRecording = false;
@@ -428,8 +423,9 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
         // Skip normalization on retries; the file may not be fully
         // written yet, and a failed decode would just return the
         // original path anyway. First attempt normalizes as usual.
-        final playbackPath =
-            i == 0 ? await PlaybackNormalizer.resolveSource(path) : path;
+        final playbackPath = i == 0
+            ? await PlaybackNormalizer.resolveSource(path)
+            : path;
         await _player.setFilePath(playbackPath);
         _loadedPlayerPath = path;
         return true;
@@ -615,10 +611,9 @@ class _VoiceMemoDialogState extends State<_VoiceMemoDialog>
   Widget _buildPlayerTransport(ThemeData theme, AppLocalizations l10n) {
     final dur = _playDuration > Duration.zero ? _playDuration : _elapsed;
     final pos = _playPosition;
-    final progress =
-        dur.inMilliseconds > 0
-            ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
-            : 0.0;
+    final progress = dur.inMilliseconds > 0
+        ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+        : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -710,28 +705,25 @@ class _RecordButton extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color:
-                isRecording
-                    ? theme.colorScheme.error
-                    : theme.colorScheme.primaryContainer,
-            boxShadow:
-                isRecording
-                    ? [
-                      BoxShadow(
-                        color: theme.colorScheme.error.withAlpha(80),
-                        blurRadius: 16,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                    : null,
+            color: isRecording
+                ? theme.colorScheme.error
+                : theme.colorScheme.primaryContainer,
+            boxShadow: isRecording
+                ? [
+                    BoxShadow(
+                      color: theme.colorScheme.error.withAlpha(80),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : null,
           ),
           child: Icon(
             isRecording ? AppIcons.stop : AppIcons.mic,
             size: 40,
-            color:
-                isRecording
-                    ? theme.colorScheme.onError
-                    : theme.colorScheme.onPrimaryContainer,
+            color: isRecording
+                ? theme.colorScheme.onError
+                : theme.colorScheme.onPrimaryContainer,
           ),
         ),
       ),

@@ -144,10 +144,9 @@ class _StepIndicator extends StatelessWidget {
                 height: 4,
                 margin: EdgeInsets.only(right: i < totalSteps - 1 ? 8 : 0),
                 decoration: BoxDecoration(
-                  color:
-                      isActive
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.surfaceContainerHighest,
+                  color: isActive
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -186,37 +185,34 @@ class _WizardFooter extends StatelessWidget {
       child: Row(
         children: [
           TextButton(
-            onPressed:
-                onBack == null
-                    ? null
-                    : () {
-                      _haptic();
-                      onBack!();
-                    },
+            onPressed: onBack == null
+                ? null
+                : () {
+                    _haptic();
+                    onBack!();
+                  },
             child: Text(backLabel),
           ),
           const Spacer(),
           if (nextIcon != null)
             FilledButton.icon(
-              onPressed:
-                  onNext == null
-                      ? null
-                      : () {
-                        _haptic();
-                        onNext!();
-                      },
+              onPressed: onNext == null
+                  ? null
+                  : () {
+                      _haptic();
+                      onNext!();
+                    },
               icon: Icon(nextIcon),
               label: Text(nextLabel),
             )
           else
             FilledButton(
-              onPressed:
-                  onNext == null
-                      ? null
-                      : () {
-                        _haptic();
-                        onNext!();
-                      },
+              onPressed: onNext == null
+                  ? null
+                  : () {
+                      _haptic();
+                      onNext!();
+                    },
               child: Text(nextLabel),
             ),
         ],
