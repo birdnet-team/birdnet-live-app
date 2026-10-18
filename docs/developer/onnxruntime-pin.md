@@ -98,6 +98,8 @@ build, is what keeps them out), and the ELF `LOAD` segments are 16 KB aligned.
 | `integration_test/model_output_test.dart` on Pixel 10 Pro (Tensor G5, Android 17, arm64, no SME), 2026-10-11 | 5/5 passed: detections match the Python reference for every fixture window, batched = single-window output, no crash |
 | Live Mode session on the same Pixel 10 Pro (debug build), 2026-10-11 | 8 min 10 s, 487 inference runs, 9 species / 28 detections, geo-model loaded with a fix, session finalized into Session Review; RSS sampled every minute stayed within 848–867 MB with no upward trend; no `Fatal signal`/ANR in logcat |
 | Release APK (R8, built-in Kotlin), 2026-10-11 | packaged `libonnxruntime.so` build ID `b178f5c22304a25ff481e608260312842627e868` = the inspected 1.28.0 AAR; `mlas.disable_kleidiai` present; `ai.onnxruntime.OrtSession$SessionOptions` kept by R8 |
+| `integration_test/model_output_test.dart` on the x86_64 emulator (Medium_Phone_API_36, API 36 Play image), 2026-10-18 | 5/5 passed with the x86_64 `libonnxruntime.so`; first bundle with the x86_64 split |
+| Universal release APK launched on the same emulator, 2026-10-18 | loader picked `lib/x86_64/libonnxruntime4j_jni.so` and `libdartjni.so`, process alive after 30 s, crash buffer empty |
 
 A Pixel 10 Pro has no SME, so on that device the KleidiAI override is never
 installed regardless of the switch. That is the point: it exercises exactly the
