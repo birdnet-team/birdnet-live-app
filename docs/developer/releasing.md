@@ -59,8 +59,10 @@ Console (Google holds the actual app-signing key in Play App Signing).
 ## 4. Build Android Artifacts
 
 The Play Store expects an `.aab`, not an APK. App Bundles deliver only the
-target device's ABI and resources, which trims our ~253 MB APK to ~221 MB on
-device.
+target device's ABI and resources, which trims our ~316 MB universal APK
+(arm64-v8a + x86_64) to ~221 MB on an arm64 device. The x86_64 split exists
+for Intel/AMD Chromebooks; see the `jniLibs` comment in
+`android/app/build.gradle`.
 
 Use the helper script — it builds, verifies, stages every artifact into
 `release/V<version>/`, and prepares the notes:
