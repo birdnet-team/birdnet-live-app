@@ -319,6 +319,8 @@ Because the tiers are rank-based, this behaves the same in a species-rich tropic
 
 ## Export & Sync
 
+The options in this section are the **defaults** for every share. Tapping **Share** on a session, on a multi-session selection in the Session Library, or on a single detection first opens a small dialog with two boxes, **Audio** and **Metadata**, pre-ticked from these settings: Audio is on when **Include audio files** is on; Metadata is on when at least one format, the HTML report, or the app metadata file is enabled. Each box has a `?` help button and a one-line subtitle naming exactly what it adds (for example "Converted to WAV" or "Raven Selection Table, CSV, HTML report"). Untick a box to leave that part out of this one share only — the saved settings never change. Audio is greyed out when the session or detection has no saved audio; ticking Metadata while every metadata option is off here falls back to a Raven Selection Table; and Share stays disabled while both boxes are off. The intuition: most shares want the usual bundle, but the one time you need a bare WAV for iNaturalist or a tables-only ZIP for a colleague, you should not have to visit Settings twice.
+
 ### Formats
 
 Tick any combination of export formats — every save / share will bundle all the selected formats together inside a single ZIP. Pick a single format with no audio clips and no HTML report and you'll get a raw file (e.g. `session.csv`) instead of a ZIP, for backwards compatibility:
@@ -348,7 +350,7 @@ When on, every export ZIP also contains a `<session>_report.html` file alongside
 
 ### Audio-only sharing
 
-Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip.
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip. For a one-off audio-only share you don't need to touch these settings at all: untick **Metadata** in the share dialog instead.
 
 ## Privacy
 

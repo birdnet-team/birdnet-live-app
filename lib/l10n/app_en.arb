@@ -5135,5 +5135,53 @@
   "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
   "@sessionInterruptedBySystem": {
     "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
+  },
+  "shareOptionsTitle": "Share",
+  "@shareOptionsTitle": {
+    "description": "Title of the dialog shown after tapping Share on a session or detection; lets the user pick what the share includes"
+  },
+  "shareOptionsConfirm": "Share",
+  "@shareOptionsConfirm": {
+    "description": "Confirm button of the share options dialog; opens the platform share sheet"
+  },
+  "shareOptionsAudio": "Audio",
+  "@shareOptionsAudio": {
+    "description": "Checkbox label in the share options dialog: include the saved audio"
+  },
+  "shareOptionsHelpAudio": "Adds the saved audio to this share: the full recording, or the detection clips when only clips were kept. A single detection is cut to its exact time span. Audio keeps its original format unless “Always share audio as WAV” is on in Settings. Turn this off to share tables and reports without audio.",
+  "@shareOptionsHelpAudio": {
+    "description": "Help text behind the ? next to the Audio checkbox in the share options dialog"
+  },
+  "shareOptionsAudioOriginal": "Original recording format",
+  "@shareOptionsAudioOriginal": {
+    "description": "Subtitle under the Audio checkbox when audio is shared in its recorded format"
+  },
+  "shareOptionsAudioAsWav": "Converted to WAV",
+  "@shareOptionsAudioAsWav": {
+    "description": "Subtitle under the Audio checkbox when the WAV conversion setting is on"
+  },
+  "shareOptionsAudioUnavailable": "No saved audio to share",
+  "@shareOptionsAudioUnavailable": {
+    "description": "Subtitle under the disabled Audio checkbox when the session or detection has no saved audio"
+  },
+  "shareOptionsMetadata": "Metadata",
+  "@shareOptionsMetadata": {
+    "description": "Checkbox label in the share options dialog: include tables, report, and app metadata"
+  },
+  "shareOptionsHelpMetadata": "Adds the detection tables, HTML report, and app metadata file enabled under Settings › Export & Sync. When none of them is enabled, a Raven Selection Table is included. Turn this off to share the audio file on its own, without a ZIP.",
+  "@shareOptionsHelpMetadata": {
+    "description": "Help text behind the ? next to the Metadata checkbox in the share options dialog"
+  },
+  "shareOptionsHtmlReport": "HTML report",
+  "@shareOptionsHtmlReport": {
+    "description": "Short item name listed under the Metadata checkbox when the HTML report setting is on"
+  },
+  "shareOptionsAppMetadata": "App metadata",
+  "@shareOptionsAppMetadata": {
+    "description": "Short item name listed under the Metadata checkbox when the app metadata setting is on"
+  },
+  "shareOptionsHelpDialog": "Choose what this share includes. The boxes start out matching Settings › Export & Sync. Changes here apply to this share only and leave those settings untouched.",
+  "@shareOptionsHelpDialog": {
+    "description": "Help text behind the ? next to the share options dialog title: explains that the boxes start from the Export & Sync settings and that changes apply to this share only"
   }
 }
