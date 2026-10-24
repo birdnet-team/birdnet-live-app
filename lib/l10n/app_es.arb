@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Camina con las manos libres y sitúa detecciones a lo largo de tu ruta.",
   "helpBackToTop": "Volver arriba",
   "settingsInferenceRateDeviceLimit": "Se sabe que este dispositivo es demasiado lento para tasas de inferencia superiores a {rate} Hz. La tasa se redujo automáticamente.",
-  "sessionInterruptedBySystem": "El sistema cerró la app antes de detener esta Session. Se recuperaron las detecciones y el audio hasta el último punto de control."
+  "sessionInterruptedBySystem": "El sistema cerró la app antes de detener esta Session. Se recuperaron las detecciones y el audio hasta el último punto de control.",
+  "shareOptionsTitle": "Compartir",
+  "shareOptionsConfirm": "Compartir",
+  "shareOptionsAudio": "Audio",
+  "shareOptionsHelpAudio": "Añade el audio guardado a este envío: la grabación completa o, si solo se conservaron clips, los clips de las detecciones. Una detección individual se recorta exactamente a su intervalo de tiempo. El audio mantiene su formato original salvo que «Compartir audio siempre como WAV» esté activado en Ajustes. Desactívalo para compartir tablas e informes sin audio.",
+  "shareOptionsAudioOriginal": "Formato original de la grabación",
+  "shareOptionsAudioAsWav": "Convertido a WAV",
+  "shareOptionsAudioUnavailable": "No hay audio guardado para compartir",
+  "shareOptionsMetadata": "Metadatos",
+  "shareOptionsHelpMetadata": "Añade las tablas de detecciones, el informe HTML y el archivo de metadatos de la app activados en Ajustes › Exportación y sincronización. Si no hay ninguno activado, se incluye una Raven Selection Table. Desactívalo para compartir solo el archivo de audio, sin ZIP.",
+  "shareOptionsHtmlReport": "Informe HTML",
+  "shareOptionsAppMetadata": "Metadatos de la app",
+  "shareOptionsHelpDialog": "Elige qué incluye este envío. Las casillas empiezan según Ajustes › Exportación y sincronización. Los cambios aquí solo afectan a este envío y no modifican esos ajustes."
 }

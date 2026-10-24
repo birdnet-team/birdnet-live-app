@@ -41,6 +41,8 @@ import '../../recording/native_audio_decoder.dart';
 import '../../recording/playback_normalizer.dart';
 import '../../spectrogram/color_maps.dart';
 import '../services/detection_sharing_service.dart';
+import '../services/share_export_config.dart';
+import 'share_options_dialog.dart';
 import 'voice_memo_overlay.dart';
 import 'detection_actions.dart';
 
@@ -286,6 +288,36 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
   /// shared [DetectionRecord] in place (the host owns the list) and notify
   /// the host via [widget.onConfirmChanged] so it can mark its session
   /// dirty and rebuild any dependent UI (map markers, species rows).
+  /// Shares this detection after the user picked what to include in the
+  /// share options dialog.
+  Future<void> _share(Rect origin) async {
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: detectionMayHaveAudio(widget.detection, widget.session),
+    );
+    if (config == null || !mounted) return;
+    unawaited(
+      reportShareFailure(
+        context,
+        shareDetection(
+          widget.detection,
+          session: widget.session,
+          formats: config.formats,
+          includeAudio: config.includeAudio,
+          shareAudioAsWav: config.shareAudioAsWav,
+          includeHtmlReport: config.includeHtmlReport,
+          includeAppMetadata: config.includeAppMetadata,
+          taxonomy: ref.read(taxonomyServiceProvider).value,
+          speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+          useAbsoluteSurveyTime:
+              ref.read(timestampDisplayModeProvider) == 'absolute',
+          sharePositionOrigin: origin,
+        ),
+      ),
+    );
+  }
+
   void _toggleConfirm() {
     final det = widget.detection;
     setState(() {
@@ -595,28 +627,7 @@ class _ClipPlayerSheetState extends ConsumerState<_ClipPlayerSheet> {
                 // regardless of where they opened the detection.
                 DetectionActionsOverflow(
                   actions: DetectionActions(
-                    onShare: (origin) => unawaited(
-                      reportShareFailure(
-                        context,
-                        shareDetection(
-                          widget.detection,
-                          session: widget.session,
-                          formats: ref.read(exportSelectionProvider),
-                          includeAudio: ref.read(includeAudioProvider),
-                          shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                          includeHtmlReport: ref.read(exportHtmlReportProvider),
-                          includeAppMetadata: ref.read(
-                            includeAppMetadataProvider,
-                          ),
-                          taxonomy: taxonomyAsync.value,
-                          speciesLocale: speciesLocale,
-                          useAbsoluteSurveyTime:
-                              ref.read(timestampDisplayModeProvider) ==
-                              'absolute',
-                          sharePositionOrigin: origin,
-                        ),
-                      ),
-                    ),
+                    onShare: (origin) => unawaited(_share(origin)),
                     onDelete: widget.onDelete == null
                         ? null
                         : () {
