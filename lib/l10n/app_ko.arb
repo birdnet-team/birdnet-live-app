@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "손을 쓰지 않고 걸으며 경로를 따라 감지를 지도에 표시합니다.",
   "helpBackToTop": "맨 위로",
   "settingsInferenceRateDeviceLimit": "이 기기는 {rate} Hz보다 높은 추론 빈도에는 너무 느린 것으로 확인되어, 빈도를 자동으로 낮췄습니다.",
-  "sessionInterruptedBySystem": "Session을 중지하기 전에 시스템이 앱을 종료했습니다. 마지막 저장 시점까지의 감지와 오디오를 복구했습니다."
+  "sessionInterruptedBySystem": "Session을 중지하기 전에 시스템이 앱을 종료했습니다. 마지막 저장 시점까지의 감지와 오디오를 복구했습니다.",
+  "shareOptionsTitle": "공유",
+  "shareOptionsConfirm": "공유",
+  "shareOptionsAudio": "오디오",
+  "shareOptionsHelpAudio": "저장된 오디오를 함께 공유합니다. 전체 녹음이 있으면 전체 녹음을, 클립만 저장했으면 감지 클립을 보냅니다. 감지 하나를 공유하면 그 감지의 시작부터 끝까지만 잘라서 보냅니다. 설정에서 “오디오를 항상 WAV로 공유”를 켜지 않았다면 원래 형식 그대로 보냅니다. 끄면 오디오 없이 표와 보고서만 공유합니다.",
+  "shareOptionsAudioOriginal": "원래 녹음 형식",
+  "shareOptionsAudioAsWav": "WAV로 변환",
+  "shareOptionsAudioUnavailable": "공유할 저장된 오디오가 없습니다",
+  "shareOptionsMetadata": "메타데이터",
+  "shareOptionsHelpMetadata": "설정 › 내보내기 및 동기화에서 켠 감지 표, HTML 보고서, 앱 메타데이터 파일을 함께 담습니다. 아무것도 켜져 있지 않으면 Raven Selection Table이 포함됩니다. 끄면 ZIP 없이 오디오 파일만 공유합니다.",
+  "shareOptionsHtmlReport": "HTML 보고서",
+  "shareOptionsAppMetadata": "앱 메타데이터",
+  "shareOptionsHelpDialog": "이번 공유에 무엇을 담을지 고릅니다. 처음에는 설정 › 내보내기 및 동기화와 같게 체크되어 있습니다. 여기서 바꾼 내용은 이번 공유에만 적용되며, 설정은 바뀌지 않습니다."
 }
