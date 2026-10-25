@@ -65,6 +65,7 @@ class SpeciesDescriptionService {
     'pl',
     'ru',
     'zh',
+    'ko',
   ];
 
   /// Resolve a species-locale tag to a bundled description locale.
