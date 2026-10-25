@@ -19,7 +19,7 @@
 |---|---|---|
 | :app-tuneRounded: **설정** | 홈 하단 바, Live, Point Count, Survey, 파일 분석, Session 검토 | 설정을 엽니다. 모드 화면에서는 해당 작업 방식과 가장 관련 있는 설정을 엽니다. |
 | :app-searchRounded: **탐색** | 홈 하단 바 | 탐색을 엽니다. |
-| :app-libraryMusic: **Session** | 홈 하단 바 | Session 목록을 엽니다. |
+| :app-libraryMusic: **Session 목록** | 홈 하단 바 | Session 목록을 엽니다. |
 | :app-helpOutlineRounded: **도움말** | 홈 하단 바, 탐색 헤더, Survey 대시보드, Session 검토 도구 모음 | 도움말 또는 화면별 도움말 시트를 엽니다. |
 | :app-infoOutline: **정보 / 앱 정보** | 홈 하단 바, 정보 표시줄, 도움말 시트 | 일반 정보나 요약 맥락을 보여 줍니다. |
 | :app-arrowBackRounded: **뒤로 가기** | Live Mode | 이전 화면으로 돌아갑니다. |
