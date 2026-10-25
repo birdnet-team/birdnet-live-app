@@ -58,6 +58,7 @@ const List<String> kReleaseLocales = [
   'pt-PT',
   'ru-RU',
   'zh-CN',
+  'ko-KR',
 ];
 
 /// Play Console's per-locale limit is 500 characters; leave a little headroom

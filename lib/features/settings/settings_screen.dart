@@ -1428,6 +1428,7 @@ const _speciesLanguages = <String, String>{
   'nl': 'Nederlands',
   'ru': 'Русский',
   'ja': '日本語',
+  'ko': '한국어',
   'cs': 'Čeština',
   'pt': 'Português',
   'ca': 'Català',

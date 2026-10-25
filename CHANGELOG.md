@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New **Spectrogram size** setting in the Spectrogram section: Full, Medium, Small, or Off. It shrinks or hides the live spectrogram in Live Mode, Point Count, Survey, and ARU so the detection list gets more room (#269).
 - Tapping Share on a session, a Session Library selection, or a single detection now opens a dialog with **Audio** and **Metadata** boxes, pre-ticked from the Export & Sync settings, so one share can leave out audio or tables without changing the saved defaults (#252).
+- Korean (한국어) is now a full app language: UI strings and spoken announcements (contributed in #279), offline species descriptions for 1,009 species, and the translated user guide and policies. Korean species common names were already bundled and now resolve for the Korean app locale.
 
 ### Changed
 

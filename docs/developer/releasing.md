@@ -162,11 +162,11 @@ Adds a way to ignore species you don't want reported, and fixes a crash when sta
 </en-US>
 ```
 
-Then translate that one line into the other 11 locales. Max ~500 characters per
+Then translate that one line into the other 12 locales. Max ~500 characters per
 locale (the Play limit); the script's budget is 480 to leave room for
-translations that run longer than the English. All 12 locales the app ships in
+translations that run longer than the English. All 13 locales the app ships in
 get a block: en-US, de-DE, cs-CZ, es-ES, fr-FR, it-IT, nl-NL, nb-NO, pl-PL,
-pt-PT, ru-RU, zh-CN. Any locale missing on Play Console falls back to en-US.
+pt-PT, ru-RU, zh-CN, ko-KR. Any locale missing on Play Console falls back to en-US.
 Write zh-CN in Simplified Chinese characters, never pinyin.
 
 Resist auto-generating this text. An earlier version of the script filled the

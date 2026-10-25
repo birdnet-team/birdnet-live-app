@@ -74,7 +74,7 @@ Quick Listen 绝不会取代正在运行的其他模式。如果 Point Count、S
 
 停止 Live 模式后，BirdNET Live 会保存 Session 并打开 [Session 回顾](session-review.md)。
 
-启用自动保存 Session 时，Live 模式还会在开始时、每 30 秒以及应用转入后台时保存一个部分 Session。发生崩溃或断电后，最近保存的快照可在 Session 库中找到。该快照之后的更改可能会丢失。关闭自动保存也会同时关闭这些中间保存。
+启用自动保存 Session 时，Live 模式还会在开始时、每 30 秒以及应用转入后台时保存一个部分 Session。发生崩溃或断电后，最近保存的快照可在 Session 列表中找到。该快照之后的更改可能会丢失。关闭自动保存也会同时关闭这些中间保存。
 
 ## 屏幕关闭后继续聆听
 
