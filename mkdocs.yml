@@ -484,6 +484,44 @@ plugins:
         Acceptable Use Policy: 使用规范
         Testing: 测试
         User Guide: 用户指南
+    - locale: ko
+      name: 한국어
+      build: true
+      nav_translations:
+        API Integration: API 연동
+        API Reference: API 참조
+        Architecture: 아키텍처
+        Audio Pipeline: 오디오 파이프라인
+        Building: 빌드
+        Code Style: 코드 스타일
+        Developer Guide: Developer Guide
+        Explore: 탐색
+        FAQ: 자주 묻는 질문
+        Batch Analysis: 일괄 분석
+        ARU Mode: ARU 모드
+        File Analysis: 파일 분석
+        Getting Started: 시작하기
+        Home: 홈
+        Icons & Controls: 아이콘과 컨트롤
+        Inference Engine: 추론 엔진
+        Live Mode: Live Mode
+        Localization: 현지화
+        Overview: 개요
+        Point Count Mode: Point Count 모드
+        Privacy Policy: 개인정보 처리방침
+        Releasing: 릴리스
+        Session Library: Session 목록
+        Session Review: Session 검토
+        Settings: 설정
+        Species Bundle: 종 번들
+        Spectrogram: 스펙트로그램
+        State Management: 상태 관리
+        Storage: 저장소
+        Survey Mode: Survey 모드
+        Taxonomy & Sync API: 분류 체계 및 동기화 API
+        Acceptable Use Policy: 허용 사용 정책
+        Testing: 테스트
+        User Guide: 사용자 가이드
 nav:
 - Home: index.md
 - User Guide:
