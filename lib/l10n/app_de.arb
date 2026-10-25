@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Gehen Sie freihändig und kartieren Sie Erkennungen entlang Ihrer Route.",
   "helpBackToTop": "Nach oben",
   "settingsInferenceRateDeviceLimit": "Dieses Gerät ist bekanntermaßen zu langsam für Inferenzraten über {rate} Hz. Die Rate wurde automatisch gesenkt.",
-  "sessionInterruptedBySystem": "Die App wurde vom System beendet, bevor diese Session gestoppt wurde. Detektionen und Audio bis zum letzten Sicherungspunkt wurden wiederhergestellt."
+  "sessionInterruptedBySystem": "Die App wurde vom System beendet, bevor diese Session gestoppt wurde. Detektionen und Audio bis zum letzten Sicherungspunkt wurden wiederhergestellt.",
+  "shareOptionsTitle": "Teilen",
+  "shareOptionsConfirm": "Teilen",
+  "shareOptionsAudio": "Audio",
+  "shareOptionsHelpAudio": "Fügt dieser Freigabe das gespeicherte Audio hinzu: die vollständige Aufnahme oder, wenn nur Clips behalten wurden, die Erkennungs-Clips. Eine einzelne Erkennung wird exakt auf ihren Zeitabschnitt zugeschnitten. Audio behält sein ursprüngliches Format, sofern in den Einstellungen nicht „Audio immer als WAV teilen“ aktiviert ist. Deaktivieren Sie diese Option, um Tabellen und Berichte ohne Audio zu teilen.",
+  "shareOptionsAudioOriginal": "Ursprüngliches Aufnahmeformat",
+  "shareOptionsAudioAsWav": "In WAV umgewandelt",
+  "shareOptionsAudioUnavailable": "Kein gespeichertes Audio zum Teilen",
+  "shareOptionsMetadata": "Metadaten",
+  "shareOptionsHelpMetadata": "Fügt die Erkennungstabellen, den HTML-Bericht und die App-Metadatendatei hinzu, die unter Einstellungen › Export & Sync aktiviert sind. Ist dort nichts aktiviert, wird eine Raven Selection Table beigelegt. Deaktivieren Sie diese Option, um nur die Audiodatei ohne ZIP zu teilen.",
+  "shareOptionsHtmlReport": "HTML-Bericht",
+  "shareOptionsAppMetadata": "App-Metadaten",
+  "shareOptionsHelpDialog": "Wählen Sie, was diese Freigabe enthält. Die Vorauswahl entspricht Einstellungen › Export & Sync. Änderungen hier gelten nur für diese Freigabe und lassen die Einstellungen unverändert."
 }

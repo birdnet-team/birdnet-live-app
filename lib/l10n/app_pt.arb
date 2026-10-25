@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Caminhe com as mãos livres e mapeie detecções ao longo da rota.",
   "helpBackToTop": "Voltar ao topo",
   "settingsInferenceRateDeviceLimit": "Sabe-se que este dispositivo é lento demais para taxas de inferência acima de {rate} Hz. A taxa foi reduzida automaticamente.",
-  "sessionInterruptedBySystem": "O sistema fechou o aplicativo antes de esta Session ser parada. As detecções e o áudio até o último ponto de verificação foram recuperados."
+  "sessionInterruptedBySystem": "O sistema fechou o aplicativo antes de esta Session ser parada. As detecções e o áudio até o último ponto de verificação foram recuperados.",
+  "shareOptionsTitle": "Compartilhar",
+  "shareOptionsConfirm": "Compartilhar",
+  "shareOptionsAudio": "Áudio",
+  "shareOptionsHelpAudio": "Adiciona o áudio salvo a este compartilhamento: a gravação completa ou, se apenas clipes foram mantidos, os clipes das detecções. Uma detecção isolada é cortada exatamente no seu intervalo de tempo. O áudio mantém o formato original, a menos que “Sempre partilhar áudio como WAV” esteja ativado nas Configurações. Desative para compartilhar tabelas e relatórios sem áudio.",
+  "shareOptionsAudioOriginal": "Formato original da gravação",
+  "shareOptionsAudioAsWav": "Convertido para WAV",
+  "shareOptionsAudioUnavailable": "Nenhum áudio salvo para compartilhar",
+  "shareOptionsMetadata": "Metadados",
+  "shareOptionsHelpMetadata": "Adiciona as tabelas de detecções, o relatório HTML e o arquivo de metadados do app ativados em Configurações › Exportação e sincronização. Se nenhum estiver ativado, uma Raven Selection Table é incluída. Desative para compartilhar apenas o arquivo de áudio, sem ZIP.",
+  "shareOptionsHtmlReport": "Relatório HTML",
+  "shareOptionsAppMetadata": "Metadados do app",
+  "shareOptionsHelpDialog": "Escolha o que este compartilhamento inclui. As caixas começam conforme Configurações › Exportação e sincronização. As alterações feitas aqui valem só para este compartilhamento e não modificam essas configurações."
 }

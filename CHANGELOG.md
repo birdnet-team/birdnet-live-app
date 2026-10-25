@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - New **Spectrogram size** setting in the Spectrogram section: Full, Medium, Small, or Off. It shrinks or hides the live spectrogram in Live Mode, Point Count, Survey, and ARU so the detection list gets more room (#269).
+- Tapping Share on a session, a Session Library selection, or a single detection now opens a dialog with **Audio** and **Metadata** boxes, pre-ticked from the Export & Sync settings, so one share can leave out audio or tables without changing the saved defaults (#252).
 
 ### Changed
 

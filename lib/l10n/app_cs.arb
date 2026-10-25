@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Choďte s volnýma rukama a mapujte detekce podél trasy.",
   "helpBackToTop": "Zpět nahoru",
   "settingsInferenceRateDeviceLimit": "Je známo, že toto zařízení je příliš pomalé pro rychlost inference nad {rate} Hz. Rychlost byla automaticky snížena.",
-  "sessionInterruptedBySystem": "Systém ukončil aplikaci dříve, než byla tato Session zastavena. Detekce a zvuk do posledního kontrolního bodu byly obnoveny."
+  "sessionInterruptedBySystem": "Systém ukončil aplikaci dříve, než byla tato Session zastavena. Detekce a zvuk do posledního kontrolního bodu byly obnoveny.",
+  "shareOptionsTitle": "Sdílet",
+  "shareOptionsConfirm": "Sdílet",
+  "shareOptionsAudio": "Zvuk",
+  "shareOptionsHelpAudio": "Přidá k tomuto sdílení uložený zvuk: celou nahrávku, nebo klipy detekcí, pokud byly uchovány jen klipy. Jediná detekce se ořízne přesně na svůj časový úsek. Zvuk si zachová původní formát, pokud v Nastavení není zapnuto „Vždy sdílet zvuk jako WAV“. Vypněte, chcete-li sdílet tabulky a reporty bez zvuku.",
+  "shareOptionsAudioOriginal": "Původní formát nahrávky",
+  "shareOptionsAudioAsWav": "Převedeno do WAV",
+  "shareOptionsAudioUnavailable": "Žádný uložený zvuk ke sdílení",
+  "shareOptionsMetadata": "Metadata",
+  "shareOptionsHelpMetadata": "Přidá tabulky detekcí, HTML report a soubor metadat aplikace, které jsou zapnuté v Nastavení › Export a synchronizace. Pokud tam není zapnuto nic, přiloží se Raven Selection Table. Vypněte, chcete-li sdílet samotný zvukový soubor bez ZIP.",
+  "shareOptionsHtmlReport": "HTML report",
+  "shareOptionsAppMetadata": "Metadata aplikace",
+  "shareOptionsHelpDialog": "Zvolte, co má toto sdílení obsahovat. Výchozí volby odpovídají Nastavení › Export a synchronizace. Změny zde platí jen pro toto sdílení a nastavení nemění."
 }

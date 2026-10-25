@@ -46,7 +46,9 @@ import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
 import 'services/session_audio_trim.dart';
+import 'services/share_export_config.dart';
 import 'services/share_file_params.dart';
+import 'widgets/share_options_dialog.dart';
 
 /// How sessions are ordered in the library.
 enum _SortMode {
@@ -887,19 +889,25 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     ref.invalidate(sessionListProvider);
   }
 
-  /// Opens the platform share sheet with the session exported using the
-  /// user's saved export-format and include-audio preferences. Returns
-  /// silently if the export couldn't be built (e.g. no audio for an
-  /// audio-only export of a metadata-only session) — except for a trimmed
-  /// recording the app can't cut, which is reported so the share button
-  /// doesn't just appear to do nothing.
+  /// Lets the user pick what to include (Audio / Metadata, pre-filled from
+  /// the export preferences), then opens the platform share sheet with the
+  /// exported session. Returns silently if the export couldn't be built
+  /// (e.g. no audio for an audio-only export of a metadata-only session) —
+  /// except for a trimmed recording the app can't cut, which is reported so
+  /// the share button doesn't just appear to do nothing.
   Future<void> _shareSession(LiveSession session, Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
-    final exportFormats = ref.read(exportSelectionProvider);
-    final includeAudio = ref.read(includeAudioProvider);
-    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-    final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final includeAppMetadata = ref.read(includeAppMetadataProvider);
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: sessionMayHaveAudio(session),
+    );
+    if (config == null || !mounted) return;
+    final exportFormats = config.formats;
+    final includeAudio = config.includeAudio;
+    final shareAudioAsWav = config.shareAudioAsWav;
+    final includeHtmlReport = config.includeHtmlReport;
+    final includeAppMetadata = config.includeAppMetadata;
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
@@ -982,6 +990,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         .toList();
     if (selectedList.isEmpty) return;
 
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: selectedList.any(sessionMayHaveAudio),
+    );
+    if (config == null || !mounted) return;
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -1002,11 +1017,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     );
 
     try {
-      final exportFormats = ref.read(exportSelectionProvider);
-      final includeAudio = ref.read(includeAudioProvider);
-      final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-      final includeHtmlReport = ref.read(exportHtmlReportProvider);
-      final includeAppMetadata = ref.read(includeAppMetadataProvider);
+      final exportFormats = config.formats;
+      final includeAudio = config.includeAudio;
+      final shareAudioAsWav = config.shareAudioAsWav;
+      final includeHtmlReport = config.includeHtmlReport;
+      final includeAppMetadata = config.includeAppMetadata;
       final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       final useAbsoluteSurveyTime =

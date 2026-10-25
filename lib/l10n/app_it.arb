@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Cammina a mani libere e mappa i rilevamenti lungo il percorso.",
   "helpBackToTop": "Torna in alto",
   "settingsInferenceRateDeviceLimit": "Questo dispositivo è noto per essere troppo lento per frequenze di inferenza superiori a {rate} Hz. La frequenza è stata ridotta automaticamente.",
-  "sessionInterruptedBySystem": "Il sistema ha chiuso l'app prima che questa Session fosse fermata. Le rilevazioni e l'audio fino all'ultimo punto di controllo sono stati recuperati."
+  "sessionInterruptedBySystem": "Il sistema ha chiuso l'app prima che questa Session fosse fermata. Le rilevazioni e l'audio fino all'ultimo punto di controllo sono stati recuperati.",
+  "shareOptionsTitle": "Condividi",
+  "shareOptionsConfirm": "Condividi",
+  "shareOptionsAudio": "Audio",
+  "shareOptionsHelpAudio": "Aggiunge a questa condivisione l'audio salvato: la registrazione completa oppure, se sono stati conservati solo i clip, i clip dei rilevamenti. Un singolo rilevamento viene tagliato esattamente sul suo intervallo di tempo. L'audio mantiene il formato originale a meno che «Condividi sempre l'audio come WAV» non sia attivo nelle Impostazioni. Disattiva per condividere tabelle e report senza audio.",
+  "shareOptionsAudioOriginal": "Formato originale della registrazione",
+  "shareOptionsAudioAsWav": "Convertito in WAV",
+  "shareOptionsAudioUnavailable": "Nessun audio salvato da condividere",
+  "shareOptionsMetadata": "Metadati",
+  "shareOptionsHelpMetadata": "Aggiunge le tabelle dei rilevamenti, il report HTML e il file di metadati dell'app attivati in Impostazioni › Esportazione e sincronizzazione. Se non è attivo nulla, viene inclusa una Raven Selection Table. Disattiva per condividere solo il file audio, senza ZIP.",
+  "shareOptionsHtmlReport": "Report HTML",
+  "shareOptionsAppMetadata": "Metadati dell'app",
+  "shareOptionsHelpDialog": "Scegli cosa includere in questa condivisione. Le caselle partono da Impostazioni › Esportazione e sincronizzazione. Le modifiche qui valgono solo per questa condivisione e non alterano quelle impostazioni."
 }

@@ -44,8 +44,10 @@ import '../explore/widgets/species_info_overlay.dart';
 import '../history/session_library_screen.dart';
 import '../history/session_review_screen.dart';
 import '../history/services/detection_sharing_service.dart';
+import '../history/services/share_export_config.dart';
 import '../history/widgets/clip_player_sheet.dart';
 import '../history/widgets/detection_actions.dart';
+import '../history/widgets/share_options_dialog.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
@@ -199,6 +201,40 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   /// directly so derived stats (count/species) and map markers refresh
   /// on the next rebuild. The undo restores the record at its original
   /// list position so chronological order is preserved.
+  /// Shares one detection of the running survey after the user picked what
+  /// to include in the share options dialog.
+  Future<void> _shareLiveDetection(
+    DetectionRecord detection,
+    LiveSession session,
+    Rect origin,
+  ) async {
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: detectionMayHaveAudio(detection, session),
+    );
+    if (config == null || !mounted) return;
+    unawaited(
+      reportShareFailure(
+        context,
+        shareDetection(
+          detection,
+          session: session,
+          formats: config.formats,
+          includeAudio: config.includeAudio,
+          shareAudioAsWav: config.shareAudioAsWav,
+          includeHtmlReport: config.includeHtmlReport,
+          includeAppMetadata: config.includeAppMetadata,
+          taxonomy: ref.read(taxonomyServiceProvider).value,
+          speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+          useAbsoluteSurveyTime:
+              ref.read(timestampDisplayModeProvider) == 'absolute',
+          sharePositionOrigin: origin,
+        ),
+      ),
+    );
+  }
+
   void _deleteLiveDetectionWithUndo(DetectionRecord detection) {
     final controller = ref.read(surveyControllerProvider);
     final session = controller.session;
@@ -1238,25 +1274,8 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
                 }
               });
             },
-            onShare: (origin) => unawaited(
-              reportShareFailure(
-                context,
-                shareDetection(
-                  detection,
-                  session: session,
-                  formats: ref.read(exportSelectionProvider),
-                  includeAudio: ref.read(includeAudioProvider),
-                  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                  includeHtmlReport: ref.read(exportHtmlReportProvider),
-                  includeAppMetadata: ref.read(includeAppMetadataProvider),
-                  taxonomy: ref.read(taxonomyServiceProvider).value,
-                  speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
-                  useAbsoluteSurveyTime:
-                      ref.read(timestampDisplayModeProvider) == 'absolute',
-                  sharePositionOrigin: origin,
-                ),
-              ),
-            ),
+            onShare: (origin) =>
+                unawaited(_shareLiveDetection(detection, session, origin)),
             onDelete: () => _deleteLiveDetectionWithUndo(detection),
           ),
         ),

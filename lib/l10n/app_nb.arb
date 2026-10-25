@@ -1179,5 +1179,17 @@
   "helpSurveySummary": "Gå med hendene fri og kartlegg funn langs ruten.",
   "helpBackToTop": "Til toppen",
   "settingsInferenceRateDeviceLimit": "Denne enheten er kjent for å være for treg for analysefrekvenser over {rate} Hz. Frekvensen ble senket automatisk.",
-  "sessionInterruptedBySystem": "Systemet avsluttet appen før denne Session ble stoppet. Deteksjoner og lyd fram til siste sjekkpunkt ble gjenopprettet."
+  "sessionInterruptedBySystem": "Systemet avsluttet appen før denne Session ble stoppet. Deteksjoner og lyd fram til siste sjekkpunkt ble gjenopprettet.",
+  "shareOptionsTitle": "Del",
+  "shareOptionsConfirm": "Del",
+  "shareOptionsAudio": "Lyd",
+  "shareOptionsHelpAudio": "Legger den lagrede lyden til i denne delingen: hele opptaket, eller deteksjonsklippene hvis bare klipp ble beholdt. En enkelt deteksjon kuttes nøyaktig til sitt tidsrom. Lyden beholder originalformatet med mindre «Del alltid lyd som WAV» er slått på i Innstillinger. Slå av for å dele tabeller og rapporter uten lyd.",
+  "shareOptionsAudioOriginal": "Opprinnelig opptaksformat",
+  "shareOptionsAudioAsWav": "Konvertert til WAV",
+  "shareOptionsAudioUnavailable": "Ingen lagret lyd å dele",
+  "shareOptionsMetadata": "Metadata",
+  "shareOptionsHelpMetadata": "Legger til deteksjonstabellene, HTML-rapporten og appmetadatafilen som er slått på under Innstillinger › Eksport og synk. Hvis ingen av dem er på, legges en Raven Selection Table ved. Slå av for å dele bare lydfilen, uten ZIP.",
+  "shareOptionsHtmlReport": "HTML-rapport",
+  "shareOptionsAppMetadata": "Appmetadata",
+  "shareOptionsHelpDialog": "Velg hva denne delingen skal inneholde. Boksene følger først Innstillinger › Eksport og synk. Endringer her gjelder bare denne delingen og lar innstillingene stå uendret."
 }
