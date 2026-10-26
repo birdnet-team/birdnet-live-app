@@ -30,10 +30,11 @@ dart dev/build_release.dart --since <last-store-version>
 
 ## iOS
 
-Requires macOS with Xcode 15+:
+Requires macOS with Xcode 15+. All iOS plugins are resolved through Swift
+Package Manager, so there is no CocoaPods step; the minimum deployment target
+is iOS 16.6, set on the Runner target and in `ios/Flutter/AppFrameworkInfo.plist`.
 
 ```bash
-cd ios && pod install && cd ..
 flutter build ios --release
 ```
 
