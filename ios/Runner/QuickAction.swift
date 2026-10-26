@@ -67,7 +67,9 @@ struct StartListeningIntent: AppIntent {
 
 /// Publishes the intent as an App Shortcut: it shows up under BirdNET Live in
 /// the Shortcuts app and the Action Button picker without any setup, and the
-/// phrases work with Siri. Phrase translations live in `AppShortcuts.xcstrings`.
+/// phrases work with Siri. Phrase translations live in the
+/// `<locale>.lproj/AppShortcuts.strings` files: a string catalog for App
+/// Shortcuts would need a 17.0 deployment target.
 ///
 /// iOS 17 only because the initializer that carries a title and icon is; on
 /// iOS 16 the intent is still available as a plain Shortcuts action.
