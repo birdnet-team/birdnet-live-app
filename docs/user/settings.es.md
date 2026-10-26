@@ -241,7 +241,7 @@ Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos
 
 Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
 
-Este ajuste rige la apertura del modo Live desde dentro de la aplicación. El [widget Quick Listen](live-mode.md) empieza a escuchar al tocarlo, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
+Este ajuste rige la apertura del modo Live desde dentro de la aplicación. [Quick Listen](live-mode.md) — el widget de Android o, en iOS, el atajo, la frase de Siri y la acción del icono — empieza a escuchar al activarse, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
 
 ### Continuar con la pantalla apagada
 

@@ -52,6 +52,37 @@
 	<!-- Audio file URLs belong to the shared-media channel, not named routes. -->
 	<key>FlutterDeepLinkingEnabled</key>
 	<false/>
+	<!-- Quick Listen entry points; see QuickAction.swift. The URL scheme is
+	     for the Shortcuts "Open URL" action and automations: birdnetlive://listen
+	     opens Live Mode and starts listening. The App Intent in
+	     QuickAction.swift covers Siri, the Shortcuts action list, and the
+	     Action Button without a URL. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>de.tu-chemnitz.mi.kahst.birdnet-live</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>birdnetlive</string>
+			</array>
+		</dict>
+	</array>
+	<!-- "Start Listening" in the app icon's long-press menu. The title is a
+	     key into InfoPlist.xcstrings; the type is matched in QuickAction.swift. -->
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.birdnet.startListening</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>QUICK_ACTION_START_LISTENING_TITLE</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>mic.fill</string>
+		</dict>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

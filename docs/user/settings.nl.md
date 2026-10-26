@@ -239,7 +239,7 @@ Deze instelling geldt voor audio die BirdNET Live opneemt. **Bestandsanalyse** b
 
 Staat die aan, dan begint de Live-modus met opnemen zodra het scherm opent en het model klaar is met laden — zonder dat je op de microfoonknop hoeft te tikken. Handig voor kioskachtige opstellingen, handsfree gebruik (bijvoorbeeld het toestel in het veld gemonteerd) of elke workflow waarbij Live openen sowieso "nu starten" betekent. Staat standaard uit, zodat een onbedoelde tik op de Live-tegel op het startscherm niet stilzwijgend een Session begint. Het automatisch starten gebeurt maar één keer per schermbezoek, dus een Session stoppen en opnieuw op de microfoon tikken werkt gewoon als handmatige herstart.
 
-Deze instelling regelt het openen van de Live-modus binnen de app. De [Quick Listen-widget](live-mode.md) begint bij een tik te luisteren, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
+Deze instelling regelt het openen van de Live-modus binnen de app. [Quick Listen](live-mode.md) — de Android-widget, of op iOS de opdracht, de Siri-zin en de actie in het app-pictogram — begint te luisteren zodra het wordt gestart, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
 
 ### Doorgaan met uitgeschakeld scherm
 

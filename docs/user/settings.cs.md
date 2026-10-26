@@ -234,7 +234,7 @@ Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza soubo
 
 Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
 
-Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Widget Quick Listen](live-mode.md) při klepnutí začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
+Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
 
 ### Pokračovat při vypnuté obrazovce
 

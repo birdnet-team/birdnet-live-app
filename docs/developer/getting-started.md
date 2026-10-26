@@ -11,7 +11,7 @@ Set up your development environment.
 ### Platform-Specific
 
 - **Android**: Android SDK, NDK (for ONNX native libraries)
-- **iOS**: Xcode 15+, CocoaPods
+- **iOS**: Xcode 15+ (plugins come through Swift Package Manager; CocoaPods is not needed)
 - **Windows**: Visual Studio 2022 with C++ desktop workload and [NuGet CLI](https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools) (`nuget.exe` on `PATH`)
 
 ## Setup

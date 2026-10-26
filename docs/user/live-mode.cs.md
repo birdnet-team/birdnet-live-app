@@ -6,18 +6,34 @@ Režim Live je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a 
 
 Na domovské obrazovce klepněte na kartu **Live** s ikonou :app-micRounded:.
 
-## Widget „Rychlý poslech“
+## Rychlý poslech
 
-**Pouze Android.** Widget na domovské obrazovce spustí poslech jediným klepnutím, aniž byste museli nejprve otevřít aplikaci a proklikat se do režimu — hodí se, když uslyšíte něco, co chcete určit dřív, než to přestane zpívat.
+Rychlý poslech spustí poslech jediným klepnutím, aniž byste museli nejprve otevřít aplikaci a proklikat se do režimu — hodí se, když uslyšíte něco, co chcete určit dřív, než to přestane zpívat. Každý z níže uvedených vstupních bodů otevře režim Live a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spustit nahrávání**, a žádný z nich toto nastavení nemění.
+
+### Android: widget na domovské obrazovce
 
 Přidáte jej stejně jako kterýkoli jiný widget: podržte prst na prázdném místě domovské obrazovky, klepněte na **Widgety**, najděte **BirdNET Live** a přetáhněte na plochu jednu ze dvou dlaždic.
 
 - **Rychlý poslech** (2×1) — ikona s popiskem **Spustit poslech**
 - **Rychlý poslech (kompaktní)** (1×1) — pouze ikona
 
-Obě dělají totéž. Klepnutí na kteroukoli z nich otevře režim Live a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spustit nahrávání**. Widget toto nastavení nemění.
+Obě dělají totéž.
 
-Pokud je režim Live již otevřený, widget se vrátí na stejnou obrazovku, místo aby ji vytvořil znovu. Běžící nebo pozastavená Session pokračuje beze změny; pokud je zastavená, spustí se poslech na stávající obrazovce.
+### iOS: Zkratky, Siri, tlačítko akce a ikona aplikace
+
+BirdNET Live nabízí systému akci **Spustit poslech**, takže nemusíte nic skládat ručně:
+
+- **Tlačítko akce** (iPhone 15 Pro a novější) — otevřete **Nastavení → Tlačítko akce**, zvolte **Zkratka** a vyberte **Spustit poslech** pod BirdNET Live. Podržení tlačítka pak spustí poslech.
+- **Siri** — řekněte „Spustit poslech v BirdNET Live“, „Poslouchat ptáky v BirdNET Live“ nebo „Určit ptáka pomocí BirdNET Live“.
+- **Aplikace Zkratky** — akce **Spustit poslech** je uvedena pod BirdNET Live. Použijte ji ve vlastní zkratce, přidejte tuto zkratku na domovskou obrazovku nebo ji spouštějte klepnutím na zadní stranu, režimem Soustředění nebo značkou NFC.
+- **Ikona aplikace** — podržte ikonu BirdNET Live na domovské obrazovce a klepněte na **Spustit poslech**.
+- **URL** — automatizace, které otevírají URL, mohou použít `birdnetlive://listen`.
+
+Fráze pro Siri a položka v nabídce tlačítka akce vyžadují iOS 17. Akce ve Zkratkách, nabídka ikony aplikace a URL fungují i v iOS 16.
+
+### Co se stane dál
+
+Pokud je režim Live již otevřený, Rychlý poslech se vrátí na stejnou obrazovku, místo aby ji vytvořil znovu. Běžící nebo pozastavená Session pokračuje beze změny; pokud je zastavená, spustí se poslech na stávající obrazovce.
 
 Rychlý poslech nikdy nenahrazuje jiný běžící režim. Pokud běží nebo se spouští Session Point Count, Survey, File Analysis nebo [režimu ARU](aru-mode.md), aplikace se přesune do popředí a vyzve vás, abyste tuto Session nejprve zastavili. Její obrazovka i práce zůstanou dostupné a nepřerušené.
 

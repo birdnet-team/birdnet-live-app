@@ -27,7 +27,7 @@
   "next": "Далее",
   "done": "Готово",
   "quickListenBlockedTitle": "Сначала завершите текущую Session",
-  "quickListenBlockedMessage": "Быстрое прослушивание нельзя запустить, пока Session {mode} выполняется или запускается. Сначала остановите эту Session, затем снова нажмите на виджет.",
+  "quickListenBlockedMessage": "Быстрое прослушивание нельзя запустить, пока Session {mode} выполняется или запускается. Сначала остановите эту Session, затем попробуйте снова.",
   "sharedAudioBusyTitle": "Выполняется Session",
   "sharedAudioBusyMessage": "Дождитесь окончания текущей Session {mode}, затем поделитесь записью снова.",
   "termsOfUseTitle": "Политика допустимого использования",

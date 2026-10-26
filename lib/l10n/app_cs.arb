@@ -27,7 +27,7 @@
   "next": "Další",
   "done": "Hotovo",
   "quickListenBlockedTitle": "Nejprve ukončete aktuální Session",
-  "quickListenBlockedMessage": "Rychlý poslech nelze spustit, dokud běží nebo se spouští Session {mode}. Nejprve tuto Session zastavte a potom na widget klepněte znovu.",
+  "quickListenBlockedMessage": "Rychlý poslech nelze spustit, dokud běží nebo se spouští Session {mode}. Nejprve tuto Session zastavte a potom to zkuste znovu.",
   "sharedAudioBusyTitle": "Probíhá Session",
   "sharedAudioBusyMessage": "Počkejte, až skončí aktuální Session {mode}, a potom nahrávku sdílejte znovu.",
   "termsOfUseTitle": "Zásady přijatelného použití",
