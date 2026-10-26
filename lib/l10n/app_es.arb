@@ -27,7 +27,7 @@
   "next": "Siguiente",
   "done": "Hecho",
   "quickListenBlockedTitle": "Finaliza primero la Session actual",
-  "quickListenBlockedMessage": "Escucha rápida no puede iniciarse mientras haya una Session de {mode} en curso o iniciándose. Detén primero esa Session y vuelve a tocar el widget.",
+  "quickListenBlockedMessage": "Escucha rápida no puede iniciarse mientras haya una Session de {mode} en curso o iniciándose. Detén primero esa Session y vuelve a intentarlo.",
   "sharedAudioBusyTitle": "Session en curso",
   "sharedAudioBusyMessage": "Espera a que termine la Session de {mode} actual y vuelve a compartir la grabación.",
   "termsOfUseTitle": "Política de uso aceptable",

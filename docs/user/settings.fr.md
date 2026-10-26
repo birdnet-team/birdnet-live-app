@@ -241,7 +241,7 @@ Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de f
 
 Une fois activé, le mode Live commence à enregistrer dès l'ouverture de l'écran et la fin du chargement du modèle — sans avoir à appuyer sur le bouton du micro. Utile pour des installations de type borne, une utilisation mains libres (appareil monté sur le terrain, par exemple) ou tout flux où ouvrir Live signifie déjà « on démarre maintenant ». Désactivé par défaut, afin qu'un appui accidentel sur la tuile Live depuis l'écran d'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se produit qu'une fois par visite de l'écran : arrêter une session puis réappuyer sur le micro fonctionne donc toujours comme un redémarrage manuel.
 
-Ce réglage concerne l'ouverture du mode Live depuis l'application. Le [widget Quick Listen](live-mode.md) commence à écouter dès qu'on appuie dessus, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
+Ce réglage concerne l'ouverture du mode Live depuis l'application. [Quick Listen](live-mode.md) — le widget Android ou, sur iOS, le raccourci, la phrase Siri et l'action de l'icône — commence à écouter dès qu'il est déclenché, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
 
 ### Continuer avec l’écran éteint
 
