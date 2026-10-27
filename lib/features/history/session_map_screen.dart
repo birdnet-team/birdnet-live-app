@@ -14,10 +14,13 @@
 // =============================================================================
 
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
+
 import '../../shared/services/link_launcher.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -67,21 +70,20 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
     final l10n = AppLocalizations.of(context)!;
     final agreed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.mapTileConsentTitle),
-            content: Text(l10n.mapTileConsentBody),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.mapTileConsentCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(l10n.mapTileConsentAllow),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.mapTileConsentTitle),
+        content: Text(l10n.mapTileConsentBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.mapTileConsentCancel),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.mapTileConsentAllow),
+          ),
+        ],
+      ),
     );
     if (agreed == true) {
       await ref.read(privacyAllowMapProvider.notifier).set(true);
@@ -103,18 +105,16 @@ class _SessionMapScreenState extends ConsumerState<SessionMapScreen> {
             IconButton(
               icon: const Icon(AppIcons.openInNew),
               tooltip: l10n.openInAppleMaps,
-              onPressed:
-                  () => openExternalUrl(
-                    context,
-                    'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
-                  ),
+              onPressed: () => openExternalUrl(
+                context,
+                'https://maps.apple.com/?q=${widget.latitude},${widget.longitude}',
+              ),
             ),
         ],
       ),
-      body:
-          _hasConsent == true
-              ? _buildMap(center, theme)
-              : _buildConsentPlaceholder(center, theme),
+      body: _hasConsent == true
+          ? _buildMap(center, theme)
+          : _buildConsentPlaceholder(center, theme),
     );
   }
 

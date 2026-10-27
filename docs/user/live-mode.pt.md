@@ -6,18 +6,34 @@ O Modo Live é a forma mais rápida de escutar pelo microfone do telefone e revi
 
 Na tela de Início, toque no cartão **Modo Live** com o ícone :app-micRounded:.
 
-## Widget «Escuta rápida»
+## Escuta rápida
 
-**Apenas Android.** Um widget na tela de início começa a escutar com um único toque, sem precisar abrir o app e navegar até o modo — útil quando você ouve algo que quer identificar antes que pare de cantar.
+A Escuta rápida começa a escutar com um único toque, sem precisar abrir o app e navegar até o modo — útil quando você ouve algo que quer identificar antes que pare de cantar. Todos os pontos de entrada abaixo abrem o Modo Live e começam a escutar imediatamente, qualquer que seja o valor da configuração **Iniciar gravação automaticamente**, e nenhum deles altera essa configuração.
+
+### Android: widget na tela de início
 
 Adicione-o como qualquer outro widget: mantenha pressionado um espaço vazio da tela de início, toque em **Widgets**, procure **BirdNET Live** e arraste um dos dois blocos.
 
 - **Escuta rápida** (2×1) — ícone com o rótulo **Iniciar escuta**
 - **Escuta rápida (compacta)** (1×1) — somente o ícone
 
-Os dois fazem a mesma coisa. Tocar em qualquer um deles abre o Modo Live e começa a escutar imediatamente, qualquer que seja o valor da configuração **Iniciar gravação automaticamente**. O widget não altera essa configuração.
+Os dois fazem a mesma coisa.
 
-Se o Modo Live já estiver aberto, o widget volta para essa mesma tela em vez de recriá-la. Uma Session em andamento ou pausada continua sem alterações; se estiver parada, a escuta começa na tela existente.
+### iOS: Atalhos, Siri, botão de Ação e ícone do app
+
+O BirdNET Live oferece ao sistema a ação **Iniciar escuta**, então não há nada para montar à mão:
+
+- **Botão de Ação** (iPhone 15 Pro e posteriores) — abra **Ajustes → Botão de Ação**, escolha **Atalho** e selecione **Iniciar escuta** em BirdNET Live. Depois disso, manter o botão pressionado começa a escutar.
+- **Siri** — diga "Começar a ouvir com BirdNET Live", "Ouvir aves com BirdNET Live" ou "Identificar uma ave com BirdNET Live".
+- **App Atalhos** — a ação **Iniciar escuta** aparece em BirdNET Live. Use-a em um atalho seu, adicione esse atalho à tela de início ou execute-o com Toque Atrás, um Foco ou uma etiqueta NFC.
+- **Ícone do app** — mantenha pressionado o ícone do BirdNET Live na tela de início e toque em **Iniciar escuta**.
+- **URL** — automações que abrem uma URL podem usar `birdnetlive://listen`.
+
+As frases da Siri e a entrada no seletor do botão de Ação exigem o iOS 17. A ação dos Atalhos, o menu do ícone e a URL também funcionam no iOS 16.
+
+### O que acontece em seguida
+
+Se o Modo Live já estiver aberto, a Escuta rápida volta para essa mesma tela em vez de recriá-la. Uma Session em andamento ou pausada continua sem alterações; se estiver parada, a escuta começa na tela existente.
 
 A Escuta rápida nunca substitui outro modo em execução. Se uma Session de Point Count, Survey, File Analysis ou [Modo ARU](aru-mode.md) estiver em andamento ou iniciando, o app vem para o primeiro plano e pede que você encerre primeiro essa Session. A tela e o trabalho continuam acessíveis e não são interrompidos.
 

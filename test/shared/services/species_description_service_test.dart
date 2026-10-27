@@ -49,7 +49,7 @@ void main() {
     });
 
     test('falls back to English for unbundled locales', () {
-      for (final loc in ['ja', 'ko', 'sv', 'tr', 'uk', 'zz-ZZ', '']) {
+      for (final loc in ['ja', 'sv', 'tr', 'uk', 'zz-ZZ', '']) {
         expect(SpeciesDescriptionService.resolveBundleLocale(loc), 'en');
       }
     });

@@ -121,6 +121,20 @@ pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
 d'inférence — elle utilise un réglage de
 [chevauchement](file-analysis.md) à la place.
 
+Si un appareil ne parvient pas à suivre la fréquence choisie — l'inférence
+prend un pas complet de retard sur la capture pendant plusieurs fenêtres
+d'affilée —, la Session abaisse la fréquence de 0,30 Hz, et de nouveau tant
+que l'appareil continue de prendre du retard, jusqu'à 0,10 Hz au minimum. La
+fréquence abaissée devient alors le réglage de tous les modes : Live, Point
+Count, Survey et ARU, et donc de leurs assistants de configuration, afin que
+la Session suivante, quel que soit le mode, démarre à une fréquence que cet
+appareil peut tenir. Les réglages et les assistants affichent sous le curseur
+une note indiquant que l'appareil est connu pour être trop lent au-delà de
+cette fréquence. La note reste, car un appareil lent reste lent ; les curseurs
+restent librement réglables. Sans cela, un appareil lent accumule un retard
+qui finit par écraser l'audio dont sont extraits les extraits de détection,
+et les détections restent sans audio.
+
 ### Ignorer des espèces
 
 Ouvre un panneau de filtres binaires d’inférence. Cochez **Oiseaux**, **Mammifères**, **Amphibiens** ou **Insectes** pour supprimer toute cette classe taxonomique. Les quatre cases sont décochées par défaut.
@@ -142,6 +156,10 @@ fenêtre de soutien, porte le score étayé le plus fort et se termine à la fin
 la dernière fenêtre de soutien.
 
 ## Spectrogramme
+
+### Taille
+
+Définit la place qu'occupe le spectrogramme en direct à l'écran en Live Mode, Point Count, Survey et ARU. **Pleine** est la hauteur habituelle. **Moyenne** et **Petite** la réduisent à 75 % et 50 % et cèdent la différence à la liste des détections : le bon choix quand, sur un téléphone en portrait, vous suivez surtout la liste. **Désactivé** retire complètement le spectrogramme ; en Survey et ARU, l'onglet du spectrogramme disparaît aussi. En mode paysage, **Moyenne** et **Petite** raccourcissent le spectrogramme dans sa moitié d'écran (l'espace en dessous reste vide pour l'instant), et **Désactivé** laisse tout l'écran à la liste des détections. Les spectrogrammes des sessions enregistrées et de la lecture ne sont pas concernés.
 
 ### Taille de FFT
 
@@ -223,7 +241,7 @@ Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de f
 
 Une fois activé, le mode Live commence à enregistrer dès l'ouverture de l'écran et la fin du chargement du modèle — sans avoir à appuyer sur le bouton du micro. Utile pour des installations de type borne, une utilisation mains libres (appareil monté sur le terrain, par exemple) ou tout flux où ouvrir Live signifie déjà « on démarre maintenant ». Désactivé par défaut, afin qu'un appui accidentel sur la tuile Live depuis l'écran d'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se produit qu'une fois par visite de l'écran : arrêter une session puis réappuyer sur le micro fonctionne donc toujours comme un redémarrage manuel.
 
-Ce réglage concerne l'ouverture du mode Live depuis l'application. Le [widget Quick Listen](live-mode.md) commence à écouter dès qu'on appuie dessus, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
+Ce réglage concerne l'ouverture du mode Live depuis l'application. [Quick Listen](live-mode.md) — le widget Android ou, sur iOS, le raccourci, la phrase Siri et l'action de l'icône — commence à écouter dès qu'il est déclenché, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
 
 ### Continuer avec l’écran éteint
 

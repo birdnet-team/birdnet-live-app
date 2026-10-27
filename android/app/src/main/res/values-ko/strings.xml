@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quick_listen_widget_label">빠른 청취</string>
+    <string name="quick_listen_widget_description">바로 Live Mode로 이동해 청취를 시작합니다.</string>
+    <string name="quick_listen_widget_button">청취 시작</string>
+    <string name="quick_listen_widget_1x1_label">빠른 청취 (소형)</string>
+    <string name="quick_listen_widget_1x1_description">아이콘만 있는 작은 타일 — 탭하면 바로 Live Mode로 이동해 청취를 시작합니다.</string>
+</resources>

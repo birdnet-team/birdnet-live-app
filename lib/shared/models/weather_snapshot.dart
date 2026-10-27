@@ -90,10 +90,9 @@ class WeatherSnapshot {
     }
     return WeatherSnapshot(
       fetchedAt: parsed,
-      observedAt:
-          json['observedAt'] is String
-              ? DateTime.tryParse(json['observedAt'] as String)
-              : null,
+      observedAt: json['observedAt'] is String
+          ? DateTime.tryParse(json['observedAt'] as String)
+          : null,
       temperatureC: (json['temperatureC'] as num?)?.toDouble(),
       precipitationMm: (json['precipitationMm'] as num?)?.toDouble(),
       windSpeedMs: (json['windSpeedMs'] as num?)?.toDouble(),

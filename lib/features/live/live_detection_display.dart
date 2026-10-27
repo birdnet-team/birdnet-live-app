@@ -133,9 +133,9 @@ void _sortDetectionDisplayList(
       return;
     case DetectedSpeciesSortMode.alphabetical:
       detections.sort((a, b) {
-        final commonName = localizedName(
-          a,
-        ).toLowerCase().compareTo(localizedName(b).toLowerCase());
+        final commonName = localizedName(a)
+            .toLowerCase()
+            .compareTo(localizedName(b).toLowerCase());
         if (commonName != 0) return commonName;
         return a.scientificName.compareTo(b.scientificName);
       });

@@ -22,17 +22,16 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 1,
-                totalSteps: 3,
-                onBack: () {},
-                onNext: () {},
-                backLabel: 'Back',
-                nextLabel: 'Next',
-                child: const Text('content'),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 1,
+            totalSteps: 3,
+            onBack: () {},
+            onNext: () {},
+            backLabel: 'Back',
+            nextLabel: 'Next',
+            child: const Text('content'),
+          ),
         ),
       );
 
@@ -46,17 +45,16 @@ void main() {
     testWidgets('disables Next button when onNext is null', (tester) async {
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 0,
-                totalSteps: 2,
-                onBack: () {},
-                onNext: null,
-                backLabel: 'Cancel',
-                nextLabel: 'Next',
-                child: const SizedBox(),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 0,
+            totalSteps: 2,
+            onBack: () {},
+            onNext: null,
+            backLabel: 'Cancel',
+            nextLabel: 'Next',
+            child: const SizedBox(),
+          ),
         ),
       );
 
@@ -71,18 +69,17 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 1,
-                totalSteps: 2,
-                onBack: () {},
-                onNext: () {},
-                backLabel: 'Back',
-                nextLabel: 'Start',
-                nextIcon: Icons.play_arrow,
-                child: const SizedBox(),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 1,
+            totalSteps: 2,
+            onBack: () {},
+            onNext: () {},
+            backLabel: 'Back',
+            nextLabel: 'Start',
+            nextIcon: Icons.play_arrow,
+            child: const SizedBox(),
+          ),
         ),
       );
 
@@ -92,18 +89,17 @@ void main() {
     testWidgets('hides footer when showFooter is false', (tester) async {
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 0,
-                totalSteps: 2,
-                onBack: () {},
-                onNext: () {},
-                backLabel: 'Back',
-                nextLabel: 'Next',
-                showFooter: false,
-                child: const SizedBox(),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 0,
+            totalSteps: 2,
+            onBack: () {},
+            onNext: () {},
+            backLabel: 'Back',
+            nextLabel: 'Next',
+            showFooter: false,
+            child: const SizedBox(),
+          ),
         ),
       );
 
@@ -116,17 +112,16 @@ void main() {
       var nextTaps = 0;
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 0,
-                totalSteps: 2,
-                onBack: () => backTaps++,
-                onNext: () => nextTaps++,
-                backLabel: 'Back',
-                nextLabel: 'Next',
-                child: const SizedBox(),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 0,
+            totalSteps: 2,
+            onBack: () => backTaps++,
+            onNext: () => nextTaps++,
+            backLabel: 'Back',
+            nextLabel: 'Next',
+            child: const SizedBox(),
+          ),
         ),
       );
 
@@ -141,21 +136,17 @@ void main() {
     testWidgets('renders leading widget in AppBar', (tester) async {
       await tester.pumpWidget(
         _host(
-          builder:
-              (_) => WizardScaffold(
-                title: 'Setup',
-                step: 0,
-                totalSteps: 2,
-                leading: const Icon(
-                  Icons.close,
-                  key: ValueKey('leading-close'),
-                ),
-                onBack: () {},
-                onNext: () {},
-                backLabel: 'Back',
-                nextLabel: 'Next',
-                child: const SizedBox(),
-              ),
+          builder: (_) => WizardScaffold(
+            title: 'Setup',
+            step: 0,
+            totalSteps: 2,
+            leading: const Icon(Icons.close, key: ValueKey('leading-close')),
+            onBack: () {},
+            onNext: () {},
+            backLabel: 'Back',
+            nextLabel: 'Next',
+            child: const SizedBox(),
+          ),
         ),
       );
 

@@ -30,6 +30,8 @@ BirdNET Live
 
 **zh:** 把专业生物声学装进口袋。
 
+**ko:** 주머니 속의 전문 생물음향학.
+
 ## Subtitle App Store
 
 **cs:** Bioakustika ve vaší kapse.
@@ -56,6 +58,8 @@ BirdNET Live
 
 **zh:** 把生物声学装进口袋。
 
+**ko:** 주머니 속의 생물음향학.
+
 ## Promo text App Store
 
 **cs:** BirdNET Live spouští náš nejvyspělejší akustický model přímo ve vašem zařízení – zcela bez nutnosti připojení k internetu.
@@ -81,6 +85,8 @@ BirdNET Live
 **ru:** BirdNET Live запускает нашу самую продвинутую модель распознавания звуков прямо на вашем устройстве — подключение к интернету не требуется.
 
 **zh:** BirdNET Live 把我们最先进的声音识别模型直接运行在您的设备上——完全无需联网。
+
+**ko:** BirdNET Live는 가장 정교한 소리 식별 모델을 기기에서 직접 실행합니다 — 인터넷 연결이 필요 없습니다.
 
 
 ## Long description
@@ -383,6 +389,31 @@ BirdNET Live 同时面向研究人员和公民科学家，提供丰富的配置�
 
 更多信息请参阅我们的在线用户指南：https://birdnet-team.github.io/birdnet-live-app/user/
 
+### ko
+
+새소리와 자연의 소리를 발견하고, 새와 다른 생물을 그들이 내는 소리로 동정해 보세요.
+
+BirdNET Live는 가장 정교한 소리 식별 모델을 기기에서 직접 실행합니다 — 인터넷 연결이 필요 없습니다.
+
+실시간으로 흐르는 스펙트로그램을 지켜보고, 종 감지 결과를 실시간으로 확인하고, 점점 늘어나는 동물 소리 라이브러리를 휴대전화에서 바로 관리하세요.
+
+BirdNET Live는 여러 작업 흐름으로 생물음향 연구와 체계적인 음향 조사를 지원합니다:
+
+- Live Mode — 실시간 스펙트로그램과 함께 종을 실시간으로 감지
+- Point Count — 실시간 감지가 포함된 체계적인 시간제 Session
+- Survey — 긴 조사선을 녹음하면서 이동 경로를 따라 감지 결과를 추적
+- 파일 분석 — 기기에 저장된 오디오 파일 분석
+- 일괄 분석 — 여러 오디오 파일을 한 번에 처리
+- ARU 모드 — 장기간의 음향 녹음 장비 운용 예약
+
+BirdNET Live는 연구자와 시민 과학자 모두를 위해 설계되었으며, 폭넓은 설정 옵션과 감지 결과 검토 기능을 제공합니다.
+
+이 앱은 코넬 대학교 K. Lisa Yang 보전 생물음향학 센터(Cornell K. Lisa Yang Center for Conservation Bioacoustics)와 켐니츠 공과대학교(Chemnitz University of Technology)가 베를린 자연사박물관(Museum für Naturkunde Berlin)과 협력하여 공동으로 개발했습니다.
+
+이 앱의 개발은 독일 연방 환경 재단(Deutsche Bundesstiftung Umwelt)의 지원을 받고 있습니다.
+
+자세한 내용은 온라인 사용자 가이드를 참고하세요: https://birdnet-team.github.io/birdnet-live-app/user/
+
 ## Keywords
 
 **cs:** BirdNET, Bioakustika, AI, Rozpoznávání ptáků, Rozpoznávání zvuků, Ptačí zpěv
@@ -408,3 +439,5 @@ BirdNET Live 同时面向研究人员和公民科学家，提供丰富的配置�
 **ru:** BirdNET, Биоакустика, ИИ, Распознавание птиц, Распознавание звуков, Пение птиц
 
 **zh:** BirdNET, 生物声学, AI, 鸟类识别, 声音识别, 鸟鸣
+
+**ko:** BirdNET, 생물음향학, AI, 조류 식별, 소리 식별, 새소리

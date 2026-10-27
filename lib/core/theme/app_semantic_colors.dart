@@ -105,26 +105,27 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   /// light/dark palettes.
   static AppSemanticColors highContrast(ColorScheme colorScheme) {
     final isDark = colorScheme.brightness == Brightness.dark;
-    final success =
-        isDark ? _successHighContrastDark : _successHighContrastLight;
+    final success = isDark
+        ? _successHighContrastDark
+        : _successHighContrastLight;
     return AppSemanticColors(
       success: success,
       onSuccess: _onColorFor(success),
       successContainer: success,
       onSuccessContainer: _onColorFor(success),
       sessionLive: isDark ? _liveHighContrastDark : _liveHighContrastLight,
-      sessionPointCount:
-          isDark ? _pointCountHighContrastDark : _pointCountHighContrastLight,
-      sessionSurvey:
-          isDark ? _surveyHighContrastDark : _surveyHighContrastLight,
-      sessionFileAnalysis:
-          isDark
-              ? _fileAnalysisHighContrastDark
-              : _fileAnalysisHighContrastLight,
-      sessionBatchAnalysis:
-          isDark
-              ? _batchAnalysisHighContrastDark
-              : _batchAnalysisHighContrastLight,
+      sessionPointCount: isDark
+          ? _pointCountHighContrastDark
+          : _pointCountHighContrastLight,
+      sessionSurvey: isDark
+          ? _surveyHighContrastDark
+          : _surveyHighContrastLight,
+      sessionFileAnalysis: isDark
+          ? _fileAnalysisHighContrastDark
+          : _fileAnalysisHighContrastLight,
+      sessionBatchAnalysis: isDark
+          ? _batchAnalysisHighContrastDark
+          : _batchAnalysisHighContrastLight,
       sessionAru: isDark ? _aruHighContrastDark : _aruHighContrastLight,
     );
   }
@@ -143,10 +144,9 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     // Pick a foreground that always survives against the success-tinted
     // container: white on dark, the deepened success hue on light. Using
     // the raw success color here would collapse contrast in light mode.
-    final onSuccessContainer =
-        isDark
-            ? Colors.white
-            : Color.alphaBlend(Colors.black.withAlpha(120), success);
+    final onSuccessContainer = isDark
+        ? Colors.white
+        : Color.alphaBlend(Colors.black.withAlpha(120), success);
 
     return AppSemanticColors(
       success: success,

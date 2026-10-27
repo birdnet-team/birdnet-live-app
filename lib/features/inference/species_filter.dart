@@ -189,9 +189,8 @@ abstract final class SpeciesFilter {
     // ranks among the ones actually expected here, using the same scale the
     // Explore screen shows.  Only ~300 of ~9800 scores clear the inclusion
     // threshold, so this is cheap enough to redo each inference cycle.
-    final neutralOccurrence = ExploreTierScale.fromGeoScores(
-      geoScores,
-    ).minRawFor(ExploreTier.abundant);
+    final neutralOccurrence = ExploreTierScale.fromGeoScores(geoScores)
+        .minRawFor(ExploreTier.abundant);
 
     // The threshold is the pivot: at p == threshold a species needs exactly
     // `neutralOccurrence` to survive.  Clamping keeps it below the immunity
@@ -207,8 +206,7 @@ abstract final class SpeciesFilter {
       if (d.confidence >= _adaptiveImmunity) return true;
 
       // Species the geo-model has no opinion on are treated as neutral.
-      final geoScore =
-          geoScores[d.species.scientificName] ?? neutralOccurrence;
+      final geoScore = geoScores[d.species.scientificName] ?? neutralOccurrence;
 
       final logitConfidence = _logit(d.confidence);
       final ramp = ((logitImmunity - logitConfidence) / span).clamp(0.0, 1.0);

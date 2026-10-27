@@ -98,6 +98,8 @@ build, is what keeps them out), and the ELF `LOAD` segments are 16 KB aligned.
 | `integration_test/model_output_test.dart` on Pixel 10 Pro (Tensor G5, Android 17, arm64, no SME), 2026-10-11 | 5/5 passed: detections match the Python reference for every fixture window, batched = single-window output, no crash |
 | Live Mode session on the same Pixel 10 Pro (debug build), 2026-10-11 | 8 min 10 s, 487 inference runs, 9 species / 28 detections, geo-model loaded with a fix, session finalized into Session Review; RSS sampled every minute stayed within 848–867 MB with no upward trend; no `Fatal signal`/ANR in logcat |
 | Release APK (R8, built-in Kotlin), 2026-10-11 | packaged `libonnxruntime.so` build ID `b178f5c22304a25ff481e608260312842627e868` = the inspected 1.28.0 AAR; `mlas.disable_kleidiai` present; `ai.onnxruntime.OrtSession$SessionOptions` kept by R8 |
+| `integration_test/model_output_test.dart` on the x86_64 emulator (Medium_Phone_API_36, API 36 Play image), 2026-10-18 | 5/5 passed with the x86_64 `libonnxruntime.so`; first bundle with the x86_64 split |
+| Universal release APK launched on the same emulator, 2026-10-18 | loader picked `lib/x86_64/libonnxruntime4j_jni.so` and `libdartjni.so`, process alive after 30 s, crash buffer empty |
 
 A Pixel 10 Pro has no SME, so on that device the KleidiAI override is never
 installed regardless of the switch. That is the point: it exercises exactly the
@@ -150,8 +152,8 @@ parity with Android.
 3. Confirm the switch still exists in that runtime. Download the AAR from
    Maven Central
    (`https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime-android/<ver>/`),
-   unzip it, and check `jni/arm64-v8a/libonnxruntime.so` for the string
-   `mlas.disable_kleidiai`. If the key is gone, read that release's
+   unzip it, and check `jni/arm64-v8a/libonnxruntime.so` and
+   `jni/x86_64/libonnxruntime.so` for the string `mlas.disable_kleidiai`. If the key is gone, read that release's
    `onnxruntime_session_options_config_keys.h` before going any further.
 4. Push the fixtures and run the model output integration test on a physical
    arm64 device — it compares detections against the Python reference, so it
@@ -161,10 +163,14 @@ parity with Android.
    flutter test integration_test/model_output_test.dart -d <device_id>
    ```
    Then run a real Live session for several minutes. An emulator is not a
-   valid substitute.
+   valid substitute for the arm64 build. The bundle also ships an x86_64
+   build for Intel/AMD Chromebooks, which has no KleidiAI path but is its
+   own binary: run the same integration test once on an x86_64 emulator so
+   that split is covered too.
 5. Build the release APK and verify the packaged `libonnxruntime.so` build ID
    matches the AAR you inspected
-   (`llvm-readelf -n lib/arm64-v8a/libonnxruntime.so` from the Android NDK).
+   (`llvm-readelf -n lib/<abi>/libonnxruntime.so` from the Android NDK, for
+   both `arm64-v8a` and `x86_64`).
 
 If the candidate is clean, update this document with the new evidence rather
 than deleting it.

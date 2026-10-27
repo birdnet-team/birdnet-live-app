@@ -6,18 +6,34 @@ Live Mode is the fastest way to listen through the phone microphone and review d
 
 From the Home screen, tap the **Live Mode** card with the :app-micRounded: icon.
 
-## Quick Listen Widget
+## Quick Listen
 
-**Android only.** A home-screen widget starts listening in a single tap, without opening the app and navigating in first — useful when you hear something you want identified before it stops calling.
+Quick Listen starts listening in a single tap, without opening the app and navigating in first — useful when you hear something you want identified before it stops calling. Every entry point below opens Live Mode and begins listening straight away, whatever the **Auto-start recording** setting is set to, and none of them changes that setting.
+
+### Android: home-screen widget
 
 Add it the way you add any widget: press and hold an empty spot on the home screen, tap **Widgets**, find **BirdNET Live**, and drag out one of the two tiles.
 
 - **Quick Listen** (2×1) — icon with a **Start Listening** label
 - **Quick Listen (compact)** (1×1) — icon only
 
-Both do the same thing. Tapping either one opens Live Mode and begins listening straight away, whatever the **Auto-start recording** setting is set to. The widget does not change that setting.
+Both do the same thing.
 
-If Live Mode is already open, the widget returns to that same screen instead of rebuilding it. A running or paused Session continues unchanged; if it is stopped, listening starts on the existing screen.
+### iOS: Shortcuts, Siri, Action Button, and app icon
+
+BirdNET Live offers a **Start Listening** action to the system, so there is nothing to build by hand:
+
+- **Action Button** (iPhone 15 Pro and later) — open **Settings → Action Button**, choose **Shortcut**, and pick **Start Listening** under BirdNET Live. Pressing and holding the button then starts listening.
+- **Siri** — say "Start listening with BirdNET Live", "Listen for birds with BirdNET Live", or "Identify a bird with BirdNET Live".
+- **Shortcuts app** — the **Start Listening** action is listed under BirdNET Live. Use it in a shortcut of your own, add that shortcut to the home screen, or run it from Back Tap, a Focus, or an NFC tag.
+- **App icon** — press and hold the BirdNET Live icon on the home screen and tap **Start Listening**.
+- **URL** — automations that open a URL can use `birdnetlive://listen`.
+
+Siri phrases and the Action Button listing need iOS 17. The Shortcuts action, the app-icon menu, and the URL also work on iOS 16.
+
+### What happens next
+
+If Live Mode is already open, Quick Listen returns to that same screen instead of rebuilding it. A running or paused Session continues unchanged; if it is stopped, listening starts on the existing screen.
 
 Quick Listen never replaces another running mode. If a Point Count, Survey, File Analysis, or [ARU Mode](aru-mode.md) Session is running or starting, the app comes to the foreground and asks you to stop that Session first. Its screen and work remain accessible and are not interrupted.
 

@@ -19,7 +19,7 @@
 |---|---|---|
 | :app-tuneRounded: **设置** | 主界面底栏、Live、Point Count、Survey、文件分析、Session 回顾 | 打开设置。在模式界面中，打开与该工作方式最相关的设置。 |
 | :app-searchRounded: **探索** | 主界面底栏 | 打开探索。 |
-| :app-libraryMusic: **库** | 主界面底栏 | 打开 Session 库。 |
+| :app-libraryMusic: **库** | 主界面底栏 | 打开 Session 列表。 |
 | :app-helpOutlineRounded: **帮助** | 主界面底栏、探索页头、Survey 面板、Session 回顾工具栏 | 打开帮助或该界面专属的帮助面板。 |
 | :app-infoOutline: **信息 / 关于** | 主界面底栏、信息栏、帮助面板 | 显示概况信息或汇总说明。 |
 | :app-arrowBackRounded: **返回** | Live 模式 | 返回上一界面。 |

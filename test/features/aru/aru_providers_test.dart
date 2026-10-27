@@ -24,14 +24,11 @@ void main() {
           startCapture: () async => captureStarts++,
           setGain: (value) => gain = value,
           setHighPassCutoff: (value) => highPass = value,
-          startRecording: ({
-            required sessionId,
-            required mode,
-            required format,
-          }) {
-            recordingStarts++;
-            return Future.value('/recordings/$sessionId');
-          },
+          startRecording:
+              ({required sessionId, required mode, required format}) {
+                recordingStarts++;
+                return Future.value('/recordings/$sessionId');
+              },
           recordingMode: RecordingMode.off,
           recordingSessionId: 'aru-1/cycle_000',
           recordingFormat: 'flac',
@@ -61,14 +58,11 @@ void main() {
           startCapture: () async => events.add('capture'),
           setGain: (_) => events.add('gain'),
           setHighPassCutoff: (_) => events.add('highPass'),
-          startRecording: ({
-            required sessionId,
-            required mode,
-            required format,
-          }) {
-            events.add('record:$sessionId:$format:${mode.name}');
-            return Future.value('/recordings/$sessionId/full.flac');
-          },
+          startRecording:
+              ({required sessionId, required mode, required format}) {
+                events.add('record:$sessionId:$format:${mode.name}');
+                return Future.value('/recordings/$sessionId/full.flac');
+              },
           recordingMode: RecordingMode.full,
           recordingSessionId: 'aru-1/cycle_000',
           recordingFormat: 'flac',

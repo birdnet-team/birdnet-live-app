@@ -6,18 +6,34 @@ De Live-modus is de snelste manier om via de telefoonmicrofoon mee te luisteren 
 
 Tik op het startscherm op de kaart **Live-modus** met het pictogram :app-micRounded:.
 
-## Quick Listen-widget
+## Quick Listen
 
-**Alleen Android.** Een widget op het startscherm begint met één tik te luisteren, zonder dat je de app hoeft te openen en erin te navigeren — handig wanneer je iets hoort dat je wilt laten herkennen voordat het stopt met roepen.
+Quick Listen begint met één tik te luisteren, zonder dat je de app hoeft te openen en erin te navigeren — handig wanneer je iets hoort dat je wilt laten herkennen voordat het stopt met roepen. Elk van de onderstaande ingangen opent de Live-modus en begint meteen te luisteren, ongeacht hoe de instelling **Opname automatisch starten** staat, en geen van ze wijzigt die instelling.
+
+### Android: widget op het startscherm
 
 Je voegt de widget toe zoals elke andere widget: houd een lege plek op het startscherm ingedrukt, tik op **Widgets**, zoek **BirdNET Live** en sleep een van de twee tegels naar buiten.
 
-- **Quick Listen** (2×1) — pictogram met het label **Start Listening**
-- **Quick Listen (compact)** (1×1) — alleen het pictogram
+- **Snel luisteren** (2×1) — pictogram met het label **Luisteren starten**
+- **Snel luisteren (compact)** (1×1) — alleen het pictogram
 
-Beide doen hetzelfde. Als je op een van beide tikt, opent de Live-modus en begint het luisteren meteen, ongeacht hoe de instelling **Opname automatisch starten** staat. De widget wijzigt die instelling niet.
+Beide doen hetzelfde.
 
-Als de Live-modus al open is, keert de widget terug naar datzelfde scherm in plaats van het opnieuw op te bouwen. Een lopende of gepauzeerde Session gaat ongewijzigd verder; is die gestopt, dan start het luisteren op het bestaande scherm.
+### iOS: Opdrachten, Siri, actieknop en app-pictogram
+
+BirdNET Live biedt het systeem de actie **Luisteren starten** aan, dus je hoeft niets zelf te bouwen:
+
+- **Actieknop** (iPhone 15 Pro en nieuwer) — open **Instellingen → Actieknop**, kies **Opdracht** en selecteer **Luisteren starten** onder BirdNET Live. De knop ingedrukt houden start daarna het luisteren.
+- **Siri** — zeg "Begin met luisteren met BirdNET Live", "Luister naar vogels met BirdNET Live" of "Herken een vogel met BirdNET Live".
+- **Opdrachten-app** — de actie **Luisteren starten** staat onder BirdNET Live. Gebruik hem in een eigen opdracht, zet die opdracht op het startscherm of start hem via Tik op achterkant, een focus of een NFC-tag.
+- **App-pictogram** — houd het BirdNET Live-pictogram op het startscherm ingedrukt en tik op **Luisteren starten**.
+- **URL** — automatiseringen die een URL openen, kunnen `birdnetlive://listen` gebruiken.
+
+Siri-zinnen en de vermelding in de actieknopkiezer vereisen iOS 17. De Opdrachten-actie, het pictogrammenu en de URL werken ook op iOS 16.
+
+### Wat er daarna gebeurt
+
+Als de Live-modus al open is, keert Quick Listen terug naar datzelfde scherm in plaats van het opnieuw op te bouwen. Een lopende of gepauzeerde Session gaat ongewijzigd verder; is die gestopt, dan start het luisteren op het bestaande scherm.
 
 Quick Listen vervangt nooit een andere lopende modus. Loopt of start er een Session van Point Count, Survey, Bestandsanalyse of de [ARU-modus](aru-mode.md), dan komt de app naar de voorgrond en vraagt of je die Session eerst wilt stoppen. Het bijbehorende scherm en het werk blijven bereikbaar en worden niet onderbroken.
 

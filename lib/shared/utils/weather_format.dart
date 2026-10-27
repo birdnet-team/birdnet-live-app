@@ -122,10 +122,9 @@ String formatWind(
   AppLocalizations? l10n,
 }) {
   if (speedMs == null) return '—';
-  final compass =
-      l10n == null
-          ? compassFromBearing(bearingDeg)
-          : localizedCompassFromBearing(bearingDeg, l10n);
+  final compass = l10n == null
+      ? compassFromBearing(bearingDeg)
+      : localizedCompassFromBearing(bearingDeg, l10n);
   final base = '${speedMs.toStringAsFixed(1)} m/s';
   return compass.isEmpty ? base : '$base $compass';
 }

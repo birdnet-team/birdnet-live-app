@@ -1,0 +1,5 @@
+/* Siri / Shortcuts phrases for StartListeningIntent (QuickAction.swift). Keys are the English phrases; ${applicationName} must stay. */
+
+"Identify a bird with ${applicationName}" = "Identifier un oiseau avec ${applicationName}";
+"Listen for birds with ${applicationName}" = "Écouter les oiseaux avec ${applicationName}";
+"Start listening with ${applicationName}" = "Commencer l’écoute avec ${applicationName}";

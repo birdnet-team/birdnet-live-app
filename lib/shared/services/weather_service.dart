@@ -284,8 +284,9 @@ class WeatherService {
       int? readInt(String key) => readDouble(key)?.toInt();
 
       final observedRaw = times[bestIdx];
-      final observed =
-          observedRaw is String ? DateTime.tryParse(observedRaw) : null;
+      final observed = observedRaw is String
+          ? DateTime.tryParse(observedRaw)
+          : null;
 
       final snapshot = WeatherSnapshot(
         fetchedAt: DateTime.now().toUtc(),

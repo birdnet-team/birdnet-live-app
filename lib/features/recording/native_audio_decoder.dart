@@ -307,13 +307,15 @@ class NativeAudioDecoder {
     required int count,
     bool allowConcurrent = false,
   }) async {
-    final result = await _channel
-        .invokeMapMethod<String, dynamic>('decodeRange', {
-          'path': path,
-          'startSample': startSample,
-          'count': count,
-          'allowConcurrent': allowConcurrent,
-        });
+    final result = await _channel.invokeMapMethod<String, dynamic>(
+      'decodeRange',
+      {
+        'path': path,
+        'startSample': startSample,
+        'count': count,
+        'allowConcurrent': allowConcurrent,
+      },
+    );
 
     if (result == null) {
       throw const FormatException('Native audio range decoder returned null');
@@ -334,8 +336,9 @@ class NativeAudioDecoder {
   /// Views PCM16 bytes as samples, copying only when the platform channel
   /// returns a Uint8List whose buffer offset is not 16-bit aligned.
   static Int16List _pcm16Samples(Uint8List bytes) {
-    final alignedBytes =
-        bytes.offsetInBytes.isEven ? bytes : Uint8List.fromList(bytes);
+    final alignedBytes = bytes.offsetInBytes.isEven
+        ? bytes
+        : Uint8List.fromList(bytes);
     return alignedBytes.buffer.asInt16List(
       alignedBytes.offsetInBytes,
       alignedBytes.lengthInBytes ~/ 2,

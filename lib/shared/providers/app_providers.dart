@@ -9,10 +9,9 @@ import '../../core/constants/app_constants.dart';
 ///
 /// Must be overridden in [ProviderScope] at app startup.
 final sharedPreferencesProvider = Provider<SharedPreferences>(
-  (ref) =>
-      throw UnimplementedError(
-        'sharedPreferencesProvider must be overridden with a real instance',
-      ),
+  (ref) => throw UnimplementedError(
+    'sharedPreferencesProvider must be overridden with a real instance',
+  ),
 );
 
 /// Provider for the current [ThemeMode].

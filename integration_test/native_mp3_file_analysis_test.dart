@@ -37,8 +37,7 @@ void main() {
       expect(
         fixture.existsSync(),
         isTrue,
-        reason:
-            'Push the fixture first: adb push assets/test_fixtures/XC561949_soundscape_head.mp3 /data/local/tmp/test_fixtures/',
+        reason: 'Push the fixture first: adb push assets/test_fixtures/XC561949_soundscape_head.mp3 /data/local/tmp/test_fixtures/',
       );
 
       final metadata = await NativeAudioDecoder.inspectFile(
@@ -74,54 +73,49 @@ void main() {
     timeout: const Timeout(Duration(minutes: 5)),
   );
 
-  testWidgets(
-    'concurrent MP3 ranges match sequential decoding',
-    (tester) async {
-      final fixture = File(_fixturePath);
-      expect(fixture.existsSync(), isTrue);
+  testWidgets('concurrent MP3 ranges match sequential decoding', (
+    tester,
+  ) async {
+    final fixture = File(_fixturePath);
+    expect(fixture.existsSync(), isTrue);
 
-      final metadata = await NativeAudioDecoder.inspectFile(
+    final metadata = await NativeAudioDecoder.inspectFile(_fixturePath, 'MP3');
+    final count = metadata.sampleRate * 5;
+    final sequential = <DecodedAudio>[
+      await NativeAudioDecoder.decodeRange(
         _fixturePath,
-        'MP3',
-      );
-      final count = metadata.sampleRate * 5;
-      final sequential = <DecodedAudio>[
-        await NativeAudioDecoder.decodeRange(
-          _fixturePath,
-          startSample: 0,
-          count: count,
-        ),
-        await NativeAudioDecoder.decodeRange(
-          _fixturePath,
-          startSample: count,
-          count: count,
-        ),
-      ];
-      final concurrent = await Future.wait([
-        NativeAudioDecoder.decodeRange(
-          _fixturePath,
-          startSample: 0,
-          count: count,
-          allowConcurrent: true,
-        ),
-        NativeAudioDecoder.decodeRange(
-          _fixturePath,
-          startSample: count,
-          count: count,
-          allowConcurrent: true,
-        ),
-      ]);
+        startSample: 0,
+        count: count,
+      ),
+      await NativeAudioDecoder.decodeRange(
+        _fixturePath,
+        startSample: count,
+        count: count,
+      ),
+    ];
+    final concurrent = await Future.wait([
+      NativeAudioDecoder.decodeRange(
+        _fixturePath,
+        startSample: 0,
+        count: count,
+        allowConcurrent: true,
+      ),
+      NativeAudioDecoder.decodeRange(
+        _fixturePath,
+        startSample: count,
+        count: count,
+        allowConcurrent: true,
+      ),
+    ]);
 
-      for (var index = 0; index < sequential.length; index++) {
-        expect(concurrent[index].sampleRate, sequential[index].sampleRate);
-        expect(
-          concurrent[index].samples,
-          orderedEquals(sequential[index].samples),
-        );
-      }
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+    for (var index = 0; index < sequential.length; index++) {
+      expect(concurrent[index].sampleRate, sequential[index].sampleRate);
+      expect(
+        concurrent[index].samples,
+        orderedEquals(sequential[index].samples),
+      );
+    }
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
 
 Future<void> _expectNativeRangesReachEof({
@@ -144,19 +138,20 @@ Future<void> _expectNativeRangesReachEof({
     );
 
     final requested = math.min(chunkSamples, sourceTotalSamples - start);
-    final result = await NativeAudioDecoder.decodeRangeWithStatus(
-      sourcePath,
-      startSample: start,
-      count: requested,
-    ).timeout(
-      const Duration(seconds: 30),
-      onTimeout: () {
-        throw TimeoutException(
-          'decodeRangeWithStatus timed out at startSample=$start '
-          'count=$requested',
+    final result =
+        await NativeAudioDecoder.decodeRangeWithStatus(
+          sourcePath,
+          startSample: start,
+          count: requested,
+        ).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            throw TimeoutException(
+              'decodeRangeWithStatus timed out at startSample=$start '
+              'count=$requested',
+            );
+          },
         );
-      },
-    );
 
     final decoded = result.audio.totalSamples;
     debugPrint(
