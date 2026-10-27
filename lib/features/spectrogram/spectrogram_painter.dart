@@ -185,8 +185,9 @@ class SpectrogramPainter extends CustomPainter {
     if (w <= 0 || h <= 0) return;
 
     // Compute effective max frequency for axis overlay.
-    final effectiveMaxFreq =
-        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    final effectiveMaxFreq = maxDisplayFrequency > 0
+        ? maxDisplayFrequency
+        : (sampleRate ~/ 2);
 
     // Draw the spectrogram image scaled to the display area.
     // The internal image is at 1:1 pixel resolution (maxColumns × binCount).
@@ -255,8 +256,9 @@ class SpectrogramPainter extends CustomPainter {
 
   /// Number of frequency bins to display (constant per painter lifetime).
   int get displayBins {
-    final effectiveMaxFreq =
-        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    final effectiveMaxFreq = maxDisplayFrequency > 0
+        ? maxDisplayFrequency
+        : (sampleRate ~/ 2);
     final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(
       1,
       binCount,
@@ -343,8 +345,9 @@ class SpectrogramPainter extends CustomPainter {
   /// Each column is exactly 1 pixel wide and [displayBins] pixels tall.
   void _drawNewColumnsPixel(Canvas canvas, int imgW, int imgH, int newCols) {
     final numCols = _columns.length;
-    final effectiveMaxFreq =
-        maxDisplayFrequency > 0 ? maxDisplayFrequency : (sampleRate ~/ 2);
+    final effectiveMaxFreq = maxDisplayFrequency > 0
+        ? maxDisplayFrequency
+        : (sampleRate ~/ 2);
     final visibleBins = (effectiveMaxFreq * fftSize / sampleRate).round().clamp(
       1,
       binCount,
@@ -398,14 +401,13 @@ class SpectrogramPainter extends CustomPainter {
   /// fall within the Nyquist frequency.
   void _paintFrequencyAxis(Canvas canvas, Size size, Rect spectrogramRect) {
     final nyquist = sampleRate / 2;
-    final labelFreqs =
-        <double>[
-          1000,
-          2000,
-          4000,
-          8000,
-          10000,
-        ].where((f) => f < nyquist).toList();
+    final labelFreqs = <double>[
+      1000,
+      2000,
+      4000,
+      8000,
+      10000,
+    ].where((f) => f < nyquist).toList();
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -417,10 +419,9 @@ class SpectrogramPainter extends CustomPainter {
       fontSize: 10,
     );
 
-    final linePaint =
-        Paint()
-          ..color = Colors.white.withAlpha(51)
-          ..strokeWidth = 0.5;
+    final linePaint = Paint()
+      ..color = Colors.white.withAlpha(51)
+      ..strokeWidth = 0.5;
 
     for (final freq in labelFreqs) {
       // Normalize frequency to vertical position (0 = bottom = 0 Hz).
@@ -437,10 +438,9 @@ class SpectrogramPainter extends CustomPainter {
       );
 
       // Label text.
-      final label =
-          freq >= 1000
-              ? '${(freq / 1000).toStringAsFixed(0)}k'
-              : '${freq.toInt()}';
+      final label = freq >= 1000
+          ? '${(freq / 1000).toStringAsFixed(0)}k'
+          : '${freq.toInt()}';
       textPainter.text = TextSpan(text: label, style: labelStyle);
       textPainter.layout(maxWidth: 44);
       textPainter.paint(
@@ -483,10 +483,9 @@ class SpectrogramPainter extends CustomPainter {
       if (x < spectrogramRect.left || x > spectrogramRect.right) continue;
 
       final secsAgo = totalSeconds - t;
-      final label =
-          secsAgo < 0.05
-              ? '0s'
-              : '-${secsAgo.toStringAsFixed(secsAgo < 10 ? 1 : 0)}s';
+      final label = secsAgo < 0.05
+          ? '0s'
+          : '-${secsAgo.toStringAsFixed(secsAgo < 10 ? 1 : 0)}s';
 
       textPainter.text = TextSpan(text: label, style: labelStyle);
       textPainter.layout();
@@ -535,10 +534,9 @@ class SpectrogramPainter extends CustomPainter {
       ],
     );
 
-    final linePaint =
-        Paint()
-          ..color = Colors.white.withAlpha(38)
-          ..strokeWidth = 0.5;
+    final linePaint = Paint()
+      ..color = Colors.white.withAlpha(38)
+      ..strokeWidth = 0.5;
 
     for (final freq in labelFreqs) {
       final normY = freq / effectiveMaxFreq;

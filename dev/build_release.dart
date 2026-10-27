@@ -58,6 +58,7 @@ const List<String> kReleaseLocales = [
   'pt-PT',
   'ru-RU',
   'zh-CN',
+  'ko-KR',
 ];
 
 /// Play Console's per-locale limit is 500 characters; leave a little headroom
@@ -134,7 +135,9 @@ Future<void> main(List<String> args) async {
     apkSrc.copySync(apkDst.path);
     stdout.writeln('Copied APK → ${apkDst.path}');
 
-    final iconDst = File('${outDir.path}/BirdNET_Live_V${version}_icon_512.png');
+    final iconDst = File(
+      '${outDir.path}/BirdNET_Live_V${version}_icon_512.png',
+    );
     await _createAppGalleryIcon(root, iconDst);
     stdout.writeln('Created 512 px AppGallery icon → ${iconDst.path}');
 
@@ -240,9 +243,8 @@ String _readSince(List<String> args) {
 String _readVersion(Directory root) {
   final lines = File('${root.path}/pubspec.yaml').readAsLinesSync();
   for (final line in lines) {
-    final m = RegExp(
-      r'^version:\s*([0-9]+\.[0-9]+\.[0-9]+)\+([0-9]+)\s*$',
-    ).firstMatch(line);
+    final m = RegExp(r'^version:\s*([0-9]+\.[0-9]+\.[0-9]+)\+([0-9]+)\s*$')
+        .firstMatch(line);
     if (m != null) return m.group(1)!;
   }
   stderr.writeln('ERROR: could not find `version:` in pubspec.yaml');
@@ -278,9 +280,8 @@ List<_VersionChanges> _collectChanges(
   for (final line in changelog.readAsLinesSync()) {
     if (line.startsWith('## ')) {
       open = null;
-      final m = RegExp(
-        r'^##\s*\[?([0-9]+\.[0-9]+\.[0-9]+)\]?(?:\s*-\s*(\S+))?',
-      ).firstMatch(line);
+      final m = RegExp(r'^##\s*\[?([0-9]+\.[0-9]+\.[0-9]+)\]?(?:\s*-\s*(\S+))?')
+          .firstMatch(line);
       if (m == null) continue; // [Unreleased] or anything unversioned.
       final v = m.group(1)!;
       if (_compareVersions(v, since) <= 0) continue;
@@ -303,13 +304,14 @@ String _sourceNotes(
   String current,
   List<_VersionChanges> changes,
 ) {
-  final b =
-      StringBuffer()
-        ..writeln('REFERENCE ONLY — do not paste this into Play Console.')
-        ..writeln()
-        ..writeln('Everything shipping in this upload: after $since, '
-            'through $current.')
-        ..writeln();
+  final b = StringBuffer()
+    ..writeln('REFERENCE ONLY — do not paste this into Play Console.')
+    ..writeln()
+    ..writeln(
+      'Everything shipping in this upload: after $since, '
+      'through $current.',
+    )
+    ..writeln();
 
   if (changes.isEmpty) {
     b.writeln('(No CHANGELOG entries found in that range.)');
@@ -340,12 +342,11 @@ String _stubReleaseNotes(String since, String current) {
       '$since and $current (max $kNotesCharBudget chars). '
       'See release_notes.source.txt.';
 
-  final stub =
-      StringBuffer()
-        ..writeln('<en-US>')
-        ..writeln(headline)
-        ..writeln('</en-US>')
-        ..writeln();
+  final stub = StringBuffer()
+    ..writeln('<en-US>')
+    ..writeln(headline)
+    ..writeln('</en-US>')
+    ..writeln();
   for (final loc in kReleaseLocales) {
     stub
       ..writeln('<$loc>')
@@ -395,28 +396,34 @@ Future<void> _createAppGalleryIcon(Directory root, File destination) async {
   }
 
   if (!Platform.isWindows) {
-    stderr.writeln('ERROR: AppGallery icon generation currently requires Windows.');
+    stderr.writeln(
+      'ERROR: AppGallery icon generation currently requires Windows.',
+    );
     exit(2);
   }
 
-  final result = await Process.run('powershell.exe', [
-    '-NoProfile',
-    '-Command',
-    r'Add-Type -AssemblyName System.Drawing; '
-        r'$background = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_BACKGROUND); '
-        r'$foreground = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_FOREGROUND); '
-        r'$icon = New-Object System.Drawing.Bitmap 512, 512; '
-        r'$graphics = [System.Drawing.Graphics]::FromImage($icon); '
-        r'$graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; '
-        r'$graphics.DrawImage($background, 0, 0, 512, 512); '
-        r'$graphics.DrawImage($foreground, 0, 0, 512, 512); '
-        r'$icon.Save($env:BIRDNET_ICON_DESTINATION, [System.Drawing.Imaging.ImageFormat]::Png); '
-        r'$graphics.Dispose(); $icon.Dispose(); $foreground.Dispose(); $background.Dispose()',
-  ], environment: {
-    'BIRDNET_ICON_BACKGROUND': background.path,
-    'BIRDNET_ICON_FOREGROUND': foreground.path,
-    'BIRDNET_ICON_DESTINATION': destination.path,
-  });
+  final result = await Process.run(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-Command',
+      r'Add-Type -AssemblyName System.Drawing; '
+          r'$background = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_BACKGROUND); '
+          r'$foreground = [System.Drawing.Image]::FromFile($env:BIRDNET_ICON_FOREGROUND); '
+          r'$icon = New-Object System.Drawing.Bitmap 512, 512; '
+          r'$graphics = [System.Drawing.Graphics]::FromImage($icon); '
+          r'$graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic; '
+          r'$graphics.DrawImage($background, 0, 0, 512, 512); '
+          r'$graphics.DrawImage($foreground, 0, 0, 512, 512); '
+          r'$icon.Save($env:BIRDNET_ICON_DESTINATION, [System.Drawing.Imaging.ImageFormat]::Png); '
+          r'$graphics.Dispose(); $icon.Dispose(); $foreground.Dispose(); $background.Dispose()',
+    ],
+    environment: {
+      'BIRDNET_ICON_BACKGROUND': background.path,
+      'BIRDNET_ICON_FOREGROUND': foreground.path,
+      'BIRDNET_ICON_DESTINATION': destination.path,
+    },
+  );
   if (result.exitCode != 0 || !destination.existsSync()) {
     stderr.writeln('ERROR: could not create 512 px AppGallery icon.');
     if (result.stderr.toString().isNotEmpty) stderr.writeln(result.stderr);

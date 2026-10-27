@@ -22,6 +22,7 @@ void main() {
         'pl',
         'ru',
         'zh',
+        'ko',
       ]) {
         expect(AppConstants.docsLocalePrefix(loc), '/$loc');
       }
@@ -48,6 +49,7 @@ void main() {
         'pl',
         'ru',
         'zh',
+        'ko',
       ]) {
         expect(AppConstants.policyDocsLocalePrefix(loc), '/$loc');
       }

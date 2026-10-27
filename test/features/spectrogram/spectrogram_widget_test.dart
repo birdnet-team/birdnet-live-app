@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/audio/ring_buffer.dart';
+import 'package:birdnet_live/features/spectrogram/spectrogram_painter.dart';
 import 'package:birdnet_live/features/spectrogram/spectrogram_widget.dart';
 
 // =============================================================================
@@ -11,7 +14,8 @@ import 'package:birdnet_live/features/spectrogram/spectrogram_widget.dart';
 // Covers the lifecycle behaviour of [SpectrogramWidget], specifically the
 // regression where calling _painter.clear() before _painter was initialised
 // caused a LateInitializationError on the first _initProcessor() call from
-// initState.
+// initState, and the regression where the live screens' portrait/landscape
+// layout switch disposed the widget and cleared the spectrogram (#276).
 // =============================================================================
 
 void main() {
@@ -128,6 +132,115 @@ void main() {
       await tester.pumpWidget(buildWidget(colorMapName: 'viridis'));
       await tester.pumpWidget(buildWidget(colorMapName: 'birdnet'));
       await tester.pumpWidget(const SizedBox.shrink());
+    });
+  });
+
+  // ─── Layout reparenting on rotation (#276) ───────────────────────────────
+  //
+  // The live screens place the spectrogram at a different depth of the tree
+  // in landscape (inside a Row → Column) than in portrait (direct child of
+  // the body Column). Without a GlobalKey, Flutter disposes the State on
+  // every rotation and the painter's column buffer is lost with it.
+
+  group('SpectrogramWidget layout reparenting', () {
+    late RingBuffer ringBuffer;
+
+    setUp(() {
+      ringBuffer = RingBuffer(capacity: 4096);
+    });
+
+    /// Mirrors the body layouts of the live screens: a vertical stack in
+    /// portrait, spectrogram and detection list side by side in landscape.
+    Widget buildLayout({required bool landscape, Key? key}) {
+      final spectrogram = SpectrogramWidget(
+        key: key,
+        ringBuffer: ringBuffer,
+        isActive: false,
+        fftSize: 256,
+        displaySeconds: 2.0,
+        showFrequencyAxis: false,
+        showTimeAxis: false,
+      );
+      final body = landscape
+          ? Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Expanded(child: spectrogram),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+                const Expanded(child: SizedBox.expand()),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(flex: 2, child: spectrogram),
+                const SizedBox(height: 24),
+                const Expanded(flex: 3, child: SizedBox.expand()),
+              ],
+            );
+      return MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              const SizedBox(height: 48),
+              Expanded(child: body),
+            ],
+          ),
+        ),
+      );
+    }
+
+    SpectrogramPainter painterOf(WidgetTester tester) {
+      final customPaint = tester.widget<CustomPaint>(
+        find.descendant(
+          of: find.byType(SpectrogramWidget),
+          matching: find.byType(CustomPaint),
+        ),
+      );
+      return customPaint.painter! as SpectrogramPainter;
+    }
+
+    testWidgets(
+      'keeps its State and columns across a layout switch when keyed',
+      (tester) async {
+        final key = GlobalKey();
+        await tester.pumpWidget(buildLayout(landscape: false, key: key));
+
+        final state = tester.state(find.byType(SpectrogramWidget));
+        final painter = painterOf(tester);
+        painter.addColumn(Float64List(painter.binCount));
+        painter.addColumn(Float64List(painter.binCount));
+        expect(painter.columnCount, 2);
+
+        await tester.pumpWidget(buildLayout(landscape: true, key: key));
+        expect(tester.state(find.byType(SpectrogramWidget)), same(state));
+        expect(painterOf(tester), same(painter));
+        expect(painter.columnCount, 2);
+
+        await tester.pumpWidget(buildLayout(landscape: false, key: key));
+        expect(tester.state(find.byType(SpectrogramWidget)), same(state));
+        expect(painterOf(tester), same(painter));
+        expect(painter.columnCount, 2);
+      },
+    );
+
+    testWidgets('is recreated across a layout switch without a key (control)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildLayout(landscape: false));
+
+      final state = tester.state(find.byType(SpectrogramWidget));
+      final painter = painterOf(tester);
+      painter.addColumn(Float64List(painter.binCount));
+      expect(painter.columnCount, 1);
+
+      await tester.pumpWidget(buildLayout(landscape: true));
+      expect(tester.state(find.byType(SpectrogramWidget)), isNot(same(state)));
+      expect(painterOf(tester).columnCount, 0);
     });
   });
 }

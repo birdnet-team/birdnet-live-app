@@ -59,8 +59,10 @@ Console (Google holds the actual app-signing key in Play App Signing).
 ## 4. Build Android Artifacts
 
 The Play Store expects an `.aab`, not an APK. App Bundles deliver only the
-target device's ABI and resources, which trims our ~253 MB APK to ~221 MB on
-device.
+target device's ABI and resources, which trims our ~316 MB universal APK
+(arm64-v8a + x86_64) to ~221 MB on an arm64 device. The x86_64 split exists
+for Intel/AMD Chromebooks; see the `jniLibs` comment in
+`android/app/build.gradle`.
 
 Use the helper script — it builds, verifies, stages every artifact into
 `release/V<version>/`, and prepares the notes:
@@ -160,11 +162,11 @@ Adds a way to ignore species you don't want reported, and fixes a crash when sta
 </en-US>
 ```
 
-Then translate that one line into the other 11 locales. Max ~500 characters per
+Then translate that one line into the other 12 locales. Max ~500 characters per
 locale (the Play limit); the script's budget is 480 to leave room for
-translations that run longer than the English. All 12 locales the app ships in
+translations that run longer than the English. All 13 locales the app ships in
 get a block: en-US, de-DE, cs-CZ, es-ES, fr-FR, it-IT, nl-NL, nb-NO, pl-PL,
-pt-PT, ru-RU, zh-CN. Any locale missing on Play Console falls back to en-US.
+pt-PT, ru-RU, zh-CN, ko-KR. Any locale missing on Play Console falls back to en-US.
 Write zh-CN in Simplified Chinese characters, never pinyin.
 
 Resist auto-generating this text. An earlier version of the script filled the

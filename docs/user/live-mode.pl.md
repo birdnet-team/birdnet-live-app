@@ -6,18 +6,34 @@ Tryb Live to najszybszy sposób, aby nasłuchiwać przez mikrofon telefonu i ogl
 
 Na ekranie startowym dotknij karty **Tryb Live** z ikoną :app-micRounded:.
 
-## Widżet Quick Listen
+## Quick Listen
 
-**Tylko Android.** Widżet na ekranie głównym zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać.
+Quick Listen zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać. Każdy z poniższych punktów wejścia otwiera tryb Live i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczne rozpoczynanie nagrywania**, i żaden z nich nie zmienia tego ustawienia.
+
+### Android: widżet na ekranie głównym
 
 Dodaj go tak jak każdy inny widżet: przytrzymaj puste miejsce na ekranie głównym, dotknij **Widżety**, znajdź **BirdNET Live** i przeciągnij jeden z dwóch kafelków.
 
-- **Quick Listen** (2×1) — ikona z etykietą **Start Listening**
-- **Quick Listen (compact)** (1×1) — sama ikona
+- **Szybkie słuchanie** (2×1) — ikona z etykietą **Rozpocznij słuchanie**
+- **Szybkie słuchanie (kompaktowe)** (1×1) — sama ikona
 
-Oba robią to samo. Dotknięcie któregokolwiek otwiera tryb Live i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczne rozpoczynanie nagrywania**. Widżet nie zmienia tego ustawienia.
+Oba robią to samo.
 
-Jeśli tryb Live jest już otwarty, widżet wraca do tego samego ekranu, zamiast budować go od nowa. Trwająca lub wstrzymana Session jest kontynuowana bez zmian; jeśli została zatrzymana, nasłuchiwanie rusza na istniejącym ekranie.
+### iOS: Skróty, Siri, przycisk czynności i ikona aplikacji
+
+BirdNET Live udostępnia systemowi czynność **Rozpocznij słuchanie**, więc nie trzeba niczego budować ręcznie:
+
+- **Przycisk czynności** (iPhone 15 Pro i nowsze) — otwórz **Ustawienia → Przycisk czynności**, wybierz **Skrót** i wskaż **Rozpocznij słuchanie** pod BirdNET Live. Od tej chwili przytrzymanie przycisku rozpoczyna nasłuchiwanie.
+- **Siri** — powiedz „Zacznij słuchać w BirdNET Live”, „Słuchaj ptaków w BirdNET Live” albo „Rozpoznaj ptaka w BirdNET Live”.
+- **Aplikacja Skróty** — czynność **Rozpocznij słuchanie** znajduje się pod BirdNET Live. Użyj jej we własnym skrócie, dodaj ten skrót do ekranu głównego albo uruchamiaj go przez Stuknięcie w tył, tryb skupienia lub tag NFC.
+- **Ikona aplikacji** — przytrzymaj ikonę BirdNET Live na ekranie głównym i dotknij **Rozpocznij słuchanie**.
+- **URL** — automatyzacje otwierające adres URL mogą użyć `birdnetlive://listen`.
+
+Frazy Siri i pozycja w wyborze przycisku czynności wymagają iOS 17. Czynność w Skrótach, menu ikony i adres URL działają także w iOS 16.
+
+### Co dzieje się dalej
+
+Jeśli tryb Live jest już otwarty, Quick Listen wraca do tego samego ekranu, zamiast budować go od nowa. Trwająca lub wstrzymana Session jest kontynuowana bez zmian; jeśli została zatrzymana, nasłuchiwanie rusza na istniejącym ekranie.
 
 Quick Listen nigdy nie zastępuje innego działającego trybu. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo [trybu ARU](aru-mode.md), aplikacja przechodzi na pierwszy plan i prosi o wcześniejsze zatrzymanie tamtej Session. Jej ekran i praca pozostają dostępne i nie zostają przerwane.
 

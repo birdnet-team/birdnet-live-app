@@ -116,6 +116,7 @@ class AruRunner {
 
     final liveController = _ref.read(liveControllerProvider);
     liveController.onStateChanged = _onInferenceStateChanged;
+    liveController.onInferenceRateLowered = _onInferenceRateLowered;
 
     if (_running) return;
     // Reset transient flags so a fresh deployment is not blocked by state left
@@ -137,8 +138,7 @@ class AruRunner {
     unawaited(_kickoff());
   }
 
-  static bool get _keepsScreenOn =>
-      defaultTargetPlatform == TargetPlatform.iOS;
+  static bool get _keepsScreenOn => defaultTargetPlatform == TargetPlatform.iOS;
 
   Future<void> _kickoff() async {
     await _tick();
@@ -262,6 +262,22 @@ class AruRunner {
   void _onInferenceStateChanged() {
     if (!_running || _finishing) return;
     unawaited(_syncDetectionsFromInference());
+  }
+
+  /// The cycle's driver dropped the rate because inference fell behind.
+  ///
+  /// Kept for the rest of the deployment — every later cycle starts from
+  /// the aggregate session's settings — and as every mode's setting, so the
+  /// next session anywhere starts at a rate this device can sustain; see
+  /// [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!_running) return;
+    final session = _ref.read(aruControllerProvider).session;
+    if (session != null) {
+      session.settings = session.settings.withInferenceRate(inferenceRateHz);
+      _bumpSessionRevision();
+    }
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: _ref.read));
   }
 
   Future<void> _syncDetectionsFromInference() async {
@@ -550,6 +566,9 @@ class AruRunner {
     final liveController = _ref.read(liveControllerProvider);
     if (liveController.onStateChanged == _onInferenceStateChanged) {
       liveController.onStateChanged = null;
+    }
+    if (liveController.onInferenceRateLowered == _onInferenceRateLowered) {
+      liveController.onInferenceRateLowered = null;
     }
   }
 

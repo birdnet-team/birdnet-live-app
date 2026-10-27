@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- New **Spectrogram size** setting in the Spectrogram section: Full, Medium, Small, or Off. It shrinks or hides the live spectrogram in Live Mode, Point Count, Survey, and ARU so the detection list gets more room (#269).
+- Tapping Share on a session, a Session Library selection, or a single detection now opens a dialog with **Audio** and **Metadata** boxes, pre-ticked from the Export & Sync settings, so one share can leave out audio or tables without changing the saved defaults (#252).
+- Korean (한국어) is now a full app language: UI strings and spoken announcements (contributed in #279), offline species descriptions for 1,009 species, and the translated user guide and policies. Korean species common names were already bundled and now resolve for the Korean app locale.
+- Quick Listen on iOS (#243). A **Start Listening** action now appears under BirdNET Live in the Shortcuts app and in the Action Button picker, works with Siri ("Start listening with BirdNET Live"), sits in the app icon's long-press menu, and answers the `birdnetlive://listen` URL for automations. Every route opens Live Mode and starts listening with the same rules as the Android widget: a mounted Live Mode screen is reused, and a running Point Count, Survey, File Analysis, or ARU Session is preserved with a prompt to stop it first. Siri phrases and the Action Button listing need iOS 17; the rest works on iOS 16.
+
+### Changed
+
+- When a device cannot keep up, Live Mode, Point Count, Survey, and ARU now lower the inference rate by 0.30 Hz at a time (down to 0.10 Hz) and make the lowered rate the setting of every mode and setup wizard; Settings and the wizards then note the rate this device is known to be too slow above. On slow devices the backlog previously overwrote the audio that detection clips are cut from, so detections were kept without their clips.
+
+### Fixed
+
+- The Android Quick Listen widget now has Chinese and Korean labels. In those two app languages the widget picker and the widget itself previously fell back to English.
+- The Android build now ships native x86_64 libraries alongside arm64. Intel and AMD Chromebooks previously ran the arm64 build through the Houdini translation layer, which crashed on an Alder Lake Chromebook; phones download nothing extra.
+- A session the system ended while it was recording in the background now keeps its full recording. Checkpoints point at the audio file, and sessions already stranded this way are repaired when opened and marked as interrupted in the review.
+- Rotating the device during a Live Mode, Point Count, Survey, or ARU session no longer clears the live spectrogram. It keeps the audio it was showing and continues scrolling in the new layout (#276).
+
 ## [1.2.1] - 2026-10-12
 
 ### Changed

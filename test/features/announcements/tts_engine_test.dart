@@ -85,14 +85,17 @@ void main() {
     expect(platform.pitch, closeTo(0.9, 0.0001));
   });
 
-  test('configure falls back to English when nothing else is installed', () async {
-    platform.availableLanguages = {'en-US'};
-    final engine = PlatformTtsEngine();
+  test(
+    'configure falls back to English when nothing else is installed',
+    () async {
+      platform.availableLanguages = {'en-US'};
+      final engine = PlatformTtsEngine();
 
-    await engine.configure(languageTag: 'cs-CZ', rate: 1, pitch: 1);
+      await engine.configure(languageTag: 'cs-CZ', rate: 1, pitch: 1);
 
-    expect(platform.languagesSet, ['cs-CZ', 'cs', 'en-US']);
-  });
+      expect(platform.languagesSet, ['cs-CZ', 'cs', 'en-US']);
+    },
+  );
 
   test('configure skips platform calls when nothing changed', () async {
     platform.availableLanguages = {'de-DE'};

@@ -31,6 +31,7 @@ import '../../core/services/location_service.dart';
 import '../../shared/services/audio_background_notification.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/inference_rate_limit_note.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
 import '../../shared/widgets/weather_setup_card.dart';
@@ -892,13 +893,20 @@ class _ParametersStep extends ConsumerWidget {
             helpBody: l10n.settingsHelpInferenceRate,
             icon: AppIcons.speedRounded,
             value: '${inferenceRate.toStringAsFixed(2)} Hz',
-            child: Slider(
-              value: inferenceRate,
-              min: inferenceRateHzValues.first,
-              max: inferenceRateHzValues.last,
-              divisions: inferenceRateHzValues.length - 1,
-              label: '${inferenceRate.toStringAsFixed(2)} Hz',
-              onChanged: onInferenceRateChanged,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Slider(
+                  value: inferenceRate,
+                  min: inferenceRateHzValues.first,
+                  max: inferenceRateHzValues.last,
+                  divisions: inferenceRateHzValues.length - 1,
+                  label: '${inferenceRate.toStringAsFixed(2)} Hz',
+                  onChanged: onInferenceRateChanged,
+                ),
+                const InferenceRateLimitNote(),
+              ],
             ),
           ),
 

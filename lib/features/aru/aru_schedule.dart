@@ -150,10 +150,9 @@ List<AruDielWindow> aruDielWindowsForDate({
   double? latitude,
   double? longitude,
 }) {
-  final localMidnight =
-      date.isUtc
-          ? DateTime.utc(date.year, date.month, date.day)
-          : DateTime(date.year, date.month, date.day);
+  final localMidnight = date.isUtc
+      ? DateTime.utc(date.year, date.month, date.day)
+      : DateTime(date.year, date.month, date.day);
   final sunTimes = estimateAruSunTimes(
     date: localMidnight,
     latitude: latitude,
@@ -248,10 +247,9 @@ AruSunTimes estimateAruSunTimes({
   double? latitude,
   double? longitude,
 }) {
-  final localMidnight =
-      date.isUtc
-          ? DateTime.utc(date.year, date.month, date.day)
-          : DateTime(date.year, date.month, date.day);
+  final localMidnight = date.isUtc
+      ? DateTime.utc(date.year, date.month, date.day)
+      : DateTime(date.year, date.month, date.day);
   if (latitude == null || longitude == null) {
     return AruSunTimes(
       sunrise: localMidnight.add(const Duration(hours: 6)),
@@ -304,8 +302,9 @@ AruSunTimes estimateAruSunTimes({
 }
 
 int _dayOfYear(DateTime date) {
-  final startOfYear =
-      date.isUtc ? DateTime.utc(date.year) : DateTime(date.year);
+  final startOfYear = date.isUtc
+      ? DateTime.utc(date.year)
+      : DateTime(date.year);
   return date.difference(startOfYear).inDays + 1;
 }
 
@@ -366,14 +365,12 @@ class AruScheduleSnapshot {
 /// result is then snapped forward to the next multiple of the repeat interval
 /// past local midnight.
 DateTime aruFirstClockAlignedStart(AruScheduleConfig config) {
-  final baseTime =
-      config.testCycleEnabled
-          ? config.startTime.add(AruDefaults.testCycleDuration)
-          : config.startTime;
-  final midnight =
-      baseTime.isUtc
-          ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
-          : DateTime(baseTime.year, baseTime.month, baseTime.day);
+  final baseTime = config.testCycleEnabled
+      ? config.startTime.add(AruDefaults.testCycleDuration)
+      : config.startTime;
+  final midnight = baseTime.isUtc
+      ? DateTime.utc(baseTime.year, baseTime.month, baseTime.day)
+      : DateTime(baseTime.year, baseTime.month, baseTime.day);
   final elapsed = baseTime.difference(midnight);
   final intervalMicros = config.repeatInterval.inMicroseconds;
   final remainder = elapsed.inMicroseconds % intervalMicros;
@@ -433,8 +430,9 @@ class AruScheduleCalculator {
       );
     }
 
-    final next =
-        now.isBefore(current.start) ? current : _windowAt(candidateIndex + 1);
+    final next = now.isBefore(current.start)
+        ? current
+        : _windowAt(candidateIndex + 1);
     if (next == null) {
       return AruScheduleSnapshot(
         status: AruScheduleStatus.completed,
@@ -537,10 +535,9 @@ class AruScheduleCalculator {
       if (deploymentEnd != null && !config.startTime.isBefore(deploymentEnd)) {
         return null;
       }
-      final end =
-          deploymentEnd != null && deploymentEnd.isBefore(plannedEnd)
-              ? deploymentEnd
-              : plannedEnd;
+      final end = deploymentEnd != null && deploymentEnd.isBefore(plannedEnd)
+          ? deploymentEnd
+          : plannedEnd;
       if (!end.isAfter(config.startTime)) return null;
       return AruCycleWindow(
         index: 0,
@@ -584,10 +581,9 @@ class AruScheduleCalculator {
     final deploymentEnd = config.endTime;
     if (deploymentEnd != null && !start.isBefore(deploymentEnd)) return null;
 
-    final end =
-        deploymentEnd != null && deploymentEnd.isBefore(plannedEnd)
-            ? deploymentEnd
-            : plannedEnd;
+    final end = deploymentEnd != null && deploymentEnd.isBefore(plannedEnd)
+        ? deploymentEnd
+        : plannedEnd;
     if (!end.isAfter(start)) return null;
 
     return AruCycleWindow(

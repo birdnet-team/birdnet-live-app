@@ -68,27 +68,25 @@ class AudioSourceTile extends ConsumerWidget {
     final selection = ref.watch(audioSourceProvider);
 
     return devicesAsync.when(
-      loading:
-          () => ListTile(
-            leading: leading,
-            contentPadding: contentPadding,
-            title: _AudioSourceTitle(l10n: l10n),
-            trailing: const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
+      loading: () => ListTile(
+        leading: leading,
+        contentPadding: contentPadding,
+        title: _AudioSourceTitle(l10n: l10n),
+        trailing: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
       // Processing doesn't depend on device enumeration, but a failure here
       // means we can't name the selected device, so fall back to the label we
       // can always produce.
-      error:
-          (_, _) => ListTile(
-            leading: leading,
-            contentPadding: contentPadding,
-            title: _AudioSourceTitle(l10n: l10n),
-            subtitle: Text(audioSourceLabel(l10n, const [], selection)),
-          ),
+      error: (_, _) => ListTile(
+        leading: leading,
+        contentPadding: contentPadding,
+        title: _AudioSourceTitle(l10n: l10n),
+        subtitle: Text(audioSourceLabel(l10n, const [], selection)),
+      ),
       data: (devices) {
         final label = audioSourceLabel(l10n, devices, selection);
         final isSubtitle = placement == AudioSourceValuePlacement.subtitle;
@@ -101,34 +99,33 @@ class AudioSourceTile extends ConsumerWidget {
           // Always end the row with a chevron. Without it the row reads as a
           // static "label: value" line and nobody discovers it is tappable —
           // which is how the old microphone row behaved.
-          trailing:
-              isSubtitle
-                  ? const Icon(AppIcons.chevronRight)
-                  : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Cap the value so a long device name can't squeeze the
-                      // title out of the row.
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.sizeOf(context).width * 0.42,
-                        ),
-                        child: Text(
-                          label,
-                          textAlign: TextAlign.end,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall,
-                        ),
+          trailing: isSubtitle
+              ? const Icon(AppIcons.chevronRight)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Cap the value so a long device name can't squeeze the
+                    // title out of the row.
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.sizeOf(context).width * 0.42,
                       ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        AppIcons.chevronRight,
-                        size: 20,
-                        color: theme.colorScheme.onSurfaceVariant,
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.end,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      AppIcons.chevronRight,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
           onTap: () => showAudioSourcePicker(context, ref, devices),
         );
       },
@@ -154,31 +151,29 @@ class _AudioSourceTitle extends StatelessWidget {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           color: Theme.of(context).colorScheme.onSurfaceVariant,
-          onPressed:
-              () => showModalBottomSheet<void>(
-                context: context,
-                showDragHandle: true,
-                useSafeArea: true,
-                builder:
-                    (context) => Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.settingsAudioSource,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.settingsHelpAudioSource,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
+          onPressed: () => showModalBottomSheet<void>(
+            context: context,
+            showDragHandle: true,
+            useSafeArea: true,
+            builder: (context) => Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.settingsAudioSource,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.settingsHelpAudioSource,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
               ),
+            ),
+          ),
         ),
       ],
     );
@@ -307,9 +302,8 @@ void showAudioSourcePicker(
 
                   RadioGroup<String?>(
                     groupValue: selection.deviceId,
-                    onChanged:
-                        (deviceId) =>
-                            notifier.state = selection.withDevice(deviceId),
+                    onChanged: (deviceId) =>
+                        notifier.state = selection.withDevice(deviceId),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

@@ -8,14 +8,11 @@ String formatLocaleTime(
 }) {
   final local = dateTime.toLocal();
   try {
-    final formatter =
-        alwaysUse24HourFormat
-            ? (showSeconds
-                ? DateFormat.Hms(localeName)
-                : DateFormat.Hm(localeName))
-            : (showSeconds
-                ? DateFormat.jms(localeName)
-                : DateFormat.jm(localeName));
+    final formatter = alwaysUse24HourFormat
+        ? (showSeconds ? DateFormat.Hms(localeName) : DateFormat.Hm(localeName))
+        : (showSeconds
+              ? DateFormat.jms(localeName)
+              : DateFormat.jm(localeName));
     return formatter.format(local);
   } catch (_) {
     return _fallbackTime(

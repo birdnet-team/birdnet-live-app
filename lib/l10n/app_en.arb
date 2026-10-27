@@ -106,9 +106,9 @@
   },
   "quickListenBlockedTitle": "Finish the current Session first",
   "@quickListenBlockedTitle": {
-    "description": "Title shown after a Quick Listen widget tap is blocked by another recording mode"
+    "description": "Title shown after a Quick Listen trigger (Android widget, iOS shortcut) is blocked by another recording mode"
   },
-  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then tap the widget again.",
+  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then try again.",
   "@quickListenBlockedMessage": {
     "description": "Explains that Quick Listen will not replace another active recording mode",
     "placeholders": {
@@ -2467,6 +2467,10 @@
   "@settingsHelpSpectrogramQuality": {
     "description": "Help text for spectrogram quality setting"
   },
+  "settingsHelpSpectrogramSize": "Sets how much of the screen the live spectrogram takes in Live Mode, Point Count, Survey, and ARU. 'Full' is the usual height; 'Medium' and 'Small' shrink it to 75% and 50% of that so the detection list gets more room. 'Off' removes the spectrogram entirely. In landscape, 'Medium' and 'Small' shorten the spectrogram in its half of the screen, and 'Off' hands the whole screen to the detection list. Spectrograms of saved sessions and clip playback are not affected.",
+  "@settingsHelpSpectrogramSize": {
+    "description": "Help text for the spectrogram size setting (Full/Medium/Small/Off)"
+  },
   "settingsHelpRecordingMode": "Whether and how audio is saved to disk. 'Full' keeps everything (large files); 'Detections only' saves short clips around each detection; 'Off' analyzes in real time without writing audio.",
   "@settingsHelpRecordingMode": {
     "description": "Help text for recording mode setting"
@@ -3732,6 +3736,26 @@
   "settingsSpectrogramQualityHigh": "High",
   "@settingsSpectrogramQualityHigh": {
     "description": "Spectrogram quality option: high"
+  },
+  "settingsSpectrogramSize": "Spectrogram size",
+  "@settingsSpectrogramSize": {
+    "description": "Setting title for how much room the live spectrogram takes (Full/Medium/Small/Off)"
+  },
+  "settingsSpectrogramSizeFull": "Full",
+  "@settingsSpectrogramSizeFull": {
+    "description": "Spectrogram size option: usual height"
+  },
+  "settingsSpectrogramSizeMedium": "Medium",
+  "@settingsSpectrogramSizeMedium": {
+    "description": "Spectrogram size option: 75% of the usual height"
+  },
+  "settingsSpectrogramSizeSmall": "Small",
+  "@settingsSpectrogramSizeSmall": {
+    "description": "Spectrogram size option: 50% of the usual height"
+  },
+  "settingsSpectrogramSizeOff": "Off",
+  "@settingsSpectrogramSizeOff": {
+    "description": "Spectrogram size option: spectrogram hidden"
   },
   "settingsIncludeAudioFiles": "Include audio files",
   "@settingsIncludeAudioFiles": {
@@ -5098,5 +5122,66 @@
   "helpBackToTop": "Back to top",
   "@helpBackToTop": {
     "description": "Quick-reference Help screen: helpBackToTop"
+  },
+  "settingsInferenceRateDeviceLimit": "This device is known to be too slow for inference rates above {rate} Hz. The rate was lowered automatically.",
+  "@settingsInferenceRateDeviceLimit": {
+    "description": "Note under every inference-rate slider (Settings, Point Count, Survey, and ARU setup) once a live mode has had to lower the rate because the device fell behind; stays for good, since a slow device stays slow",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
+  "@sessionInterruptedBySystem": {
+    "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
+  },
+  "shareOptionsTitle": "Share",
+  "@shareOptionsTitle": {
+    "description": "Title of the dialog shown after tapping Share on a session or detection; lets the user pick what the share includes"
+  },
+  "shareOptionsConfirm": "Share",
+  "@shareOptionsConfirm": {
+    "description": "Confirm button of the share options dialog; opens the platform share sheet"
+  },
+  "shareOptionsAudio": "Audio",
+  "@shareOptionsAudio": {
+    "description": "Checkbox label in the share options dialog: include the saved audio"
+  },
+  "shareOptionsHelpAudio": "Adds the saved audio to this share: the full recording, or the detection clips when only clips were kept. A single detection is cut to its exact time span. Audio keeps its original format unless “Always share audio as WAV” is on in Settings. Turn this off to share tables and reports without audio.",
+  "@shareOptionsHelpAudio": {
+    "description": "Help text behind the ? next to the Audio checkbox in the share options dialog"
+  },
+  "shareOptionsAudioOriginal": "Original recording format",
+  "@shareOptionsAudioOriginal": {
+    "description": "Subtitle under the Audio checkbox when audio is shared in its recorded format"
+  },
+  "shareOptionsAudioAsWav": "Converted to WAV",
+  "@shareOptionsAudioAsWav": {
+    "description": "Subtitle under the Audio checkbox when the WAV conversion setting is on"
+  },
+  "shareOptionsAudioUnavailable": "No saved audio to share",
+  "@shareOptionsAudioUnavailable": {
+    "description": "Subtitle under the disabled Audio checkbox when the session or detection has no saved audio"
+  },
+  "shareOptionsMetadata": "Metadata",
+  "@shareOptionsMetadata": {
+    "description": "Checkbox label in the share options dialog: include tables, report, and app metadata"
+  },
+  "shareOptionsHelpMetadata": "Adds the detection tables, HTML report, and app metadata file enabled under Settings › Export & Sync. When none of them is enabled, a Raven Selection Table is included. Turn this off to share the audio file on its own, without a ZIP.",
+  "@shareOptionsHelpMetadata": {
+    "description": "Help text behind the ? next to the Metadata checkbox in the share options dialog"
+  },
+  "shareOptionsHtmlReport": "HTML report",
+  "@shareOptionsHtmlReport": {
+    "description": "Short item name listed under the Metadata checkbox when the HTML report setting is on"
+  },
+  "shareOptionsAppMetadata": "App metadata",
+  "@shareOptionsAppMetadata": {
+    "description": "Short item name listed under the Metadata checkbox when the app metadata setting is on"
+  },
+  "shareOptionsHelpDialog": "Choose what this share includes. The boxes start out matching Settings › Export & Sync. Changes here apply to this share only and leave those settings untouched.",
+  "@shareOptionsHelpDialog": {
+    "description": "Help text behind the ? next to the share options dialog title: explains that the boxes start from the Export & Sync settings and that changes apply to this share only"
   }
 }

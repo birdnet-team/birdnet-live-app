@@ -54,21 +54,14 @@ class AboutScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   packageInfo.when(
-                    data:
-                        (info) => Text(
-                          l10n.aboutVersionLabel(
-                            info.version,
-                            info.buildNumber,
-                          ),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color:
-                                highContrast
-                                    ? theme.colorScheme.onSurface
-                                    : theme.colorScheme.onSurface.withAlpha(
-                                      153,
-                                    ),
-                          ),
-                        ),
+                    data: (info) => Text(
+                      l10n.aboutVersionLabel(info.version, info.buildNumber),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: highContrast
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurface.withAlpha(153),
+                      ),
+                    ),
                     loading: () => const SizedBox.shrink(),
                     error: (a, b) => const SizedBox.shrink(),
                   ),
@@ -146,10 +139,9 @@ class AboutScreen extends ConsumerWidget {
                         return '$base (${parts.join(', ')})';
                       }(),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color:
-                            highContrast
-                                ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurface.withAlpha(153),
+                        color: highContrast
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurface.withAlpha(153),
                       ),
                     ),
                   ],
@@ -210,31 +202,28 @@ class AboutScreen extends ConsumerWidget {
               leading: const Icon(AppIcons.menuBook),
               title: Text(l10n.aboutUserGuide),
               trailing: const Icon(AppIcons.openInNew),
-              onTap:
-                  () => openExternalUrl(
-                    context,
-                    '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/user/',
-                  ),
+              onTap: () => openExternalUrl(
+                context,
+                '${AppConstants.docsUrl}${AppConstants.docsLocalePrefix(Localizations.localeOf(context).languageCode)}/user/',
+              ),
             ),
             ListTile(
               leading: const Icon(AppIcons.privacyTip),
               title: Text(l10n.aboutPrivacyPolicy),
               trailing: const Icon(AppIcons.openInNew),
-              onTap:
-                  () => openExternalUrl(
-                    context,
-                    '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/privacy/',
-                  ),
+              onTap: () => openExternalUrl(
+                context,
+                '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/privacy/',
+              ),
             ),
             ListTile(
               leading: const Icon(AppIcons.gavel),
               title: Text(l10n.aboutTermsOfUse),
               trailing: const Icon(AppIcons.openInNew),
-              onTap:
-                  () => openExternalUrl(
-                    context,
-                    '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/acceptable-use/',
-                  ),
+              onTap: () => openExternalUrl(
+                context,
+                '${AppConstants.docsUrl}${AppConstants.policyDocsLocalePrefix(Localizations.localeOf(context).languageCode)}/acceptable-use/',
+              ),
             ),
             ListTile(
               leading: const Icon(AppIcons.code),
@@ -262,8 +251,8 @@ class AboutScreen extends ConsumerWidget {
               leading: const Icon(AppIcons.volunteerActivism),
               title: Text(l10n.aboutDonate),
               trailing: const Icon(AppIcons.openInNew),
-              onTap:
-                  () => openExternalUrl(context, AppConstants.birdnetDonateUrl),
+              onTap: () =>
+                  openExternalUrl(context, AppConstants.birdnetDonateUrl),
             ),
 
             const SizedBox(height: 32),

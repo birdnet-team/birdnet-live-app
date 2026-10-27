@@ -1,0 +1,248 @@
+{
+  "locale": "ko",
+  "version": 4,
+  "_comment": [
+    "Phrasing templates for the Announcements feature. See dev/announcements.md §3.",
+    "Each bucket has a `balanced` list (always present, used by Balanced verbosity)",
+    "and an optional `chatty` list (longer / more conversational variants used when",
+    "the user picks Chatty). Minimal verbosity bypasses these templates and speaks",
+    "just `{name}.` directly. Translators rewrite natively, not literally.",
+    "",
+    "Korean notes:",
+    "  - Particle trap: Korean particles change with the final consonant of the",
+    "    preceding word (이/가, 은/는, 을/를, 와/과, 으로/로, 이에요/예요), and",
+    "    {name} is unknown at speak time. Never attach those particles directly to",
+    "    {name}. Safe forms after {name}: a space, punctuation, 입니다, 인, 일,",
+    "    같아요, 에, 도, 하고, or a following noun such as 소리.",
+    "  - No counters (마리 etc.) and no word for 'bird' (새): the model also covers",
+    "    insects, amphibians and mammals. Use 종 when a noun is needed.",
+    "  - Register: polite 해요체 (존댓말), consistent with the polite ARB strings.",
+    "  - Punctuation: periods, commas and question marks only, for natural TTS pauses."
+  ],
+  "buckets": {
+    "A": {
+      "balanced": [
+        "{name} 소리예요.",
+        "{name}입니다.",
+        "들리세요? {name}.",
+        "{name}, 울고 있어요.",
+        "근처에서 {name} 소리가 나요.",
+        "저기, {name}.",
+        "{name}, 바로 저기예요.",
+        "{name}, 아주 또렷해요."
+      ],
+      "chatty": [
+        "근처에서 {name} 소리가 들려요.",
+        "{name} 소리예요, 듣기 좋네요.",
+        "들리세요? 분명히 {name}입니다.",
+        "저기서 {name} 소리가 계속 나요.",
+        "{name}, 틀림없어요.",
+        "방금 {name} 소리가 시작됐어요.",
+        "{name}, 목청이 좋네요.",
+        "{name} 소리예요, 아주 또렷하게 들려요."
+      ]
+    },
+    "B": {
+      "balanced": [
+        "{name} 소리가 다시 들려요.",
+        "또 {name}.",
+        "{name}, 다시 왔어요.",
+        "다시 {name}입니다.",
+        "{name}, 한 번 더."
+      ],
+      "chatty": [
+        "{name} 소리가 또 들리네요.",
+        "{name}, 아직 멀리 안 갔나 봐요.",
+        "{name}, 자꾸 돌아오네요.",
+        "다시 {name}입니다, 근처에 머무는 것 같아요.",
+        "또 {name} 소리예요, 계속 머물러 있네요."
+      ]
+    },
+    "C": {
+      "balanced": [
+        "{name}, 계속 울고 있어요.",
+        "아직 {name}입니다.",
+        "여전히 {name} 소리예요.",
+        "{name}, 쉬지 않네요.",
+        "{name} 소리가 이어져요."
+      ],
+      "chatty": [
+        "{name}, 아직도 계속 노래하네요.",
+        "{name}, 숨 돌릴 틈도 없이 울어요.",
+        "{name} 소리가 쉬지 않고 이어져요.",
+        "여전히 {name}, 목청이 좋네요.",
+        "{name}, 아예 자리를 잡았나 봐요."
+      ]
+    },
+    "D": {
+      "balanced": [
+        "{name} 같아요.",
+        "아마 {name}일 거예요.",
+        "{name} 소리 같아요.",
+        "{name}인 것 같아요.",
+        "제 생각엔 {name}.",
+        "아마도 {name}.",
+        "{name}에 가까운 소리예요."
+      ],
+      "chatty": [
+        "제가 듣기엔 {name} 같아요.",
+        "꽤 확실하게 {name}인 것 같아요.",
+        "{name} 느낌이 나는 소리예요.",
+        "거의 {name}일 거예요.",
+        "{name}인 것 같네요.",
+        "이번 소리는 {name} 쪽이에요."
+      ]
+    },
+    "E": {
+      "balanced": [
+        "또 {name}인 것 같아요.",
+        "{name}, 다시 온 것 같아요.",
+        "다시 {name}일 거예요.",
+        "{name} 소리가 또 나는 것 같아요.",
+        "아마 또 {name}."
+      ],
+      "chatty": [
+        "{name}, 다시 돌아온 것 같아요.",
+        "또 {name}인 것 같네요.",
+        "{name} 소리가 다시 들리는 것 같아요.",
+        "아까 그 {name}일 가능성이 커요."
+      ]
+    },
+    "F": {
+      "balanced": [
+        "혹시 {name}?",
+        "{name}일 수도 있어요.",
+        "{name}일지도 몰라요.",
+        "조금 {name} 같기도 해요.",
+        "{name}, 아마도요.",
+        "어쩌면 {name}.",
+        "잘 모르겠지만, {name}일지도요."
+      ],
+      "chatty": [
+        "{name}일 수도 있는데, 확실하진 않아요.",
+        "{name} 비슷한 소리예요, 한 번 더 들어 보세요.",
+        "{name} 소리가 섞여 있을지도 몰라요, 귀 기울여 보세요.",
+        "제 추측은 {name}인데, 확실하진 않아요.",
+        "{name}일 수도 있어요, 판단하기 어렵네요.",
+        "{name} 정도로 짐작해요, 너무 믿지는 마세요."
+      ]
+    },
+    "G": {
+      "balanced": [
+        "혹시 또 {name}?",
+        "다시 {name}일 수도 있어요.",
+        "어쩌면 또 {name}.",
+        "아까 그 {name}일지도 몰라요.",
+        "잘 모르겠지만, 또 {name}일지도요."
+      ],
+      "chatty": [
+        "또 {name}일 수도 있어요, 확실하진 않아요.",
+        "아까 그 {name}일지도 몰라요, 구별하기 어렵네요.",
+        "다시 {name}인 것 같기도 한데, 장담은 못 하겠어요.",
+        "어쩌면 다시 {name}."
+      ]
+    },
+    "H_two": {
+      "balanced": [
+        "두 종이에요. {name1}, {name2}.",
+        "{name1}, {name2}, 둘 다 울고 있어요.",
+        "{name1}하고 {name2}, 함께 들려요.",
+        "지금 두 종, {name1}, {name2}.",
+        "{name1}도, {name2}도 있어요."
+      ],
+      "chatty": [
+        "두 종이 동시에 울어요. {name1}, {name2}.",
+        "{name1}하고 {name2}, 서로 주고받네요.",
+        "좋은 조합이에요. {name1}, {name2}.",
+        "{name1}도 {name2}도 목청이 좋네요.",
+        "지금은 두 종이에요. {name1}, {name2}."
+      ]
+    },
+    "H_three": {
+      "balanced": [
+        "세 종이에요. {name1}, {name2}, {name3}.",
+        "{name1}, {name2}, {name3}, 모두 울고 있어요.",
+        "여러 종이 함께, {name1}, {name2}, {name3}.",
+        "{name1}, {name2}, {name3}, 동시에 들려요."
+      ],
+      "chatty": [
+        "꽤 많아졌어요. {name1}, {name2}, {name3}.",
+        "세 종이 한꺼번에, {name1}, {name2}, {name3}.",
+        "{name1}, {name2}, {name3}, 다 같이 거드네요.",
+        "여기 활발하네요. {name1}, {name2}, {name3}.",
+        "작은 합창이에요. {name1}, {name2}, {name3}."
+      ]
+    },
+    "H_many": {
+      "balanced": [
+        "많아요. {name1}, {name2}, {name3}, 그리고 더 있어요.",
+        "아주 활발해요. {name1}, {name2}, {name3}, 그 밖에도 있어요.",
+        "지금 붐벼요. {name1}, {name2}, {name3}, 몇 종 더 있어요."
+      ],
+      "chatty": [
+        "정말 많네요. {name1}, {name2}, {name3}, 그 밖에도 여러 종이 있어요.",
+        "제대로 합창이에요. {name1}, {name2}, {name3}, 그리고 다른 종도 있어요.",
+        "밖이 아주 활발해요. {name1}, {name2}, {name3}, 몇 종 더 들려요.",
+        "한꺼번에 많아요. {name1}, {name2}, {name3}, 계속 더 합류하네요."
+      ]
+    }
+  },
+  "commonness": {
+    "abundant": [
+      "이 근처에서 아주 흔한 종이에요.",
+      "여기서는 자주 듣게 될 소리예요.",
+      "이 지역에서 매우 흔해요.",
+      "이곳의 단골이에요.",
+      "이 일대에서 익숙한 소리예요."
+    ],
+    "common": [
+      "이 근처에서 흔한 종이에요.",
+      "이 지역에서 꽤 흔해요.",
+      "이 일대의 단골이에요.",
+      "이 근처에서는 흔히 만나는 종이에요.",
+      "만나기 좋은 곳에 계시네요."
+    ],
+    "uncommon": [
+      "여기서 매일 듣기는 어려워요.",
+      "이 근처에서는 조금 드문 편이에요.",
+      "좋네요, 흔히 오는 손님은 아니에요.",
+      "이 지역에서는 반가운 소리예요.",
+      "이 근처에서 흔한 편은 아니에요."
+    ],
+    "frequent": [
+      "이 근처를 자주 찾아요.",
+      "이 지역에서 꽤 자주 들려요.",
+      "여기서 자주 나타나요.",
+      "이 지역을 자주 찾는 종이에요.",
+      "이 소리는 자주 듣게 될 거예요."
+    ],
+    "scarce": [
+      "이 근처에서는 드문 편이에요.",
+      "이 지역에서 자주 들리지는 않아요.",
+      "여기서는 꽤 드물어요.",
+      "이 근처에서 자주 만나기는 어려워요.",
+      "이 지역에서는 수가 적어요."
+    ],
+    "rare": [
+      "여기서는 정말 귀한 종이에요, 운이 좋네요!",
+      "이 지역에서는 보기 드문 일이에요.",
+      "이 근처에서는 꽤 희귀해요.",
+      "기억해 둘 만해요, 이 일대에서 희귀한 종이에요.",
+      "이 지역에서는 눈에 띄는 기록이에요."
+    ],
+    "seasonalAddendum": [
+      "게다가 제철도 아니에요.",
+      "보통 이맘때는 잘 없는 종이에요.",
+      "평소보다 조금 이르거나 늦게 나타났어요.",
+      "이곳에서는 제철이 지났는데, 흥미롭네요.",
+      "여기서 보통 나타나는 시기도 벗어났어요."
+    ]
+  },
+  "_commonnessComment": [
+    "Optional one-line tag-on appended (Chatty only) the *first* time a species",
+    "is announced in a session. Bin = the same distribution-adaptive abundance",
+    "tier shown for the species on the Explore screen. The seasonal addendum is",
+    "appended only when the species is also currently below its annual peak.",
+    "Keep these short — they follow a full sentence, so long clauses drag."
+  ]
+}

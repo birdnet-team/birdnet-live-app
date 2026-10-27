@@ -138,8 +138,8 @@ void main() {
       final sampler = AruDetectionSampler(
         mode: SamplingMode.smart,
         topN: 1,
-        scopeKeyFor:
-            (record) => 'cycle-${record.timestamp.difference(start).inHours}',
+        scopeKeyFor: (record) =>
+            'cycle-${record.timestamp.difference(start).inHours}',
       );
       final cycle0 = record(confidence: 0.4, cycle: 0);
       final cycle1 = record(confidence: 0.3, cycle: 1);

@@ -116,17 +116,16 @@ class TaxonomySpecies {
   /// available.
   String get displayScientificName =>
       (canonicalScientificName != null && canonicalScientificName!.isNotEmpty)
-          ? canonicalScientificName!
-          : scientificName;
+      ? canonicalScientificName!
+      : scientificName;
 
   /// Bundled asset image path (480x320 WebP).
   ///
   /// Falls back to the placeholder image if [birdnetId] is null
   /// (9 species with no taxonomy entry).
-  String get assetImagePath =>
-      birdnetId != null
-          ? 'assets/species_images/$birdnetId.webp'
-          : 'assets/images/dummy_species.png';
+  String get assetImagePath => birdnetId != null
+      ? 'assets/species_images/$birdnetId.webp'
+      : 'assets/images/dummy_species.png';
 
   /// eBird species page URL (if eBird code is available).
   String? get ebirdUrl =>
@@ -138,11 +137,10 @@ class TaxonomySpecies {
   /// The species page's own "Listen" player is a click-only JavaScript overlay
   /// with no deep-link, so we point at the public media catalog instead: it
   /// opens in the browser with one-tap playable recordings and needs no login.
-  String? get ebirdListenUrl =>
-      ebirdCode != null
-          ? 'https://media.ebird.org/catalog?taxonCode=$ebirdCode'
-              '&mediaType=audio&sort=rating_rank_desc'
-          : null;
+  String? get ebirdListenUrl => ebirdCode != null
+      ? 'https://media.ebird.org/catalog?taxonCode=$ebirdCode'
+            '&mediaType=audio&sort=rating_rank_desc'
+      : null;
 
   /// iNaturalist species page URL (if iNat ID is available).
   String? get inatUrl =>
