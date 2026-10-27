@@ -28,7 +28,7 @@
 
 针对当前位置和季节预测的物种，以及物种详情浮层。
 
-### [Session 库](session-library.md)
+### [Session 列表](session-library.md)
 
 已保存的 Session、搜索、排序、视图模式，以及按物种分组浏览。
 

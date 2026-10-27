@@ -153,6 +153,10 @@ kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
 
+### Rozmiar
+
+Określa, ile miejsca na ekranie zajmuje spektrogram na żywo w trybach Live Mode, Point Count, Survey i ARU. **Pełny** to zwykła wysokość. **Średni** i **Mały** zmniejszają ją do 75% i 50%, a różnicę oddają liście wykryć – to właściwy wybór, gdy na telefonie w pionie patrzysz głównie na listę. **Wyłączony** całkowicie usuwa spektrogram; w Survey i ARU znika też karta spektrogramu. W orientacji poziomej **Średni** i **Mały** skracają spektrogram w jego połowie ekranu (miejsce pod nim na razie pozostaje puste), a **Wyłączony** oddaje cały ekran liście wykryć. Spektrogramy zapisanych sesji i odtwarzania pozostają bez zmian.
+
 ### Rozmiar FFT
 
 Steruje rozdzielczością częstotliwościową spektrogramu.
@@ -233,7 +237,7 @@ To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plikó
 
 Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
 
-To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Widżet Quick Listen](live-mode.md) po dotknięciu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
+To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Quick Listen](live-mode.md) — widżet w Androidzie albo skrót, fraza Siri i akcja ikony w iOS — po uruchomieniu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
 
 ### Kontynuuj przy wyłączonym ekranie
 

@@ -206,10 +206,12 @@ class InferenceService {
   /// score buffer is cleared so a switch (e.g. lme → max) doesn't
   /// cross-contaminate the new mode with stale scores.
   void setPoolingMode(String? mode) {
-    final requested =
-        (mode == null || mode.isEmpty) ? 'adaptive_lme_peak' : mode;
-    final next =
-        _isSupportedPoolingMode(requested) ? requested : 'adaptive_lme_peak';
+    final requested = (mode == null || mode.isEmpty)
+        ? 'adaptive_lme_peak'
+        : mode;
+    final next = _isSupportedPoolingMode(requested)
+        ? requested
+        : 'adaptive_lme_peak';
     if (next == _poolingMode) return;
     _poolingMode = next;
     _recentScores.clear();
@@ -256,10 +258,9 @@ class InferenceService {
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
-    final blacklist =
-        scoreBlacklistJson == null
-            ? const <String, double>{}
-            : ScoreBlacklist.parse(scoreBlacklistJson);
+    final blacklist = scoreBlacklistJson == null
+        ? const <String, double>{}
+        : ScoreBlacklist.parse(scoreBlacklistJson);
     _scoreMultipliers = ScoreBlacklist.buildMultiplierVector(
       labels: _labels,
       fractions: blacklist,
@@ -449,24 +450,22 @@ class InferenceService {
       }
 
       // Filter out chunks whose start timestamp is older than 10 seconds than "now"
-      final validRecentTimestamped =
-          _recentScores.where((ts) {
-            final age = now.difference(ts.timestamp);
-            return age.inMicroseconds >= 0 &&
-                age.inMicroseconds <= maxPoolAgeSeconds * 1000000;
-          }).toList();
+      final validRecentTimestamped = _recentScores.where((ts) {
+        final age = now.difference(ts.timestamp);
+        return age.inMicroseconds >= 0 &&
+            age.inMicroseconds <= maxPoolAgeSeconds * 1000000;
+      }).toList();
 
-      poolingInput =
-          validRecentTimestamped
-              .map(
-                (ts) => _TimestampedScores(
-                  ts.timestamp,
-                  _applySpeciesIgnoreFilter(
-                    PostProcessor.applySensitivityAll(ts.scores, sens),
-                  ),
-                ),
-              )
-              .toList();
+      poolingInput = validRecentTimestamped
+          .map(
+            (ts) => _TimestampedScores(
+              ts.timestamp,
+              _applySpeciesIgnoreFilter(
+                PostProcessor.applySensitivityAll(ts.scores, sens),
+              ),
+            ),
+          )
+          .toList();
       poolingInputScores = poolingInput.map((ts) => ts.scores).toList();
 
       switch (_poolingMode) {
@@ -509,18 +508,18 @@ class InferenceService {
 
     final gated =
         (_poolingMode == 'lme' || _poolingMode == 'adaptive_lme_peak') &&
-                useTemporalPooling &&
-                poolingInputScores.isNotEmpty
-            ? PostProcessor.applyTemporalSupportGate(
-              scores: adjusted,
-              windowScores: poolingInputScores,
-              confirmedIndexes: _confirmedDetectionIndexes,
-              confidenceThreshold: thresh,
-              supportThreshold: _supportThresholdFor(thresh),
-              minSupportWindows: minSupportWindows,
-              veryHighImmediateThreshold: veryHighImmediateThreshold,
-            )
-            : adjusted;
+            useTemporalPooling &&
+            poolingInputScores.isNotEmpty
+        ? PostProcessor.applyTemporalSupportGate(
+            scores: adjusted,
+            windowScores: poolingInputScores,
+            confirmedIndexes: _confirmedDetectionIndexes,
+            confidenceThreshold: thresh,
+            supportThreshold: _supportThresholdFor(thresh),
+            minSupportWindows: minSupportWindows,
+            veryHighImmediateThreshold: veryHighImmediateThreshold,
+          )
+        : adjusted;
 
     var detections = PostProcessor.topK(
       scores: gated,

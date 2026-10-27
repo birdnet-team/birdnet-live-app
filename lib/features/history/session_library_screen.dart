@@ -46,7 +46,9 @@ import 'export_metadata_helper.dart';
 import 'session_export.dart';
 import 'session_review_screen.dart';
 import 'services/session_audio_trim.dart';
+import 'services/share_export_config.dart';
 import 'services/share_file_params.dart';
+import 'widgets/share_options_dialog.dart';
 
 /// How sessions are ordered in the library.
 enum _SortMode {
@@ -162,36 +164,35 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder:
-          (_) => AppHelpBottomSheet(
-            title: l10n.sessionLibraryHelpTitle,
-            sections: [
-              // These icons match the meaning of each help section. The
-              // toolbar collapses view and filter controls behind one options
-              // button, so the sheet-level concepts read clearer than a
-              // strict AppBar icon mirror here.
-              AppHelpSection(
-                icon: AppIcons.search,
-                body: l10n.sessionLibraryHelpSearch,
-              ),
-              AppHelpSection(
-                icon: AppIcons.filterList,
-                body: l10n.sessionLibraryHelpFilter,
-              ),
-              AppHelpSection(
-                icon: AppIcons.expandMore,
-                body: l10n.sessionLibraryHelpView,
-              ),
-              AppHelpSection(
-                icon: AppIcons.moreVert,
-                body: l10n.sessionLibraryHelpSort,
-              ),
-              AppHelpSection(
-                icon: AppIcons.arrowDropUpRounded,
-                body: l10n.sessionLibraryHelpOpen,
-              ),
-            ],
+      builder: (_) => AppHelpBottomSheet(
+        title: l10n.sessionLibraryHelpTitle,
+        sections: [
+          // These icons match the meaning of each help section. The
+          // toolbar collapses view and filter controls behind one options
+          // button, so the sheet-level concepts read clearer than a
+          // strict AppBar icon mirror here.
+          AppHelpSection(
+            icon: AppIcons.search,
+            body: l10n.sessionLibraryHelpSearch,
           ),
+          AppHelpSection(
+            icon: AppIcons.filterList,
+            body: l10n.sessionLibraryHelpFilter,
+          ),
+          AppHelpSection(
+            icon: AppIcons.expandMore,
+            body: l10n.sessionLibraryHelpView,
+          ),
+          AppHelpSection(
+            icon: AppIcons.moreVert,
+            body: l10n.sessionLibraryHelpSort,
+          ),
+          AppHelpSection(
+            icon: AppIcons.arrowDropUpRounded,
+            body: l10n.sessionLibraryHelpOpen,
+          ),
+        ],
+      ),
     );
   }
 
@@ -358,13 +359,12 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                           if (!_typeFilters.add(t)) _typeFilters.remove(t);
                           update(() {});
                         },
-                        onClear:
-                            _typeFilters.isEmpty
-                                ? null
-                                : () {
-                                  _typeFilters.clear();
-                                  update(() {});
-                                },
+                        onClear: _typeFilters.isEmpty
+                            ? null
+                            : () {
+                                _typeFilters.clear();
+                                update(() {});
+                              },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
@@ -475,14 +475,13 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     // Pre-calculate matching/filtered lists so they're accessible to state and appBar
     final sessions = sessionsAsync.value ?? const <LiveSession>[];
     final query = _searchController.text.trim();
-    final matched =
-        sessions.where((s) {
-          if (_typeFilters.isNotEmpty && !_typeFilters.contains(s.type)) {
-            return false;
-          }
-          if (query.isEmpty) return true;
-          return _matchesQuery(s, query, l10n, taxonomy, speciesLocale);
-        }).toList();
+    final matched = sessions.where((s) {
+      if (_typeFilters.isNotEmpty && !_typeFilters.contains(s.type)) {
+        return false;
+      }
+      if (query.isEmpty) return true;
+      return _matchesQuery(s, query, l10n, taxonomy, speciesLocale);
+    }).toList();
     final filtered = _applySorting(matched);
 
     final isSelectMode = _selectedSessions.isNotEmpty;
@@ -491,129 +490,122 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         filtered.every((s) => _selectedSessions.contains(s.id));
 
     final scaffold = Scaffold(
-      appBar:
-          isSelectMode
-              ? AppBar(
-                leading: IconButton(
-                  icon: const Icon(AppIcons.close),
-                  tooltip: l10n.cancel,
-                  onPressed: _clearSelection,
-                ),
-                title: Text(
-                  l10n.sessionLibrarySelectedCount(_selectedSessions.length),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(
-                      allSelected ? AppIcons.deselect : AppIcons.selectAll,
-                    ),
-                    tooltip:
-                        allSelected
-                            ? l10n.sessionLibraryDeselectAll
-                            : l10n.sessionLibrarySelectAll,
-                    onPressed: () {
-                      setState(() {
-                        if (allSelected) {
-                          for (final s in filtered) {
-                            _selectedSessions.remove(s.id);
-                          }
-                        } else {
-                          for (final s in filtered) {
-                            _selectedSessions.add(s.id);
-                          }
-                        }
-                      });
-                    },
-                  ),
-                  // Builder so the share popover anchors on this button's
-                  // own box rather than the whole screen (iPad needs a
-                  // source rect).
-                  Builder(
-                    builder:
-                        (buttonContext) => IconButton(
-                          icon: const Icon(AppIcons.share),
-                          tooltip: l10n.sessionLibraryRowShare,
-                          onPressed:
-                              () => unawaited(
-                                reportShareFailure(
-                                  context,
-                                  _exportSelected(
-                                    filtered,
-                                    shareOriginFrom(buttonContext),
-                                  ),
-                                ),
-                              ),
-                        ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      AppIcons.deleteOutline,
-                      color: theme.colorScheme.error,
-                    ),
-                    tooltip: l10n.sessionLibraryRowDelete,
-                    onPressed: () => _deleteSelected(filtered),
-                  ),
-                ],
-              )
-              : AppBar(
-                leading: IconButton(
-                  icon: const Icon(AppIcons.arrowBackRounded),
-                  tooltip: l10n.tooltipBack,
-                  onPressed: _returnToHome,
-                ),
-                title:
-                    _showSearch
-                        ? TextField(
-                          controller: _searchController,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            hintText: l10n.sessionLibrarySearchHint,
-                            border: InputBorder.none,
-                          ),
-                          style: theme.textTheme.titleMedium,
-                          onChanged: (_) => setState(() {}),
-                        )
-                        : Text(l10n.sessionLibraryTitle),
-                actions: [
-                  if (_showSearch)
-                    IconButton(
-                      icon: const Icon(AppIcons.close),
-                      tooltip: l10n.tooltipClearSearch,
-                      onPressed:
-                          () => setState(() {
-                            _searchController.clear();
-                            _showSearch = false;
-                          }),
-                    )
-                  else ...[
-                    IconButton(
-                      icon: const Icon(AppIcons.search),
-                      tooltip: l10n.tooltipSearch,
-                      onPressed: () => setState(() => _showSearch = true),
-                    ),
-                    IconButton(
-                      icon: const Icon(AppIcons.helpOutlineRounded),
-                      tooltip: l10n.sessionLibraryHelpTitle,
-                      onPressed: _showHelp,
-                    ),
-                    IconButton(
-                      icon: const Icon(AppIcons.filterList),
-                      tooltip: l10n.settings,
-                      onPressed: _showOptionsSheet,
-                    ),
-                  ],
-                ],
+      appBar: isSelectMode
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(AppIcons.close),
+                tooltip: l10n.cancel,
+                onPressed: _clearSelection,
               ),
+              title: Text(
+                l10n.sessionLibrarySelectedCount(_selectedSessions.length),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    allSelected ? AppIcons.deselect : AppIcons.selectAll,
+                  ),
+                  tooltip: allSelected
+                      ? l10n.sessionLibraryDeselectAll
+                      : l10n.sessionLibrarySelectAll,
+                  onPressed: () {
+                    setState(() {
+                      if (allSelected) {
+                        for (final s in filtered) {
+                          _selectedSessions.remove(s.id);
+                        }
+                      } else {
+                        for (final s in filtered) {
+                          _selectedSessions.add(s.id);
+                        }
+                      }
+                    });
+                  },
+                ),
+                // Builder so the share popover anchors on this button's
+                // own box rather than the whole screen (iPad needs a
+                // source rect).
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    icon: const Icon(AppIcons.share),
+                    tooltip: l10n.sessionLibraryRowShare,
+                    onPressed: () => unawaited(
+                      reportShareFailure(
+                        context,
+                        _exportSelected(
+                          filtered,
+                          shareOriginFrom(buttonContext),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    AppIcons.deleteOutline,
+                    color: theme.colorScheme.error,
+                  ),
+                  tooltip: l10n.sessionLibraryRowDelete,
+                  onPressed: () => _deleteSelected(filtered),
+                ),
+              ],
+            )
+          : AppBar(
+              leading: IconButton(
+                icon: const Icon(AppIcons.arrowBackRounded),
+                tooltip: l10n.tooltipBack,
+                onPressed: _returnToHome,
+              ),
+              title: _showSearch
+                  ? TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        hintText: l10n.sessionLibrarySearchHint,
+                        border: InputBorder.none,
+                      ),
+                      style: theme.textTheme.titleMedium,
+                      onChanged: (_) => setState(() {}),
+                    )
+                  : Text(l10n.sessionLibraryTitle),
+              actions: [
+                if (_showSearch)
+                  IconButton(
+                    icon: const Icon(AppIcons.close),
+                    tooltip: l10n.tooltipClearSearch,
+                    onPressed: () => setState(() {
+                      _searchController.clear();
+                      _showSearch = false;
+                    }),
+                  )
+                else ...[
+                  IconButton(
+                    icon: const Icon(AppIcons.search),
+                    tooltip: l10n.tooltipSearch,
+                    onPressed: () => setState(() => _showSearch = true),
+                  ),
+                  IconButton(
+                    icon: const Icon(AppIcons.helpOutlineRounded),
+                    tooltip: l10n.sessionLibraryHelpTitle,
+                    onPressed: _showHelp,
+                  ),
+                  IconButton(
+                    icon: const Icon(AppIcons.filterList),
+                    tooltip: l10n.settings,
+                    onPressed: _showOptionsSheet,
+                  ),
+                ],
+              ],
+            ),
       body: ContentWidthConstraint(
         child: sessionsAsync.when(
           loading: () => const LoadingView(),
-          error:
-              (e, _) => ErrorView(
-                title: l10n.statusError,
-                message: e.toString(),
-                onRetry: () => ref.invalidate(sessionListProvider),
-                retryLabel: l10n.retry,
-              ),
+          error: (e, _) => ErrorView(
+            title: l10n.statusError,
+            message: e.toString(),
+            onRetry: () => ref.invalidate(sessionListProvider),
+            retryLabel: l10n.retry,
+          ),
           data: (sessions) {
             if (sessions.isEmpty) {
               return EmptyView(
@@ -649,73 +641,70 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
               itemBuilder: (context, index) {
                 final session = filtered[index];
                 final isSelected = _selectedSessions.contains(session.id);
-                final tile =
-                    _viewMode == _ViewMode.compact
-                        ? _CompactSessionTile(
-                          session: session,
-                          expanded: _expandedCompactCards.contains(session.id),
-                          isSelected: isSelected,
-                          selectionMode: isSelectMode,
-                          onTap: () {
-                            if (isSelectMode) {
-                              setState(() {
-                                if (!_selectedSessions.remove(session.id)) {
-                                  _selectedSessions.add(session.id);
-                                }
-                              });
-                            } else {
-                              _openReview(session);
-                            }
-                          },
-                          onShare:
-                              (origin) => unawaited(
-                                reportShareFailure(
-                                  context,
-                                  _shareSession(session, origin),
-                                ),
-                              ),
-                          onDelete: () => _confirmDelete(session),
-                          onLongPress: () {
+                final tile = _viewMode == _ViewMode.compact
+                    ? _CompactSessionTile(
+                        session: session,
+                        expanded: _expandedCompactCards.contains(session.id),
+                        isSelected: isSelected,
+                        selectionMode: isSelectMode,
+                        onTap: () {
+                          if (isSelectMode) {
                             setState(() {
                               if (!_selectedSessions.remove(session.id)) {
                                 _selectedSessions.add(session.id);
                               }
                             });
-                          },
-                          onToggleExpanded:
-                              () => _toggleCompactExpanded(session.id),
-                        )
-                        : _SessionTile(
-                          session: session,
-                          isSelected: isSelected,
-                          selectionMode: isSelectMode,
-                          onTap: () {
-                            if (isSelectMode) {
-                              setState(() {
-                                if (!_selectedSessions.remove(session.id)) {
-                                  _selectedSessions.add(session.id);
-                                }
-                              });
-                            } else {
-                              _openReview(session);
+                          } else {
+                            _openReview(session);
+                          }
+                        },
+                        onShare: (origin) => unawaited(
+                          reportShareFailure(
+                            context,
+                            _shareSession(session, origin),
+                          ),
+                        ),
+                        onDelete: () => _confirmDelete(session),
+                        onLongPress: () {
+                          setState(() {
+                            if (!_selectedSessions.remove(session.id)) {
+                              _selectedSessions.add(session.id);
                             }
-                          },
-                          onShare:
-                              (origin) => unawaited(
-                                reportShareFailure(
-                                  context,
-                                  _shareSession(session, origin),
-                                ),
-                              ),
-                          onDelete: () => _confirmDelete(session),
-                          onLongPress: () {
+                          });
+                        },
+                        onToggleExpanded: () =>
+                            _toggleCompactExpanded(session.id),
+                      )
+                    : _SessionTile(
+                        session: session,
+                        isSelected: isSelected,
+                        selectionMode: isSelectMode,
+                        onTap: () {
+                          if (isSelectMode) {
                             setState(() {
                               if (!_selectedSessions.remove(session.id)) {
                                 _selectedSessions.add(session.id);
                               }
                             });
-                          },
-                        );
+                          } else {
+                            _openReview(session);
+                          }
+                        },
+                        onShare: (origin) => unawaited(
+                          reportShareFailure(
+                            context,
+                            _shareSession(session, origin),
+                          ),
+                        ),
+                        onDelete: () => _confirmDelete(session),
+                        onLongPress: () {
+                          setState(() {
+                            if (!_selectedSessions.remove(session.id)) {
+                              _selectedSessions.add(session.id);
+                            }
+                          });
+                        },
+                      );
                 return _SwipeToDeleteSession(
                   key: ValueKey('swipe-${session.id}'),
                   session: session,
@@ -864,13 +853,12 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing:
-                        m.type == _newSessionMode
-                            ? Icon(
-                              AppIcons.checkRounded,
-                              color: theme.colorScheme.primary,
-                            )
-                            : null,
+                    trailing: m.type == _newSessionMode
+                        ? Icon(
+                            AppIcons.checkRounded,
+                            color: theme.colorScheme.primary,
+                          )
+                        : null,
                     onTap: () => Navigator.of(sheetCtx).pop(m.type),
                   ),
                 const SizedBox(height: 4),
@@ -901,19 +889,25 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     ref.invalidate(sessionListProvider);
   }
 
-  /// Opens the platform share sheet with the session exported using the
-  /// user's saved export-format and include-audio preferences. Returns
-  /// silently if the export couldn't be built (e.g. no audio for an
-  /// audio-only export of a metadata-only session) — except for a trimmed
-  /// recording the app can't cut, which is reported so the share button
-  /// doesn't just appear to do nothing.
+  /// Lets the user pick what to include (Audio / Metadata, pre-filled from
+  /// the export preferences), then opens the platform share sheet with the
+  /// exported session. Returns silently if the export couldn't be built
+  /// (e.g. no audio for an audio-only export of a metadata-only session) —
+  /// except for a trimmed recording the app can't cut, which is reported so
+  /// the share button doesn't just appear to do nothing.
   Future<void> _shareSession(LiveSession session, Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
-    final exportFormats = ref.read(exportSelectionProvider);
-    final includeAudio = ref.read(includeAudioProvider);
-    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-    final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final includeAppMetadata = ref.read(includeAppMetadataProvider);
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: sessionMayHaveAudio(session),
+    );
+    if (config == null || !mounted) return;
+    final exportFormats = config.formats;
+    final includeAudio = config.includeAudio;
+    final shareAudioAsWav = config.shareAudioAsWav;
+    final includeHtmlReport = config.includeHtmlReport;
+    final includeAppMetadata = config.includeAppMetadata;
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     final useAbsoluteSurveyTime =
@@ -991,9 +985,17 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     Rect shareOrigin,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final selectedList =
-        filtered.where((s) => _selectedSessions.contains(s.id)).toList();
+    final selectedList = filtered
+        .where((s) => _selectedSessions.contains(s.id))
+        .toList();
     if (selectedList.isEmpty) return;
+
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: selectedList.any(sessionMayHaveAudio),
+    );
+    if (config == null || !mounted) return;
 
     showDialog<void>(
       context: context,
@@ -1015,11 +1017,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     );
 
     try {
-      final exportFormats = ref.read(exportSelectionProvider);
-      final includeAudio = ref.read(includeAudioProvider);
-      final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-      final includeHtmlReport = ref.read(exportHtmlReportProvider);
-      final includeAppMetadata = ref.read(includeAppMetadataProvider);
+      final exportFormats = config.formats;
+      final includeAudio = config.includeAudio;
+      final shareAudioAsWav = config.shareAudioAsWav;
+      final includeHtmlReport = config.includeHtmlReport;
+      final includeAppMetadata = config.includeAppMetadata;
       final taxonomy = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       final useAbsoluteSurveyTime =
@@ -1032,11 +1034,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         shareAudioAsWav: shareAudioAsWav,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
-        metadataProvider:
-            (session) => buildSessionExportMetadata(
-              session,
-              speciesLocale: speciesLocale,
-            ),
+        metadataProvider: (session) =>
+            buildSessionExportMetadata(session, speciesLocale: speciesLocale),
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
         includeHtmlReport: includeHtmlReport,
         includeAppMetadata: includeAppMetadata,
@@ -1063,17 +1062,16 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       if (mounted) {
         showDialog<void>(
           context: context,
-          builder:
-              (ctx) => AlertDialog(
-                title: Text(l10n.statusError),
-                content: Text(e.toString()),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text(l10n.cancel),
-                  ),
-                ],
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.statusError),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(l10n.cancel),
               ),
+            ],
+          ),
         );
       }
     }
@@ -1133,10 +1131,9 @@ class _SessionTile extends ConsumerWidget {
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(highContrast ? 8 : 16),
-        side:
-            highContrast
-                ? BorderSide(color: theme.colorScheme.outline)
-                : BorderSide.none,
+        side: highContrast
+            ? BorderSide(color: theme.colorScheme.outline)
+            : BorderSide.none,
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -1216,10 +1213,9 @@ class _SessionTile extends ConsumerWidget {
                                     (session.latitude != null &&
                                             session.longitude != null
                                         ? '${session.latitude!.toStringAsFixed(4)}, '
-                                            '${session.longitude!.toStringAsFixed(4)}'
-                                        : AppLocalizations.of(
-                                          context,
-                                        )!.sessionNoLocation),
+                                              '${session.longitude!.toStringAsFixed(4)}'
+                                        : AppLocalizations.of(context)!
+                                              .sessionNoLocation),
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
@@ -1250,16 +1246,14 @@ class _SessionTile extends ConsumerWidget {
                       effectiveSpeciesLocaleProvider,
                     );
                     final taxonomy = ref.watch(taxonomyServiceProvider).value;
-                    final entries =
-                        _topSpeciesSci(session).map((entry) {
-                            final displayName =
-                                taxonomy
-                                    ?.lookup(entry.key)
-                                    ?.commonNameForLocale(speciesLocale) ??
-                                entry.value;
-                            return displayName;
-                          }).toList()
-                          ..sort((a, b) => a.compareTo(b));
+                    final entries = _topSpeciesSci(session).map((entry) {
+                      final displayName =
+                          taxonomy
+                              ?.lookup(entry.key)
+                              ?.commonNameForLocale(speciesLocale) ??
+                          entry.value;
+                      return displayName;
+                    }).toList()..sort((a, b) => a.compareTo(b));
                     return entries
                         .map(
                           (name) => Chip(
@@ -1376,13 +1370,12 @@ class _CompactSessionTile extends ConsumerWidget {
     }
 
     return ListTile(
-      leading:
-          selectionMode
-              ? Checkbox(value: isSelected, onChanged: (_) => onTap())
-              : Icon(
-                sessionTypeIcon(session.type),
-                color: sessionTypeAccentColor(theme, session.type),
-              ),
+      leading: selectionMode
+          ? Checkbox(value: isSelected, onChanged: (_) => onTap())
+          : Icon(
+              sessionTypeIcon(session.type),
+              color: sessionTypeAccentColor(theme, session.type),
+            ),
       title: Text(
         _sessionCardTitle(l10n, session),
         maxLines: 1,
@@ -1496,15 +1489,17 @@ class _SpeciesGroupedView extends ConsumerWidget {
     switch (sortMode) {
       case _SortMode.nameAsc:
         sorted.sort(
-          (a, b) => displayNameOf(
-            a,
-          ).toLowerCase().compareTo(displayNameOf(b).toLowerCase()),
+          (a, b) =>
+              displayNameOf(a)
+                  .toLowerCase()
+                  .compareTo(displayNameOf(b).toLowerCase()),
         );
       case _SortMode.nameDesc:
         sorted.sort(
-          (a, b) => displayNameOf(
-            b,
-          ).toLowerCase().compareTo(displayNameOf(a).toLowerCase()),
+          (a, b) =>
+              displayNameOf(b)
+                  .toLowerCase()
+                  .compareTo(displayNameOf(a).toLowerCase()),
         );
       case _SortMode.dateAsc:
       case _SortMode.dateDesc:
@@ -1553,22 +1548,11 @@ class _SpeciesGroupedView extends ConsumerWidget {
             child: SizedBox(
               width: imageWidth,
               height: imageHeight,
-              child:
-                  taxon != null
-                      ? Image.asset(
-                        taxon.assetImagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (a, b, c) => ColoredBox(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                AppIcons.brokenImage,
-                                size: 24,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                      )
-                      : ColoredBox(
+              child: taxon != null
+                  ? Image.asset(
+                      taxon.assetImagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (a, b, c) => ColoredBox(
                         color: theme.colorScheme.surfaceContainerHighest,
                         child: Icon(
                           AppIcons.brokenImage,
@@ -1576,6 +1560,15 @@ class _SpeciesGroupedView extends ConsumerWidget {
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
+                    )
+                  : ColoredBox(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        AppIcons.brokenImage,
+                        size: 24,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
             ),
           ),
           title: Text(
@@ -1957,8 +1950,8 @@ List<MapEntry<String, String>> _topSpeciesSci(LiveSession session) {
     if (d.confidence > prev) bestScore[d.scientificName] = d.confidence;
     names.putIfAbsent(d.scientificName, () => d.commonName);
   }
-  final sorted =
-      bestScore.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+  final sorted = bestScore.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
   return sorted.take(5).map((e) => MapEntry(e.key, names[e.key]!)).toList();
 }
 
@@ -2026,42 +2019,41 @@ class _SessionRowMenu extends StatelessWidget {
             onDelete();
         }
       },
-      itemBuilder:
-          (_) => [
-            PopupMenuItem(
-              value: _SessionRowAction.open,
-              child: ListTile(
-                leading: const Icon(AppIcons.openInNew),
-                title: Text(l10n.sessionLibraryRowOpen),
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _SessionRowAction.open,
+          child: ListTile(
+            leading: const Icon(AppIcons.openInNew),
+            title: Text(l10n.sessionLibraryRowOpen),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem(
+          value: _SessionRowAction.share,
+          child: ListTile(
+            leading: const Icon(AppIcons.share),
+            title: Text(l10n.sessionLibraryRowShare),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem(
+          value: _SessionRowAction.delete,
+          child: ListTile(
+            leading: Icon(
+              AppIcons.deleteOutline,
+              color: theme.colorScheme.error,
             ),
-            PopupMenuItem(
-              value: _SessionRowAction.share,
-              child: ListTile(
-                leading: const Icon(AppIcons.share),
-                title: Text(l10n.sessionLibraryRowShare),
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
+            title: Text(
+              l10n.sessionLibraryRowDelete,
+              style: TextStyle(color: theme.colorScheme.error),
             ),
-            PopupMenuItem(
-              value: _SessionRowAction.delete,
-              child: ListTile(
-                leading: Icon(
-                  AppIcons.deleteOutline,
-                  color: theme.colorScheme.error,
-                ),
-                title: Text(
-                  l10n.sessionLibraryRowDelete,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -2119,8 +2111,9 @@ class _SwipeToDeleteSession extends StatelessWidget {
       ),
       alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
       child: Row(
-        mainAxisAlignment:
-            alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment: alignLeft
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.end,
         children: [
           Icon(AppIcons.deleteSweep, color: theme.colorScheme.onErrorContainer),
           const SizedBox(width: 8),

@@ -17,6 +17,7 @@ import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
+import '../spectrogram/spectrogram_size.dart';
 import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
@@ -174,10 +175,9 @@ class SettingsScreen extends ConsumerWidget {
   bool _showSection(String section) {
     if (settingsContext == SettingsContext.all) return true;
     // ARU currently shares Survey's settings surface.
-    final effective =
-        settingsContext == SettingsContext.aru
-            ? SettingsContext.survey
-            : settingsContext;
+    final effective = settingsContext == SettingsContext.aru
+        ? SettingsContext.survey
+        : settingsContext;
     return _sectionContexts[section]?.contains(effective) ?? true;
   }
 
@@ -205,8 +205,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(l10n.settingsDynamicColorDescription),
                 value: ref.watch(dynamicColorProvider),
-                onChanged:
-                    (v) => ref.read(dynamicColorProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(dynamicColorProvider.notifier).set(v),
               ),
               SwitchListTile(
                 title: SettingHelpTitle(
@@ -214,8 +214,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpHighContrastTheme,
                 ),
                 value: ref.watch(highContrastThemeProvider),
-                onChanged:
-                    (v) => ref.read(highContrastThemeProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(highContrastThemeProvider.notifier).set(v),
               ),
               _LanguageTile(l10n: l10n),
               _SpeciesLanguageTile(l10n: l10n),
@@ -225,8 +225,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpShowSciNames,
                 ),
                 value: ref.watch(showSciNamesProvider),
-                onChanged:
-                    (v) => ref.read(showSciNamesProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(showSciNamesProvider.notifier).set(v),
               ),
               if (settingsContext == SettingsContext.live ||
                   settingsContext == SettingsContext.pointCount ||
@@ -240,10 +240,8 @@ class SettingsScreen extends ConsumerWidget {
                     l10n.settingsShowAllDetectedSpeciesDescription,
                   ),
                   value: ref.watch(showAllDetectedSpeciesProvider),
-                  onChanged:
-                      (v) => ref
-                          .read(showAllDetectedSpeciesProvider.notifier)
-                          .set(v),
+                  onChanged: (v) =>
+                      ref.read(showAllDetectedSpeciesProvider.notifier).set(v),
                 ),
                 if (ref.watch(showAllDetectedSpeciesProvider))
                   _ChoiceTile<String>(
@@ -267,10 +265,9 @@ class SettingsScreen extends ConsumerWidget {
                       l10n,
                       ref.watch(detectedSpeciesSortModeProvider),
                     ),
-                    onChanged:
-                        (v) => ref
-                            .read(detectedSpeciesSortModeProvider.notifier)
-                            .set(v),
+                    onChanged: (v) => ref
+                        .read(detectedSpeciesSortModeProvider.notifier)
+                        .set(v),
                   ),
               ],
               ListTile(
@@ -322,10 +319,8 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   subtitle: Text(l10n.settingsTimestampShowSecondsDescription),
                   value: ref.watch(timestampShowSecondsProvider),
-                  onChanged:
-                      (v) => ref
-                          .read(timestampShowSecondsProvider.notifier)
-                          .set(v),
+                  onChanged: (v) =>
+                      ref.read(timestampShowSecondsProvider.notifier).set(v),
                 ),
               const Divider(),
             ],
@@ -355,8 +350,8 @@ class SettingsScreen extends ConsumerWidget {
                 max: 1000,
                 divisions: 100,
                 format: (v) => '${v.toInt()} Hz',
-                onChanged:
-                    (v) => ref.read(highPassFilterProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(highPassFilterProvider.notifier).set(v),
               ),
               const Divider(),
             ],
@@ -373,8 +368,8 @@ class SettingsScreen extends ConsumerWidget {
                 value: ref.watch(windowDurationProvider),
                 values: const [1, 3, 5, 7, 10, 15],
                 format: (v) => '${v}s',
-                onChanged:
-                    (v) => ref.read(windowDurationProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(windowDurationProvider.notifier).set(v),
               ),
               _SliderTile(
                 title: l10n.settingsConfidenceThreshold,
@@ -384,10 +379,9 @@ class SettingsScreen extends ConsumerWidget {
                 max: 100,
                 divisions: 100,
                 format: (v) => '${v.toInt()}%',
-                onChanged:
-                    (v) => ref
-                        .read(confidenceThresholdProvider.notifier)
-                        .set(v.toInt()),
+                onChanged: (v) => ref
+                    .read(confidenceThresholdProvider.notifier)
+                    .set(v.toInt()),
               ),
               _SliderTile(
                 title: l10n.settingsSensitivity,
@@ -406,8 +400,8 @@ class SettingsScreen extends ConsumerWidget {
                 values: inferenceRateHzValues,
                 format: (v) => '${v.toStringAsFixed(2)} Hz',
                 note: const InferenceRateLimitNote(),
-                onChanged:
-                    (v) => ref.read(inferenceRateProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(inferenceRateProvider.notifier).set(v),
               ),
               ListTile(
                 title: SettingHelpTitle(
@@ -428,6 +422,19 @@ class SettingsScreen extends ConsumerWidget {
               _SectionHeader(
                 title: l10n.settingsSpectrogram,
                 subtitle: l10n.settingsSpectrogramDescription,
+              ),
+              _ChoiceTile<SpectrogramSize>(
+                title: l10n.settingsSpectrogramSize,
+                helpBody: l10n.settingsHelpSpectrogramSize,
+                value: ref.watch(spectrogramSizeProvider),
+                options: {
+                  SpectrogramSize.full: l10n.settingsSpectrogramSizeFull,
+                  SpectrogramSize.medium: l10n.settingsSpectrogramSizeMedium,
+                  SpectrogramSize.small: l10n.settingsSpectrogramSizeSmall,
+                  SpectrogramSize.off: l10n.settingsSpectrogramSizeOff,
+                },
+                onChanged: (v) =>
+                    ref.read(spectrogramSizeProvider.notifier).set(v),
               ),
               _ChoiceTile<int>(
                 title: l10n.settingsFftSize,
@@ -468,9 +475,8 @@ class SettingsScreen extends ConsumerWidget {
                   20: '20 s',
                   30: '30 s',
                 },
-                onChanged:
-                    (v) =>
-                        ref.read(spectrogramDurationProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(spectrogramDurationProvider.notifier).set(v),
               ),
               _ChoiceTile<int>(
                 title: l10n.settingsFrequencyRange,
@@ -484,8 +490,8 @@ class SettingsScreen extends ConsumerWidget {
                   12000: '12 kHz',
                   16000: '16 kHz',
                 },
-                onChanged:
-                    (v) => ref.read(spectrogramMaxFreqProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(spectrogramMaxFreqProvider.notifier).set(v),
               ),
               SwitchListTile(
                 title: SettingHelpTitle(
@@ -493,8 +499,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpLogAmplitude,
                 ),
                 value: ref.watch(logAmplitudeProvider),
-                onChanged:
-                    (v) => ref.read(logAmplitudeProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(logAmplitudeProvider.notifier).set(v),
               ),
               _ChoiceTile<String>(
                 title: l10n.settingsSpectrogramQuality,
@@ -505,8 +511,8 @@ class SettingsScreen extends ConsumerWidget {
                   'medium': l10n.settingsSpectrogramQualityMedium,
                   'high': l10n.settingsSpectrogramQualityHigh,
                 },
-                onChanged:
-                    (v) => ref.read(spectrogramQualityProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(spectrogramQualityProvider.notifier).set(v),
               ),
               const Divider(),
             ],
@@ -515,10 +521,9 @@ class SettingsScreen extends ConsumerWidget {
             if (_showSection('recording')) ...[
               _SectionHeader(
                 title: l10n.settingsRecording,
-                subtitle:
-                    settingsContext == SettingsContext.pointCount
-                        ? null
-                        : l10n.settingsRecordingDescription,
+                subtitle: settingsContext == SettingsContext.pointCount
+                    ? null
+                    : l10n.settingsRecordingDescription,
               ),
               if (settingsContext != SettingsContext.pointCount)
                 _ChoiceTile<String>(
@@ -530,8 +535,8 @@ class SettingsScreen extends ConsumerWidget {
                     'detections': l10n.settingsRecordingModeDetections,
                     'off': l10n.settingsRecordingModeOff,
                   },
-                  onChanged:
-                      (v) => ref.read(recordingModeProvider.notifier).set(v),
+                  onChanged: (v) =>
+                      ref.read(recordingModeProvider.notifier).set(v),
                 ),
               // Clip context (visible only when recording mode = detections)
               if (settingsContext != SettingsContext.pointCount &&
@@ -551,10 +556,8 @@ class SettingsScreen extends ConsumerWidget {
                       max: 5,
                       divisions: 5,
                       label: '\u00b1${ref.watch(clipContextProvider)}s',
-                      onChanged:
-                          (v) => ref
-                              .read(clipContextProvider.notifier)
-                              .set(v.round()),
+                      onChanged: (v) =>
+                          ref.read(clipContextProvider.notifier).set(v.round()),
                     ),
                   ),
                 ),
@@ -572,8 +575,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpRecordingFormat,
                   value: ref.watch(recordingFormatProvider),
                   options: const {'wav': 'WAV', 'flac': 'FLAC'},
-                  onChanged:
-                      (v) => ref.read(recordingFormatProvider.notifier).set(v),
+                  onChanged: (v) =>
+                      ref.read(recordingFormatProvider.notifier).set(v),
                 ),
               // Auto-save tile applies to the attended field modes that use
               // these Recording settings (Live + Point Count). Survey and ARU
@@ -592,10 +595,9 @@ class SettingsScreen extends ConsumerWidget {
                     l10n.settingsSaveSessionAutomaticallyDescription,
                   ),
                   value: ref.watch(saveSessionAutomaticallyProvider),
-                  onChanged:
-                      (v) => ref
-                          .read(saveSessionAutomaticallyProvider.notifier)
-                          .set(v),
+                  onChanged: (v) => ref
+                      .read(saveSessionAutomaticallyProvider.notifier)
+                      .set(v),
                 ),
               // Auto-start tile is Live-only — the survey / point-count
               // setup wizards already gate session start behind their own
@@ -610,8 +612,8 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   subtitle: Text(l10n.settingsLiveAutoStartDescription),
                   value: ref.watch(liveAutoStartProvider),
-                  onChanged:
-                      (v) => ref.read(liveAutoStartProvider.notifier).set(v),
+                  onChanged: (v) =>
+                      ref.read(liveAutoStartProvider.notifier).set(v),
                 ),
               if (settingsContext == SettingsContext.live ||
                   settingsContext == SettingsContext.all) ...[
@@ -622,10 +624,8 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   subtitle: Text(l10n.settingsLiveBackgroundDescription),
                   value: ref.watch(liveBackgroundEnabledProvider),
-                  onChanged:
-                      (v) => ref
-                          .read(liveBackgroundEnabledProvider.notifier)
-                          .set(v),
+                  onChanged: (v) =>
+                      ref.read(liveBackgroundEnabledProvider.notifier).set(v),
                 ),
                 if (ref.watch(liveBackgroundEnabledProvider))
                   _ChoiceTile<int>(
@@ -636,10 +636,9 @@ class SettingsScreen extends ConsumerWidget {
                       for (final minutes in liveBackgroundMaxMinuteOptions)
                         minutes: l10n.pointCountDurationMinutes(minutes),
                     },
-                    onChanged:
-                        (v) => ref
-                            .read(liveBackgroundMaxMinutesProvider.notifier)
-                            .set(v),
+                    onChanged: (v) => ref
+                        .read(liveBackgroundMaxMinutesProvider.notifier)
+                        .set(v),
                   ),
               ],
               const Divider(),
@@ -658,10 +657,9 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(l10n.settingsPlaybackOverlayDescription),
                 value: ref.watch(sessionReviewPlaybackOverlayProvider),
-                onChanged:
-                    (v) => ref
-                        .read(sessionReviewPlaybackOverlayProvider.notifier)
-                        .set(v),
+                onChanged: (v) => ref
+                    .read(sessionReviewPlaybackOverlayProvider.notifier)
+                    .set(v),
               ),
               SwitchListTile(
                 title: SettingHelpTitle(
@@ -670,8 +668,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(l10n.settingsPlaybackVoiceMemosDescription),
                 value: ref.watch(playbackVoiceMemosProvider),
-                onChanged:
-                    (v) => ref.read(playbackVoiceMemosProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(playbackVoiceMemosProvider.notifier).set(v),
               ),
               if (ref.watch(playbackVoiceMemosProvider))
                 _SliderTile(
@@ -682,10 +680,9 @@ class SettingsScreen extends ConsumerWidget {
                   max: 0.95,
                   divisions: 19,
                   format: (v) => '${(v * 100).round()}%',
-                  onChanged:
-                      (v) => ref
-                          .read(playbackVoiceMemoDuckingProvider.notifier)
-                          .set(v),
+                  onChanged: (v) => ref
+                      .read(playbackVoiceMemoDuckingProvider.notifier)
+                      .set(v),
                 ),
               const Divider(),
             ],
@@ -693,12 +690,12 @@ class SettingsScreen extends ConsumerWidget {
             // --- Announcements ---
             if (_showSection('announcements'))
               AnnouncementsSettingsSection(
-                sectionHeader:
-                    ({required String title, required String subtitle}) =>
-                        _SectionHeader(title: title, subtitle: subtitle),
-                titleWithHelp:
-                    ({required String title, String? helpBody}) =>
-                        SettingHelpTitle(title: title, helpBody: helpBody),
+                sectionHeader: ({
+                  required String title,
+                  required String subtitle,
+                }) => _SectionHeader(title: title, subtitle: subtitle),
+                titleWithHelp: ({required String title, String? helpBody}) =>
+                    SettingHelpTitle(title: title, helpBody: helpBody),
               ),
 
             // --- Location / Geo ---
@@ -732,8 +729,8 @@ class SettingsScreen extends ConsumerWidget {
                   'geoAdaptive': l10n.settingsFilterGeoAdaptive,
                   'geoMerge': l10n.settingsFilterGeoMerge,
                 },
-                onChanged:
-                    (v) => ref.read(speciesFilterModeProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(speciesFilterModeProvider.notifier).set(v),
               ),
               // Adaptive mode derives its own bar from the local score
               // distribution, so the manual threshold does not apply there.
@@ -747,8 +744,8 @@ class SettingsScreen extends ConsumerWidget {
                   max: 0.5,
                   divisions: 50,
                   format: (v) => v.toStringAsFixed(2),
-                  onChanged:
-                      (v) => ref.read(geoThresholdProvider.notifier).set(v),
+                  onChanged: (v) =>
+                      ref.read(geoThresholdProvider.notifier).set(v),
                 ),
               const Divider(),
             ],
@@ -767,9 +764,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpIncludeAudioFiles,
                 ),
                 value: ref.watch(includeAudioProvider),
-                onChanged:
-                    (v) =>
-                        ref.read(includeAudioProvider.notifier).set(v ?? false),
+                onChanged: (v) =>
+                    ref.read(includeAudioProvider.notifier).set(v ?? false),
               ),
               if (ref.watch(includeAudioProvider))
                 CheckboxListTile(
@@ -779,10 +775,9 @@ class SettingsScreen extends ConsumerWidget {
                     helpBody: l10n.settingsHelpShareAudioAsWav,
                   ),
                   value: ref.watch(shareAudioAsWavProvider),
-                  onChanged:
-                      (v) => ref
-                          .read(shareAudioAsWavProvider.notifier)
-                          .set(v ?? false),
+                  onChanged: (v) => ref
+                      .read(shareAudioAsWavProvider.notifier)
+                      .set(v ?? false),
                 ),
               CheckboxListTile(
                 dense: true,
@@ -791,10 +786,9 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpExportAppMetadata,
                 ),
                 value: ref.watch(includeAppMetadataProvider),
-                onChanged:
-                    (v) => ref
-                        .read(includeAppMetadataProvider.notifier)
-                        .set(v ?? false),
+                onChanged: (v) => ref
+                    .read(includeAppMetadataProvider.notifier)
+                    .set(v ?? false),
               ),
               CheckboxListTile(
                 dense: true,
@@ -803,10 +797,8 @@ class SettingsScreen extends ConsumerWidget {
                   helpBody: l10n.settingsHelpExportHtmlReport,
                 ),
                 value: ref.watch(exportHtmlReportProvider),
-                onChanged:
-                    (v) => ref
-                        .read(exportHtmlReportProvider.notifier)
-                        .set(v ?? false),
+                onChanged: (v) =>
+                    ref.read(exportHtmlReportProvider.notifier).set(v ?? false),
               ),
               const Divider(),
             ],
@@ -824,8 +816,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(l10n.settingsPrivacyAllowMapSubtitle),
                 value: ref.watch(privacyAllowMapProvider),
-                onChanged:
-                    (v) => ref.read(privacyAllowMapProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(privacyAllowMapProvider.notifier).set(v),
               ),
               SwitchListTile(
                 title: SettingHelpTitle(
@@ -836,10 +828,9 @@ class SettingsScreen extends ConsumerWidget {
                   l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
                 ),
                 value: ref.watch(privacyAllowReverseGeocodingProvider),
-                onChanged:
-                    (v) => ref
-                        .read(privacyAllowReverseGeocodingProvider.notifier)
-                        .set(v),
+                onChanged: (v) => ref
+                    .read(privacyAllowReverseGeocodingProvider.notifier)
+                    .set(v),
               ),
               SwitchListTile(
                 title: SettingHelpTitle(
@@ -848,9 +839,8 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 subtitle: Text(l10n.settingsPrivacyAllowWeatherSubtitle),
                 value: ref.watch(privacyAllowWeatherProvider),
-                onChanged:
-                    (v) =>
-                        ref.read(privacyAllowWeatherProvider.notifier).set(v),
+                onChanged: (v) =>
+                    ref.read(privacyAllowWeatherProvider.notifier).set(v),
               ),
               const Divider(),
             ],
@@ -914,27 +904,26 @@ class SettingsScreen extends ConsumerWidget {
   ) {
     showDialog<void>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.settingsResetOnboardingConfirmTitle),
-            content: Text(l10n.settingsResetOnboardingConfirmMessage),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () {
-                  ref.read(onboardingCompleteProvider.notifier).reset();
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.settingsOnboardingReset)),
-                  );
-                },
-                child: Text(l10n.confirm),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.settingsResetOnboardingConfirmTitle),
+        content: Text(l10n.settingsResetOnboardingConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
           ),
+          TextButton(
+            onPressed: () {
+              ref.read(onboardingCompleteProvider.notifier).reset();
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.settingsOnboardingReset)),
+              );
+            },
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1016,51 +1005,48 @@ class SettingsScreen extends ConsumerWidget {
               ),
               actions: [
                 TextButton(
-                  onPressed:
-                      isClearing ? null : () => Navigator.of(context).pop(),
+                  onPressed: isClearing
+                      ? null
+                      : () => Navigator.of(context).pop(),
                   child: Text(l10n.cancel),
                 ),
                 FilledButton.tonal(
-                  onPressed:
-                      typed && !isClearing
-                          ? () async {
-                            final navigator = Navigator.of(context);
-                            final messenger = ScaffoldMessenger.of(context);
-                            setState(() => isClearing = true);
-                            try {
-                              await const AppDataClearService().clearAllData();
-                              navigator.pop();
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.settingsDataCleared),
-                                ),
-                              );
-                              await Future<void>.delayed(
-                                const Duration(milliseconds: 800),
-                              );
-                              await SystemNavigator.pop();
-                            } catch (_) {
-                              if (!context.mounted) return;
-                              setState(() => isClearing = false);
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.settingsDataClearFailed),
-                                ),
-                              );
-                            }
+                  onPressed: typed && !isClearing
+                      ? () async {
+                          final navigator = Navigator.of(context);
+                          final messenger = ScaffoldMessenger.of(context);
+                          setState(() => isClearing = true);
+                          try {
+                            await const AppDataClearService().clearAllData();
+                            navigator.pop();
+                            messenger.showSnackBar(
+                              SnackBar(content: Text(l10n.settingsDataCleared)),
+                            );
+                            await Future<void>.delayed(
+                              const Duration(milliseconds: 800),
+                            );
+                            await SystemNavigator.pop();
+                          } catch (_) {
+                            if (!context.mounted) return;
+                            setState(() => isClearing = false);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(l10n.settingsDataClearFailed),
+                              ),
+                            );
                           }
-                          : null,
+                        }
+                      : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: theme.colorScheme.errorContainer,
                     foregroundColor: theme.colorScheme.onErrorContainer,
                   ),
-                  child:
-                      isClearing
-                          ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : Text(l10n.confirm),
+                  child: isClearing
+                      ? const SizedBox.square(
+                          dimension: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.confirm),
                 ),
               ],
             );
@@ -1110,9 +1096,8 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
                 child: Text(
                   l10n.settingsIgnoreSpecies,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               Padding(
@@ -1132,17 +1117,14 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ignoredSpeciesNames.when(
-                        data:
-                            (names) => Text(
-                              l10n.settingsIgnoredSpeciesCount(names.length),
-                              style: Theme.of(context).textTheme.titleSmall,
-                            ),
-                        loading:
-                            () => Text(l10n.settingsIgnoredSpeciesCountLoading),
-                        error:
-                            (_, _) => Text(
-                              l10n.settingsIgnoredSpeciesCountUnavailable,
-                            ),
+                        data: (names) => Text(
+                          l10n.settingsIgnoredSpeciesCount(names.length),
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        loading: () =>
+                            Text(l10n.settingsIgnoredSpeciesCountLoading),
+                        error: (_, _) =>
+                            Text(l10n.settingsIgnoredSpeciesCountUnavailable),
                       ),
                     ),
                     if (ignoredSpeciesNames.isLoading)
@@ -1156,34 +1138,29 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
               CheckboxListTile(
                 title: Text(l10n.taxonGroupAves),
                 value: ref.watch(ignoreBirdsProvider),
-                onChanged:
-                    (value) => ref
-                        .read(ignoreBirdsProvider.notifier)
-                        .set(value ?? false),
+                onChanged: (value) =>
+                    ref.read(ignoreBirdsProvider.notifier).set(value ?? false),
               ),
               CheckboxListTile(
                 title: Text(l10n.taxonGroupMammalia),
                 value: ref.watch(ignoreMammalsProvider),
-                onChanged:
-                    (value) => ref
-                        .read(ignoreMammalsProvider.notifier)
-                        .set(value ?? false),
+                onChanged: (value) => ref
+                    .read(ignoreMammalsProvider.notifier)
+                    .set(value ?? false),
               ),
               CheckboxListTile(
                 title: Text(l10n.taxonGroupAmphibia),
                 value: ref.watch(ignoreAmphibiansProvider),
-                onChanged:
-                    (value) => ref
-                        .read(ignoreAmphibiansProvider.notifier)
-                        .set(value ?? false),
+                onChanged: (value) => ref
+                    .read(ignoreAmphibiansProvider.notifier)
+                    .set(value ?? false),
               ),
               CheckboxListTile(
                 title: Text(l10n.taxonGroupInsecta),
                 value: ref.watch(ignoreInsectsProvider),
-                onChanged:
-                    (value) => ref
-                        .read(ignoreInsectsProvider.notifier)
-                        .set(value ?? false),
+                onChanged: (value) => ref
+                    .read(ignoreInsectsProvider.notifier)
+                    .set(value ?? false),
               ),
               const Divider(),
               _SliderTile(
@@ -1194,10 +1171,9 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                 max: 1.0,
                 divisions: 20,
                 format: (value) => '${(value * 100).round()}%',
-                onChanged:
-                    (value) => ref
-                        .read(ignoreCommonGeoScoreCutoffProvider.notifier)
-                        .set(value),
+                onChanged: (value) => ref
+                    .read(ignoreCommonGeoScoreCutoffProvider.notifier)
+                    .set(value),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
@@ -1421,6 +1397,7 @@ class _LanguageTile extends ConsumerWidget {
             const DropdownMenuItem(value: 'es', child: Text('Español')),
             const DropdownMenuItem(value: 'fr', child: Text('Français')),
             const DropdownMenuItem(value: 'it', child: Text('Italiano')),
+            const DropdownMenuItem(value: 'ko', child: Text('한국어')),
             const DropdownMenuItem(value: 'nl', child: Text('Nederlands')),
             const DropdownMenuItem(value: 'nb', child: Text('Norsk bokmål')),
             const DropdownMenuItem(value: 'pl', child: Text('Polski')),
@@ -1451,6 +1428,7 @@ const _speciesLanguages = <String, String>{
   'nl': 'Nederlands',
   'ru': 'Русский',
   'ja': '日本語',
+  'ko': '한국어',
   'cs': 'Čeština',
   'pt': 'Português',
   'ca': 'Català',
@@ -1493,20 +1471,19 @@ class _SpeciesLanguageTile extends ConsumerWidget {
           value: speciesLang,
           isExpanded: true,
           underline: const SizedBox.shrink(),
-          items:
-              _speciesLanguages.entries.map((e) {
-                return DropdownMenuItem(
-                  value: e.key,
-                  child: Text(
-                    e.key == 'system'
-                        ? l10n.settingsSpeciesLanguageSystem
-                        : e.key == 'app'
-                        ? l10n.settingsSpeciesLanguageFollowApp
-                        : e.value,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              }).toList(),
+          items: _speciesLanguages.entries.map((e) {
+            return DropdownMenuItem(
+              value: e.key,
+              child: Text(
+                e.key == 'system'
+                    ? l10n.settingsSpeciesLanguageSystem
+                    : e.key == 'app'
+                    ? l10n.settingsSpeciesLanguageFollowApp
+                    : e.value,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+          }).toList(),
           onChanged: (value) {
             if (value != null) {
               ref.read(speciesLanguageProvider.notifier).set(value);
@@ -1567,12 +1544,11 @@ class _ManualCoordinatesTileState
   /// "52.52; 13.40", or "52.52 13.40". Returns null when the text is not
   /// exactly two parseable numbers.
   static (double, double)? _parsePair(String text) {
-    final parts =
-        text
-            .trim()
-            .split(RegExp(r'[,;\s]+'))
-            .where((p) => p.isNotEmpty)
-            .toList();
+    final parts = text
+        .trim()
+        .split(RegExp(r'[,;\s]+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parts.length != 2) return null;
     final lat = double.tryParse(parts[0]);
     final lon = double.tryParse(parts[1]);
@@ -1656,11 +1632,10 @@ class _ManualCoordinatesTileState
   Future<void> _pickOnMap(AppLocalizations l10n) async {
     final result = await Navigator.of(context).push<LatLng>(
       MaterialPageRoute<LatLng>(
-        builder:
-            (_) => MapPickerScreen(
-              initialLat: ref.read(manualLatitudeProvider),
-              initialLon: ref.read(manualLongitudeProvider),
-            ),
+        builder: (_) => MapPickerScreen(
+          initialLat: ref.read(manualLatitudeProvider),
+          initialLon: ref.read(manualLongitudeProvider),
+        ),
       ),
     );
     if (result != null && mounted) {
@@ -1846,12 +1821,11 @@ class _DiscreteSliderTile<T> extends StatelessWidget {
         label: format(selectedValue),
         onChanged: (raw) {
           final rounded = raw.round();
-          final index =
-              rounded < 0
-                  ? 0
-                  : rounded >= values.length
-                  ? values.length - 1
-                  : rounded;
+          final index = rounded < 0
+              ? 0
+              : rounded >= values.length
+              ? values.length - 1
+              : rounded;
           onChanged(values[index]);
         },
       ),
@@ -1898,12 +1872,9 @@ class _ChoiceTile<T> extends StatelessWidget {
       trailing: DropdownButton<T>(
         value: value,
         underline: const SizedBox.shrink(),
-        items:
-            options.entries
-                .map(
-                  (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
-                )
-                .toList(),
+        items: options.entries
+            .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+            .toList(),
         onChanged: (v) {
           if (v != null) onChanged(v);
         },
@@ -1977,8 +1948,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             value: ref.watch(scorePoolingWindowsProvider),
             values: const [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             format: (v) => '$v',
-            onChanged:
-                (v) => ref.read(scorePoolingWindowsProvider.notifier).set(v),
+            onChanged: (v) =>
+                ref.read(scorePoolingWindowsProvider.notifier).set(v),
           ),
           _SliderTile(
             title: 'Time gate',
@@ -1990,9 +1961,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             max: 30,
             divisions: 29,
             format: (v) => '${v.toStringAsFixed(0)}s',
-            onChanged:
-                (v) =>
-                    ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(v),
+            onChanged: (v) =>
+                ref.read(scorePoolingMaxAgeSecondsProvider.notifier).set(v),
           ),
         ],
         if (gated) ...[
@@ -2006,8 +1976,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             max: 15,
             divisions: 28,
             format: (v) => v.toStringAsFixed(1),
-            onChanged:
-                (v) => ref.read(scorePoolingAlphaProvider.notifier).set(v),
+            onChanged: (v) =>
+                ref.read(scorePoolingAlphaProvider.notifier).set(v),
           ),
           _DiscreteSliderTile<int>(
             title: 'Support gate — min windows',
@@ -2018,10 +1988,8 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             value: ref.watch(scorePoolingMinSupportWindowsProvider),
             values: const [1, 2, 3, 4, 5],
             format: (v) => v == 1 ? '1 (off)' : '$v',
-            onChanged:
-                (v) => ref
-                    .read(scorePoolingMinSupportWindowsProvider.notifier)
-                    .set(v),
+            onChanged: (v) =>
+                ref.read(scorePoolingMinSupportWindowsProvider.notifier).set(v),
           ),
           _SliderTile(
             title: 'Support threshold fraction',
@@ -2033,10 +2001,9 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             max: 1,
             divisions: 20,
             format: (v) => v.toStringAsFixed(2),
-            onChanged:
-                (v) => ref
-                    .read(scorePoolingSupportThresholdFractionProvider.notifier)
-                    .set(v),
+            onChanged: (v) => ref
+                .read(scorePoolingSupportThresholdFractionProvider.notifier)
+                .set(v),
           ),
           _SliderTile(
             title: 'Support threshold floor',
@@ -2049,10 +2016,9 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             max: 1,
             divisions: 20,
             format: (v) => v.toStringAsFixed(2),
-            onChanged:
-                (v) => ref
-                    .read(scorePoolingSupportThresholdFloorProvider.notifier)
-                    .set(v),
+            onChanged: (v) => ref
+                .read(scorePoolingSupportThresholdFloorProvider.notifier)
+                .set(v),
           ),
           _SliderTile(
             title: 'Very-high immediate threshold',
@@ -2065,12 +2031,9 @@ class _AdvancedInferenceTuning extends ConsumerWidget {
             max: 1,
             divisions: 25,
             format: (v) => v.toStringAsFixed(2),
-            onChanged:
-                (v) => ref
-                    .read(
-                      scorePoolingVeryHighImmediateThresholdProvider.notifier,
-                    )
-                    .set(v),
+            onChanged: (v) => ref
+                .read(scorePoolingVeryHighImmediateThresholdProvider.notifier)
+                .set(v),
           ),
         ],
         Padding(
@@ -2129,8 +2092,9 @@ class _ColorMapChoiceTile extends StatelessWidget {
   /// Build a horizontal gradient strip from the named color map's LUT.
   Widget _swatch(String name, {double width = 56, double height = 14}) {
     final stops = List<double>.generate(11, (i) => i / 10);
-    final colors =
-        stops.map((s) => SpectrogramColorMap.color(name, s)).toList();
+    final colors = stops
+        .map((s) => SpectrogramColorMap.color(name, s))
+        .toList();
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: Container(
@@ -2157,20 +2121,15 @@ class _ColorMapChoiceTile extends StatelessWidget {
       trailing: DropdownButton<String>(
         value: value,
         underline: const SizedBox.shrink(),
-        selectedItemBuilder:
-            (_) =>
-                options.entries
-                    .map((e) => Center(child: _row(e.key, e.value)))
-                    .toList(),
-        items:
-            options.entries
-                .map(
-                  (e) => DropdownMenuItem(
-                    value: e.key,
-                    child: _row(e.key, e.value),
-                  ),
-                )
-                .toList(),
+        selectedItemBuilder: (_) => options.entries
+            .map((e) => Center(child: _row(e.key, e.value)))
+            .toList(),
+        items: options.entries
+            .map(
+              (e) =>
+                  DropdownMenuItem(value: e.key, child: _row(e.key, e.value)),
+            )
+            .toList(),
         onChanged: (v) {
           if (v != null) onChanged(v);
         },
@@ -2271,24 +2230,22 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final loc = ref.watch(currentLocationProvider).value;
-    final subtitle =
-        _refreshing
-            ? l10n.settingsGpsRefreshing
-            : loc == null
-            ? l10n.settingsGpsRefreshSubtitle
-            : '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}';
+    final subtitle = _refreshing
+        ? l10n.settingsGpsRefreshing
+        : loc == null
+        ? l10n.settingsGpsRefreshSubtitle
+        : '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}';
     return ListTile(
       leading: const Icon(AppIcons.myLocation),
       title: Text(l10n.settingsGpsRefresh),
       subtitle: Text(subtitle),
-      trailing:
-          _refreshing
-              ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-              : const Icon(AppIcons.refresh),
+      trailing: _refreshing
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
     );
   }
@@ -2336,10 +2293,9 @@ class _ExportFormatChecklist extends ConsumerWidget {
             dense: true,
             title: SettingHelpTitle(title: fmt.$2, helpBody: fmt.$3),
             value: selection.contains(fmt.$1),
-            onChanged:
-                (v) => ref
-                    .read(exportSelectionProvider.notifier)
-                    .toggle(fmt.$1, v ?? false),
+            onChanged: (v) => ref
+                .read(exportSelectionProvider.notifier)
+                .toggle(fmt.$1, v ?? false),
           ),
       ],
     );

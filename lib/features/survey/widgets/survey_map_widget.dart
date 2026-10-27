@@ -240,21 +240,20 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     final l10n = AppLocalizations.of(context)!;
     final agreed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.mapTileConsentTitle),
-            content: Text(l10n.mapTileConsentBody),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.mapTileConsentCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(l10n.mapTileConsentAllow),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.mapTileConsentTitle),
+        content: Text(l10n.mapTileConsentBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.mapTileConsentCancel),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.mapTileConsentAllow),
+          ),
+        ],
+      ),
     );
     if (agreed == true) {
       await ref.read(privacyAllowMapProvider.notifier).set(true);
@@ -300,8 +299,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     final speciesLocale = ref.watch(effectiveSpeciesLocaleProvider);
 
     // Build polyline from GPS track.
-    final trackPoints =
-        widget.gpsTrack.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    final trackPoints = widget.gpsTrack
+        .map((p) => LatLng(p.latitude, p.longitude))
+        .toList();
 
     // Build detection markers with species icons.
     //
@@ -351,22 +351,22 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     // currently highlighted detection, then audio over silent, then high
     // confidence over low. flutter_map paints markers in list order, so the
     // last one added wins — sort ascending by importance.
-    final sortedDetections =
-        detectionsByLocation.values.toList()..sort((a, b) {
-          final aHighlight =
-              widget.highlightedDetection != null &&
-              a.scientificName == widget.highlightedDetection!.scientificName &&
-              a.timestamp == widget.highlightedDetection!.timestamp;
-          final bHighlight =
-              widget.highlightedDetection != null &&
-              b.scientificName == widget.highlightedDetection!.scientificName &&
-              b.timestamp == widget.highlightedDetection!.timestamp;
-          if (aHighlight != bHighlight) return aHighlight ? 1 : -1;
-          final aAudio = _hasPlayableClip(a);
-          final bAudio = _hasPlayableClip(b);
-          if (aAudio != bAudio) return aAudio ? 1 : -1;
-          return a.confidence.compareTo(b.confidence);
-        });
+    final sortedDetections = detectionsByLocation.values.toList()
+      ..sort((a, b) {
+        final aHighlight =
+            widget.highlightedDetection != null &&
+            a.scientificName == widget.highlightedDetection!.scientificName &&
+            a.timestamp == widget.highlightedDetection!.timestamp;
+        final bHighlight =
+            widget.highlightedDetection != null &&
+            b.scientificName == widget.highlightedDetection!.scientificName &&
+            b.timestamp == widget.highlightedDetection!.timestamp;
+        if (aHighlight != bHighlight) return aHighlight ? 1 : -1;
+        final aAudio = _hasPlayableClip(a);
+        final bAudio = _hasPlayableClip(b);
+        if (aAudio != bAudio) return aAudio ? 1 : -1;
+        return a.confidence.compareTo(b.confidence);
+      });
 
     for (final det in sortedDetections) {
       final isHighlighted =
@@ -395,10 +395,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
             hasAudio: hasAudio,
             isConfirmed: det.isConfirmed,
             isHighlighted: isHighlighted,
-            onTap:
-                widget.onMarkerTap != null
-                    ? () => widget.onMarkerTap!(det)
-                    : null,
+            onTap: widget.onMarkerTap != null
+                ? () => widget.onMarkerTap!(det)
+                : null,
             // The marker box hands its child *tight* constraints, which a
             // bare sized Container silently inflates to fill (a Container's
             // width/height lose to tight incoming constraints). That made
@@ -469,8 +468,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     // center when no GPS fix has been recorded yet, so the user always sees
     // where the map is centered.
     if (!widget.fitAllPoints) {
-      final LatLng? currentPosition =
-          trackPoints.isNotEmpty ? trackPoints.last : widget.initialCenter;
+      final LatLng? currentPosition = trackPoints.isNotEmpty
+          ? trackPoints.last
+          : widget.initialCenter;
       if (currentPosition != null) {
         auxMarkers.add(
           Marker(
@@ -497,10 +497,9 @@ class _SurveyMapWidgetState extends ConsumerState<SurveyMapWidget> {
     double zoom;
     if (widget.fitAllPoints) {
       // Will be adjusted via fitBounds after first frame.
-      center =
-          trackPoints.isNotEmpty
-              ? trackPoints.first
-              : const LatLng(52.52, 13.405);
+      center = trackPoints.isNotEmpty
+          ? trackPoints.first
+          : const LatLng(52.52, 13.405);
       zoom = 14;
     } else if (trackPoints.isNotEmpty) {
       center = trackPoints.last;
@@ -851,8 +850,9 @@ class _SpeciesMarker extends ConsumerWidget {
     // the 4 px handicap that badge makes it look like the bigger pin.
     // Ranking still comes through via desaturation, opacity, and the
     // neutral border — not size.
-    final size =
-        isHighlighted ? (hasAudio ? 48.0 : 44.0) : (hasAudio ? 36.0 : 32.0);
+    final size = isHighlighted
+        ? (hasAudio ? 48.0 : 44.0)
+        : (hasAudio ? 36.0 : 32.0);
 
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
     final path =
@@ -864,44 +864,42 @@ class _SpeciesMarker extends ConsumerWidget {
     // small corner play badge. The confidence-colored border is preserved
     // (silent markers use a neutral grey there too) but the photo itself
     // reads as monochrome until a clip is attached.
-    final ColorFilter? silentFilter =
-        hasAudio
-            ? null
-            : const ColorFilter.matrix(<double>[
-              0.2126,
-              0.7152,
-              0.0722,
-              0,
-              0,
-              0.2126,
-              0.7152,
-              0.0722,
-              0,
-              0,
-              0.2126,
-              0.7152,
-              0.0722,
-              0,
-              0,
-              0,
-              0,
-              0,
-              1,
-              0,
-            ]);
+    final ColorFilter? silentFilter = hasAudio
+        ? null
+        : const ColorFilter.matrix(<double>[
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+          ]);
 
     Widget image = Image.asset(
       path,
       fit: BoxFit.cover,
-      errorBuilder:
-          (a, b, c) => Container(
-            color: borderColor.withAlpha(60),
-            child: Icon(
-              AppIcons.brokenImage,
-              size: size * 0.45,
-              color: borderColor,
-            ),
-          ),
+      errorBuilder: (a, b, c) => Container(
+        color: borderColor.withAlpha(60),
+        child: Icon(
+          AppIcons.brokenImage,
+          size: size * 0.45,
+          color: borderColor,
+        ),
+      ),
     );
     if (silentFilter != null) {
       image = ColorFiltered(colorFilter: silentFilter, child: image);
@@ -918,10 +916,9 @@ class _SpeciesMarker extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color:
-                isHighlighted
-                    ? theme.colorScheme.primary.withAlpha(100)
-                    : theme.colorScheme.shadow.withAlpha(50),
+            color: isHighlighted
+                ? theme.colorScheme.primary.withAlpha(100)
+                : theme.colorScheme.shadow.withAlpha(50),
             blurRadius: isHighlighted ? 8 : 3,
             offset: const Offset(0, 1),
           ),

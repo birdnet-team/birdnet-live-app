@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import 'dart:typed_data';
 
 import 'package:birdnet_live/features/audio/ring_buffer.dart';
@@ -84,8 +85,11 @@ void main() {
     const hop = sampleRate; // 1 Hz
 
     /// Take the next window after [newSamples] more have been captured.
-    InferenceWindowAudio take(InferenceWindowDriver driver, RingBuffer buffer,
-        int newSamples) {
+    InferenceWindowAudio take(
+      InferenceWindowDriver driver,
+      RingBuffer buffer,
+      int newSamples,
+    ) {
       buffer.write(Float32List(newSamples));
       final window = driver.takeReadyWindow();
       expect(window, isNotNull);

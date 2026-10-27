@@ -150,6 +150,10 @@ nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
 
+### Velikost
+
+Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
+
 ### Velikost FFT
 
 Řídí frekvenční rozlišení spektrogramu.
@@ -230,7 +234,7 @@ Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza soubo
 
 Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
 
-Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Widget Quick Listen](live-mode.md) při klepnutí začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
+Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
 
 ### Pokračovat při vypnuté obrazovce
 

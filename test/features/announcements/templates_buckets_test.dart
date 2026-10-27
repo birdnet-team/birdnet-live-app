@@ -39,6 +39,7 @@ void main() {
     'pl',
     'ru',
     'zh',
+    'ko',
   ];
 
   // Slots the engine fills per bucket. H_two deliberately has only two,

@@ -219,10 +219,9 @@ class AruStorageEstimator {
       startTime: start,
       cycleDuration: schedule.cycleDuration,
       repeatInterval: schedule.repeatInterval,
-      endTime:
-          schedule.endTime != null && schedule.endTime!.isBefore(end)
-              ? schedule.endTime
-              : end,
+      endTime: schedule.endTime != null && schedule.endTime!.isBefore(end)
+          ? schedule.endTime
+          : end,
       lowBatteryStopPercent: schedule.lowBatteryStopPercent,
       dielPattern: schedule.dielPattern,
       testCycleEnabled: schedule.testCycleEnabled,
@@ -285,20 +284,14 @@ class AruStorageEstimator {
 
     final maxCycles = schedule.maxCycles;
     final firstRegular = _firstClockAlignedStart(schedule);
-    final countBeforeEnd =
-        end == null
-            ? maxCycles
-            : _rawCandidateCountBefore(
-              firstRegular,
-              end,
-              schedule.repeatInterval,
-            );
-    final regularCycles =
-        maxCycles == null
-            ? countBeforeEnd ?? 0
-            : countBeforeEnd == null
-            ? maxCycles
-            : _minInt(maxCycles, countBeforeEnd);
+    final countBeforeEnd = end == null
+        ? maxCycles
+        : _rawCandidateCountBefore(firstRegular, end, schedule.repeatInterval);
+    final regularCycles = maxCycles == null
+        ? countBeforeEnd ?? 0
+        : countBeforeEnd == null
+        ? maxCycles
+        : _minInt(maxCycles, countBeforeEnd);
 
     if (regularCycles <= 0) {
       return _FiniteActiveDuration(cycles: cycles, duration: duration);
@@ -342,8 +335,9 @@ class AruStorageEstimator {
       if (end != null && !start.isBefore(end)) break;
       if (_isAllowedStart(schedule, start)) {
         final plannedEnd = start.add(schedule.cycleDuration);
-        final effectiveEnd =
-            end != null && plannedEnd.isAfter(end) ? end : plannedEnd;
+        final effectiveEnd = end != null && plannedEnd.isAfter(end)
+            ? end
+            : plannedEnd;
         if (effectiveEnd.isAfter(start)) {
           acceptedRegular++;
           cycles++;
@@ -398,8 +392,8 @@ class AruStorageEstimator {
     }
 
     final totalSpanSeconds = end.difference(firstRegular).inSeconds;
-    final regularCycles =
-        (sample.cycles * totalSpanSeconds / sampleSpanSeconds).round();
+    final regularCycles = (sample.cycles * totalSpanSeconds / sampleSpanSeconds)
+        .round();
     final regularSeconds =
         (sample.duration.inSeconds * totalSpanSeconds / sampleSpanSeconds)
             .round();
@@ -413,8 +407,9 @@ class AruStorageEstimator {
   Duration _testCycleDuration(AruScheduleConfig schedule, DateTime? end) {
     if (!schedule.testCycleEnabled) return Duration.zero;
     final plannedEnd = schedule.startTime.add(AruDefaults.testCycleDuration);
-    final effectiveEnd =
-        end != null && plannedEnd.isAfter(end) ? end : plannedEnd;
+    final effectiveEnd = end != null && plannedEnd.isAfter(end)
+        ? end
+        : plannedEnd;
     if (!schedule.startTime.isBefore(effectiveEnd)) return Duration.zero;
     return effectiveEnd.difference(schedule.startTime);
   }

@@ -103,6 +103,8 @@ import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import 'services/detection_sharing_service.dart';
 import 'services/session_audio_trim.dart';
+import 'services/share_export_config.dart';
+import 'widgets/share_options_dialog.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -2558,17 +2560,26 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   Future<void> _share(Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
+    // Ask what to include first so backing out costs nothing; the save
+    // below is only worth doing once the user has committed to sharing.
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: sessionMayHaveAudio(widget.session),
+    );
+    if (config == null || !mounted) return;
     // Save pending changes before sharing so the export is up to date. This
     // also persists a not-yet-saved session — exporting implies keeping it.
     // Backing out of the trim confirmation cancels the share too: the export
     // would otherwise disagree with what is on screen.
     if (_hasUnsavedWork && !await _save()) return;
+    if (!mounted) return;
 
-    final exportFormats = ref.read(exportSelectionProvider);
-    final includeAudio = ref.read(includeAudioProvider);
-    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-    final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final includeAppMetadata = ref.read(includeAppMetadataProvider);
+    final exportFormats = config.formats;
+    final includeAudio = config.includeAudio;
+    final shareAudioAsWav = config.shareAudioAsWav;
+    final includeHtmlReport = config.includeHtmlReport;
+    final includeAppMetadata = config.includeAppMetadata;
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
@@ -2614,6 +2625,37 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     await SharePlus.instance.share(
       shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
+    );
+  }
+
+  /// Shares one detection after the user picked what to include. The
+  /// session recording is cut to the detection's exact span when audio is
+  /// on; metadata goes through the regular export pipeline.
+  Future<void> _shareDetectionRecord(
+    DetectionRecord detection,
+    Rect shareOrigin,
+  ) async {
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: detectionMayHaveAudio(detection, widget.session),
+    );
+    if (config == null || !mounted) return;
+    _reportShareFailure(
+      shareDetection(
+        detection,
+        session: widget.session,
+        formats: config.formats,
+        includeAudio: config.includeAudio,
+        shareAudioAsWav: config.shareAudioAsWav,
+        includeHtmlReport: config.includeHtmlReport,
+        includeAppMetadata: config.includeAppMetadata,
+        taxonomy: ref.read(taxonomyServiceProvider).value,
+        speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+        useAbsoluteSurveyTime:
+            ref.read(timestampDisplayModeProvider) == 'absolute',
+        sharePositionOrigin: shareOrigin,
+      ),
     );
   }
 
@@ -4732,22 +4774,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             onDeleteSpecies: () => _deleteSpeciesWithUndo(group.scientificName),
             onReplaceCluster: _replaceDetection,
             onToggleConfirmCluster: _toggleClusterConfirmation,
-            onShareCluster: (cluster, origin) => _reportShareFailure(
-              shareDetection(
-                cluster.records.first,
-                session: widget.session,
-                formats: ref.read(exportSelectionProvider),
-                includeAudio: ref.read(includeAudioProvider),
-                shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                includeHtmlReport: ref.read(exportHtmlReportProvider),
-                includeAppMetadata: ref.read(includeAppMetadataProvider),
-                taxonomy: taxonomy,
-                speciesLocale: speciesLocale,
-                useAbsoluteSurveyTime:
-                    ref.read(timestampDisplayModeProvider) == 'absolute',
-                sharePositionOrigin: origin,
-              ),
-            ),
+            onShareCluster: (cluster, origin) =>
+                unawaited(_shareDetectionRecord(cluster.records.first, origin)),
             onEditNoteCluster: _editClusterNote,
             onEditVoiceMemoCluster: _editClusterVoiceMemo,
             onDeleteVoiceMemoCluster: _deleteClusterVoiceMemo,

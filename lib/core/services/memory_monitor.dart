@@ -117,8 +117,9 @@ class MemoryMonitor {
     final last = _history.last;
     final durationSec = (last.timestampMs - first.timestampMs) / 1000.0;
     final rssGrowthMb = last.vmRssMb - first.vmRssMb;
-    final ratePerMin =
-        durationSec > 0 ? rssGrowthMb / (durationSec / 60.0) : 0.0;
+    final ratePerMin = durationSec > 0
+        ? rssGrowthMb / (durationSec / 60.0)
+        : 0.0;
 
     debugPrint('[MemoryMonitor] ═══ SUMMARY ═══');
     debugPrint('[MemoryMonitor] Duration: ${durationSec.toStringAsFixed(1)}s');

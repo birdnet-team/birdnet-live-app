@@ -481,36 +481,33 @@ void main() {
       expect(gated.single, pooled.single);
     });
 
-    test(
-      'lets already confirmed detections remain until they drop below threshold',
-      () {
-        final windows = [
-          [0.90],
-          [0.05],
-          [0.05],
-          [0.05],
-          [0.05],
-        ];
-        final pooled = PostProcessor.logMeanExp(
-          windows,
-          alpha: 5.0,
-          peakRetention: 0.98,
-        );
+    test('lets already confirmed detections remain until they drop below threshold', () {
+      final windows = [
+        [0.90],
+        [0.05],
+        [0.05],
+        [0.05],
+        [0.05],
+      ];
+      final pooled = PostProcessor.logMeanExp(
+        windows,
+        alpha: 5.0,
+        peakRetention: 0.98,
+      );
 
-        final gated = PostProcessor.applyTemporalSupportGate(
-          scores: pooled,
-          windowScores: windows,
-          confirmedIndexes: {0},
-          confidenceThreshold: 0.5,
-          supportThreshold: 0.3,
-          minSupportWindows: 2,
-          veryHighImmediateThreshold: 0.98,
-        );
+      final gated = PostProcessor.applyTemporalSupportGate(
+        scores: pooled,
+        windowScores: windows,
+        confirmedIndexes: {0},
+        confidenceThreshold: 0.5,
+        supportThreshold: 0.3,
+        minSupportWindows: 2,
+        veryHighImmediateThreshold: 0.98,
+      );
 
-        expect(pooled.single, greaterThan(0.5));
-        expect(gated.single, pooled.single);
-      },
-    );
+      expect(pooled.single, greaterThan(0.5));
+      expect(gated.single, pooled.single);
+    });
 
     test('allows a very high current-window score immediately', () {
       final windows = [
@@ -547,8 +544,11 @@ void main() {
   group('Detection', () {
     test('confidencePercent formats correctly', () {
       final labels = _dummyLabels(1);
-      final det =
-          PostProcessor.topK(scores: [0.873], labels: labels, k: 1).first;
+      final det = PostProcessor.topK(
+        scores: [0.873],
+        labels: labels,
+        k: 1,
+      ).first;
 
       expect(det.confidencePercent, '87.3 %');
     });
@@ -562,10 +562,16 @@ void main() {
 
     test('equality checks species and confidence', () {
       final labels = _dummyLabels(2);
-      final a =
-          PostProcessor.topK(scores: [0.8, 0.2], labels: labels, k: 1).first;
-      final b =
-          PostProcessor.topK(scores: [0.8, 0.2], labels: labels, k: 1).first;
+      final a = PostProcessor.topK(
+        scores: [0.8, 0.2],
+        labels: labels,
+        k: 1,
+      ).first;
+      final b = PostProcessor.topK(
+        scores: [0.8, 0.2],
+        labels: labels,
+        k: 1,
+      ).first;
 
       expect(a, equals(b));
     });

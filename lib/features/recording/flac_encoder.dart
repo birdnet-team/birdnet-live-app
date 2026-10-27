@@ -94,10 +94,9 @@ int _crc8(List<int> data) {
 final List<int> _crc16Table = List<int>.generate(256, (i) {
   int crc = i << 8;
   for (int j = 0; j < 8; j++) {
-    crc =
-        (crc & 0x8000) != 0
-            ? ((crc << 1) ^ 0x8005) & 0xFFFF
-            : (crc << 1) & 0xFFFF;
+    crc = (crc & 0x8000) != 0
+        ? ((crc << 1) ^ 0x8005) & 0xFFFF
+        : (crc << 1) & 0xFFFF;
   }
   return crc;
 });

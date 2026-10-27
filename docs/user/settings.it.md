@@ -157,6 +157,10 @@ supporto.
 
 ## Spettrogramma
 
+### Dimensione
+
+Imposta quanto spazio dello schermo occupa lo spettrogramma in tempo reale in Live Mode, Point Count, Survey e ARU. **Intera** è l'altezza abituale. **Media** e **Piccola** la riducono al 75% e al 50% e cedono la differenza all'elenco dei rilevamenti: la scelta giusta quando sul telefono in verticale guardi soprattutto l'elenco. **Disattivato** rimuove del tutto lo spettrogramma; in Survey e ARU scompare anche la scheda dello spettrogramma. In orizzontale **Media** e **Piccola** accorciano lo spettrogramma nella sua metà dello schermo (lo spazio sotto resta vuoto per ora), e **Disattivato** lascia tutto lo schermo all'elenco dei rilevamenti. Gli spettrogrammi delle sessioni salvate e della riproduzione non sono interessati.
+
 ### Dimensione FFT
 
 Controlla la risoluzione in frequenza dello spettrogramma.
@@ -237,7 +241,7 @@ Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi fil
 
 Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
 
-Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. Il [widget Quick Listen](live-mode.md) inizia ad ascoltare quando lo tocchi, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
+Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. [Quick Listen](live-mode.md) — il widget Android oppure, su iOS, il comando rapido, la frase per Siri e l'azione dell'icona — inizia ad ascoltare quando viene avviato, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
 
 ### Continua a schermo spento
 

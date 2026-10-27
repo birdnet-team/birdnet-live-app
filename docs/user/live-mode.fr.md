@@ -6,18 +6,34 @@ Le mode En direct est le moyen le plus rapide d'écouter via le microphone du t�
 
 Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :app-micRounded:.
 
-## Widget « Écoute rapide »
+## Écoute rapide
 
-**Android uniquement.** Un widget sur l'écran d'accueil démarre l'écoute en un seul appui, sans avoir à ouvrir l'application puis à y naviguer — pratique lorsque vous entendez quelque chose que vous voulez identifier avant qu'il ne se taise.
+Écoute rapide démarre l'écoute en un seul appui, sans avoir à ouvrir l'application puis à y naviguer — pratique lorsque vous entendez quelque chose que vous voulez identifier avant qu'il ne se taise. Chacun des points d'entrée ci-dessous ouvre le mode En direct et commence à écouter immédiatement, quel que soit le réglage **Démarrer l'enregistrement automatiquement**, et aucun ne modifie ce réglage.
+
+### Android : widget sur l'écran d'accueil
 
 Ajoutez-le comme n'importe quel widget : appuyez longuement sur un espace libre de l'écran d'accueil, appuyez sur **Widgets**, cherchez **BirdNET Live** et faites glisser l'une des deux tuiles.
 
 - **Écoute rapide** (2×1) — icône accompagnée du libellé **Démarrer l'écoute**
 - **Écoute rapide (compacte)** (1×1) — icône seule
 
-Les deux font la même chose. Un appui sur l'une ou l'autre ouvre le mode En direct et commence à écouter immédiatement, quel que soit le réglage **Démarrer l'enregistrement automatiquement**. Le widget ne modifie pas ce réglage.
+Les deux font la même chose.
 
-Si le mode En direct est déjà ouvert, le widget revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
+### iOS : Raccourcis, Siri, bouton Action et icône de l'app
+
+BirdNET Live propose au système l'action **Démarrer l'écoute**, il n'y a donc rien à construire à la main :
+
+- **Bouton Action** (iPhone 15 Pro et modèles ultérieurs) — ouvrez **Réglages → Bouton Action**, choisissez **Raccourci** et sélectionnez **Démarrer l'écoute** sous BirdNET Live. Un appui long sur le bouton démarre ensuite l'écoute.
+- **Siri** — dites « Commencer l'écoute avec BirdNET Live », « Écouter les oiseaux avec BirdNET Live » ou « Identifier un oiseau avec BirdNET Live ».
+- **App Raccourcis** — l'action **Démarrer l'écoute** figure sous BirdNET Live. Utilisez-la dans un raccourci de votre choix, ajoutez ce raccourci à l'écran d'accueil ou lancez-le via Toucher le dos, un mode Concentration ou un tag NFC.
+- **Icône de l'app** — appuyez longuement sur l'icône BirdNET Live de l'écran d'accueil et touchez **Démarrer l'écoute**.
+- **URL** — les automatisations qui ouvrent une URL peuvent utiliser `birdnetlive://listen`.
+
+Les phrases Siri et l'entrée dans le sélecteur du bouton Action nécessitent iOS 17. L'action Raccourcis, le menu de l'icône et l'URL fonctionnent aussi sous iOS 16.
+
+### Ce qui se passe ensuite
+
+Si le mode En direct est déjà ouvert, Écoute rapide revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
 
 Écoute rapide ne remplace jamais un autre mode en cours. Si une Session Point Count, Survey, File Analysis ou [mode ARU](aru-mode.md) est en cours ou démarre, l'application revient au premier plan et vous demande d'arrêter d'abord cette Session. Son écran et son travail restent accessibles et ne sont pas interrompus.
 

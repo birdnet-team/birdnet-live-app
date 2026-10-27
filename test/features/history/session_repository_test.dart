@@ -391,13 +391,9 @@ void main() {
 
       await repo.save(session);
 
-      final raw =
-          jsonDecode(
-                await File(
-                  '${tempDir.path}/test-session-1.json',
-                ).readAsString(),
-              )
-              as Map<String, dynamic>;
+      final raw = jsonDecode(
+        await File('${tempDir.path}/test-session-1.json').readAsString(),
+      ) as Map<String, dynamic>;
       expect(raw['recordingPath'], 'recordings/test-session-1/full.flac');
       final detections = raw['detections'] as List<dynamic>;
       final detection = detections.single as Map<String, dynamic>;

@@ -73,16 +73,14 @@ class SpeciesCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final highContrast = AppTheme.isHighContrastTheme(theme);
-    final cardHeight =
-        weeklyScores == null
-            ? (showScientificName ? 78.0 : 68.0)
-            : (showScientificName ? 96.0 : 88.0);
+    final cardHeight = weeklyScores == null
+        ? (showScientificName ? 78.0 : 68.0)
+        : (showScientificName ? 96.0 : 88.0);
 
     return Material(
-      color:
-          isDark
-              ? theme.colorScheme.surfaceContainerHighest.withAlpha(120)
-              : theme.colorScheme.surfaceContainerHighest.withAlpha(180),
+      color: isDark
+          ? theme.colorScheme.surfaceContainerHighest.withAlpha(120)
+          : theme.colorScheme.surfaceContainerHighest.withAlpha(180),
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -140,18 +138,14 @@ class SpeciesCard extends StatelessWidget {
                               geoScore != null) ...[
                             const SizedBox(width: 8),
                             Semantics(
-                              label:
-                                  confidence != null
-                                      ? AppLocalizations.of(
-                                        context,
-                                      )!.a11yConfidencePercent(
-                                        (confidence! * 100).round(),
-                                      )
-                                      : AppLocalizations.of(
-                                        context,
-                                      )!.a11yLikelihoodPercent(
-                                        geoScore!.round(),
-                                      ),
+                              label: confidence != null
+                                  ? AppLocalizations.of(context)!
+                                        .a11yConfidencePercent(
+                                          (confidence! * 100).round(),
+                                        )
+                                  : AppLocalizations.of(
+                                      context,
+                                    )!.a11yLikelihoodPercent(geoScore!.round()),
                               excludeSemantics: true,
                               child: Builder(
                                 builder: (context) {
@@ -199,12 +193,9 @@ class SpeciesCard extends StatelessWidget {
                         Text(
                           scientificName,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color:
-                                highContrast
-                                    ? theme.colorScheme.onSurface
-                                    : theme.colorScheme.onSurface.withAlpha(
-                                      150,
-                                    ),
+                            color: highContrast
+                                ? theme.colorScheme.onSurface
+                                : theme.colorScheme.onSurface.withAlpha(150),
                             fontStyle: FontStyle.italic,
                             height: 1.0,
                           ),
@@ -308,17 +299,15 @@ class _TierFillPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    final track =
-        Paint()
-          ..style = PaintingStyle.fill
-          ..color = color.withAlpha(38);
+    final track = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color.withAlpha(38);
     canvas.drawCircle(center, radius, track);
 
     if (fraction > 0) {
-      final wedge =
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = color;
+      final wedge = Paint()
+        ..style = PaintingStyle.fill
+        ..color = color;
       if (fraction >= 1.0) {
         // A full 360 degree arc is degenerate (start and end coincide) and would
         // paint nothing, so draw a solid disc for the top tier.
@@ -327,20 +316,18 @@ class _TierFillPainter extends CustomPainter {
         final rect = Rect.fromCircle(center: center, radius: radius);
         const startAngle = -_pi / 2; // top
         final sweep = fraction.clamp(0.0, 1.0).toDouble() * 2 * _pi;
-        final path =
-            Path()
-              ..moveTo(center.dx, center.dy)
-              ..arcTo(rect, startAngle, sweep, false)
-              ..close();
+        final path = Path()
+          ..moveTo(center.dx, center.dy)
+          ..arcTo(rect, startAngle, sweep, false)
+          ..close();
         canvas.drawPath(path, wedge);
       }
     }
 
-    final outline =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0
-          ..color = color;
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = color;
     canvas.drawCircle(center, radius - 0.5, outline);
   }
 
@@ -365,14 +352,13 @@ class _SpeciesImage extends StatelessWidget {
       cacheWidth: 360,
       cacheHeight: 240,
       filterQuality: FilterQuality.low,
-      errorBuilder:
-          (a, b, c) => Image.asset(
-            'assets/images/dummy_species.png',
-            fit: BoxFit.cover,
-            cacheWidth: 360,
-            cacheHeight: 240,
-            filterQuality: FilterQuality.low,
-          ),
+      errorBuilder: (a, b, c) => Image.asset(
+        'assets/images/dummy_species.png',
+        fit: BoxFit.cover,
+        cacheWidth: 360,
+        cacheHeight: 240,
+        filterQuality: FilterQuality.low,
+      ),
     );
   }
 }
@@ -413,10 +399,9 @@ class _MiniChart extends StatelessWidget {
               currentWeekIndex: currentWeekIndex,
               highContrast: highContrast,
               baseColor: theme.colorScheme.primary,
-              activeColor:
-                  highContrast
-                      ? theme.colorScheme.surface
-                      : theme.colorScheme.tertiary,
+              activeColor: highContrast
+                  ? theme.colorScheme.surface
+                  : theme.colorScheme.tertiary,
               borderColor: theme.colorScheme.onSurface,
             ),
           ),
@@ -425,24 +410,22 @@ class _MiniChart extends StatelessWidget {
         SizedBox(
           height: 10,
           child: Row(
-            children:
-                _monthLabels(l10n).map((label) {
-                  return Expanded(
-                    flex: 4,
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontSize: 7,
-                        height: 1.0,
-                        color:
-                            highContrast
-                                ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurface.withAlpha(100),
-                      ),
-                    ),
-                  );
-                }).toList(),
+            children: _monthLabels(l10n).map((label) {
+              return Expanded(
+                flex: 4,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 7,
+                    height: 1.0,
+                    color: highContrast
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurface.withAlpha(100),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -490,11 +473,10 @@ class _MiniChartBarsPainter extends CustomPainter {
     final barWidth = (weekWidth * 0.65).clamp(1.0, weekWidth);
     final radius = Radius.circular(barWidth < 2 ? 0.5 : 1.0);
     final fillPaint = Paint();
-    final borderPaint =
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.5
-          ..color = borderColor;
+    final borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5
+      ..color = borderColor;
 
     for (var index = 0; index < weeklyScores.length; index++) {
       final score = weeklyScores[index];
@@ -511,14 +493,13 @@ class _MiniChartBarsPainter extends CustomPainter {
       final rect = Rect.fromLTWH(left, top, barWidth, barHeight);
       final rrect = RRect.fromRectAndRadius(rect, radius);
 
-      fillPaint.color =
-          isCurrentWeek
-              ? activeColor
-              : highContrast
-              ? baseColor
-              : baseColor.withAlpha(
-                (50 + (normalized * 150)).toInt().clamp(0, 255),
-              );
+      fillPaint.color = isCurrentWeek
+          ? activeColor
+          : highContrast
+          ? baseColor
+          : baseColor.withAlpha(
+              (50 + (normalized * 150)).toInt().clamp(0, 255),
+            );
       canvas.drawRRect(rrect, fillPaint);
       if (isCurrentWeek) canvas.drawRRect(rrect, borderPaint);
     }

@@ -237,16 +237,17 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       brightness: brightness,
       scaffoldBackgroundColor: colorScheme.surface,
-      textTheme:
-          highContrast ? _highContrastTextTheme(colorScheme, brightness) : null,
+      textTheme: highContrast
+          ? _highContrastTextTheme(colorScheme, brightness)
+          : null,
       extensions: <ThemeExtension<dynamic>>[
         isDark ? ScoreColors.dark : ScoreColors.light,
         highContrast
             ? AppSemanticColors.highContrast(colorScheme)
             : isBrandTheme
             ? (isDark
-                ? AppSemanticColors.dark(colorScheme)
-                : AppSemanticColors.light)
+                  ? AppSemanticColors.dark(colorScheme)
+                  : AppSemanticColors.light)
             : AppSemanticColors.harmonized(colorScheme),
       ],
 
@@ -254,15 +255,14 @@ abstract final class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: highContrast ? colorScheme.surface : null,
         constraints: const BoxConstraints(maxWidth: 640),
-        shape:
-            highContrast
-                ? RoundedRectangleBorder(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  side: BorderSide(color: colorScheme.outline),
-                )
-                : null,
+        shape: highContrast
+            ? RoundedRectangleBorder(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                side: BorderSide(color: colorScheme.outline),
+              )
+            : null,
       ),
 
       // ── App Bar ──
@@ -275,14 +275,13 @@ abstract final class AppTheme {
 
       // ── Bottom Navigation ──
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor:
-            highContrast
-                ? colorScheme.surface
-                : isBrandTheme
-                ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
-                : (isDark
-                    ? colorScheme.surfaceContainerHigh
-                    : colorScheme.surfaceContainerLow),
+        backgroundColor: highContrast
+            ? colorScheme.surface
+            : isBrandTheme
+            ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
+            : (isDark
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainerLow),
         indicatorColor: colorScheme.primaryContainer,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         height: 64,
@@ -290,22 +289,20 @@ abstract final class AppTheme {
 
       // ── Cards ──
       cardTheme: CardThemeData(
-        color:
-            highContrast
-                ? colorScheme.surface
-                : isBrandTheme
-                ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
-                : (isDark
-                    ? colorScheme.surfaceContainerHigh
-                    : colorScheme.surfaceContainerLow),
+        color: highContrast
+            ? colorScheme.surface
+            : isBrandTheme
+            ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
+            : (isDark
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainerLow),
         elevation: highContrast || isDark ? 0 : 1,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(highContrast ? 8 : 12),
-          side:
-              highContrast
-                  ? BorderSide(color: colorScheme.outline)
-                  : BorderSide.none,
+          side: highContrast
+              ? BorderSide(color: colorScheme.outline)
+              : BorderSide.none,
         ),
       ),
 
@@ -314,20 +311,18 @@ abstract final class AppTheme {
 
       // ── Dialogs ──
       dialogTheme: DialogThemeData(
-        backgroundColor:
-            highContrast
-                ? colorScheme.surface
-                : isBrandTheme
-                ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
-                : (isDark
-                    ? colorScheme.surfaceContainerHigh
-                    : colorScheme.surfaceContainerLow),
+        backgroundColor: highContrast
+            ? colorScheme.surface
+            : isBrandTheme
+            ? (isDark ? const Color(0xFF1E1E1E) : Colors.white)
+            : (isDark
+                  ? colorScheme.surfaceContainerHigh
+                  : colorScheme.surfaceContainerLow),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side:
-              highContrast
-                  ? BorderSide(color: colorScheme.outline)
-                  : BorderSide.none,
+          side: highContrast
+              ? BorderSide(color: colorScheme.outline)
+              : BorderSide.none,
         ),
       ),
 
@@ -349,17 +344,17 @@ abstract final class AppTheme {
               ? colorScheme.surface
               : colorScheme.surfaceContainerHighest;
         }),
-        trackOutlineColor:
-            highContrast ? WidgetStateProperty.all(colorScheme.outline) : null,
+        trackOutlineColor: highContrast
+            ? WidgetStateProperty.all(colorScheme.outline)
+            : null,
       ),
 
       // ── Sliders ──
       sliderTheme: SliderThemeData(
         activeTrackColor: colorScheme.primary,
-        inactiveTrackColor:
-            highContrast
-                ? colorScheme.outlineVariant
-                : colorScheme.surfaceContainerHighest,
+        inactiveTrackColor: highContrast
+            ? colorScheme.outlineVariant
+            : colorScheme.surfaceContainerHighest,
         thumbColor: colorScheme.primary,
         overlayColor: colorScheme.primary.withAlpha(30),
       ),
@@ -367,10 +362,12 @@ abstract final class AppTheme {
       // ── Elevated Buttons (48 dp touch target) ──
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isDark ? colorScheme.primaryContainer : colorScheme.primary,
-          foregroundColor:
-              isDark ? colorScheme.onPrimaryContainer : colorScheme.onPrimary,
+          backgroundColor: isDark
+              ? colorScheme.primaryContainer
+              : colorScheme.primary,
+          foregroundColor: isDark
+              ? colorScheme.onPrimaryContainer
+              : colorScheme.onPrimary,
           minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -388,28 +385,23 @@ abstract final class AppTheme {
 
       // ── Dividers ──
       dividerTheme: DividerThemeData(
-        color:
-            isBrandTheme
-                ? (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFE0E0E0))
-                : colorScheme.outlineVariant,
+        color: isBrandTheme
+            ? (isDark ? const Color(0xFF2C2C2C) : const Color(0xFFE0E0E0))
+            : colorScheme.outlineVariant,
         thickness: 1,
       ),
 
       // ── Snack Bars ──
       snackBarTheme: SnackBarThemeData(
-        backgroundColor:
-            isBrandTheme
-                ? (isDark ? const Color(0xFF2C2C2C) : const Color(0xFF323232))
-                : (isDark
-                    ? colorScheme.surfaceContainerHighest
-                    : colorScheme.inverseSurface),
+        backgroundColor: isBrandTheme
+            ? (isDark ? const Color(0xFF2C2C2C) : const Color(0xFF323232))
+            : (isDark
+                  ? colorScheme.surfaceContainerHighest
+                  : colorScheme.inverseSurface),
         contentTextStyle: TextStyle(
-          color:
-              isBrandTheme
-                  ? (isDark ? const Color(0xFFE0E0E0) : Colors.white)
-                  : (isDark
-                      ? colorScheme.onSurface
-                      : colorScheme.onInverseSurface),
+          color: isBrandTheme
+              ? (isDark ? const Color(0xFFE0E0E0) : Colors.white)
+              : (isDark ? colorScheme.onSurface : colorScheme.onInverseSurface),
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -459,13 +451,11 @@ abstract final class AppTheme {
     ColorScheme colorScheme,
     Brightness brightness,
   ) {
-    final base = ThemeData(
-      brightness: brightness,
-      useMaterial3: true,
-    ).textTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    );
+    final base = ThemeData(brightness: brightness, useMaterial3: true).textTheme
+        .apply(
+          bodyColor: colorScheme.onSurface,
+          displayColor: colorScheme.onSurface,
+        );
 
     return base.copyWith(
       displayLarge: base.displayLarge?.copyWith(fontWeight: FontWeight.w700),

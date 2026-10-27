@@ -52,15 +52,18 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = false
-            // Drop x86/x86_64/armeabi-v7a copies of third-party native
-            // libraries (e.g. libonnxruntime.so from flutter_onnxruntime).
-            // `ndk.abiFilters` only filters Flutter's own libs, so without
-            // this exclude the standalone APK ships ~34 MB of unused .so
-            // files. The App Bundle (`bundleRelease`) still gets all
-            // architectures because Play splits per-device automatically.
+            // Ship arm64-v8a and x86_64 only. These excludes are the
+            // effective ABI filter: the Flutter Gradle plugin resets
+            // `ndk.abiFilters` to its full list (armeabi-v7a, arm64-v8a,
+            // x86_64) after project evaluation, so the filter in
+            // defaultConfig documents intent and the excludes do the work.
+            // x86_64 stays in for Intel/AMD Chromebooks, which otherwise
+            // run the arm64 build through the Houdini translator and crash
+            // inside it. armeabi-v7a (~9 MB) and 32-bit x86 are dropped.
+            // Play serves one ABI per device, so phones download nothing
+            // extra; the universal APK carries both ABIs.
             excludes += [
                 'lib/x86/**',
-                'lib/x86_64/**',
                 'lib/armeabi-v7a/**',
             ]
         }
@@ -84,9 +87,10 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Only include 64-bit ARM. Drops armeabi-v7a (~9 MB) and x86 libs.
+        // 64-bit only: arm64 phones and tablets plus x86_64 Chromebooks.
+        // See the jniLibs excludes above for why this alone is not enough.
         ndk {
-            abiFilters 'arm64-v8a'
+            abiFilters 'arm64-v8a', 'x86_64'
         }
     }
 
