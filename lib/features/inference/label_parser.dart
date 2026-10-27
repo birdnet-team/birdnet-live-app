@@ -58,12 +58,11 @@ abstract final class LabelParser {
     final hasHeader = config?.hasHeader ?? true;
     final columns = config?.columns ?? _defaultColumns;
 
-    final lines =
-        content
-            .split('\n')
-            .map((l) => l.trim())
-            .where((l) => l.isNotEmpty)
-            .toList();
+    final lines = content
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
 
     if (lines.isEmpty) {
       throw const FormatException('Labels file is empty');
@@ -74,8 +73,10 @@ abstract final class LabelParser {
     int dataStart;
 
     if (hasHeader) {
-      final headerParts =
-          lines.first.split(delimiter).map((h) => h.trim()).toList();
+      final headerParts = lines.first
+          .split(delimiter)
+          .map((h) => h.trim())
+          .toList();
       colIndex = _resolveColumnIndices(headerParts, columns);
       dataStart = 1;
     } else {

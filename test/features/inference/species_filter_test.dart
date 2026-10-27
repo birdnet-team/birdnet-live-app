@@ -318,11 +318,7 @@ void main() {
     test('extreme inputs stay finite', () {
       for (final p in [0.0, 1.0]) {
         for (final g in [0.0, 1.0]) {
-          expect(
-            () => survives(p, g),
-            returnsNormally,
-            reason: 'p=$p g=$g',
-          );
+          expect(() => survives(p, g), returnsNormally, reason: 'p=$p g=$g');
         }
       }
     });

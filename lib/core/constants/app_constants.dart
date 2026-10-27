@@ -38,6 +38,7 @@ abstract final class AppConstants {
     'pl',
     'ru',
     'zh',
+    'ko',
   };
 
   /// UI locales that have a translated Privacy Policy and Acceptable Use
@@ -55,6 +56,7 @@ abstract final class AppConstants {
     'pl',
     'ru',
     'zh',
+    'ko',
   };
 
   /// Docs-site path prefix for [languageCode] (e.g. `/de`), or an empty
@@ -94,6 +96,22 @@ abstract final class AppConstants {
   /// The actual rate used for inference comes from the model config JSON.
   static const int sampleRate = 32000;
 
+  /// Lowest inference rate the app offers, in Hz.
+  ///
+  /// First step of the inference-rate slider, and the floor the live modes
+  /// fall back to when a device cannot keep up with its schedule.
+  static const double minInferenceRateHz = 0.1;
+
+  /// How much the live modes lower the inference rate, in Hz, each time the
+  /// schedule falls behind capture.
+  static const double inferenceRateDownshiftStepHz = 0.3;
+
+  /// Consecutive inference windows that must come out a whole hop late, each
+  /// later than the one before, before the rate is lowered. One late window
+  /// is a stall that drains on its own; a run of them that keeps growing
+  /// means the model is slower than the schedule.
+  static const int lateWindowsBeforeInferenceDownshift = 3;
+
   /// Default species count for display purposes.
   ///
   /// Overridden at runtime once the model config and labels are loaded.
@@ -118,6 +136,11 @@ abstract final class PrefKeys {
   static const String windowDuration = 'window_duration';
   static const String confidenceThreshold = 'confidence_threshold';
   static const String inferenceRate = 'inference_rate';
+
+  /// Highest inference rate this device is known to sustain: the rate a live
+  /// mode last had to lower to because the device fell behind. Absent until
+  /// that has happened; kept for good, since a slow device stays slow.
+  static const String inferenceRateDeviceLimit = 'inference_rate_device_limit';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
   static const String ignoreBirds = 'ignore_species_birds';
@@ -161,6 +184,7 @@ abstract final class PrefKeys {
   static const String spectrogramMaxFreq = 'spectrogram_max_freq';
   static const String logAmplitude = 'log_amplitude';
   static const String spectrogramQuality = 'spectrogram_quality';
+  static const String spectrogramSize = 'spectrogram_size';
 
   // Recording settings
   static const String recordingFormat = 'recording_format';
@@ -265,6 +289,10 @@ abstract final class PrefKeys {
   // Shared field-session identity settings
   static const String lastObserver = 'last_observer';
   static const String aruLastStationId = 'aru_last_station_id';
+
+  /// Inference rate ARU setup starts from; follows [inferenceRateDeviceLimit]
+  /// like the other modes' rates.
+  static const String aruInferenceRate = 'aru_inference_rate';
   static const String legacyPointCountLastObserver =
       'point_count_last_observer';
   static const String legacySurveyLastObserver = 'survey_last_observer';

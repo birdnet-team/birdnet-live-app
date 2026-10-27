@@ -311,12 +311,10 @@ class AnnouncementsAlertSink {
         // sessionResetSeconds / coalesceWindowSeconds are not exposed
         // as live providers yet; fall back to the `normal` profile
         // values so the controller has reasonable numbers.
-        sessionResetSeconds:
-            kFrequencyProfiles[AnnouncementFrequency.normal]!
-                .sessionResetSeconds,
-        coalesceWindowSeconds:
-            kFrequencyProfiles[AnnouncementFrequency.normal]!
-                .coalesceWindowSeconds,
+        sessionResetSeconds: kFrequencyProfiles[AnnouncementFrequency.normal]!
+            .sessionResetSeconds,
+        coalesceWindowSeconds: kFrequencyProfiles[AnnouncementFrequency.normal]!
+            .coalesceWindowSeconds,
       );
     } else {
       profile = kFrequencyProfiles[frequency]!;

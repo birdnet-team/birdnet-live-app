@@ -120,6 +120,20 @@ Mittelweg; **0,30 Hz** bleibt die ausdrückliche Option für maximale
 Akkulaufzeit. Die Dateianalyse hat keine Inferenzrate — sie verwendet
 stattdessen eine [Überlappung](file-analysis.md).
 
+Kommt ein Gerät mit der gewählten Rate nicht mit — die Inferenz liegt bei
+mehreren Fenstern hintereinander einen ganzen Schritt hinter der Aufnahme
+zurück —, senkt die Session die Rate um 0,30 Hz, und solange das Gerät
+weiter zurückfällt erneut, bis minimal 0,10 Hz. Die gesenkte Rate wird dann
+zur Einstellung aller Modi: Live-Modus, Point Count, Survey und ARU samt
+ihren Einrichtungsassistenten, damit die nächste Session überall mit einer
+Rate startet, die dieses Gerät durchhält. Die Einstellungen und die
+Assistenten zeigen unter dem Schieberegler einen Hinweis, dass das Gerät
+oberhalb dieser Rate bekanntermaßen zu langsam ist. Der Hinweis bleibt, denn
+ein langsames Gerät bleibt langsam; die Regler lassen sich weiterhin frei
+einstellen. Ohne diese Absenkung staut sich auf einem langsamen Gerät ein
+Rückstand an, der irgendwann das Audio überschreibt, aus dem die
+Detektionsclips geschnitten werden, und Detektionen bleiben ohne Audio.
+
 ### Arten ignorieren
 
 Öffnet ein Fenster mit binären Inferenzfiltern. Aktivieren Sie **Vögel**, **Säugetiere**, **Amphibien** oder **Insekten**, um die gesamte taxonomische Klasse zu unterdrücken. Alle vier Kontrollkästchen sind standardmäßig deaktiviert.
@@ -140,6 +154,10 @@ um: Eine Detektion beginnt bei ihrem frühesten stützenden Fenster, trägt den
 stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
+
+### Größe
+
+Legt fest, wie viel Platz das live mitlaufende Spektrogramm in Live Mode, Point Count, Survey und ARU auf dem Bildschirm einnimmt. **Voll** ist die gewohnte Höhe. **Mittel** und **Klein** verkleinern sie auf 75 % bzw. 50 % und geben den Unterschied an die Erkennungsliste ab – die richtige Wahl, wenn Sie auf dem Telefon im Hochformat vor allem die Liste im Blick haben. **Aus** entfernt das Spektrogramm ganz; in Survey und ARU verschwindet auch der Spektrogramm-Tab. Im Querformat verkürzen **Mittel** und **Klein** das Spektrogramm in seiner Bildschirmhälfte (der Platz darunter bleibt vorerst leer), und **Aus** überlässt der Erkennungsliste den ganzen Bildschirm. Spektrogramme gespeicherter Sessions und bei der Wiedergabe sind nicht betroffen.
 
 ### FFT-Größe
 
@@ -221,7 +239,7 @@ Diese Einstellung gilt für Audio, das BirdNET Live aufnimmt. Die **Dateianalyse
 
 Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet ist und das Modell geladen wurde – ohne die Mikrofonschaltfläche antippen zu müssen. Nützlich für Kiosk-artige Aufstellungen, freihändige Nutzung (z. B. das Gerät im Feld montiert) oder jeden Ablauf, bei dem das Öffnen von Live ohnehin „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Antippen der Live-Kachel auf dem Startbildschirm nicht stillschweigend eine Session beginnt. Der automatische Start erfolgt nur einmal pro Bildschirmbesuch, sodass ein Beenden der Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
 
-Diese Einstellung betrifft das Öffnen des Live-Modus innerhalb der App. Das [Quick-Listen-Widget](live-mode.md) beginnt beim Antippen zu lauschen, unabhängig von dieser Einstellung, und lässt die Einstellung unberührt. Läuft oder startet bereits eine Session von Point Count, Survey, Dateianalyse oder ARU-Modus, bleibt diese Session erhalten und Sie werden gebeten, sie zuerst zu beenden.
+Diese Einstellung betrifft das Öffnen des Live-Modus innerhalb der App. [Quick Listen](live-mode.md) — das Android-Widget oder unter iOS der Kurzbefehl, der Siri-Satz und die Aktion im App-Symbol — beginnt beim Auslösen zu lauschen, unabhängig von dieser Einstellung, und lässt die Einstellung unberührt. Läuft oder startet bereits eine Session von Point Count, Survey, Dateianalyse oder ARU-Modus, bleibt diese Session erhalten und Sie werden gebeten, sie zuerst zu beenden.
 
 ### Bei ausgeschaltetem Bildschirm fortsetzen
 

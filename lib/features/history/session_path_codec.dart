@@ -149,9 +149,8 @@ String? _relativeToDocuments(String normalizedPath, String documentsPath) {
 }
 
 String? _legacyIosDocumentsRelative(String normalizedPath) {
-  final match = RegExp(
-    r'/Containers/Data/Application/[^/]+/Documents/(.+)$',
-  ).firstMatch(normalizedPath);
+  final match = RegExp(r'/Containers/Data/Application/[^/]+/Documents/(.+)$')
+      .firstMatch(normalizedPath);
   return match?.group(1);
 }
 
@@ -169,8 +168,8 @@ bool _isAppOwnedRelativePath(String normalizedPath) {
 }
 
 String _joinDocuments(String documentsPath, String relativePath) {
-  final parts = _normalizePath(
-    relativePath,
-  ).split('/').where((part) => part.isNotEmpty);
+  final parts = _normalizePath(relativePath)
+      .split('/')
+      .where((part) => part.isNotEmpty);
   return p.joinAll([documentsPath, ...parts]);
 }

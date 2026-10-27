@@ -154,25 +154,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal:
-                    isLandscape ? (isTablet ? 64 : 48) : (isTablet ? 40 : 24),
+                horizontal: isLandscape
+                    ? (isTablet ? 64 : 48)
+                    : (isTablet ? 40 : 24),
                 vertical: isLandscape ? 12 : 0,
               ),
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child:
-                      isLandscape
-                          ? _LandscapeHomeLayout(
-                            l10n: l10n,
-                            theme: theme,
-                            isTablet: isTablet,
-                          )
-                          : _PortraitHomeLayout(
-                            l10n: l10n,
-                            theme: theme,
-                            isTablet: isTablet,
-                          ),
+                  child: isLandscape
+                      ? _LandscapeHomeLayout(
+                          l10n: l10n,
+                          theme: theme,
+                          isTablet: isTablet,
+                        )
+                      : _PortraitHomeLayout(
+                          l10n: l10n,
+                          theme: theme,
+                          isTablet: isTablet,
+                        ),
                 ),
               ),
             );
@@ -280,8 +280,9 @@ class _LogoHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final highContrast = AppTheme.isHighContrastTheme(theme);
-    final logoSize =
-        compact ? (isTablet ? 72.0 : 56.0) : (isTablet ? 160.0 : 120.0);
+    final logoSize = compact
+        ? (isTablet ? 72.0 : 56.0)
+        : (isTablet ? 160.0 : 120.0);
     final logo = Container(
       width: logoSize,
       height: logoSize,
@@ -289,10 +290,11 @@ class _LogoHeader extends ConsumerWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: (highContrast
-                    ? AppTheme.brandPrimaryLight
-                    : theme.colorScheme.primary)
-                .withAlpha(60),
+            color:
+                (highContrast
+                        ? AppTheme.brandPrimaryLight
+                        : theme.colorScheme.primary)
+                    .withAlpha(60),
             blurRadius: compact ? 16 : 32,
             spreadRadius: compact ? 2 : 4,
           ),
@@ -309,23 +311,25 @@ class _LogoHeader extends ConsumerWidget {
     );
     final title = Text(
       l10n.appTitle,
-      style: (compact
-              ? theme.textTheme.headlineSmall
-              : theme.textTheme.headlineMedium)
-          ?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-            fontSize: compact ? (isTablet ? 22 : 20) : (isTablet ? 32 : null),
-          ),
+      style:
+          (compact
+                  ? theme.textTheme.headlineSmall
+                  : theme.textTheme.headlineMedium)
+              ?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+                fontSize: compact
+                    ? (isTablet ? 22 : 20)
+                    : (isTablet ? 32 : null),
+              ),
       textAlign: compact ? TextAlign.left : TextAlign.center,
     );
     final subtitle = Text(
       l10n.homeSubtitle,
       style: theme.textTheme.bodyMedium?.copyWith(
-        color:
-            highContrast
-                ? theme.colorScheme.onSurface
-                : theme.colorScheme.onSurface.withAlpha(153),
+        color: highContrast
+            ? theme.colorScheme.onSurface
+            : theme.colorScheme.onSurface.withAlpha(153),
         fontSize: isTablet ? 16 : null,
       ),
       textAlign: compact ? TextAlign.left : TextAlign.center,
@@ -402,8 +406,9 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
         builder: (context, constraints) {
           final gridWidth = constraints.maxWidth.clamp(0.0, maxWidth);
           final pageOuterSpacing = spacing / 2;
-          final pageWidth =
-              gridWidth > spacing ? gridWidth - spacing : gridWidth;
+          final pageWidth = gridWidth > spacing
+              ? gridWidth - spacing
+              : gridWidth;
           final cellWidth = (pageWidth - spacing) / 2;
           final cellHeight = cellWidth / aspectRatio;
           final gridHeight = cellHeight * 2 + spacing;
@@ -514,11 +519,10 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                             ),
                             isTablet: widget.isTablet,
                             comingSoon: true,
-                            onTap:
-                                () => _showComingSoonSnackBar(
-                                  context,
-                                  widget.l10n.batchAnalysisMode,
-                                ),
+                            onTap: () => _showComingSoonSnackBar(
+                              context,
+                              widget.l10n.batchAnalysisMode,
+                            ),
                           ),
                         ],
                       ),
@@ -538,12 +542,9 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
                     height: 8,
                     width: isSelected ? 18 : 8,
                     decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? widget.theme.colorScheme.primary
-                              : widget.theme.colorScheme.onSurface.withAlpha(
-                                50,
-                              ),
+                      color: isSelected
+                          ? widget.theme.colorScheme.primary
+                          : widget.theme.colorScheme.onSurface.withAlpha(50),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   );
@@ -557,9 +558,8 @@ class _ModeCarouselState extends ConsumerState<_ModeCarousel> {
   }
 
   void _openLive(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const LiveScreen()));
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const LiveScreen()));
   }
 
   void _openPointCount(BuildContext context) {
@@ -696,8 +696,8 @@ class _LandscapeModeGrid extends ConsumerWidget {
             isTablet: isTablet,
             compact: true,
             comingSoon: true,
-            onTap:
-                () => _showComingSoonSnackBar(context, l10n.batchAnalysisMode),
+            onTap: () =>
+                _showComingSoonSnackBar(context, l10n.batchAnalysisMode),
           ),
         ],
       ),
@@ -705,9 +705,8 @@ class _LandscapeModeGrid extends ConsumerWidget {
   }
 
   void _openLive(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const LiveScreen()));
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const LiveScreen()));
   }
 
   void _openPointCount(BuildContext context) {
@@ -783,22 +782,18 @@ class _ModeCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final isBrandTheme = isBrandThemeColorScheme(theme.colorScheme);
     final highContrast = AppTheme.isHighContrastTheme(theme);
-    final cardColor =
-        isBrandTheme
-            ? (theme.brightness == Brightness.dark
-                ? theme.colorScheme.surfaceContainerHighest.withAlpha(120)
-                : theme.colorScheme.surfaceContainerHighest.withAlpha(180))
-            : (theme.brightness == Brightness.dark
-                ? theme.colorScheme.surfaceContainerHighest
-                : theme.colorScheme.surfaceContainerHigh);
+    final cardColor = isBrandTheme
+        ? (theme.brightness == Brightness.dark
+              ? theme.colorScheme.surfaceContainerHighest.withAlpha(120)
+              : theme.colorScheme.surfaceContainerHighest.withAlpha(180))
+        : (theme.brightness == Brightness.dark
+              ? theme.colorScheme.surfaceContainerHighest
+              : theme.colorScheme.surfaceContainerHigh);
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
-      side:
-          isBrandTheme
-              ? BorderSide.none
-              : BorderSide(
-                color: theme.colorScheme.outlineVariant.withAlpha(140),
-              ),
+      side: isBrandTheme
+          ? BorderSide.none
+          : BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(140)),
     );
 
     final l10n = AppLocalizations.of(context)!;
@@ -823,15 +818,16 @@ class _ModeCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width:
-                        compact ? (isTablet ? 42 : 34) : (isTablet ? 52 : 44),
-                    height:
-                        compact ? (isTablet ? 42 : 34) : (isTablet ? 52 : 44),
+                    width: compact
+                        ? (isTablet ? 42 : 34)
+                        : (isTablet ? 52 : 44),
+                    height: compact
+                        ? (isTablet ? 42 : 34)
+                        : (isTablet ? 52 : 44),
                     decoration: BoxDecoration(
-                      color:
-                          isBrandTheme
-                              ? accentColor.withAlpha(isDark ? 50 : 30)
-                              : accentColor.withAlpha(36),
+                      color: isBrandTheme
+                          ? accentColor.withAlpha(isDark ? 50 : 30)
+                          : accentColor.withAlpha(36),
                       borderRadius: BorderRadius.circular(isTablet ? 16 : 14),
                     ),
                     child: Icon(
@@ -868,14 +864,14 @@ class _ModeCard extends StatelessWidget {
                 label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color:
-                      highContrast
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurface.withAlpha(
-                            comingSoon ? 150 : 255,
-                          ),
-                  fontSize:
-                      compact ? (isTablet ? 13 : 12) : (isTablet ? 14 : null),
+                  color: highContrast
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onSurface.withAlpha(
+                          comingSoon ? 150 : 255,
+                        ),
+                  fontSize: compact
+                      ? (isTablet ? 13 : 12)
+                      : (isTablet ? 14 : null),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -885,14 +881,14 @@ class _ModeCard extends StatelessWidget {
                 child: Text(
                   description,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color:
-                        highContrast
-                            ? theme.colorScheme.onSurface
-                            : theme.colorScheme.onSurface.withAlpha(
-                              comingSoon ? 80 : 100,
-                            ),
-                    fontSize:
-                        compact ? (isTablet ? 11 : 10) : (isTablet ? 12 : 11),
+                    color: highContrast
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSurface.withAlpha(
+                            comingSoon ? 80 : 100,
+                          ),
+                    fontSize: compact
+                        ? (isTablet ? 11 : 10)
+                        : (isTablet ? 12 : 11),
                   ),
                   maxLines: compact ? 2 : 3,
                   overflow: TextOverflow.ellipsis,
@@ -923,10 +919,9 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final highContrast = AppTheme.isHighContrastTheme(theme);
-    final color =
-        highContrast
-            ? theme.colorScheme.onSurface
-            : theme.colorScheme.onSurface.withAlpha(153);
+    final color = highContrast
+        ? theme.colorScheme.onSurface
+        : theme.colorScheme.onSurface.withAlpha(153);
     final fontSize = isTablet ? 16.0 : 14.0;
     return Wrap(
       alignment: WrapAlignment.center,
@@ -943,12 +938,11 @@ class _Footer extends StatelessWidget {
           color: color,
           fontSize: fontSize,
           isTablet: isTablet,
-          onPressed:
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const SessionLibraryScreen(),
-                ),
-              ),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const SessionLibraryScreen(),
+            ),
+          ),
         ),
         _FooterButton(
           icon: AppIcons.searchRounded,
@@ -956,10 +950,9 @@ class _Footer extends StatelessWidget {
           color: color,
           fontSize: fontSize,
           isTablet: isTablet,
-          onPressed:
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
-              ),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const ExploreScreen()),
+          ),
         ),
         _FooterButton(
           icon: AppIcons.tuneRounded,
@@ -967,10 +960,9 @@ class _Footer extends StatelessWidget {
           color: color,
           fontSize: fontSize,
           isTablet: isTablet,
-          onPressed:
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-              ),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+          ),
         ),
         _FooterButton(
           icon: AppIcons.helpOutlineRounded,
@@ -978,10 +970,9 @@ class _Footer extends StatelessWidget {
           color: color,
           fontSize: fontSize,
           isTablet: isTablet,
-          onPressed:
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
-              ),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const HelpScreen())),
         ),
         _FooterButton(
           icon: AppIcons.infoOutline,
@@ -989,10 +980,9 @@ class _Footer extends StatelessWidget {
           color: color,
           fontSize: fontSize,
           isTablet: isTablet,
-          onPressed:
-              () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
-              ),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const AboutScreen())),
         ),
       ],
     );
@@ -1021,7 +1011,10 @@ class _FooterButton extends StatelessWidget {
     return TextButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: isTablet ? 24 : 20, color: color),
-      label: Text(label, style: TextStyle(color: color, fontSize: fontSize)),
+      label: Text(
+        label,
+        style: TextStyle(color: color, fontSize: fontSize),
+      ),
       style: TextButton.styleFrom(
         padding: EdgeInsets.symmetric(
           horizontal: isTablet ? 12 : 8,

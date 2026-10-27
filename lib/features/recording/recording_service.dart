@@ -347,13 +347,19 @@ class RecordingService {
   ///
   /// [sessionId] is used to create the output directory.
   /// [mode] determines the recording behavior.
+  ///
+  /// Returns what the session should store as its recording path: the
+  /// continuous file in [RecordingMode.full], or the clip directory in
+  /// [RecordingMode.detectionsOnly] — the same thing [stopRecording] reports.
+  /// A checkpoint written mid-session therefore already points at the audio,
+  /// and a session the system ends before it is stopped keeps its recording.
   Future<String?> startRecording({
     required String sessionId,
     required RecordingMode mode,
     String format = 'flac',
   }) async {
     if (mode == RecordingMode.off) return null;
-    if (_isRecording) return _sessionDir;
+    if (_isRecording) return _writer?.filePath ?? _sessionDir;
 
     _mode = mode;
     _format = format;
@@ -399,7 +405,7 @@ class RecordingService {
     }
 
     _sessionDir = sessionDir;
-    return sessionDir;
+    return _writer?.filePath ?? sessionDir;
   }
 
   /// Save an audio clip around a detection.

@@ -51,7 +51,7 @@ BirdNET Live 支持 Android、iOS 和 Windows。
 
 - :app-tuneRounded: **设置**
 - :app-searchRounded: **探索**
-- :app-libraryMusic: **Session 库**
+- :app-libraryMusic: **Session 列表**
 - :app-helpOutlineRounded: **帮助**
 - :app-infoOutline: **关于**
 

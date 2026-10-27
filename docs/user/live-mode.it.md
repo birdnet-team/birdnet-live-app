@@ -6,18 +6,34 @@ La modalità Live è il modo più veloce per ascoltare tramite il microfono del 
 
 Dalla schermata Home, tocca la scheda **Modalità Live** con l'icona :app-micRounded:.
 
-## Widget «Ascolto rapido»
+## Ascolto rapido
 
-**Solo Android.** Un widget nella schermata Home avvia l'ascolto con un solo tocco, senza dover prima aprire l'app e navigare fino alla modalità — comodo quando senti qualcosa che vuoi identificare prima che smetta di cantare.
+Ascolto rapido avvia l'ascolto con un solo tocco, senza dover prima aprire l'app e navigare fino alla modalità — comodo quando senti qualcosa che vuoi identificare prima che smetta di cantare. Ogni punto di accesso qui sotto apre la modalità Live e fa partire subito l'ascolto, qualunque sia il valore dell'impostazione **Avvia registrazione automaticamente**, e nessuno di essi modifica quell'impostazione.
+
+### Android: widget nella schermata Home
 
 Si aggiunge come qualsiasi altro widget: tieni premuto uno spazio libero della schermata Home, tocca **Widget**, cerca **BirdNET Live** e trascina fuori uno dei due riquadri.
 
 - **Ascolto rapido** (2×1) — icona con l'etichetta **Avvia ascolto**
 - **Ascolto rapido (compatto)** (1×1) — solo icona
 
-Fanno la stessa cosa. Toccando l'uno o l'altro si apre la modalità Live e l'ascolto parte subito, qualunque sia il valore dell'impostazione **Avvia registrazione automaticamente**. Il widget non modifica quell'impostazione.
+Fanno la stessa cosa.
 
-Se la modalità Live è già aperta, il widget torna alla stessa schermata invece di ricrearla. Una Session in corso o in pausa continua senza modifiche; se è ferma, l'ascolto parte nella schermata esistente.
+### iOS: Comandi rapidi, Siri, tasto Azione e icona dell'app
+
+BirdNET Live mette a disposizione del sistema l'azione **Avvia ascolto**, quindi non c'è nulla da costruire a mano:
+
+- **Tasto Azione** (iPhone 15 Pro e successivi) — apri **Impostazioni → Tasto Azione**, scegli **Comando rapido** e seleziona **Avvia ascolto** sotto BirdNET Live. Da quel momento, tenere premuto il tasto avvia l'ascolto.
+- **Siri** — di' «Inizia ad ascoltare con BirdNET Live», «Ascolta gli uccelli con BirdNET Live» oppure «Identifica un uccello con BirdNET Live».
+- **App Comandi rapidi** — l'azione **Avvia ascolto** è elencata sotto BirdNET Live. Usala in un comando rapido tuo, aggiungilo alla schermata Home oppure avviala con Tocca sul retro, una Full Immersion o un tag NFC.
+- **Icona dell'app** — tieni premuta l'icona di BirdNET Live nella schermata Home e tocca **Avvia ascolto**.
+- **URL** — le automazioni che aprono un URL possono usare `birdnetlive://listen`.
+
+Le frasi per Siri e la voce nel selettore del tasto Azione richiedono iOS 17. L'azione in Comandi rapidi, il menu dell'icona e l'URL funzionano anche su iOS 16.
+
+### Cosa succede dopo
+
+Se la modalità Live è già aperta, Ascolto rapido torna alla stessa schermata invece di ricrearla. Una Session in corso o in pausa continua senza modifiche; se è ferma, l'ascolto parte nella schermata esistente.
 
 Ascolto rapido non sostituisce mai un'altra modalità in esecuzione. Se una Session Point Count, Survey, File Analysis o [modalità ARU](aru-mode.md) è in corso o si sta avviando, l'app torna in primo piano e chiede di interrompere prima quella Session. La schermata e il lavoro restano accessibili e non vengono interrotti.
 

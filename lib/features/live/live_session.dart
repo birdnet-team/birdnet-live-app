@@ -307,6 +307,15 @@ class SessionSettings {
       'autoStopBatteryPercent': autoStopBatteryPercent,
     if (backgroundGps != null) 'backgroundGps': backgroundGps,
   };
+
+  /// This snapshot with [inferenceRate] replaced.
+  ///
+  /// The live modes lower the rate mid-session when the device cannot keep
+  /// up, and the session should show the rate that actually ran. The copy
+  /// goes through JSON so every field — including ones added later — carries
+  /// over without a hand-maintained copy constructor.
+  SessionSettings withInferenceRate(double inferenceRate) =>
+      SessionSettings.fromJson({...toJson(), 'inferenceRate': inferenceRate});
 }
 
 /// The type of session (maps to one of the four app modes).
@@ -349,6 +358,10 @@ enum SessionStopReason {
 
   /// Battery dropped below the configured auto-stop threshold.
   lowBattery,
+
+  /// The system ended the app before the session was stopped. What the
+  /// session holds was recovered from its last checkpoint.
+  interrupted,
 }
 
 /// How a detection was created.
@@ -1115,8 +1128,11 @@ class LiveSession {
   /// Path to the full recording file (if recording was enabled).
   String? recordingPath;
 
-  /// Inference settings that were active during this session.
-  final SessionSettings settings;
+  /// Inference settings the session ran with.
+  ///
+  /// Replaced, not mutated, when a live mode lowers the inference rate
+  /// mid-session; see [SessionSettings.withInferenceRate].
+  SessionSettings settings;
 
   /// User annotations (environmental notes, observations, etc.).
   final List<SessionAnnotation> annotations;

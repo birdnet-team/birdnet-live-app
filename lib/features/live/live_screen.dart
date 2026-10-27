@@ -43,7 +43,8 @@ import 'widgets/detection_list_widget.dart';
 //
 // Layout (top → bottom):
 //   1. Compact status bar: back arrow · status text · settings gear
-//   2. Spectrogram       (flex: 2)
+//   2. Spectrogram       (flex: 2; shrunk or left out by the spectrogram
+//                         size setting, which hands its share to the list)
 //   3. Session info bar  (conditional, ~24 px)
 //   4. Detection list    (flex: 3)
 //   5. FAB mic/stop button (bottom-center, 56×56)
@@ -108,6 +109,11 @@ class LiveScreen extends ConsumerStatefulWidget {
 
 class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   bool _isStarting = false;
   bool _finalizing = false;
   bool _stopDialogOpen = false;
@@ -156,6 +162,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final controller = ref.read(liveControllerProvider);
     _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
+    controller.onInferenceRateLowered = _onInferenceRateLowered;
     _micContestedSub = ref
         .read(audioCaptureServiceProvider)
         .micContestedStream
@@ -229,6 +236,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     }
 
     _onControllerStateChanged();
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -542,6 +557,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (controller != null &&
         controller.onStateChanged == _onControllerStateChanged) {
       controller.onStateChanged = null;
+    }
+    if (controller != null &&
+        controller.onInferenceRateLowered == _onInferenceRateLowered) {
+      controller.onInferenceRateLowered = null;
     }
 
     // Ensure screen lock is released when leaving the live screen.
@@ -1221,10 +1240,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final errorBanner = liveState == LiveState.error
         ? _StatusBanner(liveState: liveState, ref: ref)
         : null;
-    final spectrogram = Container(
-      color: theme.colorScheme.surfaceContainerLowest,
-      child: _LiveSpectrogram(isCapturing: isCapturing),
-    );
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
+    final spectrogram = spectrogramSize.isVisible
+        ? Container(
+            key: _spectrogramKey,
+            color: theme.colorScheme.surfaceContainerLowest,
+            child: _LiveSpectrogram(isCapturing: isCapturing),
+          )
+        : null;
     final sessionInfo = _SessionInfoBar(
       liveCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
@@ -1236,6 +1259,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: DetectionList(
           detections: detections,
+          // Without a spectrogram the list spans the whole landscape width,
+          // so spread the tiles over two columns.
+          columns: isLandscape && spectrogram == null ? 2 : 1,
           isActive: isActive || isPaused,
           showTips: true,
           activeDetections: activeDetections,
@@ -1252,7 +1278,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       ),
     );
 
-    if (isLandscape) {
+    if (isLandscape && spectrogram != null) {
+      // A smaller size shortens the spectrogram within its column; the
+      // space below is left empty for now.
+      final columnFlex = spectrogramSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -1265,8 +1294,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
                   flex: 1,
                   child: Column(
                     children: [
-                      Expanded(child: spectrogram),
+                      Expanded(
+                        flex: columnFlex.spectrogram,
+                        child: spectrogram,
+                      ),
                       sessionInfo,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -1280,14 +1313,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       );
     }
 
-    // Portrait: original vertical stack.
+    // Portrait, or landscape without a spectrogram: vertical stack. A
+    // smaller spectrogram hands the height it gives up to the detection list.
+    final flex = spectrogramSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         if (errorBanner != null) errorBanner,
-        Expanded(flex: 2, child: spectrogram),
+        if (spectrogram != null)
+          Expanded(flex: flex.spectrogram, child: spectrogram),
         sessionInfo,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: flex.other, child: detectionList),
         const SizedBox(height: 72),
       ],
     );

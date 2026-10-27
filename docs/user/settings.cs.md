@@ -118,6 +118,18 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
+Pokud zařízení zvolenou frekvenci nestíhá — odvozování za zachytáváním
+zaostává o celý krok u několika oken po sobě —, Session frekvenci sníží o
+0,30 Hz, a dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz.
+Snížená frekvence se pak stane nastavením všech režimů: Live, Point Count,
+Survey i ARU včetně jejich průvodců nastavením, takže další Session kdekoli
+začne frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
+posuvníkem zobrazují poznámku, že zařízení je nad touto frekvencí prokazatelně
+příliš pomalé. Poznámka zůstává, protože pomalé zařízení zůstává pomalé;
+posuvníky lze dál libovolně nastavit. Bez toho se na pomalém zařízení hromadí
+zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují ukázky detekcí, a
+detekce zůstanou bez zvuku.
+
 ### Ignorovat druhy
 
 Otevře panel s binárními filtry inference. Zaškrtnutím **Ptáci**, **Savci**, **Obojživelníci** nebo **Hmyz** potlačíte celou taxonomickou třídu. Ve výchozím nastavení jsou všechna čtyři políčka vypnutá.
@@ -137,6 +149,10 @@ sdružování na detekce stejně: detekce začíná v nejstarším podpůrném o
 nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
+
+### Velikost
+
+Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
 
 ### Velikost FFT
 
@@ -218,7 +234,7 @@ Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza soubo
 
 Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
 
-Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Widget Quick Listen](live-mode.md) při klepnutí začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
+Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
 
 ### Pokračovat při vypnuté obrazovce
 

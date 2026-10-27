@@ -75,10 +75,9 @@ String formatDetectionTime(
 }) {
   switch (mode) {
     case TimestampDisplayMode.relative:
-      final double relativeSec =
-          absoluteToRelative != null
-              ? absoluteToRelative(timestamp)
-              : timestamp.difference(sessionStart).inMicroseconds / 1e6;
+      final double relativeSec = absoluteToRelative != null
+          ? absoluteToRelative(timestamp)
+          : timestamp.difference(sessionStart).inMicroseconds / 1e6;
       return _formatRelative(
         Duration(microseconds: (relativeSec * 1e6).round()) - clipOffset,
       );

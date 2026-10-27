@@ -38,6 +38,23 @@ void main() {
   // ── SessionSettings ────────────────────────────────────────────────────
 
   group('SessionSettings', () {
+    test('withInferenceRate replaces only the rate', () {
+      const settings = SessionSettings(
+        windowDuration: 5,
+        confidenceThreshold: 40,
+        inferenceRate: 1.0,
+        speciesFilterMode: 'geoExclude',
+        clipContextSeconds: 2,
+        recordingMode: 'full',
+        poolingWindows: 4,
+      );
+
+      final lowered = settings.withInferenceRate(0.7);
+
+      expect(lowered.inferenceRate, 0.7);
+      expect(lowered.toJson(), {...settings.toJson(), 'inferenceRate': 0.7});
+    });
+
     test('fromJson parses all fields', () {
       final json = {
         'windowDuration': 5,

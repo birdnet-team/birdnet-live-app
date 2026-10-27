@@ -52,10 +52,9 @@ void main() {
     });
 
     test('fftSize does not change the column grid', () {
-      final grids =
-          fftSizes
-              .map((f) => SpectrogramTimebase(displaySeconds: 15, fftSize: f))
-              .toList();
+      final grids = fftSizes
+          .map((f) => SpectrogramTimebase(displaySeconds: 15, fftSize: f))
+          .toList();
 
       for (final tb in grids.skip(1)) {
         expect(tb.columnCount, grids.first.columnCount);
@@ -105,12 +104,11 @@ void main() {
     });
 
     test('higher quality yields a finer column grid', () {
-      int columnsFor(String quality) =>
-          SpectrogramTimebase(
-            displaySeconds: 15,
-            fftSize: 2048,
-            quality: quality,
-          ).columnCount;
+      int columnsFor(String quality) => SpectrogramTimebase(
+        displaySeconds: 15,
+        fftSize: 2048,
+        quality: quality,
+      ).columnCount;
 
       expect(columnsFor('low'), lessThan(columnsFor('medium')));
       expect(columnsFor('medium'), lessThan(columnsFor('high')));

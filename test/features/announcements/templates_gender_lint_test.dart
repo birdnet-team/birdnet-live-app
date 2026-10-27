@@ -27,7 +27,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   // Determiners / demonstratives (lowercased) that must never sit directly
   // before {name*}. English is intentionally absent — `a`/`the` are
-  // gender-neutral.
+  // gender-neutral — and so is Korean, which has no articles or grammatical
+  // gender (its particle agreement is checked by hand; see templates_ko.json).
   const forbidden = <String, List<String>>{
     'de': [
       'ein', 'eine', 'einen', 'einem', 'einer', 'eines', //

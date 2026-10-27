@@ -114,8 +114,8 @@ class App extends ConsumerWidget {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           localeListResolutionCallback: resolveAppLocale,
-          localeResolutionCallback:
-              (locale, supportedLocales) => resolveAppLocale(
+          localeResolutionCallback: (locale, supportedLocales) =>
+              resolveAppLocale(
                 locale == null ? null : <Locale>[locale],
                 supportedLocales,
               ),
@@ -123,8 +123,8 @@ class App extends ConsumerWidget {
             switch (settings.name) {
               case AruNotificationService.openRoute:
                 return MaterialPageRoute<void>(
-                  builder:
-                      (_) => const AruNotificationRoute(requestStop: false),
+                  builder: (_) =>
+                      const AruNotificationRoute(requestStop: false),
                   settings: settings,
                 );
               case AruNotificationService.stopRoute:
@@ -370,14 +370,13 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
       // A tap that launched the app has nothing to animate away from: Home has
       // never been on screen, and is only underneath so Back has somewhere
       // to go.
-      final route =
-          fromLaunch
-              ? _InstantMaterialPageRoute<void>(
-                builder: (_) => const LiveScreen(forceAutoStart: true),
-              )
-              : MaterialPageRoute<void>(
-                builder: (_) => const LiveScreen(forceAutoStart: true),
-              );
+      final route = fromLaunch
+          ? _InstantMaterialPageRoute<void>(
+              builder: (_) => const LiveScreen(forceAutoStart: true),
+            )
+          : MaterialPageRoute<void>(
+              builder: (_) => const LiveScreen(forceAutoStart: true),
+            );
       _pushedLiveRoute = route;
       unawaited(navigator.push(route));
     } catch (error, stackTrace) {
@@ -404,17 +403,16 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     };
     await showDialog<void>(
       context: navigator.context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.quickListenBlockedTitle),
-            content: Text(l10n.quickListenBlockedMessage(modeLabel)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.done),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.quickListenBlockedTitle),
+        content: Text(l10n.quickListenBlockedMessage(modeLabel)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.done),
           ),
+        ],
+      ),
     );
   }
 
@@ -705,14 +703,13 @@ class _SharedAudioListenerState extends ConsumerState<_SharedAudioListener> {
       // A hand-off that arrived with the launch has nothing to animate away
       // from: Home has never been on screen, and is only underneath so Back
       // has somewhere to go.
-      final route =
-          fromLaunch
-              ? _InstantMaterialPageRoute<void>(
-                builder: (_) => FileAnalysisScreen(sharedFile: sharedFile),
-              )
-              : MaterialPageRoute<void>(
-                builder: (_) => FileAnalysisScreen(sharedFile: sharedFile),
-              );
+      final route = fromLaunch
+          ? _InstantMaterialPageRoute<void>(
+              builder: (_) => FileAnalysisScreen(sharedFile: sharedFile),
+            )
+          : MaterialPageRoute<void>(
+              builder: (_) => FileAnalysisScreen(sharedFile: sharedFile),
+            );
 
       // Reuse the slot of a File Analysis screen the user already has open —
       // sharing a second file should swap the file, not stack another wizard.
@@ -787,17 +784,16 @@ class _SharedAudioListenerState extends ConsumerState<_SharedAudioListener> {
     };
     await showDialog<void>(
       context: navigator.context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.sharedAudioBusyTitle),
-            content: Text(l10n.sharedAudioBusyMessage(modeLabel)),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.done),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.sharedAudioBusyTitle),
+        content: Text(l10n.sharedAudioBusyMessage(modeLabel)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.done),
           ),
+        ],
+      ),
     );
   }
 

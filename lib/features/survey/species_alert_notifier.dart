@@ -120,11 +120,10 @@ class SpeciesAlertNotifier {
     }
 
     if (Platform.isAndroid) {
-      final android =
-          _plugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         // Importance HIGH gives heads-up presentation. The system enforces
         // user overrides — if they've muted the channel manually we can't
@@ -196,11 +195,10 @@ class SpeciesAlertNotifier {
         return false;
       }
     }
-    final android =
-        _plugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) return false;
     try {
       final granted = await android.requestNotificationsPermission();

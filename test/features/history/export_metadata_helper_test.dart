@@ -156,17 +156,16 @@ void main() {
   test(
     'adds survey-specific metadata separately from common session fields',
     () async {
-      final session =
-          makeSession()
-            ..transectId = 'T-001'
-            ..distanceMeters = 250.5
-            ..gpsTrack.add(
-              GpsPoint(
-                latitude: 52.52,
-                longitude: 13.405,
-                timestamp: DateTime.utc(2026, 1, 1, 10, 1),
-              ),
-            );
+      final session = makeSession()
+        ..transectId = 'T-001'
+        ..distanceMeters = 250.5
+        ..gpsTrack.add(
+          GpsPoint(
+            latitude: 52.52,
+            longitude: 13.405,
+            timestamp: DateTime.utc(2026, 1, 1, 10, 1),
+          ),
+        );
 
       final metadata = await buildSessionExportMetadata(
         session,
@@ -188,10 +187,9 @@ void main() {
   );
 
   test('adds point count timing as type-specific metadata', () async {
-    final session =
-        makeSession()
-          ..type = SessionType.pointCount
-          ..customName = 'Pond Stop 1';
+    final session = makeSession()
+      ..type = SessionType.pointCount
+      ..customName = 'Pond Stop 1';
 
     final metadata = await buildSessionExportMetadata(
       session,
@@ -207,18 +205,17 @@ void main() {
   });
 
   test('adds ARU deployment metadata as type-specific metadata', () async {
-    final session =
-        makeSession()
-          ..type = SessionType.aru
-          ..aruMetadata = AruDeploymentMetadata(
-            deploymentName: 'Wetland',
-            stationId: 'ARU-01',
-            scheduleStart: DateTime.utc(2026, 1, 1, 10),
-            eachCycleIsSession: false,
-            cycleDurationSeconds: 600,
-            repeatIntervalSeconds: 3600,
-            maxCycles: 2,
-          );
+    final session = makeSession()
+      ..type = SessionType.aru
+      ..aruMetadata = AruDeploymentMetadata(
+        deploymentName: 'Wetland',
+        stationId: 'ARU-01',
+        scheduleStart: DateTime.utc(2026, 1, 1, 10),
+        eachCycleIsSession: false,
+        cycleDurationSeconds: 600,
+        repeatIntervalSeconds: 3600,
+        maxCycles: 2,
+      );
 
     final metadata = await buildSessionExportMetadata(
       session,

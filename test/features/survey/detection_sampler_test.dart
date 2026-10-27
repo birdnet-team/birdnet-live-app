@@ -39,15 +39,9 @@ Future<DetectionRecord> _det(
     audioClipPath: clipPath,
     // Clips follow the confidence peak, so the window on disk sits a little
     // after the detection started.
-    clipTimestamp:
-        clipPath == null
-            ? null
-            : DateTime.utc(
-              2025,
-              7,
-              1,
-              12,
-            ).add(offset + const Duration(seconds: 2)),
+    clipTimestamp: clipPath == null
+        ? null
+        : DateTime.utc(2025, 7, 1, 12).add(offset + const Duration(seconds: 2)),
     latitude: latitude,
     longitude: longitude,
   );
