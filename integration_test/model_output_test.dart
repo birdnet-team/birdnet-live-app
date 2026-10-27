@@ -105,96 +105,94 @@ void main() {
   // Per-window tests
   // -------------------------------------------------------------------------
 
-  testWidgets(
-    'Model produces correct detections for all test windows',
-    (tester) async {
-      // Tolerance for confidence comparison.
-      // FP16 model running on different ONNX runtime backends (x86 CPU vs
-      // ARM CPU) may produce slightly different results due to FP16→FP32
-      // promotion, math library differences, and parallel execution order.
-      const confidenceTolerance = 0.05;
+  testWidgets('Model produces correct detections for all test windows', (
+    tester,
+  ) async {
+    // Tolerance for confidence comparison.
+    // FP16 model running on different ONNX runtime backends (x86 CPU vs
+    // ARM CPU) may produce slightly different results due to FP16→FP32
+    // promotion, math library differences, and parallel execution order.
+    const confidenceTolerance = 0.05;
 
-      final failures = <String>[];
+    final failures = <String>[];
 
-      for (final window in fixtureWindows) {
-        final fixtureIndex = window['fixtureIndex'] as int;
-        final windowIndex = window['originalWindowIndex'] as int;
-        final startSec = window['startSec'];
-        final endSec = window['endSec'];
-        final expectedDetections =
-            (window['detections'] as List).cast<Map<String, dynamic>>();
+    for (final window in fixtureWindows) {
+      final fixtureIndex = window['fixtureIndex'] as int;
+      final windowIndex = window['originalWindowIndex'] as int;
+      final startSec = window['startSec'];
+      final endSec = window['endSec'];
+      final expectedDetections = (window['detections'] as List)
+          .cast<Map<String, dynamic>>();
 
-        // Extract audio chunk for this window.
-        final audioStart = fixtureIndex * windowSamples;
-        final audioEnd = audioStart + windowSamples;
-        final chunk = Float32List.sublistView(
-          allAudioSamples,
-          audioStart,
-          audioEnd,
+      // Extract audio chunk for this window.
+      final audioStart = fixtureIndex * windowSamples;
+      final audioEnd = audioStart + windowSamples;
+      final chunk = Float32List.sublistView(
+        allAudioSamples,
+        audioStart,
+        audioEnd,
+      );
+
+      // Run inference.
+      final output = await model.predict(chunk, windowSamples: windowSamples);
+
+      // Post-process: top-K with threshold, no sensitivity scaling.
+      final detections = PostProcessor.topK(
+        scores: output.predictions,
+        labels: labels,
+        k: topK,
+        threshold: confidenceThreshold,
+      );
+
+      // --- Validate detection count ---
+      if (detections.length != expectedDetections.length) {
+        failures.add(
+          'Window $windowIndex ($startSec–${endSec}s): '
+          'expected ${expectedDetections.length} detections, '
+          'got ${detections.length}\n'
+          '  Expected: ${expectedDetections.map((d) => '${d['commonName']}=${(d['confidence'] as num).toStringAsFixed(3)}').join(', ')}\n'
+          '  Got:      ${detections.map((d) => '${d.species.commonName}=${d.confidence.toStringAsFixed(3)}').join(', ')}',
         );
+        continue;
+      }
 
-        // Run inference.
-        final output = await model.predict(chunk, windowSamples: windowSamples);
+      // --- Validate each detection ---
+      for (var i = 0; i < expectedDetections.length; i++) {
+        final expected = expectedDetections[i];
+        final actual = detections[i];
 
-        // Post-process: top-K with threshold, no sensitivity scaling.
-        final detections = PostProcessor.topK(
-          scores: output.predictions,
-          labels: labels,
-          k: topK,
-          threshold: confidenceThreshold,
-        );
+        final expectedIndex = expected['speciesIndex'] as int;
+        final expectedName = expected['commonName'] as String;
+        final expectedConf = (expected['confidence'] as num).toDouble();
 
-        // --- Validate detection count ---
-        if (detections.length != expectedDetections.length) {
+        // Check species match by index.
+        if (actual.species.index != expectedIndex) {
           failures.add(
-            'Window $windowIndex ($startSec–${endSec}s): '
-            'expected ${expectedDetections.length} detections, '
-            'got ${detections.length}\n'
-            '  Expected: ${expectedDetections.map((d) => '${d['commonName']}=${(d['confidence'] as num).toStringAsFixed(3)}').join(', ')}\n'
-            '  Got:      ${detections.map((d) => '${d.species.commonName}=${d.confidence.toStringAsFixed(3)}').join(', ')}',
+            'Window $windowIndex, det $i: '
+            'expected species index $expectedIndex ($expectedName), '
+            'got ${actual.species.index} (${actual.species.commonName})',
           );
           continue;
         }
 
-        // --- Validate each detection ---
-        for (var i = 0; i < expectedDetections.length; i++) {
-          final expected = expectedDetections[i];
-          final actual = detections[i];
-
-          final expectedIndex = expected['speciesIndex'] as int;
-          final expectedName = expected['commonName'] as String;
-          final expectedConf = (expected['confidence'] as num).toDouble();
-
-          // Check species match by index.
-          if (actual.species.index != expectedIndex) {
-            failures.add(
-              'Window $windowIndex, det $i: '
-              'expected species index $expectedIndex ($expectedName), '
-              'got ${actual.species.index} (${actual.species.commonName})',
-            );
-            continue;
-          }
-
-          // Check confidence within tolerance.
-          final confDiff = (actual.confidence - expectedConf).abs();
-          if (confDiff > confidenceTolerance) {
-            failures.add(
-              'Window $windowIndex, det $i ($expectedName): '
-              'confidence ${actual.confidence.toStringAsFixed(4)} '
-              'differs from expected ${expectedConf.toStringAsFixed(4)} '
-              'by ${confDiff.toStringAsFixed(4)} '
-              '(tolerance: $confidenceTolerance)',
-            );
-          }
+        // Check confidence within tolerance.
+        final confDiff = (actual.confidence - expectedConf).abs();
+        if (confDiff > confidenceTolerance) {
+          failures.add(
+            'Window $windowIndex, det $i ($expectedName): '
+            'confidence ${actual.confidence.toStringAsFixed(4)} '
+            'differs from expected ${expectedConf.toStringAsFixed(4)} '
+            'by ${confDiff.toStringAsFixed(4)} '
+            '(tolerance: $confidenceTolerance)',
+          );
         }
       }
+    }
 
-      if (failures.isNotEmpty) {
-        fail('Model output validation failed:\n\n${failures.join('\n\n')}');
-      }
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+    if (failures.isNotEmpty) {
+      fail('Model output validation failed:\n\n${failures.join('\n\n')}');
+    }
+  }, timeout: const Timeout(Duration(minutes: 5)));
 
   testWidgets('Model output tensor has expected size', (tester) async {
     // Use the first fixture window.
@@ -211,51 +209,47 @@ void main() {
     expect(output.embeddings!.length, equals(1280));
   });
 
-  testWidgets(
-    'Batched predictions match repeated single-window inference',
-    (tester) async {
-      final count = fixtureWindows.length < 4 ? fixtureWindows.length : 4;
-      final chunks = <Float32List>[
-        for (var index = 0; index < count; index++)
-          Float32List.sublistView(
-            allAudioSamples,
-            (fixtureWindows[index]['fixtureIndex'] as int) * windowSamples,
-            ((fixtureWindows[index]['fixtureIndex'] as int) + 1) *
-                windowSamples,
-          ),
-      ];
+  testWidgets('Batched predictions match repeated single-window inference', (
+    tester,
+  ) async {
+    final count = fixtureWindows.length < 4 ? fixtureWindows.length : 4;
+    final chunks = <Float32List>[
+      for (var index = 0; index < count; index++)
+        Float32List.sublistView(
+          allAudioSamples,
+          (fixtureWindows[index]['fixtureIndex'] as int) * windowSamples,
+          ((fixtureWindows[index]['fixtureIndex'] as int) + 1) * windowSamples,
+        ),
+    ];
 
-      final batched = await model.predictBatch(
-        chunks,
+    final batched = await model.predictBatch(
+      chunks,
+      windowSamples: windowSamples,
+    );
+    expect(batched, hasLength(chunks.length));
+
+    for (var batchIndex = 0; batchIndex < chunks.length; batchIndex++) {
+      final single = await model.predict(
+        chunks[batchIndex],
         windowSamples: windowSamples,
       );
-      expect(batched, hasLength(chunks.length));
-
-      for (var batchIndex = 0; batchIndex < chunks.length; batchIndex++) {
-        final single = await model.predict(
-          chunks[batchIndex],
-          windowSamples: windowSamples,
-        );
-        expect(batched[batchIndex].predictions, hasLength(labels.length));
-        var maxPredictionDifference = 0.0;
-        for (var index = 0; index < labels.length; index++) {
-          final difference =
-              (batched[batchIndex].predictions[index] -
-                      single.predictions[index])
-                  .abs();
-          if (difference > maxPredictionDifference) {
-            maxPredictionDifference = difference;
-          }
+      expect(batched[batchIndex].predictions, hasLength(labels.length));
+      var maxPredictionDifference = 0.0;
+      for (var index = 0; index < labels.length; index++) {
+        final difference =
+            (batched[batchIndex].predictions[index] - single.predictions[index])
+                .abs();
+        if (difference > maxPredictionDifference) {
+          maxPredictionDifference = difference;
         }
-        expect(
-          maxPredictionDifference,
-          lessThan(0.005),
-          reason: 'Batch $batchIndex changed model probabilities',
-        );
       }
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
+      expect(
+        maxPredictionDifference,
+        lessThan(0.005),
+        reason: 'Batch $batchIndex changed model probabilities',
+      );
+    }
+  }, timeout: const Timeout(Duration(minutes: 5)));
 
   testWidgets('All model output values are valid probabilities', (
     tester,

@@ -26,10 +26,10 @@ sounds natural in English rarely maps word for word.
 
 ## Files
 
-One file per locale, `templates_<locale>.json`. All 12 shipped locales must
+One file per locale, `templates_<locale>.json`. All 13 shipped locales must
 be present and complete:
 
-`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `nb` · `pl` · `ru` · `zh`
+`en` · `de` · `cs` · `es` · `fr` · `it` · `pt` · `nl` · `nb` · `pl` · `ru` · `zh` · `ko`
 
 Loaded by
 [`TemplateLibrary`](../../lib/features/announcements/phrasing/template_library.dart),
@@ -140,6 +140,14 @@ classifier-free constructions (`是{name}。`, `{name}，就在附近。`) and r
 `一只` only where it genuinely reads better. The a/the contrast that separates
 the first-detection buckets from the repeat buckets is carried by adverbs
 (`又`, `还在`, `仍`), not by anything article-shaped.
+
+Korean (`ko`) has no articles or gender either, but its **particles** change
+with the final sound of the preceding word (`이/가`, `은/는`, `을/를`, `와/과`,
+`이에요/예요`), and `{name}` is unknown at speak time. Never attach one of
+those directly to `{name}`; end on a space, punctuation, or a form that is
+invariant after any noun (`입니다`, `인`, `일`, `같아요`, `에`, `도`, `하고`, or a
+following noun such as `소리`). Skip counters (`마리`) and the word for bird
+(`새`) for the same cross-taxon reason as `一只`; `종` is the safe noun.
 
 ## Other conventions
 

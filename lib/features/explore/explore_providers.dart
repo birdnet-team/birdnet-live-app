@@ -76,12 +76,11 @@ final audioLabelClassesProvider = FutureProvider<Map<String, String>>((
   final csvText = await rootBundle.loadString(
     '${AppConstants.modelAssetsDir}/$file',
   );
-  final lines =
-      csvText
-          .split('\n')
-          .map((l) => l.trim())
-          .where((l) => l.isNotEmpty)
-          .toList();
+  final lines = csvText
+      .split('\n')
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty)
+      .toList();
   if (lines.isEmpty) return const <String, String>{};
 
   final headers = lines.first.split(delimiter).map((h) => h.trim()).toList();
@@ -95,8 +94,9 @@ final audioLabelClassesProvider = FutureProvider<Map<String, String>>((
     if (sciIdx >= parts.length) continue;
     final scientificName = parts[sciIdx].trim();
     if (scientificName.isEmpty) continue;
-    result[scientificName] =
-        classIdx >= 0 && classIdx < parts.length ? parts[classIdx].trim() : '';
+    result[scientificName] = classIdx >= 0 && classIdx < parts.length
+        ? parts[classIdx].trim()
+        : '';
   }
   return result;
 });
@@ -119,11 +119,10 @@ final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
 final locationServiceProvider = Provider<LocationService>((ref) {
   return LocationService(
     gpsEnabled: () => ref.read(useGpsProvider),
-    manualLocation:
-        () => AppLocation(
-          latitude: ref.read(manualLatitudeProvider),
-          longitude: ref.read(manualLongitudeProvider),
-        ),
+    manualLocation: () => AppLocation(
+      latitude: ref.read(manualLatitudeProvider),
+      longitude: ref.read(manualLongitudeProvider),
+    ),
   );
 });
 
@@ -356,10 +355,9 @@ final exploreSpeciesProvider = FutureProvider<List<ExploreSpecies>>((
       rawGeoScore: r.rawGeoScore,
       tier: tierScale.tierFor(r.rawGeoScore),
       taxonomy: r.taxonomy,
-      weeklyScores:
-          normalize
-              ? r.weeklyScores?.map((s) => (s / maxScore) * 100.0).toList()
-              : r.weeklyScores,
+      weeklyScores: normalize
+          ? r.weeklyScores?.map((s) => (s / maxScore) * 100.0).toList()
+          : r.weeklyScores,
     );
   }
 

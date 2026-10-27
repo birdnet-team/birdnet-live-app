@@ -147,15 +147,14 @@ class PhrasingEngine {
     // If every variant is in the history (small lists ≤ 3), allow
     // anything except the most-recent one. If the bucket has only one
     // variant we can do nothing about repetition — speak it anyway.
-    final pool =
-        candidates.isNotEmpty
-            ? candidates
-            : (variants.length > 1
-                ? [
+    final pool = candidates.isNotEmpty
+        ? candidates
+        : (variants.length > 1
+              ? [
                   for (var i = 0; i < variants.length; i++)
                     if (i != history.last) i,
                 ]
-                : [0]);
+              : [0]);
     final picked = pool[_random.nextInt(pool.length)];
     history.add(picked);
     if (history.length > _antiRepeatHistory) history.removeAt(0);
@@ -183,15 +182,14 @@ class PhrasingEngine {
       for (var i = 0; i < variants.length; i++)
         if (!history.contains(i)) i,
     ];
-    final pool =
-        candidates.isNotEmpty
-            ? candidates
-            : (variants.length > 1
-                ? [
+    final pool = candidates.isNotEmpty
+        ? candidates
+        : (variants.length > 1
+              ? [
                   for (var i = 0; i < variants.length; i++)
                     if (i != history.last) i,
                 ]
-                : [0]);
+              : [0]);
     final picked = pool[_random.nextInt(pool.length)];
     history.add(picked);
     if (history.length > _antiRepeatHistory) history.removeAt(0);

@@ -212,8 +212,11 @@ class PlaybackNormalizer {
 
   static Future<void> _pruneCache(Directory dir) async {
     try {
-      final entries =
-          await dir.list().where((e) => e is File).cast<File>().toList();
+      final entries = await dir
+          .list()
+          .where((e) => e is File)
+          .cast<File>()
+          .toList();
       if (entries.length <= _cacheMaxEntries) return;
       entries.sort(
         (a, b) => a.statSync().modified.compareTo(b.statSync().modified),

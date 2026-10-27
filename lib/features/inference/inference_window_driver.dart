@@ -18,8 +18,23 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../audio/ring_buffer.dart';
 import 'realtime_inference_scheduler.dart';
+
+/// The rate one step below [inferenceRateHz].
+///
+/// Steps are [AppConstants.inferenceRateDownshiftStepHz] on the slider's
+/// 0.1 Hz grid and never go below [AppConstants.minInferenceRateHz], so the
+/// result is always a rate the user could have picked. At the floor the rate
+/// is returned unchanged.
+double loweredInferenceRate(double inferenceRateHz) {
+  final tenths =
+      ((inferenceRateHz - AppConstants.inferenceRateDownshiftStepHz) * 10)
+          .round();
+  final floorTenths = (AppConstants.minInferenceRateHz * 10).round();
+  return (tenths < floorTenths ? floorTenths : tenths) / 10;
+}
 
 /// A scheduled window together with the audio it covers.
 class InferenceWindowAudio {
@@ -70,9 +85,25 @@ class InferenceWindowDriver {
   int _sampleBase = 0;
   int _ringBufferResetGeneration = 0;
 
+  /// Windows in a row that came out at least a hop late, each later than the
+  /// one before. See [_trackBacklog].
+  int _lateTakes = 0;
+  int _previousLateSamples = 0;
+
+  /// Called after the driver lowered the rate on its own, with the new rate.
+  ///
+  /// See [_trackBacklog] for when that happens.
+  void Function(double inferenceRateHz)? onInferenceRateLowered;
+
   bool get isRunning => _scheduler != null;
 
   int get windowDurationSeconds => _scheduler?.windowDurationSeconds ?? 0;
+
+  /// The rate the schedule currently runs at, or 0 when stopped.
+  ///
+  /// Starts as the rate passed to [start] and drops whenever the driver
+  /// lowers it.
+  double get inferenceRateHz => _scheduler?.inferenceRateHz ?? 0;
 
   /// Begin (or restart) the schedule from the audio arriving now.
   ///
@@ -99,14 +130,14 @@ class InferenceWindowDriver {
     _timer = null;
 
     final windowSamples = sampleRate * windowDurationSeconds;
-    final buffered =
-        useBufferedAudio
-            ? (ringBuffer.available < windowSamples
-                ? ringBuffer.available
-                : windowSamples)
-            : 0;
+    final buffered = useBufferedAudio
+        ? (ringBuffer.available < windowSamples
+              ? ringBuffer.available
+              : windowSamples)
+        : 0;
     _sampleBase = ringBuffer.totalWritten - buffered;
     _ringBufferResetGeneration = ringBuffer.resetGeneration;
+    _resetBacklogTracking();
 
     _scheduler = RealtimeInferenceScheduler(
       sampleRate: sampleRate,
@@ -179,6 +210,7 @@ class InferenceWindowDriver {
 
     final window = scheduler.takeNext(_relativeWritten());
     if (window == null) return null;
+    _trackBacklog(scheduler, _relativeWritten() - window.endSample);
 
     final windowEndSample = _sampleBase + window.endSample;
     return InferenceWindowAudio(
@@ -193,6 +225,53 @@ class InferenceWindowDriver {
       windowEndSample: windowEndSample,
       windowDurationSeconds: scheduler.windowDurationSeconds,
     );
+  }
+
+  /// Lower the rate once the schedule has fallen behind for good.
+  ///
+  /// A window is late by however far capture has moved past its end when it
+  /// is taken. A whole hop late means the next window was already complete
+  /// before this one was read. One such window is a stall — a slow frame, a
+  /// save — and drains on its own; a run of them, each later than the last,
+  /// means the model is slower than the schedule. Left alone, that backlog
+  /// grows until the buffer overruns, and well before that the detection
+  /// clips, cut from the same buffer after a post-roll wait, find their
+  /// windows overwritten and are silently skipped. Dropping the rate a step
+  /// and continuing from the audio arriving now keeps both inside the buffer.
+  /// At the floor the rate stays, and only the backlog is dropped.
+  void _trackBacklog(RealtimeInferenceScheduler scheduler, int lateSamples) {
+    final growing = lateSamples >= _previousLateSamples;
+    _previousLateSamples = lateSamples;
+    if (lateSamples < scheduler.hopSamples || !growing) {
+      _lateTakes = 0;
+      return;
+    }
+    if (++_lateTakes < AppConstants.lateWindowsBeforeInferenceDownshift) {
+      return;
+    }
+    _resetBacklogTracking();
+
+    final current = scheduler.inferenceRateHz;
+    final lowered = loweredInferenceRate(current);
+    scheduler.setInferenceRate(lowered, _relativeWritten());
+    final lateSeconds = (lateSamples / scheduler.sampleRate).toStringAsFixed(1);
+    if (lowered < current) {
+      debugPrint(
+        '[$debugLabel] inference ran ${lateSeconds}s behind capture; '
+        'lowering the rate from $current Hz to $lowered Hz',
+      );
+      onInferenceRateLowered?.call(lowered);
+    } else {
+      debugPrint(
+        '[$debugLabel] inference ran ${lateSeconds}s behind capture at the '
+        'lowest rate; continuing from the newest audio',
+      );
+    }
+  }
+
+  void _resetBacklogTracking() {
+    _lateTakes = 0;
+    _previousLateSamples = 0;
   }
 
   int _relativeWritten() => ringBuffer.totalWritten - _sampleBase;
@@ -243,6 +322,7 @@ class InferenceWindowDriver {
     // written on the new timeline is valid session audio, so retain it rather
     // than anchoring at the current counter and silently discarding it.
     _sampleBase = 0;
+    _resetBacklogTracking();
     scheduler.rebase(DateTime.now());
     return true;
   }

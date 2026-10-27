@@ -4,6 +4,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
+import 'package:birdnet_live/shared/widgets/inference_rate_limit_note.dart';
 import 'package:birdnet_live/shared/widgets/map_picker_screen.dart';
 import 'package:birdnet_live/shared/widgets/site_context_card.dart';
 import 'package:birdnet_live/shared/widgets/weather_setup_card.dart';
@@ -84,6 +85,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     super.initState();
     _observerController.text = ref.read(lastObserverProvider);
     _stationController.text = ref.read(aruLastStationIdProvider);
+    _inferenceRate = ref.read(aruInferenceRateProvider);
     _scheduleEnd = _defaultScheduleEnd();
     if (ref.read(useGpsProvider)) {
       _fetchGpsLocation();
@@ -489,8 +491,11 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
             onTopNPerSpeciesChanged: (value) =>
                 setState(() => _topNPerSpecies = value),
             inferenceRate: _inferenceRate,
-            onInferenceRateChanged: (value) =>
-                setState(() => _inferenceRate = value),
+            onInferenceRateChanged: (value) {
+              setState(() => _inferenceRate = value);
+              // Remembered for the next deployment, like the station ID.
+              unawaited(ref.read(aruInferenceRateProvider.notifier).set(value));
+            },
           ),
           2 => _ScheduleStep(
             key: const ValueKey(2),
@@ -901,6 +906,7 @@ class _ParametersStep extends ConsumerWidget {
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
           onChanged: onInferenceRateChanged,
         ),
+        const InferenceRateLimitNote(),
 
         // Confidence threshold
         ListTile(

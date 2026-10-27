@@ -35,6 +35,7 @@ window.BIRDNET_MOCKUPS = {
       pl: 'Profesjonalna bioakustyka w Twojej kieszeni',
       ru: 'Профессиональная биоакустика у вас в кармане',
       zh: '把专业生物声学装进口袋',
+      ko: '주머니 속의 전문 생물음향학',
     },
   },
   featureGraphicHomeSubtitles: {
@@ -49,6 +50,7 @@ window.BIRDNET_MOCKUPS = {
     pl: 'Profesjonalna bioakustyka w Twojej kieszeni',
     ru: '\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u0430\u044f \u0431\u0438\u043e\u0430\u043a\u0443\u0441\u0442\u0438\u043a\u0430 \u0432 \u0432\u0430\u0448\u0435\u043c \u043a\u0430\u0440\u043c\u0430\u043d\u0435',
     zh: '\u628a\u4e13\u4e1a\u751f\u7269\u58f0\u5b66\u88c5\u8fdb\u53e3\u888b',
+    ko: '주머니 속의 전문 생물음향학',
   },
   ipadCanvas: {
     width: 2048,
@@ -314,6 +316,10 @@ window.BIRDNET_MOCKUPS = {
     },
     zh: {
       name: '简体中文',
+      slides: {},
+    },
+    ko: {
+      name: '한국어',
       slides: {},
     },
   },

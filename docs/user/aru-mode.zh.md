@@ -27,7 +27,7 @@ ARU（Autonomous Recording Unit，自主录音单元）模式是用于定点计�
 
 设置控件使用与其他向导相同的图标：:app-micRounded: 麦克风、:app-speedRounded: 推理频率、:app-verifiedRounded: 置信度、:app-hearing: 灵敏度、:app-fiberManualRecordRounded: 录音模式、:app-timerOutlined: 片段上下文和周期时长、:app-filterAltRounded: 检测抽样，以及 :app-formatListNumberedRounded: 每个物种的片段上限。重复间隔使用 :app-repeatRounded:，低电量控件使用 :app-batteryAlert: 和 :app-batteryChargingFull:，测试运行和 Session 分组使用 :app-scienceRounded: 和 :app-libraryBooks:。点按控件旁的 :app-helpOutline: 按钮可查看说明。
 
-开始部署会立即保存一个带 ARU 排程元数据的 `SessionType.aru` Session。录音周期还会每 30 秒保存一次检查点，包括没有检测结果的周期。发生崩溃或断电后，最近保存的部分部署会作为已结束的 Session 出现在 Session 库中；录音不会自动重新开始。上次保存之后的数据可能会丢失。
+开始部署会立即保存一个带 ARU 排程元数据的 `SessionType.aru` Session。录音周期还会每 30 秒保存一次检查点，包括没有检测结果的周期。发生崩溃或断电后，最近保存的部分部署会作为已结束的 Session 出现在 Session 列表中；录音不会自动重新开始。上次保存之后的数据可能会丢失。
 
 JSON 和 ZIP 导出包含 ARU 部署元数据。ZIP 导出会把已保存的各周期录音文件归入 `aru_cycles/` 目录。
 

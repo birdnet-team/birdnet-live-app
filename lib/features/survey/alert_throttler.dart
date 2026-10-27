@@ -153,8 +153,9 @@ class AlertThrottler {
     }
 
     // Layer 2: min interval.
-    final interval =
-        _lastDeliveredAt == null ? null : t.difference(_lastDeliveredAt!);
+    final interval = _lastDeliveredAt == null
+        ? null
+        : t.difference(_lastDeliveredAt!);
     final intervalOk = interval == null || interval >= minInterval;
 
     // Layer 3: rate cap.

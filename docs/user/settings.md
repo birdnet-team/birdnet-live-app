@@ -119,6 +119,18 @@ miss. New Surveys default to **0.70 Hz** as a middle ground; **0.30 Hz**
 remains an explicit maximum-battery option. File Analysis has no inference rate
 — it uses an [overlap](file-analysis.md) setting instead.
 
+If a device cannot keep up with the selected rate — inference falls a whole
+hop behind capture for several windows in a row — the session lowers the
+rate by 0.30 Hz, and again each time it keeps falling behind, down to
+0.10 Hz. The lowered rate then becomes the rate setting of every mode: Live
+Mode, Point Count, Survey, and ARU, and so of their setup wizards, so the next
+session anywhere starts at a rate this device can sustain. Settings and the
+wizards show a note under the rate slider saying the device is known to be
+too slow above that rate. The note stays, since a slow device stays slow,
+and the sliders remain free to set. Without this, a slow device piles up a
+backlog that eventually overwrites the audio detection clips are cut from,
+and detections end up without audio.
+
 ### Ignore species
 
 Opens an overlay with binary inference filters. Check **Birds**, **Mammals**, **Amphibians**, or **Insects** to suppress that entire taxonomic class. All four checkboxes are off by default.
@@ -138,6 +150,10 @@ supporting window, carries the strongest supported score, and ends at the end
 of the last supporting window.
 
 ## Spectrogram
+
+### Size
+
+Sets how much of the screen the live scrolling spectrogram takes in Live Mode, Point Count, Survey, and ARU. **Full** is the usual height. **Medium** and **Small** shrink it to 75% and 50% of that and hand the difference to the detection list — the setting to reach for when you mostly watch the list on a phone in portrait. **Off** removes the spectrogram entirely; in Survey and ARU the spectrogram tab disappears as well. In landscape, **Medium** and **Small** shorten the spectrogram within its half of the screen (the space below it stays empty for now), and **Off** hands the whole screen to the detection list. Session Review and other playback spectrograms are not affected.
 
 ### FFT size
 
@@ -221,7 +237,7 @@ This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps 
 
 When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
 
-This setting governs opening Live mode from inside the app. The [Quick Listen widget](live-mode.md) starts listening when tapped, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
+This setting governs opening Live mode from inside the app. [Quick Listen](live-mode.md) — the Android widget, or the iOS shortcut, Siri phrase, and app-icon action — starts listening when triggered, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
 
 ### Continue with screen off
 
@@ -303,6 +319,8 @@ Because the tiers are rank-based, this behaves the same in a species-rich tropic
 
 ## Export & Sync
 
+The options in this section are the **defaults** for every share. Tapping **Share** on a session, on a multi-session selection in the Session Library, or on a single detection first opens a small dialog with two boxes, **Audio** and **Metadata**, pre-ticked from these settings: Audio is on when **Include audio files** is on; Metadata is on when at least one format, the HTML report, or the app metadata file is enabled. Each box has a `?` help button and a one-line subtitle naming exactly what it adds (for example "Converted to WAV" or "Raven Selection Table, CSV, HTML report"). Untick a box to leave that part out of this one share only — the saved settings never change. Audio is greyed out when the session or detection has no saved audio; ticking Metadata while every metadata option is off here falls back to a Raven Selection Table; and Share stays disabled while both boxes are off. The intuition: most shares want the usual bundle, but the one time you need a bare WAV for iNaturalist or a tables-only ZIP for a colleague, you should not have to visit Settings twice.
+
 ### Formats
 
 Tick any combination of export formats — every save / share will bundle all the selected formats together inside a single ZIP. Pick a single format with no audio clips and no HTML report and you'll get a raw file (e.g. `session.csv`) instead of a ZIP, for backwards compatibility:
@@ -332,7 +350,7 @@ When on, every export ZIP also contains a `<session>_report.html` file alongside
 
 ### Audio-only sharing
 
-Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip.
+Untick every format **and** the HTML report **and** the app metadata box, leaving only **Include audio files**, and Share will hand the platform sheet the raw recording (e.g. `BirdNET_Live_…flac`) instead of a ZIP. That is the low-friction path for sending a session straight into iNaturalist, eBird, or any other app that wants an unwrapped audio file. Sessions made of multiple detection clips still produce a ZIP; sharing one detection hands over that one raw clip. For a one-off audio-only share you don't need to touch these settings at all: untick **Metadata** in the share dialog instead.
 
 ## Privacy
 

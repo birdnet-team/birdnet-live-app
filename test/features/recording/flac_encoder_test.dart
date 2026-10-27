@@ -372,8 +372,7 @@ void main() {
       expect(
         md5InFile.every((b) => b == 0),
         isTrue,
-        reason:
-            'STREAMINFO MD5 signature should be all zeros to bypass strict checks',
+        reason: 'STREAMINFO MD5 signature should be all zeros to bypass strict checks',
       );
     });
 

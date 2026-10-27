@@ -2,11 +2,14 @@ import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../features/aru/aru_defaults.dart';
 import '../../features/inference/advanced_pooling_params.dart';
 import '../../features/inference/species_ignore_filter.dart';
+import '../../features/spectrogram/spectrogram_size.dart';
 import '../../l10n/app_localizations.dart';
 import 'app_providers.dart';
 
@@ -34,7 +37,7 @@ final highPassFilterProvider =
 // ---------------------------------------------------------------------------
 
 const List<double> inferenceRateHzValues = <double>[
-  0.1,
+  AppConstants.minInferenceRateHz,
   0.2,
   0.3,
   0.4,
@@ -63,10 +66,39 @@ final confidenceThresholdProvider =
 
 /// Inference rate in Hz (0.1–1.0 in 0.1 Hz steps — default 1.0).
 final inferenceRateProvider =
-    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+    StateNotifierProvider<InferenceRateSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return InferenceRateSettingNotifier(prefs);
     });
+
+/// Highest inference rate this device is known to sustain, or null while no
+/// live mode has ever had to lower the rate. Shown as a note under every
+/// inference-rate slider; see [applyInferenceRateLimit].
+final inferenceRateDeviceLimitProvider =
+    StateNotifierProvider<InferenceRateDeviceLimitNotifier, double?>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return InferenceRateDeviceLimitNotifier(prefs);
+    });
+
+/// A live mode found this device unable to keep up and lowered its rate to
+/// [inferenceRateHz].
+///
+/// The lowered rate becomes the rate setting of every mode — Live Mode and
+/// Point Count, Survey, and ARU, and so of their setup wizards — lowered but
+/// never raised, so the next session anywhere starts at a rate the device
+/// can sustain. The limit itself is remembered for the note under the rate
+/// sliders. [read] is a `ref.read`.
+Future<void> applyInferenceRateLimit(
+  double inferenceRateHz, {
+  required T Function<T>(ProviderListenable<T> provider) read,
+}) async {
+  await Future.wait<void>([
+    read(inferenceRateDeviceLimitProvider.notifier).lowerTo(inferenceRateHz),
+    read(inferenceRateProvider.notifier).lowerTo(inferenceRateHz),
+    read(surveyInferenceRateProvider.notifier).lowerTo(inferenceRateHz),
+    read(aruInferenceRateProvider.notifier).lowerTo(inferenceRateHz),
+  ]);
+}
 
 /// Sensitivity (0.5 – 1.5, default 1.0).
 ///
@@ -353,6 +385,19 @@ final spectrogramQualityProvider =
         PrefKeys.spectrogramQuality,
         'medium',
       );
+    });
+
+/// Room the live scrolling spectrogram takes on a session screen
+/// (default [SpectrogramSize.full]).
+///
+/// Applies to Live Mode, Point Count, Survey, and ARU. [SpectrogramSize.off]
+/// leaves the spectrogram out of the layout entirely.
+final spectrogramSizeProvider =
+    StateNotifierProvider<SpectrogramSizeSettingNotifier, SpectrogramSize>((
+      ref,
+    ) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return SpectrogramSizeSettingNotifier(prefs);
     });
 
 // ---------------------------------------------------------------------------
@@ -826,6 +871,18 @@ final aruLastStationIdProvider =
       return StringSettingNotifier(prefs, PrefKeys.aruLastStationId, '');
     });
 
+/// Inference rate ARU setup starts from (default 0.3), remembered between
+/// deployments so a rate lowered for a slow device sticks.
+final aruInferenceRateProvider =
+    StateNotifierProvider<InferenceRateSettingNotifier, double>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return InferenceRateSettingNotifier(
+        prefs,
+        key: PrefKeys.aruInferenceRate,
+        defaultValue: AruDefaults.defaultInferenceRateHz,
+      );
+    });
+
 String _legacyLastObserver(SharedPreferences prefs) {
   final surveyObserver = prefs.getString(PrefKeys.legacySurveyLastObserver);
   if (surveyObserver != null && surveyObserver.trim().isNotEmpty) {
@@ -848,7 +905,7 @@ String _legacyLastObserver(SharedPreferences prefs) {
 
 /// Survey inference rate in Hz (default 0.7).
 final surveyInferenceRateProvider =
-    StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
+    StateNotifierProvider<InferenceRateSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
       return InferenceRateSettingNotifier(
         prefs,
@@ -1085,6 +1142,31 @@ class InferenceRateSettingNotifier extends DoubleSettingNotifier {
 
   @override
   Future<void> set(double value) => super.set(_sanitize(value));
+
+  /// Lower the rate on the device's behalf; never raises. See
+  /// [applyInferenceRateLimit].
+  Future<void> lowerTo(double value) async {
+    final sanitized = _sanitize(value);
+    if (sanitized < state) await super.set(sanitized);
+  }
+}
+
+/// Remembers the highest inference rate this device is known to sustain; see
+/// [inferenceRateDeviceLimitProvider].
+class InferenceRateDeviceLimitNotifier extends StateNotifier<double?> {
+  InferenceRateDeviceLimitNotifier(this._prefs)
+    : super(_prefs.getDouble(PrefKeys.inferenceRateDeviceLimit));
+
+  final SharedPreferences _prefs;
+
+  /// The device fell behind and was lowered to [inferenceRateHz]. Only ever
+  /// tightens: a limit found once stands until a lower one is found.
+  Future<void> lowerTo(double inferenceRateHz) async {
+    final current = state;
+    if (current != null && inferenceRateHz >= current) return;
+    state = inferenceRateHz;
+    await _prefs.setDouble(PrefKeys.inferenceRateDeviceLimit, inferenceRateHz);
+  }
 }
 
 /// Keeps the common-species cutoff on the user-visible 80–100% grid and
@@ -1135,6 +1217,22 @@ class StringSettingNotifier extends StateNotifier<String> {
   Future<void> set(String value) async {
     state = value;
     await _prefs.setString(_key, value);
+  }
+}
+
+class SpectrogramSizeSettingNotifier extends StateNotifier<SpectrogramSize> {
+  SpectrogramSizeSettingNotifier(this._prefs)
+    : super(
+        SpectrogramSize.fromPrefValue(
+          _prefs.getString(PrefKeys.spectrogramSize),
+        ),
+      );
+
+  final SharedPreferences _prefs;
+
+  Future<void> set(SpectrogramSize value) async {
+    state = value;
+    await _prefs.setString(PrefKeys.spectrogramSize, value.prefValue);
   }
 }
 

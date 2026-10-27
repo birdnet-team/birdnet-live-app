@@ -92,7 +92,9 @@ enum LiveState {
 /// Designed to be held by a Riverpod [StateNotifier] that exposes
 /// [LiveControllerState] to the widget tree.
 class LiveController {
-  LiveController({required this.ringBuffer, required this.recordingService});
+  LiveController({required this.ringBuffer, required this.recordingService}) {
+    _windowDriver.onInferenceRateLowered = _onInferenceRateLowered;
+  }
 
   /// Shared ring buffer for audio samples.
   final RingBuffer ringBuffer;
@@ -254,6 +256,10 @@ class LiveController {
   /// Announcements feature to reset its per-session bookkeeping
   /// (startup grace, anti-repeat, etc.).
   void Function()? onSessionStarted;
+
+  /// Called with the new rate after the driver lowered the inference rate
+  /// because the device could not keep up; see [InferenceWindowDriver].
+  void Function(double inferenceRateHz)? onInferenceRateLowered;
 
   // ── Model loading ─────────────────────────────────────────────────────
 
@@ -533,7 +539,9 @@ class LiveController {
     // analyzes with.
     recordingService.setWindowSeconds(windowDuration);
     if (recordingMode != RecordingMode.off) {
-      final dir = await recordingService.startRecording(
+      // The continuous file itself in full mode, so a checkpoint written
+      // before the session is stopped already points at the audio.
+      final recordingPath = await recordingService.startRecording(
         sessionId: sessionId,
         mode: recordingMode,
         format: recordingFormat,
@@ -542,7 +550,7 @@ class LiveController {
         await recordingService.stopRecording();
         return;
       }
-      startingSession.recordingPath = dir;
+      startingSession.recordingPath = recordingPath;
     }
 
     if (_session != startingSession) return;
@@ -928,6 +936,19 @@ class LiveController {
     } finally {
       _inferring = false;
     }
+  }
+
+  /// The driver dropped the rate because inference fell behind capture.
+  ///
+  /// Recorded on the session so the review shows the rate that actually ran
+  /// and a resume after a pause keeps it; the screen then tells the user.
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    final session = _session;
+    if (session != null) {
+      session.settings = session.settings.withInferenceRate(inferenceRateHz);
+    }
+    onInferenceRateLowered?.call(inferenceRateHz);
+    _notifyListeners();
   }
 
   void _closeRecordingSegment() {

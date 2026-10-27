@@ -36,24 +36,88 @@ void main() {
     List<DetectionRecord> detections = const [],
     Set<DetectionRecord>? activeDetections,
     Map<String, int>? speciesDetectionCounts,
+    int columns = 1,
+    double? height,
   }) {
+    final list = DetectionList(
+      detections: detections,
+      isActive: isActive,
+      showTips: showTips,
+      activeDetections: activeDetections,
+      speciesDetectionCounts: speciesDetectionCounts,
+      columns: columns,
+    );
     return ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: DetectionList(
-            detections: detections,
-            isActive: isActive,
-            showTips: showTips,
-            activeDetections: activeDetections,
-            speciesDetectionCounts: speciesDetectionCounts,
-          ),
+          body: height == null ? list : SizedBox(height: height, child: list),
         ),
       ),
     );
   }
+
+  Offset tileTopLeft(WidgetTester tester, String name) {
+    return tester.getTopLeft(
+      find
+          .ancestor(of: find.text(name), matching: find.byType(DetectionTile))
+          .first,
+    );
+  }
+
+  testWidgets('two columns fill the left column first', (tester) async {
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        columns: 2,
+        detections: [
+          record('Turdus merula'),
+          record('Erithacus rubecula'),
+          record('Parus major'),
+        ],
+      ),
+    );
+
+    expect(find.byType(DetectionTile), findsNWidgets(3));
+    final first = tileTopLeft(tester, 'Turdus merula');
+    final second = tileTopLeft(tester, 'Erithacus rubecula');
+    final third = tileTopLeft(tester, 'Parus major');
+    // Plenty of height: everything stacks in the left column.
+    expect(second.dx, first.dx);
+    expect(second.dy, greaterThan(first.dy));
+    expect(third.dx, first.dx);
+    expect(third.dy, greaterThan(second.dy));
+  });
+
+  testWidgets('two columns continue on the right once the left is full', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        columns: 2,
+        // Room for two one-line tiles per column.
+        height: 150,
+        detections: [
+          record('Turdus merula'),
+          record('Erithacus rubecula'),
+          record('Parus major'),
+        ],
+      ),
+    );
+
+    expect(find.byType(DetectionTile), findsNWidgets(3));
+    final first = tileTopLeft(tester, 'Turdus merula');
+    final second = tileTopLeft(tester, 'Erithacus rubecula');
+    final third = tileTopLeft(tester, 'Parus major');
+    expect(second.dx, first.dx);
+    expect(second.dy, greaterThan(first.dy));
+    // The third tile starts the right column at the top.
+    expect(third.dy, first.dy);
+    expect(third.dx, greaterThan(first.dx));
+  });
 
   testWidgets('shows live tips only when the host opts in', (tester) async {
     await tester.pumpWidget(buildSubject(showTips: true));
