@@ -22,6 +22,10 @@ import UserNotifications
   /// Text-to-speech for spoken announcements; see TtsChannel.swift.
   private var ttsChannel: TtsChannel?
 
+  /// Keychain-backed credential store for upload destinations; see
+  /// SecureStoreChannel.swift.
+  private var secureStoreChannel: SecureStoreChannel?
+
   /// A Quick Listen action (App Intent, `birdnetlive://` URL, or home-screen
   /// quick action; see QuickAction.swift) waiting for Dart. Same contract as
   /// Android's `pendingQuickAction` in MainActivity.kt: set on cold and warm
@@ -48,6 +52,7 @@ import UserNotifications
     let messenger = engineBridge.applicationRegistrar.messenger()
 
     ttsChannel = TtsChannel(messenger: messenger)
+    secureStoreChannel = SecureStoreChannel(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",

@@ -62,6 +62,7 @@ class MainActivity: FlutterActivity() {
     private var pendingSharedMedia: Map<String, String?>? = null
     private var sharedMediaChannel: MethodChannel? = null
     private var ttsChannel: TtsChannel? = null
+    private var secureStoreChannel: SecureStoreChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -92,6 +93,11 @@ class MainActivity: FlutterActivity() {
         // thread (see TtsChannel.kt).
         ttsChannel?.dispose()
         ttsChannel = TtsChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Keystore-backed credential store for upload destinations; see
+        // SecureStoreChannel.kt.
+        secureStoreChannel?.dispose()
+        secureStoreChannel = SecureStoreChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
