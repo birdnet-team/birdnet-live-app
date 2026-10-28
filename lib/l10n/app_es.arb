@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Este enlace compartido no tiene contraseña. Cualquiera con el enlace puede subir archivos. Pide a quien dirige el proyecto que ponga una.",
   "uploadWarnInsecureLan": "HTTP sin cifrar hacia una dirección local. Los datos no van cifrados por el camino.",
   "save": "Guardar",
-  "uploadChipLabel": "{count, plural, =1{1 subida} other{{count} subidas}}",
   "uploadStatusTitle": "Subidas",
   "uploadStatusQueued": "En cola",
   "uploadStatusUploading": "Subiendo…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Unirse desde otro dispositivo",
   "uploadJoinQrBody": "Escanea este código con la cámara del otro teléfono o copia el enlace y envíalo. Cualquiera con el código puede subir a este destino, así que compártelo solo con personas de confianza.",
   "uploadJoinQrCopy": "Copiar enlace",
-  "uploadJoinQrCopied": "Enlace de acceso copiado"
+  "uploadJoinQrCopied": "Enlace de acceso copiado",
+  "uploadChipUploaded": "Subido"
 }

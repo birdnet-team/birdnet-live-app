@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "该分享没有密码。任何拥有链接的人都可以上传。请让项目负责人设置密码。",
   "uploadWarnInsecureLan": "到本地地址的未加密 HTTP。数据在传输过程中未加密。",
   "save": "保存",
-  "uploadChipLabel": "{count, plural, =1{1 项上传} other{{count} 项上传}}",
   "uploadStatusTitle": "上传",
   "uploadStatusQueued": "排队中",
   "uploadStatusUploading": "正在上传…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "在其他设备上加入",
   "uploadJoinQrBody": "用另一部手机的相机扫描此码，或复制链接后发送。任何拥有此码的人都可以上传到此目标，因此请只分享给您信任的人。",
   "uploadJoinQrCopy": "复制链接",
-  "uploadJoinQrCopied": "已复制加入链接"
+  "uploadJoinQrCopied": "已复制加入链接",
+  "uploadChipUploaded": "已上传"
 }

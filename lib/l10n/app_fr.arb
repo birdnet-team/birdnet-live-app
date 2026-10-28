@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Ce partage n'a pas de mot de passe. Toute personne disposant du lien peut envoyer des fichiers. Demandez au responsable du projet d'en définir un.",
   "uploadWarnInsecureLan": "HTTP non chiffré vers une adresse locale. Les données ne sont pas chiffrées en transit.",
   "save": "Enregistrer",
-  "uploadChipLabel": "{count, plural, =1{1 envoi} other{{count} envois}}",
   "uploadStatusTitle": "Envois",
   "uploadStatusQueued": "En attente",
   "uploadStatusUploading": "Envoi en cours…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Rejoindre depuis un autre appareil",
   "uploadJoinQrBody": "Scannez ce code avec l'appareil photo de l'autre téléphone, ou copiez le lien et envoyez-le. Toute personne disposant du code peut envoyer vers cette destination : ne le partagez qu'avec des personnes de confiance.",
   "uploadJoinQrCopy": "Copier le lien",
-  "uploadJoinQrCopied": "Lien d'accès copié"
+  "uploadJoinQrCopied": "Lien d'accès copié",
+  "uploadChipUploaded": "Envoyé"
 }

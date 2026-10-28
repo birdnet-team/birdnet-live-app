@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Questa condivisione non ha una password. Chiunque abbia il link può caricare file. Chiedi a chi guida il progetto di impostarne una.",
   "uploadWarnInsecureLan": "HTTP non cifrato verso un indirizzo locale. I dati non sono cifrati durante il trasferimento.",
   "save": "Salva",
-  "uploadChipLabel": "{count, plural, =1{1 caricamento} other{{count} caricamenti}}",
   "uploadStatusTitle": "Caricamenti",
   "uploadStatusQueued": "In coda",
   "uploadStatusUploading": "Caricamento in corso…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Unisciti da un altro dispositivo",
   "uploadJoinQrBody": "Scansiona questo codice con la fotocamera dell'altro telefono oppure copia il link e invialo. Chiunque abbia il codice può caricare su questa destinazione: condividilo solo con persone di cui ti fidi.",
   "uploadJoinQrCopy": "Copia link",
-  "uploadJoinQrCopied": "Link di accesso copiato"
+  "uploadJoinQrCopied": "Link di accesso copiato",
+  "uploadChipUploaded": "Caricato"
 }

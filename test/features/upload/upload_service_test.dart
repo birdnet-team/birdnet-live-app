@@ -108,6 +108,8 @@ void main() {
   });
 
   tearDown(() async {
+    // A run kicked off by the last enqueue may still be writing.
+    await service.processQueue();
     service.dispose();
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
@@ -407,6 +409,9 @@ void main() {
       config: config,
     );
     expect(again.version, 2);
+    // Let the run the second enqueue started finish before the temp
+    // directory is deleted.
+    await service.processQueue();
   });
 
   test('backoff doubles from one minute and caps at six hours', () {

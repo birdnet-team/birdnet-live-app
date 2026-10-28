@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Toto sdílení nemá heslo. Nahrávat může každý, kdo má odkaz. Požádejte vedoucího projektu, aby heslo nastavil.",
   "uploadWarnInsecureLan": "Nešifrované HTTP na místní adresu. Data nejsou při přenosu šifrována.",
   "save": "Uložit",
-  "uploadChipLabel": "{count, plural, =1{1 nahrání} few{{count} nahrání} other{{count} nahrání}}",
   "uploadStatusTitle": "Nahrávání",
   "uploadStatusQueued": "Ve frontě",
   "uploadStatusUploading": "Nahrává se…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Připojit na jiném zařízení",
   "uploadJoinQrBody": "Naskenujte tento kód fotoaparátem druhého telefonu nebo zkopírujte a pošlete odkaz. Kdokoli s tímto kódem může do tohoto cíle nahrávat, sdílejte ho proto jen s lidmi, kterým důvěřujete.",
   "uploadJoinQrCopy": "Kopírovat odkaz",
-  "uploadJoinQrCopied": "Odkaz pro připojení zkopírován"
+  "uploadJoinQrCopied": "Odkaz pro připojení zkopírován",
+  "uploadChipUploaded": "Nahráno"
 }

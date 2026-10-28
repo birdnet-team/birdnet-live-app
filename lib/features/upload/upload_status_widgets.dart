@@ -44,29 +44,56 @@ class UploadStatusChip extends ConsumerWidget {
           (j) => j.state == UploadJobState.failed && j.lastError != null,
         );
         final pending = jobs.any((j) => j.isPending);
-        final Widget avatar;
-        Color? color;
+        // Same shape as the stat chips next to it (icon + short word), so an
+        // upload reads as one more fact about the session, not a button.
+        final IconData icon;
+        final String text;
+        final Color color;
         if (uploading) {
-          avatar = const SizedBox.square(
-            dimension: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          );
-        } else if (failed) {
-          color = theme.colorScheme.error;
-          avatar = Icon(AppIcons.errorOutline, size: 16, color: color);
-        } else if (pending) {
-          avatar = const Icon(AppIcons.cloudUpload, size: 16);
-        } else {
+          icon = AppIcons.cloudUpload;
+          text = l10n.uploadStatusUploading;
           color = theme.colorScheme.primary;
-          avatar = Icon(AppIcons.checkCircle, size: 16, color: color);
+        } else if (failed) {
+          icon = AppIcons.errorOutline;
+          text = l10n.uploadStatusGaveUp;
+          color = theme.colorScheme.error;
+        } else if (pending) {
+          icon = AppIcons.cloudUpload;
+          text = l10n.uploadStatusQueued;
+          color = theme.colorScheme.onSurfaceVariant;
+        } else {
+          icon = AppIcons.cloud;
+          text = l10n.uploadChipUploaded;
+          color = theme.colorScheme.primary;
         }
-        return ActionChip(
-          avatar: avatar,
-          label: Text(l10n.uploadChipLabel(jobs.length)),
-          labelStyle: theme.textTheme.labelSmall?.copyWith(color: color),
-          visualDensity: VisualDensity.compact,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          onPressed: () => showUploadStatusSheet(context, sessionId),
+        return InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () => showUploadStatusSheet(context, sessionId),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                uploading
+                    ? SizedBox.square(
+                        dimension: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: color,
+                        ),
+                      )
+                    : Icon(icon, size: 16, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  text,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: failed ? color : theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

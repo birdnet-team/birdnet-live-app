@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "이 공유에는 비밀번호가 없습니다. 링크가 있는 누구나 업로드할 수 있습니다. 프로젝트 책임자에게 비밀번호 설정을 요청하세요.",
   "uploadWarnInsecureLan": "로컬 주소로의 암호화되지 않은 HTTP입니다. 전송 중 데이터가 암호화되지 않습니다.",
   "save": "저장",
-  "uploadChipLabel": "{count, plural, =1{업로드 1건} other{업로드 {count}건}}",
   "uploadStatusTitle": "업로드",
   "uploadStatusQueued": "대기 중",
   "uploadStatusUploading": "업로드 중…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "다른 기기에서 참여",
   "uploadJoinQrBody": "다른 휴대전화의 카메라로 이 코드를 스캔하거나 링크를 복사해 보내세요. 이 코드가 있는 사람은 누구나 이 대상에 업로드할 수 있으므로 신뢰하는 사람에게만 공유하세요.",
   "uploadJoinQrCopy": "링크 복사",
-  "uploadJoinQrCopied": "참여 링크를 복사했습니다"
+  "uploadJoinQrCopied": "참여 링크를 복사했습니다",
+  "uploadChipUploaded": "업로드됨"
 }

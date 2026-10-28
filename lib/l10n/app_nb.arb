@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Denne delingen har ikke passord. Alle med lenken kan laste opp. Be prosjektlederen om å sette et.",
   "uploadWarnInsecureLan": "Ukryptert HTTP til en lokal adresse. Dataene er ikke kryptert underveis.",
   "save": "Lagre",
-  "uploadChipLabel": "{count, plural, =1{1 opplasting} other{{count} opplastinger}}",
   "uploadStatusTitle": "Opplastinger",
   "uploadStatusQueued": "I køen",
   "uploadStatusUploading": "Laster opp…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Koble til på en annen enhet",
   "uploadJoinQrBody": "Skann denne koden med kameraet på den andre telefonen, eller kopier lenken og send den. Alle med koden kan laste opp til dette målet, så del den bare med folk du stoler på.",
   "uploadJoinQrCopy": "Kopier lenke",
-  "uploadJoinQrCopied": "Tilkoblingslenke kopiert"
+  "uploadJoinQrCopied": "Tilkoblingslenke kopiert",
+  "uploadChipUploaded": "Lastet opp"
 }

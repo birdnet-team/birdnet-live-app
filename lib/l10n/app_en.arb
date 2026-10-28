@@ -5430,15 +5430,6 @@
   "@save": {
     "description": "Generic Save button label"
   },
-  "uploadChipLabel": "{count, plural, =1{1 upload} other{{count} uploads}}",
-  "@uploadChipLabel": {
-    "description": "Label of the upload chip on a session tile; count = number of destinations the session was queued for",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "uploadStatusTitle": "Uploads",
   "@uploadStatusTitle": {
     "description": "Title of the per-session upload status sheet"
@@ -5568,5 +5559,9 @@
   "uploadJoinQrCopied": "Join link copied",
   "@uploadJoinQrCopied": {
     "description": "Snackbar after the join link was copied"
+  },
+  "uploadChipUploaded": "Uploaded",
+  "@uploadChipUploaded": {
+    "description": "Session-tile chip label once every upload of the session finished"
   }
 }

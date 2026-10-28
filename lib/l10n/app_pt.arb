@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Este compartilhamento não tem senha. Qualquer pessoa com o link pode enviar arquivos. Peça a quem coordena o projeto para definir uma.",
   "uploadWarnInsecureLan": "HTTP sem criptografia para um endereço local. Os dados não são criptografados no caminho.",
   "save": "Salvar",
-  "uploadChipLabel": "{count, plural, =1{1 envio} other{{count} envios}}",
   "uploadStatusTitle": "Envios",
   "uploadStatusQueued": "Na fila",
   "uploadStatusUploading": "Enviando…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Entrar em outro dispositivo",
   "uploadJoinQrBody": "Escaneie este código com a câmera do outro telefone ou copie o link e envie. Qualquer pessoa com o código pode enviar para este destino, então compartilhe apenas com quem você confia.",
   "uploadJoinQrCopy": "Copiar link",
-  "uploadJoinQrCopied": "Link de acesso copiado"
+  "uploadJoinQrCopied": "Link de acesso copiado",
+  "uploadChipUploaded": "Enviado"
 }

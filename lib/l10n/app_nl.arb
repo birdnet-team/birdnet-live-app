@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Deze deellink heeft geen wachtwoord. Iedereen met de link kan uploaden. Vraag de projectleider om er een in te stellen.",
   "uploadWarnInsecureLan": "Onversleuteld HTTP naar een lokaal adres. De gegevens zijn onderweg niet versleuteld.",
   "save": "Opslaan",
-  "uploadChipLabel": "{count, plural, =1{1 upload} other{{count} uploads}}",
   "uploadStatusTitle": "Uploads",
   "uploadStatusQueued": "In de wachtrij",
   "uploadStatusUploading": "Bezig met uploaden…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Deelnemen op een ander apparaat",
   "uploadJoinQrBody": "Scan deze code met de camera van de andere telefoon, of kopieer de link en stuur hem door. Iedereen met de code kan naar deze bestemming uploaden, deel hem dus alleen met mensen die je vertrouwt.",
   "uploadJoinQrCopy": "Link kopiëren",
-  "uploadJoinQrCopied": "Deelnamelink gekopieerd"
+  "uploadJoinQrCopied": "Deelnamelink gekopieerd",
+  "uploadChipUploaded": "Geüpload"
 }

@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "Diese Freigabe hat kein Passwort. Jede Person mit dem Link kann hochladen. Bitten Sie die Projektleitung, eines zu setzen.",
   "uploadWarnInsecureLan": "Unverschlüsseltes HTTP zu einer lokalen Adresse. Die Daten werden unterwegs nicht verschlüsselt.",
   "save": "Speichern",
-  "uploadChipLabel": "{count, plural, =1{1 Upload} other{{count} Uploads}}",
   "uploadStatusTitle": "Uploads",
   "uploadStatusQueued": "In der Warteschlange",
   "uploadStatusUploading": "Wird hochgeladen…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Auf einem anderen Gerät beitreten",
   "uploadJoinQrBody": "Scannen Sie diesen Code mit der Kamera des anderen Telefons oder kopieren und senden Sie den Link. Jede Person mit dem Code kann zu diesem Ziel hochladen – geben Sie ihn nur an Personen weiter, denen Sie vertrauen.",
   "uploadJoinQrCopy": "Link kopieren",
-  "uploadJoinQrCopied": "Beitrittslink kopiert"
+  "uploadJoinQrCopied": "Beitrittslink kopiert",
+  "uploadChipUploaded": "Hochgeladen"
 }

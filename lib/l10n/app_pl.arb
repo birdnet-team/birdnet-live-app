@@ -1246,7 +1246,6 @@
   "uploadWarnShareWithoutPassword": "To udostępnienie nie ma hasła. Każdy, kto ma link, może przesyłać pliki. Poproś osobę prowadzącą projekt o ustawienie hasła.",
   "uploadWarnInsecureLan": "Nieszyfrowane HTTP do adresu lokalnego. Dane nie są szyfrowane w drodze.",
   "save": "Zapisz",
-  "uploadChipLabel": "{count, plural, =1{1 przesyłanie} few{{count} przesyłania} other{{count} przesyłań}}",
   "uploadStatusTitle": "Przesyłania",
   "uploadStatusQueued": "W kolejce",
   "uploadStatusUploading": "Przesyłanie…",
@@ -1276,5 +1275,6 @@
   "uploadJoinQrTitle": "Dołącz na innym urządzeniu",
   "uploadJoinQrBody": "Zeskanuj ten kod aparatem drugiego telefonu albo skopiuj link i wyślij go. Każdy, kto ma ten kod, może przesyłać do tego miejsca docelowego, więc udostępniaj go tylko zaufanym osobom.",
   "uploadJoinQrCopy": "Kopiuj link",
-  "uploadJoinQrCopied": "Skopiowano link dołączenia"
+  "uploadJoinQrCopied": "Skopiowano link dołączenia",
+  "uploadChipUploaded": "Przesłano"
 }
