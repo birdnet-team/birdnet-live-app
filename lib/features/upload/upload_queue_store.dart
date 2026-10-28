@@ -63,4 +63,38 @@ class UploadQueueStore {
     final file = await _file();
     if (await file.exists()) await file.delete();
   }
+
+  static const String lockFileName = 'uploads.lock';
+
+  /// A lock older than this is a leftover of a killed process.
+  static const Duration staleLock = Duration(minutes: 15);
+
+  /// Claims the queue for one run. The foreground app and the background
+  /// worker (upload_background.dart) each run their own isolate; whoever
+  /// holds the lock processes jobs, the other backs off. Returns false when
+  /// another live run holds it.
+  Future<bool> tryLock() async {
+    final dir = await _documentsDirectory();
+    final lock = File('${dir.path}/$lockFileName');
+    try {
+      if (await lock.exists()) {
+        final age = DateTime.now().difference(await lock.lastModified());
+        if (age < staleLock) return false;
+        await lock.delete();
+      }
+      await lock.create(exclusive: true);
+      return true;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  Future<void> unlock() async {
+    final dir = await _documentsDirectory();
+    try {
+      await File('${dir.path}/$lockFileName').delete();
+    } on FileSystemException {
+      // Already gone.
+    }
+  }
 }

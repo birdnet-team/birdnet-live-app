@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Hochladen",
   "shareOptionsShareAndUpload": "Teilen und hochladen",
   "uploadQueuedSnack": "{count, plural, =1{1 Session zum Hochladen eingereiht} other{{count} Sessions zum Hochladen eingereiht}}",
-  "shareOptionsTabContent": "Inhalt"
+  "shareOptionsTabContent": "Inhalt",
+  "uploadDestinationShareQr": "Beitrittscode anzeigen",
+  "uploadDestinationShareQrSubtitle": "Ein anderes Telefon diesem Ziel beitreten lassen",
+  "uploadJoinQrTitle": "Auf einem anderen Gerät beitreten",
+  "uploadJoinQrBody": "Scannen Sie diesen Code mit der Kamera des anderen Telefons oder kopieren und senden Sie den Link. Jede Person mit dem Code kann zu diesem Ziel hochladen – geben Sie ihn nur an Personen weiter, denen Sie vertrauen.",
+  "uploadJoinQrCopy": "Link kopieren",
+  "uploadJoinQrCopied": "Beitrittslink kopiert"
 }

@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Prześlij",
   "shareOptionsShareAndUpload": "Udostępnij i prześlij",
   "uploadQueuedSnack": "{count, plural, =1{1 Session dodana do kolejki przesyłania} few{{count} Sessions dodane do kolejki przesyłania} other{{count} Sessions dodanych do kolejki przesyłania}}",
-  "shareOptionsTabContent": "Zawartość"
+  "shareOptionsTabContent": "Zawartość",
+  "uploadDestinationShareQr": "Pokaż kod dołączenia",
+  "uploadDestinationShareQrSubtitle": "Pozwól innemu telefonowi dołączyć do tego miejsca docelowego",
+  "uploadJoinQrTitle": "Dołącz na innym urządzeniu",
+  "uploadJoinQrBody": "Zeskanuj ten kod aparatem drugiego telefonu albo skopiuj link i wyślij go. Każdy, kto ma ten kod, może przesyłać do tego miejsca docelowego, więc udostępniaj go tylko zaufanym osobom.",
+  "uploadJoinQrCopy": "Kopiuj link",
+  "uploadJoinQrCopied": "Skopiowano link dołączenia"
 }

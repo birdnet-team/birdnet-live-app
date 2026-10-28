@@ -5544,5 +5544,29 @@
   "shareOptionsTabContent": "Content",
   "@shareOptionsTabContent": {
     "description": "First tab of the Share dialog: what the share contains (Audio, Metadata)"
+  },
+  "uploadDestinationShareQr": "Show join code",
+  "@uploadDestinationShareQr": {
+    "description": "Tile on the destination screen that shows the join link as a QR code"
+  },
+  "uploadDestinationShareQrSubtitle": "Let another phone join this destination",
+  "@uploadDestinationShareQrSubtitle": {
+    "description": "Subtitle of the join-code tile"
+  },
+  "uploadJoinQrTitle": "Join on another device",
+  "@uploadJoinQrTitle": {
+    "description": "Title of the dialog showing the join QR code"
+  },
+  "uploadJoinQrBody": "Scan this code with the other phone's camera, or copy the link and send it. Anyone with the code can upload to this destination, so share it only with people you trust.",
+  "@uploadJoinQrBody": {
+    "description": "Explanation under the QR code, including the warning that it carries the credential"
+  },
+  "uploadJoinQrCopy": "Copy link",
+  "@uploadJoinQrCopy": {
+    "description": "Button that copies the join link to the clipboard"
+  },
+  "uploadJoinQrCopied": "Join link copied",
+  "@uploadJoinQrCopied": {
+    "description": "Snackbar after the join link was copied"
   }
 }

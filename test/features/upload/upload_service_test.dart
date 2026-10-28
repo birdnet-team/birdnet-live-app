@@ -383,6 +383,32 @@ void main() {
     expect(service.jobsForSession(other.id), isEmpty);
   });
 
+  test('enqueue keys on the stored UUID, not the copy handed in', () async {
+    // A library listing of a legacy session carries a fresh, unsaved UUID.
+    final listed = LiveSession(
+      id: session.id,
+      startTime: session.startTime,
+      endTime: session.endTime,
+      settings: session.settings,
+    );
+    expect(listed.uuid, isNot(session.uuid));
+
+    final job = await service.enqueue(
+      session: listed,
+      destination: destination,
+      config: config,
+    );
+    expect(job.sessionUuid, session.uuid);
+    await service.processQueue();
+
+    final again = await service.enqueue(
+      session: listed,
+      destination: destination,
+      config: config,
+    );
+    expect(again.version, 2);
+  });
+
   test('backoff doubles from one minute and caps at six hours', () {
     expect(UploadService.backoff(1), const Duration(minutes: 1));
     expect(UploadService.backoff(2), const Duration(minutes: 2));

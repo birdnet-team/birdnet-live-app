@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "업로드",
   "shareOptionsShareAndUpload": "공유 및 업로드",
   "uploadQueuedSnack": "{count, plural, =1{Session 1개를 업로드 대기열에 추가했습니다} other{Sessions {count}개를 업로드 대기열에 추가했습니다}}",
-  "shareOptionsTabContent": "내용"
+  "shareOptionsTabContent": "내용",
+  "uploadDestinationShareQr": "참여 코드 표시",
+  "uploadDestinationShareQrSubtitle": "다른 휴대전화가 이 대상에 참여하도록 합니다",
+  "uploadJoinQrTitle": "다른 기기에서 참여",
+  "uploadJoinQrBody": "다른 휴대전화의 카메라로 이 코드를 스캔하거나 링크를 복사해 보내세요. 이 코드가 있는 사람은 누구나 이 대상에 업로드할 수 있으므로 신뢰하는 사람에게만 공유하세요.",
+  "uploadJoinQrCopy": "링크 복사",
+  "uploadJoinQrCopied": "참여 링크를 복사했습니다"
 }

@@ -84,6 +84,28 @@ void main() {
     });
   });
 
+  test('build produces a link the parser reads back unchanged', () {
+    final link = JoinLinkParser.build(
+      url: 'https://cloud.example.org/public.php/webdav/',
+      username: 'AbC#123',
+      secret: 'p&ss word',
+      name: 'Spring Survey',
+      wifiOnly: true,
+    );
+    expect(link, startsWith('${JoinLinkParser.landingPage}#'));
+    // The secret sits in the fragment only.
+    expect(Uri.parse(link).query, isEmpty);
+
+    final request = JoinLinkParser.parse(link)!;
+    expect(request.source, JoinLinkSource.joinLink);
+    expect(request.url, 'https://cloud.example.org/public.php/webdav/');
+    expect(request.username, 'AbC#123');
+    expect(request.secret, 'p&ss word');
+    expect(request.name, 'Spring Survey');
+    expect(request.wifiOnly, isTrue);
+    expect(request.includeAudio, isNull);
+  });
+
   test('normalizeCollectionUrl adds https and a trailing slash', () {
     expect(
       JoinLinkParser.normalizeCollectionUrl('example.org/dav?x=1#frag'),

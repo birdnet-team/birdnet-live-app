@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Last opp",
   "shareOptionsShareAndUpload": "Del og last opp",
   "uploadQueuedSnack": "{count, plural, =1{1 Session lagt i opplastingskøen} other{{count} Sessions lagt i opplastingskøen}}",
-  "shareOptionsTabContent": "Innhold"
+  "shareOptionsTabContent": "Innhold",
+  "uploadDestinationShareQr": "Vis tilkoblingskode",
+  "uploadDestinationShareQrSubtitle": "La en annen telefon koble til dette målet",
+  "uploadJoinQrTitle": "Koble til på en annen enhet",
+  "uploadJoinQrBody": "Skann denne koden med kameraet på den andre telefonen, eller kopier lenken og send den. Alle med koden kan laste opp til dette målet, så del den bare med folk du stoler på.",
+  "uploadJoinQrCopy": "Kopier lenke",
+  "uploadJoinQrCopied": "Tilkoblingslenke kopiert"
 }

@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "上传",
   "shareOptionsShareAndUpload": "分享并上传",
   "uploadQueuedSnack": "{count, plural, =1{已将 1 个 Session 加入上传队列} other{已将 {count} 个 Sessions 加入上传队列}}",
-  "shareOptionsTabContent": "内容"
+  "shareOptionsTabContent": "内容",
+  "uploadDestinationShareQr": "显示加入码",
+  "uploadDestinationShareQrSubtitle": "让另一部手机加入此目标",
+  "uploadJoinQrTitle": "在其他设备上加入",
+  "uploadJoinQrBody": "用另一部手机的相机扫描此码，或复制链接后发送。任何拥有此码的人都可以上传到此目标，因此请只分享给您信任的人。",
+  "uploadJoinQrCopy": "复制链接",
+  "uploadJoinQrCopied": "已复制加入链接"
 }

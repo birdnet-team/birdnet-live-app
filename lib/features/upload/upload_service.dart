@@ -71,6 +71,14 @@ typedef DestinationUploaded = Future<void> Function(
   DateTime at,
 );
 
+/// Called after every run with the jobs still pending, so a platform
+/// scheduler can arrange a background run or cancel one. [wifiOnly] is true
+/// when every pending job waits for Wi-Fi.
+typedef PendingChanged = Future<void> Function({
+  required int pending,
+  required bool wifiOnly,
+});
+
 /// Machine codes stored in [UploadJob.lastError]; the UI maps them to text.
 abstract final class UploadErrorCode {
   static const String offline = 'offline';
@@ -99,6 +107,7 @@ class UploadService extends ChangeNotifier {
     required ExportBuilder buildExport,
     required JsonBuilder buildJson,
     DestinationUploaded? onDestinationUploaded,
+    PendingChanged? onPendingChanged,
     DateTime Function()? now,
   }) : _store = store,
        _client = client,
@@ -111,6 +120,7 @@ class UploadService extends ChangeNotifier {
        _buildExport = buildExport,
        _buildJson = buildJson,
        _onDestinationUploaded = onDestinationUploaded,
+       _onPendingChanged = onPendingChanged,
        _now = now ?? DateTime.now;
 
   final UploadQueueStore _store;
@@ -124,6 +134,7 @@ class UploadService extends ChangeNotifier {
   final ExportBuilder _buildExport;
   final JsonBuilder _buildJson;
   final DestinationUploaded? _onDestinationUploaded;
+  final PendingChanged? _onPendingChanged;
   final DateTime Function() _now;
 
   List<UploadJob> _jobs = const [];
@@ -195,8 +206,12 @@ class UploadService extends ChangeNotifier {
     required ShareExportConfig config,
   }) async {
     await _ensureLoaded();
+    // A session listed by the library may still carry an unsaved UUID (one
+    // saved before UUIDs existed gets its permanent one on the first full
+    // load), so the identity jobs are keyed on comes from the repository.
+    final uuid = (await _loadSession(session.id))?.uuid ?? session.uuid;
     final existing = _jobs.where(
-      (j) => j.sessionUuid == session.uuid && j.destinationId == destination.id,
+      (j) => j.sessionUuid == uuid && j.destinationId == destination.id,
     );
     for (final j in existing) {
       if (j.isPending) return j;
@@ -207,7 +222,7 @@ class UploadService extends ChangeNotifier {
     final job = UploadJob(
       id: generateUuidV4(),
       sessionId: session.id,
-      sessionUuid: session.uuid,
+      sessionUuid: uuid,
       destinationId: destination.id,
       version: version,
       config: config,
@@ -264,6 +279,38 @@ class UploadService extends ChangeNotifier {
 
   Future<void> _run() async {
     await _ensureLoaded();
+    if (!_jobs.any((j) => j.isPending)) return;
+    if (!await _store.tryLock()) return;
+    try {
+      await _runLocked();
+    } finally {
+      await _store.unlock();
+      await _reportPending();
+    }
+  }
+
+  /// Tells the scheduler what is left. A destination lookup failure counts
+  /// as "any network" so nothing waits forever.
+  Future<void> _reportPending() async {
+    final hook = _onPendingChanged;
+    if (hook == null) return;
+    final pending = _jobs.where((j) => j.isPending).toList();
+    var wifiOnly = pending.isNotEmpty;
+    for (final job in pending) {
+      final destination = await _findDestination(job.destinationId);
+      if (destination == null || !destination.wifiOnly) {
+        wifiOnly = false;
+        break;
+      }
+    }
+    try {
+      await hook(pending: pending.length, wifiOnly: wifiOnly);
+    } catch (error) {
+      debugPrint('Upload scheduler hook failed: $error');
+    }
+  }
+
+  Future<void> _runLocked() async {
     final skipped = <String>{};
     while (true) {
       final now = _now();

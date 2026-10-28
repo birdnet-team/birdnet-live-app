@@ -20,6 +20,7 @@ import '../live/live_session.dart';
 import 'connectivity.dart';
 import 'join_link.dart';
 import 'secret_store.dart';
+import 'upload_background.dart';
 import 'upload_destination.dart';
 import 'upload_destination_store.dart';
 import 'upload_queue_store.dart';
@@ -224,6 +225,7 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
       taxonomy: ref.read(taxonomyServiceProvider).value,
       speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
     ),
+    onPendingChanged: UploadWorkScheduler.onPendingChanged,
     onDestinationUploaded: (destination, at) async {
       final notifier = ref.read(uploadDestinationsProvider.notifier);
       final list = await ref.read(uploadDestinationsProvider.future);

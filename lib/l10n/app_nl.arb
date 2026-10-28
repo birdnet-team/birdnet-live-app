@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Uploaden",
   "shareOptionsShareAndUpload": "Delen en uploaden",
   "uploadQueuedSnack": "{count, plural, =1{1 Session in de wachtrij voor upload} other{{count} Sessions in de wachtrij voor upload}}",
-  "shareOptionsTabContent": "Inhoud"
+  "shareOptionsTabContent": "Inhoud",
+  "uploadDestinationShareQr": "Deelnamecode tonen",
+  "uploadDestinationShareQrSubtitle": "Laat een andere telefoon aan deze bestemming deelnemen",
+  "uploadJoinQrTitle": "Deelnemen op een ander apparaat",
+  "uploadJoinQrBody": "Scan deze code met de camera van de andere telefoon, of kopieer de link en stuur hem door. Iedereen met de code kan naar deze bestemming uploaden, deel hem dus alleen met mensen die je vertrouwt.",
+  "uploadJoinQrCopy": "Link kopiëren",
+  "uploadJoinQrCopied": "Deelnamelink gekopieerd"
 }

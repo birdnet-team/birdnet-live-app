@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Carica",
   "shareOptionsShareAndUpload": "Condividi e carica",
   "uploadQueuedSnack": "{count, plural, =1{1 Session in coda per il caricamento} other{{count} Sessions in coda per il caricamento}}",
-  "shareOptionsTabContent": "Contenuto"
+  "shareOptionsTabContent": "Contenuto",
+  "uploadDestinationShareQr": "Mostra codice di accesso",
+  "uploadDestinationShareQrSubtitle": "Consenti a un altro telefono di unirsi a questa destinazione",
+  "uploadJoinQrTitle": "Unisciti da un altro dispositivo",
+  "uploadJoinQrBody": "Scansiona questo codice con la fotocamera dell'altro telefono oppure copia il link e invialo. Chiunque abbia il codice può caricare su questa destinazione: condividilo solo con persone di cui ti fidi.",
+  "uploadJoinQrCopy": "Copia link",
+  "uploadJoinQrCopied": "Link di accesso copiato"
 }

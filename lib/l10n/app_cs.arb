@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Nahrát",
   "shareOptionsShareAndUpload": "Sdílet a nahrát",
   "uploadQueuedSnack": "{count, plural, =1{1 Session zařazena k nahrání} few{{count} Sessions zařazeny k nahrání} other{{count} Sessions zařazeno k nahrání}}",
-  "shareOptionsTabContent": "Obsah"
+  "shareOptionsTabContent": "Obsah",
+  "uploadDestinationShareQr": "Zobrazit kód pro připojení",
+  "uploadDestinationShareQrSubtitle": "Připojit k tomuto cíli další telefon",
+  "uploadJoinQrTitle": "Připojit na jiném zařízení",
+  "uploadJoinQrBody": "Naskenujte tento kód fotoaparátem druhého telefonu nebo zkopírujte a pošlete odkaz. Kdokoli s tímto kódem může do tohoto cíle nahrávat, sdílejte ho proto jen s lidmi, kterým důvěřujete.",
+  "uploadJoinQrCopy": "Kopírovat odkaz",
+  "uploadJoinQrCopied": "Odkaz pro připojení zkopírován"
 }

@@ -64,8 +64,18 @@ triggered by enqueueing, app start, and return to foreground
 (`_UploadQueueListener` in `app.dart`). Failed jobs back off 1, 2, 4 … minutes
 up to six hours and give up after 30 attempts. Destinations with
 "Upload on Wi-Fi only" wait while the device is on cellular; with no network
-the run stops early. True OS background transfer (URLSession background
-sessions, WorkManager) is a later stage.
+the run stops early.
+
+On Android the queue also runs with the app closed: after every run the
+service reports what is pending through `UploadWorkScheduler`
+(`com.birdnet/upload_work`), and `UploadWorker.kt` enqueues one unique
+WorkManager job with a `CONNECTED` or `UNMETERED` constraint. When it fires,
+the worker starts a headless Flutter engine on `uploadQueueBackgroundMain`
+(`upload_background.dart`), which builds the same providers as the app, runs
+the queue once, and reports the remaining count so the worker retries with
+backoff. `UploadQueueStore.tryLock` keeps the app and the worker from running
+the queue at the same time. iOS has no background transfer yet; the queue
+runs whenever the app is open or returns to the foreground.
 
 ## Reference server
 

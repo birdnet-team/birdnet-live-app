@@ -73,6 +73,25 @@ void main() {
       if (await tempDir.exists()) await tempDir.delete(recursive: true);
     });
 
+    test(
+      'the run lock is exclusive, released, and expires when stale',
+      () async {
+        final store = UploadQueueStore(documentsDirectory: () async => tempDir);
+        expect(await store.tryLock(), isTrue);
+        expect(await store.tryLock(), isFalse);
+        await store.unlock();
+        expect(await store.tryLock(), isTrue);
+
+        // A lock left behind by a killed process is taken over once stale.
+        final lock = File('${tempDir.path}/${UploadQueueStore.lockFileName}');
+        await lock.setLastModified(
+          DateTime.now().subtract(UploadQueueStore.staleLock * 2),
+        );
+        expect(await store.tryLock(), isTrue);
+        await store.unlock();
+      },
+    );
+
     test('saves and loads jobs, and tolerates a corrupt file', () async {
       final store = UploadQueueStore(documentsDirectory: () async => tempDir);
       expect(await store.load(), isEmpty);

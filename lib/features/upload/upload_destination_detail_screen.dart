@@ -3,9 +3,11 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
@@ -114,6 +116,75 @@ class _UploadDestinationDetailScreenState
       _testing = false;
       _lastTest = result;
     });
+  }
+
+  /// Shows the join link as a QR code so another phone can scan it with its
+  /// camera, plus a copy button. The code carries the secret by design; the
+  /// dialog says so.
+  Future<void> _showJoinCode(UploadDestination destination) async {
+    final l10n = AppLocalizations.of(context)!;
+    final secret = await ref
+        .read(uploadDestinationsProvider.notifier)
+        .secretFor(destination);
+    if (!mounted) return;
+    if (secret == null) {
+      setState(() => _secretMissing = true);
+      return;
+    }
+    final link = JoinLinkParser.build(
+      url: destination.url,
+      username: destination.username,
+      secret: secret,
+      name: destination.name,
+      wifiOnly: destination.wifiOnly,
+    );
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AlertDialog(
+          title: Text(l10n.uploadJoinQrTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(12),
+                  child: QrImageView(
+                    data: link,
+                    version: QrVersions.auto,
+                    size: 220,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(l10n.uploadJoinQrBody, style: theme.textTheme.bodyMedium),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.done),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(this.context);
+                final navigator = Navigator.of(context);
+                await Clipboard.setData(ClipboardData(text: link));
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.uploadJoinQrCopied)),
+                );
+                navigator.pop();
+              },
+              icon: const Icon(AppIcons.contentPaste, size: 18),
+              label: Text(l10n.uploadJoinQrCopy),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _remove(UploadDestination destination) async {
@@ -237,6 +308,12 @@ class _UploadDestinationDetailScreenState
                 text: l10n.uploadDestinationFlatLayout,
               ),
             const Divider(),
+            ListTile(
+              leading: const Icon(AppIcons.qrCode),
+              title: Text(l10n.uploadDestinationShareQr),
+              subtitle: Text(l10n.uploadDestinationShareQrSubtitle),
+              onTap: () => _showJoinCode(destination),
+            ),
             ListTile(
               leading: _testing
                   ? const SizedBox.square(

@@ -1270,5 +1270,11 @@
   "shareOptionsUpload": "Загрузить",
   "shareOptionsShareAndUpload": "Поделиться и загрузить",
   "uploadQueuedSnack": "{count, plural, =1{1 Session поставлена в очередь на загрузку} few{{count} Sessions поставлены в очередь на загрузку} other{{count} Sessions поставлено в очередь на загрузку}}",
-  "shareOptionsTabContent": "Содержимое"
+  "shareOptionsTabContent": "Содержимое",
+  "uploadDestinationShareQr": "Показать код подключения",
+  "uploadDestinationShareQrSubtitle": "Подключить к этому назначению другой телефон",
+  "uploadJoinQrTitle": "Подключение на другом устройстве",
+  "uploadJoinQrBody": "Отсканируйте этот код камерой другого телефона или скопируйте ссылку и отправьте её. Любой, у кого есть код, сможет загружать в это назначение, поэтому делитесь им только с теми, кому доверяете.",
+  "uploadJoinQrCopy": "Копировать ссылку",
+  "uploadJoinQrCopied": "Ссылка для подключения скопирована"
 }

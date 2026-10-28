@@ -25,6 +25,7 @@ import 'shared/services/quick_action_service.dart';
 import 'shared/services/shared_media_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/upload/join_destination_screen.dart';
 import 'features/upload/upload_providers.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -298,6 +299,26 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     }
   }
 
+  /// Opens the join sheet for an upload-destination link (#284). The same
+  /// gates as Quick Listen apply: onboarding and the terms come first.
+  Future<void> _openJoinLink(String link) async {
+    if (!ref.read(onboardingCompleteProvider) ||
+        !ref.read(termsAcceptedProvider)) {
+      return;
+    }
+    // On a cold start the link arrives while the first frame is being
+    // built and the navigator is locked; wait for the frame to end first.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+    await navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => JoinDestinationScreen(initialInput: link),
+      ),
+    );
+  }
+
   void _onNativeAction(String action) {
     if (!mounted) return;
     unawaited(_handleQuickAction(action));
@@ -307,6 +328,13 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     String action, {
     bool fromLaunch = false,
   }) async {
+    if (action.startsWith(QuickActionService.joinActionPrefix)) {
+      if (fromLaunch) _launchFrame.release();
+      await _openJoinLink(
+        action.substring(QuickActionService.joinActionPrefix.length),
+      );
+      return;
+    }
     if (action != QuickActionService.startListeningAction ||
         _handlingQuickAction) {
       // Only the launch delivery owns the hold. A cold start also replays the

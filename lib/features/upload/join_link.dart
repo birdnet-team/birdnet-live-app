@@ -67,6 +67,43 @@ abstract final class JoinLinkParser {
   static const String customScheme = 'birdnetlive';
   static const String customHost = 'join';
 
+  /// Landing page that carries join links on the docs site. The app link
+  /// filters on Android and iOS claim this path; a browser that opens it
+  /// instead offers the custom-scheme form.
+  static const String landingPage =
+      'https://birdnet-team.github.io/birdnet-live-app/join';
+
+  /// Builds the link another device scans or pastes to join [url] with the
+  /// same credential. The secret travels in the fragment, which browsers
+  /// never send to the landing page's host.
+  static String build({
+    required String url,
+    required String username,
+    required String secret,
+    String? name,
+    bool? includeAudio,
+    bool? wifiOnly,
+  }) {
+    final params = <String, String>{
+      'v': '1',
+      'kind': 'webdav',
+      if (name != null && name.isNotEmpty) 'name': name,
+      'url': url,
+      if (username.isNotEmpty) 'user': username,
+      if (secret.isNotEmpty) 'secret': secret,
+      if (includeAudio != null) 'audio': includeAudio ? '1' : '0',
+      if (wifiOnly != null) 'wifi': wifiOnly ? '1' : '0',
+    };
+    final query = params.entries
+        .map(
+          (e) =>
+              '${Uri.encodeQueryComponent(e.key)}='
+              '${Uri.encodeQueryComponent(e.value)}',
+        )
+        .join('&');
+    return '$landingPage#$query';
+  }
+
   /// Returns null when [input] is not a usable URL. [username] and [secret]
   /// come from the advanced fields and only apply to inputs that carry no
   /// credential of their own.
