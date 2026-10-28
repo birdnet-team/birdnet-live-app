@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Denne påloggingsinformasjonen kan liste innholdet i målet og dermed kanskje lese andre bidragsyteres data. Bruk heller en File Drop-deling eller et token med bare skrivetilgang.",
   "uploadWarnShareWithoutPassword": "Denne delingen har ikke passord. Alle med lenken kan laste opp. Be prosjektlederen om å sette et.",
   "uploadWarnInsecureLan": "Ukryptert HTTP til en lokal adresse. Dataene er ikke kryptert underveis.",
-  "save": "Lagre"
+  "save": "Lagre",
+  "uploadChipLabel": "{count, plural, =1{1 opplasting} other{{count} opplastinger}}",
+  "uploadStatusTitle": "Opplastinger",
+  "uploadStatusQueued": "I køen",
+  "uploadStatusUploading": "Laster opp…",
+  "uploadStatusUploaded": "Lastet opp {date}",
+  "uploadStatusFailed": "Mislyktes, prøver igjen",
+  "uploadStatusGaveUp": "Mislyktes",
+  "uploadStatusWaitingForWifi": "Venter på Wi-Fi",
+  "uploadStatusOffline": "Venter på nettverk",
+  "uploadRetryNow": "Prøv igjen nå",
+  "uploadCancel": "Fjern fra køen",
+  "uploadDestinationUnknown": "Fjernet mål",
+  "uploadErrorServer": "Serveren meldte om en feil.",
+  "uploadErrorNetwork": "Tilkoblingen ble brutt under opplastingen.",
+  "uploadErrorExport": "Eksporten av Session kunne ikke lages.",
+  "uploadErrorDestinationMissing": "Målet er fjernet.",
+  "uploadErrorSessionMissing": "Session finnes ikke lenger på denne enheten."
 }

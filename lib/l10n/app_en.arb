@@ -5429,5 +5429,83 @@
   "save": "Save",
   "@save": {
     "description": "Generic Save button label"
+  },
+  "uploadChipLabel": "{count, plural, =1{1 upload} other{{count} uploads}}",
+  "@uploadChipLabel": {
+    "description": "Label of the upload chip on a session tile; count = number of destinations the session was queued for",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadStatusTitle": "Uploads",
+  "@uploadStatusTitle": {
+    "description": "Title of the per-session upload status sheet"
+  },
+  "uploadStatusQueued": "Queued",
+  "@uploadStatusQueued": {
+    "description": "Job state: waiting in the queue"
+  },
+  "uploadStatusUploading": "Uploading…",
+  "@uploadStatusUploading": {
+    "description": "Job state: upload in progress"
+  },
+  "uploadStatusUploaded": "Uploaded {date}",
+  "@uploadStatusUploaded": {
+    "description": "Job state: finished, with the date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusFailed": "Failed, will retry",
+  "@uploadStatusFailed": {
+    "description": "Job state: failed, will retry automatically"
+  },
+  "uploadStatusGaveUp": "Failed",
+  "@uploadStatusGaveUp": {
+    "description": "Job state: failed and no longer retried"
+  },
+  "uploadStatusWaitingForWifi": "Waiting for Wi-Fi",
+  "@uploadStatusWaitingForWifi": {
+    "description": "Job state: destination is Wi-Fi only and the device is on cellular"
+  },
+  "uploadStatusOffline": "Waiting for a network",
+  "@uploadStatusOffline": {
+    "description": "Job state: no network at the moment"
+  },
+  "uploadRetryNow": "Retry now",
+  "@uploadRetryNow": {
+    "description": "Menu action: retry a failed upload immediately"
+  },
+  "uploadCancel": "Remove from queue",
+  "@uploadCancel": {
+    "description": "Menu action: remove a pending upload from the queue"
+  },
+  "uploadDestinationUnknown": "Removed destination",
+  "@uploadDestinationUnknown": {
+    "description": "Shown in place of a destination name when it was removed"
+  },
+  "uploadErrorServer": "The server reported an error.",
+  "@uploadErrorServer": {
+    "description": "Upload error: the server answered with a 5xx status"
+  },
+  "uploadErrorNetwork": "The connection was lost during the upload.",
+  "@uploadErrorNetwork": {
+    "description": "Upload error: connection or transfer failed"
+  },
+  "uploadErrorExport": "The session export could not be built.",
+  "@uploadErrorExport": {
+    "description": "Upload error: the session export could not be built"
+  },
+  "uploadErrorDestinationMissing": "The destination was removed.",
+  "@uploadErrorDestinationMissing": {
+    "description": "Upload error: the destination was removed before the upload ran"
+  },
+  "uploadErrorSessionMissing": "The session no longer exists on this device.",
+  "@uploadErrorSessionMissing": {
+    "description": "Upload error: the session was deleted before the upload ran"
   }
 }

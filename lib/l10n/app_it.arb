@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Questa credenziale può elencare la destinazione e quindi forse leggere i dati di altri partecipanti. Preferisci una condivisione File Drop o un token di sola scrittura.",
   "uploadWarnShareWithoutPassword": "Questa condivisione non ha una password. Chiunque abbia il link può caricare file. Chiedi a chi guida il progetto di impostarne una.",
   "uploadWarnInsecureLan": "HTTP non cifrato verso un indirizzo locale. I dati non sono cifrati durante il trasferimento.",
-  "save": "Salva"
+  "save": "Salva",
+  "uploadChipLabel": "{count, plural, =1{1 caricamento} other{{count} caricamenti}}",
+  "uploadStatusTitle": "Caricamenti",
+  "uploadStatusQueued": "In coda",
+  "uploadStatusUploading": "Caricamento in corso…",
+  "uploadStatusUploaded": "Caricato il {date}",
+  "uploadStatusFailed": "Non riuscito, verrà ritentato",
+  "uploadStatusGaveUp": "Non riuscito",
+  "uploadStatusWaitingForWifi": "In attesa del Wi-Fi",
+  "uploadStatusOffline": "In attesa di una rete",
+  "uploadRetryNow": "Riprova ora",
+  "uploadCancel": "Rimuovi dalla coda",
+  "uploadDestinationUnknown": "Destinazione rimossa",
+  "uploadErrorServer": "Il server ha segnalato un errore.",
+  "uploadErrorNetwork": "La connessione si è interrotta durante il caricamento.",
+  "uploadErrorExport": "Impossibile generare l'esportazione della Session.",
+  "uploadErrorDestinationMissing": "La destinazione è stata rimossa.",
+  "uploadErrorSessionMissing": "La Session non esiste più su questo dispositivo."
 }

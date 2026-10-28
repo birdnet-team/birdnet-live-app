@@ -63,6 +63,7 @@ class MainActivity: FlutterActivity() {
     private var sharedMediaChannel: MethodChannel? = null
     private var ttsChannel: TtsChannel? = null
     private var secureStoreChannel: SecureStoreChannel? = null
+    private var connectivityChannel: ConnectivityChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -98,6 +99,10 @@ class MainActivity: FlutterActivity() {
         // SecureStoreChannel.kt.
         secureStoreChannel?.dispose()
         secureStoreChannel = SecureStoreChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.kt.
+        connectivityChannel?.dispose()
+        connectivityChannel = ConnectivityChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {

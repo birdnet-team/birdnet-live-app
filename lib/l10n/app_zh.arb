@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "此凭据可以列出目标内容，因此可能读取其他贡献者的数据。建议改用 File Drop 分享或只写令牌。",
   "uploadWarnShareWithoutPassword": "该分享没有密码。任何拥有链接的人都可以上传。请让项目负责人设置密码。",
   "uploadWarnInsecureLan": "到本地地址的未加密 HTTP。数据在传输过程中未加密。",
-  "save": "保存"
+  "save": "保存",
+  "uploadChipLabel": "{count, plural, =1{1 项上传} other{{count} 项上传}}",
+  "uploadStatusTitle": "上传",
+  "uploadStatusQueued": "排队中",
+  "uploadStatusUploading": "正在上传…",
+  "uploadStatusUploaded": "已于 {date} 上传",
+  "uploadStatusFailed": "失败，将自动重试",
+  "uploadStatusGaveUp": "失败",
+  "uploadStatusWaitingForWifi": "等待 Wi-Fi",
+  "uploadStatusOffline": "等待网络连接",
+  "uploadRetryNow": "立即重试",
+  "uploadCancel": "从队列中移除",
+  "uploadDestinationUnknown": "已移除的目标",
+  "uploadErrorServer": "服务器报告了错误。",
+  "uploadErrorNetwork": "上传过程中连接中断。",
+  "uploadErrorExport": "无法生成 Session 导出。",
+  "uploadErrorDestinationMissing": "该目标已被移除。",
+  "uploadErrorSessionMissing": "该 Session 在本设备上已不存在。"
 }

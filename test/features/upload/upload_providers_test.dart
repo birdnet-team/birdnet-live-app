@@ -5,10 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:birdnet_live/core/constants/app_constants.dart';
+import 'package:birdnet_live/features/upload/connectivity.dart';
 import 'package:birdnet_live/features/upload/join_link.dart';
 import 'package:birdnet_live/features/upload/secret_store.dart';
 import 'package:birdnet_live/features/upload/upload_destination_store.dart';
 import 'package:birdnet_live/features/upload/upload_providers.dart';
+import 'package:birdnet_live/features/upload/upload_queue_store.dart';
 import 'package:birdnet_live/features/upload/webdav_probe.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 
@@ -29,6 +31,12 @@ void main() {
         secretStoreProvider.overrideWithValue(secrets),
         uploadDestinationStoreProvider.overrideWithValue(
           UploadDestinationStore(documentsDirectory: () async => tempDir),
+        ),
+        uploadQueueStoreProvider.overrideWithValue(
+          UploadQueueStore(documentsDirectory: () async => tempDir),
+        ),
+        connectivityProvider.overrideWithValue(
+          FixedConnectivity(NetworkType.none),
         ),
       ],
     );

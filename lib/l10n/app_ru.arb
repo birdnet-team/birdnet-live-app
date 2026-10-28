@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Эти учётные данные позволяют просматривать содержимое назначения, а значит, возможно, читать данные других участников. Предпочтительнее общий ресурс File Drop или токен только для записи.",
   "uploadWarnShareWithoutPassword": "У этого общего ресурса нет пароля. Загружать может любой, у кого есть ссылка. Попросите руководителя проекта установить пароль.",
   "uploadWarnInsecureLan": "Незашифрованный HTTP к локальному адресу. Данные при передаче не шифруются.",
-  "save": "Сохранить"
+  "save": "Сохранить",
+  "uploadChipLabel": "{count, plural, =1{1 загрузка} few{{count} загрузки} other{{count} загрузок}}",
+  "uploadStatusTitle": "Загрузки",
+  "uploadStatusQueued": "В очереди",
+  "uploadStatusUploading": "Загружается…",
+  "uploadStatusUploaded": "Загружено {date}",
+  "uploadStatusFailed": "Ошибка, будет повторено",
+  "uploadStatusGaveUp": "Ошибка",
+  "uploadStatusWaitingForWifi": "Ожидание Wi-Fi",
+  "uploadStatusOffline": "Ожидание сети",
+  "uploadRetryNow": "Повторить сейчас",
+  "uploadCancel": "Убрать из очереди",
+  "uploadDestinationUnknown": "Удалённое назначение",
+  "uploadErrorServer": "Сервер сообщил об ошибке.",
+  "uploadErrorNetwork": "Соединение прервалось во время загрузки.",
+  "uploadErrorExport": "Не удалось создать экспорт Session.",
+  "uploadErrorDestinationMissing": "Назначение было удалено.",
+  "uploadErrorSessionMissing": "Session больше не существует на этом устройстве."
 }

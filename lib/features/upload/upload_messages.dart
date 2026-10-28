@@ -4,6 +4,7 @@
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
+import 'upload_service.dart';
 import 'webdav_probe.dart';
 
 /// The sentence shown for a failed [ProbeResult].
@@ -35,6 +36,36 @@ String probeFailureMessage(AppLocalizations l10n, ProbeResult result) {
       return l10n.uploadProbeServerError(result.statusCode ?? 0);
     case null:
       return l10n.uploadJoinSuccess;
+  }
+}
+
+/// The sentence shown for an [UploadJob.lastError] code.
+String uploadErrorMessage(AppLocalizations l10n, String code) {
+  switch (code) {
+    case UploadErrorCode.offline:
+      return l10n.uploadStatusOffline;
+    case UploadErrorCode.waitingForWifi:
+      return l10n.uploadStatusWaitingForWifi;
+    case UploadErrorCode.unauthorized:
+      return l10n.uploadProbeUnauthorized;
+    case UploadErrorCode.forbidden:
+      return l10n.uploadProbeUploadForbidden;
+    case UploadErrorCode.quota:
+      return l10n.uploadProbeQuotaExceeded;
+    case UploadErrorCode.server:
+      return l10n.uploadErrorServer;
+    case UploadErrorCode.network:
+      return l10n.uploadErrorNetwork;
+    case UploadErrorCode.exportFailed:
+      return l10n.uploadErrorExport;
+    case UploadErrorCode.destinationMissing:
+      return l10n.uploadErrorDestinationMissing;
+    case UploadErrorCode.secretMissing:
+      return l10n.uploadDestinationSecretMissing;
+    case UploadErrorCode.sessionMissing:
+      return l10n.uploadErrorSessionMissing;
+    default:
+      return l10n.uploadErrorNetwork;
   }
 }
 

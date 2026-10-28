@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Te dane logowania pozwalają wyświetlić zawartość miejsca docelowego, a więc być może odczytać dane innych uczestników. Lepiej użyj udostępnienia File Drop lub tokenu tylko do zapisu.",
   "uploadWarnShareWithoutPassword": "To udostępnienie nie ma hasła. Każdy, kto ma link, może przesyłać pliki. Poproś osobę prowadzącą projekt o ustawienie hasła.",
   "uploadWarnInsecureLan": "Nieszyfrowane HTTP do adresu lokalnego. Dane nie są szyfrowane w drodze.",
-  "save": "Zapisz"
+  "save": "Zapisz",
+  "uploadChipLabel": "{count, plural, =1{1 przesyłanie} few{{count} przesyłania} other{{count} przesyłań}}",
+  "uploadStatusTitle": "Przesyłania",
+  "uploadStatusQueued": "W kolejce",
+  "uploadStatusUploading": "Przesyłanie…",
+  "uploadStatusUploaded": "Przesłano {date}",
+  "uploadStatusFailed": "Nie powiodło się, ponowna próba później",
+  "uploadStatusGaveUp": "Nie powiodło się",
+  "uploadStatusWaitingForWifi": "Oczekiwanie na Wi-Fi",
+  "uploadStatusOffline": "Oczekiwanie na sieć",
+  "uploadRetryNow": "Ponów teraz",
+  "uploadCancel": "Usuń z kolejki",
+  "uploadDestinationUnknown": "Usunięte miejsce docelowe",
+  "uploadErrorServer": "Serwer zgłosił błąd.",
+  "uploadErrorNetwork": "Połączenie zostało przerwane podczas przesyłania.",
+  "uploadErrorExport": "Nie udało się utworzyć eksportu Session.",
+  "uploadErrorDestinationMissing": "Miejsce docelowe zostało usunięte.",
+  "uploadErrorSessionMissing": "Ta Session nie istnieje już na tym urządzeniu."
 }

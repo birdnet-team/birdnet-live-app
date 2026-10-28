@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Tyto přihlašovací údaje mohou vypsat obsah cíle, a tedy možná číst data ostatních přispěvatelů. Upřednostněte sdílení File Drop nebo token jen pro zápis.",
   "uploadWarnShareWithoutPassword": "Toto sdílení nemá heslo. Nahrávat může každý, kdo má odkaz. Požádejte vedoucího projektu, aby heslo nastavil.",
   "uploadWarnInsecureLan": "Nešifrované HTTP na místní adresu. Data nejsou při přenosu šifrována.",
-  "save": "Uložit"
+  "save": "Uložit",
+  "uploadChipLabel": "{count, plural, =1{1 nahrání} few{{count} nahrání} other{{count} nahrání}}",
+  "uploadStatusTitle": "Nahrávání",
+  "uploadStatusQueued": "Ve frontě",
+  "uploadStatusUploading": "Nahrává se…",
+  "uploadStatusUploaded": "Nahráno {date}",
+  "uploadStatusFailed": "Selhalo, zkusí se znovu",
+  "uploadStatusGaveUp": "Selhalo",
+  "uploadStatusWaitingForWifi": "Čeká na Wi-Fi",
+  "uploadStatusOffline": "Čeká na připojení k síti",
+  "uploadRetryNow": "Zkusit znovu nyní",
+  "uploadCancel": "Odebrat z fronty",
+  "uploadDestinationUnknown": "Odebraný cíl",
+  "uploadErrorServer": "Server ohlásil chybu.",
+  "uploadErrorNetwork": "Během nahrávání se přerušilo připojení.",
+  "uploadErrorExport": "Export Session se nepodařilo vytvořit.",
+  "uploadErrorDestinationMissing": "Cíl byl odebrán.",
+  "uploadErrorSessionMissing": "Session už v tomto zařízení neexistuje."
 }

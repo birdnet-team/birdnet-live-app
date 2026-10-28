@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/upload/secret_store.dart';
 import '../../features/upload/upload_destination_store.dart';
+import '../../features/upload/upload_queue_store.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
 
 typedef DirectoryProvider = Future<Directory> Function();
@@ -66,6 +67,8 @@ class AppDataClearService {
       }
     }
     await store.deleteAll();
+    await UploadQueueStore(documentsDirectory: () async => documentsDir)
+        .deleteAll();
   }
 
   /// Deletes local user data and cached third-party service results.

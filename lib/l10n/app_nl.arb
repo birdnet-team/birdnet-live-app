@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Met deze inloggegevens kan de bestemming worden opgesomd, dus mogelijk ook de gegevens van andere deelnemers worden gelezen. Gebruik liever een File Drop-deellink of een token met alleen schrijfrechten.",
   "uploadWarnShareWithoutPassword": "Deze deellink heeft geen wachtwoord. Iedereen met de link kan uploaden. Vraag de projectleider om er een in te stellen.",
   "uploadWarnInsecureLan": "Onversleuteld HTTP naar een lokaal adres. De gegevens zijn onderweg niet versleuteld.",
-  "save": "Opslaan"
+  "save": "Opslaan",
+  "uploadChipLabel": "{count, plural, =1{1 upload} other{{count} uploads}}",
+  "uploadStatusTitle": "Uploads",
+  "uploadStatusQueued": "In de wachtrij",
+  "uploadStatusUploading": "Bezig met uploaden…",
+  "uploadStatusUploaded": "Geüpload op {date}",
+  "uploadStatusFailed": "Mislukt, wordt opnieuw geprobeerd",
+  "uploadStatusGaveUp": "Mislukt",
+  "uploadStatusWaitingForWifi": "Wacht op wifi",
+  "uploadStatusOffline": "Wacht op een netwerk",
+  "uploadRetryNow": "Nu opnieuw proberen",
+  "uploadCancel": "Uit de wachtrij halen",
+  "uploadDestinationUnknown": "Verwijderde bestemming",
+  "uploadErrorServer": "De server meldde een fout.",
+  "uploadErrorNetwork": "De verbinding viel weg tijdens het uploaden.",
+  "uploadErrorExport": "De Session-export kon niet worden gemaakt.",
+  "uploadErrorDestinationMissing": "De bestemming is verwijderd.",
+  "uploadErrorSessionMissing": "De Session bestaat niet meer op dit apparaat."
 }

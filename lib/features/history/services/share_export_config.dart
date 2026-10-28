@@ -61,6 +61,28 @@ class ShareExportConfig {
 
   /// True when at least one metadata artifact (table, report, side-file)
   /// would be written. This is what the dialog's Metadata box reflects.
+  /// Persisted with queued uploads so a job survives a restart unchanged.
+  Map<String, dynamic> toJson() => {
+    'formats': formats.toList()..sort(),
+    'includeAudio': includeAudio,
+    'shareAudioAsWav': shareAudioAsWav,
+    'includeHtmlReport': includeHtmlReport,
+    'includeAppMetadata': includeAppMetadata,
+  };
+
+  factory ShareExportConfig.fromJson(Map<String, dynamic> json) {
+    return ShareExportConfig(
+      formats: {
+        for (final f in (json['formats'] as List<dynamic>? ?? const []))
+          f as String,
+      },
+      includeAudio: json['includeAudio'] as bool? ?? false,
+      shareAudioAsWav: json['shareAudioAsWav'] as bool? ?? false,
+      includeHtmlReport: json['includeHtmlReport'] as bool? ?? false,
+      includeAppMetadata: json['includeAppMetadata'] as bool? ?? false,
+    );
+  }
+
   bool get includesMetadata =>
       formats.isNotEmpty || includeHtmlReport || includeAppMetadata;
 

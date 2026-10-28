@@ -44,6 +44,7 @@ import '../point_count/point_count_setup_screen.dart';
 import '../survey/survey_setup_screen.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
+import '../upload/upload_status_widgets.dart';
 import 'session_review_screen.dart';
 import 'services/session_audio_trim.dart';
 import 'services/share_export_config.dart';
@@ -1292,6 +1293,7 @@ class _SessionTile extends ConsumerWidget {
                     variant: StatChipVariant.badge,
                   ),
                   _SessionSizeChip(session: session),
+                  UploadStatusChip(sessionId: session.id),
                 ],
               ),
             ],

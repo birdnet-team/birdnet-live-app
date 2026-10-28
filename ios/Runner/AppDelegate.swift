@@ -26,6 +26,9 @@ import UserNotifications
   /// SecureStoreChannel.swift.
   private var secureStoreChannel: SecureStoreChannel?
 
+  /// Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.swift.
+  private var connectivityChannel: ConnectivityChannel?
+
   /// A Quick Listen action (App Intent, `birdnetlive://` URL, or home-screen
   /// quick action; see QuickAction.swift) waiting for Dart. Same contract as
   /// Android's `pendingQuickAction` in MainActivity.kt: set on cold and warm
@@ -53,6 +56,7 @@ import UserNotifications
 
     ttsChannel = TtsChannel(messenger: messenger)
     secureStoreChannel = SecureStoreChannel(messenger: messenger)
+    connectivityChannel = ConnectivityChannel(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",

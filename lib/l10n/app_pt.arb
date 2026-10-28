@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "Esta credencial consegue listar o destino e, portanto, talvez ler os dados de outros participantes. Prefira um compartilhamento File Drop ou um token somente de escrita.",
   "uploadWarnShareWithoutPassword": "Este compartilhamento não tem senha. Qualquer pessoa com o link pode enviar arquivos. Peça a quem coordena o projeto para definir uma.",
   "uploadWarnInsecureLan": "HTTP sem criptografia para um endereço local. Os dados não são criptografados no caminho.",
-  "save": "Salvar"
+  "save": "Salvar",
+  "uploadChipLabel": "{count, plural, =1{1 envio} other{{count} envios}}",
+  "uploadStatusTitle": "Envios",
+  "uploadStatusQueued": "Na fila",
+  "uploadStatusUploading": "Enviando…",
+  "uploadStatusUploaded": "Enviado em {date}",
+  "uploadStatusFailed": "Falhou, será tentado de novo",
+  "uploadStatusGaveUp": "Falhou",
+  "uploadStatusWaitingForWifi": "Aguardando Wi-Fi",
+  "uploadStatusOffline": "Aguardando uma rede",
+  "uploadRetryNow": "Tentar agora",
+  "uploadCancel": "Remover da fila",
+  "uploadDestinationUnknown": "Destino removido",
+  "uploadErrorServer": "O servidor informou um erro.",
+  "uploadErrorNetwork": "A conexão caiu durante o envio.",
+  "uploadErrorExport": "Não foi possível gerar a exportação da Session.",
+  "uploadErrorDestinationMissing": "O destino foi removido.",
+  "uploadErrorSessionMissing": "A Session não existe mais neste dispositivo."
 }

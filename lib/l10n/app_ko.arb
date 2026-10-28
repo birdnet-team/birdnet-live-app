@@ -1245,5 +1245,22 @@
   "uploadWarnCanReadRemote": "이 자격 증명으로 대상의 목록을 볼 수 있어 다른 참여자의 데이터를 읽을 수도 있습니다. File Drop 공유나 쓰기 전용 토큰을 사용하는 것이 좋습니다.",
   "uploadWarnShareWithoutPassword": "이 공유에는 비밀번호가 없습니다. 링크가 있는 누구나 업로드할 수 있습니다. 프로젝트 책임자에게 비밀번호 설정을 요청하세요.",
   "uploadWarnInsecureLan": "로컬 주소로의 암호화되지 않은 HTTP입니다. 전송 중 데이터가 암호화되지 않습니다.",
-  "save": "저장"
+  "save": "저장",
+  "uploadChipLabel": "{count, plural, =1{업로드 1건} other{업로드 {count}건}}",
+  "uploadStatusTitle": "업로드",
+  "uploadStatusQueued": "대기 중",
+  "uploadStatusUploading": "업로드 중…",
+  "uploadStatusUploaded": "{date}에 업로드됨",
+  "uploadStatusFailed": "실패, 다시 시도합니다",
+  "uploadStatusGaveUp": "실패",
+  "uploadStatusWaitingForWifi": "Wi-Fi 대기 중",
+  "uploadStatusOffline": "네트워크 대기 중",
+  "uploadRetryNow": "지금 다시 시도",
+  "uploadCancel": "대기열에서 제거",
+  "uploadDestinationUnknown": "제거된 대상",
+  "uploadErrorServer": "서버가 오류를 보고했습니다.",
+  "uploadErrorNetwork": "업로드 중 연결이 끊어졌습니다.",
+  "uploadErrorExport": "Session 내보내기를 만들 수 없습니다.",
+  "uploadErrorDestinationMissing": "대상이 제거되었습니다.",
+  "uploadErrorSessionMissing": "이 Session은 더 이상 이 기기에 없습니다."
 }
