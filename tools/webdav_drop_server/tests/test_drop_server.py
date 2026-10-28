@@ -93,7 +93,7 @@ class DropServerTest(unittest.TestCase):
         self.assertEqual(self.call("OPTIONS", "/spring/", user="", secret="")[0], 401)
         rc = drop_server.main(["--config", str(self.config_path), "revoke", "spring", self.token_id])
         self.assertEqual(rc, 0)
-        self.server.config = drop_server.load_config(self.config_path)
+        # The running server notices the edited config by itself.
         self.assertEqual(self.call("OPTIONS", "/spring/")[0], 401)
 
     def test_admin_can_list_and_read(self):
@@ -108,6 +108,43 @@ class DropServerTest(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body, b"{}")
         self.assertEqual(self.call("PUT", "/spring/x.json", b"x", user="admin", secret="nope")[0], 401)
+
+    def test_put_needs_a_content_length(self):
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        auth = "Basic " + base64.b64encode(f"{self.token_id}:{self.secret}".encode()).decode()
+        conn.putrequest("PUT", "/spring/chunked.bin")
+        conn.putheader("Authorization", auth)
+        conn.putheader("Transfer-Encoding", "chunked")
+        conn.endheaders()
+        conn.send(b"3\r\nabc\r\n0\r\n\r\n")
+        self.assertEqual(conn.getresponse().status, 411)
+        conn.close()
+
+    def test_concurrent_puts_publish_exactly_one(self):
+        body_a, body_b = b"a" * 200000, b"b" * 200000
+        results = []
+
+        def put(body):
+            results.append(self.call("PUT", "/spring/race.bin", body)[0])
+
+        threads = [threading.Thread(target=put, args=(b,)) for b in (body_a, body_b)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        self.assertEqual(sorted(results), [201, 412])
+        stored = (Path(self.config["root"]) / "spring" / self.token_id / "race.bin").read_bytes()
+        self.assertIn(stored, (body_a, body_b))
+        leftovers = list((Path(self.config["root"]) / "spring" / self.token_id).glob(".race.bin.*"))
+        self.assertEqual(leftovers, [])
+
+    def test_propfind_escapes_hrefs(self):
+        self.call("MKCOL", "/spring/a&b/")
+        status, body = self.call("PROPFIND", f"/spring/{self.token_id}/", user="admin", secret=self.admin_secret,
+                                 headers={"Depth": "1"})
+        self.assertEqual(status, 207)
+        self.assertIn(b"a%26b/", body)
+        self.assertNotIn(b"a&b", body)
 
     def test_size_limit(self):
         self.server.max_bytes = 10

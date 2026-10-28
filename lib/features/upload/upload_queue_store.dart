@@ -89,6 +89,22 @@ class UploadQueueStore {
     }
   }
 
+  /// Keeps a held lock from looking stale during a long upload.
+  Future<void> touchLock() async {
+    final dir = await _documentsDirectory();
+    try {
+      await File('${dir.path}/$lockFileName').setLastModified(DateTime.now());
+    } on FileSystemException {
+      // Lost the lock file; the next tryLock sorts it out.
+    }
+  }
+
+  /// Private folder exports are moved into before they are uploaded.
+  Future<Directory> stagingDir() async {
+    final dir = await _documentsDirectory();
+    return Directory('${dir.path}/upload_staging');
+  }
+
   Future<void> unlock() async {
     final dir = await _documentsDirectory();
     try {

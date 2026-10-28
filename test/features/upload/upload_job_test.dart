@@ -88,6 +88,13 @@ void main() {
           DateTime.now().subtract(UploadQueueStore.staleLock * 2),
         );
         expect(await store.tryLock(), isTrue);
+
+        // A keep-alive touch makes a held lock young again.
+        await lock.setLastModified(
+          DateTime.now().subtract(UploadQueueStore.staleLock * 2),
+        );
+        await store.touchLock();
+        expect(await store.tryLock(), isFalse);
         await store.unlock();
       },
     );

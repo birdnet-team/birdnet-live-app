@@ -46,6 +46,7 @@ import '../../shared/utils/uuid.dart';
 import '../history/services/share_export_config.dart';
 import '../live/live_session.dart';
 import 'connectivity.dart';
+import 'secret_store.dart';
 import 'upload_destination.dart';
 import 'upload_job.dart';
 import 'upload_queue_store.dart';
@@ -141,6 +142,13 @@ class UploadService extends ChangeNotifier {
   Future<void>? _loaded;
   Future<void>? _running;
 
+  /// Jobs this isolate changed since the last write, and jobs it removed.
+  /// The foreground app and the background worker share one file; on every
+  /// write the file is re-read and merged so neither side overwrites what
+  /// the other did while it held the lock (see [_mergeAndSave]).
+  final Set<String> _dirty = {};
+  final Set<String> _removed = {};
+
   /// Every job, pending and finished, newest first.
   List<UploadJob> get jobs => List.unmodifiable(_jobs);
 
@@ -187,14 +195,52 @@ class UploadService extends ChangeNotifier {
   /// Writes go out one at a time; overlapping renames of the same file
   /// fail on Windows.
   Future<void> _persist() async {
-    _sort();
-    final snapshot = _jobs;
     final write = _persistChain
         .catchError((Object _) {})
-        .then((_) => _store.save(snapshot));
+        .then((_) => _mergeAndSave());
     _persistChain = write;
     await write;
     notifyListeners();
+  }
+
+  /// Re-reads the file, lets this isolate's changes win only for the jobs
+  /// it touched, keeps everything the other isolate wrote, and saves.
+  Future<void> _mergeAndSave() async {
+    _mergeFromDisk(await _loadDisk());
+    _dirty.clear();
+    _removed.clear();
+    await _store.save(_jobs);
+  }
+
+  Future<List<UploadJob>> _loadDisk() async {
+    try {
+      return await _store.load();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  void _mergeFromDisk(List<UploadJob> disk) {
+    final merged = <String, UploadJob>{for (final d in disk) d.id: d};
+    for (final mine in _jobs) {
+      if (_dirty.contains(mine.id) || !merged.containsKey(mine.id)) {
+        merged[mine.id] = mine;
+      }
+    }
+    for (final id in _removed) {
+      merged.remove(id);
+    }
+    _jobs = merged.values.toList();
+    _sort();
+  }
+
+  /// Runs the queue without letting an error escape an unawaited call.
+  void _kick() {
+    unawaited(
+      processQueue().catchError((Object error, StackTrace stackTrace) {
+        debugPrint('Upload queue run failed: $error\n$stackTrace');
+      }),
+    );
   }
 
   /// Queues [session] for [destination]. An already pending job for the pair
@@ -229,8 +275,9 @@ class UploadService extends ChangeNotifier {
       createdAt: _now(),
     );
     _jobs = [job, ..._jobs];
+    _dirty.add(job.id);
     await _persist();
-    unawaited(processQueue());
+    _kick();
     return job;
   }
 
@@ -246,15 +293,20 @@ class UploadService extends ChangeNotifier {
       ),
     );
     await _persist();
-    unawaited(processQueue());
+    _kick();
   }
 
   /// Drops a pending job. Finished jobs stay as the log.
   Future<void> cancel(String jobId) async {
     await _ensureLoaded();
+    for (final j in _jobs) {
+      if (j.id == jobId && j.state != UploadJobState.uploaded) {
+        _removed.add(j.id);
+      }
+    }
     _jobs = [
       for (final j in _jobs)
-        if (j.id != jobId || j.state == UploadJobState.uploaded) j,
+        if (!_removed.contains(j.id)) j,
     ];
     await _persist();
   }
@@ -263,11 +315,15 @@ class UploadService extends ChangeNotifier {
   /// destination is removed. Finished jobs stay as the log.
   Future<void> cancelForDestination(String destinationId) async {
     await _ensureLoaded();
+    for (final j in _jobs) {
+      if (j.destinationId == destinationId &&
+          j.state != UploadJobState.uploaded) {
+        _removed.add(j.id);
+      }
+    }
     _jobs = [
       for (final j in _jobs)
-        if (j.destinationId != destinationId ||
-            j.state == UploadJobState.uploaded)
-          j,
+        if (!_removed.contains(j.id)) j,
     ];
     await _persist();
   }
@@ -281,9 +337,27 @@ class UploadService extends ChangeNotifier {
     await _ensureLoaded();
     if (!_jobs.any((j) => j.isPending)) return;
     if (!await _store.tryLock()) return;
+    // A single PUT of a long recording can outlast the stale-lock window;
+    // keep the lock fresh while this run is alive.
+    final keepAlive = Timer.periodic(
+      UploadQueueStore.staleLock ~/ 3,
+      (_) => unawaited(_store.touchLock()),
+    );
     try {
+      // The other isolate may have finished jobs since this one loaded the
+      // file; a job it left "uploading" is one it was killed in.
+      _mergeFromDisk(await _loadDisk());
+      _jobs = [
+        for (final j in _jobs)
+          if (j.state == UploadJobState.uploading && !_dirty.contains(j.id))
+            j.copyWith(state: UploadJobState.queued)
+          else
+            j,
+      ];
+      notifyListeners();
       await _runLocked();
     } finally {
+      keepAlive.cancel();
       await _store.unlock();
       await _reportPending();
     }
@@ -335,6 +409,20 @@ class UploadService extends ChangeNotifier {
   }
 
   Future<_Outcome> _runJob(UploadJob job) async {
+    try {
+      return await _runJobUnguarded(job);
+    } on SecretStoreException {
+      await _fail(job, UploadErrorCode.secretMissing);
+    } catch (error, stackTrace) {
+      debugPrint(
+        'Upload of ${job.sessionId} could not start: $error\n$stackTrace',
+      );
+      await _fail(job, UploadErrorCode.network);
+    }
+    return _Outcome.done;
+  }
+
+  Future<_Outcome> _runJobUnguarded(UploadJob job) async {
     final destination = await _findDestination(job.destinationId);
     if (destination == null) {
       await _giveUp(job, UploadErrorCode.destinationMissing);
@@ -434,11 +522,23 @@ class UploadService extends ChangeNotifier {
       'sha256': sha256.convert(jsonBytes).toString(),
     };
 
-    // 2. The share bundle, if the configuration yields one.
+    // 2. The share bundle, if the configuration yields one. A null with
+    //    audio requested on a session that has audio is the export pipeline
+    //    refusing (a trim it cannot cut), not an empty configuration.
     final exportPath = await _buildExport(session, job.config);
+    if (exportPath == null &&
+        job.config.includeAudio &&
+        sessionMayHaveAudio(session)) {
+      throw const _UploadFailure(UploadErrorCode.exportFailed);
+    }
     if (exportPath != null) {
-      final file = File(exportPath);
-      final name = file.uri.pathSegments.last;
+      final name = File(exportPath).uri.pathSegments.last;
+      // The export lands next to the recording under a deterministic name,
+      // which a foreground share of the same session would also write and
+      // read. Move it into a private staging folder first so neither side
+      // deletes or truncates the other's file.
+      final staged = await _stage(job, exportPath, session);
+      final file = File(staged ?? exportPath);
       try {
         await _put(target(name), auth, file: file);
         manifest[name] = {
@@ -446,9 +546,9 @@ class UploadService extends ChangeNotifier {
           'sha256': (await sha256.bind(file.openRead()).first).toString(),
         };
       } finally {
-        if (!_isSessionAsset(exportPath, session)) {
+        if (staged != null) {
           try {
-            await file.delete();
+            await file.parent.delete(recursive: true);
           } catch (_) {
             // Best-effort cleanup of the staged export.
           }
@@ -523,6 +623,32 @@ class UploadService extends ChangeNotifier {
     return false;
   }
 
+  /// Moves a freshly built export into `upload_staging/<job id>/` and
+  /// returns the new path, or null when the file is one of the session's
+  /// own assets (an audio-only share can hand back the recording itself).
+  Future<String?> _stage(
+    UploadJob job,
+    String exportPath,
+    LiveSession session,
+  ) async {
+    if (_isSessionAsset(exportPath, session)) return null;
+    final dir = Directory('${(await _store.stagingDir()).path}/${job.id}');
+    await dir.create(recursive: true);
+    final target = '${dir.path}/${File(exportPath).uri.pathSegments.last}';
+    final source = File(exportPath);
+    try {
+      await source.rename(target);
+    } on FileSystemException {
+      await source.copy(target);
+      try {
+        await source.delete();
+      } catch (_) {
+        // The copy is what gets uploaded; the original is best-effort.
+      }
+    }
+    return target;
+  }
+
   Future<void> _fail(UploadJob job, String code) async {
     final attempts = job.attempts + 1;
     final gaveUp = attempts >= UploadJob.maxAttempts;
@@ -558,6 +684,7 @@ class UploadService extends ChangeNotifier {
   }
 
   void _replace(String jobId, UploadJob Function(UploadJob) change) {
+    _dirty.add(jobId);
     _jobs = [
       for (final j in _jobs)
         if (j.id == jobId) change(j) else j,

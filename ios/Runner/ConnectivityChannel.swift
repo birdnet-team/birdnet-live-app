@@ -41,11 +41,10 @@ final class ConnectivityChannel {
   private func startMonitorIfNeeded() {
     if monitor != nil { return }
     let monitor = NWPathMonitor()
-    // The first update arrives asynchronously; take the current path right
-    // away so the very first answer is not "unknown" forever.
-    lock.lock()
-    latest = monitor.currentPath
-    lock.unlock()
+    // The first update arrives asynchronously; until then `latest` stays nil
+    // and the answer is "unknown", which the queue treats as allowed. Reading
+    // `currentPath` before `start()` would report an unsatisfied path and
+    // stop the first run for nothing.
     monitor.pathUpdateHandler = { [weak self] path in
       guard let self = self else { return }
       self.lock.lock()

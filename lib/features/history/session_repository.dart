@@ -36,7 +36,13 @@ import 'session_path_codec.dart';
 /// Persists [LiveSession] objects as JSON files.
 class SessionRepository {
   /// Creates a repository that stores sessions in the app documents directory.
-  SessionRepository();
+  ///
+  /// [backfillUuid] lets [load] save a legacy session back once it has a
+  /// UUID. Off in the background upload isolate, which must never write a
+  /// session file while the app may be editing it.
+  SessionRepository({this.backfillUuid = true});
+
+  final bool backfillUuid;
 
   String? _basePath;
   final Map<String, Future<void>> _writeTails = {};
@@ -220,7 +226,8 @@ class SessionRepository {
         // Only a finished primary file is rewritten: saving a checkpoint or a
         // recovery snapshot as final would hide that the session was
         // interrupted.
-        if (json['uuid'] == null &&
+        if (backfillUuid &&
+            json['uuid'] == null &&
             path == primary &&
             json['checkpoint'] != true) {
           await save(session);

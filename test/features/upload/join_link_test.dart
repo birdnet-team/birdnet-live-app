@@ -53,13 +53,13 @@ void main() {
 
     test('keeps a sub-directory install prefix and drops index.php', () {
       final request = JoinLinkParser.parse(
-        'https://host.example.org/nextcloud/index.php/s/TOKEN?dir=/x',
+        'https://host.example.org/nextcloud/index.php/s/AbCdEf123456?dir=/x',
       )!;
       expect(
         request.url,
         'https://host.example.org/nextcloud/public.php/webdav/',
       );
-      expect(request.username, 'TOKEN');
+      expect(request.username, 'AbCdEf123456');
     });
 
     test('treats anything else as a WebDAV URL and normalizes it', () {
@@ -75,6 +75,28 @@ void main() {
       );
       expect(request.username, 'alice');
       expect(request.secret, 'app-pw');
+    });
+
+    test('credentials typed into the URL move into the credential fields', () {
+      final request = JoinLinkParser.parse(
+        'https://alice:p%40ss@dav.example.org/dav/',
+      )!;
+      expect(request.url, 'https://dav.example.org/dav/');
+      expect(request.username, 'alice');
+      expect(request.secret, 'p@ss');
+      expect(request.source, JoinLinkSource.webdavUrl);
+    });
+
+    test('a WebDAV folder called s is not mistaken for a share', () {
+      final folder = JoinLinkParser.parse('https://dav.example.org/s/birds/')!;
+      expect(folder.source, JoinLinkSource.webdavUrl);
+      expect(folder.url, 'https://dav.example.org/s/birds/');
+
+      final share = JoinLinkParser.parse(
+        'https://host.example.org/nextcloud/s/AbCdEf123456',
+      )!;
+      expect(share.source, JoinLinkSource.nextcloudShare);
+      expect(share.username, 'AbCdEf123456');
     });
 
     test('returns null for empty or hostless input', () {

@@ -28,6 +28,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/providers/app_providers.dart';
 import '../explore/explore_providers.dart';
+import '../history/session_repository.dart';
+import '../live/live_providers.dart';
 import 'upload_providers.dart';
 
 abstract final class UploadWorkScheduler {
@@ -79,7 +81,13 @@ Future<void> uploadQueueBackgroundMain() async {
   try {
     final prefs = await SharedPreferences.getInstance();
     container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        // Never write a session file from here; the app may be editing it.
+        sessionRepositoryProvider.overrideWithValue(
+          SessionRepository(backfillUuid: false),
+        ),
+      ],
     );
     // Species names in the exported documents come from the taxonomy; wait
     // for it so a background upload matches a foreground one.

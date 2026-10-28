@@ -127,10 +127,26 @@ abstract final class JoinLinkParser {
     if (share != null) return share;
 
     if (uri.scheme != 'http' && uri.scheme != 'https') return null;
+    // `https://user:pass@host/dav/` works as a probe target because dart:io
+    // sends the credentials, but the URL would then be stored and shown in
+    // plain text. Move them into the credential fields instead.
+    var user = username.trim();
+    var pass = secret;
+    if (uri.userInfo.isNotEmpty) {
+      final colon = uri.userInfo.indexOf(':');
+      final embeddedUser = Uri.decodeComponent(
+        colon < 0 ? uri.userInfo : uri.userInfo.substring(0, colon),
+      );
+      final embeddedPass = colon < 0
+          ? ''
+          : Uri.decodeComponent(uri.userInfo.substring(colon + 1));
+      if (user.isEmpty) user = embeddedUser;
+      if (pass.isEmpty) pass = embeddedPass;
+    }
     return JoinRequest(
       url: normalizeCollectionUrl(uri.toString()),
-      username: username.trim(),
-      secret: secret,
+      username: user,
+      secret: pass,
       source: JoinLinkSource.webdavUrl,
     );
   }
@@ -150,7 +166,6 @@ abstract final class JoinLinkParser {
   /// both when handed null, so the URI is rebuilt instead.
   static Uri _collection(Uri base, String path) => Uri(
     scheme: base.scheme,
-    userInfo: base.userInfo.isEmpty ? null : base.userInfo,
     host: base.host,
     port: base.hasPort ? base.port : null,
     path: path,
@@ -200,14 +215,19 @@ abstract final class JoinLinkParser {
     );
   }
 
-  /// `https://host[/prefix]/s/<token>` or `.../index.php/s/<token>`.
+  /// Nextcloud and ownCloud share tokens: letters and digits, 8 or more.
+  static final RegExp _shareToken = RegExp(r'^[A-Za-z0-9]{8,}$');
+
+  /// `https://host[/prefix]/s/<token>` or `.../index.php/s/<token>`, with
+  /// nothing after the token. A WebDAV folder that happens to be called `s`
+  /// (`https://dav.example.org/s/birds/`) is left alone.
   static JoinRequest? _parseShareLink(Uri uri, {required String secret}) {
     if (uri.scheme != 'https' && uri.scheme != 'http') return null;
     final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
-    final shareIndex = segments.indexOf('s');
-    if (shareIndex < 0 || shareIndex + 1 >= segments.length) return null;
+    final shareIndex = segments.lastIndexOf('s');
+    if (shareIndex < 0 || shareIndex + 2 != segments.length) return null;
     final token = segments[shareIndex + 1];
-    if (token.isEmpty) return null;
+    if (!_shareToken.hasMatch(token)) return null;
     var prefix = segments.sublist(0, shareIndex);
     if (prefix.isNotEmpty && prefix.last == 'index.php') {
       prefix = prefix.sublist(0, prefix.length - 1);

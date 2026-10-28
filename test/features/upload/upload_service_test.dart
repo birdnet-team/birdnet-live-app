@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:birdnet_live/features/history/services/share_export_config.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/features/upload/connectivity.dart';
+import 'package:birdnet_live/features/upload/secret_store.dart';
 import 'package:birdnet_live/features/upload/upload_destination.dart';
 import 'package:birdnet_live/features/upload/upload_job.dart';
 import 'package:birdnet_live/features/upload/upload_queue_store.dart';
@@ -52,6 +53,7 @@ void main() {
   late UploadService service;
   late String? exportPath;
   var now = DateTime.utc(2026, 10, 28, 12);
+  Future<String?> Function(UploadDestination) secretFor = (_) async => 'pw';
 
   final config = ShareExportConfig(formats: const {'csv'}, includeAudio: false);
 
@@ -65,7 +67,7 @@ void main() {
       loadSession: (id) async => id == session.id ? session : null,
       findDestination: (id) async =>
           id == (dest ?? destination).id ? (dest ?? destination) : null,
-      secretFor: (_) async => 'pw',
+      secretFor: (d) => secretFor(d),
       buildExport: (_, _) async {
         final path = exportPath;
         if (path == null) return null;
@@ -413,6 +415,138 @@ void main() {
     // directory is deleted.
     await service.processQueue();
   });
+
+  test('a keychain failure fails the job and the run continues', () async {
+    secretFor = (_) async => throw const SecretStoreException('locked');
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+
+    final job = service.jobsForSession(session.id).single;
+    expect(job.state, UploadJobState.failed);
+    expect(job.lastError, UploadErrorCode.secretMissing);
+    expect(job.nextAttemptAt, isNotNull);
+
+    secretFor = (_) async => 'pw';
+    now = now.add(const Duration(minutes: 2));
+    await service.processQueue();
+    expect(
+      service.jobsForSession(session.id).single.state,
+      UploadJobState.uploaded,
+    );
+  });
+
+  test('an export the pipeline refuses fails the job instead of uploading '
+      'without audio', () async {
+    exportPath = null;
+    final withAudio = LiveSession(
+      id: 'audio',
+      startTime: session.startTime,
+      endTime: session.endTime,
+      settings: session.settings,
+      recordingPath: '${tempDir.path}/full.flac',
+    );
+    await File(withAudio.recordingPath!).writeAsBytes([1, 2, 3]);
+    final previous = session;
+    session = withAudio;
+    addTearDown(() => session = previous);
+    final audioConfig = ShareExportConfig(
+      formats: const {'csv'},
+      includeAudio: true,
+    );
+
+    await service.enqueue(
+      session: withAudio,
+      destination: destination,
+      config: audioConfig,
+    );
+    await service.processQueue();
+
+    final job = service.jobsForSession(withAudio.id).single;
+    expect(job.state, UploadJobState.failed);
+    expect(job.lastError, UploadErrorCode.exportFailed);
+    expect(dav.paths('PUT'), isNot(contains(endsWith('_complete.json'))));
+  });
+
+  test('the export is moved into staging before upload and the original '
+      'path is left alone afterwards', () async {
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+
+    expect(await File(exportPath!).exists(), isFalse);
+    final staging = Directory('${tempDir.path}/upload_staging');
+    expect(
+      await staging.exists() ? await staging.list().toList() : const [],
+      isEmpty,
+    );
+    expect(
+      service.jobsForSession(session.id).single.state,
+      UploadJobState.uploaded,
+    );
+  });
+
+  test(
+    'a second service on the same file sees what the first one did',
+    () async {
+      // The foreground app enqueues while offline.
+      connectivity.type = NetworkType.none;
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+
+      // The background worker (another isolate) uploads it.
+      final worker = build();
+      connectivity.type = NetworkType.wifi;
+      await worker.processQueue();
+      expect(
+        worker.jobsForSession(session.id).single.state,
+        UploadJobState.uploaded,
+      );
+      worker.dispose();
+
+      // The app's next run must not re-upload, and a later write by the app
+      // must keep the worker's result.
+      final puts = dav.paths('PUT').length;
+      await service.processQueue();
+      expect(dav.paths('PUT').length, puts);
+      expect(
+        service.jobsForSession(session.id).single.state,
+        UploadJobState.uploaded,
+      );
+      final other = LiveSession(
+        id: 'other',
+        startTime: session.startTime,
+        endTime: session.endTime,
+        settings: session.settings,
+      );
+      await service.enqueue(
+        session: other,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+      final reloaded = await UploadQueueStore(
+        documentsDirectory: () async => tempDir,
+      ).load();
+      // The app knows nothing about 'other' on disk, so that job fails; the
+      // point is that the worker's finished job survives the app's write.
+      expect(reloaded.length, 2);
+      expect(
+        reloaded.singleWhere((j) => j.sessionId == session.id).state,
+        UploadJobState.uploaded,
+      );
+    },
+  );
 
   test('backoff doubles from one minute and caps at six hours', () {
     expect(UploadService.backoff(1), const Duration(minutes: 1));

@@ -32,7 +32,9 @@ import sys
 import threading
 import time
 import urllib.parse
+import uuid
 from collections import defaultdict, deque
+from xml.sax.saxutils import escape as xml_escape
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -122,9 +124,34 @@ class DropServer(ThreadingHTTPServer):
         super().__init__(address, DropHandler)
         self.config = config
         self.config_path = config_path
+        self.config_mtime = config_path.stat().st_mtime_ns if config_path and config_path.exists() else None
         self.root = Path(config["root"]).resolve()
         self.max_bytes = int(config.get("max_file_mb", 512)) * 1024 * 1024
         self.limiter = RateLimiter(int(config.get("rate_per_minute", 600)))
+        # Unauthenticated requests are throttled per client address so a
+        # guesser burns its own budget, not a contributor's.
+        self.ip_limiter = RateLimiter(int(config.get("rate_per_minute", 600)))
+        self._reload_lock = threading.Lock()
+
+    def refresh_config(self) -> None:
+        """Picks up `invite` / `revoke` edits without a restart."""
+        path = self.config_path
+        if path is None:
+            return
+        try:
+            mtime = path.stat().st_mtime_ns
+        except OSError:
+            return
+        if mtime == self.config_mtime:
+            return
+        with self._reload_lock:
+            if mtime == self.config_mtime:
+                return
+            try:
+                self.config = load_config(path)
+                self.config_mtime = mtime
+            except (OSError, ValueError):
+                pass  # a half-written file; keep the last good config
 
     def project(self, slug: str) -> dict | None:
         return self.config.get("projects", {}).get(slug)
@@ -162,7 +189,11 @@ class DropHandler(BaseHTTPRequestHandler):
             length -= len(chunk)
 
     def _deny(self) -> None:
-        self._drain()
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > 65536:
+            self.close_connection = True
+        else:
+            self._drain()
         self._reply(401, headers={"WWW-Authenticate": 'Basic realm="BirdNET drop"'})
 
     def _credentials(self) -> tuple[str, str] | None:
@@ -181,6 +212,11 @@ class DropHandler(BaseHTTPRequestHandler):
 
         Returns None after replying with an error.
         """
+        self.server.refresh_config()
+        if not self.server.ip_limiter.allow(self.client_address[0]):
+            self.close_connection = True
+            self._reply(429)
+            return None
         url = urllib.parse.urlsplit(self.path)
         segments = [urllib.parse.unquote(s) for s in url.path.split("/") if s]
         if not segments:
@@ -219,6 +255,7 @@ class DropHandler(BaseHTTPRequestHandler):
             self._drain()
             self._reply(403, who=token_id)
             return None
+        self._segments = [slug, *rest]
         return role, slug, token_id, local, bool(url.path.endswith("/"))
 
     # ── Methods ──────────────────────────────────────────────────────────
@@ -252,6 +289,10 @@ class DropHandler(BaseHTTPRequestHandler):
         if routed is None:
             return
         _, _, token_id, local, is_dir = routed
+        if "chunked" in self.headers.get("Transfer-Encoding", "").lower() or not self.headers.get("Content-Length"):
+            self.close_connection = True
+            self._reply(411, who=token_id)
+            return
         length = int(self.headers.get("Content-Length") or 0)
         if is_dir or local == self.server.root or local.parent == self.server.root:
             self._drain()
@@ -266,7 +307,10 @@ class DropHandler(BaseHTTPRequestHandler):
             self._reply(412, who=token_id)
             return
         local.parent.mkdir(parents=True, exist_ok=True)
-        tmp = local.with_name(local.name + ".part")
+        # Each upload streams into its own temp file and is published with an
+        # exclusive create, so two uploads of one path can neither interleave
+        # nor overwrite: exactly one gets 201, the other 412.
+        tmp = local.with_name(f".{local.name}.{uuid.uuid4().hex}.part")
         remaining = length
         try:
             with tmp.open("wb") as out:
@@ -276,13 +320,16 @@ class DropHandler(BaseHTTPRequestHandler):
                         raise ConnectionError("client closed early")
                     out.write(chunk)
                     remaining -= len(chunk)
-            if local.exists():  # lost a race with another upload
+            try:
+                os.link(tmp, local)
+            except FileExistsError:
                 tmp.unlink(missing_ok=True)
                 self._reply(412, who=token_id)
                 return
-            os.replace(tmp, local)
+            tmp.unlink(missing_ok=True)
         except (ConnectionError, OSError):
             tmp.unlink(missing_ok=True)
+            self.close_connection = True
             self._reply(500, who=token_id)
             return
         self._reply(201, who=token_id)
@@ -328,11 +375,11 @@ class DropHandler(BaseHTTPRequestHandler):
         entries = [local]
         if depth != "0" and local.is_dir():
             entries.extend(sorted(local.iterdir()))
-        base_path = urllib.parse.urlsplit(self.path).path.rstrip("/")
+        base_path = "/" + "/".join(urllib.parse.quote(s, safe="") for s in self._segments)
         parts = ['<?xml version="1.0" encoding="utf-8"?>', '<d:multistatus xmlns:d="DAV:">']
         for entry in entries:
-            rel = "" if entry == local else "/" + urllib.parse.quote(entry.name)
-            href = base_path + rel + ("/" if entry.is_dir() else "")
+            rel = "" if entry == local else "/" + urllib.parse.quote(entry.name, safe="")
+            href = xml_escape(base_path + rel + ("/" if entry.is_dir() else ""))
             kind = "<d:collection/>" if entry.is_dir() else ""
             size = "" if entry.is_dir() else f"<d:getcontentlength>{entry.stat().st_size}</d:getcontentlength>"
             parts.append(
@@ -528,15 +575,15 @@ def _complete_uploads(project_dir: Path):
 
 def collect(project_dir: Path, out_dir: Path) -> dict:
     latest: dict[str, tuple] = {}
-    for token_id, device_id, uuid, version, folder in _complete_uploads(project_dir):
-        current = latest.get(uuid)
+    for token_id, device_id, session_uuid, version, folder in _complete_uploads(project_dir):
+        current = latest.get(session_uuid)
         if current is None or version > current[2]:
-            latest[uuid] = (token_id, device_id, version, folder)
+            latest[session_uuid] = (token_id, device_id, version, folder)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     session_rows, detection_rows = [], []
     species: dict[tuple, dict] = {}
-    for uuid, (token_id, device_id, version, folder) in sorted(latest.items()):
+    for session_uuid, (token_id, device_id, version, folder) in sorted(latest.items()):
         record_path = folder / "session.json"
         if not record_path.exists():
             continue
@@ -544,7 +591,7 @@ def collect(project_dir: Path, out_dir: Path) -> dict:
         marker = json.loads((folder / "_complete.json").read_text(encoding="utf-8"))
         detections = record.get("detections") or []
         session_rows.append({
-            "sessionUuid": uuid,
+            "sessionUuid": session_uuid,
             "session": record.get("session", ""),
             "type": record.get("type", "live"),
             "startTime": record.get("startTime", ""),
@@ -570,7 +617,7 @@ def collect(project_dir: Path, out_dir: Path) -> dict:
                 entry["sessions"] += 1
                 seen_in_session.add(key)
             detection_rows.append({
-                "sessionUuid": uuid,
+                "sessionUuid": session_uuid,
                 "timestamp": d.get("timestamp", ""),
                 "beginTimeSec": d.get("beginTimeSec", ""),
                 "commonName": d.get("commonName", ""),
@@ -583,11 +630,18 @@ def collect(project_dir: Path, out_dir: Path) -> dict:
                 "contributor": token_id,
             })
 
+    def guard(value):
+        # Spreadsheets execute cells that start like formulas; contributor
+        # text (observer names, notes) must not be able to do that.
+        if isinstance(value, str) and value[:1] in ("=", "+", "-", "@", "\t", "\r"):
+            return "'" + value
+        return value
+
     def write(name: str, rows: list[dict], fields: list[str]) -> None:
         with (out_dir / name).open("w", newline="", encoding="utf-8") as fh:
             writer = csv.DictWriter(fh, fieldnames=fields)
             writer.writeheader()
-            writer.writerows(rows)
+            writer.writerows({k: guard(v) for k, v in row.items()} for row in rows)
 
     write("sessions.csv", session_rows, list(session_rows[0].keys()) if session_rows else [
         "sessionUuid", "session", "type", "startTime", "endTime", "detections", "latitude", "longitude",
@@ -614,10 +668,10 @@ def cmd_collect(args) -> int:
     if args.bundles:
         dest = Path(args.out) / "bundles"
         dest.mkdir(exist_ok=True)
-        for _, _, uuid, _, folder in _complete_uploads(project_dir):
+        for _, _, session_uuid, version, folder in _complete_uploads(project_dir):
             for file in folder.iterdir():
                 if file.name not in ("session.json", "_complete.json"):
-                    shutil.copy2(file, dest / f"{uuid}_{file.name}")
+                    shutil.copy2(file, dest / f"{session_uuid}_v{version}_{file.name}")
         print(f"share bundles copied to {dest}")
     return 0
 

@@ -2578,11 +2578,14 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     if (_hasUnsavedWork && !await _save()) return;
     if (!mounted) return;
     // Uploads read the session back from disk, so they are queued only now
-    // that it is saved.
-    final queued = await enqueueUploadsFor(ref, [widget.session], config);
-    if (!mounted) return;
-    showUploadQueuedSnackBar(context, queued);
-    if (!config.shareLocally) return;
+    // that it is saved. With a share sheet involved they are queued after
+    // it: the queue builds the same export file and would otherwise race
+    // the one handed to the sheet.
+    if (!config.shareLocally) {
+      final queued = await enqueueUploadsFor(ref, [widget.session], config);
+      if (mounted) showUploadQueuedSnackBar(context, queued);
+      return;
+    }
 
     final exportFormats = config.formats;
     final includeAudio = config.includeAudio;
@@ -2635,6 +2638,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     await SharePlus.instance.share(
       shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
     );
+    final queued = await enqueueUploadsFor(ref, [widget.session], config);
+    if (mounted) showUploadQueuedSnackBar(context, queued);
   }
 
   /// Shares one detection after the user picked what to include. The

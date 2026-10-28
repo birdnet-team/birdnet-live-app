@@ -44,7 +44,7 @@ hide:
 .join-card label { display: inline-block; margin: .25rem 0; }
 </style>
 
-<script src="assets/js/qrcode-generator-1.4.4.js"></script>
+<script src="/birdnet-live-app/assets/js/qrcode-generator-1.4.4.js"></script>
 <script>
 (function () {
   var LANDING = 'https://birdnet-team.github.io/birdnet-live-app/join';
@@ -54,9 +54,13 @@ hide:
     raw.split('&').forEach(function (pair) {
       if (!pair) return;
       var i = pair.indexOf('=');
-      var k = decodeURIComponent(i < 0 ? pair : pair.substring(0, i));
-      var v = i < 0 ? '' : decodeURIComponent(pair.substring(i + 1).replace(/\+/g, ' '));
-      out[k] = v;
+      try {
+        var k = decodeURIComponent(i < 0 ? pair : pair.substring(0, i));
+        var v = i < 0 ? '' : decodeURIComponent(pair.substring(i + 1).replace(/\+/g, ' '));
+        out[k] = v;
+      } catch (e) {
+        // A mangled parameter is dropped; the rest of the link still works.
+      }
     });
     return out;
   }
