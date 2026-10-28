@@ -194,9 +194,10 @@ class SessionRepository {
   Future<LiveSession?> load(String id) async {
     final basePath = await _getBasePath();
     final safeId = _sanitiseId(id);
+    final primary = '$basePath/$safeId.json';
     for (final path in [
       '$basePath/$safeId.pending',
-      '$basePath/$safeId.json',
+      primary,
       '$basePath/$safeId.recovery.json',
     ]) {
       final file = File(path);
@@ -204,7 +205,7 @@ class SessionRepository {
       try {
         final json =
             jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-        return await recoverInterrupted(
+        final session = await recoverInterrupted(
           sessionFromStorageJson(
             json,
             documentsPath: Directory(basePath).parent.path,
@@ -214,6 +215,17 @@ class SessionRepository {
             safeId,
           ),
         );
+        // Sessions saved by builds without a UUID get theirs the first time
+        // they are fully loaded, so the value stays the same from here on.
+        // Only a finished primary file is rewritten: saving a checkpoint or a
+        // recovery snapshot as final would hide that the session was
+        // interrupted.
+        if (json['uuid'] == null &&
+            path == primary &&
+            json['checkpoint'] != true) {
+          await save(session);
+        }
+        return session;
       } catch (_) {
         // A partially written file can leave another valid snapshot behind.
       }

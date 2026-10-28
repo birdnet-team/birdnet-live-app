@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Korean (한국어) is now a full app language: UI strings and spoken announcements (contributed in #279), offline species descriptions for 1,009 species, and the translated user guide and policies. Korean species common names were already bundled and now resolve for the Korean app locale.
 - Quick Listen on iOS (#243). A **Start Listening** action now appears under BirdNET Live in the Shortcuts app and in the Action Button picker, works with Siri ("Start listening with BirdNET Live"), sits in the app icon's long-press menu, and answers the `birdnetlive://listen` URL for automations. Every route opens Live Mode and starts listening with the same rules as the Android widget: a mounted Live Mode screen is reused, and a running Point Count, Survey, File Analysis, or ARU Session is preserved with a prompt to stop it first. Siri phrases and the Action Button listing need iOS 17; the rest works on iOS 16.
 
+- Every session now carries a UUID that is independent of its name and file. It appears as `uuid` in the JSON export and the export metadata and as "Session UUID" in the HTML report; sessions saved by earlier versions receive theirs the first time they are opened (#284).
+
 ### Changed
 
 - When a device cannot keep up, Live Mode, Point Count, Survey, and ARU now lower the inference rate by 0.30 Hz at a time (down to 0.10 Hz) and make the lowered rate the setting of every mode and setup wizard; Settings and the wizards then note the rate this device is known to be too slow above. On slow devices the backlog previously overwrote the audio that detection clips are cut from, so detections were kept without their clips.
