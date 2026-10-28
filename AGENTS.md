@@ -97,6 +97,12 @@ This file is for coding agents working in this repository.
 - Keep model behavior JSON-driven via assets/models/model_config.json.
 - ARM64 rule: sensitive compute may require FP32 casting for stable output.
 
+## Device Testing
+
+- The developer's phones carry real sessions. Never run `adb uninstall`, `pm clear`, or `flutter run --uninstall-first` against them, and never delete or overwrite the app's data.
+- Install only builds signed with the key the installed app already has, so the install is an in-place upgrade and the data survives. On the developer machine the installed app is signed with the local debug keystore, so a plain debug build (`flutter build apk --debug` + `adb install -r`) is safe; a release-signed build would be refused as a signature mismatch and must not be forced through a reinstall.
+- Before installing, confirm the signature matches: compare `apksigner verify --print-certs` on the installed `base.apk` (pulled via `adb shell pm path`) against the keystore you are building with.
+
 ## Build and Release
 
 - Typical commands:
