@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "Během nahrávání se přerušilo připojení.",
   "uploadErrorExport": "Export Session se nepodařilo vytvořit.",
   "uploadErrorDestinationMissing": "Cíl byl odebrán.",
-  "uploadErrorSessionMissing": "Session už v tomto zařízení neexistuje."
+  "uploadErrorSessionMissing": "Session už v tomto zařízení neexistuje.",
+  "shareOptionsSendTo": "Odeslat do",
+  "shareOptionsHelpSendTo": "Dialog sdílení předá export jiným aplikacím, souborům nebo zprávám jako dosud. Každý zaškrtnutý cíl nahrávání obdrží stejný obsah na pozadí: záznam JSON, balíček zvolený výše a značku dokončení. Nahrávání se samo opakuje a čeká na Wi-Fi, pokud to cíl vyžaduje. Zde zaškrtnuté cíle si aplikace zapamatuje pro příští sdílení. Cíle přidáte v Nastavení › Export & Sync › Cíle nahrávání.",
+  "shareOptionsShareSheet": "Dialog sdílení",
+  "shareOptionsShareSheetSubtitle": "Jiné aplikace, soubory nebo zprávy",
+  "shareOptionsUpload": "Nahrát",
+  "shareOptionsShareAndUpload": "Sdílet a nahrát",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session zařazena k nahrání} few{{count} Sessions zařazeny k nahrání} other{{count} Sessions zařazeno k nahrání}}",
+  "shareOptionsTabContent": "Obsah"
 }

@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "La conexión se perdió durante la subida.",
   "uploadErrorExport": "No se pudo generar la exportación de la Session.",
   "uploadErrorDestinationMissing": "El destino se ha quitado.",
-  "uploadErrorSessionMissing": "La Session ya no existe en este dispositivo."
+  "uploadErrorSessionMissing": "La Session ya no existe en este dispositivo.",
+  "shareOptionsSendTo": "Enviar a",
+  "shareOptionsHelpSendTo": "«Hoja de compartir» entrega la exportación a otras apps, archivos o mensajes, como hasta ahora. Cada destino de subida que marques recibe el mismo contenido en segundo plano: un registro JSON, el paquete elegido arriba y una marca de finalización. Las subidas se reintentan solas y esperan al Wi-Fi si el destino lo pide. Los destinos marcados aquí se recuerdan para la próxima vez. Añade destinos en Ajustes › Export & Sync › Destinos de subida.",
+  "shareOptionsShareSheet": "Hoja de compartir",
+  "shareOptionsShareSheetSubtitle": "Otras apps, archivos o mensajes",
+  "shareOptionsUpload": "Subir",
+  "shareOptionsShareAndUpload": "Compartir y subir",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session en cola para subir} other{{count} Sessions en cola para subir}}",
+  "shareOptionsTabContent": "Contenido"
 }

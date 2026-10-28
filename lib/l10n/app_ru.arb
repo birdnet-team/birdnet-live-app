@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "Соединение прервалось во время загрузки.",
   "uploadErrorExport": "Не удалось создать экспорт Session.",
   "uploadErrorDestinationMissing": "Назначение было удалено.",
-  "uploadErrorSessionMissing": "Session больше не существует на этом устройстве."
+  "uploadErrorSessionMissing": "Session больше не существует на этом устройстве.",
+  "shareOptionsSendTo": "Отправить в",
+  "shareOptionsHelpSendTo": "«Окно «Поделиться»» передаёт экспорт другим приложениям, файлам или сообщениям, как и раньше. Каждое отмеченное назначение получает то же содержимое в фоновом режиме: запись JSON, выбранный выше пакет и отметку о завершении. Загрузки повторяются сами и ждут Wi-Fi, если назначение этого требует. Отмеченные здесь назначения запоминаются для следующей отправки. Добавить назначения можно в Настройки › Export & Sync › Назначения для загрузки.",
+  "shareOptionsShareSheet": "Окно «Поделиться»",
+  "shareOptionsShareSheetSubtitle": "Другие приложения, файлы или сообщения",
+  "shareOptionsUpload": "Загрузить",
+  "shareOptionsShareAndUpload": "Поделиться и загрузить",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session поставлена в очередь на загрузку} few{{count} Sessions поставлены в очередь на загрузку} other{{count} Sessions поставлено в очередь на загрузку}}",
+  "shareOptionsTabContent": "Содержимое"
 }

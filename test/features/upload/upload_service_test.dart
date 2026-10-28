@@ -101,7 +101,7 @@ void main() {
         speciesFilterMode: 'off',
       ),
     );
-    final export = File('${tempDir.path}/BirdNET_Live_export.zip');
+    final export = File('${tempDir.path}/BirdNET_Live_export_#13.zip');
     await export.writeAsBytes(List<int>.generate(1000, (i) => i % 251));
     exportPath = export.path;
     service = build();
@@ -128,9 +128,14 @@ void main() {
     ]);
     expect(dav.paths('PUT'), [
       '${folder}session.json',
-      '${folder}BirdNET_Live_export.zip',
+      '${folder}BirdNET_Live_export_%2313.zip',
       '${folder}_complete.json',
     ]);
+    // The `#` travels percent-encoded, never as a fragment.
+    expect(
+      dav.requests[4].url.toString(),
+      endsWith('/v1/BirdNET_Live_export_%2313.zip'),
+    );
     final first = dav.requests.first;
     expect(first.headers['Authorization'], startsWith('Basic '));
 
@@ -143,10 +148,10 @@ void main() {
     final files = complete['files'] as Map<String, dynamic>;
     expect(
       files.keys,
-      containsAll(['session.json', 'BirdNET_Live_export.zip']),
+      containsAll(['session.json', 'BirdNET_Live_export_#13.zip']),
     );
     expect(
-      (files['BirdNET_Live_export.zip'] as Map<String, dynamic>)['size'],
+      (files['BirdNET_Live_export_#13.zip'] as Map<String, dynamic>)['size'],
       1000,
     );
 

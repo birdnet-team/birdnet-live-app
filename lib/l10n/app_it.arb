@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "La connessione si è interrotta durante il caricamento.",
   "uploadErrorExport": "Impossibile generare l'esportazione della Session.",
   "uploadErrorDestinationMissing": "La destinazione è stata rimossa.",
-  "uploadErrorSessionMissing": "La Session non esiste più su questo dispositivo."
+  "uploadErrorSessionMissing": "La Session non esiste più su questo dispositivo.",
+  "shareOptionsSendTo": "Invia a",
+  "shareOptionsHelpSendTo": "«Finestra di condivisione» passa l'esportazione ad altre app, file o messaggi, come prima. Ogni destinazione di caricamento spuntata riceve lo stesso contenuto in background: un record JSON, il pacchetto scelto sopra e un marcatore di completamento. I caricamenti si ripetono da soli e attendono il Wi-Fi se la destinazione lo richiede. Le destinazioni spuntate qui vengono ricordate per la prossima condivisione. Aggiungi destinazioni in Impostazioni › Export & Sync › Destinazioni di caricamento.",
+  "shareOptionsShareSheet": "Finestra di condivisione",
+  "shareOptionsShareSheetSubtitle": "Altre app, file o messaggi",
+  "shareOptionsUpload": "Carica",
+  "shareOptionsShareAndUpload": "Condividi e carica",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session in coda per il caricamento} other{{count} Sessions in coda per il caricamento}}",
+  "shareOptionsTabContent": "Contenuto"
 }

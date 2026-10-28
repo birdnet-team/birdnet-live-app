@@ -44,6 +44,7 @@ import '../point_count/point_count_setup_screen.dart';
 import '../survey/survey_setup_screen.dart';
 import 'export_metadata_helper.dart';
 import 'session_export.dart';
+import '../upload/upload_providers.dart';
 import '../upload/upload_status_widgets.dart';
 import 'session_review_screen.dart';
 import 'services/session_audio_trim.dart';
@@ -902,8 +903,14 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context,
       ref,
       audioAvailable: sessionMayHaveAudio(session),
+      uploadable: [session.id],
     );
     if (config == null || !mounted) return;
+    if (!config.shareLocally) {
+      final queued = await enqueueUploadsFor(ref, [session], config);
+      if (mounted) showUploadQueuedSnackBar(context, queued);
+      return;
+    }
     final exportFormats = config.formats;
     final includeAudio = config.includeAudio;
     final shareAudioAsWav = config.shareAudioAsWav;
@@ -940,6 +947,8 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     await SharePlus.instance.share(
       shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
     );
+    final queued = await enqueueUploadsFor(ref, [session], config);
+    if (mounted) showUploadQueuedSnackBar(context, queued);
   }
 
   /// Toggles whether a compact-view row is expanded to show the full
@@ -995,8 +1004,17 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       context,
       ref,
       audioAvailable: selectedList.any(sessionMayHaveAudio),
+      uploadable: [for (final s in selectedList) s.id],
     );
     if (config == null || !mounted) return;
+    if (!config.shareLocally) {
+      final queued = await enqueueUploadsFor(ref, selectedList, config);
+      if (mounted) {
+        showUploadQueuedSnackBar(context, queued);
+        _clearSelection();
+      }
+      return;
+    }
 
     showDialog<void>(
       context: context,
@@ -1053,7 +1071,9 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
       await SharePlus.instance.share(
         shareParamsForFile(zipPath, sharePositionOrigin: shareOrigin),
       );
+      final queued = await enqueueUploadsFor(ref, selectedList, config);
       if (mounted) {
+        showUploadQueuedSnackBar(context, queued);
         _clearSelection();
       }
     } catch (e) {

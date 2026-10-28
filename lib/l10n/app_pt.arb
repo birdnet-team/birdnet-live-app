@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "A conexão caiu durante o envio.",
   "uploadErrorExport": "Não foi possível gerar a exportação da Session.",
   "uploadErrorDestinationMissing": "O destino foi removido.",
-  "uploadErrorSessionMissing": "A Session não existe mais neste dispositivo."
+  "uploadErrorSessionMissing": "A Session não existe mais neste dispositivo.",
+  "shareOptionsSendTo": "Enviar para",
+  "shareOptionsHelpSendTo": "\"Painel de compartilhamento\" entrega a exportação a outros aplicativos, arquivos ou mensagens, como antes. Cada destino de envio marcado recebe o mesmo conteúdo em segundo plano: um registro JSON, o pacote escolhido acima e um marcador de conclusão. Os envios são repetidos sozinhos e aguardam Wi-Fi quando o destino exige. Os destinos marcados aqui são lembrados para o próximo compartilhamento. Adicione destinos em Configurações › Export & Sync › Destinos de envio.",
+  "shareOptionsShareSheet": "Painel de compartilhamento",
+  "shareOptionsShareSheetSubtitle": "Outros aplicativos, arquivos ou mensagens",
+  "shareOptionsUpload": "Enviar",
+  "shareOptionsShareAndUpload": "Compartilhar e enviar",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session na fila de envio} other{{count} Sessions na fila de envio}}",
+  "shareOptionsTabContent": "Conteúdo"
 }

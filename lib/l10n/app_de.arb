@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "Die Verbindung ist während des Uploads abgebrochen.",
   "uploadErrorExport": "Der Session-Export konnte nicht erstellt werden.",
   "uploadErrorDestinationMissing": "Das Ziel wurde entfernt.",
-  "uploadErrorSessionMissing": "Die Session existiert auf diesem Gerät nicht mehr."
+  "uploadErrorSessionMissing": "Die Session existiert auf diesem Gerät nicht mehr.",
+  "shareOptionsSendTo": "Senden an",
+  "shareOptionsHelpSendTo": "„Teilen-Dialog“ übergibt den Export wie bisher an andere Apps, Dateien oder Nachrichten. Jedes angehakte Upload-Ziel erhält denselben Inhalt im Hintergrund: einen JSON-Datensatz, das oben gewählte Paket und eine Abschlussmarke. Uploads wiederholen sich selbstständig und warten auf WLAN, wenn das Ziel es verlangt. Die hier angehakten Ziele werden für das nächste Teilen gemerkt. Ziele fügen Sie unter Einstellungen › Export & Sync › Upload-Ziele hinzu.",
+  "shareOptionsShareSheet": "Teilen-Dialog",
+  "shareOptionsShareSheetSubtitle": "Andere Apps, Dateien oder Nachrichten",
+  "shareOptionsUpload": "Hochladen",
+  "shareOptionsShareAndUpload": "Teilen und hochladen",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session zum Hochladen eingereiht} other{{count} Sessions zum Hochladen eingereiht}}",
+  "shareOptionsTabContent": "Inhalt"
 }

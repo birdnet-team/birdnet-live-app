@@ -218,3 +218,11 @@ String uploadStateLabel(AppLocalizations l10n, UploadJob job) {
       return job.gaveUp ? l10n.uploadStatusGaveUp : l10n.uploadStatusFailed;
   }
 }
+
+/// Confirms that [count] sessions were queued, when any were.
+void showUploadQueuedSnackBar(BuildContext context, int count) {
+  if (count <= 0) return;
+  final l10n = AppLocalizations.of(context)!;
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(l10n.uploadQueuedSnack(count))));
+}

@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "Połączenie zostało przerwane podczas przesyłania.",
   "uploadErrorExport": "Nie udało się utworzyć eksportu Session.",
   "uploadErrorDestinationMissing": "Miejsce docelowe zostało usunięte.",
-  "uploadErrorSessionMissing": "Ta Session nie istnieje już na tym urządzeniu."
+  "uploadErrorSessionMissing": "Ta Session nie istnieje już na tym urządzeniu.",
+  "shareOptionsSendTo": "Wyślij do",
+  "shareOptionsHelpSendTo": "„Arkusz udostępniania” przekazuje eksport innym aplikacjom, plikom lub wiadomościom, tak jak dotychczas. Każde zaznaczone miejsce docelowe otrzymuje w tle tę samą zawartość: rekord JSON, wybrany wyżej pakiet i znacznik ukończenia. Przesyłanie ponawia się samo i czeka na Wi-Fi, jeśli miejsce docelowe tego wymaga. Zaznaczone tu miejsca docelowe są zapamiętywane na następny raz. Miejsca docelowe dodasz w Ustawienia › Export & Sync › Miejsca docelowe przesyłania.",
+  "shareOptionsShareSheet": "Arkusz udostępniania",
+  "shareOptionsShareSheetSubtitle": "Inne aplikacje, pliki lub wiadomości",
+  "shareOptionsUpload": "Prześlij",
+  "shareOptionsShareAndUpload": "Udostępnij i prześlij",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session dodana do kolejki przesyłania} few{{count} Sessions dodane do kolejki przesyłania} other{{count} Sessions dodanych do kolejki przesyłania}}",
+  "shareOptionsTabContent": "Zawartość"
 }

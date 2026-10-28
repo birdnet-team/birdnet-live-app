@@ -261,3 +261,33 @@ Future<void> autoEnqueueAruSession(Ref ref, LiveSession session) async {
     );
   }
 }
+
+/// Queues every session in [sessions] for each destination ticked in
+/// [config] (the Share dialog's "Send to" group). Returns the number of
+/// sessions queued; zero when no destination was ticked.
+Future<int> enqueueUploadsFor(
+  WidgetRef ref,
+  Iterable<LiveSession> sessions,
+  ShareExportConfig config,
+) async {
+  if (config.uploadDestinationIds.isEmpty) return 0;
+  final destinations = await ref.read(uploadDestinationsProvider.future);
+  final targets = [
+    for (final d in destinations)
+      if (config.uploadDestinationIds.contains(d.id)) d,
+  ];
+  if (targets.isEmpty) return 0;
+  final service = ref.read(uploadServiceProvider);
+  var count = 0;
+  for (final session in sessions) {
+    for (final destination in targets) {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+    }
+    count++;
+  }
+  return count;
+}

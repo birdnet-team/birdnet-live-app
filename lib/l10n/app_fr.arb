@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "La connexion a été perdue pendant l'envoi.",
   "uploadErrorExport": "L'export de la Session n'a pas pu être généré.",
   "uploadErrorDestinationMissing": "La destination a été retirée.",
-  "uploadErrorSessionMissing": "La Session n'existe plus sur cet appareil."
+  "uploadErrorSessionMissing": "La Session n'existe plus sur cet appareil.",
+  "shareOptionsSendTo": "Envoyer vers",
+  "shareOptionsHelpSendTo": "« Feuille de partage » remet l'export à d'autres applications, fichiers ou messages, comme avant. Chaque destination d'envoi cochée reçoit le même contenu en arrière-plan : un enregistrement JSON, le lot choisi ci-dessus et un marqueur de fin. Les envois se relancent seuls et attendent le Wi-Fi si la destination l'exige. Les destinations cochées ici sont mémorisées pour le prochain partage. Ajoutez des destinations dans Réglages › Export & Sync › Destinations d'envoi.",
+  "shareOptionsShareSheet": "Feuille de partage",
+  "shareOptionsShareSheetSubtitle": "Autres applications, fichiers ou messages",
+  "shareOptionsUpload": "Envoyer",
+  "shareOptionsShareAndUpload": "Partager et envoyer",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session mise en file d'envoi} other{{count} Sessions mises en file d'envoi}}",
+  "shareOptionsTabContent": "Contenu"
 }

@@ -372,7 +372,10 @@ class UploadService extends ChangeNotifier {
       }
       prefix = '${segments.join('/')}/';
     }
-    Uri target(String name) => base.resolve('$prefix$name');
+    // Export names carry the session number (`…_#13.zip`); a raw `#` would
+    // start a URL fragment, so every file name is percent-encoded.
+    Uri target(String name) =>
+        base.resolve('$prefix${Uri.encodeComponent(name)}');
 
     final manifest = <String, Map<String, Object>>{};
 

@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "Tilkoblingen ble brutt under opplastingen.",
   "uploadErrorExport": "Eksporten av Session kunne ikke lages.",
   "uploadErrorDestinationMissing": "Målet er fjernet.",
-  "uploadErrorSessionMissing": "Session finnes ikke lenger på denne enheten."
+  "uploadErrorSessionMissing": "Session finnes ikke lenger på denne enheten.",
+  "shareOptionsSendTo": "Send til",
+  "shareOptionsHelpSendTo": "«Delingsark» gir eksporten videre til andre apper, filer eller meldinger som før. Hvert avhukede opplastingsmål får det samme innholdet i bakgrunnen: en JSON-post, pakken valgt ovenfor og en fullføringsmarkør. Opplastinger prøver igjen på egen hånd og venter på Wi-Fi når målet krever det. Målene du huker av her, huskes til neste deling. Legg til mål under Innstillinger › Export & Sync › Opplastingsmål.",
+  "shareOptionsShareSheet": "Delingsark",
+  "shareOptionsShareSheetSubtitle": "Andre apper, filer eller meldinger",
+  "shareOptionsUpload": "Last opp",
+  "shareOptionsShareAndUpload": "Del og last opp",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session lagt i opplastingskøen} other{{count} Sessions lagt i opplastingskøen}}",
+  "shareOptionsTabContent": "Innhold"
 }

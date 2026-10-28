@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "上传过程中连接中断。",
   "uploadErrorExport": "无法生成 Session 导出。",
   "uploadErrorDestinationMissing": "该目标已被移除。",
-  "uploadErrorSessionMissing": "该 Session 在本设备上已不存在。"
+  "uploadErrorSessionMissing": "该 Session 在本设备上已不存在。",
+  "shareOptionsSendTo": "发送到",
+  "shareOptionsHelpSendTo": "“分享面板”会像以前一样把导出内容交给其他应用、文件或消息。勾选的每个上传目标都会在后台收到相同的内容：一份 JSON 记录、上面选择的文件包和一个完成标记。上传会自动重试，并在目标要求时等待 Wi-Fi。此处勾选的目标会被记住，供下次分享使用。可在“设置 › Export & Sync › 上传目标”中添加目标。",
+  "shareOptionsShareSheet": "分享面板",
+  "shareOptionsShareSheetSubtitle": "其他应用、文件或消息",
+  "shareOptionsUpload": "上传",
+  "shareOptionsShareAndUpload": "分享并上传",
+  "uploadQueuedSnack": "{count, plural, =1{已将 1 个 Session 加入上传队列} other{已将 {count} 个 Sessions 加入上传队列}}",
+  "shareOptionsTabContent": "内容"
 }

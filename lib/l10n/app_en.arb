@@ -5507,5 +5507,42 @@
   "uploadErrorSessionMissing": "The session no longer exists on this device.",
   "@uploadErrorSessionMissing": {
     "description": "Upload error: the session was deleted before the upload ran"
+  },
+  "shareOptionsSendTo": "Send to",
+  "@shareOptionsSendTo": {
+    "description": "Group header in the Share dialog listing the share sheet and upload destinations"
+  },
+  "shareOptionsHelpSendTo": "Share sheet hands the export to other apps, files, or messages, as before. Each upload destination you tick receives the same content in the background: a JSON record, the bundle chosen above, and a completion marker. Uploads retry on their own and wait for Wi-Fi when the destination asks for it. The destinations ticked here are remembered for the next share. Add destinations under Settings › Export & Sync › Upload destinations.",
+  "@shareOptionsHelpSendTo": {
+    "description": "Help text for the Send to group in the Share dialog"
+  },
+  "shareOptionsShareSheet": "Share sheet",
+  "@shareOptionsShareSheet": {
+    "description": "Checkbox in the Share dialog: hand the export to the platform share sheet"
+  },
+  "shareOptionsShareSheetSubtitle": "Other apps, files, or messages",
+  "@shareOptionsShareSheetSubtitle": {
+    "description": "Subtitle of the share sheet checkbox"
+  },
+  "shareOptionsUpload": "Upload",
+  "@shareOptionsUpload": {
+    "description": "Primary button when only upload destinations are ticked"
+  },
+  "shareOptionsShareAndUpload": "Share and upload",
+  "@shareOptionsShareAndUpload": {
+    "description": "Primary button when the share sheet and at least one destination are ticked"
+  },
+  "uploadQueuedSnack": "{count, plural, =1{1 session queued for upload} other{{count} sessions queued for upload}}",
+  "@uploadQueuedSnack": {
+    "description": "Snackbar after the Share dialog queued sessions for upload",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareOptionsTabContent": "Content",
+  "@shareOptionsTabContent": {
+    "description": "First tab of the Share dialog: what the share contains (Audio, Metadata)"
   }
 }

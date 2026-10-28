@@ -147,6 +147,11 @@ abstract final class PrefKeys {
   /// Random identity of this install toward upload destinations (#284).
   /// Generated on first use; names the contributor folder on the server.
   static const String uploadDeviceId = 'upload_device_id';
+
+  /// Destinations ticked in the last Share dialog, so a repeat contribution
+  /// is two taps (#284). String list of destination ids.
+  static const String shareLastUploadDestinations =
+      'share_last_upload_destinations';
   static const String ignoreBirds = 'ignore_species_birds';
   static const String ignoreMammals = 'ignore_species_mammals';
   static const String ignoreAmphibians = 'ignore_species_amphibians';

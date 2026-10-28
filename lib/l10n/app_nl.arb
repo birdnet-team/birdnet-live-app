@@ -1262,5 +1262,13 @@
   "uploadErrorNetwork": "De verbinding viel weg tijdens het uploaden.",
   "uploadErrorExport": "De Session-export kon niet worden gemaakt.",
   "uploadErrorDestinationMissing": "De bestemming is verwijderd.",
-  "uploadErrorSessionMissing": "De Session bestaat niet meer op dit apparaat."
+  "uploadErrorSessionMissing": "De Session bestaat niet meer op dit apparaat.",
+  "shareOptionsSendTo": "Versturen naar",
+  "shareOptionsHelpSendTo": "'Deelvenster' geeft de export zoals voorheen door aan andere apps, bestanden of berichten. Elke aangevinkte uploadbestemming krijgt dezelfde inhoud op de achtergrond: een JSON-record, de hierboven gekozen bundel en een voltooiingsmarkering. Uploads proberen het zelf opnieuw en wachten op wifi als de bestemming dat vraagt. De hier aangevinkte bestemmingen worden onthouden voor de volgende keer. Voeg bestemmingen toe via Instellingen › Export & Sync › Uploadbestemmingen.",
+  "shareOptionsShareSheet": "Deelvenster",
+  "shareOptionsShareSheetSubtitle": "Andere apps, bestanden of berichten",
+  "shareOptionsUpload": "Uploaden",
+  "shareOptionsShareAndUpload": "Delen en uploaden",
+  "uploadQueuedSnack": "{count, plural, =1{1 Session in de wachtrij voor upload} other{{count} Sessions in de wachtrij voor upload}}",
+  "shareOptionsTabContent": "Inhoud"
 }
