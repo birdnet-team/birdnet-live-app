@@ -27,6 +27,8 @@
 // [ShareExportConfig] — or null when the user backed out.
 // =============================================================================
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,9 +40,13 @@ import '../../../shared/utils/app_icons.dart';
 import '../../../shared/utils/locale_time_format.dart';
 import '../../settings/settings_screen.dart' show SettingHelpTitle;
 import '../../upload/join_destination_screen.dart';
+import '../../upload/secret_store.dart';
 import '../../upload/upload_destination.dart';
 import '../../upload/upload_job.dart';
+import '../../upload/upload_messages.dart';
 import '../../upload/upload_providers.dart';
+import '../../upload/webdav_client.dart';
+import '../../upload/webdav_probe.dart';
 import '../services/share_export_config.dart';
 
 /// Reads the saved export preferences, lets the user adjust Audio and
@@ -85,6 +91,8 @@ Future<ShareExportConfig?> pickShareExportConfig(
     uploadedTo = dates;
   }
   if (!context.mounted) return null;
+  final probe = ref.read(webDavProbeProvider);
+  final notifier = ref.read(uploadDestinationsProvider.notifier);
   final result = await showDialog<ShareExportConfig>(
     context: context,
     builder: (_) => ShareOptionsDialog(
@@ -94,6 +102,21 @@ Future<ShareExportConfig?> pickShareExportConfig(
       destinations: destinations,
       initialDestinationIds: remembered,
       uploadedTo: uploadedTo,
+      checkReachable: (destination) async {
+        final String? secret;
+        try {
+          secret = await notifier.secretFor(destination);
+        } on SecretStoreException {
+          // A locked keychain is a device problem, not a destination one;
+          // the upload itself will report it.
+          return null;
+        }
+        if (secret == null) return ProbeFailure.unauthorized;
+        return probe.reachability(
+          destination.url,
+          WebDavClient.basicAuth(destination.username, secret),
+        );
+      },
       onAddDestination: () {
         Navigator.of(context).push(
           MaterialPageRoute<UploadDestination>(
@@ -123,6 +146,7 @@ class ShareOptionsDialog extends StatefulWidget {
     this.destinations = const [],
     this.initialDestinationIds = const {},
     this.uploadedTo = const {},
+    this.checkReachable,
     this.onAddDestination,
   });
 
@@ -143,7 +167,15 @@ class ShareOptionsDialog extends StatefulWidget {
   final Set<String> initialDestinationIds;
 
   /// Most recent successful upload of the shared session(s) per destination.
+  /// Such destinations start unticked and show the date, so a repeat
+  /// upload is a deliberate tick.
   final Map<String, DateTime> uploadedTo;
+
+  /// Quick background check whether a destination would refuse the upload
+  /// (see `WebDavProbe.reachability`). A stated failure is shown on the row;
+  /// an inconclusive result (offline, timeout) shows nothing.
+  final Future<ProbeFailure?> Function(UploadDestination destination)?
+  checkReachable;
 
   /// Opens the join flow; the dialog closes without a result first.
   final VoidCallback? onAddDestination;
@@ -158,8 +190,26 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
   bool _shareSheet = true;
   late final Set<String> _destinations = {
     for (final d in widget.destinations)
-      if (widget.initialDestinationIds.contains(d.id)) d.id,
+      if (widget.initialDestinationIds.contains(d.id) &&
+          !widget.uploadedTo.containsKey(d.id))
+        d.id,
   };
+  final Map<String, ProbeFailure> _unreachable = {};
+
+  @override
+  void initState() {
+    super.initState();
+    final check = widget.checkReachable;
+    if (check == null) return;
+    for (final destination in widget.destinations) {
+      unawaited(
+        check(destination).then((failure) {
+          if (!mounted || failure == null) return;
+          setState(() => _unreachable[destination.id] = failure);
+        }),
+      );
+    }
+  }
 
   bool get _hasContent => _audio || _metadata;
   bool get _hasTarget =>
@@ -244,14 +294,12 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
         ),
         for (final destination in widget.destinations)
           CheckboxListTile(
-            secondary: const Icon(AppIcons.cloudUpload),
+            secondary: _destinationIcon(destination),
             title: Text(destination.name),
-            subtitle: Text(switch (widget.uploadedTo[destination.id]) {
-              null => destination.host,
-              final at => l10n.uploadStatusUploaded(
-                formatLocaleDate(at, l10n.localeName),
-              ),
-            }),
+            subtitle: _destinationSubtitle(l10n, destination),
+            isThreeLine:
+                widget.uploadedTo.containsKey(destination.id) ||
+                _unreachable.containsKey(destination.id),
             value: _destinations.contains(destination.id),
             onChanged: (v) => setState(() {
               if (v ?? false) {
@@ -275,6 +323,40 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
     );
   }
 
+  Widget _destinationIcon(UploadDestination destination) {
+    final scheme = Theme.of(context).colorScheme;
+    if (_unreachable.containsKey(destination.id)) {
+      return Icon(AppIcons.errorOutline, color: scheme.error);
+    }
+    if (widget.uploadedTo.containsKey(destination.id)) {
+      return Icon(AppIcons.cloudDone, color: scheme.primary);
+    }
+    return const Icon(AppIcons.cloudUpload);
+  }
+
+  Widget _destinationSubtitle(
+    AppLocalizations l10n,
+    UploadDestination destination,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final failure = _unreachable[destination.id];
+    if (failure != null) {
+      return Text(
+        '${destination.host}\n'
+        '${l10n.shareOptionsDestinationUnreachable(probeFailureMessage(l10n, ProbeResult.failed(failure, resolvedUrl: destination.url)))}',
+        style: TextStyle(color: scheme.error),
+      );
+    }
+    final at = widget.uploadedTo[destination.id];
+    if (at != null) {
+      return Text(
+        '${l10n.uploadStatusUploaded(formatLocaleDate(at, l10n.localeName))}\n'
+        '${l10n.shareOptionsTickToUploadAgain}',
+      );
+    }
+    return Text(destination.host);
+  }
+
   /// Tabs for session shares. The pane height is fixed from the screen
   /// height so the dialog never grows with the destination list.
   Widget _tabbed(BuildContext context, AppLocalizations l10n) {
@@ -294,6 +376,10 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
                 child: Badge.count(
                   count: _destinations.length,
                   isLabelVisible: _destinations.isNotEmpty,
+                  // A count, not an alert: the default badge red reads as an
+                  // error on a tab.
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  textColor: Theme.of(context).colorScheme.onPrimary,
                   offset: const Offset(14, -6),
                   child: Text(l10n.shareOptionsSendTo),
                 ),

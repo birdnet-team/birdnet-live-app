@@ -49,6 +49,7 @@ abstract final class AppIcons {
   static const IconData closeRounded = Symbols.close_rounded;
   static const IconData cloudOff = Symbols.cloud_off;
   static const IconData cloud = Symbols.cloud;
+  static const IconData cloudDone = Symbols.cloud_done;
   static const IconData cloudUpload = Symbols.cloud_upload;
   static const IconData contentPaste = Symbols.content_paste;
   static const IconData cloudy = Symbols.cloudy;

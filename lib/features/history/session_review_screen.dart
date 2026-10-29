@@ -4185,6 +4185,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             },
           ),
           actions: [
+            UploadStatusAction(sessionId: widget.session.id),
             IconButton(
               icon: const Icon(AppIcons.helpOutline),
               tooltip: l10n.sessionHelpTitle,
