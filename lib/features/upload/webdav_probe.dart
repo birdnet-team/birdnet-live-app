@@ -37,6 +37,7 @@ import 'package:http/http.dart' as http;
 
 import 'join_link.dart';
 import 'upload_naming.dart';
+import 'webdav_auth.dart';
 
 /// Why a probe failed; each value has one user-facing sentence.
 enum ProbeFailure {
@@ -185,7 +186,7 @@ class WebDavProbe {
   /// offline and will be told so when the upload runs.
   Future<ProbeFailure?> reachability(
     String url,
-    Map<String, String> auth, {
+    WebDavAuth auth, {
     Duration timeout = const Duration(seconds: 6),
   }) async {
     final uri = Uri.tryParse(url);
@@ -308,24 +309,19 @@ class WebDavProbe {
       }
       warnings.add(ProbeWarning.insecureLan);
     }
-    final auth = _authHeader(request);
+    final auth = WebDavAuth(request.username, request.secret);
 
     try {
-      // 1. OPTIONS: reachability, certificate, credentials. Follow one
-      //    redirect so a missing trailing slash or a .well-known entry lands
-      //    on the real collection.
+      // 1. OPTIONS: reachability, certificate, credentials. One redirect is
+      //    followed so a missing trailing slash or a .well-known entry lands
+      //    on the real collection; the URL that answered is the one saved.
       var base = uri;
-      var options = await _send('OPTIONS', base, auth);
-      if (_isRedirect(options.statusCode)) {
-        final location = options.headers['location'];
-        if (location != null) {
-          base = Uri.parse(
-            JoinLinkParser.normalizeCollectionUrl(
-              base.resolve(location).toString(),
-            ),
-          );
-          options = await _send('OPTIONS', base, auth);
-        }
+      final options = await _send('OPTIONS', base, auth);
+      final answered = options.request?.url;
+      if (answered != null && answered != base) {
+        base = Uri.parse(
+          JoinLinkParser.normalizeCollectionUrl(answered.toString()),
+        );
       }
       final resolved = base.toString();
       final early = _failureFor(options.statusCode, step: _Step.options);
@@ -505,35 +501,26 @@ class WebDavProbe {
     }
   }
 
-  bool _isRedirect(int status) =>
-      status == 301 || status == 302 || status == 307 || status == 308;
-
-  Map<String, String> _authHeader(JoinRequest request) {
-    if (request.username.isEmpty && request.secret.isEmpty) return const {};
-    final token = base64Encode(
-      utf8.encode('${request.username}:${request.secret}'),
-    );
-    return {'Authorization': 'Basic $token'};
-  }
-
   Future<http.StreamedResponse> _send(
     String method,
     Uri uri,
-    Map<String, String> auth, {
+    WebDavAuth auth, {
     List<int>? body,
     String? contentType,
     Map<String, String> headers = const {},
   }) async {
-    final request = http.Request(method, uri)
-      ..followRedirects = false
-      ..headers.addAll(auth)
-      ..headers.addAll(headers)
-      ..headers['User-Agent'] = 'BirdNET-Live';
-    if (body != null) {
-      request.bodyBytes = body;
-      if (contentType != null) request.headers['Content-Type'] = contentType;
-    }
-    final response = await _client.send(request).timeout(timeout);
+    final response = await sendWithAuth(_client, auth, uri, (target) {
+      final request = http.Request(method, target)
+        ..headers.addAll(headers)
+        ..headers['User-Agent'] = 'BirdNET-Live';
+      if (body != null) {
+        request.bodyBytes = body;
+        if (contentType != null) {
+          request.headers['Content-Type'] = contentType;
+        }
+      }
+      return request;
+    }, timeout: timeout);
     // Drain so the connection can be reused.
     await response.stream.drain<void>().timeout(timeout);
     return response;

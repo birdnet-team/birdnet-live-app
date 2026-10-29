@@ -45,7 +45,7 @@ import '../../upload/upload_destination.dart';
 import '../../upload/upload_job.dart';
 import '../../upload/upload_messages.dart';
 import '../../upload/upload_providers.dart';
-import '../../upload/webdav_client.dart';
+import '../../upload/webdav_auth.dart';
 import '../../upload/webdav_probe.dart';
 import '../services/share_export_config.dart';
 
@@ -114,7 +114,7 @@ Future<ShareExportConfig?> pickShareExportConfig(
         if (secret == null) return ProbeFailure.unauthorized;
         return probe.reachability(
           destination.url,
-          WebDavClient.basicAuth(destination.username, secret),
+          WebDavAuth(destination.username, secret),
         );
       },
       onAddDestination: () {

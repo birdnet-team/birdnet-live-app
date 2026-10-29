@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'package:birdnet_live/features/upload/join_link.dart';
+import 'package:birdnet_live/features/upload/webdav_auth.dart';
 import 'package:birdnet_live/features/upload/webdav_probe.dart';
 
 /// A scripted WebDAV server: returns the status for `METHOD path`, 404 for
@@ -16,8 +17,25 @@ class _FakeServer {
   final List<http.Request> requests = [];
   final Map<String, Map<String, String>> responseHeaders = {};
 
+  /// When set, every request without a Digest Authorization header is
+  /// answered 401 with a Digest challenge for this realm.
+  String? digestRealm;
+
   http.Client get client => MockClient((request) async {
     requests.add(request);
+    final realm = digestRealm;
+    if (realm != null &&
+        !(request.headers['Authorization'] ?? '').startsWith('Digest ')) {
+      return http.Response(
+        '',
+        401,
+        headers: {
+          'www-authenticate':
+              'Digest realm="$realm", nonce="n1", algorithm=MD5, qop="auth"',
+        },
+        request: request,
+      );
+    }
     final key = '${request.method} ${request.url.path}';
     var status = routes[key];
     if (status == null) {
@@ -30,7 +48,12 @@ class _FakeServer {
       }
     }
     status ??= 404;
-    return http.Response('', status, headers: responseHeaders[key] ?? {});
+    return http.Response(
+      '',
+      status,
+      headers: responseHeaders[key] ?? {},
+      request: request,
+    );
   });
 
   http.Request? first(String method) {
@@ -445,6 +468,39 @@ void main() {
       );
     });
 
+    test('a Digest-only server is answered after one challenge', () async {
+      final server = _FakeServer({
+        'OPTIONS /dav/': 200,
+        'MKCOL /dav/.birdnet-live/': 201,
+        'PUT /dav/.birdnet-live/$folder.json': 201,
+        'HEAD *': 200,
+        'PROPFIND /dav/': 207,
+      })..digestRealm = 'Breadth';
+
+      final result = await run(
+        server,
+        request(
+          url: 'https://nas.example.org/dav/',
+          username: 'alice',
+          secret: 'secret',
+          source: JoinLinkSource.webdavUrl,
+        ),
+      );
+
+      expect(result.ok, isTrue);
+      expect(result.resolvedUrl, 'https://nas.example.org/dav/');
+      // One Basic attempt, one challenge answer, then preemptive Digest.
+      final schemes = server.requests
+          .map((r) => (r.headers['Authorization'] ?? 'none').split(' ').first)
+          .toList();
+      expect(schemes.first, 'Basic');
+      expect(schemes.where((s) => s == 'Basic').length, 1);
+      expect(schemes.skip(1), everyElement('Digest'));
+      final digest = server.requests[1].headers['Authorization']!;
+      expect(digest, contains('realm="Breadth"'));
+      expect(digest, contains('uri="/dav/"'));
+    });
+
     test('follows one redirect from OPTIONS to the real collection', () async {
       final server = _FakeServer({
         'OPTIONS /.well-known/webdav': 301,
@@ -571,7 +627,7 @@ void main() {
   group('WebDavProbe.reachability', () {
     Future<ProbeFailure?> check(int status) =>
         WebDavProbe(client: _FakeServer({'OPTIONS *': status}).client)
-            .reachability('https://x.example.org/dav/', const {});
+            .reachability('https://x.example.org/dav/', WebDavAuth.none());
 
     test('maps stated refusals and stays silent otherwise', () async {
       expect(await check(401), ProbeFailure.unauthorized);
@@ -592,12 +648,12 @@ void main() {
       });
       expect(
         await WebDavProbe(client: offline)
-            .reachability('https://x.example.org/', const {}),
+            .reachability('https://x.example.org/', WebDavAuth.none()),
         isNull,
       );
       expect(
         await WebDavProbe(client: tls)
-            .reachability('https://x.example.org/', const {}),
+            .reachability('https://x.example.org/', WebDavAuth.none()),
         ProbeFailure.tlsFailure,
       );
     });

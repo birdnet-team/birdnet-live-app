@@ -32,6 +32,7 @@ user-facing side lives in the [Settings guide](../user/settings.md#upload-destin
 | Destination model, keychain secret store, JSON list | `lib/features/upload/upload_destination*.dart`, `secret_store.dart` |
 | Join-link parser | `lib/features/upload/join_link.dart` |
 | Pre-save probe (same sequence as `conformance.py`) | `lib/features/upload/webdav_probe.dart` |
+| Credentials: Basic first, Digest (RFC 7616, MD5/SHA-256, `qop=auth`) on a 401 challenge, one redirect per request | `lib/features/upload/webdav_auth.dart` |
 | Upload engine, queue store, job model | `lib/features/upload/upload_service.dart`, `upload_queue_store.dart`, `upload_job.dart` |
 | Share dialog "Send to" tab | `lib/features/history/widgets/share_options_dialog.dart` |
 | Library chip and status sheet | `lib/features/upload/upload_status_widgets.dart` |

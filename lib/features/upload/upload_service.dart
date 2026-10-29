@@ -41,6 +41,7 @@ import 'upload_destination.dart';
 import 'upload_job.dart';
 import 'upload_naming.dart';
 import 'upload_queue_store.dart';
+import 'webdav_auth.dart';
 import 'webdav_client.dart';
 
 /// Builds the upload bundle for [session]: the Share export as one ZIP (see
@@ -477,7 +478,7 @@ class UploadService extends ChangeNotifier {
     String secret,
     LiveSession session,
   ) async {
-    final auth = WebDavClient.basicAuth(destination.username, secret);
+    final auth = WebDavAuth(destination.username, secret);
     final base = Uri.parse(destination.url);
     final folder = _deviceCode();
     final encodedFolder = Uri.encodeComponent(folder);
@@ -538,7 +539,7 @@ class UploadService extends ChangeNotifier {
     return remotePath;
   }
 
-  Future<void> _put(Uri uri, Map<String, String> auth, File file) async {
+  Future<void> _put(Uri uri, WebDavAuth auth, File file) async {
     final status = await _client.putFile(
       uri,
       auth,
