@@ -29,12 +29,29 @@ enum QuickAction {
   private static let startListeningShortcutItemType = "com.birdnet.startListening"
 
   /// The action a `birdnetlive://` URL asks for, or nil for any other URL.
+  /// Prefix of the action that carries an upload-destination join link
+  /// (#284); the rest is the URL. Dart's quick-action listener routes it.
+  static let joinPrefix = "join:"
+
   static func action(for url: URL) -> String? {
+    if isJoinLink(url) { return joinPrefix + url.absoluteString }
     guard url.scheme?.lowercased() == urlScheme else { return nil }
     // `birdnetlive://listen` parses as a host, `birdnetlive:listen` as a path.
     let target = url.host
       ?? url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     return target.lowercased() == listenTarget ? startListening : nil
+  }
+
+  /// `birdnetlive://join?...` or the docs-site landing page.
+  static func isJoinLink(_ url: URL) -> Bool {
+    let scheme = url.scheme?.lowercased()
+    if scheme == urlScheme {
+      let target = url.host
+        ?? url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+      return target.lowercased() == "join"
+    }
+    return scheme == "https" && url.host?.lowercased() == "birdnet-team.github.io"
+      && url.path.hasPrefix("/birdnet-live-app/join")
   }
 
   /// The action behind a home-screen quick action, or nil if it is not ours.

@@ -17,6 +17,7 @@ import '../recording/recording_service.dart';
 import 'aru_controller.dart';
 import 'aru_runner.dart';
 import 'aru_storage_estimator.dart';
+import '../upload/upload_providers.dart';
 
 typedef AruCycleRecordingStart = Future<String?> Function({
   required String sessionId,
@@ -102,9 +103,16 @@ final aruControllerProvider = Provider<AruController>((ref) {
   var aruCaptureActive = false;
 
   return AruController(
-    saveSession: (session) => session.endTime == null
-        ? repository.saveCheckpoint(session)
-        : repository.save(session),
+    saveSession: (session) async {
+      if (session.endTime == null) {
+        await repository.saveCheckpoint(session);
+        return;
+      }
+      await repository.save(session);
+      // Destinations with "Upload ARU sessions automatically" on get the
+      // finalized session queued right here (#284).
+      await autoEnqueueAruSession(ref, session);
+    },
     discardSession: repository.deleteMetadataOnly,
     startCycleRecording: (session, window) async {
       final metadata = session.aruMetadata;

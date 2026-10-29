@@ -18,6 +18,8 @@ import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_size.dart';
+import '../upload/upload_destinations_screen.dart';
+import '../upload/upload_providers.dart';
 import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
@@ -799,6 +801,31 @@ class SettingsScreen extends ConsumerWidget {
                 value: ref.watch(exportHtmlReportProvider),
                 onChanged: (v) =>
                     ref.read(exportHtmlReportProvider.notifier).set(v ?? false),
+              ),
+              ListTile(
+                leading: const Icon(AppIcons.cloudUpload),
+                title: SettingHelpTitle(
+                  title: l10n.uploadDestinations,
+                  helpBody: l10n.settingsHelpUploadDestinations,
+                ),
+                subtitle: Text(switch (ref
+                    .watch(uploadDestinationsProvider)
+                    .value) {
+                  null => l10n.uploadDestinationsSubtitleNone,
+                  final list when list.isEmpty =>
+                    l10n.uploadDestinationsSubtitleNone,
+                  final list => l10n.uploadDestinationsSubtitleCount(
+                    list.length,
+                  ),
+                }),
+                trailing: const Icon(AppIcons.chevronRight),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const UploadDestinationsScreen(),
+                    ),
+                  );
+                },
               ),
               const Divider(),
             ],

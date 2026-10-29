@@ -554,6 +554,7 @@ nav:
   - Spectrogram: developer/spectrogram.md
   - Localization: developer/localization.md
   - Share Targets: developer/share-targets.md
+  - Upload Drop Server: developer/upload-drop-server.md
   - Storage: developer/database.md
   - API Integration: developer/api-integration.md
   - Releasing: developer/releasing.md

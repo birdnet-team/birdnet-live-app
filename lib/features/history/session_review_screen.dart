@@ -102,6 +102,8 @@ import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import 'services/detection_sharing_service.dart';
+import '../upload/upload_providers.dart';
+import '../upload/upload_status_widgets.dart';
 import 'services/session_audio_trim.dart';
 import 'services/share_export_config.dart';
 import 'widgets/share_options_dialog.dart';
@@ -2566,6 +2568,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       context,
       ref,
       audioAvailable: sessionMayHaveAudio(widget.session),
+      uploadable: [widget.session.id],
     );
     if (config == null || !mounted) return;
     // Save pending changes before sharing so the export is up to date. This
@@ -2574,6 +2577,15 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // would otherwise disagree with what is on screen.
     if (_hasUnsavedWork && !await _save()) return;
     if (!mounted) return;
+    // Uploads read the session back from disk, so they are queued only now
+    // that it is saved. With a share sheet involved they are queued after
+    // it: the queue builds the same export file and would otherwise race
+    // the one handed to the sheet.
+    if (!config.shareLocally) {
+      final queued = await enqueueUploadsFor(ref, [widget.session], config);
+      if (mounted) showUploadQueuedSnackBar(context, queued);
+      return;
+    }
 
     final exportFormats = config.formats;
     final includeAudio = config.includeAudio;
@@ -2626,6 +2638,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     await SharePlus.instance.share(
       shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
     );
+    final queued = await enqueueUploadsFor(ref, [widget.session], config);
+    if (mounted) showUploadQueuedSnackBar(context, queued);
   }
 
   /// Shares one detection after the user picked what to include. The
