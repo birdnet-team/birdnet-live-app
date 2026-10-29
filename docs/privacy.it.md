@@ -1,6 +1,6 @@
 # Informativa sulla Privacy di BirdNET Live
 
-**Ultimo aggiornamento:** 6 agosto 2026
+**Ultimo aggiornamento:** 29 ottobre 2026
 
 Questa Informativa sulla Privacy si applica a **BirdNET Live** (l'**app**). L'app è sviluppata e offerta da **BirdNET-Team** (lo **sviluppatore**, **noi** o **nostro**).
 
@@ -25,7 +25,7 @@ Nessun dato audio viene mai trasmesso a server esterni.
 
 ## Trattamento delle informazioni personali
 
-BirdNET-Team non gestisce un backend dell'app e non riceve tramite BirdNET Live registrazioni, posizione, dati delle Session o altre informazioni personali. L'app non include account utente, pubblicità, analisi, tracciamento o telemetria. Elabora tuttavia audio e posizione sul dispositivo e, solo quando attivi una funzione di rete facoltativa, invia le informazioni descritte in **Servizi di Terze Parti** direttamente al fornitore indicato.
+BirdNET-Team non gestisce un backend dell'app e non riceve tramite BirdNET Live registrazioni, posizione, dati delle Session o altre informazioni personali. L'app non include account utente, pubblicità, analisi, tracciamento o telemetria. Elabora tuttavia audio e posizione sul dispositivo e, solo quando attivi una funzione di rete facoltativa, invia le informazioni descritte in **Servizi di Terze Parti** direttamente al fornitore indicato, oppure, solo quando ne aggiungi una e scegli di caricare, i dati delle Session descritti in **Destinazioni di caricamento** direttamente al server di chi organizza un progetto.
 
 ### Dati archiviati localmente sul tuo dispositivo:
 
@@ -82,7 +82,15 @@ I dati GPS sono archiviati localmente e inclusi nelle esportazioni solo quando c
 
 ## Esportazione Dati
 
-Puoi esportare i dati di sessione in più formati (Raven Selection Tables, CSV, JSON, GPX) e spuntare qualsiasi combinazione di formati contemporaneamente sotto **Impostazioni → Esporta → Formati**; i formati selezionati vengono raggruppati in un unico ZIP insieme alle clip audio e al report HTML autonomo opzionale. Le esportazioni sono generate localmente e condivise tramite il pannello di condivisione del sistema. L'app non carica alcun dato di esportazione su server.
+Puoi esportare i dati di sessione in più formati (Raven Selection Tables, CSV, JSON, GPX) e spuntare qualsiasi combinazione di formati contemporaneamente sotto **Impostazioni → Esporta → Formati**; i formati selezionati vengono raggruppati in un unico ZIP insieme alle clip audio e al report HTML autonomo opzionale. Le esportazioni sono generate localmente e condivise tramite il pannello di condivisione del sistema. L'app non carica alcun dato di esportazione su server, tranne verso le destinazioni di caricamento che hai aggiunto tu stesso (vedi sotto).
+
+## Destinazioni di caricamento
+
+In **Impostazioni → Esportazione e sincronizzazione → Destinazioni di caricamento** puoi aggiungere la cartella WebDAV di un progetto, di solito un File Drop di Nextcloud che chi organizza il progetto ha condiviso con te come link o codice QR. Nulla viene caricato finché non aggiungi una destinazione e poi la spunti nella finestra Condividi, oppure attivi i caricamenti automatici per le Sessions ARU. I caricamenti vanno direttamente dal tuo dispositivo al server dell'organizzatore via HTTPS. BirdNET-Team non gestisce alcun server intermedio e non riceve nulla.
+
+Un caricamento contiene lo stesso contenuto di una condivisione: il record JSON della Session (rilevazioni, orari, coordinate e, se impostati, nome dell'osservatore e del luogo), l'audio, le tabelle e il report che hai eventualmente spuntato, l'ID di caricamento del tuo dispositivo e l'identificativo del partecipante che hai inserito, se presente. La credenziale della destinazione è conservata nel portachiavi del dispositivo.
+
+Le destinazioni sono gestite da chi organizza i progetti, non da BirdNET-Team, secondo le proprie regole di privacy e sicurezza. Chiedi all'organizzatore chi può leggere i dati e per quanto tempo vengono conservati. Sei responsabile di ciò che carichi: non inviare dati che consideri privati o confidenziali o che non puoi trasmettere. L'app non scarica né elimina mai nulla da una destinazione, ed eliminare una Session sul tuo dispositivo non rimuove le copie caricate.
 
 ## Cancellazione Dati
 
