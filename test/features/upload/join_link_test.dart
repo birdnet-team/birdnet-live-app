@@ -10,7 +10,8 @@ void main() {
         '&url=https://cloud.example.org/public.php/webdav/&user=abc&secret=pw'
         '&audio=0&wifi=1',
       )!;
-      expect(request.source, JoinLinkSource.joinLink);
+      // The URL is a public share endpoint, so the share fallbacks apply.
+      expect(request.source, JoinLinkSource.nextcloudShare);
       expect(request.url, 'https://cloud.example.org/public.php/webdav/');
       expect(request.username, 'abc');
       expect(request.secret, 'pw');
@@ -31,6 +32,61 @@ void main() {
       expect(request.includeAudio, isNull);
     });
 
+    test('a join link to a public share endpoint counts as a share', () {
+      final legacy = JoinLinkParser.parse(
+        'https://example.org/join#kind=webdav'
+        '&url=https://cloud.example.org/public.php/webdav/&user=AbC123xyz',
+      )!;
+      expect(legacy.source, JoinLinkSource.nextcloudShare);
+      expect(legacy.username, 'AbC123xyz');
+
+      final current = JoinLinkParser.parse(
+        'https://example.org/join#kind=webdav'
+        '&url=https://cloud.example.org/public.php/dav/files/AbC123xyz/',
+      )!;
+      expect(current.source, JoinLinkSource.nextcloudShare);
+      expect(current.username, 'AbC123xyz');
+
+      final ocis = JoinLinkParser.parse(
+        'birdnetlive://join?url=https://ocis.example.org/remote.php/dav/'
+        'public-files/AbC123xyz/',
+      )!;
+      expect(ocis.source, JoinLinkSource.nextcloudShare);
+      expect(ocis.username, 'AbC123xyz');
+
+      final plain = JoinLinkParser.parse(
+        'birdnetlive://join?url=https://dav.example.org/public.php/webdav/x/',
+      )!;
+      expect(plain.source, JoinLinkSource.joinLink);
+    });
+
+    test('publicShareToken reads the three public endpoint forms', () {
+      expect(
+        JoinLinkParser.publicShareToken(
+          'https://c.example.org/nc/public.php/dav/files/AbC123xyz/',
+        ),
+        'AbC123xyz',
+      );
+      expect(
+        JoinLinkParser.publicShareToken(
+          'https://c.example.org/remote.php/dav/public-files/AbC123xyz/',
+        ),
+        'AbC123xyz',
+      );
+      expect(
+        JoinLinkParser.publicShareToken(
+          'https://c.example.org/public.php/webdav/',
+        ),
+        '',
+      );
+      expect(
+        JoinLinkParser.publicShareToken(
+          'https://c.example.org/remote.php/dav/files/alice/',
+        ),
+        isNull,
+      );
+    });
+
     test('rejects a join link of an unknown kind', () {
       expect(
         JoinLinkParser.parse(
@@ -46,7 +102,10 @@ void main() {
         secret: 'share-pw',
       )!;
       expect(request.source, JoinLinkSource.nextcloudShare);
-      expect(request.url, 'https://cloud.example.org/public.php/webdav/');
+      expect(
+        request.url,
+        'https://cloud.example.org/public.php/dav/files/AbC123xyz/',
+      );
       expect(request.username, 'AbC123xyz');
       expect(request.secret, 'share-pw');
     });
@@ -57,7 +116,7 @@ void main() {
       )!;
       expect(
         request.url,
-        'https://host.example.org/nextcloud/public.php/webdav/',
+        'https://host.example.org/nextcloud/public.php/dav/files/AbCdEf123456/',
       );
       expect(request.username, 'AbCdEf123456');
     });
@@ -119,7 +178,7 @@ void main() {
     expect(Uri.parse(link).query, isEmpty);
 
     final request = JoinLinkParser.parse(link)!;
-    expect(request.source, JoinLinkSource.joinLink);
+    expect(request.source, JoinLinkSource.nextcloudShare);
     expect(request.url, 'https://cloud.example.org/public.php/webdav/');
     expect(request.username, 'AbC#123');
     expect(request.secret, 'p&ss word');

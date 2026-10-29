@@ -96,8 +96,9 @@ hide:
     var share = url.match(/^(https?:\/\/[^\/]+(?:\/.*?)?)\/(?:index\.php\/)?s\/([^\/?#]+)/);
     var user = document.getElementById('mk-user').value.trim();
     if (share) {
-      // Drop a trailing /index.php: the share lives at the install root.
-      url = share[1].replace(/\/index\.php$/, '') + '/public.php/webdav/';
+      // Drop a trailing /index.php: the share lives at the install root. The
+      // app tries the older public endpoints itself when this one is missing.
+      url = share[1].replace(/\/index\.php$/, '') + '/public.php/dav/files/' + encodeURIComponent(share[2]) + '/';
       user = share[2];
     } else {
       if (!/^https?:\/\//.test(url)) url = 'https://' + url;

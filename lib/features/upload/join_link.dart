@@ -8,9 +8,13 @@
 //  1. A BirdNET join link: a URL whose fragment (preferred, because a fragment
 //     is never sent to the web host) or query carries the parameters `kind`,
 //     `url`, `user`, `secret`, `name`, `audio`, and `wifi`. The custom
-//     `birdnetlive://join` scheme is accepted as well.
+//     `birdnetlive://join` scheme is accepted as well. A join link whose URL
+//     is a Nextcloud/ownCloud public share endpoint is treated like case 2,
+//     so the same endpoint fallbacks and the no-password warning apply.
 //  2. A Nextcloud or ownCloud share link, which is converted to the share's
-//     public WebDAV endpoint with the share token as the user name.
+//     public WebDAV endpoint with the share token as the user name. The
+//     probe also tries the older public endpoints (see
+//     WebDavProbe.shareEndpointCandidates) when the server lacks this one.
 //  3. A plain WebDAV collection URL, optionally with a user name and secret
 //     typed into the advanced fields.
 //
@@ -204,15 +208,53 @@ abstract final class JoinLinkParser {
       return null;
     }
     final name = params['name']?.trim();
+    final url = normalizeCollectionUrl(target);
+    final shareToken = publicShareToken(url);
+    var username = params['user']?.trim() ?? '';
+    if (username.isEmpty && shareToken != null) username = shareToken;
     return JoinRequest(
-      url: normalizeCollectionUrl(target),
-      username: params['user']?.trim() ?? '',
+      url: url,
+      username: username,
       secret: params['secret'] ?? '',
       name: name == null || name.isEmpty ? null : name,
       includeAudio: _flag(params['audio']),
       wifiOnly: _flag(params['wifi']),
-      source: JoinLinkSource.joinLink,
+      source: shareToken != null
+          ? JoinLinkSource.nextcloudShare
+          : JoinLinkSource.joinLink,
     );
+  }
+
+  /// The share token named by a Nextcloud/ownCloud public endpoint URL
+  /// (`public.php/dav/files/<token>/`, `remote.php/dav/public-files/<token>/`),
+  /// the empty string for the legacy `public.php/webdav/` form, which carries
+  /// the token as the Basic-auth user name instead, or null for any other
+  /// URL.
+  static String? publicShareToken(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return null;
+    final s = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    for (var i = 0; i < s.length; i++) {
+      if (s[i] == 'public.php' && i + 1 < s.length) {
+        if (s[i + 1] == 'webdav' && i + 2 == s.length) return '';
+        if (s[i + 1] == 'dav' &&
+            i + 3 < s.length &&
+            s[i + 2] == 'files' &&
+            i + 4 == s.length &&
+            _shareToken.hasMatch(s[i + 3])) {
+          return s[i + 3];
+        }
+      }
+      if (s[i] == 'remote.php' &&
+          i + 3 < s.length &&
+          s[i + 1] == 'dav' &&
+          s[i + 2] == 'public-files' &&
+          i + 4 == s.length &&
+          _shareToken.hasMatch(s[i + 3])) {
+        return s[i + 3];
+      }
+    }
+    return null;
   }
 
   /// Nextcloud and ownCloud share tokens: letters and digits, 8 or more.
@@ -221,6 +263,12 @@ abstract final class JoinLinkParser {
   /// `https://host[/prefix]/s/<token>` or `.../index.php/s/<token>`, with
   /// nothing after the token. A WebDAV folder that happens to be called `s`
   /// (`https://dav.example.org/s/birds/`) is left alone.
+  ///
+  /// The result points at `public.php/dav/files/<token>/`, the public
+  /// endpoint Nextcloud 28+ serves. Its predecessor `public.php/webdav/` is
+  /// still answered by current Nextcloud but refuses every PUT into a File
+  /// Drop since Nextcloud 33 ("Files cannot be created in non-existent
+  /// collections"), so it is only a probe fallback for older servers.
   static JoinRequest? _parseShareLink(Uri uri, {required String secret}) {
     if (uri.scheme != 'https' && uri.scheme != 'http') return null;
     final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
@@ -232,7 +280,8 @@ abstract final class JoinLinkParser {
     if (prefix.isNotEmpty && prefix.last == 'index.php') {
       prefix = prefix.sublist(0, prefix.length - 1);
     }
-    final path = '/${[...prefix, 'public.php', 'webdav'].join('/')}/';
+    final path =
+        '/${[...prefix, 'public.php', 'dav', 'files', token].join('/')}/';
     return JoinRequest(
       url: _collection(uri, path).toString(),
       username: token,
