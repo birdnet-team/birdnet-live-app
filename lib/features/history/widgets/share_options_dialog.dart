@@ -1,5 +1,5 @@
 // =============================================================================
-// Share Options Dialog — pick what one share includes
+// Share Options Dialog — pick what one share includes and where it goes
 // =============================================================================
 //
 // Shown after the user taps Share on a session, a multi-session selection,
@@ -10,8 +10,17 @@
 // Each box carries a "?" help button (the same affordance as Settings) and
 // a one-line subtitle naming exactly what a ticked box will add, so the user
 // can tell at a glance whether this share carries a WAV, a Raven table, an
-// HTML report, and so on. The Share button stays disabled while both boxes
-// are off: an empty share is never handed to the platform sheet.
+// HTML report, and so on.
+//
+// Session shares add a second tab, "Send to", listing the platform share
+// sheet and every configured upload destination (#284). The dialog keeps
+// one fixed height whatever the number of destinations: the list scrolls
+// inside its tab, and a badge on the tab counts the ticked destinations so
+// the choice stays visible from the Content tab. Audio and Metadata govern
+// both; the primary button reads Share, Upload, or Share and upload
+// depending on what is ticked. The destinations ticked last time are ticked
+// again so a repeat contribution is two taps. With no destination configured
+// the tab offers to add one. Detection shares show no tabs.
 //
 // `pickShareExportConfig` is the one call share entry points make. It reads
 // the preferences, shows the dialog, and returns the resolved
@@ -23,8 +32,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
 
+import '../../../core/constants/app_constants.dart';
+import '../../../shared/providers/app_providers.dart';
 import '../../../shared/utils/app_icons.dart';
+import '../../../shared/utils/locale_time_format.dart';
 import '../../settings/settings_screen.dart' show SettingHelpTitle;
+import '../../upload/join_destination_screen.dart';
+import '../../upload/upload_destination.dart';
+import '../../upload/upload_job.dart';
+import '../../upload/upload_providers.dart';
 import '../services/share_export_config.dart';
 
 /// Reads the saved export preferences, lets the user adjust Audio and
@@ -33,17 +49,69 @@ import '../services/share_export_config.dart';
 ///
 /// [audioAvailable] greys out the Audio box when the caller already knows
 /// there is no recording or clip to share (see `sessionMayHaveAudio`).
+///
+/// [uploadable] shows the "Send to" tab with the configured upload
+/// destinations; pass the ids of the sessions being shared so the tab can
+/// say which destinations already have them. Detection shares leave it null.
 Future<ShareExportConfig?> pickShareExportConfig(
   BuildContext context,
   WidgetRef ref, {
   bool audioAvailable = true,
-}) {
+  List<String>? uploadable,
+}) async {
   final initial = readShareExportConfig(ref);
-  return showDialog<ShareExportConfig>(
+  var destinations = const <UploadDestination>[];
+  var remembered = const <String>{};
+  var uploadedTo = const <String, DateTime>{};
+  if (uploadable != null) {
+    destinations = await ref.read(uploadDestinationsProvider.future);
+    final prefs = ref.read(sharedPreferencesProvider);
+    remembered = {
+      ...?prefs.getStringList(PrefKeys.shareLastUploadDestinations),
+    };
+    final service = ref.read(uploadServiceProvider);
+    await service.ensureLoaded();
+    final dates = <String, DateTime>{};
+    for (final sessionId in uploadable) {
+      for (final job in service.jobsForSession(sessionId)) {
+        final at = job.finishedAt;
+        if (job.state != UploadJobState.uploaded || at == null) continue;
+        final previous = dates[job.destinationId];
+        if (previous == null || at.isAfter(previous)) {
+          dates[job.destinationId] = at;
+        }
+      }
+    }
+    uploadedTo = dates;
+  }
+  if (!context.mounted) return null;
+  final result = await showDialog<ShareExportConfig>(
     context: context,
-    builder: (_) =>
-        ShareOptionsDialog(initial: initial, audioAvailable: audioAvailable),
+    builder: (_) => ShareOptionsDialog(
+      initial: initial,
+      audioAvailable: audioAvailable,
+      showSendTo: uploadable != null,
+      destinations: destinations,
+      initialDestinationIds: remembered,
+      uploadedTo: uploadedTo,
+      onAddDestination: () {
+        Navigator.of(context).push(
+          MaterialPageRoute<UploadDestination>(
+            builder: (_) => const JoinDestinationScreen(),
+          ),
+        );
+      },
+    ),
   );
+  if (result != null && uploadable != null) {
+    await ref
+        .read(sharedPreferencesProvider)
+        .setStringList(
+          PrefKeys.shareLastUploadDestinations,
+          result.uploadDestinationIds.toList()..sort(),
+        );
+  }
+  return result;
 }
 
 class ShareOptionsDialog extends StatefulWidget {
@@ -51,6 +119,11 @@ class ShareOptionsDialog extends StatefulWidget {
     super.key,
     required this.initial,
     this.audioAvailable = true,
+    this.showSendTo = false,
+    this.destinations = const [],
+    this.initialDestinationIds = const {},
+    this.uploadedTo = const {},
+    this.onAddDestination,
   });
 
   /// The saved export preferences this share starts from.
@@ -60,6 +133,21 @@ class ShareOptionsDialog extends StatefulWidget {
   /// shown unticked and disabled with an explanatory subtitle.
   final bool audioAvailable;
 
+  /// Whether the "Send to" tab (share sheet + upload destinations) is
+  /// shown. Session shares pass true; detection shares keep it false.
+  final bool showSendTo;
+
+  final List<UploadDestination> destinations;
+
+  /// Destinations ticked when the dialog opens (the previous choice).
+  final Set<String> initialDestinationIds;
+
+  /// Most recent successful upload of the shared session(s) per destination.
+  final Map<String, DateTime> uploadedTo;
+
+  /// Opens the join flow; the dialog closes without a result first.
+  final VoidCallback? onAddDestination;
+
   @override
   State<ShareOptionsDialog> createState() => _ShareOptionsDialogState();
 }
@@ -67,8 +155,16 @@ class ShareOptionsDialog extends StatefulWidget {
 class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
   late bool _audio = widget.audioAvailable && widget.initial.includeAudio;
   late bool _metadata = widget.initial.includesMetadata;
+  bool _shareSheet = true;
+  late final Set<String> _destinations = {
+    for (final d in widget.destinations)
+      if (widget.initialDestinationIds.contains(d.id)) d.id,
+  };
 
-  bool get _canShare => _audio || _metadata;
+  bool get _hasContent => _audio || _metadata;
+  bool get _hasTarget =>
+      !widget.showSendTo || _shareSheet || _destinations.isNotEmpty;
+  bool get _canShare => _hasContent && _hasTarget;
 
   String _audioSubtitle(AppLocalizations l10n) {
     if (!widget.audioAvailable) return l10n.shareOptionsAudioUnavailable;
@@ -89,6 +185,135 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
     return labels.join(', ');
   }
 
+  String _confirmLabel(AppLocalizations l10n) {
+    if (!widget.showSendTo || _shareSheet && _destinations.isEmpty) {
+      return l10n.shareOptionsConfirm;
+    }
+    if (_shareSheet) return l10n.shareOptionsShareAndUpload;
+    return l10n.shareOptionsUpload;
+  }
+
+  IconData get _confirmIcon =>
+      widget.showSendTo && !_shareSheet && _destinations.isNotEmpty
+      ? AppIcons.cloudUpload
+      : AppIcons.share;
+
+  Widget _contentBoxes(AppLocalizations l10n) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CheckboxListTile(
+          secondary: const Icon(AppIcons.audioFileOutlined),
+          title: SettingHelpTitle(
+            title: l10n.shareOptionsAudio,
+            helpBody: l10n.shareOptionsHelpAudio,
+          ),
+          subtitle: Text(_audioSubtitle(l10n)),
+          value: _audio,
+          onChanged: widget.audioAvailable
+              ? (v) => setState(() => _audio = v ?? false)
+              : null,
+        ),
+        CheckboxListTile(
+          secondary: const Icon(AppIcons.listAlt),
+          title: SettingHelpTitle(
+            title: l10n.shareOptionsMetadata,
+            helpBody: l10n.shareOptionsHelpMetadata,
+          ),
+          subtitle: Text(_metadataSubtitle(l10n)),
+          value: _metadata,
+          onChanged: (v) => setState(() => _metadata = v ?? false),
+        ),
+      ],
+    );
+  }
+
+  /// The "Send to" list. Scrolls inside the tab so twenty destinations take
+  /// no more room than two.
+  Widget _sendToList(AppLocalizations l10n) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        CheckboxListTile(
+          secondary: const Icon(AppIcons.share),
+          title: Text(l10n.shareOptionsShareSheet),
+          subtitle: Text(l10n.shareOptionsShareSheetSubtitle),
+          value: _shareSheet,
+          onChanged: (v) => setState(() => _shareSheet = v ?? false),
+        ),
+        for (final destination in widget.destinations)
+          CheckboxListTile(
+            secondary: const Icon(AppIcons.cloudUpload),
+            title: Text(destination.name),
+            subtitle: Text(switch (widget.uploadedTo[destination.id]) {
+              null => destination.host,
+              final at => l10n.uploadStatusUploaded(
+                formatLocaleDate(at, l10n.localeName),
+              ),
+            }),
+            value: _destinations.contains(destination.id),
+            onChanged: (v) => setState(() {
+              if (v ?? false) {
+                _destinations.add(destination.id);
+              } else {
+                _destinations.remove(destination.id);
+              }
+            }),
+          ),
+        if (widget.destinations.isEmpty)
+          ListTile(
+            leading: const Icon(AppIcons.add),
+            title: Text(l10n.uploadAddDestination),
+            trailing: const Icon(AppIcons.chevronRight),
+            onTap: () {
+              Navigator.of(context).pop();
+              widget.onAddDestination?.call();
+            },
+          ),
+      ],
+    );
+  }
+
+  /// Tabs for session shares. The pane height is fixed from the screen
+  /// height so the dialog never grows with the destination list.
+  Widget _tabbed(BuildContext context, AppLocalizations l10n) {
+    final paneHeight = (MediaQuery.sizeOf(context).height * 0.4).clamp(
+      200.0,
+      360.0,
+    );
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TabBar(
+            tabs: [
+              Tab(text: l10n.shareOptionsTabContent),
+              Tab(
+                child: Badge.count(
+                  count: _destinations.length,
+                  isLabelVisible: _destinations.isNotEmpty,
+                  offset: const Offset(14, -6),
+                  child: Text(l10n.shareOptionsSendTo),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: paneHeight,
+            child: TabBarView(
+              children: [
+                SingleChildScrollView(child: _contentBoxes(l10n)),
+                _sendToList(l10n),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -98,39 +323,16 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
       // where the pre-ticked state comes from and that it is per share.
       title: SettingHelpTitle(
         title: l10n.shareOptionsTitle,
-        helpBody: l10n.shareOptionsHelpDialog,
+        helpBody: widget.showSendTo
+            ? '${l10n.shareOptionsHelpDialog}\n\n${l10n.shareOptionsHelpSendTo}'
+            : l10n.shareOptionsHelpDialog,
       ),
       contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CheckboxListTile(
-              secondary: const Icon(AppIcons.audioFileOutlined),
-              title: SettingHelpTitle(
-                title: l10n.shareOptionsAudio,
-                helpBody: l10n.shareOptionsHelpAudio,
-              ),
-              subtitle: Text(_audioSubtitle(l10n)),
-              value: _audio,
-              onChanged: widget.audioAvailable
-                  ? (v) => setState(() => _audio = v ?? false)
-                  : null,
-            ),
-            CheckboxListTile(
-              secondary: const Icon(AppIcons.listAlt),
-              title: SettingHelpTitle(
-                title: l10n.shareOptionsMetadata,
-                helpBody: l10n.shareOptionsHelpMetadata,
-              ),
-              subtitle: Text(_metadataSubtitle(l10n)),
-              value: _metadata,
-              onChanged: (v) => setState(() => _metadata = v ?? false),
-            ),
-          ],
-        ),
+        child: widget.showSendTo
+            ? _tabbed(context, l10n)
+            : SingleChildScrollView(child: _contentBoxes(l10n)),
       ),
       actions: [
         TextButton(
@@ -143,11 +345,15 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
                   widget.initial.withChoices(
                     audio: _audio,
                     metadata: _metadata,
+                    shareLocally: !widget.showSendTo || _shareSheet,
+                    uploadDestinationIds: widget.showSendTo
+                        ? Set.unmodifiable(_destinations)
+                        : const {},
                   ),
                 )
               : null,
-          icon: const Icon(AppIcons.share, size: 18),
-          label: Text(l10n.shareOptionsConfirm),
+          icon: Icon(_confirmIcon, size: 18),
+          label: Text(_confirmLabel(l10n)),
         ),
       ],
     );

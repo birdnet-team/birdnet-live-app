@@ -39,6 +39,20 @@ class SceneDelegate: FlutterSceneDelegate {
     }
   }
 
+  /// A universal link (the docs-site join page) while the app is running or
+  /// at launch. Without an apple-app-site-association file on the docs host
+  /// iOS opens the page in Safari instead, and the page's button sends the
+  /// `birdnetlive://join` form through `openURLContexts` above.
+  override func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+      let url = userActivity.webpageURL,
+      appDelegate?.queueQuickAction(url: url) ?? false
+    {
+      return
+    }
+    super.scene(scene, continue: userActivity)
+  }
+
   /// Home-screen quick action chosen while the app was already running. A cold
   /// launch from the same menu arrives through `connectionOptions.shortcutItem`
   /// above instead.

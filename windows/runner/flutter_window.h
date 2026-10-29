@@ -13,6 +13,7 @@
 #include <mutex>
 #include <queue>
 
+#include "secure_store_channel.h"
 #include "tts_channel.h"
 #include "win32_window.h"
 
@@ -63,6 +64,10 @@ class FlutterWindow : public Win32Window {
   // `com.birdnet/tts`: spoken announcements. Destroyed before the Flutter
   // controller in OnDestroy so no reply can reach a torn-down engine.
   std::unique_ptr<TtsChannel> tts_channel_;
+
+  // `com.birdnet/secure_store`: Credential Manager-backed secrets for upload
+  // destinations. Same lifetime rule as the TTS channel.
+  std::unique_ptr<SecureStoreChannel> secure_store_channel_;
 
   std::shared_ptr<MainThreadQueue> main_thread_queue_;
 };

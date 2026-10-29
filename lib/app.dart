@@ -25,6 +25,8 @@ import 'shared/services/quick_action_service.dart';
 import 'shared/services/shared_media_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/upload/join_destination_screen.dart';
+import 'features/upload/upload_providers.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -142,7 +144,7 @@ class App extends ConsumerWidget {
               launchAction: launchQuickAction,
               child: _SharedAudioListener(
                 launchSharedFile: launchSharedFile,
-                child: const _AppGate(),
+                child: const _UploadQueueListener(child: _AppGate()),
               ),
             ),
           ),
@@ -297,6 +299,26 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     }
   }
 
+  /// Opens the join sheet for an upload-destination link (#284). The same
+  /// gates as Quick Listen apply: onboarding and the terms come first.
+  Future<void> _openJoinLink(String link) async {
+    if (!ref.read(onboardingCompleteProvider) ||
+        !ref.read(termsAcceptedProvider)) {
+      return;
+    }
+    // On a cold start the link arrives while the first frame is being
+    // built and the navigator is locked; wait for the frame to end first.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+    await navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => JoinDestinationScreen(initialInput: link),
+      ),
+    );
+  }
+
   void _onNativeAction(String action) {
     if (!mounted) return;
     unawaited(_handleQuickAction(action));
@@ -306,6 +328,13 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     String action, {
     bool fromLaunch = false,
   }) async {
+    if (action.startsWith(QuickActionService.joinActionPrefix)) {
+      if (fromLaunch) _launchFrame.release();
+      await _openJoinLink(
+        action.substring(QuickActionService.joinActionPrefix.length),
+      );
+      return;
+    }
     if (action != QuickActionService.startListeningAction ||
         _handlingQuickAction) {
       // Only the launch delivery owns the hold. A cold start also replays the
@@ -428,6 +457,56 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
 /// this, the user watches Home paint and then get navigated away from. Frames
 /// are still built and laid out while held — only compositing waits — so the
 /// work that decides the destination proceeds normally.
+/// Kicks the upload queue when the app starts and whenever it returns to the
+/// foreground, so sessions queued while offline go out as soon as the user
+/// is back on a network. Enqueueing itself also triggers a run (see
+/// UploadService.enqueue); this listener covers the two moments nothing
+/// else would.
+class _UploadQueueListener extends ConsumerStatefulWidget {
+  const _UploadQueueListener({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_UploadQueueListener> createState() =>
+      _UploadQueueListenerState();
+}
+
+class _UploadQueueListenerState extends ConsumerState<_UploadQueueListener>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _kick();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _kick();
+  }
+
+  void _kick() {
+    unawaited(
+      ref.read(uploadServiceProvider).processQueue().catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        debugPrint('Upload queue run failed: $error\n$stackTrace');
+      }),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _LaunchFrameHold {
   bool _held = false;
   Timer? _timeout;

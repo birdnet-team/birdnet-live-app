@@ -5183,5 +5183,385 @@
   "shareOptionsHelpDialog": "Choose what this share includes. The boxes start out matching Settings › Export & Sync. Changes here apply to this share only and leave those settings untouched.",
   "@shareOptionsHelpDialog": {
     "description": "Help text behind the ? next to the share options dialog title: explains that the boxes start from the Export & Sync settings and that changes apply to this share only"
+  },
+  "uploadDestinations": "Upload destinations",
+  "@uploadDestinations": {
+    "description": "Settings tile and screen title for the list of WebDAV upload destinations"
+  },
+  "settingsHelpUploadDestinations": "A project lead can hand you a join link or QR code for their WebDAV storage, such as a Nextcloud File Drop. Add it here, then tick the destination in the Share dialog to upload a session. Uploads go one way: nothing is downloaded, and deleting a session on this device never removes it from the server. Credentials are kept in the device keychain.",
+  "@settingsHelpUploadDestinations": {
+    "description": "Help text for the Upload destinations setting"
+  },
+  "uploadDestinationsSubtitleNone": "Send finalized sessions to a project's storage",
+  "@uploadDestinationsSubtitleNone": {
+    "description": "Settings tile subtitle when no destination is configured"
+  },
+  "uploadDestinationsSubtitleCount": "{count, plural, =1{1 destination} other{{count} destinations}}",
+  "@uploadDestinationsSubtitleCount": {
+    "description": "Settings tile subtitle with the number of configured destinations",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadDestinationsEmptyTitle": "No upload destinations yet",
+  "@uploadDestinationsEmptyTitle": {
+    "description": "Empty-state title on the Upload destinations screen"
+  },
+  "uploadDestinationsEmptyBody": "Paste the join link from a project lead, or scan their QR code with your camera. Sessions are only uploaded when you choose to share them.",
+  "@uploadDestinationsEmptyBody": {
+    "description": "Empty-state body on the Upload destinations screen"
+  },
+  "uploadAddDestination": "Add destination",
+  "@uploadAddDestination": {
+    "description": "Button that opens the join flow for a new destination"
+  },
+  "uploadDestinationWifiOnly": "Upload on Wi-Fi only",
+  "@uploadDestinationWifiOnly": {
+    "description": "Switch: upload only while on Wi-Fi"
+  },
+  "uploadDestinationAutoAru": "Upload ARU sessions automatically",
+  "@uploadDestinationAutoAru": {
+    "description": "Switch: queue every finalized ARU session automatically"
+  },
+  "uploadDestinationAutoAruSubtitle": "Every finalized ARU Session is queued for this destination without asking.",
+  "@uploadDestinationAutoAruSubtitle": {
+    "description": "Subtitle of the ARU auto-upload switch"
+  },
+  "uploadDestinationRename": "Rename",
+  "@uploadDestinationRename": {
+    "description": "Action and dialog title for renaming a destination"
+  },
+  "uploadDestinationTest": "Test connection",
+  "@uploadDestinationTest": {
+    "description": "Action that re-runs the connection probe"
+  },
+  "uploadDestinationRemove": "Remove destination",
+  "@uploadDestinationRemove": {
+    "description": "Action and confirm button for removing a destination"
+  },
+  "uploadDestinationRemoveConfirm": "Remove \"{name}\"? Sessions already uploaded stay on the server. Pending uploads to it are dropped.",
+  "@uploadDestinationRemoveConfirm": {
+    "description": "Confirmation body before removing a destination",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationName": "Name",
+  "@uploadDestinationName": {
+    "description": "Label of the destination name field"
+  },
+  "uploadDestinationServer": "Server",
+  "@uploadDestinationServer": {
+    "description": "Label above the destination URL"
+  },
+  "uploadDestinationUser": "User name",
+  "@uploadDestinationUser": {
+    "description": "Label above the destination user name"
+  },
+  "uploadDestinationAdded": "Added {date}",
+  "@uploadDestinationAdded": {
+    "description": "When the destination was added",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationLastUpload": "Last upload {date}",
+  "@uploadDestinationLastUpload": {
+    "description": "When the last upload to this destination succeeded",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationNeverUploaded": "Nothing uploaded yet",
+  "@uploadDestinationNeverUploaded": {
+    "description": "Shown when nothing was uploaded to a destination yet"
+  },
+  "uploadDestinationFlatLayout": "This server does not allow folders, so uploads use flat file names.",
+  "@uploadDestinationFlatLayout": {
+    "description": "Note when the server refused to create folders during the probe"
+  },
+  "uploadDestinationSecretMissing": "The credential for this destination is missing from the device keychain. Remove the destination and add it again.",
+  "@uploadDestinationSecretMissing": {
+    "description": "Error when the keychain no longer holds the destination credential"
+  },
+  "uploadJoinTitle": "Add upload destination",
+  "@uploadJoinTitle": {
+    "description": "Title of the screen that adds a destination"
+  },
+  "uploadJoinLinkLabel": "Join link or server address",
+  "@uploadJoinLinkLabel": {
+    "description": "Label of the single input field for a join link, share link, or WebDAV URL"
+  },
+  "uploadJoinLinkHint": "https://cloud.example.org/s/…",
+  "@uploadJoinLinkHint": {
+    "description": "Placeholder of the join link field"
+  },
+  "uploadJoinLinkHelp": "Paste the join link or Nextcloud share link you received. A plain WebDAV address works too.",
+  "@uploadJoinLinkHelp": {
+    "description": "Explanation above the join link field"
+  },
+  "uploadJoinPaste": "Paste",
+  "@uploadJoinPaste": {
+    "description": "Tooltip of the paste-from-clipboard button"
+  },
+  "uploadJoinAdvanced": "Advanced",
+  "@uploadJoinAdvanced": {
+    "description": "Expander that reveals user name and password fields"
+  },
+  "uploadJoinUsername": "User name",
+  "@uploadJoinUsername": {
+    "description": "Label of the advanced user name field"
+  },
+  "uploadJoinPassword": "Password or token",
+  "@uploadJoinPassword": {
+    "description": "Label of the advanced password or token field"
+  },
+  "uploadJoinContinue": "Test connection",
+  "@uploadJoinContinue": {
+    "description": "Button that runs the connection probe"
+  },
+  "uploadJoinTesting": "Testing connection…",
+  "@uploadJoinTesting": {
+    "description": "Button label while the probe runs"
+  },
+  "uploadJoinInvalidInput": "This does not look like a link or server address.",
+  "@uploadJoinInvalidInput": {
+    "description": "Field error when the text cannot be parsed as a link or URL"
+  },
+  "uploadJoinSuccess": "Connection works",
+  "@uploadJoinSuccess": {
+    "description": "Headline when the probe passed"
+  },
+  "uploadJoinSave": "Save destination",
+  "@uploadJoinSave": {
+    "description": "Button that saves the probed destination"
+  },
+  "uploadJoinNameLabel": "Destination name",
+  "@uploadJoinNameLabel": {
+    "description": "Label of the name field shown after a successful probe"
+  },
+  "uploadJoinSaveFailed": "The destination could not be saved. {error}",
+  "@uploadJoinSaveFailed": {
+    "description": "Error when the destination list could not be written",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadJoinSecretFailed": "The credential could not be stored in the device keychain.",
+  "@uploadJoinSecretFailed": {
+    "description": "Error when the credential could not be written to the keychain"
+  },
+  "uploadProbeInvalidUrl": "The address is not a valid URL.",
+  "@uploadProbeInvalidUrl": {
+    "description": "Probe failure: not a valid URL"
+  },
+  "uploadProbeInsecureHttp": "This address uses plain HTTP. Outside your local network only https:// addresses are accepted.",
+  "@uploadProbeInsecureHttp": {
+    "description": "Probe failure: plain HTTP to a public address"
+  },
+  "uploadProbeHostNotFound": "The server name could not be found. Check the address for typos.",
+  "@uploadProbeHostNotFound": {
+    "description": "Probe failure: DNS lookup failed"
+  },
+  "uploadProbeTlsFailure": "The server's certificate could not be verified. Self-signed certificates are not supported.",
+  "@uploadProbeTlsFailure": {
+    "description": "Probe failure: certificate could not be verified"
+  },
+  "uploadProbeConnectionFailed": "The server did not accept the connection. Check your network or try again later.",
+  "@uploadProbeConnectionFailed": {
+    "description": "Probe failure: connection refused or dropped"
+  },
+  "uploadProbeTimeout": "The server did not answer in time.",
+  "@uploadProbeTimeout": {
+    "description": "Probe failure: no answer within the timeout"
+  },
+  "uploadProbeUnauthorized": "The server rejected the credentials. For a Nextcloud share use the share password; for an account use an app password, not your login password.",
+  "@uploadProbeUnauthorized": {
+    "description": "Probe failure: HTTP 401"
+  },
+  "uploadProbeNotWebDav": "This address is not a WebDAV endpoint. It may be the web page of the share rather than the share itself.",
+  "@uploadProbeNotWebDav": {
+    "description": "Probe failure: PUT not allowed, probably a web page URL"
+  },
+  "uploadProbeUploadForbidden": "Uploads are not allowed here. Ask the project lead to allow uploads on this share.",
+  "@uploadProbeUploadForbidden": {
+    "description": "Probe failure: HTTP 403 on upload"
+  },
+  "uploadProbeNotFound": "The folder does not exist on the server.",
+  "@uploadProbeNotFound": {
+    "description": "Probe failure: HTTP 404 for the folder"
+  },
+  "uploadProbeQuotaExceeded": "The storage is full.",
+  "@uploadProbeQuotaExceeded": {
+    "description": "Probe failure: HTTP 507"
+  },
+  "uploadProbeServerError": "The server reported an error ({code}).",
+  "@uploadProbeServerError": {
+    "description": "Probe failure: HTTP 5xx with the status code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadWarnCanReadRemote": "This credential can list the destination, so it may be able to read other contributors' data. Prefer a File Drop share or a write-only token.",
+  "@uploadWarnCanReadRemote": {
+    "description": "Probe warning: the credential could list the collection"
+  },
+  "uploadWarnShareWithoutPassword": "This share has no password. Anyone with the link can upload. Ask the project lead to set one.",
+  "@uploadWarnShareWithoutPassword": {
+    "description": "Probe warning: a Nextcloud share accepted uploads with no password"
+  },
+  "uploadWarnInsecureLan": "Plain HTTP to a local address. Data is not encrypted on the way.",
+  "@uploadWarnInsecureLan": {
+    "description": "Probe warning: plain HTTP to a LAN address"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Generic Save button label"
+  },
+  "uploadStatusTitle": "Uploads",
+  "@uploadStatusTitle": {
+    "description": "Title of the per-session upload status sheet"
+  },
+  "uploadStatusQueued": "Queued",
+  "@uploadStatusQueued": {
+    "description": "Job state: waiting in the queue"
+  },
+  "uploadStatusUploading": "Uploading…",
+  "@uploadStatusUploading": {
+    "description": "Job state: upload in progress"
+  },
+  "uploadStatusUploaded": "Uploaded {date}",
+  "@uploadStatusUploaded": {
+    "description": "Job state: finished, with the date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusFailed": "Failed, will retry",
+  "@uploadStatusFailed": {
+    "description": "Job state: failed, will retry automatically"
+  },
+  "uploadStatusGaveUp": "Failed",
+  "@uploadStatusGaveUp": {
+    "description": "Job state: failed and no longer retried"
+  },
+  "uploadStatusWaitingForWifi": "Waiting for Wi-Fi",
+  "@uploadStatusWaitingForWifi": {
+    "description": "Job state: destination is Wi-Fi only and the device is on cellular"
+  },
+  "uploadStatusOffline": "Waiting for a network",
+  "@uploadStatusOffline": {
+    "description": "Job state: no network at the moment"
+  },
+  "uploadRetryNow": "Retry now",
+  "@uploadRetryNow": {
+    "description": "Menu action: retry a failed upload immediately"
+  },
+  "uploadCancel": "Remove from queue",
+  "@uploadCancel": {
+    "description": "Menu action: remove a pending upload from the queue"
+  },
+  "uploadDestinationUnknown": "Removed destination",
+  "@uploadDestinationUnknown": {
+    "description": "Shown in place of a destination name when it was removed"
+  },
+  "uploadErrorServer": "The server reported an error.",
+  "@uploadErrorServer": {
+    "description": "Upload error: the server answered with a 5xx status"
+  },
+  "uploadErrorNetwork": "The connection was lost during the upload.",
+  "@uploadErrorNetwork": {
+    "description": "Upload error: connection or transfer failed"
+  },
+  "uploadErrorExport": "The session export could not be built.",
+  "@uploadErrorExport": {
+    "description": "Upload error: the session export could not be built"
+  },
+  "uploadErrorDestinationMissing": "The destination was removed.",
+  "@uploadErrorDestinationMissing": {
+    "description": "Upload error: the destination was removed before the upload ran"
+  },
+  "uploadErrorSessionMissing": "The session no longer exists on this device.",
+  "@uploadErrorSessionMissing": {
+    "description": "Upload error: the session was deleted before the upload ran"
+  },
+  "shareOptionsSendTo": "Send to",
+  "@shareOptionsSendTo": {
+    "description": "Group header in the Share dialog listing the share sheet and upload destinations"
+  },
+  "shareOptionsHelpSendTo": "Share sheet hands the export to other apps, files, or messages, as before. Each upload destination you tick receives the same content in the background: a JSON record, the bundle chosen above, and a completion marker. Uploads retry on their own and wait for Wi-Fi when the destination asks for it. The destinations ticked here are remembered for the next share. Add destinations under Settings › Export & Sync › Upload destinations.",
+  "@shareOptionsHelpSendTo": {
+    "description": "Help text for the Send to group in the Share dialog"
+  },
+  "shareOptionsShareSheet": "Share sheet",
+  "@shareOptionsShareSheet": {
+    "description": "Checkbox in the Share dialog: hand the export to the platform share sheet"
+  },
+  "shareOptionsShareSheetSubtitle": "Other apps, files, or messages",
+  "@shareOptionsShareSheetSubtitle": {
+    "description": "Subtitle of the share sheet checkbox"
+  },
+  "shareOptionsUpload": "Upload",
+  "@shareOptionsUpload": {
+    "description": "Primary button when only upload destinations are ticked"
+  },
+  "shareOptionsShareAndUpload": "Share and upload",
+  "@shareOptionsShareAndUpload": {
+    "description": "Primary button when the share sheet and at least one destination are ticked"
+  },
+  "uploadQueuedSnack": "{count, plural, =1{1 session queued for upload} other{{count} sessions queued for upload}}",
+  "@uploadQueuedSnack": {
+    "description": "Snackbar after the Share dialog queued sessions for upload",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareOptionsTabContent": "Content",
+  "@shareOptionsTabContent": {
+    "description": "First tab of the Share dialog: what the share contains (Audio, Metadata)"
+  },
+  "uploadDestinationShareQr": "Show join code",
+  "@uploadDestinationShareQr": {
+    "description": "Tile on the destination screen that shows the join link as a QR code"
+  },
+  "uploadDestinationShareQrSubtitle": "Let another phone join this destination",
+  "@uploadDestinationShareQrSubtitle": {
+    "description": "Subtitle of the join-code tile"
+  },
+  "uploadJoinQrTitle": "Join on another device",
+  "@uploadJoinQrTitle": {
+    "description": "Title of the dialog showing the join QR code"
+  },
+  "uploadJoinQrBody": "Scan this code with the other phone's camera, or copy the link and send it. Anyone with the code can upload to this destination, so share it only with people you trust.",
+  "@uploadJoinQrBody": {
+    "description": "Explanation under the QR code, including the warning that it carries the credential"
+  },
+  "uploadJoinQrCopy": "Copy link",
+  "@uploadJoinQrCopy": {
+    "description": "Button that copies the join link to the clipboard"
+  },
+  "uploadJoinQrCopied": "Join link copied",
+  "@uploadJoinQrCopied": {
+    "description": "Snackbar after the join link was copied"
+  },
+  "uploadChipUploaded": "Uploaded",
+  "@uploadChipUploaded": {
+    "description": "Session-tile chip label once every upload of the session finished"
   }
 }

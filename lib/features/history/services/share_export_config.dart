@@ -46,6 +46,8 @@ class ShareExportConfig {
     this.shareAudioAsWav = false,
     this.includeHtmlReport = false,
     this.includeAppMetadata = false,
+    this.shareLocally = true,
+    this.uploadDestinationIds = const {},
   });
 
   /// Format used when the user ticks Metadata although every metadata
@@ -59,8 +61,38 @@ class ShareExportConfig {
   final bool includeHtmlReport;
   final bool includeAppMetadata;
 
+  /// Hand the export to the platform share sheet. Off when the user ticked
+  /// only upload destinations in the Share dialog.
+  final bool shareLocally;
+
+  /// Upload destinations ticked in the Share dialog (#284). Per share only;
+  /// never persisted with the export preferences.
+  final Set<String> uploadDestinationIds;
+
   /// True when at least one metadata artifact (table, report, side-file)
   /// would be written. This is what the dialog's Metadata box reflects.
+  /// Persisted with queued uploads so a job survives a restart unchanged.
+  Map<String, dynamic> toJson() => {
+    'formats': formats.toList()..sort(),
+    'includeAudio': includeAudio,
+    'shareAudioAsWav': shareAudioAsWav,
+    'includeHtmlReport': includeHtmlReport,
+    'includeAppMetadata': includeAppMetadata,
+  };
+
+  factory ShareExportConfig.fromJson(Map<String, dynamic> json) {
+    return ShareExportConfig(
+      formats: {
+        for (final f in (json['formats'] as List<dynamic>? ?? const []))
+          f as String,
+      },
+      includeAudio: json['includeAudio'] as bool? ?? false,
+      shareAudioAsWav: json['shareAudioAsWav'] as bool? ?? false,
+      includeHtmlReport: json['includeHtmlReport'] as bool? ?? false,
+      includeAppMetadata: json['includeAppMetadata'] as bool? ?? false,
+    );
+  }
+
   bool get includesMetadata =>
       formats.isNotEmpty || includeHtmlReport || includeAppMetadata;
 
@@ -68,12 +100,19 @@ class ShareExportConfig {
   bool get isEmpty => !includeAudio && !includesMetadata;
 
   /// Applies the dialog's two choices to this configuration.
-  ShareExportConfig withChoices({required bool audio, required bool metadata}) {
+  ShareExportConfig withChoices({
+    required bool audio,
+    required bool metadata,
+    bool shareLocally = true,
+    Set<String> uploadDestinationIds = const {},
+  }) {
     if (!metadata) {
       return ShareExportConfig(
         formats: const {},
         includeAudio: audio,
         shareAudioAsWav: shareAudioAsWav,
+        shareLocally: shareLocally,
+        uploadDestinationIds: uploadDestinationIds,
       );
     }
     return ShareExportConfig(
@@ -82,6 +121,8 @@ class ShareExportConfig {
       shareAudioAsWav: shareAudioAsWav,
       includeHtmlReport: includeHtmlReport,
       includeAppMetadata: includeAppMetadata,
+      shareLocally: shareLocally,
+      uploadDestinationIds: uploadDestinationIds,
     );
   }
 

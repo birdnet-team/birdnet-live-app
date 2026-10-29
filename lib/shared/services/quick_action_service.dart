@@ -22,6 +22,10 @@ abstract final class QuickActionService {
   /// Action sent by every Quick Listen entry point.
   static const String startListeningAction = 'startListening';
 
+  /// Prefix of an action that carries an upload-destination join link
+  /// (#284): `join:<url>`. Produced by MainActivity.kt and QuickAction.swift.
+  static const String joinActionPrefix = 'join:';
+
   static const MethodChannel _intentChannel = MethodChannel(
     'com.birdnet/quick_action_intents',
   );

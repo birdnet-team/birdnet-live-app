@@ -49,6 +49,8 @@ abstract final class AppIcons {
   static const IconData closeRounded = Symbols.close_rounded;
   static const IconData cloudOff = Symbols.cloud_off;
   static const IconData cloud = Symbols.cloud;
+  static const IconData cloudUpload = Symbols.cloud_upload;
+  static const IconData contentPaste = Symbols.content_paste;
   static const IconData cloudy = Symbols.cloudy;
   static const IconData code = Symbols.code;
   static const IconData contentCut = Symbols.content_cut;
@@ -100,6 +102,8 @@ abstract final class AppIcons {
   static const IconData locationOn = Symbols.location_on;
   static const IconData locationOnFilled = Icons.location_on;
   static const IconData locationOnRounded = Symbols.location_on_rounded;
+  static const IconData key = Symbols.key;
+  static const IconData link = Symbols.link;
   static const IconData lockOutline = Symbols.lock;
   static const IconData map = Symbols.location_on;
   static const IconData mapSheet = Symbols.map;
@@ -139,6 +143,7 @@ abstract final class AppIcons {
   static const IconData publicOffRounded = Symbols.public_off_rounded;
   static const IconData radioButtonUnchecked = Symbols.radio_button_unchecked;
   static const IconData redo = Symbols.redo;
+  static const IconData qrCode = Symbols.qr_code;
   static const IconData refresh = Symbols.refresh;
   static const IconData restartAlt = Symbols.restart_alt;
   static const IconData repeatRounded = Symbols.repeat_rounded;
@@ -196,6 +201,7 @@ abstract final class AppIcons {
 
   /// Visual observation ("seen"). Pairs with [hearing] on manual detections.
   static const IconData visibility = Symbols.visibility;
+  static const IconData visibilityOff = Symbols.visibility_off;
   static const IconData volunteerActivism = Symbols.volunteer_activism;
   static const IconData volumeDown = Symbols.volume_down;
   static const IconData volumeMuteRounded = Symbols.volume_mute_rounded;
