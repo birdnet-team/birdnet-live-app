@@ -33,6 +33,7 @@ import threading
 import time
 import urllib.parse
 import uuid
+import zipfile
 from collections import defaultdict, deque
 from xml.sax.saxutils import escape as xml_escape
 from datetime import datetime, timezone
@@ -44,7 +45,9 @@ ADMIN_METHODS = CONTRIBUTOR_METHODS + ("PROPFIND", "GET")
 ADMIN_ID = "admin"
 DEFAULT_CONFIG = "drop_config.json"
 JOIN_LINK_BASE = "https://birdnet-team.github.io/birdnet-live-app/join"
-SEGMENT_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9._#@()\[\]+=,& -]{0,254}$")
+# A leading dot is allowed for the app's hidden `.birdnet-live` folder; `.`
+# and `..` themselves are refused separately.
+SEGMENT_RE = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9._#@()\[\]+=,& -]{0,254}$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}$")
 
 
@@ -302,14 +305,17 @@ class DropHandler(BaseHTTPRequestHandler):
             self._drain()
             self._reply(413, who=token_id)
             return
-        if local.exists():
+        if local.is_dir():
             self._drain()
-            self._reply(412, who=token_id)
+            self._reply(409, who=token_id)
             return
         local.parent.mkdir(parents=True, exist_ok=True)
         # Each upload streams into its own temp file and is published with an
-        # exclusive create, so two uploads of one path can neither interleave
-        # nor overwrite: exactly one gets 201, the other 412.
+        # atomic rename, so a reader never sees a half-written file and two
+        # uploads of one path cannot interleave: the last one to finish wins.
+        # A contributor may replace their own files; that is how the app
+        # re-uploads a session after an edit.
+        existed = local.exists()
         tmp = local.with_name(f".{local.name}.{uuid.uuid4().hex}.part")
         remaining = length
         try:
@@ -320,19 +326,13 @@ class DropHandler(BaseHTTPRequestHandler):
                         raise ConnectionError("client closed early")
                     out.write(chunk)
                     remaining -= len(chunk)
-            try:
-                os.link(tmp, local)
-            except FileExistsError:
-                tmp.unlink(missing_ok=True)
-                self._reply(412, who=token_id)
-                return
-            tmp.unlink(missing_ok=True)
+            os.replace(tmp, local)
         except (ConnectionError, OSError):
             tmp.unlink(missing_ok=True)
             self.close_connection = True
             self._reply(500, who=token_id)
             return
-        self._reply(201, who=token_id)
+        self._reply(204 if existed else 201, who=token_id)
 
     def do_HEAD(self):
         routed = self._route()
@@ -559,37 +559,81 @@ def cmd_list(args) -> int:
 # ── collect ──────────────────────────────────────────────────────────────────
 
 
-def _complete_uploads(project_dir: Path):
-    """Yields (token_id, device_id, session_uuid, version, folder) for finished uploads."""
-    for marker in project_dir.glob("*/*/*/v*/_complete.json"):
-        folder = marker.parent
-        try:
-            version = int(folder.name[1:])
-        except ValueError:
+def _upload_bundles(project_dir: Path):
+    """Yields (token_id, device_code, zip_path, record) for every readable upload.
+
+    The app writes one ZIP per session under `<token>/<device code>/` and puts
+    the session's JSON export inside it. A ZIP that does not open or holds no
+    JSON record is still being written or was not made by the app and is
+    skipped.
+    """
+    for zip_path in sorted(project_dir.glob("*/*/*.zip")):
+        if zip_path.name.startswith("."):
             continue
-        session_dir = folder.parent
-        device_dir = session_dir.parent
-        token_dir = device_dir.parent
-        yield token_dir.name, device_dir.name, session_dir.name, version, folder
+        folder = zip_path.parent
+        token_dir = folder.parent
+        record = _session_record(zip_path)
+        if record is None:
+            continue
+        yield token_dir.name, folder.name, zip_path, record
+
+
+def _session_record(zip_path: Path) -> dict | None:
+    try:
+        with zipfile.ZipFile(zip_path) as bundle:
+            if bundle.testzip() is not None:
+                return None
+            for name in bundle.namelist():
+                if "/" in name or not name.endswith(".json") or name.endswith(".metadata.json"):
+                    continue
+                try:
+                    record = json.loads(bundle.read(name).decode("utf-8"))
+                except (ValueError, UnicodeDecodeError):
+                    continue
+                if isinstance(record, dict) and "uuid" in record and "detections" in record:
+                    return record
+    except (zipfile.BadZipFile, OSError):
+        return None
+    return None
+
+
+def _participants(project_dir: Path) -> dict[tuple[str, str], str]:
+    """(token id, device code) -> participant identifier from the registration files."""
+    found = {}
+    for path in project_dir.glob("*/.birdnet-live/*.json"):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            continue
+        participant = record.get("participant") if isinstance(record, dict) else None
+        if participant:
+            found[(path.parent.parent.name, path.stem)] = str(participant)
+    return found
 
 
 def collect(project_dir: Path, out_dir: Path) -> dict:
+    participants = _participants(project_dir)
+    # One row per session UUID; a re-uploaded session keeps its newest file.
     latest: dict[str, tuple] = {}
-    for token_id, device_id, session_uuid, version, folder in _complete_uploads(project_dir):
-        current = latest.get(session_uuid)
-        if current is None or version > current[2]:
-            latest[session_uuid] = (token_id, device_id, version, folder)
+    for token_id, folder, zip_path, record in _upload_bundles(project_dir):
+        uuid_ = str(record.get("uuid", ""))
+        if not uuid_:
+            continue
+        mtime = zip_path.stat().st_mtime
+        current = latest.get(uuid_)
+        if current is None or mtime > current[3]:
+            latest[uuid_] = (token_id, folder, zip_path, mtime, record)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     session_rows, detection_rows = [], []
     species: dict[tuple, dict] = {}
-    for session_uuid, (token_id, device_id, version, folder) in sorted(latest.items()):
-        record_path = folder / "session.json"
-        if not record_path.exists():
-            continue
-        record = json.loads(record_path.read_text(encoding="utf-8"))
-        marker = json.loads((folder / "_complete.json").read_text(encoding="utf-8"))
+    for session_uuid, (token_id, folder, zip_path, mtime, record) in sorted(latest.items()):
         detections = record.get("detections") or []
+        uploaded_at = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat(timespec="seconds")
+        meta = record.get("meta") or {}
+        # The record's own metadata wins; the registration file fills in for
+        # uploads made before a participant was entered.
+        participant = meta.get("participant") or participants.get((token_id, folder), "")
         session_rows.append({
             "sessionUuid": session_uuid,
             "session": record.get("session", ""),
@@ -602,11 +646,11 @@ def collect(project_dir: Path, out_dir: Path) -> dict:
             "locationName": record.get("locationName", ""),
             "observerName": record.get("observerName", ""),
             "contributor": token_id,
-            "deviceId": device_id,
-            "version": version,
-            "uploadedAt": marker.get("uploadedAt", ""),
-            "appVersion": marker.get("appVersion", ""),
-            "folder": str(folder.relative_to(project_dir)).replace(os.sep, "/"),
+            "deviceCode": folder,
+            "participant": participant,
+            "uploadedAt": uploaded_at,
+            "appVersion": meta.get("appVersion", ""),
+            "file": str(zip_path.relative_to(project_dir)).replace(os.sep, "/"),
         })
         seen_in_session = set()
         for d in detections:
@@ -645,7 +689,7 @@ def collect(project_dir: Path, out_dir: Path) -> dict:
 
     write("sessions.csv", session_rows, list(session_rows[0].keys()) if session_rows else [
         "sessionUuid", "session", "type", "startTime", "endTime", "detections", "latitude", "longitude",
-        "locationName", "observerName", "contributor", "deviceId", "version", "uploadedAt", "appVersion", "folder"])
+        "locationName", "observerName", "contributor", "deviceCode", "participant", "uploadedAt", "appVersion", "file"])
     write("detections.csv", detection_rows, [
         "sessionUuid", "timestamp", "beginTimeSec", "commonName", "scientificName", "confidence",
         "latitude", "longitude", "reviewStatus", "source", "contributor"])
@@ -668,10 +712,11 @@ def cmd_collect(args) -> int:
     if args.bundles:
         dest = Path(args.out) / "bundles"
         dest.mkdir(exist_ok=True)
-        for _, _, session_uuid, version, folder in _complete_uploads(project_dir):
-            for file in folder.iterdir():
-                if file.name not in ("session.json", "_complete.json"):
-                    shutil.copy2(file, dest / f"{session_uuid}_v{version}_{file.name}")
+        for token_id, folder, zip_path, _ in _upload_bundles(project_dir):
+            target = dest / f"{folder}_{zip_path.name}"
+            if target.exists():
+                target = dest / f"{token_id}_{folder}_{zip_path.name}"
+            shutil.copy2(zip_path, target)
         print(f"share bundles copied to {dest}")
     return 0
 

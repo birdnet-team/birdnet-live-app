@@ -5,7 +5,7 @@
 import 'dart:io' show Platform;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
@@ -23,6 +23,7 @@ import 'secret_store.dart';
 import 'upload_background.dart';
 import 'upload_destination.dart';
 import 'upload_destination_store.dart';
+import 'upload_naming.dart';
 import 'upload_queue_store.dart';
 import 'upload_service.dart';
 import 'webdav_client.dart';
@@ -40,8 +41,9 @@ final uploadDestinationStoreProvider = Provider<UploadDestinationStore>(
 
 final webDavProbeProvider = Provider<WebDavProbe>((ref) => WebDavProbe());
 
-/// Random, stable identity of this install toward upload destinations. Used
-/// as the contributor folder name; carries no personal data.
+/// Random, stable identity of this install toward upload destinations.
+/// Recorded in the registration file; its first eight hex digits are the
+/// device code that names this device's folder at every destination.
 final uploadDeviceIdProvider = Provider<String>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
   final existing = prefs.getString(PrefKeys.uploadDeviceId);
@@ -51,13 +53,34 @@ final uploadDeviceIdProvider = Provider<String>((ref) {
   return id;
 });
 
-/// The record a device writes into `_joined/` when it joins a destination.
+/// Optional participant identifier (name, email, participant id) the user
+/// entered. Goes into the registration record and every upload's metadata,
+/// never into a path.
+final uploadParticipantProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      return StringSettingNotifier(
+        ref.watch(sharedPreferencesProvider),
+        PrefKeys.uploadParticipant,
+        '',
+      );
+    });
+
+/// The folder this device's uploads land in at every destination.
+final uploadDeviceCodeProvider = Provider<String>((ref) {
+  return uploadDeviceCode(ref.watch(uploadDeviceIdProvider));
+});
+
+/// The record a device writes into `.birdnet-live/<deviceCode>.json` when it
+/// joins a destination.
 Map<String, Object?> joinRegistrationRecord({
   required String deviceId,
   required String appVersion,
+  String participant = '',
 }) {
   return {
     'deviceId': deviceId,
+    'deviceCode': uploadDeviceCode(deviceId),
+    if (participant.isNotEmpty) 'participant': participant,
     'joinedAt': DateTime.now().toUtc().toIso8601String(),
     'app': 'BirdNET Live',
     'appVersion': appVersion,
@@ -168,18 +191,26 @@ ShareExportConfig defaultUploadConfig(Ref ref) => ShareExportConfig(
 /// The queue engine. Lives for the whole app so a run started from one
 /// screen finishes after that screen is gone.
 final uploadServiceProvider = Provider<UploadService>((ref) {
-  Future<Map<String, dynamic>> metadataFor(LiveSession session) =>
-      buildSessionExportMetadata(
-        session,
-        speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
-      );
+  // Uploads carry who sent them in the record's metadata: the device code
+  // (the folder name) and the participant identifier, if one was entered.
+  Future<Map<String, dynamic>> metadataFor(LiveSession session) async {
+    final meta = await buildSessionExportMetadata(
+      session,
+      speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+    );
+    final participant = ref.read(uploadParticipantProvider);
+    return {
+      ...meta,
+      'deviceCode': ref.read(uploadDeviceCodeProvider),
+      if (participant.isNotEmpty) 'participant': participant,
+    };
+  }
 
   final service = UploadService(
     store: ref.watch(uploadQueueStoreProvider),
     client: WebDavClient(),
     connectivity: ref.watch(connectivityProvider),
-    deviceId: () => ref.read(uploadDeviceIdProvider),
-    appVersion: () async => (await PackageInfo.fromPlatform()).version,
+    deviceCode: () => ref.read(uploadDeviceCodeProvider),
     loadSession: (id) => ref.read(sessionRepositoryProvider).load(id),
     findDestination: (id) async {
       final list = await ref.read(uploadDestinationsProvider.future);
@@ -217,14 +248,9 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
             ref.read(timestampDisplayModeProvider) == 'absolute',
         includeHtmlReport: config.includeHtmlReport,
         includeAppMetadata: config.includeAppMetadata,
+        alwaysZip: true,
       );
     },
-    buildJson: (session) async => buildJsonExport(
-      session,
-      metadata: await metadataFor(session),
-      taxonomy: ref.read(taxonomyServiceProvider).value,
-      speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
-    ),
     onPendingChanged: UploadWorkScheduler.onPendingChanged,
     onDestinationUploaded: (destination, at) async {
       final notifier = ref.read(uploadDestinationsProvider.notifier);

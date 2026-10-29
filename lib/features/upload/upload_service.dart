@@ -3,26 +3,18 @@
 // =============================================================================
 //
 // Owns the job list (see upload_job.dart) and pushes due jobs to their
-// destinations one at a time. For every job it writes, in this order:
+// destinations one at a time. Every job writes exactly one file:
 //
-//   <deviceId>/<sessionUuid>/v<version>/session.json    the JSON export,
-//                                                       always, so the lead
-//                                                       gets structured data
-//                                                       whatever the user's
-//                                                       share preferences
-//   <deviceId>/<sessionUuid>/v<version>/<export file>   what the Share dialog
-//                                                       would have produced
-//                                                       (ZIP or single file),
-//                                                       if the config yields
-//                                                       one
-//   <deviceId>/<sessionUuid>/v<version>/_complete.json  sizes and SHA-256 of
-//                                                       the files above;
-//                                                       written last, so the
-//                                                       collect script knows
-//                                                       the upload finished
+//   <deviceCode>/BirdNET_Live_<start>_#<n>[_<name>].zip
 //
-// Destinations that refused MKCOL during the probe get the same three files
-// with the folder path folded into the file name (`a__b__v1__session.json`).
+// `<deviceCode>` names the device (see upload_naming.dart). The ZIP is
+// what the Share dialog would have produced, with the JSON export always
+// added so the lead gets structured data whatever the user's share
+// preferences, and zipped even when Share would have handed over a single
+// file. Uploading a session again writes the same path, so servers that
+// allow it replace the file; a Nextcloud File Drop keeps the older copy
+// under a numbered name. Destinations that refused MKCOL during the probe
+// get the folder folded into the file name (`<deviceCode>__BirdNET_Live_….zip`).
 //
 // A failed job backs off exponentially (1 min, 2, 4, … capped at 6 h) and
 // gives up after [UploadJob.maxAttempts]. Jobs whose destination is on
@@ -35,11 +27,9 @@
 // =============================================================================
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../shared/utils/uuid.dart';
@@ -49,20 +39,17 @@ import 'connectivity.dart';
 import 'secret_store.dart';
 import 'upload_destination.dart';
 import 'upload_job.dart';
+import 'upload_naming.dart';
 import 'upload_queue_store.dart';
 import 'webdav_client.dart';
-import 'webdav_probe.dart';
 
-/// Builds the user-facing export (ZIP or single file) for [session]; null
-/// when the configuration yields no file. Paths in [keep] must not be
-/// deleted afterwards (the session's own recording can be returned as-is).
+/// Builds the upload bundle for [session]: the Share export as one ZIP (see
+/// `alwaysZip` on `buildSessionExport`). Null means the export pipeline
+/// refused, for example a trim it cannot cut.
 typedef ExportBuilder = Future<String?> Function(
   LiveSession session,
   ShareExportConfig config,
 );
-
-/// Builds the always-on structured record (the JSON export).
-typedef JsonBuilder = Future<String> Function(LiveSession session);
 
 typedef SessionLoader = Future<LiveSession?> Function(String sessionId);
 typedef DestinationLookup = Future<UploadDestination?> Function(String id);
@@ -100,26 +87,22 @@ class UploadService extends ChangeNotifier {
     required UploadQueueStore store,
     required WebDavClient client,
     required Connectivity connectivity,
-    required String Function() deviceId,
-    required Future<String> Function() appVersion,
+    required String Function() deviceCode,
     required SessionLoader loadSession,
     required DestinationLookup findDestination,
     required SecretLookup secretFor,
     required ExportBuilder buildExport,
-    required JsonBuilder buildJson,
     DestinationUploaded? onDestinationUploaded,
     PendingChanged? onPendingChanged,
     DateTime Function()? now,
   }) : _store = store,
        _client = client,
        _connectivity = connectivity,
-       _deviceId = deviceId,
-       _appVersion = appVersion,
+       _deviceCode = deviceCode,
        _loadSession = loadSession,
        _findDestination = findDestination,
        _secretFor = secretFor,
        _buildExport = buildExport,
-       _buildJson = buildJson,
        _onDestinationUploaded = onDestinationUploaded,
        _onPendingChanged = onPendingChanged,
        _now = now ?? DateTime.now;
@@ -127,13 +110,13 @@ class UploadService extends ChangeNotifier {
   final UploadQueueStore _store;
   final WebDavClient _client;
   final Connectivity _connectivity;
-  final String Function() _deviceId;
-  final Future<String> Function() _appVersion;
+
+  /// The folder uploads land in (see [uploadDeviceCode]).
+  final String Function() _deviceCode;
   final SessionLoader _loadSession;
   final DestinationLookup _findDestination;
   final SecretLookup _secretFor;
   final ExportBuilder _buildExport;
-  final JsonBuilder _buildJson;
   final DestinationUploaded? _onDestinationUploaded;
   final PendingChanged? _onPendingChanged;
   final DateTime Function() _now;
@@ -472,7 +455,11 @@ class UploadService extends ChangeNotifier {
       await _persist();
       await _onDestinationUploaded?.call(destination, at);
     } on _UploadFailure catch (failure) {
-      await _fail(job, failure.code);
+      if (failure.permanent) {
+        await _giveUp(job, failure.code);
+      } else {
+        await _fail(job, failure.code);
+      }
     } on TimeoutException {
       await _fail(job, UploadErrorCode.network);
     } on IOException {
@@ -492,109 +479,78 @@ class UploadService extends ChangeNotifier {
   ) async {
     final auth = WebDavClient.basicAuth(destination.username, secret);
     final base = Uri.parse(destination.url);
-    final deviceId = _deviceId();
-    final segments = [deviceId, session.uuid, 'v${job.version}'];
-    final String prefix;
-    if (destination.flatLayout) {
-      prefix =
-          segments.join(WebDavProbe.flatSeparator) + WebDavProbe.flatSeparator;
-    } else {
-      var folder = base;
-      for (final segment in segments) {
-        folder = folder.resolve('$segment/');
-        final status = await _client.mkcol(folder, auth);
-        if (status != 201 && status != 405) _throwForStatus(status);
+    final folder = _deviceCode();
+    final encodedFolder = Uri.encodeComponent(folder);
+
+    // The folder first: a server that refuses it should not cost an export
+    // (possibly a full recording re-encoded) on every retry. 201 created,
+    // 405 already exists; Nextcloud File Drop says 201 for both. Anything
+    // else short of a hard failure is left to the PUT to judge, since the
+    // probe already proved folders work here.
+    if (!destination.flatLayout) {
+      final status = await _client.mkcol(base.resolve('$encodedFolder/'), auth);
+      if (status == 401 || status == 507 || status >= 500) {
+        _throwForStatus(status);
       }
-      prefix = '${segments.join('/')}/';
     }
+
+    // The JSON record rides inside the bundle whatever the user's share
+    // preferences say, so the lead always gets structured data. A null is
+    // the pipeline refusing (a trim it cannot cut), which no retry changes.
+    final config = job.config.copyWith(
+      formats: {...job.config.formats, 'json'},
+    );
+    final exportPath = await _buildExport(session, config);
+    if (exportPath == null) {
+      throw const _UploadFailure(UploadErrorCode.exportFailed, permanent: true);
+    }
+    final name = File(exportPath).uri.pathSegments.last;
+
     // Export names carry the session number (`…_#13.zip`); a raw `#` would
-    // start a URL fragment, so every file name is percent-encoded.
-    Uri target(String name) =>
-        base.resolve('$prefix${Uri.encodeComponent(name)}');
-
-    final manifest = <String, Map<String, Object>>{};
-
-    // 1. Structured record.
-    final jsonBytes = utf8.encode(await _buildJson(session));
-    await _put(target('session.json'), auth, bytes: jsonBytes);
-    manifest['session.json'] = {
-      'size': jsonBytes.length,
-      'sha256': sha256.convert(jsonBytes).toString(),
-    };
-
-    // 2. The share bundle, if the configuration yields one. A null with
-    //    audio requested on a session that has audio is the export pipeline
-    //    refusing (a trim it cannot cut), not an empty configuration.
-    final exportPath = await _buildExport(session, job.config);
-    if (exportPath == null &&
-        job.config.includeAudio &&
-        sessionMayHaveAudio(session)) {
-      throw const _UploadFailure(UploadErrorCode.exportFailed);
+    // start a URL fragment, so every path segment is percent-encoded.
+    final String remotePath;
+    final Uri target;
+    if (destination.flatLayout) {
+      remotePath = '$folder$uploadFlatSeparator$name';
+      target = base.resolve(Uri.encodeComponent(remotePath));
+    } else {
+      remotePath = '$folder/$name';
+      target = base.resolve('$encodedFolder/${Uri.encodeComponent(name)}');
     }
-    if (exportPath != null) {
-      final name = File(exportPath).uri.pathSegments.last;
-      // The export lands next to the recording under a deterministic name,
-      // which a foreground share of the same session would also write and
-      // read. Move it into a private staging folder first so neither side
-      // deletes or truncates the other's file.
-      final staged = await _stage(job, exportPath, session);
-      final file = File(staged ?? exportPath);
-      try {
-        await _put(target(name), auth, file: file);
-        manifest[name] = {
-          'size': await file.length(),
-          'sha256': (await sha256.bind(file.openRead()).first).toString(),
-        };
-      } finally {
-        if (staged != null) {
-          try {
-            await file.parent.delete(recursive: true);
-          } catch (_) {
-            // Best-effort cleanup of the staged export.
-          }
+
+    // The export lands next to the recording under a deterministic name,
+    // which a foreground share of the same session would also write and
+    // read. Move it into a private staging folder first so neither side
+    // deletes or truncates the other's file.
+    final staged = await _stage(job, exportPath, session);
+    final file = File(staged ?? exportPath);
+    try {
+      await _put(target, auth, file);
+    } finally {
+      if (staged != null) {
+        try {
+          await file.parent.delete(recursive: true);
+        } catch (_) {
+          // Best-effort cleanup of the staged export.
         }
       }
     }
-
-    // 3. Completion marker.
-    final complete = utf8.encode(
-      const JsonEncoder.withIndent('  ').convert({
-        'sessionUuid': session.uuid,
-        'sessionId': session.id,
-        'version': job.version,
-        'deviceId': deviceId,
-        'app': 'BirdNET Live',
-        'appVersion': await _appVersion(),
-        'uploadedAt': _now().toUtc().toIso8601String(),
-        'files': manifest,
-      }),
-    );
-    await _put(target('_complete.json'), auth, bytes: complete);
-    return prefix;
+    return remotePath;
   }
 
-  Future<void> _put(
-    Uri uri,
-    Map<String, String> auth, {
-    List<int>? bytes,
-    File? file,
-  }) async {
-    final isJson = uri.path.endsWith('.json');
-    final status = file != null
-        ? await _client.putFile(uri, auth, file)
-        : await _client.putBytes(
-            uri,
-            auth,
-            bytes!,
-            contentType: isJson
-                ? 'application/json'
-                : 'application/octet-stream',
-          );
+  Future<void> _put(Uri uri, Map<String, String> auth, File file) async {
+    final status = await _client.putFile(
+      uri,
+      auth,
+      file,
+      contentType: uri.path.endsWith('.zip')
+          ? 'application/zip'
+          : 'application/octet-stream',
+    );
     // 412: an immutable server already holds this exact path (a retry after
-    // a kill between PUT and bookkeeping). The bytes are the same; move on.
-    if (status == 200 || status == 201 || status == 204 || status == 412) {
-      return;
-    }
+    // a kill between PUT and bookkeeping, or a re-upload the server refuses
+    // to replace). Either way the server has the session; move on.
+    if ((status >= 200 && status < 300) || status == 412) return;
     _throwForStatus(status);
   }
 
@@ -695,6 +651,9 @@ class UploadService extends ChangeNotifier {
 enum _Outcome { done, skip, stop }
 
 class _UploadFailure implements Exception {
-  const _UploadFailure(this.code);
+  const _UploadFailure(this.code, {this.permanent = false});
   final String code;
+
+  /// A retry cannot change the outcome; the job gives up at once.
+  final bool permanent;
 }

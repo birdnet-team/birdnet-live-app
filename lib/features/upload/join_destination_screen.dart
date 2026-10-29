@@ -3,7 +3,9 @@
 // =============================================================================
 //
 // One field takes whatever the contributor received: a join link, a Nextcloud
-// share link, or a plain WebDAV address. Advanced fields for user name and
+// share link, or a plain WebDAV address, plus an optional participant
+// identifier that travels in the upload metadata (folders are named by the
+// device code, see upload_naming.dart). Advanced fields for user name and
 // password sit behind an expander for people who run their own server. The
 // probe (webdav_probe.dart) must pass before Save is offered, and its
 // warnings are shown above the Save button so the user accepts them
@@ -22,6 +24,7 @@ import 'join_link.dart';
 import 'secret_store.dart';
 import 'upload_destination.dart';
 import 'upload_messages.dart';
+import 'upload_naming.dart';
 import 'upload_providers.dart';
 import 'webdav_probe.dart';
 
@@ -43,6 +46,9 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
   final _username = TextEditingController();
   final _secret = TextEditingController();
   final _name = TextEditingController();
+  late final TextEditingController _participant = TextEditingController(
+    text: ref.read(uploadParticipantProvider),
+  );
 
   bool _showSecret = false;
   bool _probing = false;
@@ -59,6 +65,7 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
     _username.dispose();
     _secret.dispose();
     _name.dispose();
+    _participant.dispose();
     super.dispose();
   }
 
@@ -97,15 +104,17 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
       _probing = true;
     });
     final deviceId = ref.read(uploadDeviceIdProvider);
+    final participant = _participant.text.trim();
     final info = await PackageInfo.fromPlatform();
     final result = await ref
         .read(webDavProbeProvider)
         .run(
           request,
-          deviceId: deviceId,
+          folder: uploadDeviceCode(deviceId),
           registration: joinRegistrationRecord(
             deviceId: deviceId,
             appVersion: info.version,
+            participant: participant,
           ),
         );
     if (!mounted) return;
@@ -133,6 +142,11 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
     final l10n = AppLocalizations.of(context)!;
     UploadDestination destination;
     try {
+      // The identifier is device-wide; it is kept once a destination is
+      // actually saved, not when the user merely tries a connection.
+      await ref
+          .read(uploadParticipantProvider.notifier)
+          .set(_participant.text.trim());
       destination = await ref
           .read(uploadDestinationsProvider.notifier)
           .add(
@@ -233,6 +247,24 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _participant,
+              // Often an email or an id; no auto-capitalization.
+              textCapitalization: TextCapitalization.none,
+              enabled: !_probing,
+              decoration: InputDecoration(
+                labelText: l10n.uploadParticipantLabel,
+                helperText: l10n.uploadParticipantHelp,
+                helperMaxLines: 3,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.uploadDeviceCodeLine(ref.watch(uploadDeviceCodeProvider)),
+              style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
             FilledButton.tonalIcon(

@@ -7,11 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/text_prompt_dialog.dart';
+import 'join_code_dialog.dart';
 import 'join_link.dart';
 import 'upload_destination.dart';
 import 'upload_messages.dart';
@@ -44,31 +45,12 @@ class _UploadDestinationDetailScreenState
 
   Future<void> _rename(UploadDestination destination) async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(text: destination.name);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.uploadDestinationRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(labelText: l10n.uploadDestinationName),
-          onSubmitted: (v) => Navigator.of(context).pop(v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
+    final name = await showTextPromptDialog(
+      context,
+      title: l10n.uploadDestinationRename,
+      initialText: destination.name,
+      labelText: l10n.uploadDestinationName,
     );
-    controller.dispose();
     final trimmed = name?.trim();
     if (trimmed == null || trimmed.isEmpty || trimmed == destination.name) {
       return;
@@ -103,12 +85,18 @@ class _UploadDestinationDetailScreenState
             url: destination.url,
             username: destination.username,
             secret: secret,
-            source: JoinLinkSource.joinLink,
+            // A share keeps its endpoint fallbacks and File Drop rules; any
+            // other saved URL is tested exactly as stored.
+            source: JoinLinkParser.publicShareToken(destination.url) != null
+                ? JoinLinkSource.nextcloudShare
+                : JoinLinkSource.joinLink,
           ),
-          deviceId: deviceId,
+          folder: ref.read(uploadDeviceCodeProvider),
+          knownFlatLayout: destination.flatLayout,
           registration: joinRegistrationRecord(
             deviceId: deviceId,
             appVersion: info.version,
+            participant: ref.read(uploadParticipantProvider),
           ),
         );
     if (!mounted) return;
@@ -140,50 +128,15 @@ class _UploadDestinationDetailScreenState
     );
     await showDialog<void>(
       context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          title: Text(l10n.uploadJoinQrTitle),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(12),
-                  child: QrImageView(
-                    data: link,
-                    version: QrVersions.auto,
-                    size: 220,
-                    backgroundColor: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(l10n.uploadJoinQrBody, style: theme.textTheme.bodyMedium),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.done),
-            ),
-            FilledButton.tonalIcon(
-              onPressed: () async {
-                final messenger = ScaffoldMessenger.of(this.context);
-                final navigator = Navigator.of(context);
-                await Clipboard.setData(ClipboardData(text: link));
-                messenger.showSnackBar(
-                  SnackBar(content: Text(l10n.uploadJoinQrCopied)),
-                );
-                navigator.pop();
-              },
-              icon: const Icon(AppIcons.contentPaste, size: 18),
-              label: Text(l10n.uploadJoinQrCopy),
-            ),
-          ],
-        );
-      },
+      builder: (_) => JoinCodeDialog(
+        link: link,
+        onCopy: () async {
+          await Clipboard.setData(ClipboardData(text: link));
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.uploadJoinQrCopied)));
+        },
+      ),
     );
   }
 
@@ -248,7 +201,10 @@ class _UploadDestinationDetailScreenState
               title: Text(l10n.uploadDestinationServer),
               subtitle: Text(destination.url),
             ),
-            if (destination.username.isNotEmpty)
+            // A public share's "user name" is the share token, which the
+            // project lead minted; it says nothing about this device.
+            if (destination.username.isNotEmpty &&
+                JoinLinkParser.publicShareToken(destination.url) == null)
               ListTile(
                 leading: const Icon(AppIcons.key),
                 title: Text(l10n.uploadDestinationUser),

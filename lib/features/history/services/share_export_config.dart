@@ -99,6 +99,17 @@ class ShareExportConfig {
   /// True when the share would produce nothing at all.
   bool get isEmpty => !includeAudio && !includesMetadata;
 
+  /// This configuration with [formats] replaced; everything else kept.
+  ShareExportConfig copyWith({Set<String>? formats}) => ShareExportConfig(
+    formats: formats ?? this.formats,
+    includeAudio: includeAudio,
+    shareAudioAsWav: shareAudioAsWav,
+    includeHtmlReport: includeHtmlReport,
+    includeAppMetadata: includeAppMetadata,
+    shareLocally: shareLocally,
+    uploadDestinationIds: uploadDestinationIds,
+  );
+
   /// Applies the dialog's two choices to this configuration.
   ShareExportConfig withChoices({
     required bool audio,

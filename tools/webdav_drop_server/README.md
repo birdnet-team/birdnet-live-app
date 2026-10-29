@@ -3,8 +3,8 @@
 A write-only WebDAV endpoint that collects session uploads from BirdNET Live
 (Settings › Export & Sync › Upload destinations, issue #284). Standard library
 Python 3.11+, one file, no database. Contributors can create folders and write
-files under their own folder of one project and nothing else; an admin token
-can list and read. Nothing is ever overwritten or deleted over HTTP.
+or replace files under their own folder of one project and nothing else; an
+admin token can list and read. Nothing is ever deleted over HTTP.
 
 You do not need this server to collect uploads: a Nextcloud or ownCloud
 **File Drop** share behaves the same way and the app converts its share link
@@ -40,7 +40,7 @@ The app and `conformance.py` speak the same subset of WebDAV:
 | --- | --- | --- | --- |
 | `OPTIONS` | yes | yes | `DAV: 1`, `Allow` lists the permitted methods |
 | `MKCOL` | yes | yes | 201 created, 405 already exists, 409 parent missing |
-| `PUT` | yes | yes | 201 created, **412 if the path exists** (immutable), 413 over `max_file_mb` |
+| `PUT` | yes | yes | 201 created, 204 replaced (a contributor's own file), 413 over `max_file_mb` |
 | `HEAD` | yes | yes | 200 / 404 |
 | `PROPFIND` | 403 | 207 | depth 0 or 1, minimal multistatus |
 | `GET` | 403 | 200 | |
@@ -57,15 +57,19 @@ Layout written by the app:
 
 ```
 <root>/<project>/<token id>/
-  _joined/<deviceId>-<stamp>.json               one per connection test
-  <deviceId>/<sessionUuid>/v<version>/session.json   the JSON export, always
-  <deviceId>/<sessionUuid>/v<version>/<bundle>       what Share would produce (ZIP or single file)
-  <deviceId>/<sessionUuid>/v<version>/_complete.json sizes + SHA-256; written last
+  .birdnet-live/<device code>.json                       one per device; written by the connection test
+  <device code>/BirdNET_Live_<start>_#<n>[_<name>].zip   one per session: the Share bundle plus the JSON export
 ```
 
-`collect` only reads folders that hold `_complete.json`, takes the highest
-version per session UUID, and merges `session.json` records into CSV files.
-`--bundles` also copies every share bundle next to them.
+`<device code>` is eight hex digits of the device's random id, shown in the
+app as "Your upload ID". Paths carry ids only; the optional participant
+identifier the contributor entered (name, email, participant id) sits in the
+registration file and in each record's `meta` block. Uploading a session
+again replaces its ZIP. `collect` opens every ZIP, reads the JSON record
+inside, keeps the newest file per session UUID, and merges the records into
+CSV files with `deviceCode` and `participant` columns. ZIPs that are still
+being written or hold no record are skipped. `--bundles` also copies every
+ZIP next to them.
 
 ## Deployment
 
@@ -102,12 +106,18 @@ data directory; the config file holds nothing secret beyond hashes.
 ## Checking any WebDAV server
 
 ```bash
-python conformance.py https://cloud.example.org/public.php/webdav/ --user SHARE_TOKEN --secret SHARE_PASSWORD
+python conformance.py https://cloud.example.org/public.php/dav/files/SHARE_TOKEN/ --user SHARE_TOKEN --secret SHARE_PASSWORD
 ```
 
 prints one line per step and warns when the credential can list, read, or
 delete, which means it is not write-only. Exit code 0 means the app's
-"Test connection" would pass.
+"Test connection" would pass. The URL above is what the app derives from a
+Nextcloud share link `https://cloud.example.org/s/SHARE_TOKEN`; when a server
+lacks that endpoint the app also tries `public.php/webdav/` (Nextcloud before
+28, ownCloud 10) and `remote.php/dav/public-files/SHARE_TOKEN/` (ownCloud
+Infinite Scale). Nextcloud File Drop shares are write-only by design: every
+request but PUT, MKCOL, and MOVE is answered with 405, which the probe reads
+as the good outcome.
 
 ## Tests
 

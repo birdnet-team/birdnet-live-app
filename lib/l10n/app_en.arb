@@ -5348,6 +5348,44 @@
   "@uploadJoinNameLabel": {
     "description": "Label of the name field shown after a successful probe"
   },
+  "uploadParticipantLabel": "Participant, name, or email (optional)",
+  "@uploadParticipantLabel": {
+    "description": "Optional participant identifier (name, email, id) stored in upload metadata, never in paths"
+  },
+  "uploadParticipantHelp": "Saved with every upload so the project lead knows who sent it. It never appears in folder names.",
+  "@uploadParticipantHelp": {
+    "description": "Helper text under the participant field"
+  },
+  "uploadDeviceCodeTitle": "Your upload ID",
+  "@uploadDeviceCodeTitle": {
+    "description": "Title of the tile showing the device code that names this device's folder at every destination"
+  },
+  "uploadDeviceCodeLine": "Your upload ID: {code}",
+  "@uploadDeviceCodeLine": {
+    "description": "Line on the join screen naming the folder uploads land in",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "shareOptionsTickToUploadAgain": "Tick to upload again",
+  "@shareOptionsTickToUploadAgain": {
+    "description": "Second subtitle line of a destination the session was already uploaded to; it starts unticked"
+  },
+  "shareOptionsDestinationUnreachable": "Upload would fail: {reason}",
+  "@shareOptionsDestinationUnreachable": {
+    "description": "Shown on a destination row when a quick check says the server would refuse the upload",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusFailedCheckDestination": "Upload failed. Check the destination settings.",
+  "@uploadStatusFailedCheckDestination": {
+    "description": "Upload state when the server refused with an error a retry cannot fix"
+  },
   "uploadJoinSaveFailed": "The destination could not be saved. {error}",
   "@uploadJoinSaveFailed": {
     "description": "Error when the destination list could not be written",
@@ -5418,7 +5456,7 @@
   "@uploadWarnCanReadRemote": {
     "description": "Probe warning: the credential could list the collection"
   },
-  "uploadWarnShareWithoutPassword": "This share has no password. Anyone with the link can upload. Ask the project lead to set one.",
+  "uploadWarnShareWithoutPassword": "This share has no password and can be listed, so anyone with the link can read other contributors' data. Ask the project lead to set a password or use a File Drop.",
   "@uploadWarnShareWithoutPassword": {
     "description": "Probe warning: a Nextcloud share accepted uploads with no password"
   },

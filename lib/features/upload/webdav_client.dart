@@ -42,21 +42,6 @@ class WebDavClient {
   Future<int> head(Uri uri, Map<String, String> auth) =>
       _simple('HEAD', uri, auth);
 
-  Future<int> putBytes(
-    Uri uri,
-    Map<String, String> auth,
-    List<int> body, {
-    String contentType = 'application/octet-stream',
-  }) async {
-    final request = http.Request('PUT', uri)
-      ..followRedirects = false
-      ..headers.addAll(auth)
-      ..headers['User-Agent'] = userAgent
-      ..headers['Content-Type'] = contentType
-      ..bodyBytes = body;
-    return _send(request, timeout);
-  }
-
   /// Streams [file] to [uri]. The timeout allows roughly 50 KB/s plus a
   /// minute, so a slow cellular link is not cut off halfway.
   Future<int> putFile(
