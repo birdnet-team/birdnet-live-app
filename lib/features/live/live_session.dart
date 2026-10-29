@@ -19,6 +19,7 @@ import '../../shared/models/weather_snapshot.dart';
 
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/altitude_reference.dart';
+import '../../shared/utils/uuid.dart';
 import '../aru/aru_schedule.dart';
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
@@ -1064,6 +1065,7 @@ class AruDeploymentMetadata {
 class LiveSession {
   LiveSession({
     required this.id,
+    String? uuid,
     required this.startTime,
     this.type = SessionType.live,
     this.sessionNumber,
@@ -1092,7 +1094,8 @@ class LiveSession {
     this.aruMetadata,
     int? recordedDurationSeconds,
     List<SessionSegment>? segments,
-  }) : detections = detections ?? [],
+  }) : uuid = uuid ?? generateUuidV4(),
+       detections = detections ?? [],
        annotations = annotations ?? [],
        gpsTrack = gpsTrack ?? [],
        segments = segments ?? [],
@@ -1100,6 +1103,17 @@ class LiveSession {
 
   /// Unique session identifier (ISO 8601 timestamp-based).
   final String id;
+
+  /// Globally unique identity, independent of [id], the file name, and
+  /// [displayName].
+  ///
+  /// Assigned once at creation and persisted with the session, so it survives
+  /// renames, trims, exports, and re-imports on another device. Two devices
+  /// can produce the same timestamp [id]; they cannot produce the same UUID.
+  /// Sessions saved by builds without this field receive one the first time
+  /// `SessionRepository.load` reads them and are saved back; until then a
+  /// legacy session parsed elsewhere carries a fresh, unsaved value.
+  final String uuid;
 
   /// The type of session (live, file upload, point count, survey).
   SessionType type;
@@ -1367,6 +1381,7 @@ class LiveSession {
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
+      uuid: json['uuid'] as String?,
       type: SessionType.values.firstWhere(
         (t) => t.name == (json['type'] as String?),
         orElse: () => SessionType.live,
@@ -1437,6 +1452,7 @@ class LiveSession {
   /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
+    'uuid': uuid,
     if (type != SessionType.live) 'type': type.name,
     if (sessionNumber != null) 'sessionNumber': sessionNumber,
     'startTime': startTime.toUtc().toIso8601String(),
