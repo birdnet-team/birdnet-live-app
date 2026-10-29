@@ -65,19 +65,19 @@ class DropServerTest(unittest.TestCase):
 
     def test_contributor_round_trip_matches_the_app(self):
         self.assertEqual(self.call("OPTIONS", "/spring/")[0], 200)
-        self.assertEqual(self.call("MKCOL", "/spring/_joined/")[0], 201)
-        self.assertEqual(self.call("MKCOL", "/spring/_joined/")[0], 405)
-        status, _ = self.call("PUT", "/spring/_joined/dev-1.json", b'{"deviceId":"dev-1"}')
+        self.assertEqual(self.call("MKCOL", "/spring/.birdnet-live/")[0], 201)
+        self.assertEqual(self.call("MKCOL", "/spring/.birdnet-live/")[0], 405)
+        status, _ = self.call("PUT", "/spring/.birdnet-live/Stefan.json", b'{"deviceId":"dev-1"}')
         self.assertEqual(status, 201)
-        self.assertEqual(self.call("HEAD", "/spring/_joined/dev-1.json")[0], 200)
-        # Immutable: a second PUT on the same path is refused, bytes untouched.
-        self.assertEqual(self.call("PUT", "/spring/_joined/dev-1.json", b"x")[0], 412)
-        stored = Path(self.config["root"]) / "spring" / self.token_id / "_joined" / "dev-1.json"
-        self.assertEqual(stored.read_bytes(), b'{"deviceId":"dev-1"}')
+        self.assertEqual(self.call("HEAD", "/spring/.birdnet-live/Stefan.json")[0], 200)
+        # A contributor may replace their own file: 204, new bytes.
+        self.assertEqual(self.call("PUT", "/spring/.birdnet-live/Stefan.json", b"x")[0], 204)
+        stored = Path(self.config["root"]) / "spring" / self.token_id / ".birdnet-live" / "Stefan.json"
+        self.assertEqual(stored.read_bytes(), b"x")
         # Write-only: listing, reading, deleting are refused.
         self.assertEqual(self.call("PROPFIND", "/spring/", headers={"Depth": "1"})[0], 403)
-        self.assertEqual(self.call("GET", "/spring/_joined/dev-1.json")[0], 403)
-        self.assertEqual(self.call("DELETE", "/spring/_joined/dev-1.json")[0], 403)
+        self.assertEqual(self.call("GET", "/spring/.birdnet-live/Stefan.json")[0], 403)
+        self.assertEqual(self.call("DELETE", "/spring/.birdnet-live/Stefan.json")[0], 403)
 
     def test_paths_are_confined_to_the_token_folder(self):
         self.assertEqual(self.call("PUT", "/spring/../other/x.json", b"x")[0], 403)
@@ -97,13 +97,13 @@ class DropServerTest(unittest.TestCase):
         self.assertEqual(self.call("OPTIONS", "/spring/")[0], 401)
 
     def test_admin_can_list_and_read(self):
-        self.call("MKCOL", "/spring/_joined/")
-        self.call("PUT", "/spring/_joined/dev-1.json", b"{}")
+        self.call("MKCOL", "/spring/.birdnet-live/")
+        self.call("PUT", "/spring/.birdnet-live/dev-1.json", b"{}")
         status, body = self.call("PROPFIND", "/spring/", user="admin", secret=self.admin_secret,
                                  headers={"Depth": "1"})
         self.assertEqual(status, 207)
         self.assertIn(b"c-test", body)
-        status, body = self.call("GET", f"/spring/{self.token_id}/_joined/dev-1.json",
+        status, body = self.call("GET", f"/spring/{self.token_id}/.birdnet-live/dev-1.json",
                                  user="admin", secret=self.admin_secret)
         self.assertEqual(status, 200)
         self.assertEqual(body, b"{}")
@@ -120,7 +120,7 @@ class DropServerTest(unittest.TestCase):
         self.assertEqual(conn.getresponse().status, 411)
         conn.close()
 
-    def test_concurrent_puts_publish_exactly_one(self):
+    def test_concurrent_puts_publish_one_whole_body(self):
         body_a, body_b = b"a" * 200000, b"b" * 200000
         results = []
 
@@ -132,7 +132,8 @@ class DropServerTest(unittest.TestCase):
             t.start()
         for t in threads:
             t.join()
-        self.assertEqual(sorted(results), [201, 412])
+        # Both succeed; whether the second sees 201 or 204 depends on timing.
+        self.assertTrue(all(status in (201, 204) for status in results), results)
         stored = (Path(self.config["root"]) / "spring" / self.token_id / "race.bin").read_bytes()
         self.assertIn(stored, (body_a, body_b))
         leftovers = list((Path(self.config["root"]) / "spring" / self.token_id).glob(".race.bin.*"))
@@ -170,24 +171,33 @@ class DropServerTest(unittest.TestCase):
         self.assertNotIn(link.split("secret=")[1].split("&")[0], json.dumps(config))
         self.assertIn(token_id, config["projects"]["spring"]["tokens"])
 
-        # Two uploads of one session: collect keeps the latest complete version.
-        record_v1 = {"session": "Live #1", "type": "live", "startTime": "2026-10-28T08:00:00Z",
+        # Two uploads of one session replace the ZIP; collect reads the record
+        # inside the newest one.
+        import io
+        import zipfile
+
+        def bundle(record):
+            buffer = io.BytesIO()
+            with zipfile.ZipFile(buffer, "w") as z:
+                z.writestr("BirdNET_Live_2026-10-28_08-00-00_#1.json", json.dumps(record))
+                z.writestr("BirdNET_Live_2026-10-28_08-00-00_#1.csv", "a,b\n")
+            return buffer.getvalue()
+
+        record_v1 = {"uuid": "uuid-1", "session": "Live #1", "type": "live",
+                     "startTime": "2026-10-28T08:00:00Z", "meta": {"appVersion": "1.2.1"},
                      "detections": [{"commonName": "Eurasian Wren", "scientificName": "Troglodytes troglodytes",
                                      "confidence": 0.9, "timestamp": "2026-10-28T08:01:00Z"}]}
         record_v2 = dict(record_v1, detections=record_v1["detections"] * 2)
-        for version, record in ((1, record_v1), (2, record_v2)):
-            base = f"/spring/dev-1/uuid-1/v{version}/"
-            for folder in ("/spring/dev-1/", "/spring/dev-1/uuid-1/", base):
-                self.call("MKCOL", folder)
-            self.assertEqual(self.call("PUT", base + "session.json", json.dumps(record).encode())[0], 201)
-            self.assertEqual(self.call("PUT", base + "bundle.zip", b"zip")[0], 201)
-            self.assertEqual(self.call("PUT", base + "_complete.json",
-                                       json.dumps({"uploadedAt": f"2026-10-28T09:0{version}:00Z",
-                                                   "appVersion": "1.2.1"}).encode())[0], 201)
-        # An unfinished upload (no marker) is ignored.
-        self.call("MKCOL", "/spring/dev-1/uuid-2/")
-        self.call("MKCOL", "/spring/dev-1/uuid-2/v1/")
-        self.call("PUT", "/spring/dev-1/uuid-2/v1/session.json", b"{}")
+        self.call("MKCOL", "/spring/4ee91c8f/")
+        path = "/spring/4ee91c8f/BirdNET_Live_2026-10-28_08-00-00_%231.zip"
+        self.assertEqual(self.call("PUT", path, bundle(record_v1))[0], 201)
+        self.assertEqual(self.call("PUT", path, bundle(record_v2))[0], 204)
+        # A half-written or foreign ZIP is ignored.
+        self.call("PUT", "/spring/4ee91c8f/broken.zip", b"not a zip")
+        # The registration file names the participant behind the device code.
+        self.call("MKCOL", "/spring/.birdnet-live/")
+        self.call("PUT", "/spring/.birdnet-live/4ee91c8f.json",
+                  json.dumps({"deviceCode": "4ee91c8f", "participant": "Stefan"}).encode())
 
         out_dir = Path(self.tmp.name) / "export"
         stats = drop_server.collect(Path(self.config["root"]) / "spring", out_dir)
@@ -195,7 +205,8 @@ class DropServerTest(unittest.TestCase):
         sessions = (out_dir / "sessions.csv").read_text(encoding="utf-8").splitlines()
         self.assertEqual(len(sessions), 2)
         self.assertIn("uuid-1,Live #1,live", sessions[1])
-        self.assertIn(",2,", sessions[1])  # version 2 won
+        self.assertIn(",4ee91c8f,Stefan,", sessions[1])
+        self.assertIn("4ee91c8f/BirdNET_Live_2026-10-28_08-00-00_#1.zip", sessions[1])
         summary = (out_dir / "species_summary.csv").read_text(encoding="utf-8").splitlines()
         self.assertEqual(summary[1], "Troglodytes troglodytes,Eurasian Wren,2,1")
 

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +51,7 @@ void main() {
   late LiveSession session;
   late UploadService service;
   late String? exportPath;
+  final exportConfigs = <ShareExportConfig>[];
   var now = DateTime.utc(2026, 10, 28, 12);
   Future<String?> Function(UploadDestination) secretFor = (_) async => 'pw';
 
@@ -62,13 +62,13 @@ void main() {
       store: UploadQueueStore(documentsDirectory: () async => tempDir),
       client: WebDavClient(client: dav.client),
       connectivity: connectivity,
-      deviceId: () => 'device-1',
-      appVersion: () async => '9.9.9',
+      deviceCode: () => '4ee91c8f',
       loadSession: (id) async => id == session.id ? session : null,
       findDestination: (id) async =>
           id == (dest ?? destination).id ? (dest ?? destination) : null,
       secretFor: (d) => secretFor(d),
-      buildExport: (_, _) async {
+      buildExport: (_, config) async {
+        exportConfigs.add(config);
         final path = exportPath;
         if (path == null) return null;
         // The service deletes the staged export after each upload; a real
@@ -76,7 +76,6 @@ void main() {
         await File(path).writeAsBytes(List<int>.generate(1000, (i) => i % 251));
         return path;
       },
-      buildJson: (s) async => jsonEncode({'uuid': s.uuid, 'id': s.id}),
       now: () => now,
     );
   }
@@ -84,6 +83,7 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('upload_service_');
     dav = _FakeDav();
+    exportConfigs.clear();
     connectivity = FixedConnectivity(NetworkType.wifi);
     destination = UploadDestination(
       id: 'dest-1',
@@ -116,7 +116,7 @@ void main() {
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
 
-  test('uploads the record, the export, and the completion marker', () async {
+  test('uploads one ZIP into the device folder', () async {
     final job = await service.enqueue(
       session: session,
       destination: destination,
@@ -124,46 +124,29 @@ void main() {
     );
     await service.processQueue();
 
-    final folder = '/public.php/webdav/device-1/${session.uuid}/v1/';
-    expect(dav.paths('MKCOL'), [
-      '/public.php/webdav/device-1/',
-      '/public.php/webdav/device-1/${session.uuid}/',
-      folder,
-    ]);
+    expect(dav.paths('MKCOL'), ['/public.php/webdav/4ee91c8f/']);
     expect(dav.paths('PUT'), [
-      '${folder}session.json',
-      '${folder}BirdNET_Live_export_%2313.zip',
-      '${folder}_complete.json',
+      '/public.php/webdav/4ee91c8f/BirdNET_Live_export_%2313.zip',
     ]);
     // The `#` travels percent-encoded, never as a fragment.
+    final put = dav.requests[1];
     expect(
-      dav.requests[4].url.toString(),
-      endsWith('/v1/BirdNET_Live_export_%2313.zip'),
+      put.url.toString(),
+      'https://cloud.example.org/public.php/webdav/4ee91c8f/'
+      'BirdNET_Live_export_%2313.zip',
     );
-    final first = dav.requests.first;
-    expect(first.headers['Authorization'], startsWith('Basic '));
-
-    final complete = jsonDecode(
-      utf8.decode(dav.bodies['${folder}_complete.json']!),
-    ) as Map<String, dynamic>;
-    expect(complete['sessionUuid'], session.uuid);
-    expect(complete['version'], 1);
-    expect(complete['appVersion'], '9.9.9');
-    final files = complete['files'] as Map<String, dynamic>;
-    expect(
-      files.keys,
-      containsAll(['session.json', 'BirdNET_Live_export_#13.zip']),
-    );
-    expect(
-      (files['BirdNET_Live_export_#13.zip'] as Map<String, dynamic>)['size'],
-      1000,
-    );
+    expect(put.headers['Authorization'], startsWith('Basic '));
+    expect(put.headers['Content-Type'], 'application/zip');
+    expect(dav.bodies[put.url.path]!.length, 1000);
+    // The JSON record always rides inside the bundle.
+    expect(exportConfigs.single.formats, {'csv', 'json'});
+    expect(exportConfigs.single.includeAudio, isFalse);
 
     final done = service.jobsForSession(session.id).single;
     expect(done.id, job.id);
     expect(done.state, UploadJobState.uploaded);
     expect(done.finishedAt, now);
-    expect(done.remotePath, 'device-1/${session.uuid}/v1/');
+    expect(done.remotePath, '4ee91c8f/BirdNET_Live_export_#13.zip');
     // The staged export is cleaned up; it was not a session asset.
     expect(await File(exportPath!).exists(), isFalse);
   });
@@ -176,14 +159,33 @@ void main() {
     await service.processQueue();
 
     expect(dav.paths('MKCOL'), isEmpty);
-    expect(
-      dav.paths('PUT').first,
-      '/public.php/webdav/device-1__${session.uuid}__v1__session.json',
-    );
+    expect(dav.paths('PUT'), [
+      '/public.php/webdav/4ee91c8f__BirdNET_Live_export_%2313.zip',
+    ]);
   });
 
-  test('a metadata-only configuration skips the export file', () async {
-    exportPath = null;
+  test(
+    'a configuration the pipeline yields nothing for fails the job',
+    () async {
+      exportPath = null;
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+
+      expect(dav.paths('PUT'), isEmpty);
+      final job = service.jobsForSession(session.id).single;
+      expect(job.state, UploadJobState.failed);
+      expect(job.lastError, UploadErrorCode.exportFailed);
+      // Nothing about a refused export changes between attempts.
+      expect(job.gaveUp, isTrue);
+    },
+  );
+
+  test('a hard MKCOL failure is reported before the export is built', () async {
+    dav.overrides['/public.php/webdav/4ee91c8f/'] = 507;
     await service.enqueue(
       session: session,
       destination: destination,
@@ -191,10 +193,11 @@ void main() {
     );
     await service.processQueue();
 
-    expect(dav.paths('PUT').length, 2);
+    expect(exportConfigs, isEmpty);
+    expect(dav.paths('PUT'), isEmpty);
     expect(
-      service.jobsForSession(session.id).single.state,
-      UploadJobState.uploaded,
+      service.jobsForSession(session.id).single.lastError,
+      UploadErrorCode.quota,
     );
   });
 
@@ -239,7 +242,7 @@ void main() {
   });
 
   test('a 412 on an existing path counts as written', () async {
-    dav.overrides['/public.php/webdav/device-1/${session.uuid}/v1/session.json'] =
+    dav.overrides['/public.php/webdav/4ee91c8f/BirdNET_Live_export_%2313.zip'] =
         412;
     await service.enqueue(
       session: session,
@@ -283,7 +286,8 @@ void main() {
     },
   );
 
-  test('enqueue is idempotent while pending and versions afterwards', () async {
+  test('enqueue is idempotent while pending and re-uploads to the same path '
+      'afterwards', () async {
     connectivity.type = NetworkType.none;
     final a = await service.enqueue(
       session: session,
@@ -306,10 +310,10 @@ void main() {
     );
     expect(c.version, 2);
     await service.processQueue();
-    expect(
-      dav.paths('PUT'),
-      contains('/public.php/webdav/device-1/${session.uuid}/v2/_complete.json'),
-    );
+    expect(dav.paths('PUT'), [
+      '/public.php/webdav/4ee91c8f/BirdNET_Live_export_%2313.zip',
+      '/public.php/webdav/4ee91c8f/BirdNET_Live_export_%2313.zip',
+    ]);
   });
 
   test('jobs survive a restart and an interrupted upload is retried', () async {
@@ -468,7 +472,7 @@ void main() {
     final job = service.jobsForSession(withAudio.id).single;
     expect(job.state, UploadJobState.failed);
     expect(job.lastError, UploadErrorCode.exportFailed);
-    expect(dav.paths('PUT'), isNot(contains(endsWith('_complete.json'))));
+    expect(dav.paths('PUT'), isEmpty);
   });
 
   test('the export is moved into staging before upload and the original '

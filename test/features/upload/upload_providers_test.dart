@@ -126,8 +126,21 @@ void main() {
   });
 
   test('joinRegistrationRecord carries the device id and no secret', () {
-    final record = joinRegistrationRecord(deviceId: 'd', appVersion: '1.2.3');
-    expect(record['deviceId'], 'd');
+    final record = joinRegistrationRecord(
+      deviceId: '4ee91c8f-8383-4413-8320-3aa94f39221f',
+      appVersion: '1.2.3',
+      participant: 'Stefan',
+    );
+    expect(record['deviceId'], '4ee91c8f-8383-4413-8320-3aa94f39221f');
+    expect(record['deviceCode'], '4ee91c8f');
+    expect(record['participant'], 'Stefan');
+    expect(
+      joinRegistrationRecord(
+        deviceId: 'd',
+        appVersion: '1',
+      ).containsKey('participant'),
+      isFalse,
+    );
     expect(record['appVersion'], '1.2.3');
     expect(record.values.join(), isNot(contains('share-pw')));
     expect(record['joinedAt'], isA<String>());

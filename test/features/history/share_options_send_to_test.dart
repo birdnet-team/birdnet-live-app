@@ -5,6 +5,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/features/history/services/share_export_config.dart';
 import 'package:birdnet_live/features/history/widgets/share_options_dialog.dart';
 import 'package:birdnet_live/features/upload/upload_destination.dart';
+import 'package:birdnet_live/features/upload/webdav_probe.dart';
 
 void main() {
   const initial = ShareExportConfig(formats: {'raven'}, includeAudio: true);
@@ -93,6 +94,7 @@ void main() {
     expect(find.text('Share sheet'), findsOneWidget);
     expect(find.text('Project A'), findsOneWidget);
     expect(find.textContaining('Uploaded'), findsOneWidget);
+    expect(find.textContaining('Tick to upload again'), findsOneWidget);
     expect(find.text('Share and upload'), findsOneWidget);
 
     await tester.tap(find.text('Share and upload'));
@@ -101,6 +103,72 @@ void main() {
     expect(result.shareLocally, isTrue);
     expect(result.uploadDestinationIds, {'b'});
     expect(result.formats, {'raven'});
+  });
+
+  testWidgets('an already uploaded destination starts unticked even when '
+      'remembered', (tester) async {
+    final read = await open(
+      tester,
+      showSendTo: true,
+      destinations: [destination('a', 'Project A'), destination('b', 'B')],
+      initialDestinationIds: {'a', 'b'},
+      uploadedTo: {'a': DateTime.utc(2026, 10, 27)},
+    );
+    await tester.tap(find.text('Send to'));
+    await tester.pumpAndSettle();
+    final boxes = tester
+        .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
+        .toList();
+    // Share sheet, Project A (uploaded, unticked), B (remembered, ticked).
+    expect(boxes.map((b) => b.value), [true, false, true]);
+
+    // Ticking it again is allowed and lands in the result.
+    await tester.tap(find.text('Project A'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Share and upload'));
+    await tester.pumpAndSettle();
+    expect(read()!.uploadDestinationIds, {'a', 'b'});
+  });
+
+  testWidgets('a destination the server would refuse is marked', (
+    tester,
+  ) async {
+    ShareExportConfig? result;
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                result = await showDialog<ShareExportConfig>(
+                  context: context,
+                  builder: (_) => ShareOptionsDialog(
+                    initial: initial,
+                    showSendTo: true,
+                    destinations: [
+                      destination('gone', 'Old project'),
+                      destination('ok', 'Live project'),
+                    ],
+                    checkReachable: (d) async =>
+                        d.id == 'gone' ? ProbeFailure.unauthorized : null,
+                  ),
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send to'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Upload would fail'), findsOneWidget);
+    expect(find.textContaining('cloud.example.org'), findsNWidgets(2));
+    expect(result, isNull);
   });
 
   testWidgets('unticking the share sheet turns the button into Upload', (

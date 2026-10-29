@@ -5,18 +5,28 @@
 // Nothing is persisted until this probe passes. It performs the same round
 // trip an upload will later need, in the order an upload makes it:
 //
-//   OPTIONS <url>                         reachability, TLS, credentials
-//   MKCOL   <url>_joined/                 may the credential create folders?
-//   PUT     <url>_joined/<deviceId>.json  may it upload? (also registers the
-//                                         device with the project lead)
-//   HEAD    the file just written         informational only
-//   PROPFIND <url> (depth 1)              over-privilege check: a write-only
-//                                         credential must NOT be able to list
+//   OPTIONS <url>                           reachability, TLS, credentials
+//   MKCOL   <url>.birdnet-live/             may the credential create folders?
+//   PROPFIND <url> (depth 1)                over-privilege check: a write-only
+//                                           credential must NOT be able to list
+//   PUT     <url>.birdnet-live/<code>.json  may it upload? (also registers
+//                                           the device with the project lead;
+//                                           the dot hides the folder in
+//                                           Nextcloud's default file list)
+//   HEAD    the file just written           informational only
 //
 // A refused MKCOL is not a failure: the destination is marked `flatLayout`
 // and uploads encode the folder path into file names instead. Every failure
 // maps to one [ProbeFailure] so the join sheet can show one sentence and one
 // fix. `tools/webdav_drop_server/conformance.py` runs the identical sequence.
+//
+// Servers differ in small ways the probe absorbs rather than reports:
+// OPTIONS may answer 405 (Nextcloud public shares), MKCOL may answer 201 for
+// a folder that already exists (Nextcloud File Drop) or 405 for one that
+// does (Apache, nginx, SabreDAV), and an old File Drop answers 405 to every
+// MKCOL because it only takes files. When the typed or derived URL does not
+// behave like a WebDAV collection, the usual alternative endpoints of the
+// same host are tried before giving up.
 // =============================================================================
 
 import 'dart:async';
@@ -26,6 +36,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'join_link.dart';
+import 'upload_naming.dart';
+import 'webdav_auth.dart';
 
 /// Why a probe failed; each value has one user-facing sentence.
 enum ProbeFailure {
@@ -48,7 +60,10 @@ enum ProbeWarning {
   /// The credential could list the collection, so it may read others' data.
   canReadRemote,
 
-  /// A Nextcloud/ownCloud share accepted uploads without a password.
+  /// A Nextcloud/ownCloud share that can be listed accepted uploads without
+  /// a password, so anyone holding the link can read every contribution. A
+  /// password-less File Drop is not flagged: it cannot be read, and leaving
+  /// the password off is the lead's call.
   shareWithoutPassword,
 
   /// Plain HTTP to a LAN address; tolerated, but flagged.
@@ -113,29 +128,38 @@ class WebDavProbe {
   final Duration timeout;
 
   /// Folder (or flat-name prefix) that holds device registrations.
-  static const String joinedFolder = '_joined';
+  static const String joinedFolder = uploadRegistrationFolder;
 
   /// Separator used in place of `/` when the server refuses folders.
-  static const String flatSeparator = '__';
+  static const String flatSeparator = uploadFlatSeparator;
 
-  /// Probes [request]. [registration] is written as the device's join record.
+  /// Probes [request]. [registration] is written as the device's join record
+  /// under the name of [folder], the device code uploads will use as folder.
   ///
   /// For a plain URL the probe also tries the usual WebDAV locations when the
-  /// typed one does not answer like a WebDAV server.
+  /// typed one does not answer like a WebDAV server; for a share link it
+  /// tries the older public endpoints. A join link names its endpoint
+  /// explicitly and is probed as given.
+  ///
+  /// [knownFlatLayout] re-tests a saved destination the way its uploads run:
+  /// the MKCOL step is skipped and the registration uses the flat name, so a
+  /// server that refuses folders is not reported as broken.
   Future<ProbeResult> run(
     JoinRequest request, {
-    required String deviceId,
+    required String folder,
     required Map<String, Object?> registration,
+    bool knownFlatLayout = false,
   }) async {
     final candidates = <String>[request.url];
     final first = await _probeUrl(
       request,
       request.url,
-      deviceId: deviceId,
+      folder: folder,
       registration: registration,
+      knownFlatLayout: knownFlatLayout,
     );
     if (first.ok ||
-        request.source != JoinLinkSource.webdavUrl ||
+        request.source == JoinLinkSource.joinLink ||
         !_worthDiscovering(first.failure)) {
       return first;
     }
@@ -145,12 +169,48 @@ class WebDavProbe {
       final result = await _probeUrl(
         request,
         candidate,
-        deviceId: deviceId,
+        folder: folder,
         registration: registration,
+        knownFlatLayout: knownFlatLayout,
       );
       if (result.ok) return result;
     }
     return first;
+  }
+
+  /// A quick, silent check whether uploads to [url] would fail for a reason
+  /// the server states: one OPTIONS request. Returns the failure when the
+  /// server answers 401, 403, 404, or 410, or the TLS handshake fails, and
+  /// null when the destination looks usable or the result is inconclusive
+  /// (no network, timeout, unknown host), because the user may simply be
+  /// offline and will be told so when the upload runs.
+  Future<ProbeFailure?> reachability(
+    String url,
+    WebDavAuth auth, {
+    Duration timeout = const Duration(seconds: 6),
+  }) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) return ProbeFailure.invalidUrl;
+    try {
+      final response = await _send('OPTIONS', uri, auth).timeout(timeout);
+      switch (response.statusCode) {
+        case 401:
+          return ProbeFailure.unauthorized;
+        case 403:
+          return ProbeFailure.uploadForbidden;
+        case 404:
+        case 410:
+          return ProbeFailure.notFound;
+        default:
+          return null;
+      }
+    } on HandshakeException {
+      return ProbeFailure.tlsFailure;
+    } on TlsException {
+      return ProbeFailure.tlsFailure;
+    } catch (_) {
+      return null;
+    }
   }
 
   bool _worthDiscovering(ProbeFailure? failure) =>
@@ -159,6 +219,14 @@ class WebDavProbe {
       failure == ProbeFailure.uploadForbidden;
 
   List<String> _discoveryCandidates(JoinRequest request) {
+    if (request.source == JoinLinkSource.nextcloudShare) {
+      // The token named by the URL wins; a legacy `public.php/webdav/` URL
+      // names none, so the Basic-auth user name must carry it.
+      final inUrl = JoinLinkParser.publicShareToken(request.url) ?? '';
+      final token = inUrl.isNotEmpty ? inUrl : request.username;
+      if (token.isEmpty) return const [];
+      return shareEndpointCandidates(request.url, token);
+    }
     final uri = Uri.parse(request.url);
     final origin = Uri(
       scheme: uri.scheme,
@@ -180,16 +248,52 @@ class WebDavProbe {
         );
       }
     }
+    // Legacy Nextcloud/ownCloud per-user endpoint, still served everywhere.
+    list.add(origin.replace(path: '${path}remote.php/webdav/').toString());
     list.add(origin.replace(path: '${path}dav/').toString());
     list.add(origin.replace(path: '/.well-known/webdav').toString());
     return list;
   }
 
+  /// Public endpoints a Nextcloud/ownCloud share token can be used at, under
+  /// the same install prefix as [url]; the caller skips the one it already
+  /// tried. In order:
+  ///
+  ///  * `public.php/dav/files/<token>/`: Nextcloud 28 and later, and the
+  ///    only one of the three Nextcloud 33 accepts uploads at for a File Drop.
+  ///  * `public.php/webdav/` with the token as the Basic-auth user name:
+  ///    Nextcloud before 28 and ownCloud 10.
+  ///  * `remote.php/dav/public-files/<token>/`: ownCloud Infinite Scale.
+  static List<String> shareEndpointCandidates(String url, String token) {
+    final uri = Uri.parse(url);
+    final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    var cut = segments.indexOf('public.php');
+    if (cut < 0) cut = segments.indexOf('remote.php');
+    if (cut < 0) return const [];
+    final prefix = segments.sublist(0, cut).join('/');
+    final base = prefix.isEmpty ? '/' : '/$prefix/';
+    final origin = Uri(
+      scheme: uri.scheme,
+      host: uri.host,
+      port: uri.hasPort ? uri.port : null,
+      path: '/',
+    );
+    final encoded = Uri.encodeComponent(token);
+    return [
+      origin.replace(path: '${base}public.php/dav/files/$encoded/').toString(),
+      origin.replace(path: '${base}public.php/webdav/').toString(),
+      origin
+          .replace(path: '${base}remote.php/dav/public-files/$encoded/')
+          .toString(),
+    ];
+  }
+
   Future<ProbeResult> _probeUrl(
     JoinRequest request,
     String url, {
-    required String deviceId,
+    required String folder,
     required Map<String, Object?> registration,
+    bool knownFlatLayout = false,
   }) async {
     final uri = Uri.tryParse(url);
     if (uri == null || uri.host.isEmpty) {
@@ -205,24 +309,19 @@ class WebDavProbe {
       }
       warnings.add(ProbeWarning.insecureLan);
     }
-    final auth = _authHeader(request);
+    final auth = WebDavAuth(request.username, request.secret);
 
     try {
-      // 1. OPTIONS: reachability, certificate, credentials. Follow one
-      //    redirect so a missing trailing slash or a .well-known entry lands
-      //    on the real collection.
+      // 1. OPTIONS: reachability, certificate, credentials. One redirect is
+      //    followed so a missing trailing slash or a .well-known entry lands
+      //    on the real collection; the URL that answered is the one saved.
       var base = uri;
-      var options = await _send('OPTIONS', base, auth);
-      if (_isRedirect(options.statusCode)) {
-        final location = options.headers['location'];
-        if (location != null) {
-          base = Uri.parse(
-            JoinLinkParser.normalizeCollectionUrl(
-              base.resolve(location).toString(),
-            ),
-          );
-          options = await _send('OPTIONS', base, auth);
-        }
+      final options = await _send('OPTIONS', base, auth);
+      final answered = options.request?.url;
+      if (answered != null && answered != base) {
+        base = Uri.parse(
+          JoinLinkParser.normalizeCollectionUrl(answered.toString()),
+        );
       }
       final resolved = base.toString();
       final early = _failureFor(options.statusCode, step: _Step.options);
@@ -234,13 +333,26 @@ class WebDavProbe {
         );
       }
 
-      // 2. MKCOL: may we create folders? 405 means it already exists.
-      var flatLayout = false;
-      final folder = base.resolve('$joinedFolder/');
-      final mkcol = await _send('MKCOL', folder, auth);
-      switch (mkcol.statusCode) {
+      // 2. MKCOL: may we create folders? 405 usually means it already
+      //    exists, but a Nextcloud/ownCloud File Drop from before folder
+      //    support answers 405 to every MKCOL ("Only PUT is allowed on files
+      //    drop"). A share that can list (step 3) is a read-write share where
+      //    405 keeps its usual meaning; a share that cannot is such a drop.
+      var flatLayout = knownFlatLayout;
+      var mkcolAmbiguous = false;
+      final registrationFolder = base.resolve('$joinedFolder/');
+      final mkcol = knownFlatLayout
+          ? null
+          : await _send('MKCOL', registrationFolder, auth);
+      switch (mkcol?.statusCode) {
+        case null:
+          break;
+        case 200:
         case 201:
+        case 204:
+          break;
         case 405:
+          mkcolAmbiguous = request.source == JoinLinkSource.nextcloudShare;
           break;
         case 401:
           return ProbeResult.failed(
@@ -261,7 +373,7 @@ class WebDavProbe {
             statusCode: 404,
           );
         default:
-          if (mkcol.statusCode >= 500) {
+          if (mkcol!.statusCode >= 500) {
             return ProbeResult.failed(
               ProbeFailure.serverError,
               resolvedUrl: resolved,
@@ -271,14 +383,30 @@ class WebDavProbe {
           flatLayout = true;
       }
 
-      // 3. PUT the registration record. The name carries a timestamp so a
-      //    re-test or re-join on an immutable server (412 on overwrite) still
-      //    writes a fresh record, and the lead can see when the device was
-      //    last seen.
-      final fileName = '$deviceId-${registrationStamp(DateTime.now())}.json';
+      // 3. Over-privilege check. A contributor credential should not be able
+      //    to list the collection. 207 means it can.
+      final propfind = await _send(
+        'PROPFIND',
+        base,
+        auth,
+        body: utf8.encode(
+          '<?xml version="1.0"?><d:propfind xmlns:d="DAV:">'
+          '<d:prop><d:resourcetype/></d:prop></d:propfind>',
+        ),
+        contentType: 'application/xml',
+        headers: const {'Depth': '1'},
+      );
+      final canList = propfind.statusCode == 207 || propfind.statusCode == 200;
+      if (canList) warnings.add(ProbeWarning.canReadRemote);
+      if (mkcolAmbiguous && !canList) flatLayout = true;
+
+      // 4. PUT the registration record under the device code, so the lead
+      //    can match it to the upload folder. A re-test replaces it; an
+      //    immutable server answers 412, which counts as written.
+      final fileName = '${Uri.encodeComponent(folder)}.json';
       final target = flatLayout
           ? base.resolve('$joinedFolder$flatSeparator$fileName')
-          : folder.resolve(fileName);
+          : registrationFolder.resolve(fileName);
       final put = await _send(
         'PUT',
         target,
@@ -295,27 +423,12 @@ class WebDavProbe {
         );
       }
 
-      // 4. HEAD: informational. Write-only servers may refuse it.
+      // 5. HEAD: informational. Write-only servers may refuse it.
       await _send('HEAD', target, auth);
 
-      // 5. Over-privilege check. A contributor credential should not be able
-      //    to list the collection. 207 means it can.
-      final propfind = await _send(
-        'PROPFIND',
-        base,
-        auth,
-        body: utf8.encode(
-          '<?xml version="1.0"?><d:propfind xmlns:d="DAV:">'
-          '<d:prop><d:resourcetype/></d:prop></d:propfind>',
-        ),
-        contentType: 'application/xml',
-        headers: const {'Depth': '1'},
-      );
-      if (propfind.statusCode == 207 || propfind.statusCode == 200) {
-        warnings.add(ProbeWarning.canReadRemote);
-      }
       if (request.source == JoinLinkSource.nextcloudShare &&
-          request.secret.isEmpty) {
+          request.secret.isEmpty &&
+          canList) {
         warnings.add(ProbeWarning.shareWithoutPassword);
       }
       return ProbeResult.success(
@@ -356,6 +469,9 @@ class WebDavProbe {
         return ProbeFailure.unauthorized;
       case 507:
         return ProbeFailure.quotaExceeded;
+      case 423: // locked
+      case 429: // rate limited
+        return ProbeFailure.serverError;
     }
     if (status >= 500) return ProbeFailure.serverError;
     if (step == _Step.options) {
@@ -385,46 +501,29 @@ class WebDavProbe {
     }
   }
 
-  bool _isRedirect(int status) =>
-      status == 301 || status == 302 || status == 307 || status == 308;
-
-  Map<String, String> _authHeader(JoinRequest request) {
-    if (request.username.isEmpty && request.secret.isEmpty) return const {};
-    final token = base64Encode(
-      utf8.encode('${request.username}:${request.secret}'),
-    );
-    return {'Authorization': 'Basic $token'};
-  }
-
   Future<http.StreamedResponse> _send(
     String method,
     Uri uri,
-    Map<String, String> auth, {
+    WebDavAuth auth, {
     List<int>? body,
     String? contentType,
     Map<String, String> headers = const {},
   }) async {
-    final request = http.Request(method, uri)
-      ..followRedirects = false
-      ..headers.addAll(auth)
-      ..headers.addAll(headers)
-      ..headers['User-Agent'] = 'BirdNET-Live';
-    if (body != null) {
-      request.bodyBytes = body;
-      if (contentType != null) request.headers['Content-Type'] = contentType;
-    }
-    final response = await _client.send(request).timeout(timeout);
+    final response = await sendWithAuth(_client, auth, uri, (target) {
+      final request = http.Request(method, target)
+        ..headers.addAll(headers)
+        ..headers['User-Agent'] = 'BirdNET-Live';
+      if (body != null) {
+        request.bodyBytes = body;
+        if (contentType != null) {
+          request.headers['Content-Type'] = contentType;
+        }
+      }
+      return request;
+    }, timeout: timeout);
     // Drain so the connection can be reused.
     await response.stream.drain<void>().timeout(timeout);
     return response;
-  }
-
-  /// Compact UTC stamp for file names: `20261028T092319Z`.
-  static String registrationStamp(DateTime time) {
-    final t = time.toUtc();
-    String two(int v) => v.toString().padLeft(2, '0');
-    return '${t.year}${two(t.month)}${two(t.day)}T'
-        '${two(t.hour)}${two(t.minute)}${two(t.second)}Z';
   }
 
   /// True for addresses where plain HTTP is tolerated with a warning.

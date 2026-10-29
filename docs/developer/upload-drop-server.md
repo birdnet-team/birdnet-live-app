@@ -32,6 +32,7 @@ user-facing side lives in the [Settings guide](../user/settings.md#upload-destin
 | Destination model, keychain secret store, JSON list | `lib/features/upload/upload_destination*.dart`, `secret_store.dart` |
 | Join-link parser | `lib/features/upload/join_link.dart` |
 | Pre-save probe (same sequence as `conformance.py`) | `lib/features/upload/webdav_probe.dart` |
+| Credentials: Basic first, Digest (RFC 7616, MD5/SHA-256, `qop=auth`) on a 401 challenge, one redirect per request | `lib/features/upload/webdav_auth.dart` |
 | Upload engine, queue store, job model | `lib/features/upload/upload_service.dart`, `upload_queue_store.dart`, `upload_job.dart` |
 | Share dialog "Send to" tab | `lib/features/history/widgets/share_options_dialog.dart` |
 | Library chip and status sheet | `lib/features/upload/upload_status_widgets.dart` |
@@ -41,21 +42,29 @@ user-facing side lives in the [Settings guide](../user/settings.md#upload-destin
 ## What an upload writes
 
 ```
-<collection>/<deviceId>/<sessionUuid>/v<version>/session.json    JSON export, always
-<collection>/<deviceId>/<sessionUuid>/v<version>/<bundle>        Share output (ZIP or single file), if any
-<collection>/<deviceId>/<sessionUuid>/v<version>/_complete.json  sizes + SHA-256, written last
+<collection>/<deviceCode>/BirdNET_Live_<start>_#<n>[_<name>].zip   the Share bundle with the JSON export inside
+<collection>/.birdnet-live/<deviceCode>.json                        one registration per device, from the connection test
 ```
 
-`deviceId` is a random UUID per install (`PrefKeys.uploadDeviceId`),
-`sessionUuid` the session's own UUID. A re-upload after an edit gets the next
-version folder. Servers that refuse `MKCOL` get the same three files with the
-folder path folded into the name (`<deviceId>__<uuid>__v1__session.json`).
-A `412` on `PUT` is treated as "already there": the drop server refuses to
-overwrite, and a retry after a kill between `PUT` and bookkeeping must not
-fail.
+`<deviceCode>` is the first eight hex digits of the install's random id
+(`PrefKeys.uploadDeviceId`, `uploadDeviceCode` in `upload_naming.dart`), shown
+in the app as "Your upload ID". Paths never carry anything a person typed:
+the optional participant identifier (`PrefKeys.uploadParticipant`) goes into
+the registration record and the `meta` block of each uploaded JSON record,
+next to `deviceCode`.
+The ZIP is `buildSessionExport` with `alwaysZip: true` and `json` forced into
+the formats, so the lead always gets structured data and exactly one file per
+session. A re-upload after an edit writes the same path: servers that allow
+it replace the file, a Nextcloud File Drop keeps the older copy under a
+numbered name. Servers that refuse `MKCOL` get the folder folded into the
+name (`<deviceCode>__BirdNET_Live_….zip`, `.birdnet-live__<deviceCode>.json`). A
+`412` on `PUT` is treated as "already there" so a retry after a kill between
+`PUT` and bookkeeping does not fail on an immutable server.
 
-The connection test writes `_joined/<deviceId>-<stamp>.json` so the project
-lead sees which devices joined and when.
+The registration file carries the device id and code, the participant
+identifier, the app version, and the platform, so the lead can match folders
+to people. The leading dot keeps the folder out of Nextcloud's default file
+list.
 
 ## Queue behavior
 
@@ -92,7 +101,7 @@ Security properties of the reference server:
   the path the client sends.
 - Path segments are validated; `..`, backslashes, and control characters are
   refused.
-- `PUT` to an existing path answers `412`; `DELETE`, `MOVE`, `COPY`, and
+- `PUT` may replace a contributor's own file (204); `DELETE`, `MOVE`, `COPY`, and
   `PROPPATCH` answer `403` for everyone.
 - A per-token request-rate limit and a per-file size limit are configurable.
 - The admin token can `PROPFIND` and `GET`; contributors cannot.

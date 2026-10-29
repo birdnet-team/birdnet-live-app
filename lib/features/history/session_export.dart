@@ -966,6 +966,7 @@ Future<String?> buildSessionExport(
   bool useAbsoluteSurveyTime = false,
   bool includeHtmlReport = false,
   bool includeAppMetadata = true,
+  bool alwaysZip = false,
 }) async {
   // Resolve the active format set; tokens outside the known list are
   // ignored. An empty result is now allowed so users can share the raw
@@ -1213,6 +1214,8 @@ Future<String?> buildSessionExport(
       session.annotations.isNotEmpty;
   final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final mustZip =
+      // Uploads want exactly one file per session whatever it holds.
+      alwaysZip ||
       (includeAudio && hasAruCycleAudio) ||
       (includeAudio && hasClips) ||
       (includeAudio && hasFullRecording && hasCompanion) ||

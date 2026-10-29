@@ -1,6 +1,6 @@
 # Política de Privacidad de BirdNET Live
 
-**Última actualización:** 6 de agosto de 2026
+**Última actualización:** 29 de octubre de 2026
 
 Esta Política de Privacidad se aplica a **BirdNET Live** (la **app**). La app es desarrollada y ofrecida por **BirdNET-Team** (el **desarrollador**, **nosotros** o **nuestro**).
 
@@ -25,7 +25,7 @@ Ningún dato de audio se transmite jamás a servidores externos.
 
 ## Tratamiento de información personal
 
-BirdNET-Team no opera un backend para la app y no recibe a través de BirdNET Live sus grabaciones, ubicación, datos de Session ni otra información personal. La app no tiene cuentas de usuario, publicidad, analítica, seguimiento ni telemetría. Sí procesa audio y ubicación en su dispositivo y, solo cuando usted activa una función de red opcional, envía la información descrita en **Recursos Externos** directamente al proveedor externo indicado.
+BirdNET-Team no opera un backend para la app y no recibe a través de BirdNET Live sus grabaciones, ubicación, datos de Session ni otra información personal. La app no tiene cuentas de usuario, publicidad, analítica, seguimiento ni telemetría. Sí procesa audio y ubicación en su dispositivo y, solo cuando usted activa una función de red opcional, envía la información descrita en **Recursos Externos** directamente al proveedor externo indicado o, solo cuando usted añade uno y decide subir, los datos de Session descritos en **Destinos de subida** directamente al servidor de quien organiza un proyecto.
 
 ### Datos almacenados localmente en su dispositivo:
 
@@ -82,7 +82,15 @@ Los datos GPS se almacenan localmente y se incluyen en las exportaciones solo cu
 
 ## Exportación de datos
 
-Puede exportar los datos de sesión en varios formatos (Raven Selection Tables, CSV, JSON, GPX) y marcar cualquier combinación de formatos a la vez bajo **Ajustes → Exportar → Formatos**; los formatos seleccionados se agrupan en un único ZIP junto con los clips de audio y el informe HTML autónomo opcional. Las exportaciones se generan localmente y se comparten mediante la hoja de compartir del sistema. La app no sube los datos de exportación a ningún servidor.
+Puede exportar los datos de sesión en varios formatos (Raven Selection Tables, CSV, JSON, GPX) y marcar cualquier combinación de formatos a la vez bajo **Ajustes → Exportar → Formatos**; los formatos seleccionados se agrupan en un único ZIP junto con los clips de audio y el informe HTML autónomo opcional. Las exportaciones se generan localmente y se comparten mediante la hoja de compartir del sistema. La app no sube los datos de exportación a ningún servidor, salvo a los destinos de subida que usted mismo haya añadido (véase más abajo).
+
+## Destinos de subida
+
+Bajo **Ajustes → Exportación y sincronización → Destinos de subida** puede añadir la carpeta WebDAV de un proyecto, normalmente un File Drop de Nextcloud que quien organiza el proyecto ha compartido con usted como enlace o código QR. No se sube nada hasta que añade un destino y después lo marca en el diálogo de Compartir, o activa las subidas automáticas de las Sessions ARU. Las subidas van directamente de su dispositivo al servidor del organizador mediante HTTPS. BirdNET-Team no opera ningún servidor intermedio y no recibe nada.
+
+Una subida contiene lo mismo que una compartición: el registro JSON de la Session (detecciones, horas, coordenadas y, si se indicaron, los nombres del observador y del lugar), el audio, las tablas y el informe que haya marcado, el ID de subida de su dispositivo y el identificador de participante que haya introducido, si lo hay. La credencial del destino se almacena en el llavero del dispositivo.
+
+Los destinos los gestionan los organizadores de los proyectos, no BirdNET-Team, bajo sus propias normas de privacidad y seguridad. Pregunte al organizador quién puede leer los datos y cuánto tiempo se conservan. Usted es responsable de lo que sube: no envíe datos que considere privados o confidenciales, o que no pueda transmitir. La app nunca descarga ni borra nada de un destino, y eliminar una Session en su dispositivo no elimina las copias subidas.
 
 ## Eliminación de datos
 

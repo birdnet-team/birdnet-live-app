@@ -9,6 +9,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import '../../shared/utils/app_icons.dart';
 import '../../shared/utils/locale_time_format.dart';
 import '../../shared/widgets/content_width_constraint.dart';
+import '../../shared/widgets/text_prompt_dialog.dart';
 import 'join_destination_screen.dart';
 import 'upload_destination.dart';
 import 'upload_destination_detail_screen.dart';
@@ -48,12 +49,47 @@ class UploadDestinationsScreen extends ConsumerWidget {
               : ListView(
                   padding: const EdgeInsets.only(bottom: 88),
                   children: [
+                    const _DeviceCodeTile(),
+                    const Divider(),
                     for (final destination in list)
                       _DestinationTile(destination: destination),
                   ],
                 ),
         ),
       ),
+    );
+  }
+}
+
+/// The device code that names this device's folder at every destination,
+/// with the optional participant identifier that travels in the metadata.
+class _DeviceCodeTile extends ConsumerWidget {
+  const _DeviceCodeTile();
+
+  Future<void> _edit(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final value = await showTextPromptDialog(
+      context,
+      title: l10n.uploadParticipantLabel,
+      initialText: ref.read(uploadParticipantProvider),
+      helperText: l10n.uploadParticipantHelp,
+      textCapitalization: TextCapitalization.none,
+    );
+    if (value == null) return;
+    await ref.read(uploadParticipantProvider.notifier).set(value.trim());
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final code = ref.watch(uploadDeviceCodeProvider);
+    final participant = ref.watch(uploadParticipantProvider);
+    return ListTile(
+      leading: const Icon(AppIcons.cloudUpload),
+      title: Text(l10n.uploadDeviceCodeTitle),
+      subtitle: Text(participant.isEmpty ? code : '$code · $participant'),
+      trailing: const Icon(AppIcons.edit),
+      onTap: () => _edit(context, ref),
     );
   }
 }

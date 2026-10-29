@@ -56,6 +56,10 @@ Process and analyze multiple audio files in bulk. (Coming Soon)
 
 Create a scheduled ARU deployment session, record full cycle audio or retained detection clips, run live inference during active cycles, and track planned recording cycles.
 
+### [Uploads](uploads.md)
+
+Send finished sessions to a project's folder: setting up a Nextcloud File Drop or WebDAV destination, join links and QR codes, the Send to tab, upload status, and automatic ARU uploads.
+
 ## Reference
 
 ### [FAQ](faq.md)

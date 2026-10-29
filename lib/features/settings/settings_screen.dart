@@ -20,6 +20,7 @@ import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_size.dart';
 import '../upload/upload_destinations_screen.dart';
 import '../upload/upload_providers.dart';
+import 'export_options_screens.dart';
 import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
@@ -758,49 +759,48 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.settingsExport,
                 subtitle: l10n.settingsExportDescription,
               ),
-              _ExportFormatChecklist(),
-              CheckboxListTile(
-                dense: true,
+              // Three entries, each summarizing its group; the first two
+              // open export_options_screens.dart.
+              ListTile(
+                leading: const Icon(AppIcons.listAlt),
                 title: SettingHelpTitle(
-                  title: l10n.settingsIncludeAudioFiles,
-                  helpBody: l10n.settingsHelpIncludeAudioFiles,
+                  title: l10n.settingsExportFormatsTitle,
+                  helpBody: l10n.settingsHelpExportFormat,
                 ),
-                value: ref.watch(includeAudioProvider),
-                onChanged: (v) =>
-                    ref.read(includeAudioProvider.notifier).set(v ?? false),
-              ),
-              if (ref.watch(includeAudioProvider))
-                CheckboxListTile(
-                  dense: true,
-                  title: SettingHelpTitle(
-                    title: l10n.settingsShareAudioAsWav,
-                    helpBody: l10n.settingsHelpShareAudioAsWav,
+                subtitle: Text(
+                  exportFormatsSummary(
+                    l10n,
+                    ref.watch(exportSelectionProvider),
                   ),
-                  value: ref.watch(shareAudioAsWavProvider),
-                  onChanged: (v) => ref
-                      .read(shareAudioAsWavProvider.notifier)
-                      .set(v ?? false),
                 ),
-              CheckboxListTile(
-                dense: true,
-                title: SettingHelpTitle(
-                  title: l10n.settingsExportAppMetadata,
-                  helpBody: l10n.settingsHelpExportAppMetadata,
+                trailing: const Icon(AppIcons.chevronRight),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ExportFormatsScreen(),
+                  ),
                 ),
-                value: ref.watch(includeAppMetadataProvider),
-                onChanged: (v) => ref
-                    .read(includeAppMetadataProvider.notifier)
-                    .set(v ?? false),
               ),
-              CheckboxListTile(
-                dense: true,
+              ListTile(
+                leading: const Icon(AppIcons.audioFileOutlined),
                 title: SettingHelpTitle(
-                  title: l10n.settingsExportHtmlReport,
-                  helpBody: l10n.settingsHelpExportHtmlReport,
+                  title: l10n.settingsExportContentTitle,
+                  helpBody: l10n.settingsHelpExportContent,
                 ),
-                value: ref.watch(exportHtmlReportProvider),
-                onChanged: (v) =>
-                    ref.read(exportHtmlReportProvider.notifier).set(v ?? false),
+                subtitle: Text(
+                  exportContentSummary(
+                    l10n,
+                    includeAudio: ref.watch(includeAudioProvider),
+                    audioAsWav: ref.watch(shareAudioAsWavProvider),
+                    htmlReport: ref.watch(exportHtmlReportProvider),
+                    appMetadata: ref.watch(includeAppMetadataProvider),
+                  ),
+                ),
+                trailing: const Icon(AppIcons.chevronRight),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ExportContentScreen(),
+                  ),
+                ),
               ),
               ListTile(
                 leading: const Icon(AppIcons.cloudUpload),
@@ -2274,57 +2274,6 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             )
           : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// _ExportFormatChecklist — multi-select export formats (I2)
-// ---------------------------------------------------------------------------
-//
-// Replaces the single-choice export-format selector with a row of
-// independent checkboxes. The pipeline bundles every enabled format
-// into the export ZIP, so users can grab Raven + CSV + JSON in one
-// share. Selection is persisted via [exportSelectionProvider]. Unticking
-// every format (together with the audio / metadata / HTML report boxes)
-// shares the raw audio file on its own — see [buildSessionExport].
-// ---------------------------------------------------------------------------
-
-class _ExportFormatChecklist extends ConsumerWidget {
-  const _ExportFormatChecklist();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final selection = ref.watch(exportSelectionProvider);
-    // (token, display label, per-format help). Labels stay in English as
-    // technical terms; only the help bodies are localized.
-    final formats = <(String, String, String)>[
-      ('raven', 'Raven Selection Table', l10n.settingsHelpExportRaven),
-      ('csv', 'CSV', l10n.settingsHelpExportCsv),
-      ('json', 'JSON', l10n.settingsHelpExportJson),
-      ('gpx', 'GPX (track + waypoints)', l10n.settingsHelpExportGpx),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: SettingHelpTitle(
-            title: l10n.settingsExportFormat,
-            helpBody: l10n.settingsHelpExportFormat,
-          ),
-        ),
-        for (final fmt in formats)
-          CheckboxListTile(
-            dense: true,
-            title: SettingHelpTitle(title: fmt.$2, helpBody: fmt.$3),
-            value: selection.contains(fmt.$1),
-            onChanged: (v) => ref
-                .read(exportSelectionProvider.notifier)
-                .toggle(fmt.$1, v ?? false),
-          ),
-      ],
     );
   }
 }

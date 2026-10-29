@@ -1201,6 +1201,7 @@ class _SessionTile extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
+                        UploadStatusLine(sessionId: session.id),
                         Row(
                           children: [
                             Icon(
@@ -1313,7 +1314,6 @@ class _SessionTile extends ConsumerWidget {
                     variant: StatChipVariant.badge,
                   ),
                   _SessionSizeChip(session: session),
-                  UploadStatusChip(sessionId: session.id),
                 ],
               ),
             ],

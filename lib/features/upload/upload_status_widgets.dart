@@ -1,13 +1,17 @@
 // =============================================================================
-// Upload Status Widgets — the library chip and the per-session sheet
+// Upload Status Widgets — the library line, the review action, the sheet
 // =============================================================================
 //
-// [UploadStatusChip] sits among a session tile's stat chips and shows one
-// icon for the session's uploads: a spinner while one is running, an
-// outlined cloud while any is pending, a check when all are done, an error
-// mark when one failed. Tapping it opens [UploadStatusSheet], which lists
-// every destination the session was queued for with its state, the last
-// error in one sentence, and Retry / Remove actions.
+// [UploadStatusLine] is the first metadata line of a session tile and says
+// what happened to the session's uploads: a spinner while one is running,
+// "Queued" or "Waiting for Wi-Fi" while pending, "Uploaded <date>" when done,
+// or a failure sentence that names the fix. [UploadStatusAction] is the same
+// state as an app-bar icon on Session Review. Both only appear while at
+// least one destination the session was queued for still exists in
+// Settings: once the user removes a destination, "uploaded" is no longer a
+// fact about any destination they have. Tapping either opens
+// [UploadStatusSheet], which lists every destination the session was queued
+// for with its state, the last error in one sentence, and Retry / Remove.
 // =============================================================================
 
 import 'dart:async';
@@ -23,72 +27,145 @@ import 'upload_messages.dart';
 import 'upload_providers.dart';
 import 'upload_service.dart';
 
-class UploadStatusChip extends ConsumerWidget {
-  const UploadStatusChip({super.key, required this.sessionId});
+/// The one-line summary of a session's uploads, or null when there is
+/// nothing to say: no jobs, or none whose destination still exists.
+class UploadStatusSummary {
+  const UploadStatusSummary({
+    required this.icon,
+    required this.text,
+    required this.color,
+    required this.busy,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  /// An upload is running right now; show a spinner instead of [icon].
+  final bool busy;
+
+  static UploadStatusSummary? of(
+    BuildContext context,
+    List<UploadJob> jobs,
+    Iterable<String> existingDestinationIds,
+  ) {
+    final ids = existingDestinationIds.toSet();
+    final live = [
+      for (final j in jobs)
+        if (ids.contains(j.destinationId)) j,
+    ];
+    if (live.isEmpty) return null;
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final uploading = live.where((j) => j.state == UploadJobState.uploading);
+    final failed = live.where((j) => j.state == UploadJobState.failed);
+    final pending = live.where((j) => j.isPending);
+    if (uploading.isNotEmpty) {
+      return UploadStatusSummary(
+        icon: AppIcons.cloudUpload,
+        text: l10n.uploadStatusUploading,
+        color: scheme.primary,
+        busy: true,
+      );
+    }
+    if (failed.isNotEmpty) {
+      return UploadStatusSummary(
+        icon: AppIcons.errorOutline,
+        text: uploadStateLabel(l10n, failed.first),
+        color: scheme.error,
+        busy: false,
+      );
+    }
+    if (pending.isNotEmpty) {
+      return UploadStatusSummary(
+        icon: AppIcons.cloudUpload,
+        text: uploadStateLabel(l10n, pending.first),
+        color: scheme.onSurfaceVariant,
+        busy: false,
+      );
+    }
+    // All done: the newest upload date.
+    UploadJob newest = live.first;
+    for (final j in live) {
+      final a = j.finishedAt, b = newest.finishedAt;
+      if (b == null || (a != null && a.isAfter(b))) newest = j;
+    }
+    return UploadStatusSummary(
+      icon: AppIcons.cloudDone,
+      text: uploadStateLabel(l10n, newest),
+      color: scheme.primary,
+      busy: false,
+    );
+  }
+}
+
+/// Builds [child] from the session's upload summary; renders nothing when
+/// there is no summary. Shared by the line and the action.
+class _UploadStatusBuilder extends ConsumerWidget {
+  const _UploadStatusBuilder({required this.sessionId, required this.builder});
 
   final String sessionId;
+  final Widget Function(BuildContext context, UploadStatusSummary summary)
+  builder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final service = ref.watch(uploadServiceProvider);
     unawaited(service.ensureLoaded());
+    final destinations =
+        ref.watch(uploadDestinationsProvider).value ?? const [];
     return ListenableBuilder(
       listenable: service,
       builder: (context, _) {
-        final jobs = service.jobsForSession(sessionId);
-        if (jobs.isEmpty) return const SizedBox.shrink();
-        final l10n = AppLocalizations.of(context)!;
-        final theme = Theme.of(context);
-        final uploading = jobs.any((j) => j.state == UploadJobState.uploading);
-        final failed = jobs.any(
-          (j) => j.state == UploadJobState.failed && j.lastError != null,
+        final summary = UploadStatusSummary.of(
+          context,
+          service.jobsForSession(sessionId),
+          destinations.map((d) => d.id),
         );
-        final pending = jobs.any((j) => j.isPending);
-        // Same shape as the stat chips next to it (icon + short word), so an
-        // upload reads as one more fact about the session, not a button.
-        final IconData icon;
-        final String text;
-        final Color color;
-        if (uploading) {
-          icon = AppIcons.cloudUpload;
-          text = l10n.uploadStatusUploading;
-          color = theme.colorScheme.primary;
-        } else if (failed) {
-          icon = AppIcons.errorOutline;
-          text = l10n.uploadStatusGaveUp;
-          color = theme.colorScheme.error;
-        } else if (pending) {
-          icon = AppIcons.cloudUpload;
-          text = l10n.uploadStatusQueued;
-          color = theme.colorScheme.onSurfaceVariant;
-        } else {
-          icon = AppIcons.cloud;
-          text = l10n.uploadChipUploaded;
-          color = theme.colorScheme.primary;
-        }
-        return InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () => showUploadStatusSheet(context, sessionId),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        if (summary == null) return const SizedBox.shrink();
+        return builder(context, summary);
+      },
+    );
+  }
+}
+
+/// Metadata line for a session tile: icon plus one sentence, tappable.
+class UploadStatusLine extends StatelessWidget {
+  const UploadStatusLine({super.key, required this.sessionId});
+
+  final String sessionId;
+
+  @override
+  Widget build(BuildContext context) {
+    return _UploadStatusBuilder(
+      sessionId: sessionId,
+      builder: (context, summary) {
+        final theme = Theme.of(context);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 2),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(4),
+            onTap: () => showUploadStatusSheet(context, sessionId),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                uploading
+                summary.busy
                     ? SizedBox.square(
-                        dimension: 14,
+                        dimension: 12,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: color,
+                          color: summary.color,
                         ),
                       )
-                    : Icon(icon, size: 16, color: color),
+                    : Icon(summary.icon, size: 14, color: summary.color),
                 const SizedBox(width: 4),
-                Text(
-                  text,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: failed ? color : theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    summary.text,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: summary.color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -96,6 +173,33 @@ class UploadStatusChip extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// App-bar icon for Session Review; the tooltip carries the sentence.
+class UploadStatusAction extends StatelessWidget {
+  const UploadStatusAction({super.key, required this.sessionId});
+
+  final String sessionId;
+
+  @override
+  Widget build(BuildContext context) {
+    return _UploadStatusBuilder(
+      sessionId: sessionId,
+      builder: (context, summary) => IconButton(
+        icon: summary.busy
+            ? SizedBox.square(
+                dimension: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: summary.color,
+                ),
+              )
+            : Icon(summary.icon, color: summary.color),
+        tooltip: summary.text,
+        onPressed: () => showUploadStatusSheet(context, sessionId),
+      ),
     );
   }
 }
@@ -183,11 +287,7 @@ class _JobTile extends ConsumerWidget {
     }
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(
-        job.version > 1
-            ? '$destinationName (v${job.version})'
-            : destinationName,
-      ),
+      title: Text(destinationName),
       subtitle: Text(
         [
           uploadStateLabel(l10n, job),
@@ -242,6 +342,15 @@ String uploadStateLabel(AppLocalizations l10n, UploadJob job) {
           ? l10n.uploadJoinSuccess
           : l10n.uploadStatusUploaded(formatLocaleDate(at, l10n.localeName));
     case UploadJobState.failed:
+      // Errors the server stated will not go away with a retry; point at
+      // the destination's settings instead of promising one.
+      switch (job.lastError) {
+        case UploadErrorCode.unauthorized:
+        case UploadErrorCode.forbidden:
+        case UploadErrorCode.destinationMissing:
+        case UploadErrorCode.secretMissing:
+          return l10n.uploadStatusFailedCheckDestination;
+      }
       return job.gaveUp ? l10n.uploadStatusGaveUp : l10n.uploadStatusFailed;
   }
 }
