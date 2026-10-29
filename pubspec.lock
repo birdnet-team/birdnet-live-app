@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "12.1.0"
+  android_file_picker:
+    dependency: transitive
+    description:
+      name: android_file_picker
+      sha256: "537bce9a43bc6fc08670cb68498251acc6eb9134b86a391b43e1f7c863588388"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   animated_stack_widget:
     dependency: transitive
     description:
@@ -245,10 +253,42 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: fdc6a37f715d19f35b131decf1ce39242eeed5ddae18c0818c3eccb731ab76be
+      sha256: "98c0b156b6380ba55bc767a14e2e6b3feb246e713ad40092424596fa79005bea"
       url: "https://pub.dev"
     source: hosted
-    version: "12.0.0-beta.7"
+    version: "13.1.0"
+  file_picker_darwin:
+    dependency: transitive
+    description:
+      name: file_picker_darwin
+      sha256: cd4b60bdba061ca5a6cede9141cb6816707eace5618ee469b5f46511eba7897b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
+  file_picker_linux:
+    dependency: transitive
+    description:
+      name: file_picker_linux
+      sha256: e7db600f50672ce5ebbe422ac0906e0f3d2a476188cc93e7126afee12bf08063
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
+  file_picker_platform_interface:
+    dependency: transitive
+    description:
+      name: file_picker_platform_interface
+      sha256: a78bd8ec992ae34ce32f57157422bd532967510d2ebb6fc251756472bbde7160
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
+  file_picker_web:
+    dependency: transitive
+    description:
+      name: file_picker_web
+      sha256: "32af8262aca907b02b8970b32328b0312db0b42ba6f930be6d27fde179d59b7d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   fixnum:
     dependency: transitive
     description:
@@ -368,14 +408,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      sha256: "3854fe5e3bff0b113c658f260b90c95dea17c92db0f2addeac2e343dd9969785"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.35"
   flutter_riverpod:
     dependency: "direct main"
     description:
@@ -1441,6 +1473,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.0"
+  windows_file_picker:
+    dependency: transitive
+    description:
+      name: windows_file_picker
+      sha256: "18452aa293de3b6961c6d05b0e71b4be7bb90c67635abdd3aa5c4e75dd875072"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   wkt_parser:
     dependency: transitive
     description:
