@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Settings › Export & Sync is now three entries instead of one long checkbox list: **Formats** (Raven, CSV, JSON, GPX), **Content** (audio, WAV conversion, HTML report, app metadata), and **Upload destinations**. Each summarizes its choices in its subtitle and the first two open a page with the familiar boxes and help texts; nothing about the exports themselves changed.
 - When a device cannot keep up, Live Mode, Point Count, Survey, and ARU now lower the inference rate by 0.30 Hz at a time (down to 0.10 Hz) and make the lowered rate the setting of every mode and setup wizard; Settings and the wizards then note the rate this device is known to be too slow above. On slow devices the backlog previously overwrote the audio that detection clips are cut from, so detections were kept without their clips.
 
 ### Fixed

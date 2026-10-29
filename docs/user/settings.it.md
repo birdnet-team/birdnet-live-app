@@ -325,6 +325,8 @@ Poiché i livelli si basano sulla posizione in classifica, il comportamento è l
 
 ## Esportazione e sincronizzazione
 
+La sezione mostra tre voci, ognuna con il riepilogo delle proprie scelte: **Formati**, **Contenuto** e **Destinazioni di caricamento**. Le prime due aprono una pagina con le caselle descritte sotto.
+
 ### Formati
 
 Spunta qualsiasi combinazione di formati di esportazione: ogni salvataggio o condivisione raccoglierà tutti i formati selezionati insieme in un unico ZIP. Scegliendo un solo formato senza spezzoni audio e senza report HTML otterrai un file grezzo (ad esempio `session.csv`) invece di uno ZIP, per compatibilità con le versioni precedenti:

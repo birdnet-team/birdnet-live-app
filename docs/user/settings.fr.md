@@ -325,6 +325,8 @@ Comme les niveaux reposent sur un rang, cela se comporte de la même façon dans
 
 ## Export et synchronisation
 
+La section présente trois entrées, chacune résumant ses choix : **Formats**, **Contenu** et **Destinations d'envoi**. Les deux premières ouvrent une page avec les cases décrites ci-dessous.
+
 ### Formats
 
 Cochez n'importe quelle combinaison de formats d'export : chaque enregistrement ou partage regroupera tous les formats sélectionnés dans une seule archive ZIP. Si vous choisissez un format unique, sans extraits audio ni rapport HTML, vous obtiendrez un fichier brut (par exemple `session.csv`) au lieu d'un ZIP, par compatibilité ascendante :

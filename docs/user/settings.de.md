@@ -322,6 +322,8 @@ Da die Stufen auf Rängen beruhen, verhält sich das im artenreichen Tropenwald 
 
 ## Export & Sync
 
+Der Abschnitt zeigt drei Einträge, die ihre Auswahl jeweils zusammenfassen: **Formate**, **Inhalt** und **Upload-Ziele**. Die ersten beiden öffnen eine Seite mit den unten beschriebenen Kästchen.
+
 ### Formate
 
 Wählen Sie eine beliebige Kombination von Exportformaten aus – bei jedem Speichern/Teilen werden alle ausgewählten Formate gemeinsam in einem einzigen ZIP gebündelt. Wählen Sie ein einzelnes Format ohne Audioclips und ohne HTML-Bericht, erhalten Sie aus Gründen der Abwärtskompatibilität eine reine Datei (z. B. `session.csv`) statt eines ZIP:

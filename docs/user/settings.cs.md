@@ -316,6 +316,8 @@ Protože stupně vycházejí z pořadí, funguje to v druhově bohatém tropick�
 
 ## Export a synchronizace
 
+Sekce zobrazuje tři položky, z nichž každá shrnuje svou volbu: **Formáty**, **Obsah** a **Cíle nahrávání**. První dvě otevírají stránku s políčky popsanými níže.
+
 ### Formáty
 
 Zaškrtněte libovolnou kombinaci exportních formátů – při každém uložení či sdílení se všechny zvolené formáty sbalí společně do jednoho ZIP. Zvolíte-li jediný formát bez zvukových úseků a bez HTML zprávy, dostanete kvůli zpětné kompatibilitě samostatný soubor (například `session.csv`) místo ZIP:

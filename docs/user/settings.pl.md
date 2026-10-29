@@ -320,6 +320,8 @@ Ponieważ poziomy opierają się na rankingu, działa to tak samo w bogatym gatu
 
 ## Eksport i synchronizacja
 
+Sekcja pokazuje trzy pozycje, z których każda podsumowuje swoje ustawienia: **Formaty**, **Zawartość** i **Miejsca docelowe przesyłania**. Pierwsze dwie otwierają stronę z polami opisanymi poniżej.
+
 ### Formaty
 
 Zaznacz dowolną kombinację formatów eksportu — przy każdym zapisie i udostępnieniu wszystkie wybrane formaty trafią razem do jednego pliku ZIP. Wybór jednego formatu bez fragmentów dźwiękowych i bez raportu HTML da Ci, dla zgodności wstecznej, surowy plik (na przykład `session.csv`) zamiast ZIP:

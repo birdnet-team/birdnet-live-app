@@ -4380,6 +4380,26 @@
   "@settingsExportFormat": {
     "description": "Export format setting label"
   },
+  "settingsExportFormatsTitle": "Formats",
+  "@settingsExportFormatsTitle": {
+    "description": "Export & Sync entry that opens the export formats screen; its subtitle lists the ticked formats"
+  },
+  "settingsExportFormatsNone": "None",
+  "@settingsExportFormatsNone": {
+    "description": "Subtitle of the Formats entry when no table format is ticked"
+  },
+  "settingsExportContentTitle": "Content",
+  "@settingsExportContentTitle": {
+    "description": "Export & Sync entry that opens the export content screen (audio, HTML report, app metadata)"
+  },
+  "settingsExportContentNone": "Tables only",
+  "@settingsExportContentNone": {
+    "description": "Subtitle of the Content entry when neither audio, HTML report, nor app metadata is on"
+  },
+  "settingsHelpExportContent": "What a share carries besides the tables: the saved audio (optionally converted to WAV), the HTML report, and the app metadata file. The Audio and Metadata boxes of the Share dialog start from these choices.",
+  "@settingsHelpExportContent": {
+    "description": "Help text of the Content entry"
+  },
   "liveListening": "Listening…",
   "@liveListening": {
     "description": "Status text while actively listening for species"

@@ -322,6 +322,8 @@ Como os níveis assentam na ordenação, isto comporta-se da mesma forma numa fl
 
 ## Exportação e sincronização
 
+A seção mostra três entradas, cada uma resumindo suas escolhas: **Formatos**, **Conteúdo** e **Destinos de envio**. As duas primeiras abrem uma página com as caixas descritas abaixo.
+
 ### Formatos
 
 Marque qualquer combinação de formatos de exportação — cada gravação/compartilhamento reunirá todos os formatos selecionados dentro de um único ZIP. Se escolher um único formato sem trechos de áudio e sem relatório HTML, você obterá um arquivo simples (por exemplo, `session.csv`) em vez de um ZIP, por compatibilidade retroativa:

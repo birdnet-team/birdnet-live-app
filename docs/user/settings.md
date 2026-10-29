@@ -319,6 +319,8 @@ Because the tiers are rank-based, this behaves the same in a species-rich tropic
 
 ## Export & Sync
 
+The section shows three entries, each summarizing its choices: **Formats**, **Content**, and **Upload destinations**. The first two open a page with the boxes described below.
+
 The options in this section are the **defaults** for every share. Tapping **Share** on a session, on a multi-session selection in the Session Library, or on a single detection first opens a small dialog with two boxes, **Audio** and **Metadata**, pre-ticked from these settings: Audio is on when **Include audio files** is on; Metadata is on when at least one format, the HTML report, or the app metadata file is enabled. Each box has a `?` help button and a one-line subtitle naming exactly what it adds (for example "Converted to WAV" or "Raven Selection Table, CSV, HTML report"). Untick a box to leave that part out of this one share only — the saved settings never change. Audio is greyed out when the session or detection has no saved audio; ticking Metadata while every metadata option is off here falls back to a Raven Selection Table; and Share stays disabled while both boxes are off. The intuition: most shares want the usual bundle, but the one time you need a bare WAV for iNaturalist or a tables-only ZIP for a colleague, you should not have to visit Settings twice.
 
 ### Formats

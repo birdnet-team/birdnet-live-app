@@ -324,6 +324,8 @@ Como los niveles se basan en el orden, esto funciona igual en un bosque tropical
 
 ## Exportación y sincronización
 
+La sección muestra tres entradas, cada una resumiendo sus opciones: **Formatos**, **Contenido** y **Destinos de subida**. Las dos primeras abren una página con las casillas descritas abajo.
+
 ### Formatos
 
 Marca cualquier combinación de formatos de exportación: cada guardado o compartición empaquetará todos los formatos seleccionados juntos en un único ZIP. Si eliges un solo formato sin fragmentos de audio ni informe HTML, obtendrás un archivo suelto (por ejemplo, `session.csv`) en lugar de un ZIP, por compatibilidad con versiones anteriores:

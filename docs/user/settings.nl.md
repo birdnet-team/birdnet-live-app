@@ -322,6 +322,8 @@ Omdat de niveaus op rangorde berusten, werkt dit in een soortenrijk tropisch bos
 
 ## Export & synchronisatie
 
+De sectie toont drie items die elk hun keuzes samenvatten: **Formaten**, **Inhoud** en **Uploadbestemmingen**. De eerste twee openen een pagina met de hieronder beschreven vakjes.
+
 ### Formaten
 
 Vink een willekeurige combinatie van exportformaten aan — bij elke keer opslaan of delen worden alle gekozen formaten samen in één ZIP gebundeld. Kies je één formaat zonder audiofragmenten en zonder HTML-rapport, dan krijg je omwille van achterwaartse compatibiliteit een kaal bestand (bijvoorbeeld `session.csv`) in plaats van een ZIP:
