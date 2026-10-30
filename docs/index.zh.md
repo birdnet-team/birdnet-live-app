@@ -62,6 +62,10 @@ BirdNET Live 已上架 [Google Play](https://play.google.com/store/apps/details?
 
 架构、构建和参与贡献请参阅 [Developer Guide](developer/index.md)。开发者文档仅提供英文版本。
 
+## 资助
+
+BirdNET Live 在 RangerSound 项目框架内开发，该项目由 Deutsche Bundesstiftung Umwelt 资助（项目编号 39263/01）。 RangerSound 是开姆尼茨工业大学、Universität Würzburg 与巴伐利亚森林国家公园的合作项目。
+
 ## 许可
 
 BirdNET Live 的源代码基于 [MIT 许可证](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE)开源。随附的 BirdNET 模型权重基于 [Apache 2.0 许可证](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE)授权。

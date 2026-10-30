@@ -449,6 +449,10 @@
   "@aboutFundingDescription": {
     "description": "Funding statement on the About screen. Keep 'Deutsche Bundesstiftung Umwelt' and the project number as-is in every locale."
   },
+  "aboutFundingPartners": "RangerSound is a collaboration between Chemnitz University of Technology, Universität Würzburg, and the Bavarian Forest National Park.",
+  "@aboutFundingPartners": {
+    "description": "Second paragraph of the funding card on the About screen, naming the RangerSound project partners. Keep 'RangerSound' and 'Universität Würzburg' as-is in every locale."
+  },
   "aboutWebsite": "BirdNET Website",
   "@aboutWebsite": {
     "description": "BirdNET website link label"

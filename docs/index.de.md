@@ -62,6 +62,10 @@ Unter Android können Sie die App auch als signiertes APK per Sideloading instal
 
 Im [Entwicklerhandbuch](developer/index.md) finden Sie Informationen zu Architektur, Build und Mitwirkung.
 
+## Förderung
+
+BirdNET Live wird im Rahmen des Projekts RangerSound entwickelt, gefördert von der Deutschen Bundesstiftung Umwelt (Aktenzeichen 39263/01). RangerSound ist eine Kooperation der Technischen Universität Chemnitz, der Universität Würzburg und des Nationalparks Bayerischer Wald.
+
 ## Lizenz
 
 Der Quellcode von BirdNET Live ist Open Source unter der [MIT-Lizenz](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Die gebündelten BirdNET-Modellgewichte sind unter der [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE) lizenziert.

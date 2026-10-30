@@ -62,6 +62,10 @@ BirdNET Live доступно в [Google Play](https://play.google.com/store/app
 
 Смотрите [Developer Guide](developer/index.md) — архитектура, сборка и участие в разработке. Документация для разработчиков доступна только на английском языке.
 
+## Финансирование
+
+BirdNET Live разрабатывается в рамках проекта RangerSound, который финансирует Deutsche Bundesstiftung Umwelt (проект 39263/01). RangerSound — совместный проект Технического университета Хемница, Universität Würzburg и национального парка «Баварский лес».
+
 ## Лицензия
 
 Исходный код BirdNET Live распространяется по [лицензии MIT](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Входящие в комплект веса модели BirdNET распространяются по [лицензии Apache 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE).

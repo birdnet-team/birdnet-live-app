@@ -62,6 +62,10 @@ Na Androidu můžete aplikaci nainstalovat i ručně jako podepsaný APK: stáhn
 
 Architekturu, sestavování a přispívání popisuje [Příručka pro vývojáře](developer/index.md).
 
+## Financování
+
+BirdNET Live vzniká v rámci projektu RangerSound, který financuje nadace Deutsche Bundesstiftung Umwelt (projekt č. 39263/01). RangerSound je společným projektem Technické univerzity v Chemnitzu, Universität Würzburg a Národního parku Bavorský les.
+
 ## Licence
 
 Zdrojový kód BirdNET Live je open source pod [licencí MIT](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE). Přibalené váhy modelů BirdNET jsou licencovány pod [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE).

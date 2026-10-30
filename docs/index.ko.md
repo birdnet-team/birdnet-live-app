@@ -62,6 +62,10 @@ Android에서는 서명된 APK를 직접 설치(사이드로드)할 수도 있�
 
 아키텍처, 빌드, 기여 방법은 [Developer Guide](developer/index.md)를 참조하세요. 개발자 문서는 영어로만 제공됩니다.
 
+## 후원
+
+BirdNET Live는 Deutsche Bundesstiftung Umwelt가 지원하는 RangerSound 프로젝트(project 39263/01)의 일환으로 개발됩니다. RangerSound는 켐니츠 공과대학교, Universität Würzburg, 바이에른 숲 국립공원의 공동 프로젝트입니다.
+
 ## 라이선스
 
 BirdNET Live 소스 코드는 [MIT 라이선스](https://github.com/birdnet-team/birdnet-live-app/blob/main/LICENSE)에 따라 오픈 소스로 공개됩니다. 번들로 포함된 BirdNET 모델 가중치는 [Apache License 2.0](https://github.com/birdnet-team/birdnet-live-app/blob/main/MODEL_LICENSE)에 따라 라이선스됩니다.
