@@ -53,7 +53,9 @@ class EbirdLifeList extends ChangeNotifier {
     final raw = _prefs.getString(PrefKeys.ebirdLifeList);
     _names = _decodeNames(raw);
     final importedAtRaw = _prefs.getString(PrefKeys.ebirdLifeListImportedAt);
-    _importedAt = importedAtRaw == null ? null : DateTime.tryParse(importedAtRaw);
+    _importedAt = importedAtRaw == null
+        ? null
+        : DateTime.tryParse(importedAtRaw);
   }
 
   /// Whether [scientificName] is on the imported life list.

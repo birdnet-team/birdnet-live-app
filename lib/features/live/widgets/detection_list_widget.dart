@@ -540,7 +540,10 @@ class DetectionTile extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
-                border: Border.all(color: theme.colorScheme.surface, width: 1.5),
+                border: Border.all(
+                  color: theme.colorScheme.surface,
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: theme.colorScheme.shadow.withAlpha(80),

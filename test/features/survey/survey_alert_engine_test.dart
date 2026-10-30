@@ -227,10 +227,7 @@ void main() {
       expect(engine.evaluate(det(), firstInSession: true), isNull);
 
       // Not on the life list — a lifer.
-      final c = engine.evaluate(
-        det(name: 'Parus major'),
-        firstInSession: true,
-      );
+      final c = engine.evaluate(det(name: 'Parus major'), firstInSession: true);
       expect(c, isNotNull);
       expect(c!.reason, AlertReason.lifer);
     });

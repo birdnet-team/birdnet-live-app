@@ -50,7 +50,9 @@ Future<void> openExternalUrl(
   try {
     final ok = await launchUrl(
       uri,
-      mode: inApp ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication,
+      mode: inApp
+          ? LaunchMode.inAppBrowserView
+          : LaunchMode.externalApplication,
     );
     if (ok) return;
     // launchUrl returned false — fall through to the failure path.

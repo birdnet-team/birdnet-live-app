@@ -52,8 +52,7 @@ void main() {
     expect(list.contains('Turdus migratorius'), isTrue);
   });
 
-  test('matches the Scientific Name column by header, not position',
-      () async {
+  test('matches the Scientific Name column by header, not position', () async {
     final list = await freshList();
     const csv =
         'Scientific Name,Common Name,Row #\n'
@@ -62,39 +61,41 @@ void main() {
     expect(list.contains('Turdus migratorius'), isTrue);
   });
 
-  test('throws EbirdCsvFormatException when Scientific Name column is missing',
-      () async {
-    final list = await freshList();
-    const csv = 'Common Name,Count\nAmerican Robin,1\n';
-    expect(
-      () => list.importCsv(csv),
-      throwsA(isA<EbirdCsvFormatException>()),
-    );
-  });
+  test(
+    'throws EbirdCsvFormatException when Scientific Name column is missing',
+    () async {
+      final list = await freshList();
+      const csv = 'Common Name,Count\nAmerican Robin,1\n';
+      expect(
+        () => list.importCsv(csv),
+        throwsA(isA<EbirdCsvFormatException>()),
+      );
+    },
+  );
 
   test('throws EbirdCsvFormatException for empty content', () async {
     final list = await freshList();
     expect(() => list.importCsv(''), throwsA(isA<EbirdCsvFormatException>()));
   });
 
-  test('skips blank lines and rows missing the scientific name field',
-      () async {
-    final list = await freshList();
-    const csv =
-        'Common Name,Scientific Name\n'
-        '\n'
-        'American Robin,Turdus migratorius\n'
-        'Unknown,\n';
-    final count = await list.importCsv(csv);
-    expect(count, 1);
-    expect(list.contains('Turdus migratorius'), isTrue);
-  });
+  test(
+    'skips blank lines and rows missing the scientific name field',
+    () async {
+      final list = await freshList();
+      const csv =
+          'Common Name,Scientific Name\n'
+          '\n'
+          'American Robin,Turdus migratorius\n'
+          'Unknown,\n';
+      final count = await list.importCsv(csv);
+      expect(count, 1);
+      expect(list.contains('Turdus migratorius'), isTrue);
+    },
+  );
 
   test('re-importing replaces the previous list entirely', () async {
     final list = await freshList();
-    await list.importCsv(
-      'Scientific Name\nTurdus migratorius\n',
-    );
+    await list.importCsv('Scientific Name\nTurdus migratorius\n');
     expect(list.contains('Turdus migratorius'), isTrue);
 
     await list.importCsv('Scientific Name\nParus major\n');
