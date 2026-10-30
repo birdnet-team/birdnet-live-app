@@ -40,6 +40,8 @@ class SurveyAlertCoordinator {
     required this.globalHistory,
     required this.geoScores,
     required this.watchlist,
+    this.lifeList,
+    this.isBirdSpecies,
     this.minConfidence = 0.5,
     this.rareThreshold = 0.05,
     this.startupGraceSeconds = 60,
@@ -57,6 +59,7 @@ class SurveyAlertCoordinator {
       globalHistory: globalHistory,
       geoScores: geoScores ?? const <String, double>{},
       watchlist: watchlist ?? const <String>{},
+      lifeList: lifeList ?? const <String>{},
       minConfidence: minConfidence,
       rareThreshold: rareThreshold,
     );
@@ -66,7 +69,11 @@ class SurveyAlertCoordinator {
       minInterval: Duration(seconds: minIntervalSeconds),
       maxPerMinute: maxPerMinute,
       coalesce: coalesce,
-      bypassReasons: const {AlertReason.rare, AlertReason.watchlist},
+      bypassReasons: const {
+        AlertReason.rare,
+        AlertReason.watchlist,
+        AlertReason.lifer,
+      },
       now: _clock,
     );
     _tickTimer = Timer.periodic(tickInterval, (_) => _tick());
@@ -78,6 +85,17 @@ class SurveyAlertCoordinator {
   final GlobalSpeciesHistory globalHistory;
   final Map<String, double>? geoScores;
   final Set<String>? watchlist;
+
+  /// Scientific names on the user's imported eBird life list, used by
+  /// [AlertMode.lifer].
+  final Set<String>? lifeList;
+
+  /// Returns whether a scientific name is a bird. Non-birds never fire
+  /// [AlertMode.lifer]: an eBird life list can only contain birds, so a
+  /// cricket or frog would otherwise alert as a lifer every time it's heard.
+  /// Null (taxonomy not loaded) disables the check.
+  final bool Function(String scientificName)? isBirdSpecies;
+
   final double minConfidence;
   final double rareThreshold;
   final int startupGraceSeconds;
@@ -107,6 +125,11 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
+    if (mode == AlertMode.lifer &&
+        isBirdSpecies != null &&
+        !isBirdSpecies!(name)) {
+      return;
+    }
     final firstInSession = _sessionSpeciesSeen.add(name);
     final candidate = _engine.evaluate(record, firstInSession: firstInSession);
     if (candidate == null) return;
