@@ -81,7 +81,7 @@ Una cartella per dispositivo, uno ZIP per Session e le registrazioni nascoste in
 3. Facoltativamente inserisci un **ID partecipante, nome o e-mail (facoltativo)**. Viene salvato con ogni caricamento così chi guida il progetto sa chi l'ha inviato, e non compare mai nei nomi delle cartelle. Sotto il campo l'app mostra **Il tuo ID di caricamento**, la cartella in cui finiranno i tuoi caricamenti.
 4. Per un semplice indirizzo WebDAV, apri **Avanzate** e inserisci **Nome utente** e **Password o token**. Un link di condivisione Nextcloud non ha bisogno di nessuno dei due; se la condivisione ha una password, inseriscila come password.
 5. Tocca **Prova connessione**. L'app contatta il server, crea la cartella di registrazione nascosta, verifica se la credenziale può elencare la cartella e scrive il tuo file di registrazione. Il risultato è una sola frase: **La connessione funziona**, un avviso che dovresti leggere, oppure un errore con la probabile soluzione.
-6. Dai alla destinazione un **Nome della destinazione** (precompilato dal link di accesso), decidi se attivare **Carica solo con Wi-Fi** e tocca **Salva destinazione**.
+6. Dai alla destinazione un **Nome della destinazione** (precompilato dal link di accesso), decidi se attivare **Carica solo con Wi-Fi** e **Carica automaticamente le Sessions ARU** e tocca **Salva destinazione**. Dopo un codice scansionato o un link toccato, l'app prosegue su **Destinazioni di caricamento**.
 
 Nulla viene salvato finché la prova non è riuscita. La credenziale va nel portachiavi del dispositivo, mai nei dati esportati.
 

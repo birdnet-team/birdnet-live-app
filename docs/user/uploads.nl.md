@@ -81,7 +81,7 @@ Eén map per apparaat, één ZIP per Session en de verborgen `.birdnet-live`-reg
 3. Vul eventueel een **Deelnemer-id, naam of e-mail (optioneel)** in. Die wordt bij elke upload opgeslagen zodat de projectleider weet van wie die komt, en verschijnt nooit in mapnamen. Onder het veld toont de app **Je upload-id**, de map waarin je uploads terechtkomen.
 4. Open bij een gewoon WebDAV-adres **Geavanceerd** en vul de **Gebruikersnaam** en het **Wachtwoord of token** in. Een Nextcloud-deellink heeft geen van beide nodig; heeft de deellink een wachtwoord, vul dat dan in als wachtwoord.
 5. Tik op **Verbinding testen**. De app neemt contact op met de server, maakt de verborgen registratiemap aan, controleert of de inloggegevens de map kunnen opsommen en schrijft je registratiebestand. Het resultaat is één zin: **Verbinding werkt**, een waarschuwing die je moet lezen, of een fout met de waarschijnlijke oplossing.
-6. Geef de bestemming een **Naam van de bestemming** (vooraf ingevuld vanuit de deelnamelink), kies of je **Alleen uploaden via wifi** wilt, en tik op **Bestemming opslaan**.
+6. Geef de bestemming een **Naam van de bestemming** (vooraf ingevuld vanuit de deelnamelink), kies of je **Alleen uploaden via wifi** en **ARU-Sessions automatisch uploaden** wilt, en tik op **Bestemming opslaan**. Na een gescande code of aangetikte link gaat de app verder naar **Uploadbestemmingen**.
 
 Er wordt niets opgeslagen voordat de test is geslaagd. De inloggegevens gaan naar de sleutelhanger van het apparaat, nooit naar geëxporteerde gegevens.
 

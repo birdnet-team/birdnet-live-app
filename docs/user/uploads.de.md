@@ -81,7 +81,7 @@ Ein Ordner pro Gerät, eine ZIP-Datei pro Session und die versteckten Registrier
 3. Geben Sie optional eine **Teilnehmer-ID, Name oder E-Mail (optional)** ein. Sie wird mit jedem Upload gespeichert, damit die Projektleitung weiß, von wem er stammt, und erscheint nie in Ordnernamen. Unter dem Feld zeigt die App **Ihre Upload-ID**, den Ordner, in dem Ihre Uploads landen werden.
 4. Öffnen Sie für eine einfache WebDAV-Adresse **Erweitert** und geben Sie **Benutzername** und **Passwort oder Token** ein. Ein Nextcloud-Freigabelink braucht keines von beiden; hat die Freigabe ein Passwort, geben Sie es als Passwort ein.
 5. Tippen Sie auf **Verbindung testen**. Die App kontaktiert den Server, legt den versteckten Registrierungsordner an, prüft, ob die Zugangsdaten den Ordner auflisten können, und schreibt Ihre Registrierungsdatei. Das Ergebnis ist ein Satz: **Verbindung funktioniert**, eine Warnung, die Sie lesen sollten, oder ein Fehler mit der wahrscheinlichen Abhilfe.
-6. Geben Sie dem Ziel einen **Name des Ziels** (aus dem Beitrittslink vorausgefüllt), entscheiden Sie, ob **Nur über WLAN hochladen** gelten soll, und tippen Sie auf **Ziel speichern**.
+6. Geben Sie dem Ziel einen **Name des Ziels** (aus dem Beitrittslink vorausgefüllt), entscheiden Sie, ob **Nur über WLAN hochladen** und **ARU-Sessions automatisch hochladen** gelten sollen, und tippen Sie auf **Ziel speichern**. Nach einem gescannten Code oder angetippten Link geht es weiter zu Ihren **Upload-Ziele**.
 
 Gespeichert wird erst, wenn der Test bestanden ist. Die Zugangsdaten wandern in den Schlüsselbund des Geräts, nie in exportierte Daten.
 

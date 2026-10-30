@@ -26,6 +26,7 @@ import 'shared/services/shared_media_service.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/upload/join_destination_screen.dart';
+import 'features/upload/upload_destinations_screen.dart';
 import 'features/upload/upload_providers.dart';
 
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -314,7 +315,10 @@ class _QuickActionListenerState extends ConsumerState<_QuickActionListener> {
     if (navigator == null) return;
     await navigator.push(
       MaterialPageRoute<void>(
-        builder: (_) => JoinDestinationScreen(initialInput: link),
+        builder: (_) => JoinDestinationScreen(
+          initialInput: link,
+          nextScreen: const UploadDestinationsScreen(),
+        ),
       ),
     );
   }

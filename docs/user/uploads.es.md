@@ -81,7 +81,7 @@ Una carpeta por dispositivo, un ZIP por sesión y los registros ocultos de `.bir
 3. Si quieres, rellena **ID de participante, nombre o correo (opcional)**. Se guarda con cada subida para que quien dirige el proyecto sepa quién la envió, y nunca aparece en los nombres de carpeta. Bajo el campo, la app muestra **Tu ID de subida**, la carpeta en la que aterrizarán tus subidas.
 4. Para una dirección WebDAV normal, abre **Avanzado** e introduce el **Nombre de usuario** y la **Contraseña o token**. Un enlace compartido de Nextcloud no necesita ninguno de los dos; si el recurso compartido tiene contraseña, introdúcela como contraseña.
 5. Toca **Probar conexión**. La app contacta con el servidor, crea la carpeta de registro oculta, comprueba si la credencial puede listar la carpeta y escribe tu archivo de registro. El resultado es una sola frase: **La conexión funciona**, una advertencia que conviene leer, o un fallo con la solución probable.
-6. Dale al destino un **Nombre del destino** (rellenado previamente a partir del enlace de acceso), decide si quieres **Subir solo con Wi-Fi** y toca **Guardar destino**.
+6. Dale al destino un **Nombre del destino** (rellenado previamente a partir del enlace de acceso), decide si quieres **Subir solo con Wi-Fi** y **Subir las Sessions ARU automáticamente** y toca **Guardar destino**. Tras escanear un código o tocar un enlace, la app continúa en **Destinos de subida**.
 
 No se guarda nada hasta que la prueba se ha superado. La credencial va al llavero del dispositivo, nunca a los datos exportados.
 
