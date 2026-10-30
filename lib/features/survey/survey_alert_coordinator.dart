@@ -41,6 +41,7 @@ class SurveyAlertCoordinator {
     required this.geoScores,
     required this.watchlist,
     this.lifeList,
+    this.isBirdSpecies,
     this.minConfidence = 0.5,
     this.rareThreshold = 0.05,
     this.startupGraceSeconds = 60,
@@ -89,6 +90,12 @@ class SurveyAlertCoordinator {
   /// [AlertMode.lifer].
   final Set<String>? lifeList;
 
+  /// Returns whether a scientific name is a bird. Non-birds never fire
+  /// [AlertMode.lifer]: an eBird life list can only contain birds, so a
+  /// cricket or frog would otherwise alert as a lifer every time it's heard.
+  /// Null (taxonomy not loaded) disables the check.
+  final bool Function(String scientificName)? isBirdSpecies;
+
   final double minConfidence;
   final double rareThreshold;
   final int startupGraceSeconds;
@@ -118,6 +125,11 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
+    if (mode == AlertMode.lifer &&
+        isBirdSpecies != null &&
+        !isBirdSpecies!(name)) {
+      return;
+    }
     final firstInSession = _sessionSpeciesSeen.add(name);
     final candidate = _engine.evaluate(record, firstInSession: firstInSession);
     if (candidate == null) return;

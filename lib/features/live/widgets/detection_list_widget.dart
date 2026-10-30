@@ -291,8 +291,12 @@ class DetectionTile extends ConsumerWidget {
     final lifeList = ref.watch(ebirdLifeListProvider);
     final isLifer =
         !detection.isUnknown &&
-        !lifeList.isEmpty &&
-        !lifeList.contains(detection.scientificName);
+        lifeList.isLifer(
+          detection.scientificName,
+          taxonGroup: taxonomyAsync.value
+              ?.lookup(detection.scientificName)
+              ?.taxonGroup,
+        );
 
     return InkWell(
       onTap: onTap,

@@ -137,4 +137,43 @@ void main() {
     await list.clear();
     expect(notifications, 2);
   });
+
+  group('isLifer', () {
+    const csv =
+        'Row #,Taxon Order,Category,Common Name,Scientific Name,Count\n'
+        '1,6064,species,American Woodcock,Scolopax minor,2\n';
+
+    test('is never true before a list is imported', () async {
+      final list = await freshList();
+      expect(list.isLifer('Turdus merula', taxonGroup: 'Aves'), isFalse);
+    });
+
+    test('flags a bird missing from the list', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(list.isLifer('Turdus merula', taxonGroup: 'Aves'), isTrue);
+      expect(list.isLifer('Scolopax minor', taxonGroup: 'Aves'), isFalse);
+    });
+
+    test('never flags non-birds, which an eBird list cannot contain', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(
+        list.isLifer('Sciurus carolinensis', taxonGroup: 'Mammalia'),
+        isFalse,
+      );
+      expect(
+        list.isLifer('Gryllus pennsylvanicus', taxonGroup: 'Insecta'),
+        isFalse,
+      );
+      expect(list.isLifer('Acris gryllus', taxonGroup: 'Amphibia'), isFalse);
+    });
+
+    test('treats an unknown taxon group as a bird', () async {
+      final list = await freshList();
+      await list.importCsv(csv);
+      expect(list.isLifer('Turdus merula'), isTrue);
+      expect(list.isLifer('Turdus merula', taxonGroup: ''), isTrue);
+    });
+  });
 }

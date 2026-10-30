@@ -61,6 +61,24 @@ class EbirdLifeList extends ChangeNotifier {
   /// Whether [scientificName] is on the imported life list.
   bool contains(String scientificName) => _names.contains(scientificName);
 
+  /// Whether [scientificName] should be flagged as a lifer: a list has been
+  /// imported, the species isn't on it, and it's a bird.
+  ///
+  /// eBird life lists only ever contain birds, so without the [taxonGroup]
+  /// check every squirrel, cricket and frog the model detects would be a
+  /// lifer forever. Pass the species' taxonomy `taxonGroup`; see
+  /// [isBirdTaxonGroup] for how a missing value is treated.
+  bool isLifer(String scientificName, {String? taxonGroup}) =>
+      _names.isNotEmpty &&
+      !_names.contains(scientificName) &&
+      isBirdTaxonGroup(taxonGroup);
+
+  /// Whether a taxonomy `taxonGroup` value can appear on an eBird life list.
+  /// Null or empty (taxonomy not loaded yet, species unresolved) counts as a
+  /// bird so a real lifer is never silently dropped.
+  static bool isBirdTaxonGroup(String? taxonGroup) =>
+      taxonGroup == null || taxonGroup.isEmpty || taxonGroup == 'Aves';
+
   /// Total number of species on the imported list.
   int get length => _names.length;
 

@@ -1749,8 +1749,12 @@ class _SpeciesTileState extends ConsumerState<_SpeciesTile> {
     final lifeList = ref.watch(ebirdLifeListProvider);
     final isLifer =
         widget.group.scientificName != DetectionRecord.unknownSpeciesName &&
-        !lifeList.isEmpty &&
-        !lifeList.contains(widget.group.scientificName);
+        lifeList.isLifer(
+          widget.group.scientificName,
+          taxonGroup: taxonomyAsync.value
+              ?.lookup(widget.group.scientificName)
+              ?.taxonGroup,
+        );
 
     // Render the per-cluster time using the user's selected mode.
     // Relative mode subtracts the current clip offset so that the

@@ -562,8 +562,14 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     }
 
     Set<String>? lifeList;
+    bool Function(String)? isBirdSpecies;
     if (mode == AlertMode.lifer) {
       lifeList = ref.read(ebirdLifeListProvider).all;
+      final taxonomy = ref.read(taxonomyServiceProvider).value;
+      if (taxonomy != null) {
+        isBirdSpecies = (name) =>
+            EbirdLifeList.isBirdTaxonGroup(taxonomy.lookup(name)?.taxonGroup);
+      }
     }
 
     final coord = SurveyAlertCoordinator(
@@ -574,6 +580,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       geoScores: geoScores,
       watchlist: watchlist,
       lifeList: lifeList,
+      isBirdSpecies: isBirdSpecies,
       minConfidence: ref.read(surveyAlertMinConfidenceProvider),
       rareThreshold: ref.read(surveyAlertRareThresholdProvider),
       startupGraceSeconds: ref.read(surveyAlertStartupGraceSecondsProvider),
@@ -1897,8 +1904,12 @@ class _SurveySummaryTab extends ConsumerWidget {
                           ),
                           if (sp.scientificName !=
                                   DetectionRecord.unknownSpeciesName &&
-                              !lifeList.isEmpty &&
-                              !lifeList.contains(sp.scientificName))
+                              lifeList.isLifer(
+                                sp.scientificName,
+                                taxonGroup: taxonomy
+                                    ?.lookup(sp.scientificName)
+                                    ?.taxonGroup,
+                              ))
                             Padding(
                               padding: const EdgeInsets.only(left: 4),
                               child: Tooltip(
