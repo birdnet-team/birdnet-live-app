@@ -97,6 +97,7 @@ Tocar un destino de la lista abre su pantalla con la dirección del servidor, cu
 
 - **Renombrar** (el lápiz de la barra de la app) cambia el nombre que se muestra en la app.
 - **Subir solo con Wi-Fi** retiene las subidas mientras el teléfono usa datos móviles.
+- **Subir todas las Sessions automáticamente** pone en cola cada Session terminada de cualquier modo para este destino sin preguntar, usando los valores predeterminados de Exportación y sincronización para Audio y Metadatos. Mientras esté activado, **Subir las Sessions ARU automáticamente** también permanece activado. Si después descartas una Session en Session Review, se cancela la subida que aún no haya empezado, pero lo ya enviado permanece en el servidor.
 - **Subir las Sessions ARU automáticamente** pone en cola cada ARU Session terminada para este destino sin preguntar (ver más abajo).
 - **Probar conexión** repite la prueba de conexión, por ejemplo después de que quien dirige el proyecto haya cambiado la contraseña.
 - **Mostrar código de acceso** muestra un código QR junto con **Copiar enlace** para que un segundo teléfono pueda unirse al mismo destino.

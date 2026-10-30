@@ -97,6 +97,7 @@ Tapping a destination in the list opens its screen with the server address, when
 
 - **Rename** (the pencil in the app bar) changes the name shown in the app.
 - **Upload on Wi-Fi only** holds uploads while the phone is on cellular.
+- **Upload all sessions automatically** queues every finished session from any mode for this destination without asking, using the Export & Sync defaults for Audio and Metadata. While it is on, **Upload ARU sessions automatically** stays on too. Discarding a session in Session Review afterwards cancels an upload that has not started, but anything already sent stays on the server.
 - **Upload ARU sessions automatically** queues every finished ARU Session for this destination without asking (see below).
 - **Test connection** repeats the connection test, for example after the lead changed the password.
 - **Show join code** displays a QR code plus **Copy link** so a second phone can join the same destination.

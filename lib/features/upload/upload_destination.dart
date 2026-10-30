@@ -29,6 +29,7 @@ class UploadDestination {
     required this.username,
     this.wifiOnly = true,
     this.autoUploadAru = false,
+    this.autoUploadAll = false,
     this.flatLayout = false,
     this.canReadRemote = false,
     this.shareWithoutPassword = false,
@@ -56,6 +57,10 @@ class UploadDestination {
 
   /// Enqueue every finalized ARU session for this destination automatically.
   final bool autoUploadAru;
+
+  /// Enqueue every finalized session of any type for this destination
+  /// automatically; covers [autoUploadAru].
+  final bool autoUploadAll;
 
   /// The server refused MKCOL during the probe, so uploads encode the folder
   /// path into flat file names instead of creating per-session folders.
@@ -88,6 +93,7 @@ class UploadDestination {
     String? username,
     bool? wifiOnly,
     bool? autoUploadAru,
+    bool? autoUploadAll,
     bool? flatLayout,
     bool? canReadRemote,
     bool? shareWithoutPassword,
@@ -101,6 +107,7 @@ class UploadDestination {
       username: username ?? this.username,
       wifiOnly: wifiOnly ?? this.wifiOnly,
       autoUploadAru: autoUploadAru ?? this.autoUploadAru,
+      autoUploadAll: autoUploadAll ?? this.autoUploadAll,
       flatLayout: flatLayout ?? this.flatLayout,
       canReadRemote: canReadRemote ?? this.canReadRemote,
       shareWithoutPassword: shareWithoutPassword ?? this.shareWithoutPassword,
@@ -117,6 +124,7 @@ class UploadDestination {
     'username': username,
     'wifiOnly': wifiOnly,
     'autoUploadAru': autoUploadAru,
+    'autoUploadAll': autoUploadAll,
     if (flatLayout) 'flatLayout': true,
     if (canReadRemote) 'canReadRemote': true,
     if (shareWithoutPassword) 'shareWithoutPassword': true,
@@ -137,6 +145,7 @@ class UploadDestination {
       username: json['username'] as String? ?? '',
       wifiOnly: json['wifiOnly'] as bool? ?? true,
       autoUploadAru: json['autoUploadAru'] as bool? ?? false,
+      autoUploadAll: json['autoUploadAll'] as bool? ?? false,
       flatLayout: json['flatLayout'] as bool? ?? false,
       canReadRemote: json['canReadRemote'] as bool? ?? false,
       shareWithoutPassword: json['shareWithoutPassword'] as bool? ?? false,
@@ -159,6 +168,7 @@ class UploadDestination {
       other.username == username &&
       other.wifiOnly == wifiOnly &&
       other.autoUploadAru == autoUploadAru &&
+      other.autoUploadAll == autoUploadAll &&
       other.flatLayout == flatLayout &&
       other.canReadRemote == canReadRemote &&
       other.shareWithoutPassword == shareWithoutPassword &&

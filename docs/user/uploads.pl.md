@@ -97,6 +97,7 @@ Dotknięcie miejsca docelowego na liście otwiera jego ekran z adresem serwera, 
 
 - **Zmień nazwę** (ołówek na pasku aplikacji) zmienia nazwę pokazywaną w aplikacji.
 - **Przesyłaj tylko przez Wi-Fi** wstrzymuje przesyłanie, gdy telefon korzysta z sieci komórkowej.
+- **Przesyłaj wszystkie Sessions automatycznie** dodaje każdą zakończoną Session z dowolnego trybu do kolejki tego miejsca docelowego bez pytania, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportu i synchronizacji. Gdy ta opcja jest włączona, włączona pozostaje też **Przesyłaj Sessions ARU automatycznie**. Odrzucenie Session później w Session Review anuluje przesyłanie, które się jeszcze nie rozpoczęło, ale to, co już wysłano, pozostaje na serwerze.
 - **Przesyłaj Sessions ARU automatycznie** dodaje każdą zakończoną ARU Session do kolejki tego miejsca docelowego bez pytania (zobacz poniżej).
 - **Testuj połączenie** powtarza test połączenia, na przykład po tym, jak osoba prowadząca zmieniła hasło.
 - **Pokaż kod dołączenia** wyświetla kod QR oraz **Kopiuj link**, aby drugi telefon mógł dołączyć do tego samego miejsca docelowego.

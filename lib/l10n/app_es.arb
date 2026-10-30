@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Subir solo con Wi-Fi",
   "uploadDestinationAutoAru": "Subir las Sessions ARU automáticamente",
   "uploadDestinationAutoAruSubtitle": "Cada ARU Session finalizada se pone en cola para este destino sin preguntar.",
+  "uploadDestinationAutoAll": "Subir todas las Sessions automáticamente",
+  "uploadDestinationAutoAllSubtitle": "Cada Session finalizada, de cualquier modo, se pone en cola para este destino sin preguntar.",
   "uploadDestinationRename": "Renombrar",
   "uploadDestinationTest": "Probar conexión",
   "uploadDestinationRemove": "Quitar destino",

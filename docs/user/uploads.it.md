@@ -97,6 +97,7 @@ Toccando una destinazione nell'elenco si apre la sua schermata con l'indirizzo d
 
 - **Rinomina** (la matita nella barra dell'app) cambia il nome mostrato nell'app.
 - **Carica solo con Wi-Fi** trattiene i caricamenti mentre il telefono è su rete cellulare.
+- **Carica automaticamente tutte le Sessions** mette in coda ogni Session conclusa, in qualsiasi modalità, per questa destinazione senza chiedere, usando le impostazioni predefinite di Esportazione e sincronizzazione per Audio e Metadati. Finché è attiva, resta attiva anche **Carica automaticamente le Sessions ARU**. Se poi scarti una Session in Session Review, un caricamento non ancora iniziato viene annullato, ma ciò che è già stato inviato resta sul server.
 - **Carica automaticamente le Sessions ARU** mette in coda ogni Session ARU conclusa per questa destinazione senza chiedere (vedi sotto).
 - **Prova connessione** ripete la prova di connessione, per esempio dopo che chi guida il progetto ha cambiato la password.
 - **Mostra codice di accesso** visualizza un codice QR più **Copia link**, così un secondo telefono può unirsi alla stessa destinazione.

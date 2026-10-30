@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Enviar somente por Wi-Fi",
   "uploadDestinationAutoAru": "Enviar Sessions ARU automaticamente",
   "uploadDestinationAutoAruSubtitle": "Toda ARU Session finalizada entra na fila deste destino sem perguntar.",
+  "uploadDestinationAutoAll": "Enviar todas as Sessions automaticamente",
+  "uploadDestinationAutoAllSubtitle": "Toda Session finalizada, em qualquer modo, entra na fila deste destino sem perguntar.",
   "uploadDestinationRename": "Renomear",
   "uploadDestinationTest": "Testar conexão",
   "uploadDestinationRemove": "Remover destino",

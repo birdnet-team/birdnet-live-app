@@ -97,6 +97,7 @@ Toucher une destination dans la liste ouvre son écran avec l'adresse du serveur
 
 - **Renommer** (le crayon dans la barre d'application) modifie le nom affiché dans l'application.
 - **Envoyer uniquement en Wi-Fi** retient les envois tant que le téléphone est sur le réseau cellulaire.
+- **Envoyer toutes les Sessions automatiquement** met en file chaque Session terminée, quel que soit le mode, pour cette destination sans rien demander, en utilisant les valeurs par défaut d'Export et synchronisation pour l'audio et les métadonnées. Tant que cette option est active, **Envoyer les Sessions ARU automatiquement** reste également active. Si vous supprimez ensuite une Session dans Session Review, un envoi qui n'a pas commencé est annulé, mais ce qui a déjà été envoyé reste sur le serveur.
 - **Envoyer les Sessions ARU automatiquement** met en file chaque ARU Session terminée pour cette destination sans rien demander (voir plus bas).
 - **Tester la connexion** répète le test de connexion, par exemple après que le responsable a changé le mot de passe.
 - **Afficher le code d'accès** affiche un code QR ainsi que **Copier le lien** pour qu'un second téléphone rejoigne la même destination.

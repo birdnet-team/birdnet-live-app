@@ -55,6 +55,7 @@ import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_size.dart';
 import '../spectrogram/spectrogram_widget.dart';
+import '../upload/upload_providers.dart';
 import 'detection_sampler.dart';
 import 'alert_throttler.dart';
 import 'species_alert_notifier.dart';
@@ -903,9 +904,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
 
       if (session != null && mounted) {
         final repo = ref.read(sessionRepositoryProvider);
+        final container = ProviderScope.containerOf(context, listen: false);
         session.sessionNumber = await repo.nextSessionNumber(session.type);
         await repo.save(session);
-        ref.invalidate(sessionListProvider);
+        container.invalidate(sessionListProvider);
+        await autoEnqueueSession(container.read, session);
 
         if (mounted) {
           final navigator = Navigator.of(context);

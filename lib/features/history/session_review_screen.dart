@@ -2352,6 +2352,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // below is destructive, and the save that records it must not depend on
     // this widget still being alive by the time it runs.
     final repo = ref.read(sessionRepositoryProvider);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final firstSave = _isUnsaved;
 
     final trimRange = _resolveTrimRange(_trimStartSec, _trimEndSec);
     // `_resolveTrimRange` also returns null when the recording length is
@@ -2403,6 +2405,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // outlives the cut it describes would be applied a second time — to the
     // already-shortened recording — the next time the session is opened.
     await repo.save(widget.session);
+    // With auto-save off this is where a finished session first exists.
+    if (firstSave) await autoEnqueueSession(container.read, widget.session);
     if (!mounted) return true;
     ref.invalidate(sessionListProvider);
 

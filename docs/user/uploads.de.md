@@ -97,6 +97,7 @@ Das Antippen eines Ziels in der Liste öffnet dessen Bildschirm mit der Serverad
 
 - **Umbenennen** (der Stift in der App-Leiste) ändert den in der App angezeigten Namen.
 - **Nur über WLAN hochladen** hält Uploads zurück, solange das Telefon im Mobilfunknetz ist.
+- **Alle Sessions automatisch hochladen** reiht jede abgeschlossene Session aus jedem Modus ohne Rückfrage für dieses Ziel ein, mit den Export-&-Sync-Voreinstellungen für Audio und Metadaten. Solange dies aktiv ist, bleibt auch **ARU-Sessions automatisch hochladen** aktiv. Wenn Sie eine Session danach in Session Review verwerfen, entfällt ein noch nicht gestarteter Upload, aber bereits Gesendetes bleibt auf dem Server.
 - **ARU-Sessions automatisch hochladen** reiht jede abgeschlossene ARU-Session ohne Rückfrage für dieses Ziel ein (siehe unten).
 - **Verbindung testen** wiederholt den Verbindungstest, zum Beispiel nachdem die Projektleitung das Passwort geändert hat.
 - **Beitrittscode anzeigen** zeigt einen QR-Code plus **Link kopieren**, damit ein zweites Telefon demselben Ziel beitreten kann.

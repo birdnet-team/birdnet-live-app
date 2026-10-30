@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Alleen uploaden via wifi",
   "uploadDestinationAutoAru": "ARU-Sessions automatisch uploaden",
   "uploadDestinationAutoAruSubtitle": "Elke afgeronde ARU Session wordt zonder vragen voor deze bestemming in de wachtrij gezet.",
+  "uploadDestinationAutoAll": "Alle Sessions automatisch uploaden",
+  "uploadDestinationAutoAllSubtitle": "Elke afgeronde Session uit elke modus wordt zonder vragen voor deze bestemming in de wachtrij gezet.",
   "uploadDestinationRename": "Naam wijzigen",
   "uploadDestinationTest": "Verbinding testen",
   "uploadDestinationRemove": "Bestemming verwijderen",

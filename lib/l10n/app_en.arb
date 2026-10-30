@@ -5253,6 +5253,14 @@
   "@uploadDestinationAutoAruSubtitle": {
     "description": "Subtitle of the ARU auto-upload switch"
   },
+  "uploadDestinationAutoAll": "Upload all sessions automatically",
+  "@uploadDestinationAutoAll": {
+    "description": "Switch: queue every finalized session of any mode automatically"
+  },
+  "uploadDestinationAutoAllSubtitle": "Every finalized Session from any mode is queued for this destination without asking.",
+  "@uploadDestinationAutoAllSubtitle": {
+    "description": "Subtitle of the all-sessions auto-upload switch"
+  },
   "uploadDestinationRename": "Rename",
   "@uploadDestinationRename": {
     "description": "Action and dialog title for renaming a destination"

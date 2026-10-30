@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Nur über WLAN hochladen",
   "uploadDestinationAutoAru": "ARU-Sessions automatisch hochladen",
   "uploadDestinationAutoAruSubtitle": "Jede abgeschlossene ARU-Session wird ohne Rückfrage für dieses Ziel eingereiht.",
+  "uploadDestinationAutoAll": "Alle Sessions automatisch hochladen",
+  "uploadDestinationAutoAllSubtitle": "Jede abgeschlossene Session aus jedem Modus wird ohne Rückfrage für dieses Ziel eingereiht.",
   "uploadDestinationRename": "Umbenennen",
   "uploadDestinationTest": "Verbindung testen",
   "uploadDestinationRemove": "Ziel entfernen",

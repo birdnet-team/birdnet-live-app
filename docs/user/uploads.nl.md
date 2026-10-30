@@ -97,6 +97,7 @@ Tik je op een bestemming in de lijst, dan opent haar scherm met het serveradres,
 
 - **Naam wijzigen** (het potlood in de app-balk) wijzigt de naam die in de app wordt getoond.
 - **Alleen uploaden via wifi** houdt uploads vast zolang de telefoon op mobiele data zit.
+- **Alle Sessions automatisch uploaden** zet elke afgeronde Session uit elke modus zonder vragen voor deze bestemming in de wachtrij, met de standaardwaarden voor Audio en Metagegevens uit Export & synchronisatie. Zolang dit aanstaat, blijft ook **ARU-Sessions automatisch uploaden** aan. Verwijder je daarna een Session in Session Review, dan vervalt een upload die nog niet is begonnen, maar wat al is verzonden blijft op de server.
 - **ARU-Sessions automatisch uploaden** zet elke afgeronde ARU Session zonder vragen voor deze bestemming in de wachtrij (zie hieronder).
 - **Verbinding testen** herhaalt de verbindingstest, bijvoorbeeld nadat de projectleider het wachtwoord heeft gewijzigd.
 - **Deelnamecode tonen** toont een QR-code plus **Link kopiëren**, zodat een tweede telefoon aan dezelfde bestemming kan deelnemen.

@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Last opp bare via Wi-Fi",
   "uploadDestinationAutoAru": "Last opp ARU-Sessions automatisk",
   "uploadDestinationAutoAruSubtitle": "Hver fullførte ARU Session legges i køen for dette målet uten å spørre.",
+  "uploadDestinationAutoAll": "Last opp alle Sessions automatisk",
+  "uploadDestinationAutoAllSubtitle": "Hver fullførte Session fra alle moduser legges i køen for dette målet uten å spørre.",
   "uploadDestinationRename": "Gi nytt navn",
   "uploadDestinationTest": "Test tilkoblingen",
   "uploadDestinationRemove": "Fjern mål",

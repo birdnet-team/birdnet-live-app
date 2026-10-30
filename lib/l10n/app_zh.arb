@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "仅通过 Wi-Fi 上传",
   "uploadDestinationAutoAru": "自动上传 ARU Sessions",
   "uploadDestinationAutoAruSubtitle": "每个已完成的 ARU Session 都会自动加入该目标的上传队列，无需确认。",
+  "uploadDestinationAutoAll": "自动上传所有 Sessions",
+  "uploadDestinationAutoAllSubtitle": "任何模式下已完成的每个 Session 都会自动加入该目标的上传队列，无需确认。",
   "uploadDestinationRename": "重命名",
   "uploadDestinationTest": "测试连接",
   "uploadDestinationRemove": "移除目标",

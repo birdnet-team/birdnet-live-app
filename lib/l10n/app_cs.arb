@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Nahrávat pouze přes Wi-Fi",
   "uploadDestinationAutoAru": "Nahrávat ARU Sessions automaticky",
   "uploadDestinationAutoAruSubtitle": "Každá dokončená ARU Session se bez dotazu zařadí do fronty pro tento cíl.",
+  "uploadDestinationAutoAll": "Nahrávat všechny Sessions automaticky",
+  "uploadDestinationAutoAllSubtitle": "Každá dokončená Session z libovolného režimu se bez dotazu zařadí do fronty pro tento cíl.",
   "uploadDestinationRename": "Přejmenovat",
   "uploadDestinationTest": "Otestovat připojení",
   "uploadDestinationRemove": "Odebrat cíl",

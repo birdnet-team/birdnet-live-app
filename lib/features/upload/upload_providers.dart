@@ -4,8 +4,10 @@
 
 import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
@@ -179,13 +181,15 @@ final uploadQueueStoreProvider = Provider<UploadQueueStore>(
 );
 
 /// The export configuration uploads use when nobody chose one for the job
-/// (ARU auto-upload): the saved Export & Sync preferences.
-ShareExportConfig defaultUploadConfig(Ref ref) => ShareExportConfig(
-  formats: ref.read(exportSelectionProvider),
-  includeAudio: ref.read(includeAudioProvider),
-  shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-  includeHtmlReport: ref.read(exportHtmlReportProvider),
-  includeAppMetadata: ref.read(includeAppMetadataProvider),
+/// (automatic uploads): the saved Export & Sync preferences.
+ShareExportConfig defaultUploadConfig(
+  T Function<T>(ProviderListenable<T> provider) read,
+) => ShareExportConfig(
+  formats: read(exportSelectionProvider),
+  includeAudio: read(includeAudioProvider),
+  shareAudioAsWav: read(shareAudioAsWavProvider),
+  includeHtmlReport: read(exportHtmlReportProvider),
+  includeAppMetadata: read(includeAppMetadataProvider),
 );
 
 /// The queue engine. Lives for the whole app so a run started from one
@@ -267,26 +271,42 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
   return service;
 });
 
-/// Queues a finalized ARU session for every destination whose
-/// "Upload ARU sessions automatically" switch is on. Aggregate deployments
-/// that are split into per-cycle sessions are skipped: their cycles are
-/// uploaded instead, and the aggregate is discarded on completion.
-Future<void> autoEnqueueAruSession(Ref ref, LiveSession session) async {
-  if (session.type != SessionType.aru || session.endTime == null) return;
+/// Queues a finalized session for every destination that takes it without
+/// asking: "Upload all sessions automatically" for any session, plus "Upload
+/// ARU sessions automatically" for ARU sessions. Aggregate deployments that
+/// are split into per-cycle sessions are skipped: their cycles are uploaded
+/// instead, and the aggregate is discarded on completion.
+///
+/// Runs inside session finalization, so a failure here is logged and never
+/// reaches the caller: the session is saved and can still be sent by hand.
+/// [read] is the `read` of a Ref or a ProviderContainer; session screens pass
+/// their container so the call survives the route going away.
+Future<void> autoEnqueueSession(
+  T Function<T>(ProviderListenable<T> provider) read,
+  LiveSession session,
+) async {
+  if (session.endTime == null) return;
+  final isAru = session.type == SessionType.aru;
   final perCycle = session.aruMetadata?.eachCycleIsSession ?? false;
   final isCycle = session.id.contains('_cycle_');
-  if (perCycle && !isCycle) return;
-  final destinations = await ref.read(uploadDestinationsProvider.future);
-  final targets = destinations.where((d) => d.autoUploadAru).toList();
-  if (targets.isEmpty) return;
-  final service = ref.read(uploadServiceProvider);
-  final config = defaultUploadConfig(ref);
-  for (final destination in targets) {
-    await service.enqueue(
-      session: session,
-      destination: destination,
-      config: config,
-    );
+  if (isAru && perCycle && !isCycle) return;
+  try {
+    final destinations = await read(uploadDestinationsProvider.future);
+    final targets = destinations
+        .where((d) => d.autoUploadAll || (isAru && d.autoUploadAru))
+        .toList();
+    if (targets.isEmpty) return;
+    final service = read(uploadServiceProvider);
+    final config = defaultUploadConfig(read);
+    for (final destination in targets) {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+    }
+  } catch (error, stack) {
+    debugPrint('autoEnqueueSession failed: $error\n$stack');
   }
 }
 

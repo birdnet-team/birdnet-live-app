@@ -1208,6 +1208,8 @@
   "uploadDestinationWifiOnly": "Загружать только по Wi-Fi",
   "uploadDestinationAutoAru": "Загружать ARU Sessions автоматически",
   "uploadDestinationAutoAruSubtitle": "Каждая завершённая ARU Session ставится в очередь для этого назначения без запроса.",
+  "uploadDestinationAutoAll": "Загружать все Sessions автоматически",
+  "uploadDestinationAutoAllSubtitle": "Каждая завершённая Session в любом режиме ставится в очередь для этого назначения без запроса.",
   "uploadDestinationRename": "Переименовать",
   "uploadDestinationTest": "Проверить соединение",
   "uploadDestinationRemove": "Удалить назначение",

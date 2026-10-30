@@ -97,6 +97,7 @@ Klepnutím na cíl v seznamu otevřete jeho obrazovku s adresou serveru, údaji 
 
 - **Přejmenovat** (tužka v horní liště aplikace) změní název zobrazený v aplikaci.
 - **Nahrávat pouze přes Wi-Fi** pozdrží nahrávání, dokud je telefon na mobilních datech.
+- **Nahrávat všechny Sessions automaticky** zařadí každou dokončenou Session z libovolného režimu do fronty pro tento cíl bez dotazu, s výchozími hodnotami Export a synchronizace pro Zvuk a Metadata. Dokud je tato možnost zapnutá, zůstává zapnutá i **Nahrávat ARU Sessions automaticky**. Pokud Session následně v Session Review zahodíte, nahrávání, které ještě nezačalo, se zruší, ale to, co už bylo odesláno, zůstane na serveru.
 - **Nahrávat ARU Sessions automaticky** zařadí každou dokončenou ARU Session do fronty pro tento cíl bez dotazu (viz níže).
 - **Otestovat připojení** zopakuje test připojení, například po tom, co vedoucí změnil heslo.
 - **Zobrazit kód pro připojení** zobrazí QR kód spolu s **Kopírovat odkaz**, aby se k témuž cíli mohl připojit druhý telefon.
