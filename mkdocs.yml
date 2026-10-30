@@ -88,6 +88,7 @@ plugins:
         Inference Engine: Inferenz-Engine
         Live Mode: Live-Modus
         Localization: Lokalisierung
+        Model Export Checklist: Checkliste für den Modellexport
         Overview: Überblick
         Point Count Mode: Point-Count-Modus
         Privacy Policy: Datenschutzrichtlinie
@@ -127,6 +128,7 @@ plugins:
         Inference Engine: Inference Engine
         Live Mode: Režim Live
         Localization: Lokalizace
+        Model Export Checklist: Kontrolní seznam exportu modelu
         Overview: Přehled
         Point Count Mode: Režim Point Count
         Privacy Policy: Zásady ochrany osobních údajů
@@ -166,6 +168,7 @@ plugins:
         Inference Engine: Motor de inferencia
         Live Mode: Modo Live
         Localization: Localización
+        Model Export Checklist: Lista de verificación de exportación del modelo
         Overview: Descripción general
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidad
@@ -205,6 +208,7 @@ plugins:
         Inference Engine: Moteur d'inférence
         Live Mode: Mode En direct
         Localization: Localisation
+        Model Export Checklist: Liste de contrôle d'export du modèle
         Overview: Aperçu
         Point Count Mode: Mode Point d'écoute
         Privacy Policy: Politique de confidentialité
@@ -244,6 +248,7 @@ plugins:
         Inference Engine: Motore di inferenza
         Live Mode: Modalità Live
         Localization: Localizzazione
+        Model Export Checklist: Checklist per l'esportazione del modello
         Overview: Panoramica
         Point Count Mode: Modalità Point Count
         Privacy Policy: Informativa sulla privacy
@@ -284,6 +289,7 @@ plugins:
         Inference Engine: Motor de inferência
         Live Mode: Modo Live
         Localization: Localização
+        Model Export Checklist: Lista de verificação de exportação do modelo
         Overview: Visão geral
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidade
@@ -323,6 +329,7 @@ plugins:
         Inference Engine: Inferentie-engine
         Live Mode: Live-modus
         Localization: Lokalisatie
+        Model Export Checklist: Checklist modelexport
         Overview: Overzicht
         Point Count Mode: Point Count-modus
         Privacy Policy: Privacybeleid
@@ -362,6 +369,7 @@ plugins:
         Inference Engine: Silnik wnioskowania
         Live Mode: Tryb Live
         Localization: Lokalizacja
+        Model Export Checklist: Lista kontrolna eksportu modelu
         Overview: Przegląd
         Point Count Mode: Tryb Point Count
         Privacy Policy: Polityka prywatności
@@ -401,6 +409,7 @@ plugins:
         Inference Engine: Inferensmotor
         Live Mode: Live Mode
         Localization: Lokalisering
+        Model Export Checklist: Sjekkliste for modelleksport
         Overview: Oversikt
         Point Count Mode: Point Count-modus
         Privacy Policy: Personvernerklæring
@@ -440,6 +449,7 @@ plugins:
         Inference Engine: Движок вычислений
         Live Mode: Режим Live
         Localization: Локализация
+        Model Export Checklist: Чеклист экспорта модели
         Overview: Обзор раздела
         Point Count Mode: Режим Point Count
         Privacy Policy: Политика конфиденциальности
@@ -479,6 +489,7 @@ plugins:
         Inference Engine: 推理引擎
         Live Mode: Live 模式
         Localization: 本地化
+        Model Export Checklist: 模型导出检查清单
         Overview: 概览
         Point Count Mode: Point Count 模式
         Privacy Policy: 隐私政策
@@ -518,6 +529,7 @@ plugins:
         Inference Engine: 추론 엔진
         Live Mode: Live Mode
         Localization: 현지화
+        Model Export Checklist: 모델 내보내기 체크리스트
         Overview: 개요
         Point Count Mode: Point Count 모드
         Privacy Policy: 개인정보 처리방침
@@ -564,6 +576,7 @@ nav:
   - State Management: developer/state-management.md
   - Audio Pipeline: developer/audio-pipeline.md
   - Inference Engine: developer/inference-engine.md
+  - Model Export Checklist: developer/model-export-checklist.md
   - Spectrogram: developer/spectrogram.md
   - Localization: developer/localization.md
   - Share Targets: developer/share-targets.md

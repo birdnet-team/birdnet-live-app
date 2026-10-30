@@ -87,6 +87,10 @@ it is not a win. Only a layout-agnostic fused SiLU would be.
 
 ## Takeaways
 
+The two graph changes to bake into the next model export are written up for
+the docs in `docs/developer/model-export-checklist.md`; the converter-side
+request (STFT, mixed precision, QAT INT8) is an issue on birdnet-team/model-converter.
+
 1. Two graph-only changes (no runtime, no plugin, no retraining) take the
    shipped model from 53x to ~80x: replace the STFT node with MatMul-based
    DFT stages and keep only the convolutions in fp16. Both are bit-for-bit
