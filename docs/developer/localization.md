@@ -17,7 +17,7 @@ The spoken announcement phrasing is deliberately **not** in ARB — see [Spoken 
 
 ## Supported Languages
 
-Both surfaces are complete for all 12 locales, and both must stay complete when a language is added.
+Both surfaces are complete for all 13 locales, and both must stay complete when a language is added.
 
 | Language | UI strings | Spoken phrasing |
 |----------|-----------|-----------------|
@@ -33,6 +33,7 @@ Both surfaces are complete for all 12 locales, and both must stay complete when 
 | Polish | `lib/l10n/app_pl.arb` | `assets/announcements/templates_pl.json` |
 | Russian | `lib/l10n/app_ru.arb` | `assets/announcements/templates_ru.json` |
 | Simplified Chinese | `lib/l10n/app_zh.arb` | `assets/announcements/templates_zh.json` |
+| Korean | `lib/l10n/app_ko.arb` | `assets/announcements/templates_ko.json` |
 
 ## Translation Conventions
 
@@ -56,7 +57,7 @@ Both surfaces are complete for all 12 locales, and both must stay complete when 
     }
     ```
 
-2. Add translations to every other ARB file: `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, `app_pt.arb`, `app_nl.arb`, `app_nb.arb`, `app_pl.arb`, `app_ru.arb`, and `app_zh.arb`:
+2. Add translations to every other ARB file: `app_de.arb`, `app_cs.arb`, `app_es.arb`, `app_fr.arb`, `app_it.arb`, `app_pt.arb`, `app_nl.arb`, `app_nb.arb`, `app_pl.arb`, `app_ru.arb`, `app_zh.arb`, and `app_ko.arb`:
 
     ```json
     "myNewString": "Hallo Welt"
@@ -68,7 +69,7 @@ Both surfaces are complete for all 12 locales, and both must stay complete when 
     flutter gen-l10n
     ```
 
-4. If adding a new language, include it in the app language selector and supported locale configuration — **and add `assets/announcements/templates_<locale>.json`**, or the app will speak English in that language.
+4. If adding a new language, follow the full checklist in [CONTRIBUTING.md › Adding a New Language](https://github.com/birdnet-team/birdnet-live-app/blob/main/CONTRIBUTING.md#adding-a-new-language). Besides the ARB file it covers `assets/announcements/templates_<locale>.json` (without it the app speaks English), the language picker, native Android and iOS strings, policies, and the docs site.
 
 5. Use in a widget:
 

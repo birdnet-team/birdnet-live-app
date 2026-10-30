@@ -27,6 +27,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../live/live_session.dart';
@@ -35,13 +36,32 @@ import 'session_path_codec.dart';
 /// Persists [LiveSession] objects as JSON files.
 class SessionRepository {
   /// Creates a repository that stores sessions in the app documents directory.
-  SessionRepository();
+  ///
+  /// [backfillUuid] lets [load] save a legacy session back once it has a
+  /// UUID. Off in the background upload isolate, which must never write a
+  /// session file while the app may be editing it.
+  SessionRepository({this.backfillUuid = true});
+
+  final bool backfillUuid;
 
   String? _basePath;
   final Map<String, Future<void>> _writeTails = {};
   Future<void>? _deleteAllOperation;
   int _activeWrites = 0;
   Completer<void>? _writesDrained;
+
+  /// Sessions this process wrote a checkpoint for and has not saved for good.
+  ///
+  /// Shared by every repository instance: the controllers and the library
+  /// each have their own. A checkpoint from this process may belong to a
+  /// session that is still running — Survey and ARU keep going while the
+  /// library is open. One from an earlier process cannot, so only those are
+  /// reported as interrupted by [recoverInterrupted].
+  static final Set<String> _checkpointedByThisProcess = <String>{};
+
+  /// Forget which sessions this process checkpointed, as a restart would.
+  @visibleForTesting
+  static void resetForNewProcess() => _checkpointedByThisProcess.clear();
 
   /// Get or create the sessions directory.
   Future<String> _getBasePath() async {
@@ -80,6 +100,11 @@ class SessionRepository {
     try {
       final basePath = await _getBasePath();
       final id = _sanitiseId(session.id);
+      if (checkpoint) {
+        _checkpointedByThisProcess.add(id);
+      } else {
+        _checkpointedByThisProcess.remove(id);
+      }
       final previous = _writeTails[id] ?? Future<void>.value();
       final write = previous
           .catchError((Object _) {})
@@ -117,6 +142,9 @@ class SessionRepository {
       if (checkpoint) {
         final snapshotAt = DateTime.now().toUtc().toIso8601String();
         data['endTime'] = snapshotAt;
+        // Cleared by the final save. A session still carrying it when it is
+        // loaded was never stopped; see [recoverInterrupted].
+        data['checkpoint'] = true;
         data['recordedDurationSeconds'] = session.duration.inSeconds;
         final segments = data['segments'];
         if (segments is List && segments.isNotEmpty) {
@@ -172,9 +200,10 @@ class SessionRepository {
   Future<LiveSession?> load(String id) async {
     final basePath = await _getBasePath();
     final safeId = _sanitiseId(id);
+    final primary = '$basePath/$safeId.json';
     for (final path in [
       '$basePath/$safeId.pending',
-      '$basePath/$safeId.json',
+      primary,
       '$basePath/$safeId.recovery.json',
     ]) {
       final file = File(path);
@@ -182,15 +211,70 @@ class SessionRepository {
       try {
         final json =
             jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-        return sessionFromStorageJson(
+        final session = await recoverInterrupted(
+          sessionFromStorageJson(
+            json,
+            documentsPath: Directory(basePath).parent.path,
+          ),
           json,
-          documentsPath: Directory(basePath).parent.path,
+          checkpointedByThisProcess: _checkpointedByThisProcess.contains(
+            safeId,
+          ),
         );
+        // Sessions saved by builds without a UUID get theirs the first time
+        // they are fully loaded, so the value stays the same from here on.
+        // Only a finished primary file is rewritten: saving a checkpoint or a
+        // recovery snapshot as final would hide that the session was
+        // interrupted.
+        if (backfillUuid &&
+            json['uuid'] == null &&
+            path == primary &&
+            json['checkpoint'] != true) {
+          await save(session);
+        }
+        return session;
       } catch (_) {
         // A partially written file can leave another valid snapshot behind.
       }
     }
     return null;
+  }
+
+  /// Repair what a session the system ended could not finish itself.
+  ///
+  /// A running session is written as a checkpoint every 30 s and finalized
+  /// when it is stopped. When the system ends the app first, the checkpoint
+  /// is all that is left. It is marked as such here so the review can say so
+  /// — unless this process wrote the checkpoint, in which case the session
+  /// may well still be running. Checkpoints written by earlier builds also
+  /// still name the session *directory* as the recording path rather than
+  /// the continuous recording inside it — that file is on disk and playable
+  /// (the FLAC decoder tolerates its unfinalized header), so the session is
+  /// pointed at it instead of showing no audio. Nothing is written back; the
+  /// repair is applied on every load.
+  static Future<LiveSession> recoverInterrupted(
+    LiveSession session,
+    Map<String, dynamic> json, {
+    required bool checkpointedByThisProcess,
+  }) async {
+    var interrupted = json['checkpoint'] == true && !checkpointedByThisProcess;
+    final path = session.recordingPath;
+    final mode = session.settings.recordingMode;
+    final mayHoldFullRecording = mode == null || mode == 'full';
+    if (path != null &&
+        mayHoldFullRecording &&
+        await FileSystemEntity.isDirectory(path)) {
+      for (final name in const ['full.flac', 'full.wav']) {
+        final file = File('$path/$name');
+        if (await file.exists()) {
+          session.recordingPath = file.path;
+          interrupted = true;
+          break;
+        }
+      }
+    }
+    if (interrupted) session.stopReason ??= SessionStopReason.interrupted;
+    return session;
   }
 
   /// List all saved sessions, sorted by start time (newest first).
@@ -206,6 +290,8 @@ class SessionRepository {
     if (ids.isEmpty) return const [];
 
     final documentsPath = Directory(basePath).parent.path;
+    // Statics are per isolate; carry the main isolate's record across.
+    final checkpointedHere = Set.of(_checkpointedByThisProcess);
     return Isolate.run(() async {
       final sessions = <LiveSession>[];
       for (final id in ids) {
@@ -218,7 +304,11 @@ class SessionRepository {
             final jsonString = await File(path).readAsString();
             final json = jsonDecode(jsonString) as Map<String, dynamic>;
             sessions.add(
-              sessionFromStorageJson(json, documentsPath: documentsPath),
+              await recoverInterrupted(
+                sessionFromStorageJson(json, documentsPath: documentsPath),
+                json,
+                checkpointedByThisProcess: checkpointedHere.contains(id),
+              ),
             );
             break;
           } catch (_) {

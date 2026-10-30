@@ -120,6 +120,21 @@ forma predeterminada como término medio; **0,30 Hz** sigue siendo la opción
 explícita de máxima autonomía. El análisis de archivos no tiene frecuencia de
 inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
+Si un dispositivo no puede seguir la frecuencia elegida (la inferencia se
+queda un paso completo por detrás de la captura durante varias ventanas
+seguidas), la Session reduce la frecuencia en 0,30 Hz, y lo repite mientras
+el dispositivo siga quedándose atrás, hasta un mínimo de 0,10 Hz. La
+frecuencia reducida pasa a ser el ajuste de todos los modos: Live, Point
+Count, Survey y ARU, y por tanto de sus asistentes de configuración, de modo
+que la siguiente Session en cualquier modo empiece con una frecuencia que
+este dispositivo pueda mantener. Los ajustes y los asistentes muestran bajo
+el control deslizante una nota que indica que el dispositivo es demasiado
+lento por encima de esa frecuencia. La nota se mantiene, porque un
+dispositivo lento sigue siendo lento, y los controles se pueden seguir
+ajustando libremente. Sin esto, un dispositivo lento acumula un retraso que
+acaba sobrescribiendo el audio del que se recortan los fragmentos de
+detección, y las detecciones se quedan sin audio.
+
 ### Ignorar especies
 
 Abre un panel con filtros binarios de inferencia. Marca **Aves**, **Mamíferos**, **Anfibios** o **Insectos** para suprimir toda esa clase taxonómica. Las cuatro casillas están desactivadas de forma predeterminada.
@@ -141,6 +156,10 @@ comienza en su ventana de apoyo más temprana, lleva la puntuación respaldada
 más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
+
+### Tamaño
+
+Define cuánto espacio de la pantalla ocupa el espectrograma en vivo en Live Mode, Point Count, Survey y ARU. **Completo** es la altura habitual. **Medio** y **Pequeño** la reducen al 75 % y al 50 % y ceden la diferencia a la lista de detecciones, la opción adecuada cuando en el teléfono en vertical miras sobre todo la lista. **Desactivado** quita el espectrograma por completo; en Survey y ARU desaparece también la pestaña del espectrograma. En horizontal, **Medio** y **Pequeño** acortan el espectrograma en su mitad de la pantalla (el espacio debajo queda vacío por ahora), y **Desactivado** deja toda la pantalla a la lista de detecciones. Los espectrogramas de las sesiones guardadas y de la reproducción no se ven afectados.
 
 ### Tamaño de FFT
 
@@ -222,7 +241,7 @@ Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos
 
 Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
 
-Este ajuste rige la apertura del modo Live desde dentro de la aplicación. El [widget Quick Listen](live-mode.md) empieza a escuchar al tocarlo, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
+Este ajuste rige la apertura del modo Live desde dentro de la aplicación. [Quick Listen](live-mode.md) — el widget de Android o, en iOS, el atajo, la frase de Siri y la acción del icono — empieza a escuchar al activarse, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
 
 ### Continuar con la pantalla apagada
 
@@ -305,6 +324,8 @@ Como los niveles se basan en el orden, esto funciona igual en un bosque tropical
 
 ## Exportación y sincronización
 
+La sección muestra tres entradas, cada una resumiendo sus opciones: **Formatos**, **Contenido** y **Destinos de subida**. Las dos primeras abren una página con las casillas descritas abajo.
+
 ### Formatos
 
 Marca cualquier combinación de formatos de exportación: cada guardado o compartición empaquetará todos los formatos seleccionados juntos en un único ZIP. Si eliges un solo formato sin fragmentos de audio ni informe HTML, obtendrás un archivo suelto (por ejemplo, `session.csv`) en lugar de un ZIP, por compatibilidad con versiones anteriores:
@@ -335,6 +356,11 @@ Al activarlo, cada ZIP de exportación contiene además un archivo `<session>_re
 ### Compartir solo el audio
 
 Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las Sessions con varios fragmentos de detección siguen produciendo un ZIP; al compartir una sola detección se entrega ese único clip en bruto.
+
+### Destinos de subida
+
+Lista los lugares WebDAV a los que se puede subir una Session finalizada, por ejemplo el File Drop de Nextcloud de quien dirige el proyecto o el servidor de referencia de `tools/webdav_drop_server`. Añade uno pegando el enlace de acceso o el enlace compartido que recibiste, o escaneando el código QR del proyecto con la cámara; una dirección WebDAV normal con usuario y contraseña funciona mediante los campos avanzados. No se guarda nada hasta que la prueba de conexión se supera. La pantalla del destino tiene además **Mostrar código de acceso**, que muestra el mismo enlace como código QR (más Copiar enlace) para que un segundo teléfono se una sin escribir. La prueba crea el archivo de registro del dispositivo en el servidor, en una carpeta oculta `.birdnet-live`, y avisa cuando la credencial también puede listar la carpeta (un recurso de solo escritura es más seguro para todos) y, además, cuando ese recurso listable no tiene contraseña. Cada destino tiene su propio nombre, un interruptor «Subir solo con Wi-Fi» y otro «Subir las Sessions ARU automáticamente»; este último pone en cola cada ARU Session finalizada para ese destino sin preguntar. Para subir, toca Compartir en una Session o en una selección de la biblioteca de Sessions y marca el destino en la pestaña **Enviar a** del diálogo (una insignia en la pestaña cuenta las marcas y la lista se desplaza, así que el diálogo mantiene la misma altura con cualquier número de destinos); allí puedes desmarcar la hoja de compartir para solo subir, y los destinos marcados la última vez vienen premarcados. Las subidas en cola se ejecutan mientras la app está abierta (y, en Android, también en segundo plano cuando hay una red adecuada), se reintentan con esperas crecientes, aguardan al Wi-Fi si se les pide y muestran su estado como primera línea bajo el título de la Session en la biblioteca y como icono de nube en la revisión de la Session (toca cualquiera para ver detalles por destino, Reintentar y Quitar); la línea desaparece cuando ninguno de sus destinos sigue existiendo en los ajustes. Cada subida es un único archivo ZIP, con el nombre de la exportación de Compartir y que contiene el registro JSON de la Session más todo lo que Compartir incluiría, dentro de una carpeta con el código de ocho caracteres de este dispositivo (se muestra como **Tu ID de subida** al unirse y arriba en la lista de destinos). Allí se puede indicar un identificador de participante opcional, como nombre, correo o ID de participante; viaja en los metadatos de la subida y en el registro del dispositivo, nunca en una ruta. Volver a subir una Session sustituye ese archivo; un File Drop de Nextcloud nunca sobrescribe y conserva la copia anterior con un nombre numerado. Las subidas van en un solo sentido: no se descarga nada y borrar una Session en el dispositivo nunca la elimina del servidor. Las credenciales se guardan en el llavero del dispositivo, nunca en los datos exportados. Todo el flujo de trabajo, desde la creación del recurso compartido hasta el seguimiento de una subida, se describe en [Subidas](uploads.md). Motivo: los proyectos de campo recogen datos de muchos teléfonos, y un único enlace pegado con una prueba verificada evita casi todos los errores de configuración. Consulta la incidencia #284.
+
 
 ## Privacidad
 

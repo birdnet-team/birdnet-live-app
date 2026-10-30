@@ -56,6 +56,10 @@ Processe e analise vários arquivos de áudio de uma só vez. (Em breve)
 
 Crie uma Session de instalação ARU agendada, grave áudio completo do ciclo ou clipes de detecção retidos, execute inferência ao vivo durante ciclos ativos e acompanhe os ciclos de gravação planejados.
 
+### [Envios](uploads.md)
+
+Envie Sessions finalizadas para a pasta de um projeto: configuração de um destino File Drop do Nextcloud ou WebDAV, links de acesso e códigos QR, a aba Enviar para, o estado do envio e os envios automáticos de ARU.
+
 ## Referência
 
 ### [FAQ](faq.md)

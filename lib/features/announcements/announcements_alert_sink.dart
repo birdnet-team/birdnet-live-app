@@ -10,12 +10,10 @@
 //
 // Design notes:
 //
-//   * **Lazy initialization.** The TTS plugin, audio routing service
+//   * **Lazy initialization.** The TTS engine, audio routing service
 //     and template bundle are *only* built on the first `submit()`
 //     call made while announcements are enabled. Users who never turn
-//     the feature on never pay the plugin / asset cost — and we avoid
-//     the `MissingPluginException` that follows a hot-reload of a
-//     freshly-added native plugin.
+//     the feature on never pay the engine / asset cost.
 //
 //   * **Errors are swallowed.** A TTS hiccup must never bubble up into
 //     the audio capture loop; on any failure `submit()` returns
@@ -191,7 +189,7 @@ class AnnouncementsAlertSink {
 
   Future<AnnouncementsController> _build() async {
     final ringBuffer = _ref.read(ringBufferProvider);
-    final tts = FlutterTtsEngine();
+    final tts = PlatformTtsEngine();
     final routing = AudioSessionRoutingService();
     await routing.init();
     final languageTag = _resolveLanguageTag();
@@ -313,12 +311,10 @@ class AnnouncementsAlertSink {
         // sessionResetSeconds / coalesceWindowSeconds are not exposed
         // as live providers yet; fall back to the `normal` profile
         // values so the controller has reasonable numbers.
-        sessionResetSeconds:
-            kFrequencyProfiles[AnnouncementFrequency.normal]!
-                .sessionResetSeconds,
-        coalesceWindowSeconds:
-            kFrequencyProfiles[AnnouncementFrequency.normal]!
-                .coalesceWindowSeconds,
+        sessionResetSeconds: kFrequencyProfiles[AnnouncementFrequency.normal]!
+            .sessionResetSeconds,
+        coalesceWindowSeconds: kFrequencyProfiles[AnnouncementFrequency.normal]!
+            .coalesceWindowSeconds,
       );
     } else {
       profile = kFrequencyProfiles[frequency]!;

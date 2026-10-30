@@ -13,8 +13,7 @@ import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Minimal CSV matching the real taxonomy format.
-const _testCsv =
-    '''birdnet_id,scientific_name,common_name,common_name_alt,taxon_group,inat_id,ebird_code,observations_count,image_url,image_author,image_license,image_source,description_source,common_name_en,common_name_de
+const _testCsv = '''birdnet_id,scientific_name,common_name,common_name_alt,taxon_group,inat_id,ebird_code,observations_count,image_url,image_author,image_license,image_source,description_source,common_name_en,common_name_de
 BN00498,Parus major,Great Tit,Eurasian Great Tit,Aves,204839,gretit1,50000,https://ex.com/pm.webp,John Doe,cc-by,iNaturalist,wikipedia,Great Tit,Kohlmeise
 BN00499,Turdus merula,Eurasian Blackbird,,Aves,12716,eurbla,30000,,,,,,Eurasian Blackbird,Amsel
 BN00500,Erithacus rubecula,European Robin,,Aves,13033,eurrob1,25000,,,,,,European Robin,Rotkehlchen''';
@@ -206,9 +205,8 @@ void main() {
     });
 
     test('exact matches precede geo-ranked partial matches', () {
-      final ranked =
-          TaxonomyService()
-            ..loadFromCsv('''birdnet_id,scientific_name,common_name,taxon_group
+      final ranked = TaxonomyService()
+        ..loadFromCsv('''birdnet_id,scientific_name,common_name,taxon_group
 BN1,Parus major,Great Tit,Aves
 BN2,Poecile montanus,Willow Tit,Aves
 BN3,Baeolophus bicolor,Tufted Titmouse,Aves
@@ -267,12 +265,11 @@ BN6,Tit exactus,Tit,Aves''');
     });
 
     test('splits at the threshold and keeps order', () {
-      final split =
-          TaxonomyService.splitByGeoLikelihood(
-            species,
-            geoScores: const {'Parus major': 0.5, 'Erithacus rubecula': 0.03},
-            threshold: 0.03,
-          )!;
+      final split = TaxonomyService.splitByGeoLikelihood(
+        species,
+        geoScores: const {'Parus major': 0.5, 'Erithacus rubecula': 0.03},
+        threshold: 0.03,
+      )!;
 
       expect(split.likely.map((s) => s.scientificName), [
         'Parus major',

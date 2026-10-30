@@ -99,45 +99,41 @@ void main() {
     await geoModel.dispose();
   });
 
-  testWidgets(
-    'Geo-model inference (Berlin, week 26) yields sensible results',
-    (tester) async {
-      // Berlin: 52.52°N, 13.40°E
-      final probabilities = await geoModel.predict(
-        latitude: 52.52,
-        longitude: 13.40,
-        week: 26,
+  testWidgets('Geo-model inference (Berlin, week 26) yields sensible results', (
+    tester,
+  ) async {
+    // Berlin: 52.52°N, 13.40°E
+    final probabilities = await geoModel.predict(
+      latitude: 52.52,
+      longitude: 13.40,
+      week: 26,
+    );
+
+    // Sort to get top species
+    final sortedEntries = probabilities.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    debugPrint('--- Berlin week 26 top species ---');
+    for (var i = 0; i < 10 && i < sortedEntries.length; i++) {
+      debugPrint(
+        '${sortedEntries[i].key}: ${sortedEntries[i].value.toStringAsFixed(3)}',
       );
+    }
 
-      // Sort to get top species
-      final sortedEntries =
-          probabilities.entries.toList()
-            ..sort((a, b) => b.value.compareTo(a.value));
+    expect(
+      sortedEntries.isNotEmpty,
+      isTrue,
+      reason: 'Geo model should return species probabilities',
+    );
 
-      debugPrint('--- Berlin week 26 top species ---');
-      for (var i = 0; i < 10 && i < sortedEntries.length; i++) {
-        debugPrint(
-          '${sortedEntries[i].key}: ${sortedEntries[i].value.toStringAsFixed(3)}',
-        );
-      }
-
-      expect(
-        sortedEntries.isNotEmpty,
-        isTrue,
-        reason: 'Geo model should return species probabilities',
-      );
-
-      // Confirms it's working logically if it returns at least a handful of common species with > 0.01 prob
-      final hasHighProb = sortedEntries.any((e) => e.value > 0.01);
-      expect(
-        hasHighProb,
-        isTrue,
-        reason:
-            'Some species should be highly probable in Berlin during summer',
-      );
-    },
-    timeout: const Timeout(Duration(minutes: 2)),
-  );
+    // Confirms it's working logically if it returns at least a handful of common species with > 0.01 prob
+    final hasHighProb = sortedEntries.any((e) => e.value > 0.01);
+    expect(
+      hasHighProb,
+      isTrue,
+      reason: 'Some species should be highly probable in Berlin during summer',
+    );
+  }, timeout: const Timeout(Duration(minutes: 2)));
 
   testWidgets(
     'Audio classifier on soundscape_32k.raw detects birds (Blue Jay, House Finch)',

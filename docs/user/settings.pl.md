@@ -119,6 +119,19 @@ pośredniego; **0,30 Hz** pozostaje wyraźnym wyborem na maksymalny czas pracy
 baterii. Analiza plików nie ma częstości wnioskowania — zamiast tego używa
 ustawienia [nakładania](file-analysis.md).
 
+Jeśli urządzenie nie nadąża za wybraną częstością — wnioskowanie przez kilka
+kolejnych okien pozostaje o cały krok w tyle za rejestracją — Session obniża
+częstość o 0,30 Hz, i ponownie, dopóki urządzenie wciąż nie nadąża, najniżej
+do 0,10 Hz. Obniżona częstość staje się wtedy ustawieniem wszystkich trybów:
+Live, Point Count, Survey i ARU, a więc także ich kreatorów konfiguracji, aby
+kolejna Session w dowolnym trybie zaczynała się z częstością, którą to
+urządzenie jest w stanie utrzymać. Ustawienia i kreatory pokazują pod
+suwakiem notatkę, że urządzenie jest zbyt wolne powyżej tej częstości.
+Notatka pozostaje, bo wolne urządzenie pozostaje wolne; suwaki nadal można
+dowolnie ustawiać. Bez tego na wolnym urządzeniu narasta zaległość, która w
+końcu nadpisuje dźwięk, z którego wycinane są fragmenty wykryć, i wykrycia
+zostają bez dźwięku.
+
 ### Ignoruj gatunki
 
 Otwiera panel binarnych filtrów wnioskowania. Zaznacz **Ptaki**, **Ssaki**, **Płazy** lub **Owady**, aby wykluczyć całą klasę taksonomiczną. Wszystkie cztery pola są domyślnie wyłączone.
@@ -139,6 +152,10 @@ najwcześniejszym oknie potwierdzającym, niesie najwyższą potwierdzoną ocen�
 kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
+
+### Rozmiar
+
+Określa, ile miejsca na ekranie zajmuje spektrogram na żywo w trybach Live Mode, Point Count, Survey i ARU. **Pełny** to zwykła wysokość. **Średni** i **Mały** zmniejszają ją do 75% i 50%, a różnicę oddają liście wykryć – to właściwy wybór, gdy na telefonie w pionie patrzysz głównie na listę. **Wyłączony** całkowicie usuwa spektrogram; w Survey i ARU znika też karta spektrogramu. W orientacji poziomej **Średni** i **Mały** skracają spektrogram w jego połowie ekranu (miejsce pod nim na razie pozostaje puste), a **Wyłączony** oddaje cały ekran liście wykryć. Spektrogramy zapisanych sesji i odtwarzania pozostają bez zmian.
 
 ### Rozmiar FFT
 
@@ -220,7 +237,7 @@ To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plikó
 
 Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
 
-To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Widżet Quick Listen](live-mode.md) po dotknięciu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
+To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Quick Listen](live-mode.md) — widżet w Androidzie albo skrót, fraza Siri i akcja ikony w iOS — po uruchomieniu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
 
 ### Kontynuuj przy wyłączonym ekranie
 
@@ -303,6 +320,8 @@ Ponieważ poziomy opierają się na rankingu, działa to tak samo w bogatym gatu
 
 ## Eksport i synchronizacja
 
+Sekcja pokazuje trzy pozycje, z których każda podsumowuje swoje ustawienia: **Formaty**, **Zawartość** i **Miejsca docelowe przesyłania**. Pierwsze dwie otwierają stronę z polami opisanymi poniżej.
+
 ### Formaty
 
 Zaznacz dowolną kombinację formatów eksportu — przy każdym zapisie i udostępnieniu wszystkie wybrane formaty trafią razem do jednego pliku ZIP. Wybór jednego formatu bez fragmentów dźwiękowych i bez raportu HTML da Ci, dla zgodności wstecznej, surowy plik (na przykład `session.csv`) zamiast ZIP:
@@ -333,6 +352,11 @@ Po włączeniu każdy plik ZIP eksportu zawiera dodatkowo plik `<session>_report
 ### Udostępnianie samego dźwięku
 
 Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions z wieloma fragmentami wykryć nadal dają ZIP; przy udostępnianiu pojedynczego wykrycia przekazywany jest ten jeden surowy fragment.
+
+### Miejsca docelowe przesyłania
+
+Lista lokalizacji WebDAV, do których można przesłać zakończoną Session, na przykład Nextcloud File Drop osoby prowadzącej projekt lub referencyjny serwer drop z `tools/webdav_drop_server`. Dodaj miejsce docelowe, wklejając otrzymany link dołączenia lub link udostępnienia albo skanując aparatem kod QR projektu; zwykły adres WebDAV z nazwą użytkownika i hasłem działa przez pola zaawansowane. Nic nie zostanie zapisane, dopóki test połączenia się nie powiedzie. Ekran miejsca docelowego ma też **Pokaż kod dołączenia**, który pokazuje ten sam link jako kod QR (oraz Kopiuj link), aby drugi telefon dołączył bez wpisywania. Test tworzy na serwerze plik rejestracji urządzenia w ukrytym folderze `.birdnet-live` i ostrzega, gdy dane logowania pozwalają też wyświetlić zawartość folderu (udostępnienie tylko do zapisu jest bezpieczniejsze dla wszystkich), a dodatkowo gdy takie udostępnienie z listowaniem nie ma hasła. Każde miejsce docelowe ma własną nazwę, przełącznik „Przesyłaj tylko przez Wi-Fi” i przełącznik „Przesyłaj Sessions ARU automatycznie”; ten drugi dodaje każdą zakończoną ARU Session do kolejki tego miejsca bez pytania. Aby przesłać, dotknij Udostępnij przy Session lub zaznaczeniu w bibliotece Sessions i zaznacz miejsce docelowe na karcie **Wyślij do** w oknie dialogowym (plakietka na karcie zlicza zaznaczenia, a lista się przewija, więc okno zachowuje tę samą wysokość niezależnie od liczby miejsc docelowych); możesz tam odznaczyć arkusz udostępniania, aby tylko przesłać, a ostatnio zaznaczone miejsca docelowe będą następnym razem zaznaczone z góry. Przesyłania w kolejce działają, gdy aplikacja jest otwarta (a na Androidzie także w tle, gdy tylko dostępna jest odpowiednia sieć), ponawiają się z rosnącymi odstępami, w razie potrzeby czekają na Wi-Fi i pokazują swój stan jako pierwszy wiersz pod tytułem Session w bibliotece oraz jako ikonę chmury w przeglądzie Session (dotknij dowolnego z nich, aby zobaczyć szczegóły dla każdego miejsca, Ponów teraz i Usuń); wiersz znika, gdy żadne z jego miejsc docelowych nie istnieje już w ustawieniach. Każde przesłanie to jeden plik ZIP, nazwany jak eksport Udostępniania i zawierający rekord JSON Session oraz wszystko, co dołączyłoby Udostępnianie, w folderze nazwanym ośmioznakowym kodem tego urządzenia (pokazywanym jako **Twój identyfikator przesyłania** przy dołączaniu i na górze listy miejsc docelowych). Można tam opcjonalnie podać identyfikator uczestnika, np. imię, e-mail lub numer uczestnika; trafia on do metadanych przesłania i rejestracji urządzenia, nigdy do ścieżki. Ponowne przesłanie Session zastępuje ten plik; Nextcloud File Drop nigdy nie nadpisuje i zachowuje starszą kopię pod numerowaną nazwą. Przesyłanie działa w jedną stronę: nic nie jest pobierane, a usunięcie Session na urządzeniu nigdy nie usuwa jej z serwera. Dane logowania są przechowywane w pęku kluczy urządzenia, nigdy w wyeksportowanych danych. Cały proces, od utworzenia udostępnienia po śledzenie przesyłania, jest opisany w [Przesyłanie](uploads.md). Uzasadnienie: projekty terenowe zbierają dane z wielu telefonów, a jeden wklejony link ze zweryfikowanym testem eliminuje niemal każdy błąd konfiguracji. Zobacz zgłoszenie #284.
+
 
 ## Prywatność
 

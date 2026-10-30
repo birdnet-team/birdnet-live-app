@@ -29,10 +29,28 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+/// Decompresses and parses one bundled description file.
+///
+/// Top-level so it can run through [compute]: a locale file is roughly a
+/// megabyte of gzip that inflates to several megabytes of JSON, and parsing
+/// that on the UI isolate — which is also the platform thread on Android and
+/// iOS — is a visible hitch the first time a species card opens.
+Map<String, String> parseSpeciesDescriptions(Uint8List gzipBytes) {
+  final decompressed = gzip.decode(gzipBytes);
+  final json = jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
+  return json.map((k, v) => MapEntry(k, v as String));
+}
+
 /// Provides offline species descriptions from bundled gzip JSON files.
 class SpeciesDescriptionService {
   /// In-memory cache of parsed description maps, keyed by locale.
   final Map<String, Map<String, String>> _cache = {};
+
+  /// Loads in flight, keyed by locale. A species list opening several cards
+  /// at once asks for the same unloaded locale several times before the
+  /// first parse lands; sharing the load keeps that at one isolate and one
+  /// copy of the file instead of one per card.
+  final Map<String, Future<void>> _loading = {};
 
   /// Available description locales (matching the bundled files).
   static const List<String> availableLocales = [
@@ -47,6 +65,7 @@ class SpeciesDescriptionService {
     'pl',
     'ru',
     'zh',
+    'ko',
   ];
 
   /// Resolve a species-locale tag to a bundled description locale.
@@ -88,16 +107,25 @@ class SpeciesDescriptionService {
     return _cache[resolved]?[scientificName] ?? _cache['en']?[scientificName];
   }
 
-  /// Load and decompress a single locale file.
-  Future<void> _loadLocale(String locale) async {
+  /// Load and decompress a single locale file off the UI isolate, joining a
+  /// load of the same locale that is already under way.
+  Future<void> _loadLocale(String locale) =>
+      _loading[locale] ??= _parseLocale(locale).whenComplete(() {
+        // A block, not an arrow: returning the removed future from here
+        // would make the shared future wait on itself.
+        _loading.remove(locale);
+      });
+
+  Future<void> _parseLocale(String locale) async {
     try {
       final bytes = await rootBundle.load(
         'assets/species_data/descriptions_$locale.json.gz',
       );
-      final decompressed = gzip.decode(bytes.buffer.asUint8List());
-      final json =
-          jsonDecode(utf8.decode(decompressed)) as Map<String, dynamic>;
-      _cache[locale] = json.map((k, v) => MapEntry(k, v as String));
+      _cache[locale] = await compute(
+        parseSpeciesDescriptions,
+        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+        debugLabel: 'species-descriptions-$locale',
+      );
       debugPrint(
         '[SpeciesDescriptionService] loaded $locale: '
         '${_cache[locale]!.length} descriptions',

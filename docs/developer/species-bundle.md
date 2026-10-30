@@ -77,7 +77,7 @@ python tools/build_species_bundle.py --taxonomy-json path/to/custom.json --quali
 The script rewrites these generated assets:
 
 - `assets/species_images/*.webp`
-- `assets/species_data/descriptions_*.json.gz`
+- `assets/species_data/descriptions_*.json.gz` — one gzip JSON map per locale, inflated and parsed in a `compute()` isolate by `SpeciesDescriptionService` the first time a locale is requested
 - `assets/models/taxonomy.csv`
 
 The cache in `tools/.cache/species_images/` is local-only and safe to delete.

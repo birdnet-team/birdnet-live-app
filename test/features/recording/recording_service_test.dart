@@ -130,6 +130,14 @@ void main() {
       final result = await service.saveDetectionClips(clipNames: ['a', 'b']);
       expect(result, isEmpty);
     });
+
+    test('setClipContextSeconds follows the setting between sessions', () {
+      expect(service.clipContextSeconds, 0);
+      service.setClipContextSeconds(2);
+      expect(service.clipContextSeconds, 2);
+      service.setClipContextSeconds(-1);
+      expect(service.clipContextSeconds, 2);
+    });
   });
 
   // ── Clip naming ────────────────────────────────────────────────────────
@@ -305,6 +313,69 @@ void main() {
         ),
         isTrue,
       );
+    });
+  });
+
+  // ── Recording path ─────────────────────────────────────────────────────
+
+  group('recording path', () {
+    late Directory tmp;
+    late RingBuffer ringBuffer;
+    late RecordingService service;
+
+    setUp(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      tmp = await Directory.systemTemp.createTemp('recording_service_test');
+      PathProviderPlatform.instance = _FakePathProvider(tmp.path);
+      ringBuffer = RingBuffer(capacity: 1000);
+      service = RecordingService(
+        ringBuffer: ringBuffer,
+        sampleRate: 1000,
+        clipContextSeconds: 0,
+        windowSeconds: 1,
+      );
+    });
+
+    tearDown(() async {
+      service.dispose();
+      if (tmp.existsSync()) await tmp.delete(recursive: true);
+    });
+
+    test('full mode reports the continuous file from the start', () async {
+      // A checkpoint written mid-session stores this path, so it has to be
+      // the file a session the system ends will be played from.
+      final started = await service.startRecording(
+        sessionId: 'full-session',
+        mode: RecordingMode.full,
+        format: 'wav',
+      );
+
+      expect(started, '${service.sessionDir}/full.wav');
+      expect(File(started!).existsSync(), isTrue);
+      expect(
+        await service.startRecording(
+          sessionId: 'full-session',
+          mode: RecordingMode.full,
+          format: 'wav',
+        ),
+        started,
+        reason: 'a second start reports the same file',
+      );
+
+      _writeTone(ringBuffer, 1000);
+      expect(await service.stopRecording(), started);
+    });
+
+    test('detections-only mode reports the clip directory', () async {
+      final started = await service.startRecording(
+        sessionId: 'clip-session',
+        mode: RecordingMode.detectionsOnly,
+        format: 'wav',
+      );
+
+      expect(started, service.sessionDir);
+      expect(Directory(started!).existsSync(), isTrue);
+      expect(await service.stopRecording(), started);
     });
   });
 

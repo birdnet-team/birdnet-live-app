@@ -103,7 +103,11 @@ import '../survey/survey_live_screen.dart';
 import '../survey/widgets/survey_map_widget.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import 'services/detection_sharing_service.dart';
+import '../upload/upload_providers.dart';
+import '../upload/upload_status_widgets.dart';
 import 'services/session_audio_trim.dart';
+import 'services/share_export_config.dart';
+import 'widgets/share_options_dialog.dart';
 
 part 'widgets/session_review_widgets.dart';
 
@@ -517,9 +521,14 @@ class _FullSpectrogramRequest {
     required this.hop,
     required this.colorMapName,
     required this.maxColumns,
+    this.seekIndex,
   });
 
   final String path;
+
+  /// Frame index for FLAC sources, so each decoded batch starts near its
+  /// first sample instead of walking the stream from byte zero.
+  final FlacSeekIndex? seekIndex;
   final int targetSampleRate;
   final int maxDisplayBins;
   final int hop;
@@ -530,35 +539,53 @@ class _FullSpectrogramRequest {
   final int maxColumns;
 }
 
-/// Decode a whole recording and render its spectrogram in one shot.
+/// Render a whole recording's spectrogram for the trim editor.
 ///
-/// Only used for the trim editor, which needs a single image spanning the
-/// entire file. The main strip uses [_decodeAndRenderSpectrogramChunk]
-/// instead — tiled, so nothing ever holds the full PCM.
+/// The trim editor needs a single image spanning the entire file; the main
+/// strip uses [_decodeAndRenderSpectrogramChunk] instead — tiled, so nothing
+/// ever holds the full PCM. This render is batched too: the recording is
+/// decoded a minute at a time through [renderSpectrogramInBatches], so an
+/// hour-long file costs one batch of PCM rather than the whole decode (which
+/// for a native format also meant reading the entire transcoded file into
+/// memory).
 Future<SpectrogramPixels?> _decodeAndRenderFullSpectrogram(
   _FullSpectrogramRequest req,
 ) async {
-  final DecodedAudio decoded;
-  if (await AudioDecoder.canDecodeDart(req.path)) {
-    decoded = await AudioDecoder.decodeFile(req.path);
-  } else {
-    decoded = await NativeAudioDecoder.decodeFile(req.path);
-  }
+  final canDart = await AudioDecoder.canDecodeDart(req.path);
+  final metadata = canDart
+      ? await AudioDecoder.inspectFile(req.path)
+      : await NativeAudioDecoder.inspectFile(req.path, 'AUDIO');
   const fftSize = 2048;
   // Column count is measured on the target grid the renderer will resample
   // onto, without materializing it.
-  final ratio = decoded.sampleRate / req.targetSampleRate;
+  final ratio = metadata.sampleRate / req.targetSampleRate;
   final targetTotal = ratio == 1.0
-      ? decoded.totalSamples
-      : (decoded.totalSamples / ratio).floor();
+      ? metadata.totalSamples
+      : (metadata.totalSamples / ratio).floor();
   if (targetTotal < fftSize) return null;
   // Stretch the hop rather than the column count so a long recording costs
   // the same as a short one to render.
   final rawCols = (targetTotal - fftSize) ~/ req.hop + 1;
   final stride = math.max(1, (rawCols / req.maxColumns).ceil());
 
-  return renderSpectrogram(
-    decoded,
+  return renderSpectrogramInBatches(
+    sourceSampleRate: metadata.sampleRate,
+    sourceTotalSamples: metadata.totalSamples,
+    decode: (startSample, count) => canDart
+        ? AudioDecoder.decodeRange(
+            req.path,
+            startSample: startSample,
+            count: count,
+            seekIndex: req.seekIndex,
+          )
+        // Concurrent on purpose: the strip's transcode of the same file may
+        // still be running, and a non-concurrent request would cancel it.
+        : NativeAudioDecoder.decodeRange(
+            req.path,
+            startSample: startSample,
+            count: count,
+            allowConcurrent: true,
+          ),
     targetSampleRate: req.targetSampleRate,
     fftSize: fftSize,
     hop: req.hop * stride,
@@ -1220,10 +1247,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       await session.configure(
         AudioSessionConfiguration(
           avAudioSessionCategory: AVAudioSessionCategory.playback,
+          // Bluetooth A2DP and AirPlay are implicit for `playback`; the
+          // explicit options are only valid with `playAndRecord`, and
+          // passing them made iOS reject the whole call (error -50), so the
+          // review kept the category the last recording left behind.
           avAudioSessionCategoryOptions:
-              AVAudioSessionCategoryOptions.mixWithOthers |
-              AVAudioSessionCategoryOptions.allowBluetoothA2dp |
-              AVAudioSessionCategoryOptions.allowAirPlay,
+              AVAudioSessionCategoryOptions.mixWithOthers,
           avAudioSessionMode: AVAudioSessionMode.defaultMode,
           avAudioSessionRouteSharingPolicy:
               AVAudioSessionRouteSharingPolicy.defaultPolicy,
@@ -1715,6 +1744,9 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
           hop: hop,
           colorMapName: ref.read(colorMapProvider),
           maxColumns: 6000,
+          // Only an index of this very file helps: the strip indexes the
+          // tile source, which for a native format is its PCM cache.
+          seekIndex: _spectrogramAudioPath == path ? _flacSeekIndex : null,
         ),
       );
       if (pixelData == null) return;
@@ -2321,6 +2353,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // below is destructive, and the save that records it must not depend on
     // this widget still being alive by the time it runs.
     final repo = ref.read(sessionRepositoryProvider);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final firstSave = _isUnsaved;
 
     final trimRange = _resolveTrimRange(_trimStartSec, _trimEndSec);
     // `_resolveTrimRange` also returns null when the recording length is
@@ -2372,6 +2406,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     // outlives the cut it describes would be applied a second time — to the
     // already-shortened recording — the next time the session is opened.
     await repo.save(widget.session);
+    // With auto-save off this is where a finished session first exists.
+    if (firstSave) await autoEnqueueSession(container.read, widget.session);
     if (!mounted) return true;
     ref.invalidate(sessionListProvider);
 
@@ -2531,17 +2567,36 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
 
   Future<void> _share(Rect shareOrigin) async {
     final l10n = AppLocalizations.of(context)!;
+    // Ask what to include first so backing out costs nothing; the save
+    // below is only worth doing once the user has committed to sharing.
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: sessionMayHaveAudio(widget.session),
+      uploadable: [widget.session.id],
+    );
+    if (config == null || !mounted) return;
     // Save pending changes before sharing so the export is up to date. This
     // also persists a not-yet-saved session — exporting implies keeping it.
     // Backing out of the trim confirmation cancels the share too: the export
     // would otherwise disagree with what is on screen.
     if (_hasUnsavedWork && !await _save()) return;
+    if (!mounted) return;
+    // Uploads read the session back from disk, so they are queued only now
+    // that it is saved. With a share sheet involved they are queued after
+    // it: the queue builds the same export file and would otherwise race
+    // the one handed to the sheet.
+    if (!config.shareLocally) {
+      final queued = await enqueueUploadsFor(ref, [widget.session], config);
+      if (mounted) showUploadQueuedSnackBar(context, queued);
+      return;
+    }
 
-    final exportFormats = ref.read(exportSelectionProvider);
-    final includeAudio = ref.read(includeAudioProvider);
-    final shareAudioAsWav = ref.read(shareAudioAsWavProvider);
-    final includeHtmlReport = ref.read(exportHtmlReportProvider);
-    final includeAppMetadata = ref.read(includeAppMetadataProvider);
+    final exportFormats = config.formats;
+    final includeAudio = config.includeAudio;
+    final shareAudioAsWav = config.shareAudioAsWav;
+    final includeHtmlReport = config.includeHtmlReport;
+    final includeAppMetadata = config.includeAppMetadata;
     final taxonomy = ref.read(taxonomyServiceProvider).value;
     final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
     // Legacy sessions persisted before SessionSettings.clipContextSeconds
@@ -2587,6 +2642,39 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
     }
     await SharePlus.instance.share(
       shareParamsForFile(exportPath, sharePositionOrigin: shareOrigin),
+    );
+    final queued = await enqueueUploadsFor(ref, [widget.session], config);
+    if (mounted) showUploadQueuedSnackBar(context, queued);
+  }
+
+  /// Shares one detection after the user picked what to include. The
+  /// session recording is cut to the detection's exact span when audio is
+  /// on; metadata goes through the regular export pipeline.
+  Future<void> _shareDetectionRecord(
+    DetectionRecord detection,
+    Rect shareOrigin,
+  ) async {
+    final config = await pickShareExportConfig(
+      context,
+      ref,
+      audioAvailable: detectionMayHaveAudio(detection, widget.session),
+    );
+    if (config == null || !mounted) return;
+    _reportShareFailure(
+      shareDetection(
+        detection,
+        session: widget.session,
+        formats: config.formats,
+        includeAudio: config.includeAudio,
+        shareAudioAsWav: config.shareAudioAsWav,
+        includeHtmlReport: config.includeHtmlReport,
+        includeAppMetadata: config.includeAppMetadata,
+        taxonomy: ref.read(taxonomyServiceProvider).value,
+        speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+        useAbsoluteSurveyTime:
+            ref.read(timestampDisplayModeProvider) == 'absolute',
+        sharePositionOrigin: shareOrigin,
+      ),
     );
   }
 
@@ -4102,6 +4190,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             },
           ),
           actions: [
+            UploadStatusAction(sessionId: widget.session.id),
             IconButton(
               icon: const Icon(AppIcons.helpOutline),
               tooltip: l10n.sessionHelpTitle,
@@ -4705,22 +4794,8 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
             onDeleteSpecies: () => _deleteSpeciesWithUndo(group.scientificName),
             onReplaceCluster: _replaceDetection,
             onToggleConfirmCluster: _toggleClusterConfirmation,
-            onShareCluster: (cluster, origin) => _reportShareFailure(
-              shareDetection(
-                cluster.records.first,
-                session: widget.session,
-                formats: ref.read(exportSelectionProvider),
-                includeAudio: ref.read(includeAudioProvider),
-                shareAudioAsWav: ref.read(shareAudioAsWavProvider),
-                includeHtmlReport: ref.read(exportHtmlReportProvider),
-                includeAppMetadata: ref.read(includeAppMetadataProvider),
-                taxonomy: taxonomy,
-                speciesLocale: speciesLocale,
-                useAbsoluteSurveyTime:
-                    ref.read(timestampDisplayModeProvider) == 'absolute',
-                sharePositionOrigin: origin,
-              ),
-            ),
+            onShareCluster: (cluster, origin) =>
+                unawaited(_shareDetectionRecord(cluster.records.first, origin)),
             onEditNoteCluster: _editClusterNote,
             onEditVoiceMemoCluster: _editClusterVoiceMemo,
             onDeleteVoiceMemoCluster: _deleteClusterVoiceMemo,

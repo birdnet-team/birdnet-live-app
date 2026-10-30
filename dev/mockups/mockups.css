@@ -366,6 +366,14 @@ select option {
   letter-spacing: 0;
 }
 
+/* Korean wraps at spaces only; the default CJK rule would split a word
+   between syllables. The preview sets <html lang> per rendered language. */
+:lang(ko) .title,
+:lang(ko) .subtitle {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .phone-stage {
   position: absolute;
   left: 158px;

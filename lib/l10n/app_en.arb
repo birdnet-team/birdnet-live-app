@@ -106,9 +106,9 @@
   },
   "quickListenBlockedTitle": "Finish the current Session first",
   "@quickListenBlockedTitle": {
-    "description": "Title shown after a Quick Listen widget tap is blocked by another recording mode"
+    "description": "Title shown after a Quick Listen trigger (Android widget, iOS shortcut) is blocked by another recording mode"
   },
-  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then tap the widget again.",
+  "quickListenBlockedMessage": "Quick Listen can’t start while a {mode} Session is running or starting. Stop that Session first, then try again.",
   "@quickListenBlockedMessage": {
     "description": "Explains that Quick Listen will not replace another active recording mode",
     "placeholders": {
@@ -448,6 +448,10 @@
   "aboutFundingDescription": "The development of BirdNET Live is supported by the Deutsche Bundesstiftung Umwelt through the project RangerSound (project 39263/01).",
   "@aboutFundingDescription": {
     "description": "Funding statement on the About screen. Keep 'Deutsche Bundesstiftung Umwelt' and the project number as-is in every locale."
+  },
+  "aboutFundingPartners": "RangerSound is a collaboration between Chemnitz University of Technology, Universität Würzburg, and the Bavarian Forest National Park.",
+  "@aboutFundingPartners": {
+    "description": "Second paragraph of the funding card on the About screen, naming the RangerSound project partners. Keep 'RangerSound' and 'Universität Würzburg' as-is in every locale."
   },
   "aboutWebsite": "BirdNET Website",
   "@aboutWebsite": {
@@ -2467,6 +2471,10 @@
   "@settingsHelpSpectrogramQuality": {
     "description": "Help text for spectrogram quality setting"
   },
+  "settingsHelpSpectrogramSize": "Sets how much of the screen the live spectrogram takes in Live Mode, Point Count, Survey, and ARU. 'Full' is the usual height; 'Medium' and 'Small' shrink it to 75% and 50% of that so the detection list gets more room. 'Off' removes the spectrogram entirely. In landscape, 'Medium' and 'Small' shorten the spectrogram in its half of the screen, and 'Off' hands the whole screen to the detection list. Spectrograms of saved sessions and clip playback are not affected.",
+  "@settingsHelpSpectrogramSize": {
+    "description": "Help text for the spectrogram size setting (Full/Medium/Small/Off)"
+  },
   "settingsHelpRecordingMode": "Whether and how audio is saved to disk. 'Full' keeps everything (large files); 'Detections only' saves short clips around each detection; 'Off' analyzes in real time without writing audio.",
   "@settingsHelpRecordingMode": {
     "description": "Help text for recording mode setting"
@@ -3751,6 +3759,26 @@
   "@settingsSpectrogramQualityHigh": {
     "description": "Spectrogram quality option: high"
   },
+  "settingsSpectrogramSize": "Spectrogram size",
+  "@settingsSpectrogramSize": {
+    "description": "Setting title for how much room the live spectrogram takes (Full/Medium/Small/Off)"
+  },
+  "settingsSpectrogramSizeFull": "Full",
+  "@settingsSpectrogramSizeFull": {
+    "description": "Spectrogram size option: usual height"
+  },
+  "settingsSpectrogramSizeMedium": "Medium",
+  "@settingsSpectrogramSizeMedium": {
+    "description": "Spectrogram size option: 75% of the usual height"
+  },
+  "settingsSpectrogramSizeSmall": "Small",
+  "@settingsSpectrogramSizeSmall": {
+    "description": "Spectrogram size option: 50% of the usual height"
+  },
+  "settingsSpectrogramSizeOff": "Off",
+  "@settingsSpectrogramSizeOff": {
+    "description": "Spectrogram size option: spectrogram hidden"
+  },
   "settingsIncludeAudioFiles": "Include audio files",
   "@settingsIncludeAudioFiles": {
     "description": "Setting to include audio files in export"
@@ -4415,6 +4443,26 @@
   "settingsExportFormat": "Format",
   "@settingsExportFormat": {
     "description": "Export format setting label"
+  },
+  "settingsExportFormatsTitle": "Formats",
+  "@settingsExportFormatsTitle": {
+    "description": "Export & Sync entry that opens the export formats screen; its subtitle lists the ticked formats"
+  },
+  "settingsExportFormatsNone": "None",
+  "@settingsExportFormatsNone": {
+    "description": "Subtitle of the Formats entry when no table format is ticked"
+  },
+  "settingsExportContentTitle": "Content",
+  "@settingsExportContentTitle": {
+    "description": "Export & Sync entry that opens the export content screen (audio, HTML report, app metadata)"
+  },
+  "settingsExportContentNone": "Tables only",
+  "@settingsExportContentNone": {
+    "description": "Subtitle of the Content entry when neither audio, HTML report, nor app metadata is on"
+  },
+  "settingsHelpExportContent": "What a share carries besides the tables: the saved audio (optionally converted to WAV), the HTML report, and the app metadata file. The Audio and Metadata boxes of the Share dialog start from these choices.",
+  "@settingsHelpExportContent": {
+    "description": "Help text of the Content entry"
   },
   "liveListening": "Listening…",
   "@liveListening": {
@@ -5158,5 +5206,492 @@
   "helpBackToTop": "Back to top",
   "@helpBackToTop": {
     "description": "Quick-reference Help screen: helpBackToTop"
+  },
+  "settingsInferenceRateDeviceLimit": "This device is known to be too slow for inference rates above {rate} Hz. The rate was lowered automatically.",
+  "@settingsInferenceRateDeviceLimit": {
+    "description": "Note under every inference-rate slider (Settings, Point Count, Survey, and ARU setup) once a live mode has had to lower the rate because the device fell behind; stays for good, since a slow device stays slow",
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionInterruptedBySystem": "The app was closed by the system before this session was stopped. Detections and audio up to the last checkpoint were recovered.",
+  "@sessionInterruptedBySystem": {
+    "description": "Session Review banner for a session recovered from its last checkpoint after the system ended the app"
+  },
+  "shareOptionsTitle": "Share",
+  "@shareOptionsTitle": {
+    "description": "Title of the dialog shown after tapping Share on a session or detection; lets the user pick what the share includes"
+  },
+  "shareOptionsConfirm": "Share",
+  "@shareOptionsConfirm": {
+    "description": "Confirm button of the share options dialog; opens the platform share sheet"
+  },
+  "shareOptionsAudio": "Audio",
+  "@shareOptionsAudio": {
+    "description": "Checkbox label in the share options dialog: include the saved audio"
+  },
+  "shareOptionsHelpAudio": "Adds the saved audio to this share: the full recording, or the detection clips when only clips were kept. A single detection is cut to its exact time span. Audio keeps its original format unless “Always share audio as WAV” is on in Settings. Turn this off to share tables and reports without audio.",
+  "@shareOptionsHelpAudio": {
+    "description": "Help text behind the ? next to the Audio checkbox in the share options dialog"
+  },
+  "shareOptionsAudioOriginal": "Original recording format",
+  "@shareOptionsAudioOriginal": {
+    "description": "Subtitle under the Audio checkbox when audio is shared in its recorded format"
+  },
+  "shareOptionsAudioAsWav": "Converted to WAV",
+  "@shareOptionsAudioAsWav": {
+    "description": "Subtitle under the Audio checkbox when the WAV conversion setting is on"
+  },
+  "shareOptionsAudioUnavailable": "No saved audio to share",
+  "@shareOptionsAudioUnavailable": {
+    "description": "Subtitle under the disabled Audio checkbox when the session or detection has no saved audio"
+  },
+  "shareOptionsMetadata": "Metadata",
+  "@shareOptionsMetadata": {
+    "description": "Checkbox label in the share options dialog: include tables, report, and app metadata"
+  },
+  "shareOptionsHelpMetadata": "Adds the detection tables, HTML report, and app metadata file enabled under Settings › Export & Sync. When none of them is enabled, a Raven Selection Table is included. Turn this off to share the audio file on its own, without a ZIP.",
+  "@shareOptionsHelpMetadata": {
+    "description": "Help text behind the ? next to the Metadata checkbox in the share options dialog"
+  },
+  "shareOptionsHtmlReport": "HTML report",
+  "@shareOptionsHtmlReport": {
+    "description": "Short item name listed under the Metadata checkbox when the HTML report setting is on"
+  },
+  "shareOptionsAppMetadata": "App metadata",
+  "@shareOptionsAppMetadata": {
+    "description": "Short item name listed under the Metadata checkbox when the app metadata setting is on"
+  },
+  "shareOptionsHelpDialog": "Choose what this share includes. The boxes start out matching Settings › Export & Sync. Changes here apply to this share only and leave those settings untouched.",
+  "@shareOptionsHelpDialog": {
+    "description": "Help text behind the ? next to the share options dialog title: explains that the boxes start from the Export & Sync settings and that changes apply to this share only"
+  },
+  "uploadDestinations": "Upload destinations",
+  "@uploadDestinations": {
+    "description": "Settings tile and screen title for the list of WebDAV upload destinations"
+  },
+  "settingsHelpUploadDestinations": "A project lead can hand you a join link or QR code for their WebDAV storage, such as a Nextcloud File Drop. Add it here, then tick the destination in the Share dialog to upload a session. Uploads go one way: nothing is downloaded, and deleting a session on this device never removes it from the server. Credentials are kept in the device keychain.",
+  "@settingsHelpUploadDestinations": {
+    "description": "Help text for the Upload destinations setting"
+  },
+  "uploadDestinationsSubtitleNone": "Send finalized sessions to a project's storage",
+  "@uploadDestinationsSubtitleNone": {
+    "description": "Settings tile subtitle when no destination is configured"
+  },
+  "uploadDestinationsSubtitleCount": "{count, plural, =1{1 destination} other{{count} destinations}}",
+  "@uploadDestinationsSubtitleCount": {
+    "description": "Settings tile subtitle with the number of configured destinations",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadDestinationsEmptyTitle": "No upload destinations yet",
+  "@uploadDestinationsEmptyTitle": {
+    "description": "Empty-state title on the Upload destinations screen"
+  },
+  "uploadDestinationsEmptyBody": "Paste the join link from a project lead, or scan their QR code with your camera. Sessions are only uploaded when you choose to share them.",
+  "@uploadDestinationsEmptyBody": {
+    "description": "Empty-state body on the Upload destinations screen"
+  },
+  "uploadAddDestination": "Add destination",
+  "@uploadAddDestination": {
+    "description": "Button that opens the join flow for a new destination"
+  },
+  "uploadDestinationWifiOnly": "Upload on Wi-Fi only",
+  "@uploadDestinationWifiOnly": {
+    "description": "Switch: upload only while on Wi-Fi"
+  },
+  "uploadDestinationAutoAru": "Upload ARU sessions automatically",
+  "@uploadDestinationAutoAru": {
+    "description": "Switch: queue every finalized ARU session automatically"
+  },
+  "uploadDestinationAutoAruSubtitle": "Every finalized ARU Session is queued for this destination without asking.",
+  "@uploadDestinationAutoAruSubtitle": {
+    "description": "Subtitle of the ARU auto-upload switch"
+  },
+  "uploadDestinationAutoAll": "Upload all sessions automatically",
+  "@uploadDestinationAutoAll": {
+    "description": "Switch: queue every finalized session of any mode automatically"
+  },
+  "uploadDestinationAutoAllSubtitle": "Every finalized Session from any mode is queued for this destination without asking.",
+  "@uploadDestinationAutoAllSubtitle": {
+    "description": "Subtitle of the all-sessions auto-upload switch"
+  },
+  "uploadDestinationRename": "Rename",
+  "@uploadDestinationRename": {
+    "description": "Action and dialog title for renaming a destination"
+  },
+  "uploadDestinationTest": "Test connection",
+  "@uploadDestinationTest": {
+    "description": "Action that re-runs the connection probe"
+  },
+  "uploadDestinationRemove": "Remove destination",
+  "@uploadDestinationRemove": {
+    "description": "Action and confirm button for removing a destination"
+  },
+  "uploadDestinationRemoveConfirm": "Remove \"{name}\"? Sessions already uploaded stay on the server. Pending uploads to it are dropped.",
+  "@uploadDestinationRemoveConfirm": {
+    "description": "Confirmation body before removing a destination",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationName": "Name",
+  "@uploadDestinationName": {
+    "description": "Label of the destination name field"
+  },
+  "uploadDestinationServer": "Server",
+  "@uploadDestinationServer": {
+    "description": "Label above the destination URL"
+  },
+  "uploadDestinationUser": "User name",
+  "@uploadDestinationUser": {
+    "description": "Label above the destination user name"
+  },
+  "uploadDestinationAdded": "Added {date}",
+  "@uploadDestinationAdded": {
+    "description": "When the destination was added",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationLastUpload": "Last upload {date}",
+  "@uploadDestinationLastUpload": {
+    "description": "When the last upload to this destination succeeded",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadDestinationNeverUploaded": "Nothing uploaded yet",
+  "@uploadDestinationNeverUploaded": {
+    "description": "Shown when nothing was uploaded to a destination yet"
+  },
+  "uploadDestinationFlatLayout": "This server does not allow folders, so uploads use flat file names.",
+  "@uploadDestinationFlatLayout": {
+    "description": "Note when the server refused to create folders during the probe"
+  },
+  "uploadDestinationSecretMissing": "The credential for this destination is missing from the device keychain. Remove the destination and add it again.",
+  "@uploadDestinationSecretMissing": {
+    "description": "Error when the keychain no longer holds the destination credential"
+  },
+  "uploadJoinTitle": "Add upload destination",
+  "@uploadJoinTitle": {
+    "description": "Title of the screen that adds a destination"
+  },
+  "uploadJoinLinkLabel": "Join link or server address",
+  "@uploadJoinLinkLabel": {
+    "description": "Label of the single input field for a join link, share link, or WebDAV URL"
+  },
+  "uploadJoinLinkHint": "https://cloud.example.org/s/…",
+  "@uploadJoinLinkHint": {
+    "description": "Placeholder of the join link field"
+  },
+  "uploadJoinLinkHelp": "Paste the join link or Nextcloud share link you received. A plain WebDAV address works too.",
+  "@uploadJoinLinkHelp": {
+    "description": "Explanation above the join link field"
+  },
+  "uploadJoinPaste": "Paste",
+  "@uploadJoinPaste": {
+    "description": "Tooltip of the paste-from-clipboard button"
+  },
+  "uploadJoinAdvanced": "Advanced",
+  "@uploadJoinAdvanced": {
+    "description": "Expander that reveals user name and password fields"
+  },
+  "uploadJoinUsername": "User name",
+  "@uploadJoinUsername": {
+    "description": "Label of the advanced user name field"
+  },
+  "uploadJoinPassword": "Password or token",
+  "@uploadJoinPassword": {
+    "description": "Label of the advanced password or token field"
+  },
+  "uploadJoinContinue": "Test connection",
+  "@uploadJoinContinue": {
+    "description": "Button that runs the connection probe"
+  },
+  "uploadJoinTesting": "Testing connection…",
+  "@uploadJoinTesting": {
+    "description": "Button label while the probe runs"
+  },
+  "uploadJoinInvalidInput": "This does not look like a link or server address.",
+  "@uploadJoinInvalidInput": {
+    "description": "Field error when the text cannot be parsed as a link or URL"
+  },
+  "uploadJoinSuccess": "Connection works",
+  "@uploadJoinSuccess": {
+    "description": "Headline when the probe passed"
+  },
+  "uploadJoinSave": "Save destination",
+  "@uploadJoinSave": {
+    "description": "Button that saves the probed destination"
+  },
+  "uploadJoinNameLabel": "Destination name",
+  "@uploadJoinNameLabel": {
+    "description": "Label of the name field shown after a successful probe"
+  },
+  "uploadParticipantLabel": "Participant, name, or email (optional)",
+  "@uploadParticipantLabel": {
+    "description": "Optional participant identifier (name, email, id) stored in upload metadata, never in paths"
+  },
+  "uploadParticipantHelp": "Saved with every upload so the project lead knows who sent it. It never appears in folder names.",
+  "@uploadParticipantHelp": {
+    "description": "Helper text under the participant field"
+  },
+  "uploadDeviceCodeTitle": "Your upload ID",
+  "@uploadDeviceCodeTitle": {
+    "description": "Title of the tile showing the device code that names this device's folder at every destination"
+  },
+  "uploadDeviceCodeLine": "Your upload ID: {code}",
+  "@uploadDeviceCodeLine": {
+    "description": "Line on the join screen naming the folder uploads land in",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "shareOptionsTickToUploadAgain": "Tick to upload again",
+  "@shareOptionsTickToUploadAgain": {
+    "description": "Second subtitle line of a destination the session was already uploaded to; it starts unticked"
+  },
+  "shareOptionsDestinationUnreachable": "Upload would fail: {reason}",
+  "@shareOptionsDestinationUnreachable": {
+    "description": "Shown on a destination row when a quick check says the server would refuse the upload",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusFailedCheckDestination": "Upload failed. Check the destination settings.",
+  "@uploadStatusFailedCheckDestination": {
+    "description": "Upload state when the server refused with an error a retry cannot fix"
+  },
+  "uploadJoinSaveFailed": "The destination could not be saved. {error}",
+  "@uploadJoinSaveFailed": {
+    "description": "Error when the destination list could not be written",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadJoinSecretFailed": "The credential could not be stored in the device keychain.",
+  "@uploadJoinSecretFailed": {
+    "description": "Error when the credential could not be written to the keychain"
+  },
+  "uploadProbeInvalidUrl": "The address is not a valid URL.",
+  "@uploadProbeInvalidUrl": {
+    "description": "Probe failure: not a valid URL"
+  },
+  "uploadProbeInsecureHttp": "This address uses plain HTTP. Outside your local network only https:// addresses are accepted.",
+  "@uploadProbeInsecureHttp": {
+    "description": "Probe failure: plain HTTP to a public address"
+  },
+  "uploadProbeHostNotFound": "The server name could not be found. Check the address for typos.",
+  "@uploadProbeHostNotFound": {
+    "description": "Probe failure: DNS lookup failed"
+  },
+  "uploadProbeTlsFailure": "The server's certificate could not be verified. Self-signed certificates are not supported.",
+  "@uploadProbeTlsFailure": {
+    "description": "Probe failure: certificate could not be verified"
+  },
+  "uploadProbeConnectionFailed": "The server did not accept the connection. Check your network or try again later.",
+  "@uploadProbeConnectionFailed": {
+    "description": "Probe failure: connection refused or dropped"
+  },
+  "uploadProbeTimeout": "The server did not answer in time.",
+  "@uploadProbeTimeout": {
+    "description": "Probe failure: no answer within the timeout"
+  },
+  "uploadProbeUnauthorized": "The server rejected the credentials. For a Nextcloud share use the share password; for an account use an app password, not your login password.",
+  "@uploadProbeUnauthorized": {
+    "description": "Probe failure: HTTP 401"
+  },
+  "uploadProbeNotWebDav": "This address is not a WebDAV endpoint. It may be the web page of the share rather than the share itself.",
+  "@uploadProbeNotWebDav": {
+    "description": "Probe failure: PUT not allowed, probably a web page URL"
+  },
+  "uploadProbeUploadForbidden": "Uploads are not allowed here. Ask the project lead to allow uploads on this share.",
+  "@uploadProbeUploadForbidden": {
+    "description": "Probe failure: HTTP 403 on upload"
+  },
+  "uploadProbeNotFound": "The folder does not exist on the server.",
+  "@uploadProbeNotFound": {
+    "description": "Probe failure: HTTP 404 for the folder"
+  },
+  "uploadProbeQuotaExceeded": "The storage is full.",
+  "@uploadProbeQuotaExceeded": {
+    "description": "Probe failure: HTTP 507"
+  },
+  "uploadProbeServerError": "The server reported an error ({code}).",
+  "@uploadProbeServerError": {
+    "description": "Probe failure: HTTP 5xx with the status code",
+    "placeholders": {
+      "code": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadWarnCanReadRemote": "This credential can list the destination, so it may be able to read other contributors' data. Prefer a File Drop share or a write-only token.",
+  "@uploadWarnCanReadRemote": {
+    "description": "Probe warning: the credential could list the collection"
+  },
+  "uploadWarnShareWithoutPassword": "This share has no password and can be listed, so anyone with the link can read other contributors' data. Ask the project lead to set a password or use a File Drop.",
+  "@uploadWarnShareWithoutPassword": {
+    "description": "Probe warning: a Nextcloud share accepted uploads with no password"
+  },
+  "uploadWarnInsecureLan": "Plain HTTP to a local address. Data is not encrypted on the way.",
+  "@uploadWarnInsecureLan": {
+    "description": "Probe warning: plain HTTP to a LAN address"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Generic Save button label"
+  },
+  "uploadStatusTitle": "Uploads",
+  "@uploadStatusTitle": {
+    "description": "Title of the per-session upload status sheet"
+  },
+  "uploadStatusQueued": "Queued",
+  "@uploadStatusQueued": {
+    "description": "Job state: waiting in the queue"
+  },
+  "uploadStatusUploading": "Uploading…",
+  "@uploadStatusUploading": {
+    "description": "Job state: upload in progress"
+  },
+  "uploadStatusUploaded": "Uploaded {date}",
+  "@uploadStatusUploaded": {
+    "description": "Job state: finished, with the date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadStatusFailed": "Failed, will retry",
+  "@uploadStatusFailed": {
+    "description": "Job state: failed, will retry automatically"
+  },
+  "uploadStatusGaveUp": "Failed",
+  "@uploadStatusGaveUp": {
+    "description": "Job state: failed and no longer retried"
+  },
+  "uploadStatusWaitingForWifi": "Waiting for Wi-Fi",
+  "@uploadStatusWaitingForWifi": {
+    "description": "Job state: destination is Wi-Fi only and the device is on cellular"
+  },
+  "uploadStatusOffline": "Waiting for a network",
+  "@uploadStatusOffline": {
+    "description": "Job state: no network at the moment"
+  },
+  "uploadRetryNow": "Retry now",
+  "@uploadRetryNow": {
+    "description": "Menu action: retry a failed upload immediately"
+  },
+  "uploadCancel": "Remove from queue",
+  "@uploadCancel": {
+    "description": "Menu action: remove a pending upload from the queue"
+  },
+  "uploadDestinationUnknown": "Removed destination",
+  "@uploadDestinationUnknown": {
+    "description": "Shown in place of a destination name when it was removed"
+  },
+  "uploadErrorServer": "The server reported an error.",
+  "@uploadErrorServer": {
+    "description": "Upload error: the server answered with a 5xx status"
+  },
+  "uploadErrorNetwork": "The connection was lost during the upload.",
+  "@uploadErrorNetwork": {
+    "description": "Upload error: connection or transfer failed"
+  },
+  "uploadErrorExport": "The session export could not be built.",
+  "@uploadErrorExport": {
+    "description": "Upload error: the session export could not be built"
+  },
+  "uploadErrorDestinationMissing": "The destination was removed.",
+  "@uploadErrorDestinationMissing": {
+    "description": "Upload error: the destination was removed before the upload ran"
+  },
+  "uploadErrorSessionMissing": "The session no longer exists on this device.",
+  "@uploadErrorSessionMissing": {
+    "description": "Upload error: the session was deleted before the upload ran"
+  },
+  "shareOptionsSendTo": "Send to",
+  "@shareOptionsSendTo": {
+    "description": "Group header in the Share dialog listing the share sheet and upload destinations"
+  },
+  "shareOptionsHelpSendTo": "Share sheet hands the export to other apps, files, or messages, as before. Each upload destination you tick receives the same content in the background: a JSON record, the bundle chosen above, and a completion marker. Uploads retry on their own and wait for Wi-Fi when the destination asks for it. The destinations ticked here are remembered for the next share. Add destinations under Settings › Export & Sync › Upload destinations.",
+  "@shareOptionsHelpSendTo": {
+    "description": "Help text for the Send to group in the Share dialog"
+  },
+  "shareOptionsShareSheet": "Share sheet",
+  "@shareOptionsShareSheet": {
+    "description": "Checkbox in the Share dialog: hand the export to the platform share sheet"
+  },
+  "shareOptionsShareSheetSubtitle": "Other apps, files, or messages",
+  "@shareOptionsShareSheetSubtitle": {
+    "description": "Subtitle of the share sheet checkbox"
+  },
+  "shareOptionsUpload": "Upload",
+  "@shareOptionsUpload": {
+    "description": "Primary button when only upload destinations are ticked"
+  },
+  "shareOptionsShareAndUpload": "Share and upload",
+  "@shareOptionsShareAndUpload": {
+    "description": "Primary button when the share sheet and at least one destination are ticked"
+  },
+  "uploadQueuedSnack": "{count, plural, =1{1 session queued for upload} other{{count} sessions queued for upload}}",
+  "@uploadQueuedSnack": {
+    "description": "Snackbar after the Share dialog queued sessions for upload",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareOptionsTabContent": "Content",
+  "@shareOptionsTabContent": {
+    "description": "First tab of the Share dialog: what the share contains (Audio, Metadata)"
+  },
+  "uploadDestinationShareQr": "Show join code",
+  "@uploadDestinationShareQr": {
+    "description": "Tile on the destination screen that shows the join link as a QR code"
+  },
+  "uploadDestinationShareQrSubtitle": "Let another phone join this destination",
+  "@uploadDestinationShareQrSubtitle": {
+    "description": "Subtitle of the join-code tile"
+  },
+  "uploadJoinQrTitle": "Join on another device",
+  "@uploadJoinQrTitle": {
+    "description": "Title of the dialog showing the join QR code"
+  },
+  "uploadJoinQrBody": "Scan this code with the other phone's camera, or copy the link and send it. Anyone with the code can upload to this destination, so share it only with people you trust.",
+  "@uploadJoinQrBody": {
+    "description": "Explanation under the QR code, including the warning that it carries the credential"
+  },
+  "uploadJoinQrCopy": "Copy link",
+  "@uploadJoinQrCopy": {
+    "description": "Button that copies the join link to the clipboard"
+  },
+  "uploadJoinQrCopied": "Join link copied",
+  "@uploadJoinQrCopied": {
+    "description": "Snackbar after the join link was copied"
+  },
+  "uploadChipUploaded": "Uploaded",
+  "@uploadChipUploaded": {
+    "description": "Session-tile chip label once every upload of the session finished"
   }
 }

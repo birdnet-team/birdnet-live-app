@@ -120,6 +120,21 @@ esplicita per la massima autonomia. L'analisi file non ha una frequenza di
 inferenza: usa invece un'impostazione di
 [sovrapposizione](file-analysis.md).
 
+Se un dispositivo non riesce a stare al passo con la frequenza scelta —
+l'inferenza resta indietro di un intero passo rispetto all'acquisizione per
+diverse finestre consecutive —, la Session riduce la frequenza di 0,30 Hz, e
+di nuovo finché il dispositivo continua a restare indietro, fino a un minimo
+di 0,10 Hz. La frequenza ridotta diventa quindi l'impostazione di tutte le
+modalità: Live, Point Count, Survey e ARU, e dunque delle loro procedure di
+configurazione, così la Session successiva in qualsiasi modalità parte con
+una frequenza che questo dispositivo può sostenere. Le impostazioni e le
+procedure mostrano sotto il cursore una nota che segnala che il dispositivo
+è risultato troppo lento oltre quella frequenza. La nota resta, perché un
+dispositivo lento resta lento; i cursori restano liberamente regolabili.
+Senza questo, un dispositivo lento accumula un ritardo che finisce per
+sovrascrivere l'audio da cui vengono ritagliati i clip delle rilevazioni, e
+le rilevazioni restano senza audio.
+
 ### Ignora specie
 
 Apre un pannello con filtri binari di inferenza. Seleziona **Uccelli**, **Mammiferi**, **Anfibi** o **Insetti** per sopprimere l’intera classe tassonomica. Le quattro caselle sono disattivate per impostazione predefinita.
@@ -141,6 +156,10 @@ punteggio supportato più alto e termina alla fine dell'ultima finestra di
 supporto.
 
 ## Spettrogramma
+
+### Dimensione
+
+Imposta quanto spazio dello schermo occupa lo spettrogramma in tempo reale in Live Mode, Point Count, Survey e ARU. **Intera** è l'altezza abituale. **Media** e **Piccola** la riducono al 75% e al 50% e cedono la differenza all'elenco dei rilevamenti: la scelta giusta quando sul telefono in verticale guardi soprattutto l'elenco. **Disattivato** rimuove del tutto lo spettrogramma; in Survey e ARU scompare anche la scheda dello spettrogramma. In orizzontale **Media** e **Piccola** accorciano lo spettrogramma nella sua metà dello schermo (lo spazio sotto resta vuoto per ora), e **Disattivato** lascia tutto lo schermo all'elenco dei rilevamenti. Gli spettrogrammi delle sessioni salvate e della riproduzione non sono interessati.
 
 ### Dimensione FFT
 
@@ -222,7 +241,7 @@ Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi fil
 
 Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
 
-Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. Il [widget Quick Listen](live-mode.md) inizia ad ascoltare quando lo tocchi, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
+Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. [Quick Listen](live-mode.md) — il widget Android oppure, su iOS, il comando rapido, la frase per Siri e l'azione dell'icona — inizia ad ascoltare quando viene avviato, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
 
 ### Continua a schermo spento
 
@@ -306,6 +325,8 @@ Poiché i livelli si basano sulla posizione in classifica, il comportamento è l
 
 ## Esportazione e sincronizzazione
 
+La sezione mostra tre voci, ognuna con il riepilogo delle proprie scelte: **Formati**, **Contenuto** e **Destinazioni di caricamento**. Le prime due aprono una pagina con le caselle descritte sotto.
+
 ### Formati
 
 Spunta qualsiasi combinazione di formati di esportazione: ogni salvataggio o condivisione raccoglierà tutti i formati selezionati insieme in un unico ZIP. Scegliendo un solo formato senza spezzoni audio e senza report HTML otterrai un file grezzo (ad esempio `session.csv`) invece di uno ZIP, per compatibilità con le versioni precedenti:
@@ -336,6 +357,11 @@ Una volta attivo, ogni ZIP di esportazione contiene anche un file `<session>_rep
 ### Condivisione del solo audio
 
 Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions con più spezzoni di rilevazione producono comunque uno ZIP; condividendo una sola rilevazione viene consegnato quell'unico clip grezzo.
+
+### Destinazioni di caricamento
+
+Elenca gli spazi WebDAV in cui una Session conclusa può essere caricata, ad esempio il File Drop Nextcloud di chi guida il progetto o il server di riferimento in `tools/webdav_drop_server`. Aggiungine uno incollando il link di accesso o il link di condivisione ricevuto, oppure scansionando il codice QR del progetto con la fotocamera; un semplice indirizzo WebDAV con nome utente e password funziona tramite i campi avanzati. Nulla viene salvato finché una prova di connessione non è riuscita. La schermata della destinazione offre anche **Mostra codice di accesso**, che presenta lo stesso link come codice QR (più Copia link) così un secondo telefono si unisce senza digitare. La prova crea il file di registrazione del dispositivo sul server, in una cartella nascosta `.birdnet-live`, e avvisa quando la credenziale può anche elencare la cartella (una condivisione di sola scrittura è più sicura per tutti) e, in più, quando tale condivisione elencabile non ha password. Ogni destinazione ha un proprio nome, un interruttore «Carica solo con Wi-Fi» e un interruttore «Carica automaticamente le Sessions ARU»; quest'ultimo mette in coda ogni ARU Session conclusa per quella destinazione senza chiedere. Per caricare, tocca Condividi su una Session o su una selezione della libreria delle Sessions e spunta la destinazione nella scheda **Invia a** della finestra (un badge sulla scheda conta le spunte e l'elenco scorre, così la finestra mantiene la stessa altezza con qualsiasi numero di destinazioni); lì puoi togliere la spunta alla finestra di condivisione per caricare soltanto, e le destinazioni spuntate l'ultima volta sono già selezionate la volta successiva. I caricamenti in coda procedono mentre l'app è aperta (e, su Android, anche in background non appena è disponibile una rete adatta), si ripetono con attese crescenti, aspettano il Wi-Fi se richiesto e mostrano il loro stato come prima riga sotto il titolo della Session nella libreria e come icona nuvola nella revisione della Session (tocca l'una o l'altra per i dettagli per destinazione, Riprova e Rimuovi); la riga scompare quando nessuna delle sue destinazioni esiste più nelle impostazioni. Ogni caricamento è un singolo file ZIP, con il nome dell'esportazione di Condividi e contenente il record JSON della Session più tutto ciò che Condividi includerebbe, in una cartella con il codice di otto caratteri di questo dispositivo (mostrato come **Il tuo ID di caricamento** quando ti unisci e in alto nell'elenco delle destinazioni). Lì puoi inserire un identificativo facoltativo del partecipante, come nome, e-mail o ID partecipante; viaggia nei metadati del caricamento e nella registrazione del dispositivo, mai in un percorso. Caricare di nuovo una Session sostituisce quel file; un File Drop di Nextcloud non sovrascrive mai e conserva la copia precedente con un nome numerato. I caricamenti vanno in una sola direzione: non viene scaricato nulla e cancellare una Session sul dispositivo non la rimuove mai dal server. Le credenziali sono conservate nel portachiavi del dispositivo, mai nei dati esportati. L'intero flusso di lavoro, dalla creazione della condivisione al monitoraggio di un caricamento, è descritto in [Caricamenti](uploads.md). Motivazione: i progetti sul campo raccolgono dati da molti telefoni e un solo link incollato con una prova verificata elimina quasi ogni errore di configurazione. Vedi issue #284.
+
 
 ## Privacy
 

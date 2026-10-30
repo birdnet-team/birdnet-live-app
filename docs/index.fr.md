@@ -5,7 +5,7 @@
 BirdNET Live est une application Flutter conçue pour les chercheurs de terrain, les naturalistes et les ornithologues amateurs qui ont besoin de preuves acoustiques fiables sur le terrain. Elle exécute le classifieur audio BirdNET+ et le géo-modèle directement sur votre appareil : l'identification des espèces fonctionne donc entièrement hors ligne une fois l'application installée.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v1.2.0-orange.svg" alt="Latest release: v1.2.0">
+  <img src="https://img.shields.io/badge/latest-v1.2.1-orange.svg" alt="Latest release: v1.2.1">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
@@ -56,11 +56,15 @@ BirdNET Live est disponible sur [Google Play](https://play.google.com/store/apps
 
 Sous Android, vous pouvez aussi l'installer manuellement sous forme d'APK signé : téléchargez la dernière version depuis la [page des Releases GitHub](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transférez le fichier `.apk` sur votre téléphone et ouvrez-le pour l'installer. Vous devrez peut-être d'abord autoriser l'installation depuis des sources inconnues dans les paramètres de votre appareil.
 
-> **Note :** L'APK pèse environ 260 Mo car il inclut les ressources du modèle BirdNET+ et toutes les images d'espèces pour une utilisation hors ligne.
+> **Note :** L'APK pèse environ 320 Mo car il inclut les ressources du modèle BirdNET+ et toutes les images d'espèces pour une utilisation hors ligne.
 
 ## Pour les développeurs
 
 Consultez le [Guide du développeur](developer/index.md) pour l'architecture, la compilation et la contribution.
+
+## Financement
+
+BirdNET Live est développé dans le cadre du projet RangerSound, financé par la Deutsche Bundesstiftung Umwelt (projet 39263/01). RangerSound est une collaboration entre l'Université de technologie de Chemnitz, l'Universität Würzburg et le parc national de la Forêt bavaroise.
 
 ## Licence
 

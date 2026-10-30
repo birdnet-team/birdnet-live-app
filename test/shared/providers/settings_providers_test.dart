@@ -5,10 +5,68 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:birdnet_live/core/constants/app_constants.dart';
+import 'package:birdnet_live/features/spectrogram/spectrogram_size.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
 void main() {
+  group('inference rate limit', () {
+    late ProviderContainer container;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+    });
+
+    tearDown(() => container.dispose());
+
+    test('lowers every mode to the rate and remembers it', () async {
+      await applyInferenceRateLimit(0.7, read: container.read);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+      expect(container.read(inferenceRateProvider), 0.7);
+      expect(container.read(surveyInferenceRateProvider), 0.7);
+      // Already below the limit; never raised.
+      expect(container.read(aruInferenceRateProvider), 0.3);
+
+      // A further step tightens everything again.
+      await applyInferenceRateLimit(0.4, read: container.read);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.4);
+      expect(container.read(inferenceRateProvider), 0.4);
+      expect(container.read(surveyInferenceRateProvider), 0.4);
+      expect(container.read(aruInferenceRateProvider), 0.3);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getDouble(PrefKeys.inferenceRateDeviceLimit), 0.4);
+      expect(prefs.getDouble(PrefKeys.inferenceRate), 0.4);
+      expect(prefs.getDouble(PrefKeys.surveyInferenceRate), 0.4);
+    });
+
+    test('never raises a rate or loosens the limit', () async {
+      await container.read(inferenceRateProvider.notifier).set(0.4);
+      await applyInferenceRateLimit(0.7, read: container.read);
+      expect(container.read(inferenceRateProvider), 0.4);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+
+      await applyInferenceRateLimit(0.9, read: container.read);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+    });
+
+    test('the user setting a rate keeps the note', () async {
+      // A device that fell behind once is still a slow device.
+      await applyInferenceRateLimit(0.7, read: container.read);
+
+      await container.read(inferenceRateProvider.notifier).set(1.0);
+
+      expect(container.read(inferenceRateProvider), 1.0);
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+    });
+  });
+
   group('Settings providers default values', () {
     late ProviderContainer container;
 
@@ -152,6 +210,34 @@ void main() {
     test('logAmplitude defaults to true', () {
       expect(container.read(logAmplitudeProvider), true);
     });
+
+    test('spectrogramSize defaults to full', () {
+      expect(container.read(spectrogramSizeProvider), SpectrogramSize.full);
+    });
+
+    test(
+      'spectrogramSize persists and ignores unknown stored values',
+      () async {
+        await container
+            .read(spectrogramSizeProvider.notifier)
+            .set(SpectrogramSize.small);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(PrefKeys.spectrogramSize), 'small');
+
+        SharedPreferences.setMockInitialValues({
+          PrefKeys.spectrogramSize: 'huge',
+        });
+        final stale = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(
+              await SharedPreferences.getInstance(),
+            ),
+          ],
+        );
+        addTearDown(stale.dispose);
+        expect(stale.read(spectrogramSizeProvider), SpectrogramSize.full);
+      },
+    );
 
     test('useGps defaults to true', () {
       expect(container.read(useGpsProvider), true);

@@ -30,10 +30,11 @@ dart dev/build_release.dart --since <last-store-version>
 
 ## iOS
 
-Requires macOS with Xcode 15+:
+Requires macOS with Xcode 15+. All iOS plugins are resolved through Swift
+Package Manager, so there is no CocoaPods step; the minimum deployment target
+is iOS 16.6, set on the Runner target and in `ios/Flutter/AppFrameworkInfo.plist`.
 
 ```bash
-cd ios && pod install && cd ..
 flutter build ios --release
 ```
 
@@ -52,7 +53,7 @@ flutter build windows --release
 ## Notes
 
 - The two ONNX models are tracked with Git LFS. Run `git lfs pull` before building from a fresh clone.
-- APK builds keep the models in `flutter_assets`; AAB builds ship them via the install-time `models_pack` asset pack.
+- APK builds keep the models in `flutter_assets`; AAB builds ship them via the install-time `models_pack` asset pack. At runtime `AssetPackService` reads both locations through the Android `AssetManager`, so neither flow loads the model into Dart memory.
 - ONNX Runtime native libraries are platform-specific and handled by the `flutter_onnxruntime` package.
 
 ## Forking and Re-releasing

@@ -60,21 +60,20 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
     final l10n = AppLocalizations.of(context)!;
     final agreed = await showDialog<bool>(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(l10n.mapTileConsentTitle),
-            content: Text(l10n.mapTileConsentBody),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.mapTileConsentCancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(l10n.mapTileConsentAllow),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: Text(l10n.mapTileConsentTitle),
+        content: Text(l10n.mapTileConsentBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.mapTileConsentCancel),
           ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.mapTileConsentAllow),
+          ),
+        ],
+      ),
     );
     if (agreed == true) {
       await ref.read(privacyAllowMapProvider.notifier).set(true);
@@ -99,10 +98,9 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
             ),
         ],
       ),
-      body:
-          _hasConsent == true
-              ? _buildMap(center, theme)
-              : _buildConsentPlaceholder(theme, l10n),
+      body: _hasConsent == true
+          ? _buildMap(center, theme)
+          : _buildConsentPlaceholder(theme, l10n),
     );
   }
 
@@ -111,6 +109,7 @@ class _MapPickerScreenState extends ConsumerState<MapPickerScreen> {
       options: MapOptions(
         initialCenter: center,
         initialZoom: _picked != null ? 10 : 3,
+        minZoom: kOsmMinZoom,
         onTap: (_, point) => setState(() => _picked = point),
       ),
       children: [

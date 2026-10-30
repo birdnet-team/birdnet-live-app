@@ -19,6 +19,7 @@ import '../../shared/models/weather_snapshot.dart';
 
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/altitude_reference.dart';
+import '../../shared/utils/uuid.dart';
 import '../aru/aru_schedule.dart';
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
@@ -307,6 +308,15 @@ class SessionSettings {
       'autoStopBatteryPercent': autoStopBatteryPercent,
     if (backgroundGps != null) 'backgroundGps': backgroundGps,
   };
+
+  /// This snapshot with [inferenceRate] replaced.
+  ///
+  /// The live modes lower the rate mid-session when the device cannot keep
+  /// up, and the session should show the rate that actually ran. The copy
+  /// goes through JSON so every field — including ones added later — carries
+  /// over without a hand-maintained copy constructor.
+  SessionSettings withInferenceRate(double inferenceRate) =>
+      SessionSettings.fromJson({...toJson(), 'inferenceRate': inferenceRate});
 }
 
 /// The type of session (maps to one of the four app modes).
@@ -349,6 +359,10 @@ enum SessionStopReason {
 
   /// Battery dropped below the configured auto-stop threshold.
   lowBattery,
+
+  /// The system ended the app before the session was stopped. What the
+  /// session holds was recovered from its last checkpoint.
+  interrupted,
 }
 
 /// How a detection was created.
@@ -1051,6 +1065,7 @@ class AruDeploymentMetadata {
 class LiveSession {
   LiveSession({
     required this.id,
+    String? uuid,
     required this.startTime,
     this.type = SessionType.live,
     this.sessionNumber,
@@ -1079,7 +1094,8 @@ class LiveSession {
     this.aruMetadata,
     int? recordedDurationSeconds,
     List<SessionSegment>? segments,
-  }) : detections = detections ?? [],
+  }) : uuid = uuid ?? generateUuidV4(),
+       detections = detections ?? [],
        annotations = annotations ?? [],
        gpsTrack = gpsTrack ?? [],
        segments = segments ?? [],
@@ -1087,6 +1103,17 @@ class LiveSession {
 
   /// Unique session identifier (ISO 8601 timestamp-based).
   final String id;
+
+  /// Globally unique identity, independent of [id], the file name, and
+  /// [displayName].
+  ///
+  /// Assigned once at creation and persisted with the session, so it survives
+  /// renames, trims, exports, and re-imports on another device. Two devices
+  /// can produce the same timestamp [id]; they cannot produce the same UUID.
+  /// Sessions saved by builds without this field receive one the first time
+  /// `SessionRepository.load` reads them and are saved back; until then a
+  /// legacy session parsed elsewhere carries a fresh, unsaved value.
+  final String uuid;
 
   /// The type of session (live, file upload, point count, survey).
   SessionType type;
@@ -1115,8 +1142,11 @@ class LiveSession {
   /// Path to the full recording file (if recording was enabled).
   String? recordingPath;
 
-  /// Inference settings that were active during this session.
-  final SessionSettings settings;
+  /// Inference settings the session ran with.
+  ///
+  /// Replaced, not mutated, when a live mode lowers the inference rate
+  /// mid-session; see [SessionSettings.withInferenceRate].
+  SessionSettings settings;
 
   /// User annotations (environmental notes, observations, etc.).
   final List<SessionAnnotation> annotations;
@@ -1351,6 +1381,7 @@ class LiveSession {
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
+      uuid: json['uuid'] as String?,
       type: SessionType.values.firstWhere(
         (t) => t.name == (json['type'] as String?),
         orElse: () => SessionType.live,
@@ -1421,6 +1452,7 @@ class LiveSession {
   /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
+    'uuid': uuid,
     if (type != SessionType.live) 'type': type.name,
     if (sessionNumber != null) 'sessionNumber': sessionNumber,
     'startTime': startTime.toUtc().toIso8601String(),

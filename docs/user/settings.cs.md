@@ -118,6 +118,18 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci odvozování nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
+Pokud zařízení zvolenou frekvenci nestíhá — odvozování za zachytáváním
+zaostává o celý krok u několika oken po sobě —, Session frekvenci sníží o
+0,30 Hz, a dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz.
+Snížená frekvence se pak stane nastavením všech režimů: Live, Point Count,
+Survey i ARU včetně jejich průvodců nastavením, takže další Session kdekoli
+začne frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
+posuvníkem zobrazují poznámku, že zařízení je nad touto frekvencí prokazatelně
+příliš pomalé. Poznámka zůstává, protože pomalé zařízení zůstává pomalé;
+posuvníky lze dál libovolně nastavit. Bez toho se na pomalém zařízení hromadí
+zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují ukázky detekcí, a
+detekce zůstanou bez zvuku.
+
 ### Ignorovat druhy
 
 Otevře panel s binárními filtry inference. Zaškrtnutím **Ptáci**, **Savci**, **Obojživelníci** nebo **Hmyz** potlačíte celou taxonomickou třídu. Ve výchozím nastavení jsou všechna čtyři políčka vypnutá.
@@ -137,6 +149,10 @@ sdružování na detekce stejně: detekce začíná v nejstarším podpůrném o
 nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
+
+### Velikost
+
+Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
 
 ### Velikost FFT
 
@@ -218,7 +234,7 @@ Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza soubo
 
 Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
 
-Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Widget Quick Listen](live-mode.md) při klepnutí začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
+Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
 
 ### Pokračovat při vypnuté obrazovce
 
@@ -300,6 +316,8 @@ Protože stupně vycházejí z pořadí, funguje to v druhově bohatém tropick�
 
 ## Export a synchronizace
 
+Sekce zobrazuje tři položky, z nichž každá shrnuje svou volbu: **Formáty**, **Obsah** a **Cíle nahrávání**. První dvě otevírají stránku s políčky popsanými níže.
+
 ### Formáty
 
 Zaškrtněte libovolnou kombinaci exportních formátů – při každém uložení či sdílení se všechny zvolené formáty sbalí společně do jednoho ZIP. Zvolíte-li jediný formát bez zvukových úseků a bez HTML zprávy, dostanete kvůli zpětné kompatibilitě samostatný soubor (například `session.csv`) místo ZIP:
@@ -330,6 +348,11 @@ Po zapnutí obsahuje každý exportní ZIP navíc soubor `<session>_report.html`
 ### Sdílení pouze zvuku
 
 Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z více úseků detekcí stále vytvoří ZIP; při sdílení jedné detekce se předá její jediný surový klip.
+
+### Cíle nahrávání
+
+Seznam úložišť WebDAV, do kterých lze nahrát dokončenou Session, například Nextcloud File Drop vedoucího projektu nebo referenční drop server v `tools/webdav_drop_server`. Cíl přidáte vložením obdrženého odkazu pro připojení nebo odkazu na sdílení, případně naskenováním QR kódu projektu fotoaparátem; běžná adresa WebDAV s uživatelským jménem a heslem funguje přes rozšířená pole. Nic se neuloží, dokud neprojde test připojení. Obrazovka cíle má také **Zobrazit kód pro připojení**, který ukáže stejný odkaz jako QR kód (plus Kopírovat odkaz), aby se druhý telefon připojil bez psaní. Test vytvoří na serveru registrační soubor zařízení ve skryté složce `.birdnet-live` a upozorní, pokud přihlašovací údaje umožňují i výpis složky (sdílení jen pro zápis je bezpečnější pro všechny), a navíc pokud takové vypsatelné sdílení nemá heslo. Každý cíl má vlastní název, přepínač „Nahrávat pouze přes Wi-Fi“ a přepínač „Nahrávat ARU Sessions automaticky“; ten druhý zařadí každou dokončenou ARU Session do fronty pro daný cíl bez dotazu. Pro nahrání klepněte u Session nebo u výběru v knihovně Sessions na Sdílet a zaškrtněte cíl na kartě **Odeslat do** v dialogu (odznak na kartě počítá zaškrtnutí a seznam se posouvá, takže dialog má stále stejnou výšku bez ohledu na počet cílů); dialog sdílení lze tam odškrtnout, pokud chcete pouze nahrát, a naposledy zaškrtnuté cíle jsou příště předvyplněné. Nahrávání ve frontě běží, dokud je aplikace otevřená (v Androidu také na pozadí, jakmile je k dispozici vhodná síť), opakuje se s rostoucími prodlevami, podle potřeby čeká na Wi-Fi a svůj stav zobrazuje jako první řádek pod názvem Session v knihovně Sessions a jako ikonu mraku v kontrole Session (klepnutím zobrazíte podrobnosti podle cíle, Zkusit znovu a Odebrat); řádek zmizí, jakmile žádný z jeho cílů už v nastavení neexistuje. Každé nahrání je jeden soubor ZIP, pojmenovaný jako export Sdílení a obsahující záznam JSON Session i vše, co by Sdílení přiložilo, ve složce pojmenované osmimístným kódem tohoto zařízení (zobrazuje se při připojení a nahoře v seznamu cílů jako **Vaše ID pro nahrávání**). Tam lze nepovinně zadat identifikátor účastníka, například jméno, e-mail nebo ID účastníka; ten se ukládá do metadat nahrání a registrace zařízení, nikdy do cesty. Opětovné nahrání Session tento soubor nahradí; Nextcloud File Drop nikdy nepřepisuje a starší kopii místo toho ponechá pod očíslovaným názvem. Nahrávání probíhá jen jedním směrem: nic se nestahuje a smazání Session v zařízení ji ze serveru nikdy neodstraní. Přihlašovací údaje jsou uloženy v klíčence zařízení, nikdy v exportovaných datech. Celý pracovní postup, od vytvoření sdílení až po sledování nahrání, popisuje [Nahrávání](uploads.md). Zdůvodnění: terénní projekty sbírají data z mnoha telefonů a jediný vložený odkaz s ověřeným testem odstraní téměř každou chybu při nastavení. Viz issue #284.
+
 
 ## Soukromí
 

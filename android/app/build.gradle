@@ -1,7 +1,12 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // Kotlin is not applied here. With android.builtInKotlin=false the Flutter
+    // Gradle plugin applies the Kotlin Gradle Plugin to every Android module
+    // that does not declare it itself; once built-in Kotlin is enabled, AGP
+    // compiles Kotlin on its own. Declaring it here is what Flutter's "app
+    // applies KGP" warning flags. The jvmTarget lives in the `kotlin {}`
+    // block below, which both setups register.
+    // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -47,15 +52,18 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = false
-            // Drop x86/x86_64/armeabi-v7a copies of third-party native
-            // libraries (e.g. libonnxruntime.so from flutter_onnxruntime).
-            // `ndk.abiFilters` only filters Flutter's own libs, so without
-            // this exclude the standalone APK ships ~34 MB of unused .so
-            // files. The App Bundle (`bundleRelease`) still gets all
-            // architectures because Play splits per-device automatically.
+            // Ship arm64-v8a and x86_64 only. These excludes are the
+            // effective ABI filter: the Flutter Gradle plugin resets
+            // `ndk.abiFilters` to its full list (armeabi-v7a, arm64-v8a,
+            // x86_64) after project evaluation, so the filter in
+            // defaultConfig documents intent and the excludes do the work.
+            // x86_64 stays in for Intel/AMD Chromebooks, which otherwise
+            // run the arm64 build through the Houdini translator and crash
+            // inside it. armeabi-v7a (~9 MB) and 32-bit x86 are dropped.
+            // Play serves one ABI per device, so phones download nothing
+            // extra; the universal APK carries both ABIs.
             excludes += [
                 'lib/x86/**',
-                'lib/x86_64/**',
                 'lib/armeabi-v7a/**',
             ]
         }
@@ -65,10 +73,6 @@ android {
         coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
     }
 
     defaultConfig {
@@ -83,9 +87,10 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Only include 64-bit ARM. Drops armeabi-v7a (~9 MB) and x86 libs.
+        // 64-bit only: arm64 phones and tablets plus x86_64 Chromebooks.
+        // See the jniLibs excludes above for why this alone is not enough.
         ndk {
-            abiFilters 'arm64-v8a'
+            abiFilters 'arm64-v8a', 'x86_64'
         }
     }
 
@@ -127,6 +132,14 @@ android {
     }
 }
 
+// Replaces the deprecated `android.kotlinOptions` block. Must match
+// compileOptions above.
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
+
 flutter {
     source = "../.."
 }
@@ -149,6 +162,8 @@ dependencies {
     // returns null for any pack lookup, and we fall back to extracting
     // models from `rootBundle`.
     implementation 'com.google.android.play:asset-delivery:2.2.2'
+    // Background upload runs (UploadWorker.kt, #284).
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
 }
 
 // ── Strip *.onnx from base module assets when building the App Bundle ──

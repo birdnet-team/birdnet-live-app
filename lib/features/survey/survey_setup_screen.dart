@@ -32,6 +32,7 @@ import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
+import '../../shared/widgets/inference_rate_limit_note.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../../shared/widgets/site_context_card.dart';
 import '../../shared/widgets/weather_setup_card.dart';
@@ -824,6 +825,9 @@ class _ParametersStep extends ConsumerWidget {
           label: '${inferenceRate.toStringAsFixed(2)} Hz',
           onChanged: (v) =>
               ref.read(surveyInferenceRateProvider.notifier).set(v),
+        ),
+        const InferenceRateLimitNote(
+          padding: EdgeInsets.symmetric(horizontal: 16),
         ),
 
         // Confidence threshold

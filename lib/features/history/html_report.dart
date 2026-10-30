@@ -1664,6 +1664,7 @@ String _buildSettingsRows(LiveSession session) {
 String _buildExtendedMetaRows(LiveSession session) {
   final rows = <(String, String)>[];
   rows.add(('Session ID', session.id));
+  rows.add(('Session UUID', session.uuid));
   if (session.endTime != null) {
     rows.add((
       'End time',
@@ -1769,6 +1770,8 @@ String _stopReasonLabel(SessionStopReason? reason) {
       return 'App went to background';
     case SessionStopReason.lowBattery:
       return 'Low battery';
+    case SessionStopReason.interrupted:
+      return 'Ended by the system before the session was stopped';
     case null:
       return '';
   }

@@ -120,6 +120,19 @@ middenweg; **0,30 Hz** blijft de uitdrukkelijke keuze voor maximale
 batterijduur. De bestandsanalyse heeft geen inferentiesnelheid — die gebruikt
 in plaats daarvan een instelling voor [overlap](file-analysis.md).
 
+Als een apparaat de gekozen snelheid niet bijhoudt — de inferentie loopt bij
+meerdere vensters achter elkaar een hele stap achter op de opname —, verlaagt
+de Session de snelheid met 0,30 Hz, en opnieuw zolang het apparaat blijft
+achterlopen, tot minimaal 0,10 Hz. De verlaagde snelheid wordt dan de
+instelling van alle modi: Live, Point Count, Survey en ARU, en dus ook van
+hun setup-wizards, zodat de volgende Session waar dan ook start met een
+snelheid die dit apparaat aankan. Instellingen en de wizards tonen onder de
+schuifregelaar een melding dat het apparaat boven die snelheid te traag is
+gebleken. De melding blijft staan, want een traag apparaat blijft traag; de
+regelaars blijven vrij in te stellen. Zonder dit bouwt een traag apparaat een
+achterstand op die uiteindelijk de audio overschrijft waaruit de
+detectiefragmenten worden geknipt, en blijven detecties zonder audio achter.
+
 ### Soorten negeren
 
 Opent een paneel met binaire inferentiefilters. Vink **Vogels**, **Zoogdieren**, **Amfibieën** of **Insecten** aan om die hele taxonomische klasse te onderdrukken. Alle vier staan standaard uit.
@@ -141,6 +154,10 @@ draagt de sterkste ondersteunde score en eindigt aan het einde van het laatste
 ondersteunende venster.
 
 ## Spectrogram
+
+### Grootte
+
+Bepaalt hoeveel van het scherm het live spectrogram inneemt in Live Mode, Point Count, Survey en ARU. **Volledig** is de gebruikelijke hoogte. **Gemiddeld** en **Klein** verkleinen die tot 75% en 50% en geven het verschil aan de detectielijst – de juiste keuze als je op een telefoon in portretstand vooral naar de lijst kijkt. **Uit** verwijdert het spectrogram helemaal; in Survey en ARU verdwijnt ook het spectrogramtabblad. In liggende stand maken **Gemiddeld** en **Klein** het spectrogram in zijn schermhelft lager (de ruimte eronder blijft voorlopig leeg), en **Uit** geeft het hele scherm aan de detectielijst. Spectrogrammen van opgeslagen sessies en bij afspelen blijven ongewijzigd.
 
 ### FFT-grootte
 
@@ -222,7 +239,7 @@ Deze instelling geldt voor audio die BirdNET Live opneemt. **Bestandsanalyse** b
 
 Staat die aan, dan begint de Live-modus met opnemen zodra het scherm opent en het model klaar is met laden — zonder dat je op de microfoonknop hoeft te tikken. Handig voor kioskachtige opstellingen, handsfree gebruik (bijvoorbeeld het toestel in het veld gemonteerd) of elke workflow waarbij Live openen sowieso "nu starten" betekent. Staat standaard uit, zodat een onbedoelde tik op de Live-tegel op het startscherm niet stilzwijgend een Session begint. Het automatisch starten gebeurt maar één keer per schermbezoek, dus een Session stoppen en opnieuw op de microfoon tikken werkt gewoon als handmatige herstart.
 
-Deze instelling regelt het openen van de Live-modus binnen de app. De [Quick Listen-widget](live-mode.md) begint bij een tik te luisteren, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
+Deze instelling regelt het openen van de Live-modus binnen de app. [Quick Listen](live-mode.md) — de Android-widget, of op iOS de opdracht, de Siri-zin en de actie in het app-pictogram — begint te luisteren zodra het wordt gestart, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
 
 ### Doorgaan met uitgeschakeld scherm
 
@@ -305,6 +322,8 @@ Omdat de niveaus op rangorde berusten, werkt dit in een soortenrijk tropisch bos
 
 ## Export & synchronisatie
 
+De sectie toont drie items die elk hun keuzes samenvatten: **Formaten**, **Inhoud** en **Uploadbestemmingen**. De eerste twee openen een pagina met de hieronder beschreven vakjes.
+
 ### Formaten
 
 Vink een willekeurige combinatie van exportformaten aan — bij elke keer opslaan of delen worden alle gekozen formaten samen in één ZIP gebundeld. Kies je één formaat zonder audiofragmenten en zonder HTML-rapport, dan krijg je omwille van achterwaartse compatibiliteit een kaal bestand (bijvoorbeeld `session.csv`) in plaats van een ZIP:
@@ -335,6 +354,11 @@ Staat die aan, dan bevat elke export-ZIP ook een bestand `<session>_report.html`
 ### Alleen audio delen
 
 Haal het vinkje weg bij elk formaat **én** bij het HTML-rapport **én** bij het vakje voor app-metadata, zodat alleen **Audiobestanden meesturen** overblijft: dan geeft Delen de kale opname (bijvoorbeeld `BirdNET_Live_…flac`) aan het systeemvenster in plaats van een ZIP. Dat is de eenvoudigste route om een Session rechtstreeks naar iNaturalist, eBird of een andere app te sturen die een onverpakt audiobestand verwacht. Sessions met meerdere detectiefragmenten leveren nog steeds een ZIP op; bij het delen van één detectie wordt dat ene kale fragment overgedragen.
+
+### Uploadbestemmingen
+
+Toont de WebDAV-locaties waarnaar een afgeronde Session kan worden geüpload, bijvoorbeeld de Nextcloud File Drop van een projectleider of de referentie-dropserver in `tools/webdav_drop_server`. Voeg er een toe door de ontvangen deelnamelink of deellink te plakken of door de QR-code van het project met je camera te scannen; een gewoon WebDAV-adres met gebruikersnaam en wachtwoord werkt via de geavanceerde velden. Er wordt niets opgeslagen tot een verbindingstest is geslaagd. Het scherm van de bestemming heeft ook **Deelnamecode tonen**, dat dezelfde link als QR-code toont (plus Link kopiëren), zodat een tweede telefoon zonder typen kan deelnemen. De test maakt het registratiebestand van het apparaat aan op de server, in een verborgen map `.birdnet-live`, en waarschuwt als de inloggegevens de map ook kunnen opsommen (een deellink met alleen schrijfrechten is veiliger voor iedereen), en bovendien als zo'n deellink zonder wachtwoord is. Elke bestemming heeft een eigen naam, een schakelaar 'Alleen uploaden via wifi' en een schakelaar 'ARU-Sessions automatisch uploaden'; die laatste zet elke afgeronde ARU Session zonder vragen in de wachtrij voor die bestemming. Om te uploaden tik je bij een Session of een selectie in de Session-bibliotheek op Delen en vink je de bestemming aan op het tabblad **Versturen naar** van het venster (een badge op het tabblad telt de vinkjes en de lijst scrolt, zodat het venster even hoog blijft hoeveel bestemmingen er ook zijn); het deelvenster kun je daar uitvinken om alleen te uploaden, en de laatst aangevinkte bestemmingen staan de volgende keer al aan. Uploads in de wachtrij lopen zolang de app open is (en op Android ook op de achtergrond zodra een geschikt netwerk beschikbaar is), proberen het opnieuw met oplopende wachttijden, wachten desgevraagd op wifi en tonen hun status als eerste regel onder de Session-titel in de bibliotheek en als wolkpictogram in de Session-review (tik op een van beide voor details per bestemming, Opnieuw proberen en Verwijderen); de regel verdwijnt zodra geen van de bestemmingen meer in de instellingen bestaat. Elke upload is één ZIP-bestand, genoemd naar de export van Delen en met het JSON-record van de Session plus alles wat Delen zou meenemen, in een map met de code van acht tekens van dit apparaat (getoond als **Je upload-id** bij het toevoegen en bovenaan de lijst met bestemmingen). Daar kun je optioneel een deelnemer-id invullen, zoals een naam, e-mail of deelnemernummer; die reist mee in de uploadmetadata en de apparaatregistratie, nooit in een pad. Een Session opnieuw uploaden vervangt dat bestand; een Nextcloud File Drop overschrijft nooit en bewaart de oudere kopie onder een genummerde naam. Uploads gaan één kant op: er wordt niets gedownload en een Session op het apparaat verwijderen haalt hem nooit van de server. Inloggegevens staan in de sleutelhanger van het apparaat, nooit in de geëxporteerde gegevens. De hele workflow, van het aanmaken van de deellink tot het volgen van een upload, staat beschreven in [Uploads](uploads.md). Reden: veldprojecten verzamelen gegevens van veel telefoons, en één geplakte link met een geslaagde test voorkomt bijna elke instelfout. Zie issue #284.
+
 
 ## Privacy
 

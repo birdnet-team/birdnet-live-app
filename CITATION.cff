@@ -19,6 +19,9 @@ authors:
   - given-names: Mario
     family-names: Lasseck
     affiliation: 'Cornell K. Lisa Yang Center for Conservation Bioacoustics & MfN Berlin'
+  - given-names: Simon
+    family-names: Verdon
+    affiliation: 'Universität Würzburg'
   - given-names: Thomas
     family-names: Wilhelm-Stein
     affiliation: 'Chemnitz University of Technology'
@@ -28,6 +31,9 @@ authors:
   - given-names: Maximilian
     family-names: Eibl
     affiliation: 'Chemnitz University of Technology'
+  - given-names: Jörg
+    family-names: Müller
+    affiliation: 'Universität Würzburg & Bavarian Forest National Park'
   - given-names: Holger
     family-names: Klinck
     affiliation: 'Cornell K. Lisa Yang Center for Conservation Bioacoustics'

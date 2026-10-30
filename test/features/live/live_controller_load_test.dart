@@ -30,44 +30,38 @@ LiveController buildController() {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test(
-    'concurrent callers join one load instead of starting a second',
-    () async {
-      final controller = buildController();
+  test('concurrent callers join one load instead of starting a second', () async {
+    final controller = buildController();
 
-      // One load notifies exactly twice: once entering `loading`, once settling.
-      // A duplicate load would push this to four.
-      var notifications = 0;
-      controller.onStateChanged = () => notifications++;
+    // One load notifies exactly twice: once entering `loading`, once settling.
+    // A duplicate load would push this to four.
+    var notifications = 0;
+    controller.onStateChanged = () => notifications++;
 
-      final fromWarmUp = controller.loadModel();
-      final fromLiveScreen = controller.loadModel();
+    final fromWarmUp = controller.loadModel();
+    final fromLiveScreen = controller.loadModel();
 
-      expect(
-        identical(fromWarmUp, fromLiveScreen),
-        isTrue,
-        reason: 'the second caller should be handed the in-flight load',
-      );
+    expect(
+      identical(fromWarmUp, fromLiveScreen),
+      isTrue,
+      reason: 'the second caller should be handed the in-flight load',
+    );
 
-      await Future.wait([fromWarmUp, fromLiveScreen]);
+    await Future.wait([fromWarmUp, fromLiveScreen]);
 
-      expect(notifications, 2, reason: 'exactly one load should have run');
-    },
-  );
+    expect(notifications, 2, reason: 'exactly one load should have run');
+  });
 
-  test(
-    'the returned future never completes while the model is still loading',
-    () async {
-      final controller = buildController();
+  test('the returned future never completes while the model is still loading', () async {
+    final controller = buildController();
 
-      await controller.loadModel();
+    await controller.loadModel();
 
-      // The whole point: `await loadModel()` is enough to know the load is over,
-      // so callers can check `state` afterwards without racing it.
-      expect(controller.state, isNot(LiveState.loading));
-      expect(controller.state, LiveState.error);
-    },
-  );
+    // The whole point: `await loadModel()` is enough to know the load is over,
+    // so callers can check `state` afterwards without racing it.
+    expect(controller.state, isNot(LiveState.loading));
+    expect(controller.state, LiveState.error);
+  });
 
   test('a load that failed can be retried', () async {
     final controller = buildController();

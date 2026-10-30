@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -18,11 +19,44 @@ import UIKit
   private var sharedMediaChannel: FlutterMethodChannel?
   private var lastQueuedStagedURI: String?
 
+  /// Text-to-speech for spoken announcements; see TtsChannel.swift.
+  private var ttsChannel: TtsChannel?
+
+  /// Keychain-backed credential store for upload destinations; see
+  /// SecureStoreChannel.swift.
+  private var secureStoreChannel: SecureStoreChannel?
+
+  /// Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.swift.
+  private var connectivityChannel: ConnectivityChannel?
+
+  /// A Quick Listen action (App Intent, `birdnetlive://` URL, or home-screen
+  /// quick action; see QuickAction.swift) waiting for Dart. Same contract as
+  /// Android's `pendingQuickAction` in MainActivity.kt: set on cold and warm
+  /// starts, drained by `takePendingAction`.
+  private var pendingQuickAction: String?
+  private var quickActionChannel: FlutterMethodChannel?
+
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    // flutter_local_notifications relies on the app delegate to forward
+    // foreground presentation and taps (FlutterAppDelegate implements the
+    // callbacks and hands them to the plugin). Without this, Survey species
+    // alerts are never shown while the app is open.
+    UNUserNotificationCenter.current().delegate = self
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
   /// Register only after the implicit engine exists. Under the scene lifecycle,
   /// AppDelegate's window is not available during application launch.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     let messenger = engineBridge.applicationRegistrar.messenger()
+
+    ttsChannel = TtsChannel(messenger: messenger)
+    secureStoreChannel = SecureStoreChannel(messenger: messenger)
+    connectivityChannel = ConnectivityChannel(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",
@@ -65,7 +99,7 @@ import UIKit
     )
     audioChannel.setMethodCallHandler { (call, result) in
       if call.method == "cancelDecode" {
-        NativeAudioDecoder.isCancelled = true
+        NativeAudioDecoder.cancelAll()
         result(nil)
         return
       }
@@ -78,6 +112,10 @@ import UIKit
         result(FlutterError(code: "INVALID_ARG", message: "Missing 'path' argument", details: nil))
         return
       }
+      // Read the cancellation generation here, on the main thread, so a
+      // `cancelDecode` that arrives before the block below runs still
+      // cancels this request.
+      let generation = NativeAudioDecoder.currentGeneration()
       DispatchQueue.global(qos: .userInitiated).async {
         do {
           let decoded: [String: Any]
@@ -91,7 +129,9 @@ import UIKit
               }
               return
             }
-            decoded = try NativeAudioDecoder.decodeRange(path: path, startSample: startSample, count: count)
+            decoded = try NativeAudioDecoder.decodeRange(
+              path: path, startSample: startSample, count: count, generation: generation
+            )
           } else {
             guard let tempPcmPath = args["tempPcmPath"] as? String else {
               DispatchQueue.main.async {
@@ -99,7 +139,9 @@ import UIKit
               }
               return
             }
-            decoded = try NativeAudioDecoder.decode(path: path, tempPcmPath: tempPcmPath)
+            decoded = try NativeAudioDecoder.decode(
+              path: path, tempPcmPath: tempPcmPath, generation: generation
+            )
           }
           DispatchQueue.main.async {
             result(decoded)
@@ -169,6 +211,36 @@ import UIKit
       }
     }
     self.sharedMediaChannel = sharedMediaChannel
+
+    // Quick action channel — Quick Listen entry points (QuickAction.swift).
+    // Mirrors the Android channel of the same name: Dart reads the queued
+    // action at launch with `takePendingAction`, is told about later ones via
+    // `onQuickAction`, and confirms with `clearPendingAction` so the cold-start
+    // duplicate (the launch read plus the buffered `onQuickAction`) is harmless.
+    let quickActionChannel = FlutterMethodChannel(
+      name: "com.birdnet/quick_action_intents",
+      binaryMessenger: messenger
+    )
+    quickActionChannel.setMethodCallHandler { [weak self] (call, result) in
+      guard let self = self else {
+        result(nil)
+        return
+      }
+      switch call.method {
+      case "takePendingAction":
+        let action = self.pendingQuickAction
+        self.pendingQuickAction = nil
+        result(action)
+      case "clearPendingAction":
+        if let action = call.arguments as? String, self.pendingQuickAction == action {
+          self.pendingQuickAction = nil
+        }
+        result(nil)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    self.quickActionChannel = quickActionChannel
   }
 
   /// Drains the same queue whether Dart reads at launch or after a notification.
@@ -178,10 +250,42 @@ import UIKit
     return pending
   }
 
+  /// Queues a Quick Listen action and tells Dart about it.
+  ///
+  /// Before the engine is up the channel is nil and Dart's launch read drains
+  /// the queue; afterwards the mounted listener handles `onQuickAction`. Both
+  /// paths exist on Android too, so Dart treats them identically.
+  func queueQuickAction(_ action: String) {
+    pendingQuickAction = action
+    quickActionChannel?.invokeMethod("onQuickAction", arguments: action)
+  }
+
+  /// Called by SceneDelegate for URLs that are not shared documents.
+  @discardableResult
+  func queueQuickAction(url: URL) -> Bool {
+    guard let action = QuickAction.action(for: url) else { return false }
+    queueQuickAction(action)
+    return true
+  }
+
+  /// Called by SceneDelegate for home-screen quick actions (icon long-press).
+  @discardableResult
+  func queueQuickAction(shortcutItem: UIApplicationShortcutItem) -> Bool {
+    guard let action = QuickAction.action(for: shortcutItem) else { return false }
+    queueQuickAction(action)
+    return true
+  }
+
   /// Called by SceneDelegate before forwarding the scene event to Flutter.
   @discardableResult
   func queueDocument(_ url: URL) -> Bool {
     guard url.isFileURL else { return false }
+    // Only the latest hand-off is kept. A replaced one Dart never took would
+    // otherwise leave its Documents/Inbox copy behind, counted against the
+    // user's storage and backed up.
+    if let previous = pendingSharedFile?["uri"], previous != url.absoluteString {
+      AppDelegate.removeStagedFile(uri: previous)
+    }
     pendingSharedFile = ["uri": url.absoluteString, "name": url.lastPathComponent]
     sharedMediaChannel?.invokeMethod("onSharedFile", arguments: nil)
     return true
@@ -338,6 +442,11 @@ import UIKit
     }
     if base.count > 120 {
       base = String(base.suffix(120))
+    }
+    // The filesystem limit is 255 *bytes*; 120 CJK characters are ~360.
+    // Trim from the front so the extension survives.
+    while base.utf8.count > 200 {
+      base = String(base.dropFirst())
     }
     if !(base as NSString).pathExtension.isEmpty { return base }
     let fallback = fallbackExtension?

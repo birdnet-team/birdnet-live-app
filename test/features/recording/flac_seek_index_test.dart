@@ -163,20 +163,23 @@ void main() {
       }
     });
 
-    test('a range running past the end is truncated, not zero-padded', () async {
-      final index = await AudioDecoder.buildFlacSeekIndex(flacPath);
-      final start = full.totalSamples - 1000;
+    test(
+      'a range running past the end is truncated, not zero-padded',
+      () async {
+        final index = await AudioDecoder.buildFlacSeekIndex(flacPath);
+        final start = full.totalSamples - 1000;
 
-      final seeked = await AudioDecoder.decodeFlacRange(
-        flacPath,
-        startSample: start,
-        count: 50000,
-        seekIndex: index,
-      );
+        final seeked = await AudioDecoder.decodeFlacRange(
+          flacPath,
+          startSample: start,
+          count: 50000,
+          seekIndex: index,
+        );
 
-      expect(seeked.totalSamples, 1000);
-      expect(seeked.samples, full.samples.sublist(start));
-    });
+        expect(seeked.totalSamples, 1000);
+        expect(seeked.samples, full.samples.sublist(start));
+      },
+    );
 
     test('a start beyond the end yields nothing', () async {
       final index = await AudioDecoder.buildFlacSeekIndex(flacPath);
@@ -412,10 +415,9 @@ void main() {
           expect(seeked.totalSamples, 32000);
         }
       },
-      skip:
-          fixture.existsSync()
-              ? false
-              : 'Optional large FLAC fixture not found at $fixturePath',
+      skip: fixture.existsSync()
+          ? false
+          : 'Optional large FLAC fixture not found at $fixturePath',
       timeout: const Timeout(Duration(minutes: 10)),
     );
   });

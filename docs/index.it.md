@@ -5,7 +5,7 @@
 BirdNET Live è un'app Flutter pensata per chi fa ricerca sul campo, per chi si occupa di conservazione e per il birdwatching, e ha bisogno di prove acustiche affidabili sul campo. Esegue il classificatore audio BirdNET+ e il geo-modello direttamente sul dispositivo, quindi l'identificazione delle specie funziona completamente offline una volta installata.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v1.2.0-orange.svg" alt="Latest release: v1.2.0">
+  <img src="https://img.shields.io/badge/latest-v1.2.1-orange.svg" alt="Latest release: v1.2.1">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
@@ -56,11 +56,15 @@ BirdNET Live è disponibile su [Google Play](https://play.google.com/store/apps/
 
 Su Android puoi anche installarlo manualmente come APK firmato: scarica l'ultima versione dalla [pagina GitHub Releases](https://github.com/birdnet-team/birdnet-live-app/releases/latest), trasferisci il file `.apk` sul telefono e aprilo per installarlo. Potrebbe essere necessario consentire prima l'installazione da origini sconosciute nelle impostazioni del dispositivo.
 
-> **Nota:** l'APK pesa circa 260 MB perché include le risorse del modello BirdNET+ e tutte le immagini delle specie per l'uso offline.
+> **Nota:** l'APK pesa circa 320 MB perché include le risorse del modello BirdNET+ e tutte le immagini delle specie per l'uso offline.
 
 ## Per gli sviluppatori
 
 Consulta la [Guida per sviluppatori](developer/index.md) per architettura, compilazione e contributi.
+
+## Finanziamento
+
+BirdNET Live è sviluppato nell'ambito del progetto RangerSound, finanziato dalla Deutsche Bundesstiftung Umwelt (progetto 39263/01). RangerSound è una collaborazione tra l'Università Tecnica di Chemnitz, l'Universität Würzburg e il Parco nazionale della Foresta Bavarese.
 
 ## Licenza
 

@@ -124,11 +124,10 @@ class SpeciesAlertNotifier {
     }
 
     if (Platform.isAndroid) {
-      final android =
-          _plugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >();
+      final android = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       if (android != null) {
         // Importance HIGH gives heads-up presentation. The system enforces
         // user overrides — if they've muted the channel manually we can't
@@ -157,7 +156,7 @@ class SpeciesAlertNotifier {
   /// platform does not require a runtime prompt. Safe to call before
   /// [init] — initializes the plugin lazily.
   Future<bool> requestPermission({SpeciesAlertStrings? strings}) async {
-    if (!Platform.isAndroid) return true;
+    if (!Platform.isAndroid && !Platform.isIOS) return true;
     if (!_initialized && strings != null) {
       await init(strings: strings, sound: _sound, vibrate: _vibrate);
     } else if (!_initialized) {
@@ -183,11 +182,27 @@ class SpeciesAlertNotifier {
         return false;
       }
     }
-    final android =
-        _plugin
-            .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin
-            >();
+    if (Platform.isIOS) {
+      // iOS shows nothing — not even while the app is open — until the user
+      // has authorized notifications. The plugin is initialized without a
+      // prompt above, so ask here, at the same point Android does.
+      final ios = _plugin
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >();
+      if (ios == null) return false;
+      try {
+        final granted = await ios.requestPermissions(alert: true, sound: true);
+        return granted ?? false;
+      } catch (e) {
+        debugPrint('[SpeciesAlertNotifier] requestPermission failed: $e');
+        return false;
+      }
+    }
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) return false;
     try {
       final granted = await android.requestNotificationsPermission();

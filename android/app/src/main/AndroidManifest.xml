@@ -68,6 +68,26 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="audio/*"/>
             </intent-filter>
+            <!-- Upload-destination join links (#284): the camera app or a
+                 browser opens birdnetlive://join?... and the join sheet comes
+                 up. The https form is the landing page on the docs site; it is
+                 claimed too so a tap on it offers this app, and the page
+                 itself falls back to the custom scheme. BROWSABLE on purpose:
+                 these links carry no file and open a form, nothing more. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="birdnetlive" android:host="join"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"
+                      android:host="birdnet-team.github.io"
+                      android:pathPrefix="/birdnet-live-app/join"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -143,6 +163,11 @@
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="mailto"/>
+        </intent>
+        <!-- Lets TextToSpeech enumerate and bind installed speech engines
+             under Android 11+ package visibility (TtsChannel.kt). -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

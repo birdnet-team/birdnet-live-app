@@ -1,8 +1,8 @@
 #ifndef RUNNER_NATIVE_AUDIO_DECODER_H_
 #define RUNNER_NATIVE_AUDIO_DECODER_H_
 
-#include <atomic>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -17,8 +17,13 @@
 // lib/features/recording/audio_decoder.dart.
 class NativeAudioDecoder {
  public:
+  // Answers whether the decode it was handed to should stop. Checked between
+  // samples; see flutter_window.cpp for the generation counter behind it.
+  using CancelCheck = std::function<bool()>;
+
   struct Info {
     bool ok = false;
+    bool cancelled = false;
     std::string error;
     int sample_rate = 0;
     int64_t total_samples = 0;
@@ -26,6 +31,7 @@ class NativeAudioDecoder {
 
   struct RangeResult {
     bool ok = false;
+    bool cancelled = false;
     std::string error;
     int sample_rate = 0;
     int64_t total_samples = 0;
@@ -37,15 +43,17 @@ class NativeAudioDecoder {
   static Info Inspect(const std::string& utf8_path);
 
   // Decodes the whole file to mono PCM16 and writes it to |utf8_temp_path|.
+  // A cancelled decode reports |cancelled| rather than a partial success, as
+  // the Android and iOS decoders do.
   static Info DecodeToFile(const std::string& utf8_path,
                             const std::string& utf8_temp_path,
-                            std::atomic<bool>* cancelled);
+                            const CancelCheck& is_cancelled);
 
   // Decodes [start_sample, start_sample + count) to mono PCM16 in memory.
   static RangeResult DecodeRange(const std::string& utf8_path,
                                   int64_t start_sample,
                                   int64_t count,
-                                  std::atomic<bool>* cancelled);
+                                  const CancelCheck& is_cancelled);
 };
 
 #endif  // RUNNER_NATIVE_AUDIO_DECODER_H_

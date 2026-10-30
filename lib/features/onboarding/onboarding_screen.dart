@@ -28,6 +28,7 @@ import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 
 import '../../core/theme/app_semantic_colors.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:record/record.dart';
 
@@ -215,8 +216,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       duration: const Duration(milliseconds: 200),
                       opacity: _page < _termsPageIndex ? 1 : 0,
                       child: TextButton(
-                        onPressed:
-                            _page < _termsPageIndex ? _skipToTerms : null,
+                        onPressed: _page < _termsPageIndex
+                            ? _skipToTerms
+                            : null,
                         child: Text(l10n.skip),
                       ),
                     ),
@@ -260,8 +262,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     l10n: l10n,
                     theme: theme,
                     agreed: _termsAgreed,
-                    onAgreedChanged:
-                        (v) => setState(() => _termsAgreed = v ?? false),
+                    onAgreedChanged: (v) =>
+                        setState(() => _termsAgreed = v ?? false),
                   ),
                 ],
               ),
@@ -335,10 +337,9 @@ class _ControlsBar extends StatelessWidget {
                     width: i == page ? 18 : 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color:
-                          i == page
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.outlineVariant,
+                      color: i == page
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -610,9 +611,8 @@ class _PermissionsPage extends ConsumerWidget {
                     title: l10n.settingsPrivacyAllowMap,
                     description: l10n.settingsPrivacyAllowMapSubtitle,
                     value: ref.watch(privacyAllowMapProvider),
-                    onChanged:
-                        (val) =>
-                            ref.read(privacyAllowMapProvider.notifier).set(val),
+                    onChanged: (val) =>
+                        ref.read(privacyAllowMapProvider.notifier).set(val),
                     theme: theme,
                   ),
                   const SizedBox(height: 14),
@@ -622,10 +622,9 @@ class _PermissionsPage extends ConsumerWidget {
                     description:
                         l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
                     value: ref.watch(privacyAllowReverseGeocodingProvider),
-                    onChanged:
-                        (val) => ref
-                            .read(privacyAllowReverseGeocodingProvider.notifier)
-                            .set(val),
+                    onChanged: (val) => ref
+                        .read(privacyAllowReverseGeocodingProvider.notifier)
+                        .set(val),
                     theme: theme,
                   ),
                   const SizedBox(height: 14),
@@ -634,10 +633,8 @@ class _PermissionsPage extends ConsumerWidget {
                     title: l10n.settingsPrivacyAllowWeather,
                     description: l10n.settingsPrivacyAllowWeatherSubtitle,
                     value: ref.watch(privacyAllowWeatherProvider),
-                    onChanged:
-                        (val) => ref
-                            .read(privacyAllowWeatherProvider.notifier)
-                            .set(val),
+                    onChanged: (val) =>
+                        ref.read(privacyAllowWeatherProvider.notifier).set(val),
                     theme: theme,
                   ),
                 ],
@@ -753,18 +750,17 @@ class _PermissionTile extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                 ),
-                child:
-                    busy
-                        ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : Text(
-                          Platform.isIOS
-                              ? l10n.permissionRequestIOS
-                              : l10n.permissionRequest,
-                        ),
+                child: busy
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        Platform.isIOS
+                            ? l10n.permissionRequestIOS
+                            : l10n.permissionRequest,
+                      ),
               ),
             ),
         ],

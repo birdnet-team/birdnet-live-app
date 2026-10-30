@@ -44,6 +44,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
+import 'ort_session_options.dart';
+
 /// A species entry from the geo-model's own labels file.
 class GeoSpecies {
   const GeoSpecies({
@@ -185,7 +187,10 @@ class GeoModel {
       await old.close();
     }
 
-    _session = await _ort.createSession(modelPath);
+    _session = await _ort.createSession(
+      modelPath,
+      options: buildOrtSessionOptions(),
+    );
 
     debugPrint('[GeoModel] model loaded from $modelPath');
     debugPrint('[GeoModel] input: $_inputName, output: $_outputName');
@@ -243,19 +248,17 @@ class GeoModel {
         throw StateError('Geo-model returned no output');
       }
       final raw = await outputTensor.asFlattenedList();
-      final probabilities =
-          raw is List<double>
-              ? raw
-              : raw is Float32List
-              ? raw.toList()
-              : raw.map((e) => (e as num).toDouble()).toList(growable: false);
+      final probabilities = raw is List<double>
+          ? raw
+          : raw is Float32List
+          ? raw.toList()
+          : raw.map((e) => (e as num).toDouble()).toList(growable: false);
 
       // Build the result map.
       final scores = <String, double>{};
-      final count =
-          probabilities.length < _labels.length
-              ? probabilities.length
-              : _labels.length;
+      final count = probabilities.length < _labels.length
+          ? probabilities.length
+          : _labels.length;
       for (var i = 0; i < count; i++) {
         scores[_labels[i].scientificName] = probabilities[i];
       }
@@ -292,13 +295,12 @@ class GeoModel {
       if (entry.value >= threshold) {
         final label = _labels.firstWhere(
           (l) => l.scientificName == entry.key,
-          orElse:
-              () => GeoSpecies(
-                index: -1,
-                id: 0,
-                scientificName: entry.key,
-                commonName: entry.key,
-              ),
+          orElse: () => GeoSpecies(
+            index: -1,
+            id: 0,
+            scientificName: entry.key,
+            commonName: entry.key,
+          ),
         );
         results.add(
           GeoSpeciesScore(

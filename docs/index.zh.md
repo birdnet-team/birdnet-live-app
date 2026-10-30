@@ -5,7 +5,7 @@
 BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可靠声学证据的野外研究者、保护工作者和观鸟者。它直接在您的设备上运行 BirdNET+ 音频分类器和地理模型，因此安装完成后，物种识别可以完全离线工作。
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v1.2.0-orange.svg" alt="Latest release: v1.2.0">
+  <img src="https://img.shields.io/badge/latest-v1.2.1-orange.svg" alt="Latest release: v1.2.1">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
@@ -18,7 +18,7 @@ BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可�
 - **文件分析** - 离线分析已有录音（WAV、FLAC、MP3、OGG 等）
 - **ARU 模式** - 把设备变成自主录音单元，用于多日部署
 - **探索** - 使用 BirdNET 地理模型浏览您所在位置可能出现的物种
-- **Session 库** - 查看、编辑和导出过往 Session，并可回放音频
+- **Session 列表** - 查看、编辑和导出过往 Session，并可回放音频
 - **导出** - Raven Pro、CSV、JSON、GPX 和带来源元数据的 ZIP 包
 - **设备端推理** - BirdNET+ 模型覆盖 9,789 个物种，无需联网
 - **FLAC 录音** - 压缩音频，长时间调查时文件更小
@@ -56,11 +56,15 @@ BirdNET Live 已上架 [Google Play](https://play.google.com/store/apps/details?
 
 在 Android 上也可以手动安装已签名的 APK：从 [GitHub 发布页](https://github.com/birdnet-team/birdnet-live-app/releases/latest)下载最新版本，把 `.apk` 文件传到手机上并打开安装。您可能需要先在设备设置中允许安装未知来源的应用。
 
-> **注意：** APK 约 260 MB，因为其中包含 BirdNET+ 模型文件和全部物种图片，以便离线使用。
+> **注意：** APK 约 320 MB，因为其中包含 BirdNET+ 模型文件和全部物种图片，以便离线使用。
 
 ## 面向开发者
 
 架构、构建和参与贡献请参阅 [Developer Guide](developer/index.md)。开发者文档仅提供英文版本。
+
+## 资助
+
+BirdNET Live 在 RangerSound 项目框架内开发，该项目由 Deutsche Bundesstiftung Umwelt 资助（项目编号 39263/01）。 RangerSound 是开姆尼茨工业大学、Universität Würzburg 与巴伐利亚森林国家公园的合作项目。
 
 ## 许可
 

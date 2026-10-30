@@ -54,9 +54,8 @@ void main() {
     ).create(recursive: true);
     // The repository only auto-creates its sessions dir when it resolves the
     // base path itself; an explicit basePath override skips that, so create it.
-    final sessionsDir = await Directory(
-      '${sandbox.path}/sessions',
-    ).create(recursive: true);
+    final sessionsDir = await Directory('${sandbox.path}/sessions')
+        .create(recursive: true);
     repository = SessionRepository()..basePath = sessionsDir.path;
   });
 
@@ -184,131 +183,122 @@ void main() {
     },
   );
 
-  testWidgets(
-    'retains and evicts detection clips on disk across a cycle',
-    (tester) async {
-      final clipsDir = await Directory(
-        '${sandbox.path}/clips',
-      ).create(recursive: true);
+  testWidgets('retains and evicts detection clips on disk across a cycle', (
+    tester,
+  ) async {
+    final clipsDir = await Directory('${sandbox.path}/clips')
+        .create(recursive: true);
 
-      // Real clip saver: writes a small file per record in the round and
-      // returns their paths, mirroring the detections-only retention path.
-      Future<Map<DetectionRecord, String>> saveClips(
-        LiveSession session,
-        List<DetectionRecord> records,
-      ) async {
-        final written = <DetectionRecord, String>{};
-        for (final record in records) {
-          final safeTs = record.timestamp.toIso8601String().replaceAll(
-                ':',
-                '-',
-              );
-          final path =
-              '${clipsDir.path}/clip_${record.scientificName}_$safeTs.wav';
-          await File(path).writeAsBytes(
-            List<int>.filled(64, 0),
-            flush: true,
-          );
-          written[record] = path;
-        }
-        return written;
+    // Real clip saver: writes a small file per record in the round and
+    // returns their paths, mirroring the detections-only retention path.
+    Future<Map<DetectionRecord, String>> saveClips(
+      LiveSession session,
+      List<DetectionRecord> records,
+    ) async {
+      final written = <DetectionRecord, String>{};
+      for (final record in records) {
+        final safeTs = record.timestamp.toIso8601String().replaceAll(':', '-');
+        final path =
+            '${clipsDir.path}/clip_${record.scientificName}_$safeTs.wav';
+        await File(path).writeAsBytes(List<int>.filled(64, 0), flush: true);
+        written[record] = path;
       }
+      return written;
+    }
 
-      final controller = AruController(
-        saveSession: repository.save,
-        saveDetectionClips: saveClips,
-        now: () => scheduleStart.subtract(const Duration(minutes: 5)),
-      );
+    final controller = AruController(
+      saveSession: repository.save,
+      saveDetectionClips: saveClips,
+      now: () => scheduleStart.subtract(const Duration(minutes: 5)),
+    );
 
-      // topN = 1: only the strongest clip per species+cycle is retained.
-      await controller.startDeployment(
-        sessionId: 'aru-it-clips',
-        settings: settings,
-        metadata: combinedMetadata(
-          maxCycles: 1,
-          samplingMode: 'topN',
-          topNPerSpecies: 1,
-        ),
-      );
-      await controller.evaluate(
-        now: scheduleStart.add(const Duration(minutes: 5)),
-      );
-      expect(controller.state, AruControllerState.recording);
+    // topN = 1: only the strongest clip per species+cycle is retained.
+    await controller.startDeployment(
+      sessionId: 'aru-it-clips',
+      settings: settings,
+      metadata: combinedMetadata(
+        maxCycles: 1,
+        samplingMode: 'topN',
+        topNPerSpecies: 1,
+      ),
+    );
+    await controller.evaluate(
+      now: scheduleStart.add(const Duration(minutes: 5)),
+    );
+    expect(controller.state, AruControllerState.recording);
 
-      final weakTs = scheduleStart.add(const Duration(minutes: 6));
-      final strongTs = scheduleStart.add(const Duration(minutes: 7));
+    final weakTs = scheduleStart.add(const Duration(minutes: 6));
+    final strongTs = scheduleStart.add(const Duration(minutes: 7));
 
-      // Weaker detection appears, then closes -> clip written and retained.
-      await controller.syncDetections([
-        DetectionRecord(
-          scientificName: 'Turdus merula',
-          commonName: 'Eurasian Blackbird',
-          confidence: 0.60,
-          timestamp: weakTs,
-        ),
-      ]);
-      await controller.syncDetections([
-        DetectionRecord(
-          scientificName: 'Turdus merula',
-          commonName: 'Eurasian Blackbird',
-          confidence: 0.60,
-          timestamp: weakTs,
-          endTimestamp: weakTs.add(const Duration(seconds: 3)),
-        ),
-      ]);
+    // Weaker detection appears, then closes -> clip written and retained.
+    await controller.syncDetections([
+      DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.60,
+        timestamp: weakTs,
+      ),
+    ]);
+    await controller.syncDetections([
+      DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.60,
+        timestamp: weakTs,
+        endTimestamp: weakTs.add(const Duration(seconds: 3)),
+      ),
+    ]);
 
-      final weakClips =
-          clipsDir
-              .listSync()
-              .whereType<File>()
-              .where((f) => f.path.contains('06-00'))
-              .toList();
-      expect(weakClips, hasLength(1), reason: 'weak clip should be written');
+    final weakClips = clipsDir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.contains('06-00'))
+        .toList();
+    expect(weakClips, hasLength(1), reason: 'weak clip should be written');
 
-      // Stronger detection of the same species in the same cycle closes ->
-      // it is retained and the weaker clip is evicted from disk.
-      await controller.syncDetections([
-        DetectionRecord(
-          scientificName: 'Turdus merula',
-          commonName: 'Eurasian Blackbird',
-          confidence: 0.90,
-          timestamp: strongTs,
-        ),
-      ]);
-      await controller.syncDetections([
-        DetectionRecord(
-          scientificName: 'Turdus merula',
-          commonName: 'Eurasian Blackbird',
-          confidence: 0.90,
-          timestamp: strongTs,
-          endTimestamp: strongTs.add(const Duration(seconds: 3)),
-        ),
-      ]);
+    // Stronger detection of the same species in the same cycle closes ->
+    // it is retained and the weaker clip is evicted from disk.
+    await controller.syncDetections([
+      DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.90,
+        timestamp: strongTs,
+      ),
+    ]);
+    await controller.syncDetections([
+      DetectionRecord(
+        scientificName: 'Turdus merula',
+        commonName: 'Eurasian Blackbird',
+        confidence: 0.90,
+        timestamp: strongTs,
+        endTimestamp: strongTs.add(const Duration(seconds: 3)),
+      ),
+    ]);
 
-      final remaining = clipsDir.listSync().whereType<File>().toList();
-      debugPrint(
-        '[AruClipsTest] remaining clips: '
-        '${remaining.map((f) => f.uri.pathSegments.last).toList()}',
-      );
-      expect(
-        remaining,
-        hasLength(1),
-        reason: 'only the strongest clip should remain on disk',
-      );
-      expect(remaining.single.path, contains('07-00'));
+    final remaining = clipsDir.listSync().whereType<File>().toList();
+    debugPrint(
+      '[AruClipsTest] remaining clips: '
+      '${remaining.map((f) => f.uri.pathSegments.last).toList()}',
+    );
+    expect(
+      remaining,
+      hasLength(1),
+      reason: 'only the strongest clip should remain on disk',
+    );
+    expect(remaining.single.path, contains('07-00'));
 
-      // Both detections are still recorded; only the weaker clip path is gone.
-      final blackbirds = controller.session!.detections
-          .where((d) => d.scientificName == 'Turdus merula')
-          .toList();
-      expect(blackbirds, hasLength(2));
-      final weak = blackbirds.firstWhere((d) => d.timestamp == weakTs);
-      final strong = blackbirds.firstWhere((d) => d.timestamp == strongTs);
-      expect(weak.audioClipPath, isNull);
-      expect(strong.audioClipPath, isNotNull);
-      expect(File(strong.audioClipPath!).existsSync(), isTrue);
-    },
-  );
+    // Both detections are still recorded; only the weaker clip path is gone.
+    final blackbirds = controller.session!.detections
+        .where((d) => d.scientificName == 'Turdus merula')
+        .toList();
+    expect(blackbirds, hasLength(2));
+    final weak = blackbirds.firstWhere((d) => d.timestamp == weakTs);
+    final strong = blackbirds.firstWhere((d) => d.timestamp == strongTs);
+    expect(weak.audioClipPath, isNull);
+    expect(strong.audioClipPath, isNotNull);
+    expect(File(strong.audioClipPath!).existsSync(), isTrue);
+  });
 
   testWidgets(
     'leaves no aggregate session on disk for a full per-cycle deployment',

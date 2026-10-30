@@ -35,12 +35,36 @@ class MainActivity: FlutterActivity() {
     private val SHARED_MEDIA_DIR = "shared_audio"
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val activeDecodeJobs = Collections.synchronizedSet(mutableSetOf<Job>())
+
+    // Delivers a channel reply from a worker coroutine. Runs under
+    // NonCancellable so the reply still goes out when `scope` has been
+    // cancelled by onDestroy: a plain withContext(Dispatchers.Main) throws
+    // on a cancelled job and the Dart future then waits forever — for
+    // extractAsset that is a model load that never finishes.
+    private suspend fun replyOnMain(block: () -> Unit) {
+        withContext(NonCancellable + Dispatchers.Main) { block() }
+    }
+
+    // Starts worker-thread work for a channel call, answering immediately when
+    // the activity is already shutting down instead of launching into a
+    // cancelled scope whose body would never run.
+    private fun launchWork(result: MethodChannel.Result, block: suspend CoroutineScope.() -> Unit) {
+        if (!scope.isActive) {
+            result.error("ACTIVITY_DESTROYED", "Activity is shutting down", null)
+            return
+        }
+        scope.launch(block = block)
+    }
     private var pendingAruNotificationAction: String? = null
     private var aruNotificationIntentChannel: MethodChannel? = null
     private var pendingQuickAction: String? = null
     private var quickActionIntentChannel: MethodChannel? = null
     private var pendingSharedMedia: Map<String, String?>? = null
     private var sharedMediaChannel: MethodChannel? = null
+    private var ttsChannel: TtsChannel? = null
+    private var secureStoreChannel: SecureStoreChannel? = null
+    private var connectivityChannel: ConnectivityChannel? = null
+    private var uploadWorkChannel: UploadWorkChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -49,6 +73,7 @@ class MainActivity: FlutterActivity() {
         super.onCreate(savedInstanceState)
         captureAruNotificationAction(intent)
         captureQuickAction(intent)
+        captureJoinLink(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
@@ -60,11 +85,31 @@ class MainActivity: FlutterActivity() {
         setIntent(intent)
         captureAruNotificationAction(intent)
         captureQuickAction(intent)
+        captureJoinLink(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Text-to-speech for spoken announcements. Lazy: the engine is only
+        // bound on the first call, and all engine calls stay off the main
+        // thread (see TtsChannel.kt).
+        ttsChannel?.dispose()
+        ttsChannel = TtsChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Keystore-backed credential store for upload destinations; see
+        // SecureStoreChannel.kt.
+        secureStoreChannel?.dispose()
+        secureStoreChannel = SecureStoreChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.kt.
+        connectivityChannel?.dispose()
+        connectivityChannel = ConnectivityChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Background upload scheduling; see UploadWorker.kt.
+        uploadWorkChannel?.dispose()
+        uploadWorkChannel = UploadWorkChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
@@ -184,14 +229,12 @@ class MainActivity: FlutterActivity() {
                             return@setMethodCallHandler
                         }
                         val name = call.argument<String>("name")
-                        scope.launch {
+                        launchWork(result) {
                             try {
                                 val path = importSharedMedia(uri, name)
-                                withContext(Dispatchers.Main) {
-                                    result.success(path)
-                                }
+                                replyOnMain { result.success(path) }
                             } catch (e: Throwable) {
-                                withContext(Dispatchers.Main) {
+                                replyOnMain {
                                     result.error(
                                         "IMPORT_ERROR",
                                         e.message ?: "Could not read the shared file",
@@ -221,14 +264,12 @@ class MainActivity: FlutterActivity() {
                         result.error("INVALID_ARG", "Missing 'path' argument", null)
                         return@setMethodCallHandler
                     }
-                    scope.launch {
+                    launchWork(result) {
                         try {
                             val metadata = NativeAudioDecoder.inspect(path)
-                            withContext(Dispatchers.Main) {
-                                result.success(metadata)
-                            }
+                            replyOnMain { result.success(metadata) }
                         } catch (e: Throwable) {
-                            withContext(Dispatchers.Main) {
+                            replyOnMain {
                                 result.error("INSPECT_ERROR", e.message ?: "Unknown error", null)
                             }
                         }
@@ -241,14 +282,12 @@ class MainActivity: FlutterActivity() {
                         result.error("INVALID_ARG", "Missing 'path' or 'tempPcmPath' argument", null)
                         return@setMethodCallHandler
                     }
-                    launchDecode(allowConcurrent = false) {
+                    launchDecode(result, allowConcurrent = false) {
                         try {
                             val decoded = NativeAudioDecoder.decode(path, tempPcmPath) {
                                 !coroutineContext.isActive
                             }
-                            withContext(Dispatchers.Main) {
-                                result.success(decoded)
-                            }
+                            replyOnMain { result.success(decoded) }
                         } catch (e: CancellationException) {
                             withContext(NonCancellable + Dispatchers.Main) {
                                 result.error("DECODE_CANCELLED", "Decoding cancelled", null)
@@ -269,14 +308,12 @@ class MainActivity: FlutterActivity() {
                         result.error("INVALID_ARG", "Missing 'path', 'startSample', or 'count' argument", null)
                         return@setMethodCallHandler
                     }
-                    launchDecode(allowConcurrent = allowConcurrent) {
+                    launchDecode(result, allowConcurrent = allowConcurrent) {
                         try {
                             val decoded = NativeAudioDecoder.decodeRange(path, startSample, count) {
                                 !coroutineContext.isActive
                             }
-                            withContext(Dispatchers.Main) {
-                                result.success(decoded)
-                            }
+                            replyOnMain { result.success(decoded) }
                         } catch (e: CancellationException) {
                             withContext(NonCancellable + Dispatchers.Main) {
                                 result.error("DECODE_CANCELLED", "Decoding cancelled", null)
@@ -340,7 +377,7 @@ class MainActivity: FlutterActivity() {
                         )
                         return@setMethodCallHandler
                     }
-                    scope.launch {
+                    launchWork(result) {
                         try {
                             val outFile = File(applicationContext.filesDir, destName)
                             // Open the asset to (a) probe for presence and
@@ -350,10 +387,8 @@ class MainActivity: FlutterActivity() {
                             val inStream = try {
                                 applicationContext.assets.open(assetPath)
                             } catch (e: FileNotFoundException) {
-                                withContext(Dispatchers.Main) {
-                                    result.success(null)
-                                }
-                                return@launch
+                                replyOnMain { result.success(null) }
+                                return@launchWork
                             }
                             // Try to determine the uncompressed length cheaply
                             // via openFd (works for noCompress assets like .onnx).
@@ -368,10 +403,8 @@ class MainActivity: FlutterActivity() {
                             if (outFile.exists() && expectedSize > 0 &&
                                 outFile.length() == expectedSize) {
                                 inStream.close()
-                                withContext(Dispatchers.Main) {
-                                    result.success(outFile.absolutePath)
-                                }
-                                return@launch
+                                replyOnMain { result.success(outFile.absolutePath) }
+                                return@launchWork
                             }
                             // Stream-copy to a temp file then atomically rename
                             // so a partial copy from a previous crash never
@@ -388,11 +421,9 @@ class MainActivity: FlutterActivity() {
                                     "Failed to rename ${tmpFile.absolutePath} to ${outFile.absolutePath}"
                                 )
                             }
-                            withContext(Dispatchers.Main) {
-                                result.success(outFile.absolutePath)
-                            }
+                            replyOnMain { result.success(outFile.absolutePath) }
                         } catch (e: Throwable) {
-                            withContext(Dispatchers.Main) {
+                            replyOnMain {
                                 result.error(
                                     "EXTRACT_ERROR",
                                     e.message ?: "extractAsset failed",
@@ -408,11 +439,18 @@ class MainActivity: FlutterActivity() {
     }
 
     private fun launchDecode(
+        result: MethodChannel.Result,
         allowConcurrent: Boolean,
         block: suspend CoroutineScope.() -> Unit,
     ) {
         if (!allowConcurrent) {
             cancelActiveDecodes()
+        }
+        if (!scope.isActive) {
+            // A job launched into a cancelled scope never runs its body, so
+            // its reply would never be sent; answer here instead.
+            result.error("ACTIVITY_DESTROYED", "Activity is shutting down", null)
+            return
         }
         lateinit var job: Job
         job = scope.launch(start = CoroutineStart.LAZY, block = block)
@@ -428,6 +466,8 @@ class MainActivity: FlutterActivity() {
     }
 
     override fun onDestroy() {
+        ttsChannel?.dispose()
+        ttsChannel = null
         aruNotificationIntentChannel = null
         quickActionIntentChannel = null
         sharedMediaChannel = null
@@ -440,6 +480,24 @@ class MainActivity: FlutterActivity() {
         pendingAruNotificationAction = action
         aruNotificationIntentChannel?.invokeMethod("onNotificationAction", action)
         intent.removeExtra(ARU_NOTIFICATION_ACTION_EXTRA)
+    }
+
+    // An upload-destination join link (#284) opened from the camera app or a
+    // browser. Travels as the quick action "join:<url>" so Dart's existing
+    // quick-action listener can route it; see lib/app.dart.
+    private fun isJoinLink(uri: Uri): Boolean =
+        (uri.scheme == "birdnetlive" && uri.host == "join") ||
+            (uri.scheme == "https" && uri.host == "birdnet-team.github.io" &&
+                (uri.path ?: "").startsWith("/birdnet-live-app/join"))
+
+    private fun captureJoinLink(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) return
+        val uri = intent.data ?: return
+        if (!isJoinLink(uri)) return
+        intent.data = null
+        val action = "join:$uri"
+        pendingQuickAction = action
+        quickActionIntentChannel?.invokeMethod("onQuickAction", action)
     }
 
     private fun captureQuickAction(intent: Intent?) {
@@ -465,7 +523,7 @@ class MainActivity: FlutterActivity() {
             Intent.ACTION_VIEW -> intent.data
             else -> null
         }
-        if (uri == null) return
+        if (uri == null || isJoinLink(uri)) return
 
         if (intent.action == Intent.ACTION_SEND) {
             intent.removeExtra(Intent.EXTRA_STREAM)

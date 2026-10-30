@@ -164,17 +164,16 @@ void main() {
     accumulator.processCycle(
       detections: [detection(0.6, start)],
       windowEnd: start.add(const Duration(seconds: 3)),
-      createRecord:
-          (detection, timestamp) => DetectionRecord(
-            scientificName: detection.species.scientificName,
-            commonName: detection.species.commonName,
-            confidence: detection.confidence,
-            timestamp: timestamp,
-            reviewStatus: ReviewStatus.confirmed,
-            reviewedAt: reviewedAt,
-            note: 'field note',
-            voiceMemoPath: '/memo.m4a',
-          ),
+      createRecord: (detection, timestamp) => DetectionRecord(
+        scientificName: detection.species.scientificName,
+        commonName: detection.species.commonName,
+        confidence: detection.confidence,
+        timestamp: timestamp,
+        reviewStatus: ReviewStatus.confirmed,
+        reviewedAt: reviewedAt,
+        note: 'field note',
+        voiceMemoPath: '/memo.m4a',
+      ),
     );
     accumulator.processCycle(
       detections: [detection(0.9, start)],

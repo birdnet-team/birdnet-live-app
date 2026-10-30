@@ -8,7 +8,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
    <img src="https://img.shields.io/badge/flutter-%3E%3D3.47-blue.svg" alt="Flutter >=3.47">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
-  <img src="https://img.shields.io/badge/version-1.2.0-orange.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.1-orange.svg" alt="Version">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
 </p>
 
@@ -34,7 +34,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases"><b>All Releases</b></a>
 </p>
 
-**NOTE: BirdNET Live is under active development. Some rough edges and limitations remain — please [report issues](https://github.com/birdnet-team/birdnet-live-app/issues) you run into and contribute if you can!**
+**Your feedback shapes BirdNET Live — please [report bugs](https://github.com/birdnet-team/birdnet-live-app/issues/new?template=bug_report.yml), [request features](https://github.com/birdnet-team/birdnet-live-app/issues/new?template=feature_request.yml), and [contribute](CONTRIBUTING.md) if you can!**
 
 ---
 
@@ -74,13 +74,13 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **On-device inference** — BirdNET+ model (9,789 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
-- **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, Russian, and Simplified Chinese
+- **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, Russian, Simplified Chinese, and Korean
 
 ## Install on Android
 
 BirdNET Live is available on the [Google Play Store](https://play.google.com/store/apps/details?id=de.tu_chemnitz.mi.kahst.birdnet_live) and is available as a signed APK for sideloading. Download the latest release from the [Releases page](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfer the `.apk` file to your phone, and open it to install. You may need to allow installation from unknown sources in your device settings.
 
-> **Note:** The APK is ~260 MB because it includes the full BirdNET+ audio model and all species images for full offline use.
+> **Note:** The APK is ~320 MB because it includes the full BirdNET+ audio model, all species images for full offline use, and native libraries for both arm64 phones and x86_64 Chromebooks.
 
 ## Quick Start
 
@@ -229,12 +229,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Contributing Translations
 
-Translations are very welcome contributions, and they cover **two** surfaces — both need updating for a language to be complete:
+Translations are very welcome contributions. Most translation changes cover **two** surfaces, and both need updating:
 
 - **UI strings** — ARB files in `lib/l10n/`. See [CONTRIBUTING.md](CONTRIBUTING.md#translation-contributions).
 - **Spoken announcement phrasing** — the sentences the app says out loud, in `assets/announcements/templates_<locale>.json`. See [assets/announcements/README.md](assets/announcements/README.md).
 
 The announcement templates are not in ARB because each entry is a *list* of interchangeable variants rather than a single string. A missing or incomplete template file falls back to English silently, so it is easy to ship a "complete" translation that still speaks English.
+
+Adding a whole new language touches more files — native Android and iOS strings, the language picker, policies, and the docs site. See [Adding a New Language](CONTRIBUTING.md#adding-a-new-language) for the full checklist.
 
 ## License
 
@@ -253,7 +255,7 @@ If you use this app in your scientific work, please cite it using the following 
 
 ```bibtex
 @software{BirdNET_Live_2026,
-  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Verdon, Simon and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Müller, Jörg and Klinck, Holger},
   title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
   year = {2026}

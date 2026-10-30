@@ -41,6 +41,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
+import 'ort_session_options.dart';
+
 /// Low-level wrapper around an ONNX classification model.
 ///
 /// Handles session creation, input tensor construction, inference, and
@@ -114,14 +116,7 @@ class ClassifierModel {
 
     _session = await _ort.createSession(
       modelPath,
-      options:
-          intraOpNumThreads == null
-              ? null
-              : OrtSessionOptions(
-                intraOpNumThreads: intraOpNumThreads,
-                interOpNumThreads: 1,
-                useArena: true,
-              ),
+      options: buildOrtSessionOptions(intraOpNumThreads: intraOpNumThreads),
     );
 
     debugPrint(
@@ -280,10 +275,9 @@ class ClassifierModel {
     }
 
     final input = Float32List(windowSamples);
-    final copyLen =
-        audioSamples.length < windowSamples
-            ? audioSamples.length
-            : windowSamples;
+    final copyLen = audioSamples.length < windowSamples
+        ? audioSamples.length
+        : windowSamples;
     for (var i = 0; i < copyLen; i++) {
       input[i] = audioSamples[i].clamp(-1.0, 1.0);
     }
@@ -323,8 +317,9 @@ class ModelOutput {
     }
 
     final predictionsPerBatch = predictions.length ~/ batchSize;
-    final embeddingsPerBatch =
-        embeddings == null ? 0 : embeddings.length ~/ batchSize;
+    final embeddingsPerBatch = embeddings == null
+        ? 0
+        : embeddings.length ~/ batchSize;
     return [
       for (var index = 0; index < batchSize; index++)
         ModelOutput(

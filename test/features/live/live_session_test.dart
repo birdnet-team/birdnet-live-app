@@ -38,6 +38,23 @@ void main() {
   // ── SessionSettings ────────────────────────────────────────────────────
 
   group('SessionSettings', () {
+    test('withInferenceRate replaces only the rate', () {
+      const settings = SessionSettings(
+        windowDuration: 5,
+        confidenceThreshold: 40,
+        inferenceRate: 1.0,
+        speciesFilterMode: 'geoExclude',
+        clipContextSeconds: 2,
+        recordingMode: 'full',
+        poolingWindows: 4,
+      );
+
+      final lowered = settings.withInferenceRate(0.7);
+
+      expect(lowered.inferenceRate, 0.7);
+      expect(lowered.toJson(), {...settings.toJson(), 'inferenceRate': 0.7});
+    });
+
     test('fromJson parses all fields', () {
       final json = {
         'windowDuration': 5,
@@ -889,6 +906,54 @@ void main() {
       expect(roundTripped.detections[0].audioClipPath, '/clips/clip1.wav');
       expect(roundTripped.recordingPath, '/recordings/full.wav');
       expect(roundTripped.settings.windowDuration, 3);
+    });
+
+    test('every new session gets its own version 4 UUID', () {
+      final a = LiveSession(
+        id: 'same-id',
+        startTime: DateTime(2026, 2, 28),
+        settings: testSettings,
+      );
+      final b = LiveSession(
+        id: 'same-id',
+        startTime: DateTime(2026, 2, 28),
+        settings: testSettings,
+      );
+
+      expect(a.uuid, isNot(b.uuid));
+      expect(
+        a.uuid,
+        matches(
+          RegExp(
+            r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-'
+            r'[0-9a-f]{12}$',
+          ),
+        ),
+      );
+    });
+
+    test('uuid round-trips through JSON unchanged', () {
+      final session = LiveSession(
+        id: 'session-2026',
+        startTime: DateTime(2026, 2, 28),
+        settings: testSettings,
+      );
+
+      final json = session.toJson();
+      expect(json['uuid'], session.uuid);
+      expect(LiveSession.fromJson(json).uuid, session.uuid);
+    });
+
+    test('legacy JSON without a uuid parses with a fresh one', () {
+      final json = LiveSession(
+        id: 'legacy',
+        startTime: DateTime(2026, 2, 28),
+        settings: testSettings,
+      ).toJson()..remove('uuid');
+
+      final restored = LiveSession.fromJson(json);
+      expect(restored.uuid, isNotEmpty);
+      expect(restored.toJson()['uuid'], restored.uuid);
     });
 
     test('background stop reasons survive saving and reopening', () {

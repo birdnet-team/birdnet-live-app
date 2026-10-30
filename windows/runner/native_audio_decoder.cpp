@@ -199,7 +199,7 @@ NativeAudioDecoder::Info NativeAudioDecoder::Inspect(
 
 NativeAudioDecoder::Info NativeAudioDecoder::DecodeToFile(
     const std::string& utf8_path, const std::string& utf8_temp_path,
-    std::atomic<bool>* cancelled) {
+    const CancelCheck& is_cancelled) {
   Info info;
   MfSession session;
   if (!session.ok()) {
@@ -225,8 +225,12 @@ NativeAudioDecoder::Info NativeAudioDecoder::DecodeToFile(
 
   int64_t total_samples = 0;
   bool reader_failed = false;
+  bool was_cancelled = false;
   for (;;) {
-    if (cancelled && cancelled->load()) break;
+    if (is_cancelled && is_cancelled()) {
+      was_cancelled = true;
+      break;
+    }
 
     DWORD stream_index = 0, flags = 0;
     LONGLONG timestamp = 0;
@@ -267,6 +271,11 @@ NativeAudioDecoder::Info NativeAudioDecoder::DecodeToFile(
   out.close();
   SafeRelease(&reader);
 
+  if (was_cancelled) {
+    info.cancelled = true;
+    info.error = "Decoding cancelled";
+    return info;
+  }
   if (reader_failed) {
     info.error = "Decode failed while reading samples";
     return info;
@@ -280,7 +289,7 @@ NativeAudioDecoder::Info NativeAudioDecoder::DecodeToFile(
 
 NativeAudioDecoder::RangeResult NativeAudioDecoder::DecodeRange(
     const std::string& utf8_path, int64_t start_sample, int64_t count,
-    std::atomic<bool>* cancelled) {
+    const CancelCheck& is_cancelled) {
   RangeResult result;
   MfSession session;
   if (!session.ok()) {
@@ -316,9 +325,13 @@ NativeAudioDecoder::RangeResult NativeAudioDecoder::DecodeRange(
   mono.reserve(static_cast<size_t>(count));
   bool reached_end = false;
   bool reader_failed = false;
+  bool was_cancelled = false;
 
   while (static_cast<int64_t>(mono.size()) < count) {
-    if (cancelled && cancelled->load()) break;
+    if (is_cancelled && is_cancelled()) {
+      was_cancelled = true;
+      break;
+    }
 
     DWORD stream_index = 0, flags = 0;
     LONGLONG timestamp = 0;
@@ -356,6 +369,11 @@ NativeAudioDecoder::RangeResult NativeAudioDecoder::DecodeRange(
 
   SafeRelease(&reader);
 
+  if (was_cancelled) {
+    result.cancelled = true;
+    result.error = "Decoding cancelled";
+    return result;
+  }
   if (reader_failed) {
     result.error = "Decode failed while reading samples";
     return result;

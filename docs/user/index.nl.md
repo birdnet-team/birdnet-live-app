@@ -56,6 +56,10 @@ Meerdere audiobestanden in bulk verwerken en analyseren. (Binnenkort beschikbaar
 
 Een geplande ARU-inzet als Session opzetten, volledige cyclusaudio of bewaarde detectiefragmenten opnemen, live inferentie draaien tijdens actieve cycli en geplande opnamecycli volgen.
 
+### [Uploads](uploads.md)
+
+Afgeronde Sessions naar de map van een project sturen: een Nextcloud File Drop- of WebDAV-bestemming opzetten, deelnamelinks en QR-codes, het tabblad Versturen naar, de uploadstatus en automatische ARU-uploads.
+
 ## Naslag
 
 ### [Veelgestelde vragen](faq.md)

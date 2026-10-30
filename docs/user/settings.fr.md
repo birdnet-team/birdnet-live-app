@@ -121,6 +121,20 @@ pour une autonomie maximale. L'analyse de fichiers n'a pas de fréquence
 d'inférence — elle utilise un réglage de
 [chevauchement](file-analysis.md) à la place.
 
+Si un appareil ne parvient pas à suivre la fréquence choisie — l'inférence
+prend un pas complet de retard sur la capture pendant plusieurs fenêtres
+d'affilée —, la Session abaisse la fréquence de 0,30 Hz, et de nouveau tant
+que l'appareil continue de prendre du retard, jusqu'à 0,10 Hz au minimum. La
+fréquence abaissée devient alors le réglage de tous les modes : Live, Point
+Count, Survey et ARU, et donc de leurs assistants de configuration, afin que
+la Session suivante, quel que soit le mode, démarre à une fréquence que cet
+appareil peut tenir. Les réglages et les assistants affichent sous le curseur
+une note indiquant que l'appareil est connu pour être trop lent au-delà de
+cette fréquence. La note reste, car un appareil lent reste lent ; les curseurs
+restent librement réglables. Sans cela, un appareil lent accumule un retard
+qui finit par écraser l'audio dont sont extraits les extraits de détection,
+et les détections restent sans audio.
+
 ### Ignorer des espèces
 
 Ouvre un panneau de filtres binaires d’inférence. Cochez **Oiseaux**, **Mammifères**, **Amphibiens** ou **Insectes** pour supprimer toute cette classe taxonomique. Les quatre cases sont décochées par défaut.
@@ -142,6 +156,10 @@ fenêtre de soutien, porte le score étayé le plus fort et se termine à la fin
 la dernière fenêtre de soutien.
 
 ## Spectrogramme
+
+### Taille
+
+Définit la place qu'occupe le spectrogramme en direct à l'écran en Live Mode, Point Count, Survey et ARU. **Pleine** est la hauteur habituelle. **Moyenne** et **Petite** la réduisent à 75 % et 50 % et cèdent la différence à la liste des détections : le bon choix quand, sur un téléphone en portrait, vous suivez surtout la liste. **Désactivé** retire complètement le spectrogramme ; en Survey et ARU, l'onglet du spectrogramme disparaît aussi. En mode paysage, **Moyenne** et **Petite** raccourcissent le spectrogramme dans sa moitié d'écran (l'espace en dessous reste vide pour l'instant), et **Désactivé** laisse tout l'écran à la liste des détections. Les spectrogrammes des sessions enregistrées et de la lecture ne sont pas concernés.
 
 ### Taille de FFT
 
@@ -223,7 +241,7 @@ Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de f
 
 Une fois activé, le mode Live commence à enregistrer dès l'ouverture de l'écran et la fin du chargement du modèle — sans avoir à appuyer sur le bouton du micro. Utile pour des installations de type borne, une utilisation mains libres (appareil monté sur le terrain, par exemple) ou tout flux où ouvrir Live signifie déjà « on démarre maintenant ». Désactivé par défaut, afin qu'un appui accidentel sur la tuile Live depuis l'écran d'accueil ne lance pas silencieusement une session. Le démarrage automatique ne se produit qu'une fois par visite de l'écran : arrêter une session puis réappuyer sur le micro fonctionne donc toujours comme un redémarrage manuel.
 
-Ce réglage concerne l'ouverture du mode Live depuis l'application. Le [widget Quick Listen](live-mode.md) commence à écouter dès qu'on appuie dessus, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
+Ce réglage concerne l'ouverture du mode Live depuis l'application. [Quick Listen](live-mode.md) — le widget Android ou, sur iOS, le raccourci, la phrase Siri et l'action de l'icône — commence à écouter dès qu'il est déclenché, quel que soit ce réglage, et ne le modifie pas. Si une session Point Count, Survey, Analyse de fichiers ou mode ARU est déjà en cours ou en cours de démarrage, cette session est préservée et il vous est demandé de l'arrêter d'abord.
 
 ### Continuer avec l’écran éteint
 
@@ -307,6 +325,8 @@ Comme les niveaux reposent sur un rang, cela se comporte de la même façon dans
 
 ## Export et synchronisation
 
+La section présente trois entrées, chacune résumant ses choix : **Formats**, **Contenu** et **Destinations d'envoi**. Les deux premières ouvrent une page avec les cases décrites ci-dessous.
+
 ### Formats
 
 Cochez n'importe quelle combinaison de formats d'export : chaque enregistrement ou partage regroupera tous les formats sélectionnés dans une seule archive ZIP. Si vous choisissez un format unique, sans extraits audio ni rapport HTML, vous obtiendrez un fichier brut (par exemple `session.csv`) au lieu d'un ZIP, par compatibilité ascendante :
@@ -337,6 +357,11 @@ Une fois activé, chaque archive ZIP d'export contient également un fichier `<s
 ### Partage de l'audio seul
 
 Décochez tous les formats **ainsi que** le rapport HTML **et** la case des métadonnées de l'application, en ne laissant que **Inclure les fichiers audio** : Partager remettra alors au panneau système l'enregistrement brut (par exemple `BirdNET_Live_…flac`) au lieu d'un ZIP. C'est la voie la plus directe pour envoyer une session vers iNaturalist, eBird ou toute autre application attendant un fichier audio non empaqueté. Les Sessions avec plusieurs extraits de détection produisent toujours un ZIP ; le partage d'une seule détection transmet ce clip brut unique.
+
+### Destinations d'envoi
+
+Liste les emplacements WebDAV vers lesquels une Session terminée peut être envoyée, par exemple le File Drop Nextcloud d'un responsable de projet ou le serveur de référence de `tools/webdav_drop_server`. Ajoutez-en un en collant le lien d'accès ou le lien de partage reçu, ou en scannant le code QR du projet avec l'appareil photo ; une simple adresse WebDAV avec nom d'utilisateur et mot de passe fonctionne via les champs avancés. Rien n'est enregistré tant qu'un test de connexion n'a pas réussi. L'écran de la destination propose aussi **Afficher le code d'accès**, qui montre le même lien sous forme de code QR (plus Copier le lien) pour qu'un second téléphone rejoigne sans rien saisir. Le test crée le fichier d'enregistrement de l'appareil sur le serveur, dans un dossier caché `.birdnet-live`, et avertit lorsque l'identifiant peut aussi lister le dossier (un partage en écriture seule est plus sûr pour tous), et en plus lorsqu'un tel partage listable n'a pas de mot de passe. Chaque destination a son propre nom, un interrupteur « Envoyer uniquement en Wi-Fi » et un interrupteur « Envoyer les Sessions ARU automatiquement » ; ce dernier met en file chaque ARU Session terminée pour cette destination sans confirmation. Pour envoyer, touchez Partager sur une Session ou une sélection de la bibliothèque de Sessions et cochez la destination dans l'onglet **Envoyer vers** de la boîte de dialogue (un badge sur l'onglet compte les coches et la liste défile, la boîte de dialogue garde donc une hauteur fixe quel que soit le nombre de destinations) ; la feuille de partage peut y être décochée pour envoyer sans partager, et les destinations cochées la dernière fois sont précochées. Les envois en file s'exécutent tant que l'application est ouverte (et, sur Android, aussi en arrière-plan dès qu'un réseau adapté est disponible), se relancent avec des délais croissants, attendent le Wi-Fi si demandé et affichent leur état en première ligne sous le titre de la Session dans la bibliothèque et sous forme d'icône nuage dans la revue de Session (touchez l'un ou l'autre pour les détails par destination, Réessayer et Retirer) ; la ligne disparaît dès qu'aucune de ses destinations n'existe plus dans les réglages. Chaque envoi est un seul fichier ZIP, nommé comme l'export de Partager et contenant l'enregistrement JSON de la Session plus tout ce que Partager inclurait, placé dans un dossier portant le code à huit caractères de cet appareil (affiché comme **Votre identifiant d'envoi** lors de l'adhésion et en haut de la liste des destinations). Un identifiant de participant facultatif, comme un nom, un e-mail ou un numéro de participant, peut y être saisi ; il voyage dans les métadonnées de l'envoi et l'enregistrement de l'appareil, jamais dans un chemin. Renvoyer une Session remplace ce fichier ; un File Drop Nextcloud n'écrase jamais et conserve l'ancienne copie sous un nom numéroté. Les envois se font dans un seul sens : rien n'est téléchargé et supprimer une Session sur l'appareil ne la retire jamais du serveur. Les identifiants sont conservés dans le trousseau de l'appareil, jamais dans les données exportées. L'ensemble du processus, de la création du partage au suivi d'un envoi, est décrit dans [Envois](uploads.md). Raison : les projets de terrain collectent des données depuis de nombreux téléphones, et un seul lien collé avec un test vérifié élimine presque toutes les erreurs de configuration. Voir le ticket #284.
+
 
 ## Confidentialité
 

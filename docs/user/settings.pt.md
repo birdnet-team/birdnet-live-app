@@ -120,6 +120,20 @@ configurações de Survey usam **0,70 Hz** por padrão como meio-termo;
 arquivos não tem taxa de inferência — ela usa uma configuração de
 [sobreposição](file-analysis.md).
 
+Se um dispositivo não consegue acompanhar a taxa escolhida — a inferência fica
+um passo inteiro atrás da captura por várias janelas seguidas —, a Session
+reduz a taxa em 0,30 Hz, e de novo enquanto o dispositivo continuar ficando
+para trás, até o mínimo de 0,10 Hz. A taxa reduzida passa então a ser a
+configuração de todos os modos: Live, Point Count, Survey e ARU, e portanto
+dos seus assistentes de configuração, para que a próxima Session em qualquer
+modo comece com uma taxa que este dispositivo consiga sustentar. As
+configurações e os assistentes mostram, abaixo do controle deslizante, uma
+nota dizendo que o dispositivo é lento demais acima dessa taxa. A nota
+permanece, porque um dispositivo lento continua lento; os controles seguem
+livres para ajustar. Sem isso, um dispositivo lento acumula um atraso que
+acaba sobrescrevendo o áudio do qual os trechos de detecção são cortados, e
+as detecções ficam sem áudio.
+
 ### Ignorar espécies
 
 Abre um painel com filtros binários de inferência. Marque **Aves**, **Mamíferos**, **Anfíbios** ou **Insetos** para suprimir toda a classe taxonômica. As quatro caixas ficam desmarcadas por padrão.
@@ -140,6 +154,10 @@ detecção começa na sua janela de apoio mais antiga, carrega a maior pontuaç�
 respaldada e termina no fim da última janela de apoio.
 
 ## Espectrograma
+
+### Tamanho
+
+Define quanto da tela o espectrograma ao vivo ocupa em Live Mode, Point Count, Survey e ARU. **Completo** é a altura habitual. **Médio** e **Pequeno** a reduzem para 75% e 50% e cedem a diferença à lista de detecções, a escolha certa quando você olha sobretudo para a lista no celular em pé. **Desligado** remove o espectrograma por completo; em Survey e ARU a aba do espectrograma também desaparece. Na horizontal, **Médio** e **Pequeno** encurtam o espectrograma na sua metade da tela (o espaço abaixo fica vazio por enquanto), e **Desligado** deixa a tela inteira para a lista de detecções. Os espectrogramas das sessões salvas e da reprodução não são afetados.
 
 ### Tamanho da FFT
 
@@ -221,7 +239,7 @@ Esta configuração se aplica ao áudio gravado pelo BirdNET Live. A **Análise 
 
 Quando ativado, o modo Live começa a gravar assim que a tela abre e o modelo termina de carregar — sem precisar tocar no botão do microfone. Útil para instalações tipo quiosque, uso sem as mãos (por exemplo, o dispositivo montado no campo) ou qualquer fluxo em que abrir o Live já signifique "começar agora". Desativado por padrão, para que um toque acidental no bloco do Live na tela inicial não inicie uma Session silenciosamente. O início automático ocorre apenas uma vez por visita à tela, então parar uma Session e tocar no microfone de novo continua funcionando como reinício manual.
 
-Esta configuração vale para abrir o modo Live de dentro do aplicativo. O [widget Quick Listen](live-mode.md) começa a ouvir quando tocado, independentemente desta configuração, e não a altera. Se uma Session de Point Count, Survey, Análise de arquivos ou modo ARU já estiver em execução ou iniciando, essa Session é preservada e o aplicativo pede que você a interrompa primeiro.
+Esta configuração vale para abrir o modo Live de dentro do aplicativo. [Quick Listen](live-mode.md) — o widget do Android ou, no iOS, o atalho, a frase da Siri e a ação do ícone — começa a ouvir quando acionado, independentemente desta configuração, e não a altera. Se uma Session de Point Count, Survey, Análise de arquivos ou modo ARU já estiver em execução ou iniciando, essa Session é preservada e o aplicativo pede que você a interrompa primeiro.
 
 ### Continuar com a tela desligada
 
@@ -304,6 +322,8 @@ Como os níveis assentam na ordenação, isto comporta-se da mesma forma numa fl
 
 ## Exportação e sincronização
 
+A seção mostra três entradas, cada uma resumindo suas escolhas: **Formatos**, **Conteúdo** e **Destinos de envio**. As duas primeiras abrem uma página com as caixas descritas abaixo.
+
 ### Formatos
 
 Marque qualquer combinação de formatos de exportação — cada gravação/compartilhamento reunirá todos os formatos selecionados dentro de um único ZIP. Se escolher um único formato sem trechos de áudio e sem relatório HTML, você obterá um arquivo simples (por exemplo, `session.csv`) em vez de um ZIP, por compatibilidade retroativa:
@@ -334,6 +354,11 @@ Quando ativado, cada ZIP de exportação também contém um arquivo `<session>_r
 ### Compartilhamento só de áudio
 
 Desmarque todos os formatos **e** o relatório HTML **e** a caixa de metadados do aplicativo, deixando apenas **Incluir arquivos de áudio**, e Compartilhar entregará ao painel do sistema a gravação bruta (por exemplo, `BirdNET_Live_…flac`) em vez de um ZIP. Esse é o caminho mais direto para enviar uma Session ao iNaturalist, eBird ou qualquer outro aplicativo que espere um arquivo de áudio sem empacotamento. Sessions com vários trechos de detecção ainda produzem um ZIP; ao compartilhar uma única detecção, aquele único clipe bruto é entregue.
+
+### Destinos de envio
+
+Lista os locais WebDAV para os quais uma Session finalizada pode ser enviada, por exemplo o File Drop do Nextcloud de quem coordena o projeto ou o servidor de referência em `tools/webdav_drop_server`. Adicione um colando o link de acesso ou o link de compartilhamento recebido, ou escaneando o código QR do projeto com a câmera; um endereço WebDAV comum com nome de usuário e senha funciona pelos campos avançados. Nada é salvo até que um teste de conexão seja aprovado. A tela do destino também tem **Mostrar código de acesso**, que mostra o mesmo link como código QR (mais Copiar link) para que um segundo telefone entre sem digitar. O teste cria o arquivo de registro do dispositivo no servidor, em uma pasta oculta `.birdnet-live`, e avisa quando a credencial também consegue listar a pasta (um compartilhamento somente de escrita é mais seguro para todos) e, além disso, quando esse compartilhamento listável não tem senha. Cada destino tem seu próprio nome, uma chave "Enviar somente por Wi-Fi" e uma chave "Enviar Sessions ARU automaticamente"; esta última coloca toda ARU Session finalizada na fila desse destino sem perguntar. Para enviar, toque em Compartilhar em uma Session ou em uma seleção da biblioteca de Sessions e marque o destino na aba **Enviar para** da caixa de diálogo (um selo na aba conta as marcações e a lista rola, então a caixa mantém a mesma altura com qualquer número de destinos); ali o painel de compartilhamento pode ser desmarcado para apenas enviar, e os destinos marcados da última vez já vêm marcados. Os envios na fila rodam enquanto o aplicativo está aberto (e, no Android, também em segundo plano assim que uma rede adequada estiver disponível), são repetidos com esperas crescentes, aguardam Wi-Fi quando solicitado e mostram seu estado como primeira linha abaixo do título da Session na biblioteca e como ícone de nuvem na revisão da Session (toque em qualquer um deles para detalhes por destino, Tentar agora e Remover); a linha desaparece quando nenhum de seus destinos existe mais nas configurações. Cada envio é um único arquivo ZIP, com o nome da exportação de Compartilhar e contendo o registro JSON da Session mais tudo o que Compartilhar incluiria, em uma pasta com o código de oito caracteres deste dispositivo (mostrado como **Seu ID de envio** ao entrar e no topo da lista de destinos). Ali é possível informar um identificador de participante opcional, como nome, e-mail ou ID de participante; ele segue nos metadados do envio e no registro do dispositivo, nunca em um caminho. Enviar uma Session de novo substitui esse arquivo; um File Drop do Nextcloud nunca sobrescreve e mantém a cópia anterior com um nome numerado. Os envios são de mão única: nada é baixado, e excluir uma Session no dispositivo nunca a remove do servidor. As credenciais ficam no chaveiro do dispositivo, nunca nos dados exportados. Todo o fluxo de trabalho, desde a criação do compartilhamento até o acompanhamento de um envio, está descrito em [Envios](uploads.md). Justificativa: projetos de campo coletam dados de muitos telefones, e um único link colado com um teste verificado elimina quase todo erro de configuração. Veja a issue #284.
+
 
 ## Privacidade
 

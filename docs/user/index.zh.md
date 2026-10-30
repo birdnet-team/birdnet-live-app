@@ -28,7 +28,7 @@
 
 针对当前位置和季节预测的物种，以及物种详情浮层。
 
-### [Session 库](session-library.md)
+### [Session 列表](session-library.md)
 
 已保存的 Session、搜索、排序、视图模式，以及按物种分组浏览。
 
@@ -55,6 +55,10 @@ Survey 的设置、实时 Survey 面板，以及地图、语谱图和汇总三�
 ### [ARU 模式](aru-mode.md)
 
 创建计划中的 ARU 部署 Session，录制完整周期音频或保留的检测片段，在活动周期内进行实时推理，并跟踪计划中的录音周期。
+
+### [上传](uploads.md)
+
+把已完成的 Session 发送到项目文件夹：设置 Nextcloud File Drop 或 WebDAV 目标、加入链接和 QR 码、“发送到”标签页、上传状态，以及自动上传 ARU。
 
 ## 参考
 

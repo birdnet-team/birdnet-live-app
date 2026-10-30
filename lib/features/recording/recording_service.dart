@@ -42,6 +42,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
@@ -49,6 +50,7 @@ import 'package:path_provider/path_provider.dart';
 import '../audio/ring_buffer.dart';
 import 'audio_file_writer.dart';
 import 'flac_encoder.dart';
+import 'isolate_audio_file_writer.dart';
 import 'wav_writer.dart';
 
 /// Recording mode for live sessions.
@@ -190,6 +192,48 @@ Future<Map<T, String>> saveDetectionClipsFor<T>({
   };
 }
 
+/// Writes [samples] once per entry in [targets] (clip name → file path).
+///
+/// Returns an error description per clip name, or null where the file was
+/// written. A clip that fails is deleted so no partial file is left behind.
+/// Pure file I/O over the arguments, so it can run through `Isolate.run`.
+@visibleForTesting
+Future<Map<String, String?>> writeClipFiles({
+  required Map<String, String> targets,
+  required Float32List samples,
+  required int sampleRate,
+  required String format,
+}) async {
+  final outcome = <String, String?>{};
+  for (final entry in targets.entries) {
+    try {
+      if (format == 'flac') {
+        await FlacEncoder.writeFile(
+          filePath: entry.value,
+          samples: samples,
+          sampleRate: sampleRate,
+        );
+      } else {
+        await WavWriter.writeFile(
+          filePath: entry.value,
+          samples: samples,
+          sampleRate: sampleRate,
+        );
+      }
+      outcome[entry.key] = null;
+    } catch (error) {
+      outcome[entry.key] = error.toString();
+      try {
+        final file = File(entry.value);
+        if (await file.exists()) await file.delete();
+      } catch (_) {
+        // Best-effort cleanup of a partial clip.
+      }
+    }
+  }
+  return outcome;
+}
+
 /// Parses a [RecordingMode] from its string name.
 ///
 /// Returns [RecordingMode.off] for unrecognized values.
@@ -213,9 +257,10 @@ class RecordingService {
   RecordingService({
     required this.ringBuffer,
     this.sampleRate = 32000,
-    this.clipContextSeconds = 1,
+    int clipContextSeconds = 1,
     int windowSeconds = 3,
-  }) : _windowSeconds = windowSeconds;
+  }) : _clipContextSeconds = clipContextSeconds,
+       _windowSeconds = windowSeconds;
 
   /// The shared ring buffer to read audio from.
   final RingBuffer ringBuffer;
@@ -226,8 +271,21 @@ class RecordingService {
   /// Seconds of audio captured before AND after each detection window.
   ///
   /// A clip is `windowSeconds + 2 * clipContextSeconds` long, centered on
-  /// the analyzed audio window that triggered the detection.
-  final int clipContextSeconds;
+  /// the analyzed audio window that triggered the detection. Follows the
+  /// clip-context setting between sessions (see [setClipContextSeconds]).
+  int get clipContextSeconds => _clipContextSeconds;
+  int _clipContextSeconds;
+
+  /// Follow a change of the clip-context setting.
+  ///
+  /// Ignored while a recording is open, for the same reason as
+  /// [setWindowSeconds]: the clip length has to stay put for the lifetime of
+  /// a session. Letting the setting rebuild the service instead would dispose
+  /// it — and the controller built on it — underneath a running session.
+  void setClipContextSeconds(int value) {
+    if (_isRecording || value < 0) return;
+    _clipContextSeconds = value;
+  }
 
   /// Length of the inference window in seconds (typically 3).
   ///
@@ -289,13 +347,19 @@ class RecordingService {
   ///
   /// [sessionId] is used to create the output directory.
   /// [mode] determines the recording behavior.
+  ///
+  /// Returns what the session should store as its recording path: the
+  /// continuous file in [RecordingMode.full], or the clip directory in
+  /// [RecordingMode.detectionsOnly] — the same thing [stopRecording] reports.
+  /// A checkpoint written mid-session therefore already points at the audio,
+  /// and a session the system ends before it is stopped keeps its recording.
   Future<String?> startRecording({
     required String sessionId,
     required RecordingMode mode,
     String format = 'flac',
   }) async {
     if (mode == RecordingMode.off) return null;
-    if (_isRecording) return _sessionDir;
+    if (_isRecording) return _writer?.filePath ?? _sessionDir;
 
     _mode = mode;
     _format = format;
@@ -311,10 +375,14 @@ class RecordingService {
     if (mode == RecordingMode.full) {
       final ext = format == 'flac' ? 'flac' : 'wav';
       final filePath = '$sessionDir/full.$ext';
-      final AudioFileWriter writer =
-          format == 'flac'
-              ? FlacEncoder(filePath: filePath, sampleRate: sampleRate)
-              : WavWriter(filePath: filePath, sampleRate: sampleRate);
+      // Encoding and file I/O run on a worker isolate; the UI isolate is also
+      // the platform thread on Android and iOS, and a second of FLAC every
+      // second for hours does not belong there.
+      final AudioFileWriter writer = IsolateAudioFileWriter(
+        filePath: filePath,
+        format: ext,
+        sampleRate: sampleRate,
+      );
       await writer.open();
       // Publish the writer and directory only once the file is open, so a
       // stopRecording() that ran during open() never flushes into or closes
@@ -337,7 +405,7 @@ class RecordingService {
     }
 
     _sessionDir = sessionDir;
-    return sessionDir;
+    return _writer?.filePath ?? sessionDir;
   }
 
   /// Save an audio clip around a detection.
@@ -414,32 +482,49 @@ class RecordingService {
     if (_isAllSilent(samples)) return const {};
 
     final ext = format == 'flac' ? 'flac' : 'wav';
-    final written = <String, String>{};
-    for (final clipName in clipNames.toSet()) {
-      final filePath = '$sessionDir/$clipName.$ext';
-      try {
-        if (format == 'flac') {
-          await FlacEncoder.writeFile(
-            filePath: filePath,
-            samples: samples,
-            sampleRate: sampleRate,
-          );
-        } else {
-          await WavWriter.writeFile(
-            filePath: filePath,
-            samples: samples,
-            sampleRate: sampleRate,
-          );
-        }
-        written[clipName] = filePath;
-      } catch (e, st) {
-        debugPrint(
-          '[RecordingService] failed to save clip "$clipName": $e\n$st',
-        );
-        await deleteClip(filePath);
-      }
+    final targets = {
+      for (final clipName in clipNames.toSet())
+        clipName: '$sessionDir/$clipName.$ext',
+    };
+    // One worker isolate per round: every clip of the round is encoded from
+    // the same snapshot off the UI isolate, which is also the platform thread
+    // on Android and iOS. The samples are copied into the worker once. Only
+    // locals are captured — never `this`, which would drag the ring buffer
+    // along.
+    final rate = sampleRate;
+    final Map<String, String?> outcome;
+    try {
+      outcome = await Isolate.run(
+        () => writeClipFiles(
+          targets: targets,
+          samples: samples,
+          sampleRate: rate,
+          format: ext,
+        ),
+        debugName: 'detection-clips',
+      );
+    } catch (error) {
+      // The worker could not be started (memory pressure, isolate limit).
+      // Each clip's own failure is already reported per name; a round that
+      // cannot run at all simply records no clip, as a failed write always
+      // did, rather than erroring the detection that asked for it.
+      debugPrint(
+        '[RecordingService] failed to save ${targets.length} clip(s): $error',
+      );
+      return const {};
     }
 
+    final written = <String, String>{};
+    for (final entry in outcome.entries) {
+      final error = entry.value;
+      if (error == null) {
+        written[entry.key] = targets[entry.key]!;
+      } else {
+        debugPrint(
+          '[RecordingService] failed to save clip "${entry.key}": $error',
+        );
+      }
+    }
     return written;
   }
 
@@ -511,23 +596,36 @@ class RecordingService {
       await Future<void>.delayed(const Duration(milliseconds: 10));
     }
 
-    if (_mode == RecordingMode.full && _writer != null) {
-      // Final flush (timer is canceled, no concurrency risk).
-      await _flushBuffer();
-      await _writer!.close();
-      final path = _writer!.filePath;
+    final writer = _writer;
+    if (_mode == RecordingMode.full && writer != null) {
+      final path = writer.filePath;
+      try {
+        // Final flush (timer is canceled, no concurrency risk).
+        await _flushBuffer();
+        await writer.close();
+      } finally {
+        // Whatever became of the file, the service is no longer recording
+        // into it: a flush or close that throws must not leave the stopped
+        // session reported as the current recording.
+        _writer = null;
+        _sessionDir = null;
+        _mode = RecordingMode.off;
+      }
+      if (writer is IsolateAudioFileWriter && writer.failure != null) {
+        debugPrint(
+          '[RecordingService] writer for $path stopped early: '
+          '${writer.failure}',
+        );
+      }
 
       int samples = 0;
-      final writer = _writer;
-      if (writer is FlacEncoder) {
+      if (writer is IsolateAudioFileWriter) {
+        samples = writer.samplesWritten;
+      } else if (writer is FlacEncoder) {
         samples = writer.totalSamples;
       } else if (writer is WavWriter) {
         samples = writer.samplesWritten;
       }
-
-      _writer = null;
-      _sessionDir = null;
-      _mode = RecordingMode.off;
 
       if (samples == 0) {
         try {
@@ -580,8 +678,9 @@ class RecordingService {
       if (newSamples <= 0) return;
 
       // Read only the new samples since last flush.
-      final samplesToRead =
-          newSamples > ringBuffer.capacity ? ringBuffer.capacity : newSamples;
+      final samplesToRead = newSamples > ringBuffer.capacity
+          ? ringBuffer.capacity
+          : newSamples;
       final samples = ringBuffer.readLast(samplesToRead);
 
       await _writer!.writeSamples(samples);

@@ -215,13 +215,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           if (!_groups.add(g)) _groups.remove(g);
                           update(() {});
                         },
-                        onClear:
-                            _groups.isEmpty
-                                ? null
-                                : () {
-                                  _groups.clear();
-                                  update(() {});
-                                },
+                        onClear: _groups.isEmpty
+                            ? null
+                            : () {
+                                _groups.clear();
+                                update(() {});
+                              },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                       const SizedBox(height: 16),
@@ -236,13 +235,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           if (!_tiers.add(tier)) _tiers.remove(tier);
                           update(() {});
                         },
-                        onClear:
-                            _tiers.isEmpty
-                                ? null
-                                : () {
-                                  _tiers.clear();
-                                  update(() {});
-                                },
+                        onClear: _tiers.isEmpty
+                            ? null
+                            : () {
+                                _tiers.clear();
+                                update(() {});
+                              },
                         clearLabel: l10n.exploreFilterAll,
                       ),
                     ],
@@ -299,8 +297,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget _buildSearchButton(AppLocalizations l10n) {
     return IconButton(
       icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
-      tooltip:
-          _searchVisible ? l10n.tooltipClearSearch : l10n.exploreSearchTooltip,
+      tooltip: _searchVisible
+          ? l10n.tooltipClearSearch
+          : l10n.exploreSearchTooltip,
       onPressed: _toggleSearch,
     );
   }
@@ -323,13 +322,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final content = ContentWidthConstraint(
       child: speciesAsync.when(
         loading: () => const LoadingView(),
-        error:
-            (error, _) => ErrorView(
-              title: l10n.statusError,
-              message: error.toString(),
-              onRetry: _refresh,
-              retryLabel: l10n.retry,
-            ),
+        error: (error, _) => ErrorView(
+          title: l10n.statusError,
+          message: error.toString(),
+          onRetry: _refresh,
+          retryLabel: l10n.retry,
+        ),
         data: (localSpecies) {
           return Column(
             children: [
@@ -361,72 +359,66 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeInOut,
                 alignment: Alignment.topCenter,
-                child:
-                    _searchVisible
-                        ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            focusNode: _searchFocusNode,
-                            onChanged: _onQueryChanged,
-                            textInputAction: TextInputAction.search,
-                            decoration: InputDecoration(
-                              hintText: l10n.exploreSearchHint,
-                              prefixIcon: const Icon(AppIcons.search, size: 20),
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              suffixIcon:
-                                  _query.isNotEmpty
-                                      ? IconButton(
-                                        icon: const Icon(
-                                          AppIcons.clear,
-                                          size: 20,
-                                        ),
-                                        tooltip: l10n.tooltipClearSearch,
-                                        onPressed: () {
-                                          _searchController.clear();
-                                          _onQueryChanged('');
-                                        },
-                                      )
-                                      : null,
+                child: _searchVisible
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          onChanged: _onQueryChanged,
+                          textInputAction: TextInputAction.search,
+                          decoration: InputDecoration(
+                            hintText: l10n.exploreSearchHint,
+                            prefixIcon: const Icon(AppIcons.search, size: 20),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
                             ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            suffixIcon: _query.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(AppIcons.clear, size: 20),
+                                    tooltip: l10n.tooltipClearSearch,
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _onQueryChanged('');
+                                    },
+                                  )
+                                : null,
                           ),
-                        )
-                        : const SizedBox(width: double.infinity, height: 0),
+                        ),
+                      )
+                    : const SizedBox(width: double.infinity, height: 0),
               ),
 
               // ── Body: either geo list or search results ──
               Expanded(
-                child:
-                    _query.isEmpty
-                        ? _GeoList(
-                          species: localSpecies,
-                          groups: _groups,
-                          tiers: _tiers,
-                          sortMode: _sortMode,
-                          detectionFilter: _detectionFilter,
-                          locationAvailable: locationAsync.value != null,
-                          onRefresh: _refresh,
-                          isEmbedded: widget.isEmbedded,
-                        )
-                        : _SearchResults(
-                          query: _query,
-                          groups: _groups,
-                          tiers: _tiers,
-                          detectionFilter: _detectionFilter,
-                          localSpecies: localSpecies,
-                          onRefresh: _refresh,
-                          isEmbedded: widget.isEmbedded,
-                        ),
+                child: _query.isEmpty
+                    ? _GeoList(
+                        species: localSpecies,
+                        groups: _groups,
+                        tiers: _tiers,
+                        sortMode: _sortMode,
+                        detectionFilter: _detectionFilter,
+                        locationAvailable: locationAsync.value != null,
+                        onRefresh: _refresh,
+                        isEmbedded: widget.isEmbedded,
+                      )
+                    : _SearchResults(
+                        query: _query,
+                        groups: _groups,
+                        tiers: _tiers,
+                        detectionFilter: _detectionFilter,
+                        localSpecies: localSpecies,
+                        onRefresh: _refresh,
+                        isEmbedded: widget.isEmbedded,
+                      ),
               ),
             ],
           );
@@ -637,27 +629,26 @@ class _GeoListState extends ConsumerState<_GeoList> {
     final detected = ref.watch(detectedSpeciesSetProvider);
     final showScientificName = ref.watch(showSciNamesProvider);
 
-    final filtered =
-        widget.species.where((s) {
-          if (widget.groups.isNotEmpty) {
-            final g = s.taxonomy?.taxonGroup;
-            if (g == null || !widget.groups.any((tg) => tg.csvValue == g)) {
-              return false;
-            }
-          }
-          switch (widget.detectionFilter) {
-            case _DetectionFilter.all:
-              break;
-            case _DetectionFilter.detected:
-              if (!detected.contains(s.scientificName)) return false;
-            case _DetectionFilter.undetected:
-              if (detected.contains(s.scientificName)) return false;
-          }
-          if (widget.tiers.isNotEmpty && !widget.tiers.contains(s.tier)) {
-            return false;
-          }
-          return true;
-        }).toList();
+    final filtered = widget.species.where((s) {
+      if (widget.groups.isNotEmpty) {
+        final g = s.taxonomy?.taxonGroup;
+        if (g == null || !widget.groups.any((tg) => tg.csvValue == g)) {
+          return false;
+        }
+      }
+      switch (widget.detectionFilter) {
+        case _DetectionFilter.all:
+          break;
+        case _DetectionFilter.detected:
+          if (!detected.contains(s.scientificName)) return false;
+        case _DetectionFilter.undetected:
+          if (detected.contains(s.scientificName)) return false;
+      }
+      if (widget.tiers.isNotEmpty && !widget.tiers.contains(s.tier)) {
+        return false;
+      }
+      return true;
+    }).toList();
 
     switch (widget.sortMode) {
       case _SortMode.geo:
@@ -676,14 +667,12 @@ class _GeoListState extends ConsumerState<_GeoList> {
 
     if (filtered.isEmpty) {
       return EmptyView(
-        icon:
-            widget.locationAvailable
-                ? AppIcons.searchOff
-                : AppIcons.locationOff,
-        title:
-            widget.locationAvailable
-                ? l10n.exploreNoSpecies
-                : l10n.exploreNoLocation,
+        icon: widget.locationAvailable
+            ? AppIcons.searchOff
+            : AppIcons.locationOff,
+        title: widget.locationAvailable
+            ? l10n.exploreNoSpecies
+            : l10n.exploreNoLocation,
       );
     }
 
@@ -707,8 +696,8 @@ class _GeoListState extends ConsumerState<_GeoList> {
               ),
               _ExploreTierHeaderSliver(
                 speciesCount: widget.species.length,
-                onTierSelected:
-                    (tier) => _scrollToTier(tier, filtered, cardHeight, gap),
+                onTierSelected: (tier) =>
+                    _scrollToTier(tier, filtered, cardHeight, gap),
               ),
               const SliverToBoxAdapter(child: Divider(height: 1)),
             ],
@@ -733,13 +722,12 @@ class _GeoListState extends ConsumerState<_GeoList> {
                         geoScore: s.geoScore,
                         tier: s.tier,
                         weeklyScores: s.weeklyScores,
-                        onTap:
-                            () => SpeciesInfoOverlay.show(
-                              context,
-                              ref,
-                              scientificName: s.scientificName,
-                              commonName: s.commonName,
-                            ),
+                        onTap: () => SpeciesInfoOverlay.show(
+                          context,
+                          ref,
+                          scientificName: s.scientificName,
+                          commonName: s.commonName,
+                        ),
                       ),
                     );
                   },
@@ -874,36 +862,35 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     // Search across the entire taxonomy, then keep only species the audio
     // model knows about (so opening them is meaningful), and apply the
     // taxonomic-group + detection-state filters.
-    final hits =
-        taxonomy
-            .search(
-              widget.query,
-              locale: speciesLocale,
-              geoScores: rawGeoScores,
-              limit: 200,
-            )
-            .where((sp) => audioLabels.contains(sp.scientificName))
-            .where(
-              (sp) =>
-                  widget.groups.isEmpty ||
-                  widget.groups.any((g) => g.csvValue == sp.taxonGroup),
-            )
-            .where((sp) {
-              switch (widget.detectionFilter) {
-                case _DetectionFilter.all:
-                  return true;
-                case _DetectionFilter.detected:
-                  return detected.contains(sp.scientificName);
-                case _DetectionFilter.undetected:
-                  return !detected.contains(sp.scientificName);
-              }
-            })
-            .where((sp) {
-              if (widget.tiers.isEmpty) return true;
-              final local = localByName[sp.scientificName];
-              return local != null && widget.tiers.contains(local.tier);
-            })
-            .toList();
+    final hits = taxonomy
+        .search(
+          widget.query,
+          locale: speciesLocale,
+          geoScores: rawGeoScores,
+          limit: 200,
+        )
+        .where((sp) => audioLabels.contains(sp.scientificName))
+        .where(
+          (sp) =>
+              widget.groups.isEmpty ||
+              widget.groups.any((g) => g.csvValue == sp.taxonGroup),
+        )
+        .where((sp) {
+          switch (widget.detectionFilter) {
+            case _DetectionFilter.all:
+              return true;
+            case _DetectionFilter.detected:
+              return detected.contains(sp.scientificName);
+            case _DetectionFilter.undetected:
+              return !detected.contains(sp.scientificName);
+          }
+        })
+        .where((sp) {
+          if (widget.tiers.isEmpty) return true;
+          final local = localByName[sp.scientificName];
+          return local != null && widget.tiers.contains(local.tier);
+        })
+        .toList();
 
     if (hits.isEmpty) {
       return Center(
@@ -975,8 +962,8 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
               ),
               _ExploreTierHeaderSliver(
                 speciesCount: widget.localSpecies.length,
-                onTierSelected:
-                    (tier) => _scrollToTier(tier, items, showScientificName),
+                onTierSelected: (tier) =>
+                    _scrollToTier(tier, items, showScientificName),
               ),
               const SliverToBoxAdapter(child: Divider(height: 1)),
             ],
@@ -1002,13 +989,12 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
                       geoScore: hit.local?.geoScore,
                       tier: hit.local?.tier,
                       weeklyScores: hit.local?.weeklyScores,
-                      onTap:
-                          () => SpeciesInfoOverlay.show(
-                            context,
-                            ref,
-                            scientificName: hit.species.scientificName,
-                            commonName: hit.species.commonName,
-                          ),
+                      onTap: () => SpeciesInfoOverlay.show(
+                        context,
+                        ref,
+                        scientificName: hit.species.scientificName,
+                        commonName: hit.species.commonName,
+                      ),
                     );
                   }
 
@@ -1173,13 +1159,12 @@ class _LocationHeaderState extends ConsumerState<_LocationHeader> {
                     return Text(label, style: subtleStyle);
                   },
                   loading: () => Text(l10n.exploreLocating, style: subtleStyle),
-                  error:
-                      (a, b) => Text(
-                        l10n.exploreLocationError,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
-                      ),
+                  error: (a, b) => Text(
+                    l10n.exploreLocationError,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
                 ),
               ),
               IconButton(
@@ -1437,11 +1422,8 @@ class _ExploreHelpLink extends StatelessWidget {
     final theme = Theme.of(context);
 
     return InkWell(
-      onTap:
-          () => openExternalUrl(
-            context,
-            'https://birdnet-team.github.io/geomodel/',
-          ),
+      onTap: () =>
+          openExternalUrl(context, 'https://birdnet-team.github.io/geomodel/'),
       child: Row(
         children: [
           Icon(AppIcons.openInNew, size: 18, color: theme.colorScheme.primary),

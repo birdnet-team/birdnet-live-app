@@ -39,7 +39,6 @@ import '../../shared/services/taxonomy_service.dart';
 import '../live/live_session.dart';
 import '../recording/audio_decoder.dart';
 import '../recording/native_audio_decoder.dart';
-import '../recording/wav_writer.dart';
 import 'export_device_info.dart';
 import 'html_report.dart';
 import 'services/audio_share_extension.dart';
@@ -62,7 +61,7 @@ const double _highFreqHz = 16000.0;
 /// that sweep from pulling a file out of a sheet the user still has open.
 const Duration _kExportTrimStagingTtl = Duration(hours: 1);
 
-/// Directory holding trimmed audio staged for an export.
+/// Directory holding trimmed audio and WAV conversions staged for an export.
 Directory _exportTrimStagingDir() =>
     Directory(p.join(Directory.systemTemp.path, 'birdnet_export_trim'));
 
@@ -114,16 +113,22 @@ double? _exportAnnotationOffset(LiveSession session, double? sourceOffsetSec) {
   return sourceOffsetSec - session.trimStartSeconds;
 }
 
-/// Decodes a FLAC file and returns the bytes of an equivalent PCM WAV.
+/// Writes a PCM WAV equivalent of [flacPath] to [destPath].
+///
+/// Streams the conversion frame by frame in a background isolate, so an
+/// hour-long recording never lands in memory as a whole and the UI isolate —
+/// which is also the platform thread on Android and iOS — stays responsive.
 /// Returns null if decoding fails (caller should fall back to original file).
-Future<Uint8List?> _flacToWavBytes(String flacPath) async {
+Future<String?> _writeFlacAsWav(String flacPath, String destPath) async {
   try {
     if (!await AudioDecoder.canDecodeDart(flacPath)) return null;
-    final decoded = await AudioDecoder.decodeFile(flacPath);
-    return WavWriter.toBytesFromPcm16(
-      samples: decoded.samples,
-      sampleRate: decoded.sampleRate,
+    final written = await writeTrimmedAudioFile(
+      sourcePath: flacPath,
+      destPath: destPath,
+      startSec: 0,
+      asWav: true,
     );
+    return written?.file.path;
   } catch (_) {
     return null;
   }
@@ -660,6 +665,7 @@ Map<String, dynamic> _commonSessionExportMetadata(LiveSession session) {
       : endTime.difference(session.startTime).inMilliseconds / 1000.0;
   return {
     'id': session.id,
+    'uuid': session.uuid,
     'type': session.type.name,
     'displayName': session.displayName,
     'startTime': session.startTime.toUtc().toIso8601String(),
@@ -772,6 +778,7 @@ String buildJsonExport(
   final map = {
     if (metadata != null) 'meta': metadata,
     'session': session.displayName,
+    'uuid': session.uuid,
     if (session.customName != null && session.customName!.isNotEmpty)
       'customName': session.customName,
     if (session.sessionNumber != null) 'sessionNumber': session.sessionNumber,
@@ -959,6 +966,7 @@ Future<String?> buildSessionExport(
   bool useAbsoluteSurveyTime = false,
   bool includeHtmlReport = false,
   bool includeAppMetadata = true,
+  bool alwaysZip = false,
 }) async {
   // Resolve the active format set; tokens outside the known list are
   // ignored. An empty result is now allowed so users can share the raw
@@ -1206,6 +1214,8 @@ Future<String?> buildSessionExport(
       session.annotations.isNotEmpty;
   final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final mustZip =
+      // Uploads want exactly one file per session whatever it holds.
+      alwaysZip ||
       (includeAudio && hasAruCycleAudio) ||
       (includeAudio && hasClips) ||
       (includeAudio && hasFullRecording && hasCompanion) ||
@@ -1229,18 +1239,12 @@ Future<String?> buildSessionExport(
     if (trimmedRecording != null) return trimmedRecording.file.path;
 
     if (shareAudioAsWav && fullRecordingSourceExt == '.flac') {
-      final wavBytes = await _flacToWavBytes(fullRecordingPath);
-      if (wavBytes != null) {
-        final dest = p.join(p.dirname(fullRecordingPath), audioFileName);
-        final destFile = File(dest);
-        if (await destFile.exists()) {
-          try {
-            await destFile.delete();
-          } catch (_) {}
-        }
-        await destFile.writeAsBytes(wavBytes);
-        return dest;
-      }
+      // The slicer truncates a stale destination itself.
+      final dest = await _writeFlacAsWav(
+        fullRecordingPath,
+        p.join(p.dirname(fullRecordingPath), audioFileName),
+      );
+      if (dest != null) return dest;
     }
 
     final fallbackName = shareAudioAsWav && fullRecordingSourceExt == '.flac'
@@ -1264,39 +1268,61 @@ Future<String?> buildSessionExport(
   if (mustZip) {
     final archive = Archive();
     final archiveFiles = <String, String>{};
+    // WAV conversions of FLAC audio, staged on disk so the ZIP worker streams
+    // them like any other file instead of holding whole recordings in memory.
+    // Deleted once the archive is written.
+    final stagedConversions = <String>[];
 
     Future<void> addAudio(String name, String path) async {
       final sourceExt = await sourceAudioExtensionForFile(File(path));
       if (shareAudioAsWav && sourceExt == '.flac') {
-        final bytes = await _flacToWavBytes(path);
-        if (bytes == null) {
+        final stagingDir = _exportTrimStagingDir();
+        await stagingDir.create(recursive: true);
+        final staged = await _writeFlacAsWav(
+          path,
+          p.join(stagingDir.path, p.basename(name)),
+        );
+        if (staged == null) {
           throw FormatException('Could not convert FLAC to WAV: $path');
         }
-        archive.addFile(ArchiveFile(name, bytes.length, bytes));
+        stagedConversions.add(staged);
+        archiveFiles[name] = staged;
       } else {
         archiveFiles[name] = path;
       }
     }
 
-    if (includeAudio && hasAnyAudio) {
-      if (hasFullRecording) {
-        // A materialized trim is already in the requested container.
-        if (trimmedRecording != null) {
-          archiveFiles[audioFileName] = trimmedRecording.file.path;
+    try {
+      if (includeAudio && hasAnyAudio) {
+        if (hasFullRecording) {
+          // A materialized trim is already in the requested container.
+          if (trimmedRecording != null) {
+            archiveFiles[audioFileName] = trimmedRecording.file.path;
+          } else {
+            await addAudio(audioFileName, fullRecordingPath);
+          }
         } else {
-          await addAudio(audioFileName, fullRecordingPath);
-        }
-      } else {
-        for (final entry in clipExportNames.entries) {
-          await addAudio(entry.value, clipEntries[entry.key]!.path);
+          for (final entry in clipExportNames.entries) {
+            await addAudio(entry.value, clipEntries[entry.key]!.path);
+          }
         }
       }
-    }
 
-    if (includeAudio && hasAruCycleAudio) {
-      for (final entry in aruCycleAudioEntries.values) {
-        await addAudio(entry.name, entry.file.path);
+      if (includeAudio && hasAruCycleAudio) {
+        for (final entry in aruCycleAudioEntries.values) {
+          await addAudio(entry.name, entry.file.path);
+        }
       }
+    } catch (_) {
+      // A failed conversion aborts the export; drop what was staged so far.
+      for (final staged in stagedConversions) {
+        try {
+          await File(staged).delete();
+        } catch (_) {
+          // Best-effort cleanup.
+        }
+      }
+      rethrow;
     }
 
     // Drop every selected document into the ZIP root.
@@ -1408,10 +1434,14 @@ Future<String?> buildSessionExport(
         contents: archive,
       );
     } finally {
-      if (trimmedRecording != null) {
-        // Keep the staged trim until the worker has finished reading it.
+      // Keep the staged trim and conversions until the worker has finished
+      // reading them.
+      for (final staged in [
+        if (trimmedRecording != null) trimmedRecording.file.path,
+        ...stagedConversions,
+      ]) {
         try {
-          await trimmedRecording.file.delete();
+          await File(staged).delete();
         } catch (_) {
           // Best-effort cleanup.
         }

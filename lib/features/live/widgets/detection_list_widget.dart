@@ -12,6 +12,8 @@
 // Tapping a detection opens the species info overlay.
 // =============================================================================
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
@@ -45,7 +47,8 @@ class DetectionList extends StatelessWidget {
     this.emptyAlignment = Alignment.center,
     this.activeDetections,
     this.speciesDetectionCounts,
-  });
+    this.columns = 1,
+  }) : assert(columns >= 1, 'columns must be at least 1');
 
   /// Detections to display (newest first).
   final List<DetectionRecord> detections;
@@ -92,6 +95,16 @@ class DetectionList extends StatelessWidget {
   /// screen wires confirm + share so reviewers can validate as they go.
   final DetectionActions? Function(DetectionRecord detection)? actionsBuilder;
 
+  /// Number of side-by-side columns the tiles are laid out in (default 1).
+  ///
+  /// Live Mode and Point Count use two columns in landscape when the
+  /// spectrogram is off, so the list fills the width without stretching
+  /// every tile across the whole screen. Columns fill top to bottom, left
+  /// to right: the left column takes as many tiles as fit the visible
+  /// height before the next column starts, and once every column of a
+  /// screenful is full the next screenful continues below.
+  final int columns;
+
   @override
   Widget build(BuildContext context) {
     if (detections.isEmpty) {
@@ -105,41 +118,89 @@ class DetectionList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      itemCount: detections.length,
-      itemBuilder: (context, index) {
-        final det = detections[index];
-        final actions = actionsBuilder?.call(det);
-        final isActivelyDetected = activeDetections?.contains(det) ?? true;
-        final tile = DetectionTile(
-          detection: det,
-          onTap: onDetectionTap != null ? () => onDetectionTap!(det) : null,
-          actions: actions,
-          showConfidence: isActivelyDetected,
-          detectionCount: speciesDetectionCounts?[det.scientificName],
-        );
-        // When the host wires a delete action, also expose it as a
-        // horizontal swipe shortcut. The host's undo SnackBar covers
-        // misfires, so no modal confirm is needed. Keyed by the
-        // detection's identity (sci-name + microsecond timestamp) so
-        // dismiss/rebuild stays stable as new detections stream in.
-        final onDelete = actions?.onDelete;
-        if (onDelete == null) return tile;
-        return Dismissible(
-          key: ValueKey(
-            '${det.scientificName}-${det.timestamp.microsecondsSinceEpoch}',
-          ),
-          direction: DismissDirection.horizontal,
-          background: _swipeDeleteBackground(context, alignLeft: true),
-          secondaryBackground: _swipeDeleteBackground(
-            context,
-            alignLeft: false,
-          ),
-          onDismissed: (_) => onDelete(),
-          child: tile,
+    const listPadding = EdgeInsets.symmetric(vertical: 4);
+    if (columns == 1) {
+      return ListView.builder(
+        padding: listPadding,
+        itemCount: detections.length,
+        itemBuilder: (context, index) =>
+            _buildEntry(context, detections[index]),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Tiles per column: as many one-line tiles as fit the visible
+        // height. A screenful ("block") holds one column's worth per
+        // column; tile i sits in block i ~/ perBlock, column
+        // (i % perBlock) ~/ perColumn, row i % perColumn.
+        final visibleHeight = constraints.maxHeight - listPadding.vertical;
+        final int perColumn = visibleHeight.isFinite
+            ? math.max<int>(
+                1,
+                (visibleHeight / DetectionTile.estimateHeight(context)).floor(),
+              )
+            : detections.length;
+        final perBlock = perColumn * columns;
+        final fullBlocks = detections.length ~/ perBlock;
+        final remainder = detections.length % perBlock;
+        final rowCount =
+            fullBlocks * perColumn + math.min<int>(perColumn, remainder);
+        return ListView.builder(
+          padding: listPadding,
+          itemCount: rowCount,
+          itemBuilder: (context, row) {
+            final blockStart = (row ~/ perColumn) * perBlock;
+            final rowInBlock = row % perColumn;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var column = 0; column < columns; column++)
+                  Expanded(
+                    child: _entryOrBlank(
+                      context,
+                      blockStart + column * perColumn + rowInBlock,
+                    ),
+                  ),
+              ],
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _entryOrBlank(BuildContext context, int index) {
+    if (index >= detections.length) return const SizedBox.shrink();
+    return _buildEntry(context, detections[index]);
+  }
+
+  Widget _buildEntry(BuildContext context, DetectionRecord det) {
+    final actions = actionsBuilder?.call(det);
+    final isActivelyDetected = activeDetections?.contains(det) ?? true;
+    final tile = DetectionTile(
+      detection: det,
+      onTap: onDetectionTap != null ? () => onDetectionTap!(det) : null,
+      actions: actions,
+      showConfidence: isActivelyDetected,
+      detectionCount: speciesDetectionCounts?[det.scientificName],
+    );
+    // When the host wires a delete action, also expose it as a
+    // horizontal swipe shortcut. The host's undo SnackBar covers
+    // misfires, so no modal confirm is needed. Keyed by the
+    // detection's identity (sci-name + microsecond timestamp) so
+    // dismiss/rebuild stays stable as new detections stream in.
+    final onDelete = actions?.onDelete;
+    if (onDelete == null) return tile;
+    return Dismissible(
+      key: ValueKey(
+        '${det.scientificName}-${det.timestamp.microsecondsSinceEpoch}',
+      ),
+      direction: DismissDirection.horizontal,
+      background: _swipeDeleteBackground(context, alignLeft: true),
+      secondaryBackground: _swipeDeleteBackground(context, alignLeft: false),
+      onDismissed: (_) => onDelete(),
+      child: tile,
     );
   }
 
@@ -182,6 +243,35 @@ class DetectionTile extends ConsumerWidget {
 
   /// Cumulative number of session detection events for this species.
   final int? detectionCount;
+
+  /// Height of a tile whose common name fits on one line, with the
+  /// confidence row shown. [DetectionList] uses it to decide how many tiles
+  /// fill a column; a wrapped name only makes that column a little taller.
+  static double estimateHeight(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final textScaler = MediaQuery.textScalerOf(context);
+    double lineHeight(TextStyle? style) {
+      final painter = TextPainter(
+        text: TextSpan(text: 'Xg', style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: textScaler,
+      )..layout();
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    // Name row, 2 px gap, scientific-name row, 4 px gap, 3 px confidence
+    // bar; the 40 px thumbnail wins when the text is smaller than that.
+    final textHeight =
+        lineHeight(textTheme.bodyMedium) +
+        2 +
+        lineHeight(textTheme.bodySmall) +
+        4 +
+        3;
+    // Vertical tile padding is 8 px on each side.
+    return 16 + math.max(40.0, textHeight);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -381,10 +471,9 @@ class DetectionTile extends ConsumerWidget {
     return [
       if (actions.onToggleConfirm != null)
         Tooltip(
-          message:
-              actions.isConfirmed
-                  ? l10n.detectionUnconfirmTooltip
-                  : l10n.detectionConfirmTooltip,
+          message: actions.isConfirmed
+              ? l10n.detectionUnconfirmTooltip
+              : l10n.detectionConfirmTooltip,
           child: InkWell(
             onTap: actions.onToggleConfirm,
             borderRadius: BorderRadius.circular(24),
@@ -395,10 +484,9 @@ class DetectionTile extends ConsumerWidget {
                     ? AppIcons.checkCircle
                     : AppIcons.checkCircleOutline,
                 size: 24,
-                color:
-                    actions.isConfirmed
-                        ? AppSemanticColors.of(context).success
-                        : theme.colorScheme.onSurface.withAlpha(120),
+                color: actions.isConfirmed
+                    ? AppSemanticColors.of(context).success
+                    : theme.colorScheme.onSurface.withAlpha(120),
               ),
             ),
           ),
@@ -480,9 +568,8 @@ class DetectionTile extends ConsumerWidget {
     return Image.asset(
       path,
       fit: BoxFit.cover,
-      errorBuilder:
-          (a, b, c) =>
-              Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
+      errorBuilder: (a, b, c) =>
+          Image.asset('assets/images/dummy_species.png', fit: BoxFit.cover),
     );
   }
 }

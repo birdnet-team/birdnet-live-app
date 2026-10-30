@@ -29,9 +29,9 @@ Future<({String device, String os})> exportDeviceInfo() async {
 
   if (platform == TargetPlatform.windows) {
     final osVersion = Platform.operatingSystemVersion;
-    final windowsVersion = RegExp(
-      r'Windows (\d+)',
-    ).firstMatch(osVersion)?.group(1);
+    final windowsVersion = RegExp(r'Windows (\d+)')
+        .firstMatch(osVersion)
+        ?.group(1);
     return formatExportDeviceInfo(platform: 'Windows', version: windowsVersion);
   }
   if (platform == TargetPlatform.macOS) {

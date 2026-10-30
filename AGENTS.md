@@ -2,6 +2,11 @@
 
 This file is for coding agents working in this repository.
 
+## Contributions
+
+- When helping someone prepare a contribution (pull request, translation, new language, docs fix), read [CONTRIBUTING.md](CONTRIBUTING.md) first and follow it: code style, settings/docs/changelog rules, translation rules and per-locale register, the new-language checklist, and the PR guidelines all apply to agent-written changes.
+- If this file and CONTRIBUTING.md disagree, flag it to the user and keep both in sync rather than silently picking one.
+
 ## Mission
 
 - Keep changes small, safe, and easy to review.
@@ -33,21 +38,26 @@ This file is for coding agents working in this repository.
 
 ## Core Rules
 
-- Always keep user-facing strings translated in all 12 locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh (Simplified Chinese).
+- Always keep user-facing strings translated in all 13 locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh (Simplified Chinese), ko.
 - After ARB edits, run flutter gen-l10n and verify no missing keys.
 - Use l10n keys in UI; do not hardcode user-facing text.
-- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
-- A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product:
+- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart, Gain.
+- Keep each locale's register (formal/informal) as listed in the Supported Locales table in CONTRIBUTING.md.
+- A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product. The contributor-facing version with who-does-what is "Adding a New Language" in CONTRIBUTING.md; keep the two lists in sync:
   - `lib/l10n/app_<loc>.arb` (UI strings)
   - `assets/announcements/templates_<loc>.json` (spoken announcements; a missing file falls back to English silently)
   - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `dev/build_species_bundle.py`. After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; `dev/birdnet_taxonomy_*.json` already carries the URLs.
   - the app-language dropdown in `lib/features/settings/settings_screen.dart`
-  - `AppConstants.policyDocsLocales` + `docs/privacy.<loc>.md` + `docs/acceptable-use.<loc>.md` + the `mkdocs.yml` locale block
-  - `docs/index.<loc>.md` + `docs/user/*.<loc>.md` (the MkDocs user guide) + the locale's `nav_translations` block in `mkdocs.yml`. The Developer Guide and API Reference stay English.
+  - `android/app/src/main/res/values-<loc>/strings.xml` (Quick Listen widget labels)
+  - iOS: a `<loc>` entry for every key in `ios/Runner/InfoPlist.xcstrings` (permission prompts) and `ios/Runner/Localizable.xcstrings` (Shortcuts/Siri), plus `knownRegions` in `ios/Runner.xcodeproj/project.pbxproj` (Apple codes, e.g. `zh-Hans`)
+  - species names: an alias in `TaxonomySpecies` (`lib/shared/models/taxonomy_species.dart`) when the taxonomy column code differs from the app locale (`nb` → `no`, `zh` → `zh-CN`), and the `_speciesLanguages` map in `settings_screen.dart`
+  - `AppConstants.policyDocsLocales` + `docs/privacy.<loc>.md` + `docs/acceptable-use.<loc>.md` + the `mkdocs.yml` locale block + `test/core/constants/app_constants_test.dart`
+  - `docs/index.<loc>.md` + `docs/user/*.<loc>.md` (the MkDocs user guide) + `AppConstants.docsLocales` + the locale's `nav_translations` block in `mkdocs.yml`. The Developer Guide and API Reference stay English.
   - `dev/store/store-desc.md` (all five sections: both subtitles, promo text, short description, keywords)
   - `dev/mockups/`: slide titles/subtitles belong in `mockups.copy.md` (then run `node sync-copy.js`), not inline in `mockups.config.js` — copy.md is the source of truth and only overlays languages it defines. In `mockups.config.js` add the language's `name` plus an entry in both `featureGraphic.taglines` and `featureGraphicHomeSubtitles`; the feature graphic falls back to English silently when either is missing. Render with `node render-mockups.js --lang <loc>`, then again with `--ipad`, then `--feature-graphic --lang <loc>` (13 images per locale).
   - the locale list in `dev/build_release.dart` so stubbed Play/App Store release notes include it
-  - the locale lists in `test/features/announcements/templates_*_test.dart`
+  - the locale lists in `test/features/announcements/templates_*_test.dart` (plus determiners in the gender-lint map if the language has them) and `test/shared/services/species_description_service_test.dart`
+  - locale lists in docs: `README.md` localization bullet, `docs/developer/localization.md`, `assets/announcements/README.md`, the CONTRIBUTING.md Supported Locales table, this file, and `.github/copilot-instructions.md`
 - Use AppIcons from lib/shared/utils/app_icons.dart, not raw Icons.* or Symbols.* in app code.
 - Do not hardcode thresholds or model config values when constants/config already exist.
 
@@ -97,6 +107,12 @@ This file is for coding agents working in this repository.
 - Keep model behavior JSON-driven via assets/models/model_config.json.
 - ARM64 rule: sensitive compute may require FP32 casting for stable output.
 
+## Device Testing
+
+- The developer's phones carry real sessions. Never run `adb uninstall`, `pm clear`, or `flutter run --uninstall-first` against them, and never delete or overwrite the app's data.
+- Install only builds signed with the key the installed app already has, so the install is an in-place upgrade and the data survives. On the developer machine the installed app is signed with the local debug keystore, so a plain debug build (`flutter build apk --debug` + `adb install -r`) is safe; a release-signed build would be refused as a signature mismatch and must not be forced through a reinstall.
+- Before installing, confirm the signature matches: compare `apksigner verify --print-certs` on the installed `base.apk` (pulled via `adb shell pm path`) against the keystore you are building with.
+
 ## Build and Release
 
 - Typical commands:
@@ -113,7 +129,7 @@ This file is for coding agents working in this repository.
 ## Version Bumping Checklist
 
 - Update version in pubspec.yaml as patch+build (example: 0.16.10+178 -> 0.16.11+179).
-- Add/update release notes in CHANGELOG.md under the matching version header and prepare Play/App Store release notes for all 12 app locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh. Release notes are UTF-8 with `<xx-XX>` tags — write zh-CN in Simplified Chinese characters, never pinyin.
+- Add/update release notes in CHANGELOG.md under the matching version header and prepare Play/App Store release notes for all 13 app locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh, ko. Release notes are UTF-8 with `<xx-XX>` tags — write zh-CN in Simplified Chinese characters, never pinyin.
 - Run dart dev/sync_version.dart to sync README/docs version badges.
 - If strings changed, run flutter gen-l10n and verify locale completeness.
 - Run flutter analyze (and flutter test when relevant) before committing.

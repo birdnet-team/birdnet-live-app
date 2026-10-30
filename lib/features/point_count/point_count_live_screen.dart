@@ -56,6 +56,7 @@ import '../live/live_detection_display.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
+import '../upload/upload_providers.dart';
 
 /// Timed point-count survey screen with countdown and auto-stop.
 class PointCountLiveScreen extends ConsumerStatefulWidget {
@@ -115,6 +116,11 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     with WidgetsBindingObserver {
   final Object _quickListenSafetyOwner = Object();
 
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   /// The long-lived Live controller, resolved once in [initState].
   ///
   /// `ref` is unusable from [dispose] — Riverpod throws, because the element is
@@ -162,6 +168,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     _liveController = ref.read(liveControllerProvider);
     final controller = _liveController;
     controller.onStateChanged = _onControllerStateChanged;
+    controller.onInferenceRateLowered = _onInferenceRateLowered;
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -178,6 +185,14 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         _startSession();
       }
     });
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -220,13 +235,16 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final audioSource = ref.read(audioSourceProvider);
     final repo = ref.read(sessionRepositoryProvider);
 
-    // Load model if not ready.
-    if (controller.state == LiveState.idle) {
+    // Bring the model up first. `loadModel` is a no-op when ready, joins a
+    // load the menu's warm-up still has in flight, and retries after a
+    // failure — so a count started during the warm-up no longer opens the
+    // mic and runs its countdown without a session.
+    if (controller.state != LiveState.ready) {
       await controller.loadModel();
       _onControllerStateChanged();
     }
     if (await _abortPendingStart(captureNotifier)) return;
-    if (controller.state == LiveState.error) return;
+    if (controller.state != LiveState.ready) return;
 
     await WakelockService.enable();
 
@@ -253,11 +271,15 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final recordingMode = recordingModeFromString(widget.recordingMode);
     final recordingFormat = ref.read(recordingFormatProvider);
     final geoThreshold = ref.read(geoThresholdProvider);
-    final geoScores = await ref.read(geoScoresProvider.future);
-    final ignoredSpeciesNames = await ref.read(
-      ignoredSpeciesNamesProvider.future,
+    final geoInputs = await readGeoFilterInputs(
+      read: ref.read,
+      invalidate: (provider) {
+        if (mounted) ref.invalidate(provider);
+      },
     );
-    final geoSpeciesNames = await ref.read(geoModelSpeciesNamesProvider.future);
+    final geoScores = geoInputs.geoScores;
+    final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+    final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
     if (await _abortPendingStart(captureNotifier)) return;
 
     double? startLat = widget.latitude;
@@ -498,15 +520,24 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       } catch (error, stack) {
         debugPrint('PointCount: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('PointCount: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('PointCount: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -517,6 +548,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         }
         return;
       }
+      final session = finalized;
 
       if (endedEarlyByBackground) {
         session.stopReason = SessionStopReason.backgrounded;
@@ -566,6 +598,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
             debugPrint('PointCount: library refresh failed: $error\n$stack');
             container.invalidate(sessionListProvider);
           }
+          await autoEnqueueSession(container.read, session);
         }
       }
 
@@ -685,6 +718,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     // updates on a defunct/disposed widget state.
     if (_liveController.onStateChanged == _onControllerStateChanged) {
       _liveController.onStateChanged = null;
+    }
+    if (_liveController.onInferenceRateLowered == _onInferenceRateLowered) {
+      _liveController.onInferenceRateLowered = null;
     }
 
     WakelockService.disable();
@@ -827,12 +863,16 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         totalDuration: Duration(minutes: widget.durationMinutes),
       ),
     );
-    final spectrogram = Container(
-      color: theme.colorScheme.surfaceContainerLowest,
-      child: _PointCountSpectrogram(
-        isCapturing: isCapturing && !_spectrogramPaused,
-      ),
-    );
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
+    final spectrogram = spectrogramSize.isVisible
+        ? Container(
+            key: _spectrogramKey,
+            color: theme.colorScheme.surfaceContainerLowest,
+            child: _PointCountSpectrogram(
+              isCapturing: isCapturing && !_spectrogramPaused,
+            ),
+          )
+        : null;
     final sessionInfo = _PointCountInfoBar(
       currentDetectionCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
@@ -844,6 +884,9 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: DetectionList(
           detections: detections,
+          // Without a spectrogram the list spans the whole landscape width,
+          // so spread the tiles over two columns.
+          columns: isLandscape && spectrogram == null ? 2 : 1,
           isActive: isActive,
           activeDetections: activeDetections,
           speciesDetectionCounts: speciesDetectionCounts,
@@ -859,7 +902,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       ),
     );
 
-    if (isLandscape) {
+    if (isLandscape && spectrogram != null) {
+      // A smaller size shortens the spectrogram within its column; the
+      // space below is left empty for now.
+      final columnFlex = spectrogramSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -871,8 +917,12 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
                   flex: 1,
                   child: Column(
                     children: [
-                      Expanded(child: spectrogram),
+                      Expanded(
+                        flex: columnFlex.spectrogram,
+                        child: spectrogram,
+                      ),
                       sessionInfo,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -885,13 +935,17 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
       );
     }
 
+    // Portrait, or landscape without a spectrogram: vertical stack. A
+    // smaller spectrogram hands the height it gives up to the detection list.
+    final flex = spectrogramSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         progressBar,
-        Expanded(flex: 2, child: spectrogram),
+        if (spectrogram != null)
+          Expanded(flex: flex.spectrogram, child: spectrogram),
         sessionInfo,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: flex.other, child: detectionList),
         const SizedBox(height: 16),
       ],
     );

@@ -29,6 +29,7 @@ import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
+import '../upload/upload_providers.dart';
 import 'live_controller.dart';
 import 'live_detection_display.dart';
 import 'live_providers.dart';
@@ -43,7 +44,8 @@ import 'widgets/detection_list_widget.dart';
 //
 // Layout (top → bottom):
 //   1. Compact status bar: back arrow · status text · settings gear
-//   2. Spectrogram       (flex: 2)
+//   2. Spectrogram       (flex: 2; shrunk or left out by the spectrogram
+//                         size setting, which hands its share to the list)
 //   3. Session info bar  (conditional, ~24 px)
 //   4. Detection list    (flex: 3)
 //   5. FAB mic/stop button (bottom-center, 56×56)
@@ -108,6 +110,11 @@ class LiveScreen extends ConsumerStatefulWidget {
 
 class _LiveScreenState extends ConsumerState<LiveScreen>
     with WidgetsBindingObserver {
+  /// Keeps the spectrogram's element, and with it the painter's column
+  /// buffer, alive when the body switches between the portrait and
+  /// landscape layouts, which place it at different depths of the tree.
+  final GlobalKey _spectrogramKey = GlobalKey();
+
   bool _isStarting = false;
   bool _finalizing = false;
   bool _stopDialogOpen = false;
@@ -123,6 +130,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
   int _backgroundEpisode = 0;
   DateTime? _backgroundDeadline;
   Timer? _backgroundLimitTimer;
+  StreamSubscription<bool>? _micContestedSub;
+
+  /// Set while the session is paused because the microphone was lost (see
+  /// [_onMicContested]); cleared when audio flows again or the user resumes.
+  bool _pausedByMicLoss = false;
   bool _autoStartAttempted = false;
   bool _startScheduled = false;
   bool _forceAutoStartRequested = false;
@@ -151,6 +163,11 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final controller = ref.read(liveControllerProvider);
     _liveController = controller;
     controller.onStateChanged = _onControllerStateChanged;
+    controller.onInferenceRateLowered = _onInferenceRateLowered;
+    _micContestedSub = ref
+        .read(audioCaptureServiceProvider)
+        .micContestedStream
+        .listen(_onMicContested);
 
     // Deferred to post-frame so provider updates don't fire during build.
     SchedulerBinding.instance.addPostFrameCallback((_) => _initLiveScreen());
@@ -220,6 +237,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     }
 
     _onControllerStateChanged();
+  }
+
+  /// The controller lowered the inference rate because this device fell
+  /// behind. Every mode's rate setting follows, so the next session anywhere
+  /// starts at a rate the device can sustain; see [applyInferenceRateLimit].
+  void _onInferenceRateLowered(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
   }
 
   void _onControllerStateChanged() {
@@ -316,6 +341,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       }
       await controller.resumeSession();
       _pausedByLifecycle = false;
+      // The user chose to run on while the mic is still lost; don't undo it.
+      _pausedByMicLoss = false;
       _onControllerStateChanged();
       await _syncBackgroundSupport();
     } else {
@@ -328,6 +355,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       _isStarting = true;
       _durationWarningShown = false;
       _pausedByLifecycle = false;
+      _pausedByMicLoss = false;
       setState(() {});
 
       // No-op when already ready; otherwise joins the in-flight load, or
@@ -388,13 +416,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       if (useGps) {
         ref.invalidate(currentLocationProvider);
       }
-      final geoScores = await ref.read(geoScoresProvider.future);
-      final ignoredSpeciesNames = await ref.read(
-        ignoredSpeciesNamesProvider.future,
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
       );
-      final geoSpeciesNames = await ref.read(
-        geoModelSpeciesNamesProvider.future,
-      );
+      final geoScores = geoInputs.geoScores;
+      final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
+      final geoSpeciesNames = geoInputs.geoModelSpeciesNames;
       // The geo-model futures can take seconds; the user may have left the
       // Live screen in the meantime. Bail out before touching [ref] again so
       // we never read providers on an unmounted widget.
@@ -515,6 +545,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     WidgetsBinding.instance.removeObserver(this);
     FlutterForegroundTask.removeTaskDataCallback(_onNotificationData);
     _sessionTimer?.cancel();
+    _micContestedSub?.cancel();
     _checkpointWriter?.dispose();
     _backgroundLimitTimer?.cancel();
     _backgroundDeadline = null;
@@ -527,6 +558,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     if (controller != null &&
         controller.onStateChanged == _onControllerStateChanged) {
       controller.onStateChanged = null;
+    }
+    if (controller != null &&
+        controller.onInferenceRateLowered == _onInferenceRateLowered) {
+      controller.onInferenceRateLowered = null;
     }
 
     // Ensure screen lock is released when leaving the live screen.
@@ -664,6 +699,35 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     });
   }
 
+  /// Pause while the microphone is held by someone else; resume when audio
+  /// flows again.
+  ///
+  /// Left alone, the session timeline runs straight through the gap: the
+  /// recording receives no samples, so Session Review later reports audio
+  /// shorter than the Session, and score pooling would date a detection
+  /// inside the silence. [LiveController.pauseSession] closes the recorded
+  /// segment and [LiveController.resumeSession] resets pooling, exactly as
+  /// for a lifecycle pause. Capture itself is not touched: the capture
+  /// service is the one reclaiming the mic, and it keeps doing so while the
+  /// session waits.
+  Future<void> _onMicContested(bool contested) async {
+    if (!mounted || _finalizing) return;
+    final controller = ref.read(liveControllerProvider);
+    if (contested) {
+      if (controller.state != LiveState.active) return;
+      _pausedByMicLoss = true;
+      await controller.pauseSession();
+      if (mounted) _onControllerStateChanged();
+      return;
+    }
+    if (!_pausedByMicLoss) return;
+    _pausedByMicLoss = false;
+    // A lifecycle pause stopped capture itself and owns the resume.
+    if (_pausedByLifecycle || controller.state != LiveState.paused) return;
+    await controller.resumeSession();
+    if (mounted) _onControllerStateChanged();
+  }
+
   Future<void> _pauseSessionForBackground([
     DateTime? backgroundedAt,
     int? episode,
@@ -729,6 +793,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     // the flag down, so no later `resumed` event could retry it.
     _pausedByLifecycle = false;
     _onControllerStateChanged();
+    // The contested stream is edge-triggered and the fresh recorder keeps
+    // the mic marked lost until audio arrives, so a mic that is still held
+    // after the background pause would otherwise run the timeline on silence.
+    if (ref.read(audioCaptureServiceProvider).isMicContested) {
+      await _onMicContested(true);
+    }
     await _syncBackgroundSupport();
     // Do not hold the lifecycle queue open for a dialog. A second lock while
     // the dialog is visible must still pause foreground-only capture.
@@ -906,15 +976,24 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       } catch (error, stack) {
         debugPrint('LiveScreen: wakelock release failed: $error\n$stack');
       }
-      try {
-        await captureNotifier.stop();
-      } catch (error, stack) {
-        debugPrint('LiveScreen: capture stop failed: $error\n$stack');
-      }
 
-      final session = await controller.finalizeSession();
+      // Keep capture alive until the controller is done: it drains pending
+      // clip post-roll before closing the recording, and every last-moment
+      // clip would otherwise wait for audio that can no longer arrive. In the
+      // background the audio I/O is also what keeps iOS from suspending the
+      // app before the Session is saved.
+      final LiveSession? finalized;
+      try {
+        finalized = await controller.finalizeSession();
+      } finally {
+        try {
+          await captureNotifier.stop();
+        } catch (error, stack) {
+          debugPrint('LiveScreen: capture stop failed: $error\n$stack');
+        }
+      }
       _onControllerStateChanged();
-      if (session == null) {
+      if (finalized == null) {
         if (mounted) {
           final navigator = Navigator.of(context);
           final sessionRoute = ModalRoute.of(context);
@@ -925,6 +1004,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         }
         return;
       }
+      final session = finalized;
       if (backgroundLimitReached) {
         session.stopReason = SessionStopReason.backgroundLimit;
         session.stopReasonValue = backgroundMinutes;
@@ -966,6 +1046,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             debugPrint('LiveScreen: library refresh failed: $error\n$stack');
             container.invalidate(sessionListProvider);
           }
+          await autoEnqueueSession(container.read, session);
         }
       }
 
@@ -1161,10 +1242,14 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final errorBanner = liveState == LiveState.error
         ? _StatusBanner(liveState: liveState, ref: ref)
         : null;
-    final spectrogram = Container(
-      color: theme.colorScheme.surfaceContainerLowest,
-      child: _LiveSpectrogram(isCapturing: isCapturing),
-    );
+    final spectrogramSize = ref.watch(spectrogramSizeProvider);
+    final spectrogram = spectrogramSize.isVisible
+        ? Container(
+            key: _spectrogramKey,
+            color: theme.colorScheme.surfaceContainerLowest,
+            child: _LiveSpectrogram(isCapturing: isCapturing),
+          )
+        : null;
     final sessionInfo = _SessionInfoBar(
       liveCount: currentDetectionCount,
       controller: ref.read(liveControllerProvider),
@@ -1176,6 +1261,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         child: DetectionList(
           detections: detections,
+          // Without a spectrogram the list spans the whole landscape width,
+          // so spread the tiles over two columns.
+          columns: isLandscape && spectrogram == null ? 2 : 1,
           isActive: isActive || isPaused,
           showTips: true,
           activeDetections: activeDetections,
@@ -1192,7 +1280,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       ),
     );
 
-    if (isLandscape) {
+    if (isLandscape && spectrogram != null) {
+      // A smaller size shortens the spectrogram within its column; the
+      // space below is left empty for now.
+      final columnFlex = spectrogramSize.ownColumnFlex;
       return Column(
         children: [
           statusBar,
@@ -1205,8 +1296,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
                   flex: 1,
                   child: Column(
                     children: [
-                      Expanded(child: spectrogram),
+                      Expanded(
+                        flex: columnFlex.spectrogram,
+                        child: spectrogram,
+                      ),
                       sessionInfo,
+                      if (columnFlex.other > 0) Spacer(flex: columnFlex.other),
                     ],
                   ),
                 ),
@@ -1220,14 +1315,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       );
     }
 
-    // Portrait: original vertical stack.
+    // Portrait, or landscape without a spectrogram: vertical stack. A
+    // smaller spectrogram hands the height it gives up to the detection list.
+    final flex = spectrogramSize.flexFor(spectrogram: 2, other: 3);
     return Column(
       children: [
         statusBar,
         if (errorBanner != null) errorBanner,
-        Expanded(flex: 2, child: spectrogram),
+        if (spectrogram != null)
+          Expanded(flex: flex.spectrogram, child: spectrogram),
         sessionInfo,
-        Expanded(flex: 3, child: detectionList),
+        Expanded(flex: flex.other, child: detectionList),
         const SizedBox(height: 72),
       ],
     );
