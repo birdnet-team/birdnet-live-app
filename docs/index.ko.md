@@ -56,7 +56,7 @@ BirdNET Live는 [Google Play 스토어](https://play.google.com/store/apps/detai
 
 Android에서는 서명된 APK를 직접 설치(사이드로드)할 수도 있습니다: [GitHub 릴리스 페이지](https://github.com/birdnet-team/birdnet-live-app/releases/latest)에서 최신 릴리스를 다운로드하고 `.apk` 파일을 휴대폰으로 옮긴 뒤 열어서 설치하세요. 먼저 기기 설정에서 출처를 알 수 없는 앱 설치를 허용해야 할 수도 있습니다.
 
-> **참고:** APK는 오프라인 사용을 위한 BirdNET+ 모델 에셋과 모든 종 이미지를 포함하므로 약 260 MB입니다.
+> **참고:** APK는 오프라인 사용을 위한 BirdNET+ 모델 에셋과 모든 종 이미지를 포함하므로 약 320 MB입니다.
 
 ## 개발자를 위한 안내
 

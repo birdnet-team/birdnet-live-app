@@ -56,7 +56,7 @@ O BirdNET Live está disponível na [Google Play](https://play.google.com/store/
 
 No Android também é possível instalá-lo manualmente como APK assinado: baixe a versão mais recente na [página de releases do GitHub](https://github.com/birdnet-team/birdnet-live-app/releases/latest), transfira o arquivo `.apk` para o celular e abra-o para instalar. Talvez seja necessário permitir antes a instalação de fontes desconhecidas nas configurações do dispositivo.
 
-> **Nota:** o APK tem cerca de 260 MB porque inclui os recursos do modelo BirdNET+ e todas as imagens de espécies para uso offline.
+> **Nota:** o APK tem cerca de 320 MB porque inclui os recursos do modelo BirdNET+ e todas as imagens de espécies para uso offline.
 
 ## Para desenvolvedores
 
