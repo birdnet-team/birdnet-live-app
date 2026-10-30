@@ -9,7 +9,8 @@
 // password sit behind an expander for people who run their own server. The
 // probe (webdav_probe.dart) must pass before Save is offered, and its
 // warnings are shown above the Save button so the user accepts them
-// knowingly. Returns the saved [UploadDestination] through `Navigator.pop`.
+// knowingly. Returns the saved [UploadDestination] through `Navigator.pop`,
+// or moves on to [JoinDestinationScreen.nextScreen] when one is given.
 // =============================================================================
 
 import 'package:flutter/material.dart';
@@ -29,10 +30,14 @@ import 'upload_providers.dart';
 import 'webdav_probe.dart';
 
 class JoinDestinationScreen extends ConsumerStatefulWidget {
-  const JoinDestinationScreen({super.key, this.initialInput});
+  const JoinDestinationScreen({super.key, this.initialInput, this.nextScreen});
 
   /// Prefills the link field, for example from an app link.
   final String? initialInput;
+
+  /// Replaces this screen after a save. A join link can arrive anywhere in
+  /// the app, so popping would land on an unrelated screen.
+  final Widget? nextScreen;
 
   @override
   ConsumerState<JoinDestinationScreen> createState() =>
@@ -57,6 +62,7 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
   JoinRequest? _request;
   ProbeResult? _result;
   bool _wifiOnly = true;
+  bool _autoUploadAru = false;
   String? _saveError;
 
   @override
@@ -154,6 +160,7 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
             result: result,
             name: name,
             wifiOnly: _wifiOnly,
+            autoUploadAru: _autoUploadAru,
           );
     } on SecretStoreException {
       if (!mounted) return;
@@ -171,7 +178,13 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
       return;
     }
     if (!mounted) return;
-    Navigator.of(context).pop(destination);
+    final next = widget.nextScreen;
+    if (next == null) {
+      Navigator.of(context).pop(destination);
+    } else {
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute<void>(builder: (_) => next));
+    }
   }
 
   @override
@@ -301,6 +314,15 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
                 onChanged: _saving
                     ? null
                     : (v) => setState(() => _wifiOnly = v),
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(l10n.uploadDestinationAutoAru),
+                subtitle: Text(l10n.uploadDestinationAutoAruSubtitle),
+                value: _autoUploadAru,
+                onChanged: _saving
+                    ? null
+                    : (v) => setState(() => _autoUploadAru = v),
               ),
               if (_saveError != null)
                 Padding(

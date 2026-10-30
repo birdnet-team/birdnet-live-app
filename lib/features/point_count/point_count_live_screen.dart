@@ -56,6 +56,7 @@ import '../live/live_detection_display.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 import '../live/widgets/detection_list_widget.dart';
+import '../upload/upload_providers.dart';
 
 /// Timed point-count survey screen with countdown and auto-stop.
 class PointCountLiveScreen extends ConsumerStatefulWidget {
@@ -597,6 +598,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
             debugPrint('PointCount: library refresh failed: $error\n$stack');
             container.invalidate(sessionListProvider);
           }
+          await autoEnqueueSession(container.read, session);
         }
       }
 

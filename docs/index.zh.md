@@ -56,11 +56,15 @@ BirdNET Live 已上架 [Google Play](https://play.google.com/store/apps/details?
 
 在 Android 上也可以手动安装已签名的 APK：从 [GitHub 发布页](https://github.com/birdnet-team/birdnet-live-app/releases/latest)下载最新版本，把 `.apk` 文件传到手机上并打开安装。您可能需要先在设备设置中允许安装未知来源的应用。
 
-> **注意：** APK 约 260 MB，因为其中包含 BirdNET+ 模型文件和全部物种图片，以便离线使用。
+> **注意：** APK 约 320 MB，因为其中包含 BirdNET+ 模型文件和全部物种图片，以便离线使用。
 
 ## 面向开发者
 
 架构、构建和参与贡献请参阅 [Developer Guide](developer/index.md)。开发者文档仅提供英文版本。
+
+## 资助
+
+BirdNET Live 在 RangerSound 项目框架内开发，该项目由 Deutsche Bundesstiftung Umwelt 资助（项目编号 39263/01）。 RangerSound 是开姆尼茨工业大学、Universität Würzburg 与巴伐利亚森林国家公园的合作项目。
 
 ## 许可
 

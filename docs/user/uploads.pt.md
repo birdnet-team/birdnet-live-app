@@ -81,7 +81,7 @@ Uma pasta por dispositivo, um ZIP por Session e os registros ocultos em `.birdne
 3. Opcionalmente, informe um **ID de participante, nome ou e-mail**. Ele é salvo com cada envio para que quem coordena o projeto saiba quem o enviou, e nunca aparece em nomes de pasta. Abaixo do campo, o aplicativo mostra **Seu ID de envio**, a pasta em que seus envios vão cair.
 4. Para um endereço WebDAV comum, abra **Avançado** e informe o **Nome de usuário** e a **Senha ou token**. Um link de compartilhamento do Nextcloud não precisa de nenhum dos dois; se o compartilhamento tiver senha, informe-a como senha.
 5. Toque em **Testar conexão**. O aplicativo contata o servidor, cria a pasta de registro oculta, verifica se a credencial consegue listar a pasta e grava o seu arquivo de registro. O resultado é uma única frase: **A conexão funciona**, um aviso que vale a pena ler, ou uma falha com a provável correção.
-6. Dê ao destino um **Nome do destino** (pré-preenchido a partir do link de acesso), decida se quer **Enviar somente por Wi-Fi** e toque em **Salvar destino**.
+6. Dê ao destino um **Nome do destino** (pré-preenchido a partir do link de acesso), decida se quer **Enviar somente por Wi-Fi** e **Enviar Sessions ARU automaticamente** e toque em **Salvar destino**. Depois de um código escaneado ou de um link tocado, o aplicativo segue para **Destinos de envio**.
 
 Nada é armazenado até que o teste seja aprovado. A credencial vai para o chaveiro do dispositivo, nunca para os dados exportados.
 
@@ -97,6 +97,7 @@ Tocar em um destino na lista abre a tela dele, com o endereço do servidor, quan
 
 - **Renomear** (o lápis na barra do aplicativo) altera o nome mostrado no aplicativo.
 - **Enviar somente por Wi-Fi** retém os envios enquanto o telefone está na rede celular.
+- **Enviar todas as Sessions automaticamente** coloca na fila toda Session finalizada, em qualquer modo, para este destino sem perguntar, usando os padrões de Exportação e sincronização para Áudio e Metadados. Enquanto estiver ativado, **Enviar Sessions ARU automaticamente** também permanece ativado. Se você descartar uma Session em Session Review depois, um envio que ainda não começou é cancelado, mas o que já foi enviado permanece no servidor.
 - **Enviar Sessions ARU automaticamente** coloca na fila toda ARU Session finalizada para este destino sem perguntar (veja abaixo).
 - **Testar conexão** repete o teste de conexão, por exemplo depois que o coordenador alterou a senha.
 - **Mostrar código de acesso** exibe um código QR mais **Copiar link**, para que um segundo telefone entre no mesmo destino.

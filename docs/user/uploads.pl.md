@@ -81,7 +81,7 @@ Jeden folder na urządzenie, jeden ZIP na Session i ukryte rejestracje `.birdnet
 3. Opcjonalnie wprowadź **Identyfikator uczestnika, imię lub e-mail**. Jest zapisywany z każdym przesłaniem, aby osoba prowadząca projekt wiedziała, kto je wysłał, i nigdy nie pojawia się w nazwach folderów. Pod polem aplikacja pokazuje **Twój identyfikator przesyłania**, czyli folder, do którego trafią Twoje przesłania.
 4. W przypadku zwykłego adresu WebDAV otwórz **Zaawansowane** i wprowadź **Nazwa użytkownika** oraz **Hasło lub token**. Link udostępnienia Nextcloud nie potrzebuje żadnego z nich; jeśli udostępnienie ma hasło, wpisz je jako hasło.
 5. Dotknij **Testuj połączenie**. Aplikacja łączy się z serwerem, tworzy ukryty folder rejestracji, sprawdza, czy dane logowania pozwalają wyświetlić zawartość folderu, i zapisuje Twój plik rejestracji. Wynik to jedno zdanie: **Połączenie działa**, ostrzeżenie, które warto przeczytać, albo błąd z prawdopodobnym rozwiązaniem.
-6. Nadaj miejscu docelowemu **Nazwa miejsca docelowego** (wypełnioną wstępnie z linku dołączenia), zdecyduj, czy **Przesyłaj tylko przez Wi-Fi**, i dotknij **Zapisz miejsce docelowe**.
+6. Nadaj miejscu docelowemu **Nazwa miejsca docelowego** (wypełnioną wstępnie z linku dołączenia), zdecyduj, czy **Przesyłaj tylko przez Wi-Fi** i **Przesyłaj Sessions ARU automatycznie**, i dotknij **Zapisz miejsce docelowe**. Po zeskanowaniu kodu lub dotknięciu linku aplikacja przechodzi do ekranu **Miejsca docelowe przesyłania**.
 
 Nic nie zostanie zapisane, dopóki test się nie powiedzie. Dane logowania trafiają do pęku kluczy urządzenia, nigdy do eksportowanych danych.
 
@@ -97,6 +97,7 @@ Dotknięcie miejsca docelowego na liście otwiera jego ekran z adresem serwera, 
 
 - **Zmień nazwę** (ołówek na pasku aplikacji) zmienia nazwę pokazywaną w aplikacji.
 - **Przesyłaj tylko przez Wi-Fi** wstrzymuje przesyłanie, gdy telefon korzysta z sieci komórkowej.
+- **Przesyłaj wszystkie Sessions automatycznie** dodaje każdą zakończoną Session z dowolnego trybu do kolejki tego miejsca docelowego bez pytania, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportu i synchronizacji. Gdy ta opcja jest włączona, włączona pozostaje też **Przesyłaj Sessions ARU automatycznie**. Odrzucenie Session później w Session Review anuluje przesyłanie, które się jeszcze nie rozpoczęło, ale to, co już wysłano, pozostaje na serwerze.
 - **Przesyłaj Sessions ARU automatycznie** dodaje każdą zakończoną ARU Session do kolejki tego miejsca docelowego bez pytania (zobacz poniżej).
 - **Testuj połączenie** powtarza test połączenia, na przykład po tym, jak osoba prowadząca zmieniła hasło.
 - **Pokaż kod dołączenia** wyświetla kod QR oraz **Kopiuj link**, aby drugi telefon mógł dołączyć do tego samego miejsca docelowego.

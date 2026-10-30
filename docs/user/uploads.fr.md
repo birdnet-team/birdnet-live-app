@@ -81,7 +81,7 @@ Un dossier par appareil, un ZIP par session et les enregistrements cachés `.bir
 3. Saisissez éventuellement un **Identifiant de participant, nom ou e-mail (facultatif)**. Il est enregistré avec chaque envoi pour que le responsable de projet sache qui l'a envoyé, et il n'apparaît jamais dans les noms de dossier. Sous le champ, l'application affiche **Votre identifiant d'envoi**, le dossier dans lequel vos envois seront déposés.
 4. Pour une simple adresse WebDAV, ouvrez **Avancé** et saisissez le **Nom d'utilisateur** et le **Mot de passe ou jeton**. Un lien de partage Nextcloud n'a besoin ni de l'un ni de l'autre ; si le partage a un mot de passe, saisissez-le comme mot de passe.
 5. Touchez **Tester la connexion**. L'application contacte le serveur, crée le dossier d'enregistrement caché, vérifie si l'identifiant peut lister le dossier et écrit votre fichier d'enregistrement. Le résultat tient en une phrase : **La connexion fonctionne**, un avertissement que vous devriez lire, ou un échec avec la solution probable.
-6. Donnez à la destination un **Nom de la destination** (prérempli depuis le lien d'accès), décidez s'il faut **Envoyer uniquement en Wi-Fi**, puis touchez **Enregistrer la destination**.
+6. Donnez à la destination un **Nom de la destination** (prérempli depuis le lien d'accès), décidez s'il faut **Envoyer uniquement en Wi-Fi** et **Envoyer les Sessions ARU automatiquement**, puis touchez **Enregistrer la destination**. Après un code scanné ou un lien touché, l'application continue vers **Destinations d'envoi**.
 
 Rien n'est enregistré tant que le test n'a pas réussi. L'identifiant est placé dans le trousseau de l'appareil, jamais dans les données exportées.
 
@@ -97,6 +97,7 @@ Toucher une destination dans la liste ouvre son écran avec l'adresse du serveur
 
 - **Renommer** (le crayon dans la barre d'application) modifie le nom affiché dans l'application.
 - **Envoyer uniquement en Wi-Fi** retient les envois tant que le téléphone est sur le réseau cellulaire.
+- **Envoyer toutes les Sessions automatiquement** met en file chaque Session terminée, quel que soit le mode, pour cette destination sans rien demander, en utilisant les valeurs par défaut d'Export et synchronisation pour l'audio et les métadonnées. Tant que cette option est active, **Envoyer les Sessions ARU automatiquement** reste également active. Si vous supprimez ensuite une Session dans Session Review, un envoi qui n'a pas commencé est annulé, mais ce qui a déjà été envoyé reste sur le serveur.
 - **Envoyer les Sessions ARU automatiquement** met en file chaque ARU Session terminée pour cette destination sans rien demander (voir plus bas).
 - **Tester la connexion** répète le test de connexion, par exemple après que le responsable a changé le mot de passe.
 - **Afficher le code d'accès** affiche un code QR ainsi que **Copier le lien** pour qu'un second téléphone rejoigne la même destination.

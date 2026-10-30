@@ -109,9 +109,9 @@ final aruControllerProvider = Provider<AruController>((ref) {
         return;
       }
       await repository.save(session);
-      // Destinations with "Upload ARU sessions automatically" on get the
-      // finalized session queued right here (#284).
-      await autoEnqueueAruSession(ref, session);
+      // Destinations with automatic uploads on get the finalized session
+      // queued right here (#284).
+      await autoEnqueueSession(ref.read, session);
     },
     discardSession: repository.deleteMetadataOnly,
     startCycleRecording: (session, window) async {

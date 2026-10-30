@@ -34,7 +34,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
   <a href="https://github.com/birdnet-team/birdnet-live-app/releases"><b>All Releases</b></a>
 </p>
 
-**NOTE: BirdNET Live is under active development. Some rough edges and limitations remain — please [report issues](https://github.com/birdnet-team/birdnet-live-app/issues) you run into and contribute if you can!**
+**Your feedback shapes BirdNET Live — please [report bugs](https://github.com/birdnet-team/birdnet-live-app/issues/new?template=bug_report.yml), [request features](https://github.com/birdnet-team/birdnet-live-app/issues/new?template=feature_request.yml), and [contribute](CONTRIBUTING.md) if you can!**
 
 ---
 
@@ -229,12 +229,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Contributing Translations
 
-Translations are very welcome contributions, and they cover **two** surfaces — both need updating for a language to be complete:
+Translations are very welcome contributions. Most translation changes cover **two** surfaces, and both need updating:
 
 - **UI strings** — ARB files in `lib/l10n/`. See [CONTRIBUTING.md](CONTRIBUTING.md#translation-contributions).
 - **Spoken announcement phrasing** — the sentences the app says out loud, in `assets/announcements/templates_<locale>.json`. See [assets/announcements/README.md](assets/announcements/README.md).
 
 The announcement templates are not in ARB because each entry is a *list* of interchangeable variants rather than a single string. A missing or incomplete template file falls back to English silently, so it is easy to ship a "complete" translation that still speaks English.
+
+Adding a whole new language touches more files — native Android and iOS strings, the language picker, policies, and the docs site. See [Adding a New Language](CONTRIBUTING.md#adding-a-new-language) for the full checklist.
 
 ## License
 
@@ -253,7 +255,7 @@ If you use this app in your scientific work, please cite it using the following 
 
 ```bibtex
 @software{BirdNET_Live_2026,
-  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Klinck, Holger},
+  author = {Kahl, Stefan and Börner, Andy and Mauermann, Max and Seifert, Raja Charlotte and Lasseck, Mario and Verdon, Simon and Wilhelm-Stein, Thomas and Wood, Connor M. and Eibl, Maximilian and Müller, Jörg and Klinck, Holger},
   title = {{BirdNET Live app - Professional bioacoustics in your pocket}},
   url = {https://github.com/birdnet-team/birdnet-live-app},
   year = {2026}

@@ -190,6 +190,8 @@ class AboutScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(l10n.aboutFundingDescription),
+                    const SizedBox(height: 8),
+                    Text(l10n.aboutFundingPartners),
                   ],
                 ),
               ),

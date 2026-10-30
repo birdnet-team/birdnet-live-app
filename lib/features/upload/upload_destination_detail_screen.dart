@@ -233,11 +233,23 @@ class _UploadDestinationDetailScreenState
                   notifier.replace(destination.copyWith(wifiOnly: v)),
             ),
             SwitchListTile(
+              title: Text(l10n.uploadDestinationAutoAll),
+              subtitle: Text(l10n.uploadDestinationAutoAllSubtitle),
+              value: destination.autoUploadAll,
+              onChanged: (v) =>
+                  notifier.replace(destination.copyWith(autoUploadAll: v)),
+            ),
+            // "All sessions" includes ARU ones, so this switch has no say
+            // while that one is on.
+            SwitchListTile(
               title: Text(l10n.uploadDestinationAutoAru),
               subtitle: Text(l10n.uploadDestinationAutoAruSubtitle),
-              value: destination.autoUploadAru,
-              onChanged: (v) =>
-                  notifier.replace(destination.copyWith(autoUploadAru: v)),
+              value: destination.autoUploadAll || destination.autoUploadAru,
+              onChanged: destination.autoUploadAll
+                  ? null
+                  : (v) => notifier.replace(
+                      destination.copyWith(autoUploadAru: v),
+                    ),
             ),
             if (destination.canReadRemote ||
                 destination.shareWithoutPassword ||

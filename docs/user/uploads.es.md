@@ -81,7 +81,7 @@ Una carpeta por dispositivo, un ZIP por sesión y los registros ocultos de `.bir
 3. Si quieres, rellena **ID de participante, nombre o correo (opcional)**. Se guarda con cada subida para que quien dirige el proyecto sepa quién la envió, y nunca aparece en los nombres de carpeta. Bajo el campo, la app muestra **Tu ID de subida**, la carpeta en la que aterrizarán tus subidas.
 4. Para una dirección WebDAV normal, abre **Avanzado** e introduce el **Nombre de usuario** y la **Contraseña o token**. Un enlace compartido de Nextcloud no necesita ninguno de los dos; si el recurso compartido tiene contraseña, introdúcela como contraseña.
 5. Toca **Probar conexión**. La app contacta con el servidor, crea la carpeta de registro oculta, comprueba si la credencial puede listar la carpeta y escribe tu archivo de registro. El resultado es una sola frase: **La conexión funciona**, una advertencia que conviene leer, o un fallo con la solución probable.
-6. Dale al destino un **Nombre del destino** (rellenado previamente a partir del enlace de acceso), decide si quieres **Subir solo con Wi-Fi** y toca **Guardar destino**.
+6. Dale al destino un **Nombre del destino** (rellenado previamente a partir del enlace de acceso), decide si quieres **Subir solo con Wi-Fi** y **Subir las Sessions ARU automáticamente** y toca **Guardar destino**. Tras escanear un código o tocar un enlace, la app continúa en **Destinos de subida**.
 
 No se guarda nada hasta que la prueba se ha superado. La credencial va al llavero del dispositivo, nunca a los datos exportados.
 
@@ -97,6 +97,7 @@ Tocar un destino de la lista abre su pantalla con la dirección del servidor, cu
 
 - **Renombrar** (el lápiz de la barra de la app) cambia el nombre que se muestra en la app.
 - **Subir solo con Wi-Fi** retiene las subidas mientras el teléfono usa datos móviles.
+- **Subir todas las Sessions automáticamente** pone en cola cada Session terminada de cualquier modo para este destino sin preguntar, usando los valores predeterminados de Exportación y sincronización para Audio y Metadatos. Mientras esté activado, **Subir las Sessions ARU automáticamente** también permanece activado. Si después descartas una Session en Session Review, se cancela la subida que aún no haya empezado, pero lo ya enviado permanece en el servidor.
 - **Subir las Sessions ARU automáticamente** pone en cola cada ARU Session terminada para este destino sin preguntar (ver más abajo).
 - **Probar conexión** repite la prueba de conexión, por ejemplo después de que quien dirige el proyecto haya cambiado la contraseña.
 - **Mostrar código de acceso** muestra un código QR junto con **Copiar enlace** para que un segundo teléfono pueda unirse al mismo destino.

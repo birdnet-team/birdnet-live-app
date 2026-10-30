@@ -29,6 +29,7 @@ import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
+import '../upload/upload_providers.dart';
 import 'live_controller.dart';
 import 'live_detection_display.dart';
 import 'live_providers.dart';
@@ -1045,6 +1046,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             debugPrint('LiveScreen: library refresh failed: $error\n$stack');
             container.invalidate(sessionListProvider);
           }
+          await autoEnqueueSession(container.read, session);
         }
       }
 

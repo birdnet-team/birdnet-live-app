@@ -81,7 +81,7 @@ Jednu složku na zařízení, jeden ZIP na Session a skryté registrace `.birdne
 3. Volitelně vyplňte pole **ID účastníka, jméno nebo e-mail (nepovinné)**. Ukládá se s každým nahráním, aby vedoucí projektu věděl, kdo ho poslal, a nikdy se neobjeví v názvech složek. Pod polem aplikace zobrazuje **Vaše ID pro nahrávání**, složku, do které budou vaše nahrání ukládána.
 4. U běžné adresy WebDAV otevřete **Rozšířené** a zadejte **Uživatelské jméno** a **Heslo nebo token**. Odkaz pro sdílení Nextcloud nepotřebuje ani jedno; má-li sdílení heslo, zadejte ho jako heslo.
 5. Klepněte na **Otestovat připojení**. Aplikace kontaktuje server, vytvoří skrytou registrační složku, zkontroluje, zda přihlašovací údaje mohou vypsat obsah složky, a zapíše váš registrační soubor. Výsledkem je jedna věta: **Připojení funguje**, varování, které byste si měli přečíst, nebo selhání s pravděpodobnou nápravou.
-6. Zadejte cíli **Název cíle** (předvyplněný z odkazu pro připojení), rozhodněte, zda **Nahrávat pouze přes Wi-Fi**, a klepněte na **Uložit cíl**.
+6. Zadejte cíli **Název cíle** (předvyplněný z odkazu pro připojení), rozhodněte, zda **Nahrávat pouze přes Wi-Fi** a **Nahrávat ARU Sessions automaticky**, a klepněte na **Uložit cíl**. Po naskenování kódu nebo klepnutí na odkaz aplikace pokračuje na obrazovku **Cíle nahrávání**.
 
 Dokud test neprojde, nic se neuloží. Přihlašovací údaje se ukládají do klíčenky zařízení, nikdy do exportovaných dat.
 
@@ -97,6 +97,7 @@ Klepnutím na cíl v seznamu otevřete jeho obrazovku s adresou serveru, údaji 
 
 - **Přejmenovat** (tužka v horní liště aplikace) změní název zobrazený v aplikaci.
 - **Nahrávat pouze přes Wi-Fi** pozdrží nahrávání, dokud je telefon na mobilních datech.
+- **Nahrávat všechny Sessions automaticky** zařadí každou dokončenou Session z libovolného režimu do fronty pro tento cíl bez dotazu, s výchozími hodnotami Export a synchronizace pro Zvuk a Metadata. Dokud je tato možnost zapnutá, zůstává zapnutá i **Nahrávat ARU Sessions automaticky**. Pokud Session následně v Session Review zahodíte, nahrávání, které ještě nezačalo, se zruší, ale to, co už bylo odesláno, zůstane na serveru.
 - **Nahrávat ARU Sessions automaticky** zařadí každou dokončenou ARU Session do fronty pro tento cíl bez dotazu (viz níže).
 - **Otestovat připojení** zopakuje test připojení, například po tom, co vedoucí změnil heslo.
 - **Zobrazit kód pro připojení** zobrazí QR kód spolu s **Kopírovat odkaz**, aby se k témuž cíli mohl připojit druhý telefon.

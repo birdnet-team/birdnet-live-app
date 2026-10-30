@@ -81,7 +81,7 @@ One folder per device, one ZIP per session, and the hidden `.birdnet-live` regis
 3. Optionally enter a **Participant, name, or email**. It is saved with every upload so the project lead knows who sent it, and it never appears in folder names. Below the field the app shows **Your upload ID**, the folder your uploads will land in.
 4. For a plain WebDAV address, open **Advanced** and enter the **User name** and **Password or token**. A Nextcloud share link needs neither; if the share has a password, enter it as the password.
 5. Tap **Test connection**. The app contacts the server, creates the hidden registration folder, checks whether the credential can list the folder, and writes your registration file. The result is one sentence: **Connection works**, a warning you should read, or a failure with the likely fix.
-6. Give the destination a **Destination name** (prefilled from the join link), decide whether to **Upload on Wi-Fi only**, and tap **Save destination**.
+6. Give the destination a **Destination name** (prefilled from the join link), decide whether to **Upload on Wi-Fi only** and **Upload ARU sessions automatically**, and tap **Save destination**. After a scanned code or a tapped link, the app continues to your **Upload destinations**.
 
 Nothing is stored until the test has passed. The credential goes into the device keychain, never into exported data.
 
@@ -97,6 +97,7 @@ Tapping a destination in the list opens its screen with the server address, when
 
 - **Rename** (the pencil in the app bar) changes the name shown in the app.
 - **Upload on Wi-Fi only** holds uploads while the phone is on cellular.
+- **Upload all sessions automatically** queues every finished session from any mode for this destination without asking, using the Export & Sync defaults for Audio and Metadata. While it is on, **Upload ARU sessions automatically** stays on too. Discarding a session in Session Review afterwards cancels an upload that has not started, but anything already sent stays on the server.
 - **Upload ARU sessions automatically** queues every finished ARU Session for this destination without asking (see below).
 - **Test connection** repeats the connection test, for example after the lead changed the password.
 - **Show join code** displays a QR code plus **Copy link** so a second phone can join the same destination.
