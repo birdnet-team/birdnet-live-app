@@ -142,7 +142,7 @@ class UploadStatusLine extends StatelessWidget {
       builder: (context, summary) {
         final theme = Theme.of(context);
         return Padding(
-          padding: const EdgeInsets.only(bottom: 2),
+          padding: const EdgeInsets.only(bottom: 4),
           child: InkWell(
             borderRadius: BorderRadius.circular(4),
             onTap: () => showUploadStatusSheet(context, sessionId),
@@ -150,7 +150,7 @@ class UploadStatusLine extends StatelessWidget {
               children: [
                 summary.busy
                     ? SizedBox.square(
-                        dimension: 12,
+                        dimension: 14,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: summary.color,
