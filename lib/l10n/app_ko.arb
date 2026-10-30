@@ -884,7 +884,7 @@
   "ebirdLifeListGetListLink": "eBird.org에서 라이프 리스트 다운로드",
   "ebirdLifeListSpeciesCount": "가져온 종: {count}",
   "ebirdLifeListImportedOn": "마지막 업데이트: {date}",
-  "ebirdLifeListImportError": "\"Scientific Name\" 열을 찾을 수 없습니다. eBird 라이프 리스트 CSV가 맞나요?",
+  "ebirdLifeListImportError": "\"Scientific Name\" 열을 찾을 수 없습니다. eBird 라이프 리스트 CSV가 맞습니까?",
   "ebirdLifeListBadgeTooltip": "eBird 라이프 리스트에 없음",
   "settingsPrivacy": "개인정보",
   "settingsPrivacyDescription": "BirdNET Live가 사용자를 대신해 연결할 외부 서비스를 고릅니다. 기본값은 모두 꺼짐입니다.",
