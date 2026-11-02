@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "Escaneie este código com a câmera do outro telefone ou copie o link e envie. Qualquer pessoa com o código pode enviar para este destino, então compartilhe apenas com quem você confia.",
   "uploadJoinQrCopy": "Copiar link",
   "uploadJoinQrCopied": "Link de acesso copiado",
-  "uploadChipUploaded": "Enviado"
+  "uploadChipUploaded": "Enviado",
+  "uploadDestinationPause": "Pausar envios",
+  "uploadDestinationPauseSubtitle": "Enquanto estiver pausado, nada é enviado a este destino. Os envios na fila aguardam e as Sessions concluídas não entram na fila automaticamente.",
+  "uploadDestinationPaused": "Pausado",
+  "uploadStatusDestinationPaused": "Destino pausado"
 }

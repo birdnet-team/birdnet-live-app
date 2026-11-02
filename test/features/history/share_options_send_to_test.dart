@@ -105,6 +105,28 @@ void main() {
     expect(result.formats, {'raven'});
   });
 
+  testWidgets('a paused destination is not offered, even when remembered', (
+    tester,
+  ) async {
+    final read = await open(
+      tester,
+      showSendTo: true,
+      destinations: [
+        destination('a', 'Project A').copyWith(paused: true),
+        destination('b', 'B'),
+      ],
+      initialDestinationIds: {'a', 'b'},
+    );
+    await tester.tap(find.text('Send to'));
+    await tester.pumpAndSettle();
+    expect(find.text('Project A'), findsNothing);
+    expect(find.text('B'), findsOneWidget);
+
+    await tester.tap(find.text('Share and upload'));
+    await tester.pumpAndSettle();
+    expect(read()!.uploadDestinationIds, {'b'});
+  });
+
   testWidgets('an already uploaded destination starts unticked even when '
       'remembered', (tester) async {
     final read = await open(
@@ -217,6 +239,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(added, isTrue);
     expect(read(), isNull);
+  });
+
+  testWidgets('with every destination paused the group does not offer to '
+      'add one', (tester) async {
+    await open(
+      tester,
+      showSendTo: true,
+      destinations: [destination('a', 'Project A').copyWith(paused: true)],
+    );
+    await tester.tap(find.text('Send to'));
+    await tester.pumpAndSettle();
+    expect(find.text('Project A'), findsNothing);
+    expect(find.text('Add destination'), findsNothing);
   });
 
   testWidgets('thirty destinations do not grow the dialog', (tester) async {

@@ -98,7 +98,8 @@ Future<void> uploadQueueBackgroundMain() async {
     }
     final service = container.read(uploadServiceProvider);
     await service.processQueue();
-    pending = service.pendingCount;
+    // Jobs held by a paused destination are not worth another worker run.
+    pending = (await service.actionablePending()).length;
   } catch (e, stackTrace) {
     error = '$e';
     debugPrint('Background upload run failed: $e\n$stackTrace');

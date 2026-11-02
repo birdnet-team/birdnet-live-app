@@ -57,15 +57,22 @@ void main() {
 
   final config = ShareExportConfig(formats: const {'csv'}, includeAudio: false);
 
-  UploadService build({UploadDestination? dest}) {
+  UploadService build({
+    UploadDestination? dest,
+    List<UploadDestination> others = const [],
+  }) {
     return UploadService(
       store: UploadQueueStore(documentsDirectory: () async => tempDir),
       client: WebDavClient(client: dav.client),
       connectivity: connectivity,
       deviceCode: () => '4ee91c8f',
       loadSession: (id) async => id == session.id ? session : null,
-      findDestination: (id) async =>
-          id == (dest ?? destination).id ? (dest ?? destination) : null,
+      findDestination: (id) async {
+        for (final d in [dest ?? destination, ...others]) {
+          if (d.id == id) return d;
+        }
+        return null;
+      },
       secretFor: (d) => secretFor(d),
       buildExport: (_, config) async {
         exportConfigs.add(config);
@@ -285,6 +292,151 @@ void main() {
       );
     },
   );
+
+  test('enqueue refuses a paused destination', () async {
+    await expectLater(
+      service.enqueue(
+        session: session,
+        destination: destination.copyWith(paused: true),
+        config: config,
+      ),
+      throwsStateError,
+    );
+    expect(service.jobsForSession(session.id), isEmpty);
+  });
+
+  test('a paused destination holds its jobs until it is resumed', () async {
+    // Queued offline, so the job is still waiting when the pause comes.
+    connectivity.type = NetworkType.none;
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+    expect(dav.requests, isEmpty);
+
+    connectivity.type = NetworkType.wifi;
+    service.dispose();
+    service = build(dest: destination.copyWith(paused: true));
+    await service.processQueue();
+
+    var job = service.jobsForSession(session.id).single;
+    expect(job.state, UploadJobState.queued);
+    expect(job.lastError, UploadErrorCode.destinationPaused);
+    expect(dav.requests, isEmpty);
+    // Nothing for the background scheduler to book.
+    expect(await service.actionablePending(), isEmpty);
+
+    // Resuming is a destination change; the next run finds the same queue.
+    service.dispose();
+    service = build();
+    await service.processQueue();
+    job = service.jobsForSession(session.id).single;
+    expect(job.state, UploadJobState.uploaded);
+    expect(job.lastError, isNull);
+  });
+
+  test('pausing also holds a job in retry backoff', () async {
+    dav.failuresLeft = 1;
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+    var job = service.jobsForSession(session.id).single;
+    expect(job.state, UploadJobState.failed);
+    expect(job.nextAttemptAt, isNotNull);
+
+    // Paused before the retry is due: the job reads "Destination paused"
+    // rather than "failed", and loses its backoff so resuming sends it.
+    service.dispose();
+    service = build(dest: destination.copyWith(paused: true));
+    await service.processQueue();
+    job = service.jobsForSession(session.id).single;
+    expect(job.state, UploadJobState.queued);
+    expect(job.lastError, UploadErrorCode.destinationPaused);
+    expect(job.nextAttemptAt, isNull);
+    expect(await service.actionablePending(), isEmpty);
+  });
+
+  test('pausing holds a job the run never reaches', () async {
+    final other = UploadDestination(
+      id: 'dest-2',
+      name: 'Other',
+      url: 'https://cloud.example.org/other/',
+      username: 'token',
+      createdAt: now,
+    );
+    service.dispose();
+    service = build(others: [other]);
+    connectivity.type = NetworkType.none;
+    await service.enqueue(session: session, destination: other, config: config);
+    // Strictly older, so the run reaches the other destination's job first.
+    now = now.add(const Duration(minutes: 1));
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+
+    // Still offline, the older job (the live destination's) stops the run
+    // before the paused destination's job would have its turn.
+    service.dispose();
+    service = build(dest: destination.copyWith(paused: true), others: [other]);
+    await service.processQueue();
+
+    final jobs = {
+      for (final j in service.jobsForSession(session.id)) j.destinationId: j,
+    };
+    expect(jobs[other.id]!.lastError, UploadErrorCode.offline);
+    expect(jobs[destination.id]!.lastError, UploadErrorCode.destinationPaused);
+    expect(await service.actionablePending(), hasLength(1));
+  });
+
+  test('resuming clears the mark of a job the run never reaches', () async {
+    final other = UploadDestination(
+      id: 'dest-2',
+      name: 'Other',
+      url: 'https://cloud.example.org/other/',
+      username: 'token',
+      createdAt: now,
+    );
+    Map<String, UploadJob> byDestination() => {
+      for (final j in service.jobsForSession(session.id)) j.destinationId: j,
+    };
+    service.dispose();
+    service = build(others: [other]);
+    connectivity.type = NetworkType.none;
+    await service.enqueue(session: session, destination: other, config: config);
+    // Strictly older, so the run reaches the other destination's job first.
+    now = now.add(const Duration(minutes: 1));
+    await service.enqueue(
+      session: session,
+      destination: destination,
+      config: config,
+    );
+    await service.processQueue();
+    service.dispose();
+    service = build(dest: destination.copyWith(paused: true), others: [other]);
+    await service.processQueue();
+    expect(
+      byDestination()[destination.id]!.lastError,
+      UploadErrorCode.destinationPaused,
+    );
+
+    // Resumed, still offline: the other destination's older job stops the
+    // run first, yet this one no longer claims to be paused.
+    service.dispose();
+    service = build(others: [other]);
+    await service.processQueue();
+    final job = byDestination()[destination.id]!;
+    expect(job.state, UploadJobState.queued);
+    expect(job.lastError, isNull);
+    expect(await service.actionablePending(), hasLength(2));
+  });
 
   test('enqueue is idempotent while pending and re-uploads to the same path '
       'afterwards', () async {

@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "다른 휴대전화의 카메라로 이 코드를 스캔하거나 링크를 복사해 보내세요. 이 코드가 있는 사람은 누구나 이 대상에 업로드할 수 있으므로 신뢰하는 사람에게만 공유하세요.",
   "uploadJoinQrCopy": "링크 복사",
   "uploadJoinQrCopied": "참여 링크를 복사했습니다",
-  "uploadChipUploaded": "업로드됨"
+  "uploadChipUploaded": "업로드됨",
+  "uploadDestinationPause": "업로드 일시 중지",
+  "uploadDestinationPauseSubtitle": "일시 중지된 동안에는 이 대상으로 아무것도 전송되지 않습니다. 대기 중인 업로드는 그대로 기다리고, 완료된 Session은 자동으로 대기열에 추가되지 않습니다.",
+  "uploadDestinationPaused": "일시 중지됨",
+  "uploadStatusDestinationPaused": "대상 일시 중지됨"
 }

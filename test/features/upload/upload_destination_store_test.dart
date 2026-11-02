@@ -47,6 +47,22 @@ void main() {
     expect(loaded[0].autoUploadAru, isFalse);
   });
 
+  test(
+    'paused survives a round-trip and is left out of the JSON when off',
+    () async {
+      await store.save([
+        destination('a').copyWith(paused: true),
+        destination('b'),
+      ]);
+
+      final loaded = await store.load();
+
+      expect(loaded[0].paused, isTrue);
+      expect(loaded[1].paused, isFalse);
+      expect(destination('b').toJson().containsKey('paused'), isFalse);
+    },
+  );
+
   test('the file never contains a secret key field', () async {
     await store.save([destination('a')]);
     final text = await File(

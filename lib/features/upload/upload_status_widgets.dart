@@ -4,8 +4,8 @@
 //
 // [UploadStatusLine] is the first metadata line of a session tile and says
 // what happened to the session's uploads: a spinner while one is running,
-// "Queued" or "Waiting for Wi-Fi" while pending, "Uploaded <date>" when done,
-// or a failure sentence that names the fix. [UploadStatusAction] is the same
+// "Queued", "Waiting for Wi-Fi", or "Destination paused" while pending,
+// "Uploaded <date>" when done, or a failure sentence that names the fix. [UploadStatusAction] is the same
 // state as an app-bar icon on Session Review. Both only appear while at
 // least one destination the session was queued for still exists in
 // Settings: once the user removes a destination, "uploaded" is no longer a
@@ -332,6 +332,7 @@ String uploadStateLabel(AppLocalizations l10n, UploadJob job) {
       return switch (job.lastError) {
         UploadErrorCode.waitingForWifi => l10n.uploadStatusWaitingForWifi,
         UploadErrorCode.offline => l10n.uploadStatusOffline,
+        UploadErrorCode.destinationPaused => l10n.uploadStatusDestinationPaused,
         _ => l10n.uploadStatusQueued,
       };
     case UploadJobState.uploading:

@@ -127,11 +127,18 @@ Future<ShareExportConfig?> pickShareExportConfig(
     ),
   );
   if (result != null && uploadable != null) {
+    // A paused destination was not offered, so its tick could not be
+    // confirmed; keep it remembered for when the destination resumes.
+    final kept = {
+      ...result.uploadDestinationIds,
+      for (final d in destinations)
+        if (d.paused && remembered.contains(d.id)) d.id,
+    };
     await ref
         .read(sharedPreferencesProvider)
         .setStringList(
           PrefKeys.shareLastUploadDestinations,
-          result.uploadDestinationIds.toList()..sort(),
+          kept.toList()..sort(),
         );
   }
   return result;
@@ -161,6 +168,8 @@ class ShareOptionsDialog extends StatefulWidget {
   /// shown. Session shares pass true; detection shares keep it false.
   final bool showSendTo;
 
+  /// The configured upload destinations, one box each. Paused ones take
+  /// nothing and are left out.
   final List<UploadDestination> destinations;
 
   /// Destinations ticked when the dialog opens (the previous choice).
@@ -189,11 +198,15 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
   late bool _metadata = widget.initial.includesMetadata;
   bool _shareSheet = true;
   late final Set<String> _destinations = {
-    for (final d in widget.destinations)
+    for (final d in _offered)
       if (widget.initialDestinationIds.contains(d.id) &&
           !widget.uploadedTo.containsKey(d.id))
         d.id,
   };
+
+  /// The destinations the Send to tab lists: every one that is not paused.
+  Iterable<UploadDestination> get _offered =>
+      widget.destinations.where((d) => !d.paused);
   final Map<String, ProbeFailure> _unreachable = {};
 
   @override
@@ -201,7 +214,7 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
     super.initState();
     final check = widget.checkReachable;
     if (check == null) return;
-    for (final destination in widget.destinations) {
+    for (final destination in _offered) {
       unawaited(
         check(destination).then((failure) {
           if (!mounted || failure == null) return;
@@ -292,7 +305,7 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
           value: _shareSheet,
           onChanged: (v) => setState(() => _shareSheet = v ?? false),
         ),
-        for (final destination in widget.destinations)
+        for (final destination in _offered)
           CheckboxListTile(
             secondary: _destinationIcon(destination),
             title: Text(destination.name),
@@ -309,6 +322,8 @@ class _ShareOptionsDialogState extends State<ShareOptionsDialog> {
               }
             }),
           ),
+        // Only when none exists at all: with every destination paused the
+        // user has one to resume, not one to add.
         if (widget.destinations.isEmpty)
           ListTile(
             leading: const Icon(AppIcons.add),

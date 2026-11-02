@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "Scannen Sie diesen Code mit der Kamera des anderen Telefons oder kopieren und senden Sie den Link. Jede Person mit dem Code kann zu diesem Ziel hochladen – geben Sie ihn nur an Personen weiter, denen Sie vertrauen.",
   "uploadJoinQrCopy": "Link kopieren",
   "uploadJoinQrCopied": "Beitrittslink kopiert",
-  "uploadChipUploaded": "Hochgeladen"
+  "uploadChipUploaded": "Hochgeladen",
+  "uploadDestinationPause": "Uploads pausieren",
+  "uploadDestinationPauseSubtitle": "Solange pausiert, wird nichts an dieses Ziel gesendet. Wartende Uploads bleiben in der Warteschlange, und abgeschlossene Sessions werden nicht automatisch eingereiht.",
+  "uploadDestinationPaused": "Pausiert",
+  "uploadStatusDestinationPaused": "Ziel pausiert"
 }

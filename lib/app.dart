@@ -496,16 +496,7 @@ class _UploadQueueListenerState extends ConsumerState<_UploadQueueListener>
     if (state == AppLifecycleState.resumed) _kick();
   }
 
-  void _kick() {
-    unawaited(
-      ref.read(uploadServiceProvider).processQueue().catchError((
-        Object error,
-        StackTrace stackTrace,
-      ) {
-        debugPrint('Upload queue run failed: $error\n$stackTrace');
-      }),
-    );
-  }
+  void _kick() => ref.read(uploadServiceProvider).kick();
 
   @override
   Widget build(BuildContext context) => widget.child;
