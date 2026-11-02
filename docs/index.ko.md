@@ -5,7 +5,7 @@
 BirdNET Live는 현장에서 신뢰할 수 있는 음향 증거가 필요한 현장 연구자, 보전 활동가, 탐조인을 위해 만들어진 Flutter 앱입니다. BirdNET+ 오디오 분류기와 지리 모델을 기기에서 직접 실행하므로, 설치 후에는 종 동정이 완전히 오프라인으로 작동합니다.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v1.2.1-orange.svg" alt="Latest release: v1.2.1">
+  <img src="https://img.shields.io/badge/latest-v1.3.0-orange.svg" alt="Latest release: v1.3.0">
   <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
