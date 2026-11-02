@@ -868,6 +868,9 @@ void main() {
       await service.processQueue();
 
       await transfer.report(service.jobs.single.transferId!, 401);
+      // The outcome kicks a run that read the clock before it moves; join
+      // it here so the next processQueue starts a fresh one.
+      await service.processQueue();
       var current = service.jobs.single;
       expect(current.state, UploadJobState.failed);
       expect(current.lastError, UploadErrorCode.unauthorized);
