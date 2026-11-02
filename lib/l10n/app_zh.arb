@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "用另一部手机的相机扫描此码，或复制链接后发送。任何拥有此码的人都可以上传到此目标，因此请只分享给您信任的人。",
   "uploadJoinQrCopy": "复制链接",
   "uploadJoinQrCopied": "已复制加入链接",
-  "uploadChipUploaded": "已上传"
+  "uploadChipUploaded": "已上传",
+  "uploadDestinationPause": "暂停上传",
+  "uploadDestinationPauseSubtitle": "暂停期间不会向此目标发送任何内容。队列中的上传会等待，已完成的 Session 不会自动加入队列。",
+  "uploadDestinationPaused": "已暂停",
+  "uploadStatusDestinationPaused": "目标已暂停"
 }

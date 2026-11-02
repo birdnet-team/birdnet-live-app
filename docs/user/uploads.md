@@ -96,6 +96,7 @@ Warnings worth understanding:
 Tapping a destination in the list opens its screen with the server address, when it was added and last used, and these controls:
 
 - **Rename** (the pencil in the app bar) changes the name shown in the app.
+- **Pause uploads** holds everything for this destination: queued uploads wait and show **Destination paused**, finished sessions are not queued automatically, and the destination is left out of the Share dialog's **Send to** tab. Nothing new is queued while paused, and the three switches below are inactive until you resume. Switch it off to resume; the waiting uploads then go out. An upload that is already running finishes.
 - **Upload on Wi-Fi only** holds uploads while the phone is on cellular.
 - **Upload all sessions automatically** queues every finished session from any mode for this destination without asking, using the Export & Sync defaults for Audio and Metadata. While it is on, **Upload ARU sessions automatically** stays on too. Discarding a session in Session Review afterwards cancels an upload that has not started, but anything already sent stays on the server.
 - **Upload ARU sessions automatically** queues every finished ARU Session for this destination without asking (see below).
@@ -122,7 +123,7 @@ Untick **Share sheet** and the button reads **Upload**; with both ticked it read
 
 ### Following an upload
 
-The session card in Session Library shows the state as the first line under the session title: **Queued**, **Waiting for Wi-Fi**, **Waiting for a network**, **Uploading…**, **Uploaded** with the date, or a failure. Tap the line for the per-destination list with **Retry now** and **Remove from queue**. Session Review shows the same state as a cloud icon in the app bar; tapping it opens the same list.
+The session card in Session Library shows the state as the first line under the session title: **Queued**, **Waiting for Wi-Fi**, **Waiting for a network**, **Destination paused**, **Uploading…**, **Uploaded** with the date, or a failure. Tap the line for the per-destination list with **Retry now** and **Remove from queue**. Session Review shows the same state as a cloud icon in the app bar; tapping it opens the same list.
 
 Failed uploads retry on their own with growing delays, up to six hours apart, for up to thirty attempts. **Failed, will retry** means the app will try again. **Upload failed. Check the destination settings.** means the server refused and a retry cannot help: the password changed, uploads were switched off, or the destination was removed. Open the destination, run **Test connection**, and remove and re-add it if the credential changed.
 
@@ -174,6 +175,7 @@ An upload contains what a Share would contain: the session's JSON record with de
 | The server's certificate could not be verified. | Self-signed or broken TLS. | Ask the lead for an address with a valid certificate. |
 | This address uses plain HTTP. | Unencrypted connection outside your local network. | Use an `https://` address. |
 | Waiting for Wi-Fi | The destination is set to Wi-Fi only and the phone is on cellular. | Wait, or switch the destination's Wi-Fi only switch off. |
+| Destination paused | The destination's **Pause uploads** switch is on. | Open the destination and switch it off; the upload then goes out. |
 | Failed, will retry | A temporary problem such as a dropped connection or a server error. | Nothing; the app retries on its own. **Retry now** forces an attempt. |
 | Upload failed. Check the destination settings. | The server refused for a reason a retry cannot fix. | Open the destination, run **Test connection**, and remove and re-add it if the credential changed. |
 | The credential for this destination is missing from the device keychain. | The keychain entry was lost, for example after a restore to a new phone. | Remove the destination and add it again. |

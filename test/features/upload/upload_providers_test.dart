@@ -210,6 +210,16 @@ void main() {
       expect(await queuedFor(finished(SessionType.aru)), [destination.id]);
     });
 
+    test('a paused destination takes nothing automatically', () async {
+      final destination = await addDestination(all: true, aru: true);
+      await container
+          .read(uploadDestinationsProvider.notifier)
+          .replace(destination.copyWith(paused: true));
+
+      expect(await queuedFor(finished(SessionType.live)), isEmpty);
+      expect(await queuedFor(finished(SessionType.aru)), isEmpty);
+    });
+
     test('skips a session that has not ended', () async {
       await addDestination(all: true);
       final session = finished(SessionType.live)..endTime = null;

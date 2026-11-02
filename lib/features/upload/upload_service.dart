@@ -18,8 +18,9 @@
 //
 // A failed job backs off exponentially (1 min, 2, 4, … capped at 6 h) and
 // gives up after [UploadJob.maxAttempts]. Jobs whose destination is on
-// Wi-Fi only wait while the device is on cellular; with no network at all the
-// run stops early. Every state change is persisted, so a kill mid-upload
+// Wi-Fi only wait while the device is on cellular, jobs whose destination is
+// paused wait until it is resumed; with no network at all the run stops
+// early. Every state change is persisted, so a kill mid-upload
 // simply retries that job on the next run.
 //
 // Triggers (see app.dart and upload_providers.dart): enqueue, app start,
@@ -79,6 +80,7 @@ abstract final class UploadErrorCode {
   static const String network = 'network';
   static const String exportFailed = 'exportFailed';
   static const String destinationMissing = 'destinationMissing';
+  static const String destinationPaused = 'destinationPaused';
   static const String secretMissing = 'secretMissing';
   static const String sessionMissing = 'sessionMissing';
 }
@@ -143,6 +145,22 @@ class UploadService extends ChangeNotifier {
   ];
 
   int get pendingCount => _jobs.where((j) => j.isPending).length;
+
+  /// Pending jobs a run could act on: those whose destination is not paused.
+  /// A destination lookup failure counts as actionable so nothing waits
+  /// forever.
+  Future<List<UploadJob>> actionablePending() async {
+    await _ensureLoaded();
+    final paused = <String, bool>{};
+    final result = <UploadJob>[];
+    for (final job in _jobs) {
+      if (!job.isPending) continue;
+      final isPaused = paused[job.destinationId] ??=
+          (await _findDestination(job.destinationId))?.paused ?? false;
+      if (!isPaused) result.add(job);
+    }
+    return result;
+  }
 
   /// Reads the job list from disk once. Safe to call from widgets: a
   /// store that cannot be read (no documents directory in a widget test)
@@ -219,7 +237,7 @@ class UploadService extends ChangeNotifier {
   }
 
   /// Runs the queue without letting an error escape an unawaited call.
-  void _kick() {
+  void kick() {
     unawaited(
       processQueue().catchError((Object error, StackTrace stackTrace) {
         debugPrint('Upload queue run failed: $error\n$stackTrace');
@@ -229,12 +247,17 @@ class UploadService extends ChangeNotifier {
 
   /// Queues [session] for [destination]. An already pending job for the pair
   /// is returned instead of duplicated; after a finished upload a new
-  /// version is queued.
+  /// version is queued. A paused destination takes nothing: the callers
+  /// leave it out, and this guard keeps a queue from piling up behind a
+  /// pause however the job was requested.
   Future<UploadJob> enqueue({
     required LiveSession session,
     required UploadDestination destination,
     required ShareExportConfig config,
   }) async {
+    if (destination.paused) {
+      throw StateError('Destination ${destination.id} is paused');
+    }
     await _ensureLoaded();
     // A session listed by the library may still carry an unsaved UUID (one
     // saved before UUIDs existed gets its permanent one on the first full
@@ -261,7 +284,7 @@ class UploadService extends ChangeNotifier {
     _jobs = [job, ..._jobs];
     _dirty.add(job.id);
     await _persist();
-    _kick();
+    kick();
     return job;
   }
 
@@ -277,7 +300,7 @@ class UploadService extends ChangeNotifier {
       ),
     );
     await _persist();
-    _kick();
+    kick();
   }
 
   /// Drops a pending job. Finished jobs stay as the log.
@@ -347,12 +370,13 @@ class UploadService extends ChangeNotifier {
     }
   }
 
-  /// Tells the scheduler what is left. A destination lookup failure counts
-  /// as "any network" so nothing waits forever.
+  /// Tells the scheduler what is left, leaving out jobs held by a paused
+  /// destination so no background run is booked for them. A destination
+  /// lookup failure counts as "any network" so nothing waits forever.
   Future<void> _reportPending() async {
     final hook = _onPendingChanged;
     if (hook == null) return;
-    final pending = _jobs.where((j) => j.isPending).toList();
+    final pending = await actionablePending();
     var wifiOnly = pending.isNotEmpty;
     for (final job in pending) {
       final destination = await _findDestination(job.destinationId);
@@ -369,7 +393,7 @@ class UploadService extends ChangeNotifier {
   }
 
   Future<void> _runLocked() async {
-    final skipped = <String>{};
+    final skipped = await _holdPausedJobs();
     while (true) {
       final now = _now();
       UploadJob? next;
@@ -392,6 +416,51 @@ class UploadService extends ChangeNotifier {
     }
   }
 
+  /// Marks every pending job of a paused destination before the run, so the
+  /// label does not depend on the run reaching the job: one in retry
+  /// backoff, or one behind a job that stops the run offline, reads
+  /// "Destination paused" all the same. A job still carrying the mark after
+  /// its destination resumed goes back to plain "Queued" for the same
+  /// reason. Returns the ids held; the run skips them.
+  Future<Set<String>> _holdPausedJobs() async {
+    final held = <String>{};
+    final pausedById = <String, bool>{};
+    var changed = false;
+    for (final job in _jobs) {
+      if (!job.isPending || job.state == UploadJobState.uploading) continue;
+      final paused = pausedById[job.destinationId] ??=
+          (await _findDestination(job.destinationId))?.paused ?? false;
+      if (paused) {
+        held.add(job.id);
+        if (_hold(job)) changed = true;
+      } else if (job.lastError == UploadErrorCode.destinationPaused) {
+        _replace(job.id, (j) => j.copyWith(clearError: true));
+        changed = true;
+      }
+    }
+    if (changed) await _persist();
+    return held;
+  }
+
+  /// Turns [job] into a plain queued job that reads "Destination paused". A
+  /// retry loses its backoff, so resuming sends it at once. Returns false
+  /// when the job already carried the mark, so nothing has to be written.
+  bool _hold(UploadJob job) {
+    if (job.state == UploadJobState.queued &&
+        job.lastError == UploadErrorCode.destinationPaused) {
+      return false;
+    }
+    _replace(
+      job.id,
+      (j) => j.copyWith(
+        state: UploadJobState.queued,
+        lastError: UploadErrorCode.destinationPaused,
+        clearNextAttempt: true,
+      ),
+    );
+    return true;
+  }
+
   Future<_Outcome> _runJob(UploadJob job) async {
     try {
       return await _runJobUnguarded(job);
@@ -411,6 +480,11 @@ class UploadService extends ChangeNotifier {
     if (destination == null) {
       await _giveUp(job, UploadErrorCode.destinationMissing);
       return _Outcome.done;
+    }
+    if (destination.paused) {
+      // Paused since _holdPausedJobs ran.
+      if (_hold(job)) await _persist();
+      return _Outcome.skip;
     }
     final network = await _connectivity.currentType();
     if (network.isOffline) {

@@ -60,6 +60,8 @@ String uploadErrorMessage(AppLocalizations l10n, String code) {
       return l10n.uploadErrorExport;
     case UploadErrorCode.destinationMissing:
       return l10n.uploadErrorDestinationMissing;
+    case UploadErrorCode.destinationPaused:
+      return l10n.uploadStatusDestinationPaused;
     case UploadErrorCode.secretMissing:
       return l10n.uploadDestinationSecretMissing;
     case UploadErrorCode.sessionMissing:

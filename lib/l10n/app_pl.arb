@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "Zeskanuj ten kod aparatem drugiego telefonu albo skopiuj link i wyślij go. Każdy, kto ma ten kod, może przesyłać do tego miejsca docelowego, więc udostępniaj go tylko zaufanym osobom.",
   "uploadJoinQrCopy": "Kopiuj link",
   "uploadJoinQrCopied": "Skopiowano link dołączenia",
-  "uploadChipUploaded": "Przesłano"
+  "uploadChipUploaded": "Przesłano",
+  "uploadDestinationPause": "Wstrzymaj przesyłanie",
+  "uploadDestinationPauseSubtitle": "Gdy miejsce docelowe jest wstrzymane, nic nie jest do niego wysyłane. Przesyłania w kolejce czekają, a zakończone Sessions nie są dodawane do kolejki automatycznie.",
+  "uploadDestinationPaused": "Wstrzymane",
+  "uploadStatusDestinationPaused": "Miejsce docelowe wstrzymane"
 }

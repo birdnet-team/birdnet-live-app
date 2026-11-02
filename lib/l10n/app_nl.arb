@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "Scan deze code met de camera van de andere telefoon, of kopieer de link en stuur hem door. Iedereen met de code kan naar deze bestemming uploaden, deel hem dus alleen met mensen die je vertrouwt.",
   "uploadJoinQrCopy": "Link kopiëren",
   "uploadJoinQrCopied": "Deelnamelink gekopieerd",
-  "uploadChipUploaded": "Geüpload"
+  "uploadChipUploaded": "Geüpload",
+  "uploadDestinationPause": "Uploads pauzeren",
+  "uploadDestinationPauseSubtitle": "Zolang de bestemming gepauzeerd is, wordt er niets naartoe gestuurd. Uploads in de wachtrij wachten en afgeronde Sessions worden niet automatisch in de wachtrij gezet.",
+  "uploadDestinationPaused": "Gepauzeerd",
+  "uploadStatusDestinationPaused": "Bestemming gepauzeerd"
 }

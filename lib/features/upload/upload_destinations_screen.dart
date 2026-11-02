@@ -153,18 +153,35 @@ class _DestinationTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final lastUpload = destination.lastUploadAt;
+    final paused = destination.paused;
     final hasWarning =
         destination.canReadRemote || destination.shareWithoutPassword;
+    final String status;
+    if (paused) {
+      status = l10n.uploadDestinationPaused;
+    } else if (lastUpload == null) {
+      status = l10n.uploadDestinationNeverUploaded;
+    } else {
+      status = l10n.uploadDestinationLastUpload(
+        formatLocaleDate(lastUpload, l10n.localeName),
+      );
+    }
+    final IconData icon;
+    final Color? color;
+    if (paused) {
+      icon = AppIcons.cloudOff;
+      color = theme.colorScheme.onSurfaceVariant;
+    } else if (hasWarning) {
+      icon = AppIcons.warningAmberRounded;
+      color = theme.colorScheme.tertiary;
+    } else {
+      icon = AppIcons.cloud;
+      color = null;
+    }
     return ListTile(
-      leading: Icon(
-        hasWarning ? AppIcons.warningAmberRounded : AppIcons.cloud,
-        color: hasWarning ? theme.colorScheme.tertiary : null,
-      ),
+      leading: Icon(icon, color: color),
       title: Text(destination.name),
-      subtitle: Text(
-        '${destination.host}\n'
-        '${lastUpload == null ? l10n.uploadDestinationNeverUploaded : l10n.uploadDestinationLastUpload(formatLocaleDate(lastUpload, l10n.localeName))}',
-      ),
+      subtitle: Text('${destination.host}\n$status'),
       isThreeLine: true,
       trailing: const Icon(AppIcons.chevronRight),
       onTap: () {

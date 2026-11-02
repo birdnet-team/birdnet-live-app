@@ -132,12 +132,18 @@ class UploadDestinationsNotifier
     return destination;
   }
 
-  /// Replaces the destination with the same id.
+  /// Replaces the destination with the same id. Flipping the pause switch
+  /// runs the queue: resuming sends what waited, pausing lets the run mark
+  /// the held jobs and drop them from the background schedule.
   Future<void> replace(UploadDestination destination) async {
     final current = await future;
+    final previous = current.where((d) => d.id == destination.id).firstOrNull;
     await _persist([
       for (final d in current) d.id == destination.id ? destination : d,
     ]);
+    if (previous != null && previous.paused != destination.paused) {
+      ref.read(uploadServiceProvider).kick();
+    }
   }
 
   /// Removes the destination and its secret.
@@ -273,7 +279,8 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
 
 /// Queues a finalized session for every destination that takes it without
 /// asking: "Upload all sessions automatically" for any session, plus "Upload
-/// ARU sessions automatically" for ARU sessions. Aggregate deployments that
+/// ARU sessions automatically" for ARU sessions. A paused destination takes
+/// nothing. Aggregate deployments that
 /// are split into per-cycle sessions are skipped: their cycles are uploaded
 /// instead, and the aggregate is discarded on completion.
 ///
@@ -293,7 +300,9 @@ Future<void> autoEnqueueSession(
   try {
     final destinations = await read(uploadDestinationsProvider.future);
     final targets = destinations
-        .where((d) => d.autoUploadAll || (isAru && d.autoUploadAru))
+        .where(
+          (d) => !d.paused && (d.autoUploadAll || (isAru && d.autoUploadAru)),
+        )
         .toList();
     if (targets.isEmpty) return;
     final service = read(uploadServiceProvider);
@@ -311,8 +320,9 @@ Future<void> autoEnqueueSession(
 }
 
 /// Queues every session in [sessions] for each destination ticked in
-/// [config] (the Share dialog's "Send to" group). Returns the number of
-/// sessions queued; zero when no destination was ticked.
+/// [config] (the Share dialog's "Send to" group); a paused destination is
+/// left out even if ticked. Returns the number of sessions queued; zero when
+/// no destination was ticked.
 Future<int> enqueueUploadsFor(
   WidgetRef ref,
   Iterable<LiveSession> sessions,
@@ -322,7 +332,7 @@ Future<int> enqueueUploadsFor(
   final destinations = await ref.read(uploadDestinationsProvider.future);
   final targets = [
     for (final d in destinations)
-      if (config.uploadDestinationIds.contains(d.id)) d,
+      if (!d.paused && config.uploadDestinationIds.contains(d.id)) d,
   ];
   if (targets.isEmpty) return 0;
   final service = ref.read(uploadServiceProvider);

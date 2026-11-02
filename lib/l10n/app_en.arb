@@ -5633,5 +5633,21 @@
   "uploadChipUploaded": "Uploaded",
   "@uploadChipUploaded": {
     "description": "Session-tile chip label once every upload of the session finished"
+  },
+  "uploadDestinationPause": "Pause uploads",
+  "@uploadDestinationPause": {
+    "description": "Switch on a destination screen: hold every upload to it"
+  },
+  "uploadDestinationPauseSubtitle": "Nothing is sent to this destination while paused. Queued uploads wait, and finished sessions are not queued automatically.",
+  "@uploadDestinationPauseSubtitle": {
+    "description": "Subtitle of the pause switch"
+  },
+  "uploadDestinationPaused": "Paused",
+  "@uploadDestinationPaused": {
+    "description": "Short state label of a paused destination (list and status)"
+  },
+  "uploadStatusDestinationPaused": "Destination paused",
+  "@uploadStatusDestinationPaused": {
+    "description": "Upload status line when the job waits because its destination is paused"
   }
 }

@@ -30,6 +30,7 @@ class UploadDestination {
     this.wifiOnly = true,
     this.autoUploadAru = false,
     this.autoUploadAll = false,
+    this.paused = false,
     this.flatLayout = false,
     this.canReadRemote = false,
     this.shareWithoutPassword = false,
@@ -61,6 +62,11 @@ class UploadDestination {
   /// Enqueue every finalized session of any type for this destination
   /// automatically; covers [autoUploadAru].
   final bool autoUploadAll;
+
+  /// Nothing is sent here while paused: queued jobs wait, finished sessions
+  /// are not queued automatically, and the Share dialog leaves it out.
+  /// Resuming picks the queue up where it stopped.
+  final bool paused;
 
   /// The server refused MKCOL during the probe, so uploads encode the folder
   /// path into flat file names instead of creating per-session folders.
@@ -94,6 +100,7 @@ class UploadDestination {
     bool? wifiOnly,
     bool? autoUploadAru,
     bool? autoUploadAll,
+    bool? paused,
     bool? flatLayout,
     bool? canReadRemote,
     bool? shareWithoutPassword,
@@ -108,6 +115,7 @@ class UploadDestination {
       wifiOnly: wifiOnly ?? this.wifiOnly,
       autoUploadAru: autoUploadAru ?? this.autoUploadAru,
       autoUploadAll: autoUploadAll ?? this.autoUploadAll,
+      paused: paused ?? this.paused,
       flatLayout: flatLayout ?? this.flatLayout,
       canReadRemote: canReadRemote ?? this.canReadRemote,
       shareWithoutPassword: shareWithoutPassword ?? this.shareWithoutPassword,
@@ -125,6 +133,7 @@ class UploadDestination {
     'wifiOnly': wifiOnly,
     'autoUploadAru': autoUploadAru,
     'autoUploadAll': autoUploadAll,
+    if (paused) 'paused': true,
     if (flatLayout) 'flatLayout': true,
     if (canReadRemote) 'canReadRemote': true,
     if (shareWithoutPassword) 'shareWithoutPassword': true,
@@ -146,6 +155,7 @@ class UploadDestination {
       wifiOnly: json['wifiOnly'] as bool? ?? true,
       autoUploadAru: json['autoUploadAru'] as bool? ?? false,
       autoUploadAll: json['autoUploadAll'] as bool? ?? false,
+      paused: json['paused'] as bool? ?? false,
       flatLayout: json['flatLayout'] as bool? ?? false,
       canReadRemote: json['canReadRemote'] as bool? ?? false,
       shareWithoutPassword: json['shareWithoutPassword'] as bool? ?? false,
@@ -169,6 +179,7 @@ class UploadDestination {
       other.wifiOnly == wifiOnly &&
       other.autoUploadAru == autoUploadAru &&
       other.autoUploadAll == autoUploadAll &&
+      other.paused == paused &&
       other.flatLayout == flatLayout &&
       other.canReadRemote == canReadRemote &&
       other.shareWithoutPassword == shareWithoutPassword &&

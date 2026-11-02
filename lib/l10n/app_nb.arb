@@ -1291,5 +1291,9 @@
   "uploadJoinQrBody": "Skann denne koden med kameraet på den andre telefonen, eller kopier lenken og send den. Alle med koden kan laste opp til dette målet, så del den bare med folk du stoler på.",
   "uploadJoinQrCopy": "Kopier lenke",
   "uploadJoinQrCopied": "Tilkoblingslenke kopiert",
-  "uploadChipUploaded": "Lastet opp"
+  "uploadChipUploaded": "Lastet opp",
+  "uploadDestinationPause": "Sett opplastinger på pause",
+  "uploadDestinationPauseSubtitle": "Mens målet er satt på pause, sendes ingenting dit. Opplastinger i køen venter, og avsluttede Sessions legges ikke i køen automatisk.",
+  "uploadDestinationPaused": "Satt på pause",
+  "uploadStatusDestinationPaused": "Mål satt på pause"
 }

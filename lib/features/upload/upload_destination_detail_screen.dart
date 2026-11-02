@@ -227,17 +227,30 @@ class _UploadDestinationDetailScreenState
             ),
             const Divider(),
             SwitchListTile(
+              title: Text(l10n.uploadDestinationPause),
+              subtitle: Text(l10n.uploadDestinationPauseSubtitle),
+              value: destination.paused,
+              onChanged: (v) =>
+                  notifier.replace(destination.copyWith(paused: v)),
+            ),
+            // Nothing is sent or queued while paused, so the switches that
+            // decide what goes out and when have no say until resume.
+            SwitchListTile(
               title: Text(l10n.uploadDestinationWifiOnly),
               value: destination.wifiOnly,
-              onChanged: (v) =>
-                  notifier.replace(destination.copyWith(wifiOnly: v)),
+              onChanged: destination.paused
+                  ? null
+                  : (v) => notifier.replace(destination.copyWith(wifiOnly: v)),
             ),
             SwitchListTile(
               title: Text(l10n.uploadDestinationAutoAll),
               subtitle: Text(l10n.uploadDestinationAutoAllSubtitle),
               value: destination.autoUploadAll,
-              onChanged: (v) =>
-                  notifier.replace(destination.copyWith(autoUploadAll: v)),
+              onChanged: destination.paused
+                  ? null
+                  : (v) => notifier.replace(
+                      destination.copyWith(autoUploadAll: v),
+                    ),
             ),
             // "All sessions" includes ARU ones, so this switch has no say
             // while that one is on.
@@ -245,7 +258,7 @@ class _UploadDestinationDetailScreenState
               title: Text(l10n.uploadDestinationAutoAru),
               subtitle: Text(l10n.uploadDestinationAutoAruSubtitle),
               value: destination.autoUploadAll || destination.autoUploadAru,
-              onChanged: destination.autoUploadAll
+              onChanged: destination.paused || destination.autoUploadAll
                   ? null
                   : (v) => notifier.replace(
                       destination.copyWith(autoUploadAru: v),
