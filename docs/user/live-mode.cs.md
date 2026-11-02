@@ -90,7 +90,7 @@ Nahrávání se ovládá v [Nastavení](settings.md).
 
 Když režim Live zastavíte, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).
 
-Když je zapnuté automatické ukládání Sessions, režim Live navíc ukládá rozpracovanou Session při spuštění, každých 30 sekund a při přechodu aplikace do pozadí. Po pádu aplikace nebo výpadku napájení najdete poslední uložený stav v Knihovně Sessions. Změny od tohoto uložení mohou být ztraceny. Vypnutím automatického ukládání vypnete i tato průběžná ukládání.
+Režim Live navíc ukládá rozpracovanou Session při spuštění, každých 30 sekund a při přechodu aplikace do pozadí a dokončenou Session zapíše na disk ještě před uvolněním mikrofonu. Po pádu aplikace, výpadku napájení nebo když systém aplikaci na pozadí ukončí, najdete poslední uložený stav v Knihovně Sessions – s označením přerušená, pokud aplikace skončila uprostřed Session. Změny od tohoto uložení mohou být ztraceny. Tato průběžná ukládání zůstávají zachována i při vypnutém automatickém ukládání; dokončená Session se pak dál otevře v přehledu jako neuložená a při odchodu bez uložení se zahodí.
 
 ## Poslech s vypnutou obrazovkou
 

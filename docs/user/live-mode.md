@@ -90,7 +90,7 @@ Recording is controlled in [Settings](settings.md).
 
 When you stop Live Mode, BirdNET Live saves the session and opens [Session Review](session-review.md).
 
-When automatic Session saving is enabled, Live Mode also saves a partial Session at the start, every 30 seconds, and when the app goes into the background. After a crash or power loss, the latest saved snapshot is available in Session Library. Changes since that snapshot can be lost. Turning automatic saving off also turns off these checkpoints.
+Live Mode also saves a partial Session at the start, every 30 seconds, and when the app goes into the background, and it writes the finished Session to disk before the microphone is released. After a crash, a power loss, or the system ending the app in the background, the latest saved snapshot is available in Session Library, marked as interrupted when the app ended mid-session. Changes since that snapshot can be lost. These checkpoints are kept even with automatic saving turned off; a finished Session then still opens in review as unsaved and is discarded when you leave without saving.
 
 ## Screen-off listening
 
