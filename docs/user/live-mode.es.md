@@ -90,7 +90,7 @@ La grabación se controla en [Ajustes](settings.md).
 
 Cuando detienes el Modo Live, BirdNET Live guarda la Session y abre el [Resumen de la Session](session-review.md).
 
-Cuando el guardado automático de sesiones está activado, el Modo Live también guarda una Session parcial al inicio, cada 30 segundos y cuando la aplicación pasa a segundo plano. Tras un cierre inesperado o un corte de energía, la última copia guardada está disponible en la Biblioteca de sesiones. Pueden perderse los cambios posteriores a esa copia. Al desactivar el guardado automático también se desactivan estos guardados intermedios.
+El Modo Live también guarda una Session parcial al inicio, cada 30 segundos y cuando la aplicación pasa a segundo plano, y escribe la Session terminada en el disco antes de liberar el micrófono. Tras un cierre inesperado, un corte de energía o si el sistema cierra la aplicación en segundo plano, la última copia guardada está disponible en la Biblioteca de sesiones, marcada como interrumpida si la aplicación terminó a mitad de la Session. Pueden perderse los cambios posteriores a esa copia. Estos guardados intermedios se conservan aunque el guardado automático esté desactivado; una Session terminada sigue abriéndose entonces en la revisión como sin guardar y se descarta si sales sin guardar.
 
 ## Escuchar con la pantalla apagada
 

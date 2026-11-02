@@ -636,7 +636,10 @@ class SessionReviewScreen extends ConsumerStatefulWidget {
   /// finished a Live / Point Count session — the session is treated as
   /// **unsaved**: the save icon is highlighted, best-effort metadata writes
   /// (location / weather) are held back, and leaving review without saving
-  /// deletes the session and its recordings. See [_isUnsaved].
+  /// deletes the session and its recordings. A copy is nevertheless already
+  /// on disk, written by the finishing screen before it released the
+  /// microphone, so a process the system ends before this screen opens keeps
+  /// the session rather than losing it. See [_isUnsaved].
   final bool autoSaved;
 
   @override
@@ -697,12 +700,12 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
   Duration? _autoStopPosition;
   bool _isDirty = false;
 
-  /// True when this session has never been written to the library yet (the
-  /// user disabled automatic saving). Unlike [_isDirty] — which tracks
-  /// *edits* to an already-saved session — an unsaved session has no
-  /// persisted copy to fall back to, so discarding it deletes the recordings
-  /// outright. Set once from `widget.autoSaved` in [initState]; cleared by
-  /// [_save].
+  /// True when the user has not yet chosen to keep this session (automatic
+  /// saving is off). Unlike [_isDirty] — which tracks *edits* to a session
+  /// the user already keeps — an unsaved session has no earlier version to
+  /// fall back to: the finishing screen's safety copy is all there is, so
+  /// discarding it deletes that file and the recordings outright. Set once
+  /// from `widget.autoSaved` in [initState]; cleared by [_save].
   bool _isUnsaved = false;
 
   /// Whether there is work that would be lost on leaving without saving:

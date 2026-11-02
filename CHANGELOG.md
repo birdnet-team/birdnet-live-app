@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A Live Mode or Point Count Session that ended while the app was in the background is no longer lost when the system suspends or ends the app the moment the microphone stops. The finished Session is now written to disk before the microphone is released, and the 30-second checkpoints are kept even with **Save sessions automatically** off, so a Session the system interrupts appears in the Session Library instead of vanishing. With that setting off, a finished Session still opens in review as unsaved and is discarded when you leave without saving.
 - The **Save destination** button on the Add upload destination screen, and the last entry of the Upload destinations list, no longer end under the system navigation bar on phones (#284).
 - The Android Quick Listen widget now has Chinese and Korean labels. In those two app languages the widget picker and the widget itself previously fell back to English.
 - The Android build now ships native x86_64 libraries alongside arm64. Intel and AMD Chromebooks previously ran the arm64 build through the Houdini translation layer, which crashed on an Alder Lake Chromebook; phones download nothing extra.
