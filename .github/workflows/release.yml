@@ -3,9 +3,30 @@ name: Release
 on:
   release:
     types: [published]
+  # Manual re-run for a release whose build failed. Builds the branch or tag
+  # selected in the "Run workflow" dialog (so a fix on main can be picked up)
+  # and attaches the artifacts to the existing release named by `tag`.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to attach artifacts to (e.g. v1.3.0)
+        required: true
+        type: string
+      build_android:
+        description: Build and attach the Android APK
+        type: boolean
+        default: true
+      build_windows:
+        description: Build and attach the Windows zip and installer
+        type: boolean
+        default: true
 
 permissions:
   contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
+
 jobs:
   prepare_source:
     name: Prepare Source Snapshot
@@ -29,6 +50,7 @@ jobs:
     name: Test And Build Android APK
     runs-on: ubuntu-latest
     needs: prepare_source
+    if: github.event_name == 'release' || inputs.build_android
     steps:
       - name: Download source snapshot
         uses: actions/download-artifact@v4
@@ -138,7 +160,7 @@ jobs:
       - name: Attach APK to GitHub Release
         uses: ./.github/actions/upload-release-assets
         with:
-          tag-name: ${{ github.event.release.tag_name }}
+          tag-name: ${{ env.RELEASE_TAG }}
           token: ${{ secrets.GITHUB_TOKEN }}
           files: build/app/outputs/flutter-apk/BirdNET_Live_v${{ env.APP_VERSION }}.apk
 
@@ -152,6 +174,7 @@ jobs:
     name: Build Windows Release Artifacts
     runs-on: windows-latest
     needs: prepare_source
+    if: github.event_name == 'release' || inputs.build_windows
     steps:
       - name: Download source snapshot
         uses: actions/download-artifact@v4
@@ -217,7 +240,7 @@ jobs:
       - name: Attach Windows artifacts to GitHub Release
         uses: ./.github/actions/upload-release-assets
         with:
-          tag-name: ${{ github.event.release.tag_name }}
+          tag-name: ${{ env.RELEASE_TAG }}
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             build/windows/x64/runner/BirdNET_Live_v${{ env.APP_VERSION }}_windows_x64.zip
@@ -226,6 +249,8 @@ jobs:
   publish_winget:
     needs:
       - build_windows
+    # Only on a fresh release; a manual re-run must not open a second winget PR.
+    if: github.event_name == 'release'
     runs-on: windows-latest
     steps:
       - name: Submit to WinGet
