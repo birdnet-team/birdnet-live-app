@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The 1.3.0 release build closed immediately on launch on every Android device: the shrinker had removed a constructor that the background-upload scheduler's database needs at process start. Debug builds were not affected (#297, #298).
+
 ## [1.3.0] - 2026-11-02
 
 ### Added
