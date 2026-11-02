@@ -102,6 +102,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('keeps the Save button clear of the system navigation bar', (
+    tester,
+  ) async {
+    // 120 physical pixels of gesture bar at the default 3.0 ratio.
+    tester.view.padding = const FakeViewPadding(bottom: 120);
+    addTearDown(tester.view.reset);
+    await openScreen(tester);
+
+    final list = tester.widget<ListView>(find.byType(ListView));
+    expect(list.padding!.resolve(TextDirection.ltr).bottom, 16 + 40);
+  });
+
   testWidgets('offers the ARU switch and saves its value', (tester) async {
     await openScreen(tester);
 

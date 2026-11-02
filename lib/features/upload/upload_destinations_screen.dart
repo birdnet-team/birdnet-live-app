@@ -47,7 +47,11 @@ class UploadDestinationsScreen extends ConsumerWidget {
           data: (list) => list.isEmpty
               ? _EmptyState(onAdd: () => _add(context))
               : ListView(
-                  padding: const EdgeInsets.only(bottom: 88),
+                  // Room for the FAB plus the system navigation bar, which
+                  // an explicit padding would otherwise drop.
+                  padding: EdgeInsets.only(
+                    bottom: 88 + MediaQuery.paddingOf(context).bottom,
+                  ),
                   children: [
                     const _DeviceCodeTile(),
                     const Divider(),

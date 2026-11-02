@@ -198,7 +198,15 @@ class _JoinDestinationScreenState extends ConsumerState<JoinDestinationScreen> {
       appBar: AppBar(title: Text(l10n.uploadJoinTitle)),
       body: ContentWidthConstraint(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          // An explicit padding replaces the safe-area inset a ListView adds
+          // on its own; without the bottom inset the Save button ends under
+          // the system navigation bar on phones (edge-to-edge).
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            16 + MediaQuery.paddingOf(context).bottom,
+          ),
           children: [
             Text(l10n.uploadJoinLinkHelp, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 12),

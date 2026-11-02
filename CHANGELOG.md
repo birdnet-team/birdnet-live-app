@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The **Save destination** button on the Add upload destination screen, and the last entry of the Upload destinations list, no longer end under the system navigation bar on phones (#284).
 - The Android Quick Listen widget now has Chinese and Korean labels. In those two app languages the widget picker and the widget itself previously fell back to English.
 - The Android build now ships native x86_64 libraries alongside arm64. Intel and AMD Chromebooks previously ran the arm64 build through the Houdini translation layer, which crashed on an Alder Lake Chromebook; phones download nothing extra.
 - A session the system ended while it was recording in the background now keeps its full recording. Checkpoints point at the audio file, and sessions already stranded this way are repaired when opened and marked as interrupted in the review.
