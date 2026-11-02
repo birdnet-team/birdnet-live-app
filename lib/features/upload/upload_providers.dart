@@ -262,6 +262,7 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
       );
     },
     onPendingChanged: UploadWorkScheduler.onPendingChanged,
+    transfer: BackgroundTransfer.supported ? BackgroundTransfer() : null,
     onDestinationUploaded: (destination, at) async {
       final notifier = ref.read(uploadDestinationsProvider.notifier);
       final list = await ref.read(uploadDestinationsProvider.future);

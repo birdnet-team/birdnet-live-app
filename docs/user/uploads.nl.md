@@ -130,7 +130,7 @@ De regel en het pictogram verschijnen alleen zolang minstens één bestemming wa
 
 ### Wat er op de achtergrond draait
 
-Uploads in de wachtrij lopen terwijl de app open is en telkens wanneer die naar de voorgrond terugkeert. Op Android lopen ze ook met de app gesloten: het systeem start ze zodra een geschikt netwerk beschikbaar is, wifi als de bestemming daarom vraagt, en blijft het opnieuw proberen tot de wachtrij leeg is. Op iOS lopen uploads terwijl de app open is.
+Uploads in de wachtrij lopen terwijl de app open is en telkens wanneer die naar de voorgrond terugkeert. Op Android lopen ze ook met de app gesloten: het systeem start ze zodra een geschikt netwerk beschikbaar is, wifi als de bestemming daarom vraagt, en blijft het opnieuw proberen tot de wachtrij leeg is. Op iOS worden uploads voorbereid terwijl de app open is en daarna aan het systeem overgedragen, dat ze afrondt terwijl de app op de achtergrond staat of gesloten is en zelf opnieuw probeert. Bestemmingen die via onversleuteld http worden bereikt, blijven bij de app en uploaden terwijl die open is.
 
 ### Een Session opnieuw uploaden
 

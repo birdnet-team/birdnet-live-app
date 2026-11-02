@@ -130,7 +130,7 @@ La línea y el icono solo aparecen mientras al menos uno de los destinos a los q
 
 ### Qué se ejecuta en segundo plano
 
-Las subidas en cola se ejecutan mientras la app está abierta y cada vez que vuelve al primer plano. En Android también se ejecutan con la app cerrada: el sistema las inicia en cuanto hay disponible una red adecuada, Wi-Fi cuando el destino lo exige, y sigue reintentando hasta que la cola queda vacía. En iOS las subidas se ejecutan mientras la app está abierta.
+Las subidas en cola se ejecutan mientras la app está abierta y cada vez que vuelve al primer plano. En Android también se ejecutan con la app cerrada: el sistema las inicia en cuanto hay disponible una red adecuada, Wi-Fi cuando el destino lo exige, y sigue reintentando hasta que la cola queda vacía. En iOS, las subidas se preparan mientras la app está abierta y luego se entregan al sistema, que las termina con la app en segundo plano o cerrada y reintenta por su cuenta. Los destinos a los que se accede por http sin cifrar se quedan en la app y suben mientras está abierta.
 
 ### Subir una sesión de nuevo
 

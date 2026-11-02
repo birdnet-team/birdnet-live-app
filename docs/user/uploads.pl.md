@@ -130,7 +130,7 @@ Wiersz i ikona pojawiają się tylko wtedy, gdy co najmniej jedno miejsce docelo
 
 ### Co działa w tle
 
-Przesłania z kolejki są realizowane, gdy aplikacja jest otwarta i za każdym razem, gdy wraca na pierwszy plan. Na Androidzie działają także przy zamkniętej aplikacji: system uruchamia je, gdy tylko dostępna jest odpowiednia sieć, Wi-Fi, jeśli miejsce docelowe tego wymaga, i ponawia próby, aż kolejka będzie pusta. Na iOS przesyłanie działa, gdy aplikacja jest otwarta.
+Przesłania z kolejki są realizowane, gdy aplikacja jest otwarta i za każdym razem, gdy wraca na pierwszy plan. Na Androidzie działają także przy zamkniętej aplikacji: system uruchamia je, gdy tylko dostępna jest odpowiednia sieć, Wi-Fi, jeśli miejsce docelowe tego wymaga, i ponawia próby, aż kolejka będzie pusta. Na iOS przesłania są przygotowywane, gdy aplikacja jest otwarta, a następnie przekazywane systemowi, który kończy je, gdy aplikacja działa w tle lub jest zamknięta, i sam ponawia próby. Cele dostępne przez nieszyfrowane http pozostają w aplikacji i przesyłają, gdy jest otwarta.
 
 ### Ponowne przesyłanie Session
 

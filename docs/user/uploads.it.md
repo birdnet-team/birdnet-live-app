@@ -130,7 +130,7 @@ La riga e l'icona compaiono solo finché almeno una destinazione a cui la Sessio
 
 ### Cosa avviene in background
 
-I caricamenti in coda procedono mentre l'app è aperta e ogni volta che torna in primo piano. Su Android procedono anche con l'app chiusa: il sistema li avvia non appena è disponibile una rete adatta, Wi-Fi quando la destinazione lo richiede, e continua a riprovare finché la coda non è vuota. Su iOS i caricamenti procedono mentre l'app è aperta.
+I caricamenti in coda procedono mentre l'app è aperta e ogni volta che torna in primo piano. Su Android procedono anche con l'app chiusa: il sistema li avvia non appena è disponibile una rete adatta, Wi-Fi quando la destinazione lo richiede, e continua a riprovare finché la coda non è vuota. Su iOS i caricamenti vengono preparati mentre l'app è aperta e poi affidati al sistema, che li completa con l'app in background o chiusa e riprova da solo. Le destinazioni raggiunte tramite http non cifrato restano all'app e caricano mentre è aperta.
 
 ### Caricare di nuovo una Session
 

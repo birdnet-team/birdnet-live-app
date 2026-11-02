@@ -24,7 +24,11 @@
 // simply retries that job on the next run.
 //
 // Triggers (see app.dart and upload_providers.dart): enqueue, app start,
-// return to foreground. True OS background transfer is a later stage.
+// return to foreground. With an [UploadTransfer] (iOS) the service builds
+// and stages the export, hands the PUT to the OS, and leaves the job
+// "uploading" until the outcome arrives: through [UploadTransfer.onFinished]
+// while this isolate lives, or through [UploadTransfer.recover] at the start
+// of the next run. Without one, the PUT runs here.
 // =============================================================================
 
 import 'dart:async';
@@ -32,6 +36,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 
 import '../../shared/utils/uuid.dart';
 import '../history/services/share_export_config.dart';
@@ -69,6 +74,48 @@ typedef PendingChanged = Future<void> Function({
   required bool wifiOnly,
 });
 
+/// Hands a staged export to the operating system for delivery (iOS). Null in
+/// UploadService where the platform has none; then the service PUTs itself.
+abstract class UploadTransfer {
+  /// Called with every outcome the OS reports while this isolate is alive.
+  void Function(String transferId, int status)? onFinished;
+
+  /// Starts carrying [file]; [transferId] names this hand-off in every
+  /// later call and report.
+  Future<void> put({
+    required String transferId,
+    required Uri uri,
+    required Map<String, String> headers,
+    required String username,
+    required String secret,
+    required File file,
+    required bool wifiOnly,
+  });
+
+  /// What the OS still carries and what it finished since the last [ack].
+  Future<TransferRecovery> recover();
+
+  /// Confirms a finished outcome is recorded; the OS forgets it.
+  Future<void> ack(String transferId);
+
+  /// Stops a hand-off still in flight; its outcome is reported as 0.
+  Future<void> cancel(String transferId);
+
+  /// Tells the OS a run is preparing hand-offs, so a run that is still
+  /// exporting when the app leaves the foreground gets a little more time.
+  Future<void> setRunning(bool running);
+}
+
+class TransferRecovery {
+  const TransferRecovery({required this.running, required this.finished});
+
+  /// Transfer ids still in flight.
+  final Set<String> running;
+
+  /// Transfer id to HTTP status; 0 when the request never got an answer.
+  final Map<String, int> finished;
+}
+
 /// Machine codes stored in [UploadJob.lastError]; the UI maps them to text.
 abstract final class UploadErrorCode {
   static const String offline = 'offline';
@@ -97,6 +144,7 @@ class UploadService extends ChangeNotifier {
     required ExportBuilder buildExport,
     DestinationUploaded? onDestinationUploaded,
     PendingChanged? onPendingChanged,
+    UploadTransfer? transfer,
     DateTime Function()? now,
   }) : _store = store,
        _client = client,
@@ -108,7 +156,21 @@ class UploadService extends ChangeNotifier {
        _buildExport = buildExport,
        _onDestinationUploaded = onDestinationUploaded,
        _onPendingChanged = onPendingChanged,
-       _now = now ?? DateTime.now;
+       _transfer = transfer,
+       _now = now ?? DateTime.now {
+    transfer?.onFinished = (transferId, status) {
+      unawaited(
+        _settleTransfer(transferId, status).catchError((
+          Object error,
+          StackTrace s,
+        ) {
+          debugPrint(
+            'Upload outcome of $transferId could not be recorded: $error\n$s',
+          );
+        }),
+      );
+    };
+  }
 
   final UploadQueueStore _store;
   final WebDavClient _client;
@@ -122,7 +184,20 @@ class UploadService extends ChangeNotifier {
   final ExportBuilder _buildExport;
   final DestinationUploaded? _onDestinationUploaded;
   final PendingChanged? _onPendingChanged;
+
+  /// The OS carries the PUT (iOS); null where this isolate does.
+  final UploadTransfer? _transfer;
   final DateTime Function() _now;
+
+  /// Hand-offs the OS may carry at once. Each one is a staged export on
+  /// disk, so the run stops here and continues as outcomes come in.
+  static const int maxInFlight = 3;
+
+  @override
+  void dispose() {
+    _transfer?.onFinished = null;
+    super.dispose();
+  }
 
   List<UploadJob> _jobs = const [];
   Future<void>? _loaded;
@@ -176,9 +251,10 @@ class UploadService extends ChangeNotifier {
         jobs = const [];
       }
       // A kill mid-upload leaves a job "uploading"; it is simply due again.
+      // With a transfer the OS may still carry it; the next run asks.
       _jobs = [
         for (final j in jobs)
-          if (j.state == UploadJobState.uploading)
+          if (j.state == UploadJobState.uploading && _transfer == null)
             j.copyWith(state: UploadJobState.queued)
           else
             j,
@@ -306,26 +382,27 @@ class UploadService extends ChangeNotifier {
   /// Drops a pending job. Finished jobs stay as the log.
   Future<void> cancel(String jobId) async {
     await _ensureLoaded();
-    for (final j in _jobs) {
-      if (j.id == jobId && j.state != UploadJobState.uploaded) {
-        _removed.add(j.id);
-      }
-    }
-    _jobs = [
-      for (final j in _jobs)
-        if (!_removed.contains(j.id)) j,
-    ];
-    await _persist();
+    await _drop((j) => j.id == jobId);
   }
 
   /// Drops every pending job for [destinationId]; called when the
   /// destination is removed. Finished jobs stay as the log.
   Future<void> cancelForDestination(String destinationId) async {
     await _ensureLoaded();
+    await _drop((j) => j.destinationId == destinationId);
+  }
+
+  /// Removes every unfinished job [matches] accepts. A hand-off the OS still
+  /// carries is stopped too; its outcome then finds no job and only drops
+  /// the staged export.
+  Future<void> _drop(bool Function(UploadJob) matches) async {
+    final inFlight = <String>[];
     for (final j in _jobs) {
-      if (j.destinationId == destinationId &&
-          j.state != UploadJobState.uploaded) {
+      if (matches(j) && j.state != UploadJobState.uploaded) {
         _removed.add(j.id);
+        if (j.state == UploadJobState.uploading && j.transferId != null) {
+          inFlight.add(j.transferId!);
+        }
       }
     }
     _jobs = [
@@ -333,6 +410,13 @@ class UploadService extends ChangeNotifier {
         if (!_removed.contains(j.id)) j,
     ];
     await _persist();
+    for (final transferId in inFlight) {
+      try {
+        await _transfer?.cancel(transferId);
+      } catch (error) {
+        debugPrint('Upload hand-off $transferId could not be stopped: $error');
+      }
+    }
   }
 
   /// Runs every due job. Concurrent calls share one run.
@@ -342,7 +426,9 @@ class UploadService extends ChangeNotifier {
 
   Future<void> _run() async {
     await _ensureLoaded();
-    if (!_jobs.any((j) => j.isPending)) return;
+    // With a transfer the OS may hold outcomes for jobs that no longer
+    // exist (removed while in flight); the reconcile below clears them.
+    if (_transfer == null && !_jobs.any((j) => j.isPending)) return;
     if (!await _store.tryLock()) return;
     // A single PUT of a long recording can outlast the stale-lock window;
     // keep the lock fresh while this run is alive.
@@ -354,20 +440,103 @@ class UploadService extends ChangeNotifier {
       // The other isolate may have finished jobs since this one loaded the
       // file; a job it left "uploading" is one it was killed in.
       _mergeFromDisk(await _loadDisk());
-      _jobs = [
-        for (final j in _jobs)
-          if (j.state == UploadJobState.uploading && !_dirty.contains(j.id))
-            j.copyWith(state: UploadJobState.queued)
-          else
-            j,
-      ];
+      final transfer = _transfer;
+      if (transfer == null) {
+        _jobs = [
+          for (final j in _jobs)
+            if (j.state == UploadJobState.uploading && !_dirty.contains(j.id))
+              j.copyWith(state: UploadJobState.queued)
+            else
+              j,
+        ];
+      } else {
+        await _reconcile(transfer);
+      }
       notifyListeners();
+      await _setRunning(true);
       await _runLocked();
     } finally {
+      await _setRunning(false);
       keepAlive.cancel();
       await _store.unlock();
       await _reportPending();
     }
+  }
+
+  Future<void> _setRunning(bool running) async {
+    try {
+      await _transfer?.setRunning(running);
+    } catch (error) {
+      debugPrint('Upload transfer could not be told about the run: $error');
+    }
+  }
+
+  /// Lines the job list up with the OS: outcomes it reported while nobody
+  /// listened (the app was relaunched) are recorded, and a job it no longer
+  /// carries is due again.
+  Future<void> _reconcile(UploadTransfer transfer) async {
+    final TransferRecovery recovery;
+    try {
+      recovery = await transfer.recover();
+    } catch (error) {
+      debugPrint('Upload transfer state could not be read: $error');
+      return;
+    }
+    for (final entry in recovery.finished.entries) {
+      await _settleTransfer(entry.key, entry.value);
+    }
+    var changed = false;
+    for (final job in _jobs) {
+      final transferId = job.transferId;
+      if (job.state == UploadJobState.uploading &&
+          (transferId == null ||
+              (!recovery.running.contains(transferId) &&
+                  !recovery.finished.containsKey(transferId)))) {
+        _replace(
+          job.id,
+          (j) =>
+              j.copyWith(state: UploadJobState.queued, clearTransferId: true),
+        );
+        changed = true;
+      }
+    }
+    if (changed) await _persist();
+  }
+
+  /// Hand-off ids are `<job id>.<n>`, so the job (and its staging folder)
+  /// is known even after the job is gone.
+  static String _jobIdOf(String transferId) {
+    final dot = transferId.indexOf('.');
+    return dot < 0 ? transferId : transferId.substring(0, dot);
+  }
+
+  /// Records the outcome of a PUT the OS carried. A job that is no longer
+  /// waiting (removed, or settled by an earlier report) only gets its
+  /// staged export dropped. An outcome of an earlier hand-off of a job that
+  /// has since been handed off again is acknowledged and otherwise ignored:
+  /// the staging folder belongs to the newer hand-off now.
+  Future<void> _settleTransfer(String transferId, int status) async {
+    await _ensureLoaded();
+    final jobId = _jobIdOf(transferId);
+    UploadJob? job;
+    for (final j in _jobs) {
+      if (j.id == jobId) job = j;
+    }
+    final waiting = job != null && job.state == UploadJobState.uploading;
+    final stale = waiting && job.transferId != transferId;
+    if (!stale) {
+      if (waiting) await _settle(job, status);
+      await _discardStaging(jobId);
+    }
+    try {
+      await _transfer?.ack(transferId);
+    } catch (error) {
+      debugPrint(
+        'Upload outcome of $transferId could not be acknowledged: $error',
+      );
+    }
+    // Room for the next hand-off (see [maxInFlight]); a no-op mid-run.
+    if (waiting && !stale) kick();
   }
 
   /// Tells the scheduler what is left, leaving out jobs held by a paused
@@ -395,6 +564,11 @@ class UploadService extends ChangeNotifier {
   Future<void> _runLocked() async {
     final skipped = await _holdPausedJobs();
     while (true) {
+      if (_transfer != null &&
+          _jobs.where((j) => j.state == UploadJobState.uploading).length >=
+              maxInFlight) {
+        return;
+      }
       final now = _now();
       UploadJob? next;
       for (final j in _jobs.reversed) {
@@ -515,20 +689,11 @@ class UploadService extends ChangeNotifier {
     await _persist();
 
     try {
-      final remotePath = await _upload(job, destination, secret, session);
-      final at = _now();
-      _replace(
-        job.id,
-        (j) => j.copyWith(
-          state: UploadJobState.uploaded,
-          finishedAt: at,
-          clearError: true,
-          clearNextAttempt: true,
-          remotePath: remotePath,
-        ),
-      );
-      await _persist();
-      await _onDestinationUploaded?.call(destination, at);
+      final status = await _upload(job, destination, secret, session);
+      // Null: the OS took the PUT over; _settleTransfer finishes the job.
+      if (status != null) {
+        await _settle(job, status, destination: destination);
+      }
     } on _UploadFailure catch (failure) {
       if (failure.permanent) {
         await _giveUp(job, failure.code);
@@ -539,6 +704,9 @@ class UploadService extends ChangeNotifier {
       await _fail(job, UploadErrorCode.network);
     } on IOException {
       await _fail(job, UploadErrorCode.network);
+    } on PlatformException {
+      // The OS refused the hand-off.
+      await _fail(job, UploadErrorCode.network);
     } catch (error, stackTrace) {
       debugPrint('Upload of ${job.sessionId} failed: $error\n$stackTrace');
       await _fail(job, UploadErrorCode.exportFailed);
@@ -546,7 +714,41 @@ class UploadService extends ChangeNotifier {
     return _Outcome.done;
   }
 
-  Future<String> _upload(
+  /// Marks [job] by the status of its PUT: written, or failed for a retry.
+  /// [destination] is looked up when the caller does not hold it (an
+  /// outcome the OS reported).
+  Future<void> _settle(
+    UploadJob job,
+    int status, {
+    UploadDestination? destination,
+  }) async {
+    // 412: an immutable server already holds this exact path (a retry after
+    // a kill between PUT and bookkeeping, or a re-upload the server refuses
+    // to replace). Either way the server has the session; move on.
+    if ((status >= 200 && status < 300) || status == 412) {
+      final at = _now();
+      _replace(
+        job.id,
+        (j) => j.copyWith(
+          state: UploadJobState.uploaded,
+          finishedAt: at,
+          clearError: true,
+          clearNextAttempt: true,
+        ),
+      );
+      await _persist();
+      destination ??= await _findDestination(job.destinationId);
+      if (destination != null) {
+        await _onDestinationUploaded?.call(destination, at);
+      }
+    } else {
+      await _fail(job, _codeForStatus(status));
+    }
+  }
+
+  /// Builds, stages, and sends the export. Returns the PUT status, or null
+  /// when the transfer was handed to the OS and the outcome comes later.
+  Future<int?> _upload(
     UploadJob job,
     UploadDestination destination,
     String secret,
@@ -599,48 +801,87 @@ class UploadService extends ChangeNotifier {
     // deletes or truncates the other's file.
     final staged = await _stage(job, exportPath, session);
     final file = File(staged ?? exportPath);
-    try {
-      await _put(target, auth, file);
-    } finally {
-      if (staged != null) {
-        try {
-          await file.parent.delete(recursive: true);
-        } catch (_) {
-          // Best-effort cleanup of the staged export.
-        }
-      }
-    }
-    return remotePath;
-  }
+    final contentType = name.endsWith('.zip')
+        ? 'application/zip'
+        : 'application/octet-stream';
 
-  Future<void> _put(Uri uri, WebDavAuth auth, File file) async {
-    final status = await _client.putFile(
-      uri,
-      auth,
-      file,
-      contentType: uri.path.endsWith('.zip')
-          ? 'application/zip'
-          : 'application/octet-stream',
+    // The OS transfer is bound by App Transport Security, so a plain-http
+    // destination (a NAS on the LAN) keeps the in-app PUT below.
+    final transfer = _transfer;
+    final handOff = transfer != null && target.scheme == 'https';
+    final transferId = handOff ? '${job.id}.${generateUuidV4()}' : null;
+    // Recorded before the PUT so an outcome that arrives after a relaunch
+    // still knows where the file went and which hand-off it belongs to.
+    _replace(
+      job.id,
+      (j) => j.copyWith(
+        remotePath: remotePath,
+        transferId: transferId,
+        clearTransferId: !handOff,
+      ),
     );
-    // 412: an immutable server already holds this exact path (a retry after
-    // a kill between PUT and bookkeeping, or a re-upload the server refuses
-    // to replace). Either way the server has the session; move on.
-    if ((status >= 200 && status < 300) || status == 412) return;
-    _throwForStatus(status);
+    await _persist();
+
+    if (handOff) {
+      // The MKCOL above already taught [auth] a Digest challenge if the
+      // server uses one, so the header is good preemptively; the OS answers
+      // a challenge itself when it is not. The staged file stays until the
+      // outcome is settled, unless the OS refuses the hand-off itself.
+      try {
+        await transfer.put(
+          transferId: transferId!,
+          uri: target,
+          headers: {
+            ...auth.headers('PUT', target),
+            'User-Agent': WebDavClient.userAgent,
+            'Content-Type': contentType,
+          },
+          username: auth.username,
+          secret: auth.secret,
+          file: file,
+          wifiOnly: destination.wifiOnly,
+        );
+      } catch (_) {
+        await _discardStaging(job.id);
+        rethrow;
+      }
+      return null;
+    }
+    try {
+      return await _client.putFile(
+        target,
+        auth,
+        file,
+        contentType: contentType,
+      );
+    } finally {
+      if (staged != null) await _discardStaging(job.id);
+    }
   }
 
-  Never _throwForStatus(int status) {
+  Never _throwForStatus(int status) =>
+      throw _UploadFailure(_codeForStatus(status));
+
+  static String _codeForStatus(int status) {
     switch (status) {
       case 401:
-        throw const _UploadFailure(UploadErrorCode.unauthorized);
+        return UploadErrorCode.unauthorized;
       case 403:
-        throw const _UploadFailure(UploadErrorCode.forbidden);
+        return UploadErrorCode.forbidden;
       case 507:
-        throw const _UploadFailure(UploadErrorCode.quota);
+        return UploadErrorCode.quota;
       default:
-        throw _UploadFailure(
-          status >= 500 ? UploadErrorCode.server : UploadErrorCode.network,
-        );
+        return status >= 500 ? UploadErrorCode.server : UploadErrorCode.network;
+    }
+  }
+
+  /// Removes a job's staging folder; nothing else lives there.
+  Future<void> _discardStaging(String jobId) async {
+    try {
+      final dir = Directory('${(await _store.stagingDir()).path}/$jobId');
+      if (await dir.exists()) await dir.delete(recursive: true);
+    } catch (_) {
+      // Best-effort cleanup of the staged export.
     }
   }
 
