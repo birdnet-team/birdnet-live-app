@@ -130,7 +130,7 @@ La ligne et l'icône n'apparaissent que tant qu'au moins une destination vers la
 
 ### Ce qui s'exécute en arrière-plan
 
-Les envois en file s'exécutent tant que l'application est ouverte et chaque fois qu'elle revient au premier plan. Sur Android, ils s'exécutent aussi lorsque l'application est fermée : le système les démarre dès qu'un réseau adapté est disponible, le Wi-Fi lorsque la destination l'exige, et continue de réessayer jusqu'à ce que la file soit vide. Sur iOS, les envois s'exécutent tant que l'application est ouverte.
+Les envois en file s'exécutent tant que l'application est ouverte et chaque fois qu'elle revient au premier plan. Sur Android, ils s'exécutent aussi lorsque l'application est fermée : le système les démarre dès qu'un réseau adapté est disponible, le Wi-Fi lorsque la destination l'exige, et continue de réessayer jusqu'à ce que la file soit vide. Sur iOS, les envois sont préparés tant que l'application est ouverte, puis confiés au système, qui les termine lorsque l'application est en arrière-plan ou fermée et réessaie de lui-même. Les destinations jointes en http non chiffré restent gérées par l'application et envoient tant qu'elle est ouverte.
 
 ### Renvoyer une session
 

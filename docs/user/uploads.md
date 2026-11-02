@@ -131,7 +131,7 @@ The line and the icon only appear while at least one destination the session was
 
 ### What runs in the background
 
-Queued uploads run while the app is open and whenever it returns to the foreground. On Android they also run with the app closed: the system starts them once a suitable network is available, Wi-Fi when the destination asks for it, and keeps retrying until the queue is empty. On iOS uploads run while the app is open.
+Queued uploads run while the app is open and whenever it returns to the foreground. On Android they also run with the app closed: the system starts them once a suitable network is available, Wi-Fi when the destination asks for it, and keeps retrying until the queue is empty. On iOS, uploads are prepared while the app is open and then handed to the system, which finishes them while the app is in the background or closed and retries on its own. Destinations reached over plain http stay with the app and upload while it is open.
 
 ### Uploading a session again
 

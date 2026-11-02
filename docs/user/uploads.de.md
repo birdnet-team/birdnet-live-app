@@ -130,7 +130,7 @@ Die Zeile und das Symbol erscheinen nur, solange mindestens ein Ziel, an das die
 
 ### Was im Hintergrund läuft
 
-Eingereihte Uploads laufen, solange die App geöffnet ist, und immer dann, wenn sie in den Vordergrund zurückkehrt. Unter Android laufen sie auch bei geschlossener App: Das System startet sie, sobald ein passendes Netz verfügbar ist, WLAN, wenn das Ziel es verlangt, und wiederholt sie, bis die Warteschlange leer ist. Unter iOS laufen Uploads, solange die App geöffnet ist.
+Eingereihte Uploads laufen, solange die App geöffnet ist, und immer dann, wenn sie in den Vordergrund zurückkehrt. Unter Android laufen sie auch bei geschlossener App: Das System startet sie, sobald ein passendes Netz verfügbar ist, WLAN, wenn das Ziel es verlangt, und wiederholt sie, bis die Warteschlange leer ist. Unter iOS werden Uploads vorbereitet, solange die App geöffnet ist, und dann an das System übergeben, das sie im Hintergrund oder bei geschlossener App abschließt und selbst wiederholt. Ziele, die über unverschlüsseltes http erreicht werden, bleiben bei der App und laden hoch, solange sie geöffnet ist.
 
 ### Eine Session erneut hochladen
 

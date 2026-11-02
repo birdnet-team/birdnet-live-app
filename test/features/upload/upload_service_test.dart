@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -13,6 +14,75 @@ import 'package:birdnet_live/features/upload/upload_job.dart';
 import 'package:birdnet_live/features/upload/upload_queue_store.dart';
 import 'package:birdnet_live/features/upload/upload_service.dart';
 import 'package:birdnet_live/features/upload/webdav_client.dart';
+
+/// Stands in for the OS transfer (iOS): records hand-offs, answers `recover`
+/// with [recovery], and lets a test report an outcome through [report].
+class _FakeTransfer implements UploadTransfer {
+  @override
+  void Function(String transferId, int status)? onFinished;
+
+  final List<Map<String, Object?>> puts = [];
+  final List<String> acked = [];
+  final List<String> cancelled = [];
+  final List<bool> running = [];
+  Object? putError;
+
+  /// What `recover` answers; by default every hand-off not yet reported or
+  /// cancelled is still running, as the OS would say.
+  TransferRecovery? recovery;
+
+  @override
+  Future<void> put({
+    required String transferId,
+    required Uri uri,
+    required Map<String, String> headers,
+    required String username,
+    required String secret,
+    required File file,
+    required bool wifiOnly,
+  }) async {
+    if (putError != null) throw putError!;
+    puts.add({
+      'transferId': transferId,
+      'uri': uri,
+      'headers': headers,
+      'path': file.path,
+      'wifiOnly': wifiOnly,
+    });
+  }
+
+  @override
+  Future<TransferRecovery> recover() async =>
+      recovery ??
+      TransferRecovery(
+        running: {
+          for (final p in puts)
+            if (!acked.contains(p['transferId']) &&
+                !cancelled.contains(p['transferId']))
+              p['transferId'] as String,
+        },
+        finished: const {},
+      );
+
+  @override
+  Future<void> ack(String transferId) async => acked.add(transferId);
+
+  @override
+  Future<void> cancel(String transferId) async => cancelled.add(transferId);
+
+  @override
+  Future<void> setRunning(bool isRunning) async => running.add(isRunning);
+
+  /// Reports an outcome the way the OS would and waits until the service has
+  /// recorded it; the acknowledgement is the last thing it does.
+  Future<void> report(String transferId, int status) async {
+    final before = acked.length;
+    onFinished!(transferId, status);
+    while (acked.length == before) {
+      await Future<void>.delayed(const Duration(milliseconds: 5));
+    }
+  }
+}
 
 /// Records every request; answers PUT/MKCOL with [putStatus] (or a per-path
 /// override) and stores PUT bodies by path.
@@ -60,8 +130,12 @@ void main() {
   UploadService build({
     UploadDestination? dest,
     List<UploadDestination> others = const [],
+    UploadTransfer? transfer,
+    DestinationUploaded? onDestinationUploaded,
   }) {
     return UploadService(
+      transfer: transfer,
+      onDestinationUploaded: onDestinationUploaded,
       store: UploadQueueStore(documentsDirectory: () async => tempDir),
       client: WebDavClient(client: dav.client),
       connectivity: connectivity,
@@ -703,6 +777,346 @@ void main() {
       );
     },
   );
+
+  group('with an OS transfer', () {
+    late _FakeTransfer transfer;
+    final uploadedAt = <DateTime>[];
+
+    UploadService buildWith(
+      _FakeTransfer transfer, {
+      List<UploadDestination> others = const [],
+    }) => build(
+      transfer: transfer,
+      others: others,
+      onDestinationUploaded: (_, at) async => uploadedAt.add(at),
+    );
+
+    UploadDestination dest(String id) => UploadDestination(
+      id: id,
+      name: id,
+      url: 'https://$id.example.org/dav/',
+      username: 'u',
+      createdAt: now,
+    );
+
+    setUp(() {
+      transfer = _FakeTransfer();
+      uploadedAt.clear();
+      service.dispose();
+      service = buildWith(transfer);
+    });
+
+    test(
+      'hands the staged export to the OS and leaves the job uploading',
+      () async {
+        final job = await service.enqueue(
+          session: session,
+          destination: destination,
+          config: config,
+        );
+        await service.processQueue();
+
+        expect(dav.paths('MKCOL'), ['/public.php/webdav/4ee91c8f/']);
+        expect(dav.paths('PUT'), isEmpty);
+        final put = transfer.puts.single;
+        final current = service.jobs.single;
+        expect(current.state, UploadJobState.uploading);
+        expect(current.transferId, startsWith('${job.id}.'));
+        expect(put['transferId'], current.transferId);
+        expect(
+          (put['uri'] as Uri).path,
+          '/public.php/webdav/4ee91c8f/BirdNET_Live_export_%2313.zip',
+        );
+        final headers = put['headers'] as Map<String, String>;
+        expect(headers['Authorization'], startsWith('Basic '));
+        expect(headers['Content-Type'], 'application/zip');
+        expect(put['wifiOnly'], destination.wifiOnly);
+        // The staged file must outlive the run; the OS reads it later.
+        expect(File(put['path'] as String).existsSync(), isTrue);
+        expect(current.remotePath, '4ee91c8f/BirdNET_Live_export_#13.zip');
+        expect(transfer.running, [true, false]);
+      },
+    );
+
+    test('a reported 2xx finishes the job and drops the staged file', () async {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+      final staged = File(transfer.puts.single['path'] as String);
+      final transferId = service.jobs.single.transferId!;
+
+      await transfer.report(transferId, 201);
+
+      final current = service.jobs.single;
+      expect(current.state, UploadJobState.uploaded);
+      expect(current.finishedAt, now);
+      expect(staged.existsSync(), isFalse);
+      expect(transfer.acked, [transferId]);
+      expect(uploadedAt, [now]);
+    });
+
+    test('a reported 401 fails the job for a retry; no answer is a network '
+        'failure', () async {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+
+      await transfer.report(service.jobs.single.transferId!, 401);
+      var current = service.jobs.single;
+      expect(current.state, UploadJobState.failed);
+      expect(current.lastError, UploadErrorCode.unauthorized);
+      expect(current.nextAttemptAt, now.add(const Duration(minutes: 1)));
+
+      now = now.add(const Duration(minutes: 2));
+      await service.processQueue();
+      expect(transfer.puts, hasLength(2));
+      await transfer.report(service.jobs.single.transferId!, 0);
+      current = service.jobs.single;
+      expect(current.state, UploadJobState.failed);
+      expect(current.lastError, UploadErrorCode.network);
+      expect(current.attempts, 2);
+    });
+
+    test('an outcome of an earlier hand-off is ignored once the job was '
+        'handed off again', () async {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+      final first = service.jobs.single.transferId!;
+      service.dispose();
+
+      // The OS lost the first hand-off; the next run sends it again.
+      final second = _FakeTransfer();
+      service = buildWith(second);
+      await service.processQueue();
+      final again = service.jobs.single.transferId!;
+      expect(again, isNot(first));
+      expect(second.puts.single['transferId'], again);
+      final staged = File(second.puts.single['path'] as String);
+
+      // A late report for the first hand-off changes nothing and leaves
+      // the staged file of the second alone.
+      await second.report(first, 0);
+      expect(service.jobs.single.state, UploadJobState.uploading);
+      expect(staged.existsSync(), isTrue);
+      expect(second.acked, [first]);
+
+      await second.report(again, 204);
+      expect(service.jobs.single.state, UploadJobState.uploaded);
+      expect(staged.existsSync(), isFalse);
+    });
+
+    test('an outcome reported while the app was gone is settled on the next '
+        'run', () async {
+      await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+      final staged = File(transfer.puts.single['path'] as String);
+      final transferId = service.jobs.single.transferId!;
+      service.dispose();
+
+      final second = _FakeTransfer()
+        ..recovery = TransferRecovery(
+          running: const {},
+          finished: {transferId: 204},
+        );
+      service = buildWith(second);
+      await service.ensureLoaded();
+      // Not reset to queued at load: the OS may still carry it.
+      expect(service.jobs.single.state, UploadJobState.uploading);
+
+      await service.processQueue();
+      expect(service.jobs.single.state, UploadJobState.uploaded);
+      expect(second.acked, [transferId]);
+      expect(second.puts, isEmpty);
+      expect(staged.existsSync(), isFalse);
+      expect(uploadedAt, [now]);
+    });
+
+    test(
+      'a job the OS still carries waits; one it lost is sent again',
+      () async {
+        final other = dest('dest-2');
+        service.dispose();
+        service = buildWith(transfer, others: [other]);
+        final a = await service.enqueue(
+          session: session,
+          destination: destination,
+          config: config,
+        );
+        final b = await service.enqueue(
+          session: session,
+          destination: other,
+          config: config,
+        );
+        await service.processQueue();
+        final ids = {for (final j in service.jobs) j.id: j.transferId!};
+        expect(transfer.puts.map((p) => p['transferId']), [
+          ids[b.id],
+          ids[a.id],
+        ]);
+        service.dispose();
+
+        final second = _FakeTransfer()
+          ..recovery = TransferRecovery(
+            running: {ids[a.id]!},
+            finished: const {},
+          );
+        service = buildWith(second, others: [other]);
+        await service.processQueue();
+
+        final byId = {for (final j in service.jobs) j.id: j};
+        expect(byId[a.id]!.state, UploadJobState.uploading);
+        expect(byId[a.id]!.transferId, ids[a.id]);
+        expect(byId[b.id]!.state, UploadJobState.uploading);
+        expect(byId[b.id]!.transferId, isNot(ids[b.id]));
+        expect(second.puts.single['transferId'], byId[b.id]!.transferId);
+      },
+    );
+
+    test('removing a job or its destination stops the hand-off and the late '
+        'outcome only cleans up', () async {
+      final other = dest('dest-2');
+      service.dispose();
+      service = buildWith(transfer, others: [other]);
+      final a = await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      final b = await service.enqueue(
+        session: session,
+        destination: other,
+        config: config,
+      );
+      await service.processQueue();
+      final ids = {for (final j in service.jobs) j.id: j.transferId!};
+      final stagedA = Directory('${tempDir.path}/upload_staging/${a.id}');
+      expect(stagedA.existsSync(), isTrue);
+
+      await service.cancel(a.id);
+      await service.cancelForDestination(other.id);
+      expect(transfer.cancelled, [ids[a.id], ids[b.id]]);
+      expect(service.jobs, isEmpty);
+
+      await transfer.report(ids[a.id]!, 0);
+      expect(stagedA.existsSync(), isFalse);
+      expect(transfer.acked, [ids[a.id]]);
+    });
+
+    test('an outcome for a job removed while the app was gone is cleared '
+        'even when nothing is pending', () async {
+      final job = await service.enqueue(
+        session: session,
+        destination: destination,
+        config: config,
+      );
+      await service.processQueue();
+      final transferId = service.jobs.single.transferId!;
+      final staged = Directory('${tempDir.path}/upload_staging/${job.id}');
+      service.dispose();
+
+      // Removed, then the OS finished it while no app was running.
+      service = buildWith(_FakeTransfer());
+      await service.cancel(job.id);
+      service.dispose();
+      final second = _FakeTransfer()
+        ..recovery = TransferRecovery(
+          running: const {},
+          finished: {transferId: 201},
+        );
+      service = buildWith(second);
+      await service.processQueue();
+
+      expect(second.acked, [transferId]);
+      expect(staged.existsSync(), isFalse);
+    });
+
+    test('at most three hand-offs are in flight; an outcome lets the next one '
+        'go', () async {
+      final others = [dest('dest-2'), dest('dest-3'), dest('dest-4')];
+      service.dispose();
+      service = buildWith(transfer, others: others);
+      for (final d in [destination, ...others]) {
+        await service.enqueue(session: session, destination: d, config: config);
+      }
+      await service.processQueue();
+
+      expect(transfer.puts, hasLength(UploadService.maxInFlight));
+      expect(
+        service.jobs.where((j) => j.state == UploadJobState.queued),
+        hasLength(1),
+      );
+
+      await transfer.report(transfer.puts.first['transferId'] as String, 201);
+      await service.processQueue();
+      expect(transfer.puts, hasLength(4));
+      expect(
+        service.jobs.where((j) => j.state == UploadJobState.queued),
+        isEmpty,
+      );
+    });
+
+    test(
+      'a hand-off the OS refuses fails the job and drops the staged file',
+      () async {
+        transfer.putError = PlatformException(code: 'INVALID_ARG');
+        final job = await service.enqueue(
+          session: session,
+          destination: destination,
+          config: config,
+        );
+        await service.processQueue();
+
+        final current = service.jobs.single;
+        expect(current.state, UploadJobState.failed);
+        expect(current.lastError, UploadErrorCode.network);
+        expect(
+          Directory('${tempDir.path}/upload_staging/${job.id}').existsSync(),
+          isFalse,
+        );
+      },
+    );
+
+    test('a plain-http destination keeps the in-app PUT', () async {
+      final lan = UploadDestination(
+        id: 'dest-lan',
+        name: 'NAS',
+        url: 'http://nas.local/dav/',
+        username: 'u',
+        createdAt: now,
+      );
+      service.dispose();
+      service = buildWith(transfer, others: [lan]);
+      await service.enqueue(session: session, destination: lan, config: config);
+      await service.processQueue();
+
+      expect(transfer.puts, isEmpty);
+      expect(dav.paths('PUT'), ['/dav/4ee91c8f/BirdNET_Live_export_%2313.zip']);
+      final current = service.jobs.single;
+      expect(current.state, UploadJobState.uploaded);
+      expect(current.transferId, isNull);
+    });
+
+    test('dispose detaches from the transfer', () {
+      expect(transfer.onFinished, isNotNull);
+      service.dispose();
+      expect(transfer.onFinished, isNull);
+      service = buildWith(_FakeTransfer());
+    });
+  });
 
   test('backoff doubles from one minute and caps at six hours', () {
     expect(UploadService.backoff(1), const Duration(minutes: 1));

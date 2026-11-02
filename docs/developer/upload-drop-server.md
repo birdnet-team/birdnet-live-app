@@ -83,8 +83,15 @@ the worker starts a headless Flutter engine on `uploadQueueBackgroundMain`
 (`upload_background.dart`), which builds the same providers as the app, runs
 the queue once, and reports the remaining count so the worker retries with
 backoff. `UploadQueueStore.tryLock` keeps the app and the worker from running
-the queue at the same time. iOS has no background transfer yet; the queue
-runs whenever the app is open or returns to the foreground.
+the queue at the same time. On iOS there is no headless run: the queue runs
+whenever the app is open or returns to the foreground, builds and stages each
+export there, and hands the PUT to a background `URLSession`
+(`UploadTransferChannel.swift`, `BackgroundTransfer` in
+`upload_background.dart`), which finishes it while the app is suspended or
+gone. The job stays "uploading" until the outcome comes back, over the channel
+while the app lives or through `recover` at the start of the next run after a
+relaunch. App Transport Security binds that session, so a plain-http
+destination keeps the in-app PUT and uploads only while the app is open.
 
 ## Reference server
 

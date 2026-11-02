@@ -130,7 +130,7 @@ Neúspěšná nahrání se opakují sama s rostoucími prodlevami, až šest hod
 
 ### Co běží na pozadí
 
-Nahrání ve frontě běží, dokud je aplikace otevřená, a vždy, když se vrátí do popředí. Na Androidu běží i při zavřené aplikaci: systém je spustí, jakmile je k dispozici vhodná síť — Wi-Fi, pokud to cíl vyžaduje —, a opakuje pokusy, dokud fronta není prázdná. Na iOS nahrávání běží, dokud je aplikace otevřená.
+Nahrání ve frontě běží, dokud je aplikace otevřená, a vždy, když se vrátí do popředí. Na Androidu běží i při zavřené aplikaci: systém je spustí, jakmile je k dispozici vhodná síť — Wi-Fi, pokud to cíl vyžaduje —, a opakuje pokusy, dokud fronta není prázdná. Na iOS se nahrání připraví, dokud je aplikace otevřená, a poté se předá systému, který je dokončí na pozadí nebo při zavřené aplikaci a sám opakuje pokusy. Cíle dostupné přes nešifrované http zůstávají u aplikace a nahrávají, dokud je otevřená.
 
 ### Opětovné nahrání Session
 

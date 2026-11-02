@@ -28,6 +28,7 @@ class UploadJob {
     DateTime? finishedAt,
     this.lastError,
     this.remotePath,
+    this.transferId,
   }) : createdAt = createdAt.toUtc(),
        nextAttemptAt = nextAttemptAt?.toUtc(),
        finishedAt = finishedAt?.toUtc();
@@ -57,6 +58,10 @@ class UploadJob {
   /// Remote folder (or flat-name prefix) the files went to.
   final String? remotePath;
 
+  /// Id of the hand-off the OS currently carries for this job (iOS), so a
+  /// late outcome of an earlier hand-off is told apart. See UploadService.
+  final String? transferId;
+
   /// Still waiting for its turn, including scheduled retries.
   bool get isPending =>
       state == UploadJobState.queued ||
@@ -83,6 +88,8 @@ class UploadJob {
     String? lastError,
     bool clearError = false,
     String? remotePath,
+    String? transferId,
+    bool clearTransferId = false,
   }) {
     return UploadJob(
       id: id,
@@ -100,6 +107,7 @@ class UploadJob {
       finishedAt: finishedAt ?? this.finishedAt,
       lastError: clearError ? null : (lastError ?? this.lastError),
       remotePath: remotePath ?? this.remotePath,
+      transferId: clearTransferId ? null : (transferId ?? this.transferId),
     );
   }
 
@@ -118,6 +126,7 @@ class UploadJob {
     if (finishedAt != null) 'finishedAt': finishedAt!.toIso8601String(),
     if (lastError != null) 'lastError': lastError,
     if (remotePath != null) 'remotePath': remotePath,
+    if (transferId != null) 'transferId': transferId,
   };
 
   factory UploadJob.fromJson(Map<String, dynamic> json) {
@@ -147,6 +156,7 @@ class UploadJob {
       finishedAt: date('finishedAt'),
       lastError: json['lastError'] as String?,
       remotePath: json['remotePath'] as String?,
+      transferId: json['transferId'] as String?,
     );
   }
 

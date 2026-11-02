@@ -1,8 +1,8 @@
 // =============================================================================
-// Upload Background — run the queue while the app is closed (Android)
+// Upload Background — run the queue while the app is closed
 // =============================================================================
 //
-// Android's WorkManager starts UploadWorker.kt when the device is on a
+// Android: WorkManager starts UploadWorker.kt when the device is on a
 // suitable network; the worker spins up a headless Flutter engine on
 // [uploadQueueBackgroundMain], which builds the same providers the app uses,
 // runs the queue once, and reports how many jobs are left so the worker can
@@ -15,10 +15,23 @@
 //   cancel()             -> null
 //   finished({pending})  -> null   worker <- Dart, from the headless run
 //
-// iOS has no equivalent yet; there the queue runs whenever the app is open.
+// iOS: there is no headless run. Instead the queue builds and stages each
+// export while the app is open and hands the PUT itself to a background
+// URLSession (UploadTransferChannel.swift), which carries it out while the
+// app is suspended or gone and wakes the app when it ends. The job stays
+// "uploading" until the outcome comes back, through `onFinished` while the
+// app is alive or through `recover` on the next run after a relaunch.
+// [BackgroundTransfer] is the Dart side of `com.birdnet/upload_transfer`:
+//
+//   upload({transferId, url, headers, path, username, secret, wifiOnly})
+//   recover()  -> {running: [transferId], finished: [{transferId, status}]}
+//   ack({transferId})     -> null   drops a finished entry once recorded
+//   cancel({transferId})  -> null   stops a hand-off; reported as status 0
+//   setRunning({running}) -> null   background time while a run prepares
+//   onFinished({transferId, status})   native -> Dart; 0 = no answer
 // =============================================================================
 
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
@@ -31,6 +44,7 @@ import '../explore/explore_providers.dart';
 import '../history/session_repository.dart';
 import '../live/live_providers.dart';
 import 'upload_providers.dart';
+import 'upload_service.dart';
 
 abstract final class UploadWorkScheduler {
   static const MethodChannel channel = MethodChannel('com.birdnet/upload_work');
@@ -114,4 +128,75 @@ Future<void> uploadQueueBackgroundMain() async {
   } on MissingPluginException {
     // Not started by the worker.
   }
+}
+
+class BackgroundTransfer implements UploadTransfer {
+  BackgroundTransfer({MethodChannel? channel})
+    : _channel = channel ?? defaultChannel {
+    _channel.setMethodCallHandler(_handle);
+  }
+
+  static const MethodChannel defaultChannel = MethodChannel(
+    'com.birdnet/upload_transfer',
+  );
+
+  static bool get supported => Platform.isIOS;
+
+  final MethodChannel _channel;
+
+  @override
+  void Function(String transferId, int status)? onFinished;
+
+  Future<dynamic> _handle(MethodCall call) async {
+    if (call.method != 'onFinished') throw MissingPluginException();
+    final args = call.arguments as Map<Object?, Object?>;
+    onFinished?.call(args['transferId'] as String, args['status'] as int? ?? 0);
+  }
+
+  @override
+  Future<void> put({
+    required String transferId,
+    required Uri uri,
+    required Map<String, String> headers,
+    required String username,
+    required String secret,
+    required File file,
+    required bool wifiOnly,
+  }) {
+    return _channel.invokeMethod<void>('upload', {
+      'transferId': transferId,
+      'url': uri.toString(),
+      'headers': headers,
+      'path': file.path,
+      'username': username,
+      'secret': secret,
+      'wifiOnly': wifiOnly,
+    });
+  }
+
+  @override
+  Future<TransferRecovery> recover() async {
+    final raw = await _channel.invokeMethod<Map<Object?, Object?>>('recover');
+    final running = (raw?['running'] as List<Object?>?) ?? const [];
+    final finished = (raw?['finished'] as List<Object?>?) ?? const [];
+    return TransferRecovery(
+      running: {for (final id in running) id as String},
+      finished: {
+        for (final entry in finished.cast<Map<Object?, Object?>>())
+          entry['transferId'] as String: entry['status'] as int? ?? 0,
+      },
+    );
+  }
+
+  @override
+  Future<void> ack(String transferId) =>
+      _channel.invokeMethod<void>('ack', {'transferId': transferId});
+
+  @override
+  Future<void> cancel(String transferId) =>
+      _channel.invokeMethod<void>('cancel', {'transferId': transferId});
+
+  @override
+  Future<void> setRunning(bool running) =>
+      _channel.invokeMethod<void>('setRunning', {'running': running});
 }

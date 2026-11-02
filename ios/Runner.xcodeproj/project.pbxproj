@@ -15,6 +15,7 @@
 		5E1A2B3C4D5E6F7080900011 /* QuickAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900010 /* QuickAction.swift */; };
 		5E1A2B3C4D5E6F7080900041 /* SecureStoreChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900040 /* SecureStoreChannel.swift */; };
 		5E1A2B3C4D5E6F7080900051 /* ConnectivityChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900050 /* ConnectivityChannel.swift */; };
+		5E1A2B3C4D5E6F7080900061 /* UploadTransferChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900060 /* UploadTransferChannel.swift */; };
 		5E1A2B3C4D5E6F7080900013 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900012 /* Localizable.xcstrings */; };
 		5E1A2B3C4D5E6F7080900015 /* AppShortcuts.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900014 /* AppShortcuts.strings */; };
 		5E1A2B3C4D5E6F7080900017 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5E1A2B3C4D5E6F7080900016 /* InfoPlist.xcstrings */; };
@@ -61,6 +62,7 @@
 		5E1A2B3C4D5E6F7080900010 /* QuickAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAction.swift; sourceTree = "<group>"; };
 		5E1A2B3C4D5E6F7080900040 /* SecureStoreChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureStoreChannel.swift; sourceTree = "<group>"; };
 		5E1A2B3C4D5E6F7080900050 /* ConnectivityChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectivityChannel.swift; sourceTree = "<group>"; };
+		5E1A2B3C4D5E6F7080900060 /* UploadTransferChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadTransferChannel.swift; sourceTree = "<group>"; };
 		5E1A2B3C4D5E6F7080900012 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		5E1A2B3C4D5E6F7080900016 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		5E1A2B3C4D5E6F70809000A0 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/AppShortcuts.strings; sourceTree = "<group>"; };
@@ -165,6 +167,7 @@
 				5E1A2B3C4D5E6F7080900010 /* QuickAction.swift */,
 				5E1A2B3C4D5E6F7080900040 /* SecureStoreChannel.swift */,
 				5E1A2B3C4D5E6F7080900050 /* ConnectivityChannel.swift */,
+				5E1A2B3C4D5E6F7080900060 /* UploadTransferChannel.swift */,
 				5E1A2B3C4D5E6F7080900012 /* Localizable.xcstrings */,
 				5E1A2B3C4D5E6F7080900014 /* AppShortcuts.strings */,
 				5E1A2B3C4D5E6F7080900016 /* InfoPlist.xcstrings */,
@@ -349,6 +352,7 @@
 				5E1A2B3C4D5E6F7080900011 /* QuickAction.swift in Sources */,
 				5E1A2B3C4D5E6F7080900041 /* SecureStoreChannel.swift in Sources */,
 				5E1A2B3C4D5E6F7080900051 /* ConnectivityChannel.swift in Sources */,
+				5E1A2B3C4D5E6F7080900061 /* UploadTransferChannel.swift in Sources */,
 				1A2B3C4D5E6F708192A3B4C5 /* NativeAudioDecoder.swift in Sources */,
 				1A2B3C4D5E6F708192A3B4C7 /* TtsChannel.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,

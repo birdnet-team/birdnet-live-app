@@ -130,7 +130,7 @@ A linha e o ícone só aparecem enquanto pelo menos um destino para o qual a Ses
 
 ### O que roda em segundo plano
 
-Os envios na fila rodam enquanto o aplicativo está aberto e sempre que ele volta ao primeiro plano. No Android, também rodam com o aplicativo fechado: o sistema os inicia assim que uma rede adequada está disponível, Wi-Fi quando o destino exige, e continua tentando até a fila esvaziar. No iOS, os envios rodam enquanto o aplicativo está aberto.
+Os envios na fila rodam enquanto o aplicativo está aberto e sempre que ele volta ao primeiro plano. No Android, também rodam com o aplicativo fechado: o sistema os inicia assim que uma rede adequada está disponível, Wi-Fi quando o destino exige, e continua tentando até a fila esvaziar. No iOS, os envios são preparados enquanto o aplicativo está aberto e depois entregues ao sistema, que os conclui com o aplicativo em segundo plano ou fechado e tenta de novo por conta própria. Destinos acessados por http sem criptografia ficam com o aplicativo e enviam enquanto ele está aberto.
 
 ### Enviando uma Session de novo
 
