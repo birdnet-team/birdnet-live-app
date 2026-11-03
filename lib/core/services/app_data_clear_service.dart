@@ -15,6 +15,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/upload/secret_store.dart';
+import '../../features/upload/upload_destination_store.dart';
+import '../../features/upload/upload_queue_store.dart';
 import '../../shared/widgets/open_street_map_tile_layer.dart';
 
 typedef DirectoryProvider = Future<Directory> Function();
@@ -29,6 +32,7 @@ class AppDataClearService {
     DirectoryProvider? temporaryDirectoryProvider,
     SharedPreferencesProvider? sharedPreferencesProvider,
     CacheClearer? mapTileCacheClearer,
+    CacheClearer? uploadDestinationsClearer,
   }) : _documentsDirectoryProvider =
            documentsDirectoryProvider ?? getApplicationDocumentsDirectory,
        _temporaryDirectoryProvider =
@@ -36,12 +40,36 @@ class AppDataClearService {
        _sharedPreferencesProvider =
            sharedPreferencesProvider ?? SharedPreferences.getInstance,
        _mapTileCacheClearer =
-           mapTileCacheClearer ?? clearOpenStreetMapTileCache;
+           mapTileCacheClearer ?? clearOpenStreetMapTileCache,
+       _uploadDestinationsClearer = uploadDestinationsClearer;
 
   final DirectoryProvider _documentsDirectoryProvider;
   final DirectoryProvider _temporaryDirectoryProvider;
   final SharedPreferencesProvider _sharedPreferencesProvider;
   final CacheClearer _mapTileCacheClearer;
+
+  /// Null means: clear the destination list in the documents directory and
+  /// every secret it names from the platform keychain.
+  final CacheClearer? _uploadDestinationsClearer;
+
+  /// Removes every upload destination in [documentsDir] together with its
+  /// keychain secret.
+  static Future<void> clearUploadDestinations(Directory documentsDir) async {
+    final store = UploadDestinationStore(
+      documentsDirectory: () async => documentsDir,
+    );
+    final secrets = PlatformSecretStore();
+    for (final destination in await store.load()) {
+      try {
+        await secrets.delete(destination.secretKey);
+      } on SecretStoreException {
+        // The list goes regardless; a stale keychain item is harmless.
+      }
+    }
+    await store.deleteAll();
+    await UploadQueueStore(documentsDirectory: () async => documentsDir)
+        .deleteAll();
+  }
 
   /// Deletes local user data and cached third-party service results.
   ///
@@ -75,6 +103,9 @@ class AppDataClearService {
     }
 
     await attempt(_mapTileCacheClearer);
+    await attempt(
+      _uploadDestinationsClearer ?? () => clearUploadDestinations(documentsDir),
+    );
     await attempt(() async {
       final prefs = await _sharedPreferencesProvider();
       await prefs.clear();

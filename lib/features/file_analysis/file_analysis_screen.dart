@@ -53,6 +53,7 @@ import '../history/session_review_screen.dart';
 import '../inference/species_ignore_filter.dart';
 import '../live/live_providers.dart';
 import '../settings/settings_screen.dart';
+import '../upload/upload_providers.dart';
 import 'file_analysis_controller.dart';
 import 'file_analysis_providers.dart';
 
@@ -530,9 +531,11 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     if (session != null && mounted) {
       // Save session and navigate to review.
       final repo = ref.read(sessionRepositoryProvider);
+      final container = ProviderScope.containerOf(context, listen: false);
       session.sessionNumber = await repo.nextSessionNumber(session.type);
       await repo.save(session);
-      ref.invalidate(sessionListProvider);
+      container.invalidate(sessionListProvider);
+      await autoEnqueueSession(container.read, session);
 
       controller.reset();
 

@@ -35,7 +35,11 @@ version heading and group them into Added / Changed / Fixed.
 5. `flutter test` — full suite must pass.
 6. Sanity-check the app on a physical Android device with `flutter run
    --release` (the release build behaves differently from debug for ONNX
-   Runtime memory mapping and ProGuard).
+   Runtime memory mapping and ProGuard). Launch it cold at least once: R8
+   breakage surfaces at process start, before any Flutter code runs, and a
+   debug build never shows it (1.3.0 shipped such a crash, #297). The
+   universal release APK also runs on the x86_64 emulator, which is a
+   cheaper place to catch this.
 
 ## 3. Signing
 

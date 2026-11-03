@@ -20,3 +20,13 @@
 # the app calls no GMS API of its own, and Play Asset Delivery lives under
 # com.google.android.play, so this hides nothing we care about.
 -dontwarn com.google.android.gms.**
+
+# Room instantiates its generated database classes reflectively through the
+# no-argument constructor (Room.getGeneratedImplementation). Room 2.6.1's own
+# consumer rule is `-keep class * extends androidx.room.RoomDatabase`, which in
+# R8 full mode (the AGP 8+ default) keeps the class but not that constructor,
+# so WorkManager's androidx.startup initializer died at process start with
+# "NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []" in
+# the 1.3.0 release build (#297, #298). Debug builds are not shrunk and never
+# showed it.
+-keep class * extends androidx.room.RoomDatabase { <init>(); }

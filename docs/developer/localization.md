@@ -69,7 +69,7 @@ Both surfaces are complete for all 13 locales, and both must stay complete when 
     flutter gen-l10n
     ```
 
-4. If adding a new language, include it in the app language selector and supported locale configuration — **and add `assets/announcements/templates_<locale>.json`**, or the app will speak English in that language.
+4. If adding a new language, follow the full checklist in [CONTRIBUTING.md › Adding a New Language](https://github.com/birdnet-team/birdnet-live-app/blob/main/CONTRIBUTING.md#adding-a-new-language). Besides the ARB file it covers `assets/announcements/templates_<locale>.json` (without it the app speaks English), the language picker, native Android and iOS strings, policies, and the docs site.
 
 5. Use in a widget:
 

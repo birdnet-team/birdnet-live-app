@@ -47,7 +47,11 @@ TOOLS_DIR = ROOT / "tools"
 DEFAULT_TAXONOMY_JSON = TOOLS_DIR / "data" / "birdnet_taxonomy_0.2-Jun2026.json"
 LEGACY_TAXONOMY_JSON = ROOT / "dev" / "birdnet_taxonomy_0.2-Jun2026.json"
 TAXONOMY_DOWNLOAD_URL = "https://birdnet.cornell.edu/taxonomy/api/download/json"
-TAXONOMY_JSON_GLOB = "birdnet_taxonomy*.json"
+# The API names its export after the taxonomy version, e.g.
+# BirdNET_Taxonomy_v0.5-Nov2026.json; match the prefix case-insensitively so
+# the lookup behaves the same on Linux CI and on Windows.
+TAXONOMY_JSON_PREFIX = "birdnet_taxonomy"
+TAXONOMY_JSON_GLOB = f"{TAXONOMY_JSON_PREFIX}*.json"
 
 
 def _audio_labels_from_config() -> Path:
@@ -215,7 +219,11 @@ def resolve_taxonomy_json(taxonomy_json: Path) -> Path:
 
     if taxonomy_json == DEFAULT_TAXONOMY_JSON:
         downloaded_exports = sorted(
-            (TOOLS_DIR / "data").glob(TAXONOMY_JSON_GLOB),
+            (
+                path
+                for path in (TOOLS_DIR / "data").glob("*.json")
+                if path.name.lower().startswith(TAXONOMY_JSON_PREFIX)
+            ),
             key=lambda path: (path.stat().st_mtime, path.name),
             reverse=True,
         )

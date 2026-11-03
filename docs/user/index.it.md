@@ -56,6 +56,10 @@ Elabora e analizza più file audio in blocco. (Prossimamente)
 
 Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevazione conservate, esegui l'inferenza live durante i cicli attivi e tieni traccia dei cicli di registrazione pianificati.
 
+### [Caricamenti](uploads.md)
+
+Invia le Sessions concluse alla cartella di un progetto: configurazione di una destinazione File Drop di Nextcloud o WebDAV, link di accesso e codici QR, la scheda Invia a, lo stato dei caricamenti e i caricamenti ARU automatici.
+
 ## Riferimento
 
 ### [FAQ](faq.md)

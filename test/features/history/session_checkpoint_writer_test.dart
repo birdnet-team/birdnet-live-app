@@ -36,7 +36,6 @@ void main() {
       final writer = SessionCheckpointWriter(
         repository: repository,
         session: () => session,
-        shouldSave: () => true,
       );
 
       final first = writer.saveNow();

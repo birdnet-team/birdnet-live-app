@@ -1,6 +1,6 @@
 # Datenschutzerklärung für BirdNET Live
 
-**Zuletzt aktualisiert:** 6. August 2026
+**Zuletzt aktualisiert:** 29. Oktober 2026
 
 Diese Datenschutzerklärung gilt für **BirdNET Live** (die **App**). Die App wird von **BirdNET-Team** (dem **Entwickler**, **wir** oder **uns**) entwickelt und angeboten.
 
@@ -25,7 +25,7 @@ Es werden niemals Audiodaten an externe Server übertragen.
 
 ## Verarbeitung personenbezogener Daten
 
-BirdNET-Team betreibt kein App-Backend und erhält über BirdNET Live weder Ihre Aufnahmen noch Standort-, Session- oder andere personenbezogene Daten. Die App hat keine Benutzerkonten, Werbung, Analysen, Tracking oder Telemetrie. Sie verarbeitet Audio- und Standortdaten auf Ihrem Gerät und sendet nur dann Daten direkt an den unter **Externe Ressourcen** genannten Drittanbieter, wenn Sie die entsprechende optionale Netzwerkfunktion aktivieren.
+BirdNET-Team betreibt kein App-Backend und erhält über BirdNET Live weder Ihre Aufnahmen noch Standort-, Session- oder andere personenbezogene Daten. Die App hat keine Benutzerkonten, Werbung, Analysen, Tracking oder Telemetrie. Sie verarbeitet Audio- und Standortdaten auf Ihrem Gerät und sendet nur dann Daten direkt an den unter **Externe Ressourcen** genannten Drittanbieter, wenn Sie die entsprechende optionale Netzwerkfunktion aktivieren, oder, nur wenn Sie ein Upload-Ziel hinzufügen und sich zum Hochladen entscheiden, die unter **Upload-Ziele** beschriebenen Session-Daten direkt an den Server einer Projektleitung.
 
 ### Lokal auf Ihrem Gerät gespeicherte Daten:
 
@@ -82,7 +82,15 @@ GPS-Daten werden lokal gespeichert und nur dann in Exporte einbezogen, wenn Sie 
 
 ## Datenexport
 
-Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch.
+Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch, außer auf Upload-Ziele, die Sie selbst hinzugefügt haben (siehe unten).
+
+## Upload-Ziele
+
+Unter **Einstellungen → Export & Sync → Upload-Ziele** können Sie den WebDAV-Ordner eines Projekts hinzufügen, in der Regel einen Nextcloud File Drop, den eine Projektleitung als Link oder QR-Code mit Ihnen geteilt hat. Es wird nichts hochgeladen, bis Sie ein Ziel hinzufügen und es dann im Dialog „Teilen“ anhaken oder automatische Uploads für ARU-Sessions einschalten. Uploads gehen über HTTPS direkt von Ihrem Gerät an den Server der Projektleitung. BirdNET-Team betreibt keinen Server dazwischen und erhält nichts.
+
+Ein Upload enthält denselben Inhalt wie ein Teilen: den JSON-Datensatz der Session (Detektionen, Zeiten, Koordinaten sowie Beobachter- und Ortsnamen, falls gesetzt), das Audio, die Tabellen und den Bericht, die Sie angehakt haben, die Upload-ID Ihres Geräts und die Teilnehmerkennung, die Sie eingegeben haben, falls vorhanden. Die Zugangsdaten des Ziels werden im Schlüsselbund des Geräts gespeichert.
+
+Ziele werden von Projektleitungen betrieben, nicht von BirdNET-Team, nach deren eigenen Datenschutz- und Sicherheitsregeln. Fragen Sie die Projektleitung, wer die Daten lesen kann und wie lange sie aufbewahrt werden. Sie sind für das verantwortlich, was Sie hochladen: Senden Sie keine Daten, die Sie als privat oder vertraulich betrachten oder die Sie nicht weitergeben dürfen. Die App lädt nie etwas von einem Ziel herunter und löscht dort nie etwas, und das Löschen einer Session auf Ihrem Gerät entfernt hochgeladene Kopien nicht.
 
 ## Datenlöschung
 

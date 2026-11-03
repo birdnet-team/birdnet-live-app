@@ -56,6 +56,10 @@ Traitez et analysez plusieurs fichiers audio en une seule fois. (Prochainement)
 
 Créez une session de déploiement ARU planifiée, enregistrez l'audio complet des cycles ou les clips de détection conservés, exécutez l'inférence en direct pendant les cycles actifs et suivez les cycles d'enregistrement prévus.
 
+### [Envois](uploads.md)
+
+Envoyez les sessions terminées vers le dossier d'un projet : configuration d'une destination File Drop Nextcloud ou WebDAV, liens d'accès et codes QR, l'onglet Envoyer vers, l'état des envois et les envois ARU automatiques.
+
 ## Référence
 
 ### [FAQ](faq.md)
