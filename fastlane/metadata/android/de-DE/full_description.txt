@@ -1,0 +1,22 @@
+Entdecken Sie Vogelstimmen und die Klänge der Natur und bestimmen Sie Vögel und andere Arten anhand ihrer Rufe.
+
+BirdNET Live nutzt unser neuestes Akustikmodell zur Tierstimmenerkennung direkt auf Ihrem Gerät – ganz ohne Internetverbindung.
+
+Verfolgen Sie ein Live-Spektrogramm, sehen Sie Artenerkennungen in Echtzeit und verwalten Sie Ihre wachsende Bibliothek an Tierstimmen direkt auf Ihrem Smartphone.
+
+BirdNET Live unterstützt die bioakustische Forschung und strukturierte akustische Erhebungen in mehreren Arbeitsabläufen:
+
+- Live-Modus – Artenerkennung in Echtzeit mit Live-Spektrogramm
+- Punktzählungen – Strukturierte, zeitlich begrenzte Sitzungen mit Live-Erkennungen
+- Survey-Modus – Zeichnen Sie längere Transekte auf und verfolgen Sie Erkennungen entlang Ihrer gelaufenen Route
+- Dateianalyse – Analysieren Sie Audiodateien aus dem lokalen Speicher Ihres Geräts
+- Batch Analysis – Verarbeiten Sie mehrere Audiodateien gesammelt
+- ARU Mode – Planen Sie längere Einsätze akustischer Aufzeichnungseinheiten
+
+BirdNET Live ist sowohl für Forschende als auch für Bürgerwissenschaftler:innen konzipiert und bietet umfangreiche Konfigurations- und Auswertungsoptionen.
+
+Diese App ist ein Gemeinschaftsprojekt des Cornell K. Lisa Yang Center for Conservation Bioacoustics und der Technischen Universität Chemnitz, in Zusammenarbeit mit dem Museum für Naturkunde Berlin.
+
+Die Entwicklung dieser App wird von der Deutschen Bundesstiftung Umwelt gefördert.
+
+Weitere Informationen finden Sie in unserer Online-Benutzeranleitung: https://birdnet-team.github.io/birdnet-live-app/user/

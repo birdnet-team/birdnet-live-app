@@ -1,0 +1,22 @@
+Odkrywaj ptasie śpiewy i dźwięki natury oraz rozpoznawaj ptaki i inne gatunki po wydawanych przez nie odgłosach.
+
+BirdNET Live uruchamia nasz najbardziej zaawansowany model rozpoznawania dźwięku bezpośrednio na Twoim urządzeniu — bez połączenia z internetem.
+
+Obserwuj przewijany spektrogram na żywo, sprawdzaj wykrycia gatunków w czasie rzeczywistym i zarządzaj rosnącą biblioteką dźwięków zwierząt bezpośrednio z telefonu.
+
+BirdNET Live wspiera badania bioakustyczne i ustrukturyzowane surveys akustyczne w wielu przepływach pracy:
+
+- Live Mode — Wykrycia gatunków w czasie rzeczywistym z live spektrogramem
+- Point Count — Ustrukturyzowane sesje czasowe z live wykryciami
+- Survey — Rejestruj dłuższe transekty i śledź wykrycia wzdłuż trasy
+- File Analysis — Analizuj pliki audio z lokalnej pamięci
+- Batch Analysis — Przetwarzaj wiele plików audio zbiorczo
+- ARU Mode — Planuj dłuższe wdrożenia rejestratorów akustycznych
+
+BirdNET Live zaprojektowano zarówno dla badaczy, jak i citizen scientists; aplikacja oferuje rozbudowaną konfigurację i opcje przeglądu wykryć.
+
+Ta aplikacja jest wspólnym przedsięwzięciem Cornell K. Lisa Yang Center for Conservation Bioacoustics oraz Uniwersytetu Technicznego w Chemnitz, we współpracy z Muzeum Historii Naturalnej w Berlinie.
+
+Rozwój aplikacji wspiera Deutsche Bundesstiftung Umwelt.
+
+Więcej informacji znajdziesz w naszym internetowym podręczniku użytkownika: https://birdnet-team.github.io/birdnet-live-app/user/

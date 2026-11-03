@@ -1,0 +1,22 @@
+Scopri i canti degli uccelli e i suoni della natura, e identifica uccelli e altre specie dai suoni che producono.
+
+BirdNET Live esegue il nostro modello di identificazione sonora più sofisticato direttamente sul tuo dispositivo — senza bisogno di connessione Internet.
+
+Guarda uno spettrogramma a scorrimento in tempo reale, visualizza le rilevazioni delle specie in tempo reale e gestisci la tua raccolta in crescita di suoni di animali direttamente dal tuo telefono.
+
+BirdNET Live supporta la ricerca bioacustica e i monitoraggi acustici strutturati in più flussi di lavoro:
+
+- Live — Rilevazione delle specie in tempo reale con uno spettrogramma dal vivo
+- Point Count — Sessioni a tempo strutturate con rilevazioni in tempo reale
+- Survey — Registra transetti più lunghi monitorando le rilevazioni lungo il tuo percorso
+- Analisi file — Analizza i file audio dalla memoria locale
+- Batch Analysis — Elabora più file audio in batch
+- ARU Mode — Pianifica distribuzioni acustiche più lunghe
+
+BirdNET Live è progettato sia per i ricercatori sul campo che per i citizen scientist e offre ampie opzioni di configurazione e revisione delle rilevazioni.
+
+Questa applicazione è il risultato di un lavoro congiunto del Cornell K. Lisa Yang Center for Conservation Bioacoustics e della Università di Tecnologia di Chemnitz, in collaborazione con il Museo di Storia Naturale di Berlino.
+
+Lo sviluppo di questa applicazione è supportato dalla Deutsche Bundesstiftung Umwelt.
+
+Per ulteriori informazioni, consulta la nostra guida per l'utente online: https://birdnet-team.github.io/birdnet-live-app/user/

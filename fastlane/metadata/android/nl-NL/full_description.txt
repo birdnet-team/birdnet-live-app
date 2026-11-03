@@ -1,0 +1,22 @@
+Ontdek vogelzang en de geluiden van de natuur, en herken vogels en andere soorten aan de geluiden die ze maken.
+
+BirdNET Live draait ons meest geavanceerde model voor geluidsherkenning rechtstreeks op je apparaat — geen internetverbinding nodig.
+
+Bekijk een live scrollend spectrogram, zie soortdetecties in realtime en beheer je groeiende bibliotheek met dierengeluiden rechtstreeks vanaf je telefoon.
+
+BirdNET Live ondersteunt bioakoestisch onderzoek en gestructureerde akoestische surveys in meerdere workflows:
+
+- Live Mode — Realtime soortdetecties met een live spectrogram
+- Point Count — Gestructureerde getimede sessies met live detecties
+- Survey — Leg langere transecten vast terwijl detecties langs je route worden gevolgd
+- File Analysis — Analyseer audiobestanden uit lokale opslag
+- Batch Analysis — Verwerk meerdere audiobestanden in bulk
+- ARU Mode — Plan langere akoestische recorder-implementaties
+
+BirdNET Live is ontworpen voor onderzoekers en citizen scientists en biedt uitgebreide configuratie- en reviewopties voor detecties.
+
+Deze app is een gezamenlijke inspanning van het Cornell K. Lisa Yang Center for Conservation Bioacoustics en de Technische Universiteit Chemnitz, in samenwerking met het Natuurhistorisch Museum Berlijn.
+
+De ontwikkeling van deze app wordt ondersteund door de Deutsche Bundesstiftung Umwelt.
+
+Meer informatie vind je in onze online gebruikershandleiding: https://birdnet-team.github.io/birdnet-live-app/user/
