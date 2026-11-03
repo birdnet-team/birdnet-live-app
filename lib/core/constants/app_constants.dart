@@ -143,6 +143,20 @@ abstract final class PrefKeys {
   static const String inferenceRateDeviceLimit = 'inference_rate_device_limit';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
+
+  /// Random identity of this install toward upload destinations (#284).
+  /// Generated on first use; names the contributor folder on the server.
+  static const String uploadDeviceId = 'upload_device_id';
+
+  /// Optional participant identifier (name, email, participant id) written
+  /// into every upload's metadata and the device registration (#284). Never
+  /// part of a path; folders are named by the device code.
+  static const String uploadParticipant = 'upload_participant';
+
+  /// Destinations ticked in the last Share dialog, so a repeat contribution
+  /// is two taps (#284). String list of destination ids.
+  static const String shareLastUploadDestinations =
+      'share_last_upload_destinations';
   static const String ignoreBirds = 'ignore_species_birds';
   static const String ignoreMammals = 'ignore_species_mammals';
   static const String ignoreAmphibians = 'ignore_species_amphibians';

@@ -1,6 +1,6 @@
 # Politique de Confidentialité de BirdNET Live
 
-**Dernière mise à jour :** 6 août 2026
+**Dernière mise à jour :** 29 octobre 2026
 
 La présente Politique de Confidentialité s'applique à **BirdNET Live** (l'**application**). L'application est développée et proposée par **BirdNET-Team** (le **développeur**, **nous** ou **notre**).
 
@@ -25,7 +25,7 @@ Aucune donnée audio n'est jamais transmise à des serveurs externes.
 
 ## Traitement des informations personnelles
 
-BirdNET-Team n'exploite aucun serveur applicatif et ne reçoit par BirdNET Live ni vos enregistrements, ni votre position, ni vos données de Session, ni aucune autre information personnelle. L'application ne comporte aucun compte utilisateur, publicité, outil d'analyse, suivi ou télémétrie. Elle traite toutefois l'audio et la position sur votre appareil et, uniquement lorsque vous activez une fonction réseau facultative, envoie directement les informations décrites sous **Ressources Externes** au fournisseur tiers indiqué.
+BirdNET-Team n'exploite aucun serveur applicatif et ne reçoit par BirdNET Live ni vos enregistrements, ni votre position, ni vos données de Session, ni aucune autre information personnelle. L'application ne comporte aucun compte utilisateur, publicité, outil d'analyse, suivi ou télémétrie. Elle traite toutefois l'audio et la position sur votre appareil et, uniquement lorsque vous activez une fonction réseau facultative, envoie directement les informations décrites sous **Ressources Externes** au fournisseur tiers indiqué ou, uniquement lorsque vous en ajoutez une et choisissez d'envoyer, les données de Session décrites sous **Destinations d'envoi** directement au serveur d'un organisateur de projet.
 
 ### Données stockées localement sur votre appareil :
 
@@ -82,7 +82,15 @@ Les données GPS sont stockées localement et incluses dans les exports uniqueme
 
 ## Export de Données
 
-Vous pouvez exporter les données de session dans plusieurs formats (Raven Selection Tables, CSV, JSON, GPX) et cocher n'importe quelle combinaison de formats à la fois sous **Paramètres → Exporter → Formats** ; les formats sélectionnés sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML autonome optionnel. Les exports sont générés localement et partagés via la feuille de partage du système. L'application ne téléverse aucune donnée d'export sur un serveur.
+Vous pouvez exporter les données de session dans plusieurs formats (Raven Selection Tables, CSV, JSON, GPX) et cocher n'importe quelle combinaison de formats à la fois sous **Paramètres → Exporter → Formats** ; les formats sélectionnés sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML autonome optionnel. Les exports sont générés localement et partagés via la feuille de partage du système. L'application ne téléverse aucune donnée d'export sur un serveur, sauf vers les destinations d'envoi que vous avez ajoutées vous-même (voir ci-dessous).
+
+## Destinations d'envoi
+
+Sous **Paramètres → Export et synchronisation → Destinations d'envoi**, vous pouvez ajouter le dossier WebDAV d'un projet, généralement un File Drop Nextcloud qu'un organisateur de projet a partagé avec vous sous forme de lien ou de code QR. Rien n'est envoyé tant que vous n'avez pas ajouté une destination puis coché celle-ci dans la boîte de dialogue Partager, ou activé les envois automatiques pour les Sessions ARU. Les envois vont directement de votre appareil au serveur de l'organisateur via HTTPS. BirdNET-Team n'exploite aucun serveur intermédiaire et ne reçoit rien.
+
+Un envoi contient le même contenu qu'un Partager : l'enregistrement JSON de la Session (détections, heures, coordonnées, ainsi que les noms de l'observateur et du lieu s'ils sont définis), l'audio, les tables et le rapport que vous avez cochés, l'identifiant d'envoi de votre appareil et l'identifiant de participant que vous avez saisi, le cas échéant. L'identifiant de connexion de la destination est conservé dans le trousseau de l'appareil.
+
+Les destinations sont exploitées par des organisateurs de projet, et non par BirdNET-Team, selon leurs propres règles de confidentialité et de sécurité. Demandez à l'organisateur qui peut lire les données et combien de temps elles sont conservées. Vous êtes responsable de ce que vous envoyez : n'envoyez pas de données que vous considérez comme privées ou confidentielles, ou que vous n'êtes pas autorisé à transmettre. L'application ne télécharge ni ne supprime jamais rien d'une destination, et supprimer une Session sur votre appareil ne retire pas les copies envoyées.
 
 ## Suppression de Données
 

@@ -56,6 +56,10 @@ Przetwarzanie i analiza wielu plików dźwiękowych naraz. (Wkrótce)
 
 Utwórz zaplanowaną Session wdrożenia ARU, nagrywaj pełne cykle lub zachowane fragmenty wykryć, prowadź wnioskowanie na żywo w trakcie aktywnych cykli i śledź zaplanowane cykle nagrywania.
 
+### [Przesyłanie](uploads.md)
+
+Wysyłaj zakończone Sessions do folderu projektu: konfiguracja miejsca docelowego Nextcloud File Drop lub WebDAV, linki dołączenia i kody QR, karta Wyślij do, stan przesyłania i automatyczne przesyłanie ARU.
+
 ## Informacje
 
 ### [Najczęstsze pytania](faq.md)

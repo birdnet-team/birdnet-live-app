@@ -1,6 +1,6 @@
 # Zásady ochrany osobních údajů pro BirdNET Live
 
-**Poslední aktualizace:** 6. srpna 2026
+**Poslední aktualizace:** 29. října 2026
 
 Tyto zásady ochrany osobních údajů se vztahují na **BirdNET Live** (dále jen **aplikace**). Aplikaci vyvíjí a nabízí **BirdNET-Team** (dále jen **vývojář** nebo **my**).
 
@@ -25,7 +25,7 @@ Veškerá analýza zvuku a identifikace ptačích druhů probíhá **zcela ve va
 
 ## Nakládání s osobními údaji
 
-BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepřijímá vaše nahrávky, polohu, data Session ani jiné osobní údaje. Aplikace nemá uživatelské účty, reklamu, analytiku, sledování ani telemetrii. Zvuk a polohu zpracovává ve vašem zařízení a pouze po zapnutí volitelné síťové funkce odešle údaje popsané v části **Externí zdroje** přímo uvedenému poskytovateli třetí strany.
+BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepřijímá vaše nahrávky, polohu, data Session ani jiné osobní údaje. Aplikace nemá uživatelské účty, reklamu, analytiku, sledování ani telemetrii. Zvuk a polohu zpracovává ve vašem zařízení a pouze po zapnutí volitelné síťové funkce odešle údaje popsané v části **Externí zdroje** přímo uvedenému poskytovateli třetí strany, nebo – pouze pokud nějaký cíl přidáte a rozhodnete se nahrávat – data Session popsaná v části **Cíle nahrávání** přímo na server organizátora projektu.
 
 ### Data uložená lokálně ve vašem zařízení:
 
@@ -82,7 +82,15 @@ Data GPS jsou uložena lokálně a do exportů jsou zahrnuta pouze tehdy, když 
 
 ## Export dat
 
-Data Session lze exportovat ve více formátech (Raven Selection Tables, CSV, JSON, GPX); pod **Nastavení → Export → Formáty** můžete zaškrtnout libovolnou kombinaci formátů naráz. Vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Exporty se generují lokálně a sdílejí přes systémový panel sdílení. Aplikace nenahrává žádná exportovaná data na server.
+Data Session lze exportovat ve více formátech (Raven Selection Tables, CSV, JSON, GPX); pod **Nastavení → Export → Formáty** můžete zaškrtnout libovolnou kombinaci formátů naráz. Vybrané formáty jsou sbaleny do jediného ZIPu spolu s audio klipy a volitelným samostatným HTML reportem. Exporty se generují lokálně a sdílejí přes systémový panel sdílení. Aplikace nenahrává žádná exportovaná data na server, s výjimkou cílů nahrávání, které jste si sami přidali (viz níže).
+
+## Cíle nahrávání
+
+V **Nastavení → Export a synchronizace → Cíle nahrávání** můžete přidat složku WebDAV projektu, obvykle Nextcloud File Drop, který s vámi organizátor projektu sdílel jako odkaz nebo QR kód. Nic se nenahraje, dokud cíl nepřidáte a poté ho nezaškrtnete v dialogu Sdílet nebo nezapnete automatické nahrávání pro ARU Sessions. Nahrání jdou přímo z vašeho zařízení na server organizátora přes HTTPS. BirdNET-Team mezi nimi neprovozuje žádný server a nic nepřijímá.
+
+Nahrání obsahuje stejný obsah jako Sdílení: záznam JSON dané Session (detekce, časy, souřadnice a jméno pozorovatele a název místa, jsou-li nastaveny), zvuk, tabulky a zprávu, které jste zaškrtli, ID pro nahrávání vašeho zařízení a identifikátor účastníka, pokud jste nějaký zadali. Přihlašovací údaje k cíli jsou uloženy v klíčence zařízení.
+
+Cíle provozují organizátoři projektů, nikoli BirdNET-Team, podle vlastních pravidel ochrany soukromí a zabezpečení. Zeptejte se organizátora, kdo může data číst a jak dlouho jsou uchovávána. Za to, co nahráváte, odpovídáte vy: neodesílejte data, která považujete za soukromá nebo důvěrná nebo která nesmíte předávat dál. Aplikace z cíle nikdy nic nestahuje ani nemaže a smazání Session ve vašem zařízení neodstraní nahrané kopie.
 
 ## Smazání dat
 

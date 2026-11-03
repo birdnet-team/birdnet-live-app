@@ -1664,6 +1664,7 @@ String _buildSettingsRows(LiveSession session) {
 String _buildExtendedMetaRows(LiveSession session) {
   final rows = <(String, String)>[];
   rows.add(('Session ID', session.id));
+  rows.add(('Session UUID', session.uuid));
   if (session.endTime != null) {
     rows.add((
       'End time',
