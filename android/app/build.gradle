@@ -11,6 +11,10 @@ plugins {
 }
 
 def keystoreProperties = new Properties()
+
+// F-Droid build (BIRDNET_FDROID=1): no Google Play libraries and no asset
+// pack. The ONNX models stay in flutter_assets, exactly like the sideload APK.
+def isFdroid = System.getenv("BIRDNET_FDROID") as boolean
 def keystorePropertiesFile = rootProject.file('key.properties')
 
 // hasKeystore is true only when key.properties exists AND the referenced
@@ -109,7 +113,13 @@ android {
     // The Dart-side `AssetPackService` resolves models from the pack when
     // available, and falls back to extracting them from `rootBundle` on
     // sideload installs. Both paths run fully offline at runtime.
-    assetPacks = [":models_pack"]
+    if (!isFdroid) {
+        assetPacks = [":models_pack"]
+    }
+
+    sourceSets {
+        main.kotlin.srcDir(isFdroid ? "src/fdroid/kotlin" : "src/play/kotlin")
+    }
 
     signingConfigs {
         if (hasKeystore) {
@@ -161,7 +171,9 @@ dependencies {
     // gracefully on sideload APKs (no Play Store install): the API simply
     // returns null for any pack lookup, and we fall back to extracting
     // models from `rootBundle`.
-    implementation 'com.google.android.play:asset-delivery:2.2.2'
+    if (!isFdroid) {
+        implementation 'com.google.android.play:asset-delivery:2.2.2'
+    }
     // Background upload runs (UploadWorker.kt, #284).
     implementation 'androidx.work:work-runtime-ktx:2.10.0'
 }
