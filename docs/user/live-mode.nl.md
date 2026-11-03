@@ -90,7 +90,7 @@ Opnemen regel je in [Instellingen](settings.md).
 
 Wanneer je de Live-modus stopt, slaat BirdNET Live de Session op en opent het [Session-overzicht](session-review.md).
 
-Als automatisch opslaan van Sessions aanstaat, slaat de Live-modus ook een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app naar de achtergrond gaat. Na een crash of stroomuitval staat de laatst opgeslagen stand in de Session-bibliotheek. Wijzigingen sinds die opslag kunnen verloren gaan. Zet je automatisch opslaan uit, dan vervallen ook deze tussentijdse opslagmomenten.
+De Live-modus slaat ook een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app naar de achtergrond gaat, en schrijft de afgeronde Session naar de opslag voordat de microfoon wordt vrijgegeven. Na een crash, stroomuitval of wanneer het systeem de app op de achtergrond beëindigt, staat de laatst opgeslagen stand in de Session-bibliotheek, gemarkeerd als onderbroken als de app midden in de Session is gestopt. Wijzigingen sinds die opslag kunnen verloren gaan. Deze tussentijdse opslagmomenten blijven ook bewaard als automatisch opslaan uitstaat; een afgeronde Session opent dan nog steeds in het overzicht als niet opgeslagen en wordt weggegooid als je zonder opslaan weggaat.
 
 ## Luisteren met het scherm uit
 

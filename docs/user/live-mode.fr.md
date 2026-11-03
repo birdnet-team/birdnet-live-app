@@ -90,7 +90,7 @@ L'enregistrement est contrôlé dans les [Paramètres](settings.md).
 
 Lorsque vous arrêtez le mode En direct, BirdNET Live enregistre la session et ouvre le [Résumé de la session](session-review.md).
 
-Lorsque l'enregistrement automatique des sessions est activé, le mode En direct enregistre aussi une session partielle au démarrage, toutes les 30 secondes et lorsque l'application passe en arrière-plan. Après un plantage ou une coupure de courant, la dernière sauvegarde est disponible dans la Bibliothèque de sessions. Les changements postérieurs à cette sauvegarde peuvent être perdus. Désactiver l'enregistrement automatique désactive aussi ces sauvegardes intermédiaires.
+Le mode En direct enregistre aussi une session partielle au démarrage, toutes les 30 secondes et lorsque l'application passe en arrière-plan, et il écrit la session terminée sur le disque avant de libérer le microphone. Après un plantage, une coupure de courant ou l'arrêt de l'application par le système en arrière-plan, la dernière sauvegarde est disponible dans la Bibliothèque de sessions, marquée comme interrompue si l'application s'est arrêtée en cours de session. Les changements postérieurs à cette sauvegarde peuvent être perdus. Ces sauvegardes intermédiaires sont conservées même lorsque l'enregistrement automatique est désactivé ; une session terminée s'ouvre alors toujours dans le résumé comme non enregistrée et est supprimée si vous quittez sans enregistrer.
 
 ## Écoute avec l’écran éteint
 

@@ -1,6 +1,6 @@
 # Personvernerklæring for BirdNET Live
 
-**Sist oppdatert:** 6. august 2026
+**Sist oppdatert:** 29. oktober 2026
 
 Denne personvernerklæringen gjelder for **BirdNET Live** (**appen**). Appen utvikles og tilbys av **BirdNET-Team** (**utvikleren**, **vi** eller **oss**).
 
@@ -25,7 +25,7 @@ Lyddata overføres aldri til eksterne servere.
 
 ## Behandling av personopplysninger
 
-BirdNET-Team driver ingen serverløsning for appen og mottar ikke opptakene dine, posisjonen din, Session-data eller andre personopplysninger gjennom BirdNET Live. Appen har ingen brukerkontoer, reklame, analyse, sporing eller telemetri. Appen behandler lyd og posisjon på enheten din og sender bare opplysningene som er beskrevet under **Eksterne ressurser**, direkte til den navngitte tredjepartsleverandøren når du aktiverer en valgfri nettverksfunksjon.
+BirdNET-Team driver ingen serverløsning for appen og mottar ikke opptakene dine, posisjonen din, Session-data eller andre personopplysninger gjennom BirdNET Live. Appen har ingen brukerkontoer, reklame, analyse, sporing eller telemetri. Appen behandler lyd og posisjon på enheten din og sender bare opplysningene som er beskrevet under **Eksterne ressurser**, direkte til den navngitte tredjepartsleverandøren når du aktiverer en valgfri nettverksfunksjon, eller bare Session-dataene som er beskrevet under **Opplastingsmål**, direkte til en prosjektleders server når du har lagt til et opplastingsmål og velger å laste opp.
 
 ### Data som lagres lokalt på enheten din
 
@@ -82,7 +82,15 @@ GPS-data lagres lokalt og tas bare med i eksporter når du uttrykkelig deler ell
 
 ## Dataeksport
 
-Du kan eksportere Session-data i flere formater (Raven Selection Tables, CSV, JSON, GPX) og velge en hvilken som helst kombinasjon under **Innstillinger → Eksport → Formater**. De valgte formatene samles i én ZIP-fil sammen med eventuelle lydklipp og den valgfrie HTML-rapporten. Eksporter opprettes lokalt og deles via systemets delingsmeny. Appen laster ikke opp eksportdata til noen server.
+Du kan eksportere Session-data i flere formater (Raven Selection Tables, CSV, JSON, GPX) og velge en hvilken som helst kombinasjon under **Innstillinger → Eksport → Formater**. De valgte formatene samles i én ZIP-fil sammen med eventuelle lydklipp og den valgfrie HTML-rapporten. Eksporter opprettes lokalt og deles via systemets delingsmeny. Appen laster ikke opp eksportdata til noen server, bortsett fra til opplastingsmål du selv har lagt til (se nedenfor).
+
+## Opplastingsmål
+
+Under **Innstillinger → Eksport og synk → Opplastingsmål** kan du legge til et prosjekts WebDAV-mappe, vanligvis en Nextcloud File Drop som en prosjektleder har delt med deg som lenke eller QR-kode. Ingenting lastes opp før du legger til et opplastingsmål og deretter huker det av i Del-dialogen, eller slår på automatisk opplasting for ARU-Sessions. Opplastinger går direkte fra enheten din til prosjektlederens server over HTTPS. BirdNET-Team driver ingen server imellom og mottar ingenting.
+
+En opplasting inneholder det samme som en deling via **Del**: Session-ens JSON-oppføring (deteksjoner, tidspunkter, koordinater samt observatør- og stedsnavn hvis de er angitt), eventuell lyd, tabeller og rapport du har huket av, enhetens opplastings-ID og deltakeridentifikatoren du har oppgitt, hvis noen. Påloggingsinformasjonen for opplastingsmålet lagres i enhetens nøkkelring.
+
+Opplastingsmål drives av prosjektledere, ikke av BirdNET-Team, etter deres egne regler for personvern og sikkerhet. Spør prosjektlederen om hvem som kan lese dataene og hvor lenge de oppbevares. Du er ansvarlig for det du laster opp: ikke send data du anser som private eller fortrolige, eller som du ikke har lov til å gi videre. Appen laster aldri ned eller sletter noe fra et opplastingsmål, og sletting av en Session på enheten din fjerner ikke opplastede kopier.
 
 ## Sletting av data
 

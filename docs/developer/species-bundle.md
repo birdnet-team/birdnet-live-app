@@ -43,7 +43,9 @@ python tools/download_taxonomy_json.py
 ```
 
 That script saves the file into `tools/data/` using the filename returned by
-the API, for example `tools/data/birdnet_taxonomy_0.1-Mar2026.json`.
+the API, for example `tools/data/BirdNET_Taxonomy_v0.5-Nov2026.json`. The
+bundle script picks up the newest `tools/data/birdnet_taxonomy*.json` without
+regard to letter case, so the API may rename its export between versions.
 
 If you prefer to download it manually, this is equivalent:
 

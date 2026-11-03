@@ -219,6 +219,9 @@ LiveSession _singleDetectionSession({
 
   return LiveSession(
     id: source?.id ?? 'detection-${detection.timestamp.microsecondsSinceEpoch}',
+    // The share is a view of the source session, so its documents name the
+    // session the detection came from.
+    uuid: source?.uuid,
     startTime: detection.timestamp,
     endTime: end,
     type: source?.type ?? SessionType.live,

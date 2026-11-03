@@ -7,11 +7,17 @@ import 'session_repository.dart';
 
 /// Persists partial Live Mode and Point Count sessions during recording.
 /// The writer is owned by the active screen and drained before final save.
+///
+/// Checkpoints are written whatever *Save sessions automatically* says. With
+/// the setting off the finished session still opens in review as unsaved and
+/// is deleted when the user leaves without saving, but a process the system
+/// ends first leaves the checkpoint in the library instead of losing the
+/// session: a 30-minute Point Count that ran its course with the screen off
+/// was lost that way when nothing of it had ever reached the disk.
 class SessionCheckpointWriter {
   SessionCheckpointWriter({
     required this.repository,
     required this.session,
-    required this.shouldSave,
     this.prepare,
   });
 
@@ -19,7 +25,6 @@ class SessionCheckpointWriter {
 
   final SessionRepository repository;
   final LiveSession? Function() session;
-  final bool Function() shouldSave;
   final void Function(LiveSession)? prepare;
   Timer? _timer;
   Future<void>? _pending;
@@ -50,11 +55,7 @@ class SessionCheckpointWriter {
         final current = session();
         if (current == null) return;
         prepare?.call(current);
-        if (shouldSave()) {
-          await repository.saveCheckpoint(current);
-        } else {
-          await repository.deleteMetadataOnly(current.id);
-        }
+        await repository.saveCheckpoint(current);
       } catch (error, stack) {
         debugPrint('Session checkpoint failed: $error\n$stack');
       }

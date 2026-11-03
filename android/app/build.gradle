@@ -162,6 +162,8 @@ dependencies {
     // returns null for any pack lookup, and we fall back to extracting
     // models from `rootBundle`.
     implementation 'com.google.android.play:asset-delivery:2.2.2'
+    // Background upload runs (UploadWorker.kt, #284).
+    implementation 'androidx.work:work-runtime-ktx:2.10.0'
 }
 
 // ── Strip *.onnx from base module assets when building the App Bundle ──

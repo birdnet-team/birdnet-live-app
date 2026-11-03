@@ -665,6 +665,7 @@ Map<String, dynamic> _commonSessionExportMetadata(LiveSession session) {
       : endTime.difference(session.startTime).inMilliseconds / 1000.0;
   return {
     'id': session.id,
+    'uuid': session.uuid,
     'type': session.type.name,
     'displayName': session.displayName,
     'startTime': session.startTime.toUtc().toIso8601String(),
@@ -777,6 +778,7 @@ String buildJsonExport(
   final map = {
     if (metadata != null) 'meta': metadata,
     'session': session.displayName,
+    'uuid': session.uuid,
     if (session.customName != null && session.customName!.isNotEmpty)
       'customName': session.customName,
     if (session.sessionNumber != null) 'sessionNumber': session.sessionNumber,
@@ -964,6 +966,7 @@ Future<String?> buildSessionExport(
   bool useAbsoluteSurveyTime = false,
   bool includeHtmlReport = false,
   bool includeAppMetadata = true,
+  bool alwaysZip = false,
 }) async {
   // Resolve the active format set; tokens outside the known list are
   // ignored. An empty result is now allowed so users can share the raw
@@ -1211,6 +1214,8 @@ Future<String?> buildSessionExport(
       session.annotations.isNotEmpty;
   final hasMemos = session.detections.any((d) => d.hasVoiceMemo);
   final mustZip =
+      // Uploads want exactly one file per session whatever it holds.
+      alwaysZip ||
       (includeAudio && hasAruCycleAudio) ||
       (includeAudio && hasClips) ||
       (includeAudio && hasFullRecording && hasCompanion) ||

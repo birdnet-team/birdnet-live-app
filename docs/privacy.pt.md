@@ -1,6 +1,6 @@
 # Política de Privacidade do BirdNET Live
 
-**Última atualização:** 6 de agosto de 2026
+**Última atualização:** 29 de outubro de 2026
 
 Esta Política de Privacidade se aplica ao **BirdNET Live** (o **app**). O app é desenvolvido e oferecido por **BirdNET-Team** (o **desenvolvedor**, **nós** ou **nosso**).
 
@@ -25,7 +25,7 @@ Nenhum dado de áudio é jamais transmitido para servidores externos.
 
 ## Tratamento de informações pessoais
 
-O BirdNET-Team não opera um backend do app e não recebe pelo BirdNET Live suas gravações, localização, dados de Session nem outras informações pessoais. O app não tem contas de usuário, publicidade, análise, rastreamento ou telemetria. Ele processa áudio e localização no dispositivo e, somente quando você ativa um recurso de rede opcional, envia as informações descritas em **Serviços Externos** diretamente ao provedor externo indicado.
+O BirdNET-Team não opera um backend do app e não recebe pelo BirdNET Live suas gravações, localização, dados de Session nem outras informações pessoais. O app não tem contas de usuário, publicidade, análise, rastreamento ou telemetria. Ele processa áudio e localização no dispositivo e, somente quando você ativa um recurso de rede opcional, envia as informações descritas em **Serviços Externos** diretamente ao provedor externo indicado, ou, somente quando você adiciona um e opta por enviar, os dados de Session descritos em **Destinos de envio** diretamente ao servidor de um organizador de projeto.
 
 ### Dados armazenados localmente no seu dispositivo:
 
@@ -82,7 +82,15 @@ Os dados GPS são armazenados localmente e incluídos nas exportações apenas q
 
 ## Exportação de Dados
 
-Você pode exportar os dados de sessão em vários formatos (Raven Selection Tables, CSV, JSON, GPX) e marcar qualquer combinação de formatos ao mesmo tempo em **Configurações → Exportação → Formatos**; os formatos selecionados são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML autônomo opcional. As exportações são geradas localmente e compartilhadas pela folha de compartilhamento do sistema. O app não envia dados de exportação para nenhum servidor.
+Você pode exportar os dados de sessão em vários formatos (Raven Selection Tables, CSV, JSON, GPX) e marcar qualquer combinação de formatos ao mesmo tempo em **Configurações → Exportação → Formatos**; os formatos selecionados são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML autônomo opcional. As exportações são geradas localmente e compartilhadas pela folha de compartilhamento do sistema. O app não envia dados de exportação para nenhum servidor, exceto para destinos de envio que você mesmo adicionou (veja abaixo).
+
+## Destinos de envio
+
+Em **Configurações → Exportação e sincronização → Destinos de envio** você pode adicionar a pasta WebDAV de um projeto, normalmente um File Drop do Nextcloud que um organizador de projeto compartilhou com você como link ou código QR. Nada é enviado até que você adicione um destino e depois o marque na caixa de diálogo Compartilhar, ou ative os envios automáticos para Sessions ARU. Os envios vão diretamente do seu dispositivo para o servidor do organizador por HTTPS. O BirdNET-Team não opera nenhum servidor intermediário e não recebe nada.
+
+Um envio contém o mesmo conteúdo que um Compartilhar: o registro JSON da Session (detecções, horários, coordenadas e nomes do observador e do local se definidos), o áudio, as tabelas e o relatório que você marcou, o ID de envio do seu dispositivo e o identificador de participante que você informou, se houver. A credencial do destino é armazenada no chaveiro do dispositivo.
+
+Os destinos são operados por organizadores de projeto, não pelo BirdNET-Team, sob suas próprias regras de privacidade e segurança. Pergunte ao organizador quem pode ler os dados e por quanto tempo são mantidos. Você é responsável pelo que envia: não envie dados que considere privados ou confidenciais, ou que você não tenha permissão de repassar. O app nunca baixa nem exclui nada de um destino, e excluir uma Session no seu dispositivo não remove as cópias enviadas.
 
 ## Exclusão de Dados
 
