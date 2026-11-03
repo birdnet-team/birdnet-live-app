@@ -6,7 +6,9 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions" # See documentation for possible values
-    directory: "/.github" # Location of package manifests
+    directories:
+      - "/" # Workflows in .github/workflows
+      - "/.github/actions/upload-release-assets" # Local composite action
     schedule:
       interval: "weekly"
   - package-ecosystem: "pub"
