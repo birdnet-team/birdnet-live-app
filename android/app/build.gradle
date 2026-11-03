@@ -202,8 +202,8 @@ afterEvaluate {
     tasks.matching { it.name == 'copyFlutterAssetsRelease' }.configureEach { copyTask ->
         copyTask.outputs.upToDateWhen { false }
         copyTask.doLast {
-            if (!gradle.taskGraph.hasTask(':app:packageReleaseBundle')) {
-                logger.info("[asset-pack] APK build detected — keeping .onnx in flutter_assets")
+            if (isFdroid || !gradle.taskGraph.hasTask(':app:packageReleaseBundle')) {
+                logger.info("[asset-pack] APK or F-Droid build detected — keeping .onnx in flutter_assets")
                 return
             }
             def root = file("${buildDir}/intermediates/assets/release")
