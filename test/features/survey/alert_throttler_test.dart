@@ -261,5 +261,16 @@ void main() {
       );
       expect(s.primaryReason, AlertReason.rare);
     });
+
+    test('lifer outranks every other reason', () {
+      final s = SummaryAlert(
+        alerts: [
+          _candidate(name: 'a', reason: AlertReason.rare),
+          _candidate(name: 'b', reason: AlertReason.watchlist),
+          _candidate(name: 'c', reason: AlertReason.lifer),
+        ],
+      );
+      expect(s.primaryReason, AlertReason.lifer);
+    });
   });
 }

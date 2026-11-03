@@ -15,6 +15,8 @@ import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/widgets/audio_source_tile.dart';
+import '../ebird/ebird_life_list.dart';
+import '../ebird/widgets/ebird_life_list_settings_section.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_size.dart';
@@ -151,6 +153,11 @@ class SettingsScreen extends ConsumerWidget {
       SettingsContext.fileAnalysis,
     },
     'location': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+    },
+    'ebird': {
       SettingsContext.live,
       SettingsContext.survey,
       SettingsContext.pointCount,
@@ -830,6 +837,12 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(),
             ],
 
+            // --- eBird Life List ---
+            if (_showSection('ebird')) ...[
+              const EbirdLifeListSettingsSection(),
+              const Divider(),
+            ],
+
             // --- Privacy ---
             if (_showSection('privacy')) ...[
               _SectionHeader(
@@ -906,14 +919,14 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 title: Text(l10n.settingsResetAll),
                 subtitle: Text(l10n.settingsResetAllSubtitle),
-                onTap: () => _showResetAllSettingsDialog(context, l10n),
+                onTap: () => _showResetAllSettingsDialog(context, ref, l10n),
               ),
               ListTile(
                 title: Text(
                   l10n.settingsClearData,
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
-                onTap: () => _showClearDataDialog(context, l10n),
+                onTap: () => _showClearDataDialog(context, ref, l10n),
               ),
             ],
 
@@ -956,6 +969,7 @@ class SettingsScreen extends ConsumerWidget {
 
   void _showResetAllSettingsDialog(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
   ) {
     showDialog<void>(
@@ -983,6 +997,10 @@ class SettingsScreen extends ConsumerWidget {
                 // SharedPreferences and are intentionally untouched.
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
+                // Reset in-memory singletons backed by the prefs we just
+                // wiped so their state is correct even on platforms where
+                // SystemNavigator.pop() below doesn't actually relaunch.
+                await ref.read(ebirdLifeListProvider).clear();
                 messenger.showSnackBar(
                   SnackBar(content: Text(l10n.settingsResetAllDone)),
                 );
@@ -1001,7 +1019,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showClearDataDialog(BuildContext context, AppLocalizations l10n) {
+  void _showClearDataDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
     showDialog<void>(
       context: context,
       builder: (context) {
@@ -1045,6 +1067,12 @@ class SettingsScreen extends ConsumerWidget {
                           setState(() => isClearing = true);
                           try {
                             await const AppDataClearService().clearAllData();
+                            // Reset in-memory singletons backed by the
+                            // stores we just wiped so their state is
+                            // correct even on platforms where
+                            // SystemNavigator.pop() below doesn't
+                            // actually relaunch.
+                            await ref.read(ebirdLifeListProvider).clear();
                             navigator.pop();
                             messenger.showSnackBar(
                               SnackBar(content: Text(l10n.settingsDataCleared)),
