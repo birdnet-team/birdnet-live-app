@@ -28,4 +28,7 @@ plugins {
 }
 
 include ":app"
-include ":models_pack"
+// The Play Asset Delivery pack is skipped for F-Droid builds (BIRDNET_FDROID=1).
+if (!System.getenv("BIRDNET_FDROID")) {
+    include ":models_pack"
+}
