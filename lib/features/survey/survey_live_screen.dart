@@ -153,6 +153,7 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     _surveyController.onStateChanged = _onControllerStateChanged;
     _surveyController.onAutoStop = _onAutoStop;
     _surveyController.onInferenceRateLowered = _onInferenceRateLowered;
+    _surveyController.onSustainableInferenceRate = _onSustainableInferenceRate;
 
     // Listen for "Stop" button pressed in the foreground notification.
     FlutterForegroundTask.addTaskDataCallback(_onNotificationData);
@@ -186,6 +187,20 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
   void _onInferenceRateLowered(double inferenceRateHz) {
     if (!mounted) return;
     unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
+  }
+
+  /// The controller measured the rate this device can sustain. A rate the
+  /// device was lowered to earlier is raised again from it; see
+  /// [applyInferenceRateHeadroom].
+  void _onSustainableInferenceRate(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(
+      applyInferenceRateHeadroom(
+        inferenceRateHz,
+        read: ref.read,
+        rate: surveyInferenceRateProvider,
+      ),
+    );
   }
 
   void _onControllerStateChanged() {
@@ -584,7 +599,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       // Read lazily, like the localizer: the taxonomy may finish loading
       // after the survey starts.
       isSoundClass: (sciName) =>
-          ref.read(taxonomyServiceProvider).value?.lookup(sciName)?.isSoundClass ??
+          ref
+              .read(taxonomyServiceProvider)
+              .value
+              ?.lookup(sciName)
+              ?.isSoundClass ??
           false,
     );
     await controller.setAlertCoordinator(coord);
@@ -1007,6 +1026,10 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     }
     if (_surveyController.onInferenceRateLowered == _onInferenceRateLowered) {
       _surveyController.onInferenceRateLowered = null;
+    }
+    if (_surveyController.onSustainableInferenceRate ==
+        _onSustainableInferenceRate) {
+      _surveyController.onSustainableInferenceRate = null;
     }
     QuickListenSafety.unregisterIncompatibleSessionOwner(
       _quickListenSafetyOwner,

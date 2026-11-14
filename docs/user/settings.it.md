@@ -172,14 +172,17 @@ diverse finestre consecutive —, la Session riduce la frequenza di 0,30 Hz, e
 di nuovo finché il dispositivo continua a restare indietro, fino a un minimo
 di 0,10 Hz. La frequenza ridotta diventa quindi l'impostazione di tutte le
 modalità: Live, Point Count, Survey e ARU, e dunque delle loro procedure di
-configurazione, così la Session successiva in qualsiasi modalità parte con
-una frequenza che questo dispositivo può sostenere. Le impostazioni e le
-procedure mostrano sotto il cursore una nota che segnala che il dispositivo
-è risultato troppo lento oltre quella frequenza. La nota resta, perché un
-dispositivo lento resta lento; i cursori restano liberamente regolabili.
-Senza questo, un dispositivo lento accumula un ritardo che finisce per
-sovrascrivere l'audio da cui vengono ritagliati i clip delle rilevazioni, e
-le rilevazioni restano senza audio.
+configurazione, così la Session successiva in qualsiasi modalità parte con una
+frequenza che questo dispositivo può sostenere. Le impostazioni e le procedure
+mostrano sotto il cursore una nota che segnala che il dispositivo è risultato
+troppo lento oltre quella frequenza. La nota non è definitiva: ogni Session
+misura quanto dura la sua inferenza e, quando c'è margine sufficiente, il
+limite sale, e con esso le frequenze che aveva ridotto, al massimo fino al
+valore precedente. Quando il dispositivo sostiene 1,00 Hz, la nota scompare.
+Una frequenza impostata da te non viene mai aumentata, e i cursori restano
+liberamente regolabili. Senza questo, un dispositivo lento accumula un ritardo
+che finisce per sovrascrivere l'audio da cui vengono ritagliati i clip delle
+rilevazioni, e le rilevazioni restano senza audio.
 
 ### Ignora specie
 

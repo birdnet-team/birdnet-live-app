@@ -84,15 +84,18 @@ void main() {
   group('falling behind', () {
     const hop = sampleRate; // 1 Hz
 
-    /// Take the next window after [newSamples] more have been captured.
+    /// Take the next window after [newSamples] more have been captured, in a
+    /// cycle that then runs for [cycle].
     InferenceWindowAudio take(
       InferenceWindowDriver driver,
       RingBuffer buffer,
-      int newSamples,
-    ) {
+      int newSamples, {
+      Duration cycle = const Duration(seconds: 2),
+    }) {
       buffer.write(Float32List(newSamples));
       final window = driver.takeReadyWindow();
       expect(window, isNotNull);
+      driver.recordCycleDuration(cycle);
       return window!;
     }
 
@@ -103,7 +106,7 @@ void main() {
       driver.onInferenceRateLowered = lowered.add;
 
       // On time, then one hop late and growing: capture is pulling away
-      // from a model that is slower than the schedule.
+      // from a model whose cycles take two hops each.
       expect(take(driver, buffer, windowSamples).windowEndSample, 300);
       expect(take(driver, buffer, 2 * hop).windowEndSample, 400);
       expect(take(driver, buffer, 2 * hop).windowEndSample, 500);
@@ -140,6 +143,56 @@ void main() {
       expect(driver.inferenceRateHz, 1);
     });
 
+    test('a cycle just short of a hop still counts as slow', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+      // With the shortest wakeup added, the schedule cannot do a hop in time.
+      const nearlyAHop = Duration(milliseconds: 990);
+
+      expect(take(driver, buffer, windowSamples, cycle: nearlyAHop), isNotNull);
+      for (var i = 0; i < 3; i++) {
+        expect(take(driver, buffer, 2 * hop, cycle: nearlyAHop), isNotNull);
+      }
+
+      expect(lowered, [0.7]);
+    });
+
+    test('a backlog the model did not cause leaves the rate alone', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+      const quick = Duration(milliseconds: 50);
+
+      // Capture keeps pulling away, yet every cycle finishes well inside a
+      // hop: something other than the model is holding the schedule up.
+      expect(take(driver, buffer, windowSamples, cycle: quick), isNotNull);
+      for (var i = 0; i < 6; i++) {
+        expect(take(driver, buffer, 2 * hop, cycle: quick), isNotNull);
+      }
+
+      expect(lowered, isEmpty);
+      expect(driver.inferenceRateHz, 1);
+    });
+
+    test('a backlog waiting for the first cycle is not a strike', () {
+      final buffer = RingBuffer(capacity: 10000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final lowered = <double>[];
+      driver.onInferenceRateLowered = lowered.add;
+
+      // Eight seconds pass before the first cycle runs, then two slow
+      // cycles: two strikes, not three.
+      expect(take(driver, buffer, 8 * hop).windowEndSample, 300);
+      expect(take(driver, buffer, 2 * hop).windowEndSample, 400);
+      expect(take(driver, buffer, 2 * hop).windowEndSample, 500);
+
+      expect(lowered, isEmpty);
+      expect(driver.inferenceRateHz, 1);
+    });
+
     test('at the floor only the backlog is dropped', () {
       final buffer = RingBuffer(capacity: 10000);
       final driver = InferenceWindowDriver(
@@ -155,15 +208,129 @@ void main() {
       driver.onInferenceRateLowered = lowered.add;
       const slowHop = 10 * sampleRate;
 
-      expect(take(driver, buffer, windowSamples).windowEndSample, 300);
-      expect(take(driver, buffer, 2 * slowHop).windowEndSample, 1300);
-      expect(take(driver, buffer, slowHop + 100).windowEndSample, 2300);
-      expect(take(driver, buffer, slowHop + 100).windowEndSample, 3300);
+      const slowCycle = Duration(seconds: 11);
+      expect(
+        take(driver, buffer, windowSamples, cycle: slowCycle).windowEndSample,
+        300,
+      );
+      expect(
+        take(driver, buffer, 2 * slowHop, cycle: slowCycle).windowEndSample,
+        1300,
+      );
+      expect(
+        take(driver, buffer, slowHop + 100, cycle: slowCycle).windowEndSample,
+        2300,
+      );
+      expect(
+        take(driver, buffer, slowHop + 100, cycle: slowCycle).windowEndSample,
+        3300,
+      );
 
       expect(lowered, isEmpty);
       expect(driver.inferenceRateHz, 0.1);
       expect(driver.takeReadyWindow()!.windowEndSample, buffer.totalWritten);
     });
+  });
+
+  group('measuring headroom', () {
+    /// Run [count] on-time cycles of [cycle] each.
+    void run(
+      InferenceWindowDriver driver,
+      RingBuffer buffer,
+      int count,
+      Duration cycle,
+    ) {
+      for (var i = 0; i < count; i++) {
+        buffer.write(Float32List(i == 0 ? windowSamples : sampleRate));
+        expect(driver.takeReadyWindow(), isNotNull);
+        driver.recordCycleDuration(cycle);
+      }
+    }
+
+    test('reports the sustainable rate after a run of measured cycles', () {
+      final buffer = RingBuffer(capacity: 100000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final sustainable = <double>[];
+      driver.onSustainableInferenceRate = sustainable.add;
+
+      run(driver, buffer, 29, const Duration(milliseconds: 60));
+      expect(sustainable, isEmpty);
+      buffer.write(Float32List(sampleRate));
+      expect(driver.takeReadyWindow(), isNotNull);
+      driver.recordCycleDuration(const Duration(milliseconds: 60));
+
+      expect(sustainable, [1.0]);
+    });
+
+    test('one slow cycle in the run sets the rate', () {
+      final buffer = RingBuffer(capacity: 100000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final sustainable = <double>[];
+      driver.onSustainableInferenceRate = sustainable.add;
+
+      run(driver, buffer, 29, const Duration(milliseconds: 60));
+      buffer.write(Float32List(sampleRate));
+      expect(driver.takeReadyWindow(), isNotNull);
+      driver.recordCycleDuration(const Duration(milliseconds: 700));
+
+      expect(sustainable, [0.7]);
+    });
+
+    test('a cycle whose inference failed is not measured', () {
+      final buffer = RingBuffer(capacity: 100000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final sustainable = <double>[];
+      driver.onSustainableInferenceRate = sustainable.add;
+
+      for (var i = 0; i < 40; i++) {
+        buffer.write(Float32List(i == 0 ? windowSamples : sampleRate));
+        expect(driver.takeReadyWindow(), isNotNull);
+        driver.discardCycleMeasurement();
+        driver.recordCycleDuration(const Duration(milliseconds: 2));
+      }
+
+      expect(sustainable, isEmpty);
+    });
+
+    test('measured cycles carry over a restart', () {
+      final buffer = RingBuffer(capacity: 100000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final sustainable = <double>[];
+      driver.onSustainableInferenceRate = sustainable.add;
+
+      run(driver, buffer, 20, const Duration(milliseconds: 60));
+      driver.start(
+        sampleRate: sampleRate,
+        windowDurationSeconds: windowSeconds,
+        inferenceRateHz: 1,
+      );
+      run(driver, buffer, 10, const Duration(milliseconds: 60));
+
+      expect(sustainable, [1.0]);
+    });
+
+    test('a wakeup that found no window is not measured', () {
+      final buffer = RingBuffer(capacity: 100000);
+      final driver = driverOn(buffer, useBufferedAudio: false);
+      final sustainable = <double>[];
+      driver.onSustainableInferenceRate = sustainable.add;
+
+      for (var i = 0; i < 40; i++) {
+        expect(driver.takeReadyWindow(), isNull);
+        driver.recordCycleDuration(const Duration(milliseconds: 1));
+      }
+
+      expect(sustainable, isEmpty);
+    });
+  });
+
+  test('sustainableInferenceRate leaves half a hop of headroom', () {
+    expect(sustainableInferenceRate(const Duration(milliseconds: 40)), 1.0);
+    expect(sustainableInferenceRate(const Duration(milliseconds: 500)), 1.0);
+    expect(sustainableInferenceRate(const Duration(milliseconds: 501)), 0.9);
+    expect(sustainableInferenceRate(const Duration(milliseconds: 1250)), 0.4);
+    expect(sustainableInferenceRate(const Duration(seconds: 30)), 0.1);
+    expect(sustainableInferenceRate(Duration.zero), 1.0);
   });
 
   test('loweredInferenceRate steps by 0.3 Hz down to 0.1 Hz', () {

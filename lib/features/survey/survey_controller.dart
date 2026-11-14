@@ -79,6 +79,8 @@ class SurveyController {
   }) : _gpsEnabled = gpsEnabled,
        _repository = repository ?? SessionRepository() {
     _windowDriver.onInferenceRateLowered = _onInferenceRateLowered;
+    _windowDriver.onSustainableInferenceRate = (inferenceRateHz) =>
+        onSustainableInferenceRate?.call(inferenceRateHz);
   }
 
   final RingBuffer ringBuffer;
@@ -260,6 +262,10 @@ class SurveyController {
   /// Called with the new rate after the driver lowered the inference rate
   /// because the device could not keep up; see [InferenceWindowDriver].
   void Function(double inferenceRateHz)? onInferenceRateLowered;
+
+  /// Called with the rate the driver measured this device to sustain; see
+  /// [InferenceWindowDriver.onSustainableInferenceRate].
+  void Function(double inferenceRateHz)? onSustainableInferenceRate;
 
   /// Called once per inference cycle with the current cycle's full set
   /// of filtered detections (one record per species, with that cycle's
@@ -521,11 +527,6 @@ class SurveyController {
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
-      _windowDriver.start(
-        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
-        windowDurationSeconds: windowDuration,
-        inferenceRateHz: inferenceRate,
-      );
 
       if (kDebugMode) {
         MemoryMonitor.startPeriodic(intervalSeconds: 30);
@@ -615,6 +616,14 @@ class SurveyController {
 
       _state = SurveyState.active;
       unawaited(_persistSession());
+      // Start the schedule only now: GPS and the foreground service can take
+      // seconds to come up, and audio captured meanwhile would otherwise be
+      // drained as a backlog the moment the Survey turns active.
+      _windowDriver.start(
+        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+        windowDurationSeconds: windowDuration,
+        inferenceRateHz: inferenceRate,
+      );
       _armNextInference();
       onSessionStarted?.call();
       _notifyListeners();
@@ -703,11 +712,6 @@ class SurveyController {
       _isolate.resetPooling();
       _inferenceCycleCount = 0;
       ringBuffer.clear();
-      _windowDriver.start(
-        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
-        windowDurationSeconds: windowDuration,
-        inferenceRateHz: inferenceRate,
-      );
 
       if (kDebugMode) {
         MemoryMonitor.startPeriodic(intervalSeconds: 30);
@@ -791,6 +795,14 @@ class SurveyController {
 
       _state = SurveyState.active;
       unawaited(_persistSession());
+      // Start the schedule only now: GPS and the foreground service can take
+      // seconds to come up, and audio captured meanwhile would otherwise be
+      // drained as a backlog the moment the Survey turns active.
+      _windowDriver.start(
+        sampleRate: _config?.audio.sampleRate ?? AppConstants.sampleRate,
+        windowDurationSeconds: windowDuration,
+        inferenceRateHz: inferenceRate,
+      );
       _armNextInference();
       _notifyListeners();
 
@@ -1365,6 +1377,7 @@ class SurveyController {
       _notifyListeners();
     } catch (e, st) {
       debugPrint('[SurveyController] inference error: $e\n$st');
+      _windowDriver.discardCycleMeasurement();
     } finally {
       _inferring = false;
     }

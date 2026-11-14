@@ -169,6 +169,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final controller = _liveController;
     controller.onStateChanged = _onControllerStateChanged;
     controller.onInferenceRateLowered = _onInferenceRateLowered;
+    controller.onSustainableInferenceRate = _onSustainableInferenceRate;
 
     // Start session after the first frame.
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -193,6 +194,20 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
   void _onInferenceRateLowered(double inferenceRateHz) {
     if (!mounted) return;
     unawaited(applyInferenceRateLimit(inferenceRateHz, read: ref.read));
+  }
+
+  /// The controller measured the rate this device can sustain. A rate the
+  /// device was lowered to earlier is raised again from it; see
+  /// [applyInferenceRateHeadroom].
+  void _onSustainableInferenceRate(double inferenceRateHz) {
+    if (!mounted) return;
+    unawaited(
+      applyInferenceRateHeadroom(
+        inferenceRateHz,
+        read: ref.read,
+        rate: inferenceRateProvider,
+      ),
+    );
   }
 
   void _onControllerStateChanged() {
@@ -722,6 +737,10 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     }
     if (_liveController.onInferenceRateLowered == _onInferenceRateLowered) {
       _liveController.onInferenceRateLowered = null;
+    }
+    if (_liveController.onSustainableInferenceRate ==
+        _onSustainableInferenceRate) {
+      _liveController.onSustainableInferenceRate = null;
     }
 
     WakelockService.disable();

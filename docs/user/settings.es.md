@@ -168,18 +168,21 @@ inferencia: usa un ajuste de [solapamiento](file-analysis.md) en su lugar.
 
 Si un dispositivo no puede seguir la frecuencia elegida (la inferencia se
 queda un paso completo por detrás de la captura durante varias ventanas
-seguidas), la Session reduce la frecuencia en 0,30 Hz, y lo repite mientras
-el dispositivo siga quedándose atrás, hasta un mínimo de 0,10 Hz. La
-frecuencia reducida pasa a ser el ajuste de todos los modos: Live, Point
-Count, Survey y ARU, y por tanto de sus asistentes de configuración, de modo
-que la siguiente Session en cualquier modo empiece con una frecuencia que
-este dispositivo pueda mantener. Los ajustes y los asistentes muestran bajo
-el control deslizante una nota que indica que el dispositivo es demasiado
-lento por encima de esa frecuencia. La nota se mantiene, porque un
-dispositivo lento sigue siendo lento, y los controles se pueden seguir
-ajustando libremente. Sin esto, un dispositivo lento acumula un retraso que
-acaba sobrescribiendo el audio del que se recortan los fragmentos de
-detección, y las detecciones se quedan sin audio.
+seguidas), la Session reduce la frecuencia en 0,30 Hz, y lo repite mientras el
+dispositivo siga quedándose atrás, hasta un mínimo de 0,10 Hz. La frecuencia
+reducida pasa a ser el ajuste de todos los modos: Live, Point Count, Survey y
+ARU, y por tanto de sus asistentes de configuración, de modo que la siguiente
+Session en cualquier modo empiece con una frecuencia que este dispositivo
+pueda mantener. Los ajustes y los asistentes muestran bajo el control
+deslizante una nota que indica que el dispositivo es demasiado lento por
+encima de esa frecuencia. La nota no es permanente: cada Session mide cuánto
+tarda su inferencia y, cuando hay margen suficiente, el límite sube, y con él
+las frecuencias que había reducido, como máximo hasta su valor anterior.
+Cuando el dispositivo mantiene 1,00 Hz, la nota desaparece. Una frecuencia que
+hayas ajustado tú nunca se aumenta, y los controles se pueden seguir ajustando
+libremente. Sin esto, un dispositivo lento acumula un retraso que acaba
+sobrescribiendo el audio del que se recortan los fragmentos de detección, y
+las detecciones se quedan sin audio.
 
 ### Ignorar especies
 

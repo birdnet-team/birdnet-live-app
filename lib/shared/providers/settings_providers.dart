@@ -46,7 +46,7 @@ const List<double> inferenceRateHzValues = <double>[
   0.7,
   0.8,
   0.9,
-  1.0,
+  AppConstants.maxInferenceRateHz,
 ];
 
 /// Window duration in seconds (3, 5, or 10).
@@ -72,8 +72,9 @@ final inferenceRateProvider =
     });
 
 /// Highest inference rate this device is known to sustain, or null while no
-/// live mode has ever had to lower the rate. Shown as a note under every
-/// inference-rate slider; see [applyInferenceRateLimit].
+/// live mode has had to lower the rate — or once the device has shown it
+/// sustains the highest one. Shown as a note under every inference-rate
+/// slider; see [applyInferenceRateLimit] and [applyInferenceRateHeadroom].
 final inferenceRateDeviceLimitProvider =
     StateNotifierProvider<InferenceRateDeviceLimitNotifier, double?>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);
@@ -92,13 +93,49 @@ Future<void> applyInferenceRateLimit(
   double inferenceRateHz, {
   required T Function<T>(ProviderListenable<T> provider) read,
 }) async {
+  // Every rate setting is read before the limit changes, so each one checks
+  // itself against the limit an earlier version left, not against this one.
+  final rates = _limitedInferenceRates(read);
   await Future.wait<void>([
     read(inferenceRateDeviceLimitProvider.notifier).lowerTo(inferenceRateHz),
-    read(inferenceRateProvider.notifier).lowerTo(inferenceRateHz),
-    read(surveyInferenceRateProvider.notifier).lowerTo(inferenceRateHz),
-    read(aruInferenceRateProvider.notifier).lowerTo(inferenceRateHz),
+    for (final rate in rates) rate.lowerTo(inferenceRateHz),
   ]);
 }
+
+/// A live mode measured that this device sustains [inferenceRateHz].
+///
+/// A device limit below that rate rises to it, and is removed altogether at
+/// [AppConstants.maxInferenceRateHz], which takes the note under the rate
+/// sliders away. Of the rate settings only [rate], the measuring mode's own,
+/// rises, and only if the limit had lowered it: up to the rate it had before
+/// and no further. The other modes wait for their own measurement — a Survey
+/// with the screen off can be slower than Live Mode in the foreground, and
+/// raising its rate from a Live measurement would only have it lowered
+/// again. A rate the user set is theirs and stays, whatever the device could
+/// do. The session that measured keeps its rate; the next one starts at the
+/// raised setting. [read] is a `ref.read`.
+Future<void> applyInferenceRateHeadroom(
+  double inferenceRateHz, {
+  required T Function<T>(ProviderListenable<T> provider) read,
+  required StateNotifierProvider<InferenceRateSettingNotifier, double> rate,
+}) async {
+  // Read every rate setting first; see [applyInferenceRateLimit].
+  _limitedInferenceRates(read);
+  await Future.wait<void>([
+    read(inferenceRateDeviceLimitProvider.notifier).raiseTo(inferenceRateHz),
+    read(rate.notifier).restoreUpTo(inferenceRateHz),
+  ]);
+}
+
+/// The rate settings the device limit applies to: Live Mode and Point Count,
+/// Survey, and ARU.
+List<InferenceRateSettingNotifier> _limitedInferenceRates(
+  T Function<T>(ProviderListenable<T> provider) read,
+) => [
+  read(inferenceRateProvider.notifier),
+  read(surveyInferenceRateProvider.notifier),
+  read(aruInferenceRateProvider.notifier),
+];
 
 /// Sensitivity (0.5 – 1.5, default 1.0).
 ///
@@ -1136,6 +1173,27 @@ class InferenceRateSettingNotifier extends DoubleSettingNotifier {
       state = sanitized;
       _inferenceRatePrefs.setDouble(key, sanitized);
     }
+    _adoptEarlierLimit(_sanitize(defaultValue));
+  }
+
+  String get _beforeLimitKey =>
+      '$key${PrefKeys.inferenceRateBeforeLimitSuffix}';
+
+  /// Versions before this one lowered rates without remembering what they
+  /// were. A rate found sitting exactly on such a limit is taken to have been
+  /// lowered from this mode's default, so it can be raised again that far and
+  /// no further — a Survey at its default 0.7 Hz under a 0.7 Hz limit stays.
+  /// Checked once per setting.
+  void _adoptEarlierLimit(double defaultRate) {
+    final migratedKey = '$key${PrefKeys.inferenceRateLimitMigratedSuffix}';
+    if (_inferenceRatePrefs.getBool(migratedKey) == true) return;
+    _inferenceRatePrefs.setBool(migratedKey, true);
+    final limit = _inferenceRatePrefs.getDouble(
+      PrefKeys.inferenceRateDeviceLimit,
+    );
+    if (limit != null && state == _sanitize(limit) && defaultRate > state) {
+      _inferenceRatePrefs.setDouble(_beforeLimitKey, defaultRate);
+    }
   }
 
   static const double _defaultRate = 1.0;
@@ -1149,14 +1207,43 @@ class InferenceRateSettingNotifier extends DoubleSettingNotifier {
     return tick / 10.0;
   }
 
+  /// The user chose [value]. Whatever the device limit did to this rate
+  /// before is forgotten, so the rate is not raised on the device's behalf.
   @override
-  Future<void> set(double value) => super.set(_sanitize(value));
+  Future<void> set(double value) async {
+    // The state changes before the first await, as callers expect of a set.
+    final stored = super.set(_sanitize(value));
+    await _inferenceRatePrefs.remove(_beforeLimitKey);
+    await stored;
+  }
 
-  /// Lower the rate on the device's behalf; never raises. See
-  /// [applyInferenceRateLimit].
+  /// Lower the rate on the device's behalf; never raises. The rate it had is
+  /// remembered for [restoreUpTo]. See [applyInferenceRateLimit].
   Future<void> lowerTo(double value) async {
     final sanitized = _sanitize(value);
-    if (sanitized < state) await super.set(sanitized);
+    final before = state;
+    if (sanitized >= before) return;
+    // The state changes before the first await, so a rate the user sets
+    // meanwhile is not overwritten.
+    final stored = super.set(sanitized);
+    if (!_inferenceRatePrefs.containsKey(_beforeLimitKey)) {
+      await _inferenceRatePrefs.setDouble(_beforeLimitKey, before);
+    }
+    await stored;
+  }
+
+  /// Raise a rate that [lowerTo] lowered, to [value] at most and never past
+  /// the rate it had before. A rate the device limit never lowered, or that
+  /// the user set since, is left alone. See [applyInferenceRateHeadroom].
+  Future<void> restoreUpTo(double value) async {
+    final before = _inferenceRatePrefs.getDouble(_beforeLimitKey);
+    if (before == null) return;
+    final sanitized = _sanitize(value);
+    final target = sanitized < before ? sanitized : _sanitize(before);
+    if (target > state) await super.set(target);
+    if (sanitized >= before) {
+      await _inferenceRatePrefs.remove(_beforeLimitKey);
+    }
   }
 }
 
@@ -1173,6 +1260,21 @@ class InferenceRateDeviceLimitNotifier extends StateNotifier<double?> {
   Future<void> lowerTo(double inferenceRateHz) async {
     final current = state;
     if (current != null && inferenceRateHz >= current) return;
+    state = inferenceRateHz;
+    await _prefs.setDouble(PrefKeys.inferenceRateDeviceLimit, inferenceRateHz);
+  }
+
+  /// The device was measured to sustain [inferenceRateHz]. Loosens an
+  /// existing limit, and removes it once the device sustains the highest
+  /// rate; never creates one.
+  Future<void> raiseTo(double inferenceRateHz) async {
+    final current = state;
+    if (current == null || inferenceRateHz <= current) return;
+    if (inferenceRateHz >= AppConstants.maxInferenceRateHz) {
+      state = null;
+      await _prefs.remove(PrefKeys.inferenceRateDeviceLimit);
+      return;
+    }
     state = inferenceRateHz;
     await _prefs.setDouble(PrefKeys.inferenceRateDeviceLimit, inferenceRateHz);
   }

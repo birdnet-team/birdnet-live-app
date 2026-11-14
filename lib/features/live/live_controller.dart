@@ -94,6 +94,8 @@ enum LiveState {
 class LiveController {
   LiveController({required this.ringBuffer, required this.recordingService}) {
     _windowDriver.onInferenceRateLowered = _onInferenceRateLowered;
+    _windowDriver.onSustainableInferenceRate = (inferenceRateHz) =>
+        onSustainableInferenceRate?.call(inferenceRateHz);
   }
 
   /// Shared ring buffer for audio samples.
@@ -260,6 +262,10 @@ class LiveController {
   /// Called with the new rate after the driver lowered the inference rate
   /// because the device could not keep up; see [InferenceWindowDriver].
   void Function(double inferenceRateHz)? onInferenceRateLowered;
+
+  /// Called with the rate the driver measured this device to sustain; see
+  /// [InferenceWindowDriver.onSustainableInferenceRate].
+  void Function(double inferenceRateHz)? onSustainableInferenceRate;
 
   // ── Model loading ─────────────────────────────────────────────────────
 
@@ -931,6 +937,7 @@ class LiveController {
     } catch (e, st) {
       // Inference errors are logged but don't stop the session.
       debugPrint('[LiveController] inference ERROR: $e\n$st');
+      _windowDriver.discardCycleMeasurement();
       _errorMessage = e.toString();
     } finally {
       _inferring = false;

@@ -174,11 +174,14 @@ configuração de todos os modos: Live, Point Count, Survey e ARU, e portanto
 dos seus assistentes de configuração, para que a próxima Session em qualquer
 modo comece com uma taxa que este dispositivo consiga sustentar. As
 configurações e os assistentes mostram, abaixo do controle deslizante, uma
-nota dizendo que o dispositivo é lento demais acima dessa taxa. A nota
-permanece, porque um dispositivo lento continua lento; os controles seguem
-livres para ajustar. Sem isso, um dispositivo lento acumula um atraso que
-acaba sobrescrevendo o áudio do qual os trechos de detecção são cortados, e
-as detecções ficam sem áudio.
+nota dizendo que o dispositivo é lento demais acima dessa taxa. A nota não é
+permanente: cada Session mede quanto tempo a inferência leva e, quando há
+folga suficiente, o limite sobe, e com ele as taxas que tinha reduzido, no
+máximo até o valor anterior. Quando o dispositivo sustenta 1,00 Hz, a nota
+desaparece. Uma taxa que você mesmo definiu nunca é aumentada, e os controles
+seguem livres para ajustar. Sem isso, um dispositivo lento acumula um atraso
+que acaba sobrescrevendo o áudio do qual os trechos de detecção são cortados,
+e as detecções ficam sem áudio.
 
 ### Ignorar espécies
 
