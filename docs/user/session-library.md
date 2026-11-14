@@ -51,7 +51,7 @@ Every timestamp shown in Session Library — list rows, day-group headers, "star
 
 Each session row has two ways to act on it:
 
-- **Three-dot menu** (:app-moreVert:) on the right of every card opens a small menu with **Open**, **Share**, and **Delete**. Share uses your current Settings → Export preferences (format and "include audio") and opens the platform share sheet directly — no need to first open Session Review just to send a session to a colleague.
+- **Three-dot menu** (:app-moreVert:) on the right of every card opens a small menu with **Open**, **Share**, and **Delete**. Share opens a dialog whose **Audio** and **Metadata** boxes start out matching Settings → Export & Sync and apply to that share only, then opens the platform share sheet — no need to first open Session Review just to send a session to a colleague.
 - **Swipe** the row left or right to delete it. A confirmation dialog still appears before anything is removed, so an accidental swipe is recoverable.
 
 ## What Happens Next

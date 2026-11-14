@@ -25,11 +25,11 @@ Nastavuje jazyk rozhraní.
 
 Řídí jazyk používaný pro názvy druhů. **Systémový** použije preferovaný jazyk telefonu, pokud je daný název k dispozici, i když rozhraní přejde na angličtinu. **Podle aplikace** použije místo toho jazyk rozhraní.
 
-### Zobrazovat vědecké názvy
+### Zobrazit vědecké názvy
 
 Zobrazuje v celé aplikaci vědecké názvy pod běžnými názvy.
 
-### Zobrazovat všechny detekované druhy
+### Zobrazit všechny detekované druhy
 
 Pouze režim Live a Point Count. Ve výchozím nastavení vypnuto, takže tyto obrazovky zobrazují jen druhy detekované v posledním cyklu odvozování – tedy prakticky ty, které se právě ozývají. Zapněte, aby každý druh detekovaný během probíhající Session zůstal v seznamu viditelný i poté, co přestane zpívat nebo klesne pod práh spolehlivosti.
 
@@ -43,7 +43,7 @@ Nastavení Survey, Point Count a ARU si pamatuje poslední neprázdné jméno po
 
 Nastavení ARU si pamatuje poslední neprázdné ID ARU/stanice a předvyplní jej pro další nasazení. Je-li vyplněno, ID se objeví v názvu Session ARU i v názvech exportovaných souborů, takže opakovaná nasazení na stálých místech zůstanou rozpoznatelná i mimo aplikaci.
 
-### Zobrazení časových značek
+### Zobrazení času
 
 Řídí, jak se v přehledu Session zobrazují časy jednotlivých detekcí.
 
@@ -80,11 +80,11 @@ Jeden panel se dvěma nezávislými prvky: **Mikrofon** – z jakého vstupu nah
 
 | Volba | Co dělá |
 |---|---|
-| **Výchozí pro telefon** | To, co váš telefon dělá běžně, včetně zpracování řeči. Původní chování a stále výchozí volba, aby se stávajícím uživatelům nic nezměnilo. |
-| **Bez zpracování** | Surový signál z mikrofonu – žádné potlačení šumu, žádné automatické zesílení. Pro ptáky obvykle nejlepší volba. |
+| **Výchozí telefonu** | To, co váš telefon dělá běžně, včetně zpracování řeči. Původní chování a stále výchozí volba, aby se stávajícím uživatelům nic nezměnilo. |
+| **Nezpracovaný** | Surový signál z mikrofonu – žádné potlačení šumu, žádné automatické zesílení. Pro ptáky obvykle nejlepší volba. |
 | **Rozpoznávání řeči** | Rovněž vypíná potlačení šumu a automatické zesílení a funguje téměř na každém telefonu. |
 
-**Vyzkoušejte je a porovnejte.** Která volba vyhraje, opravdu závisí na konkrétním přístroji. *Bez zpracování* je ideál, ale Android jej respektuje jen na telefonech, u nichž výrobce podporu deklaruje – na ostatních se tiše vrátí zpět a zní stejně jako *Výchozí pro systém*. Právě proto existuje *Rozpoznávání řeči*: pravidla kompatibility Androidu **vyžadují**, aby u něj bylo automatické zesílení i potlačení šumu vypnuto, takže spolehlivě dodává nezpracovaný zvuk i na telefonech, které *Bez zpracování* ignorují. Pokud přepnutí na *Bez zpracování* nic nezmění, přepněte na *Rozpoznávání řeči*.
+**Vyzkoušejte je a porovnejte.** Která volba vyhraje, opravdu závisí na konkrétním přístroji. *Nezpracovaný* je ideál, ale Android jej respektuje jen na telefonech, u nichž výrobce podporu deklaruje – na ostatních se tiše vrátí zpět a zní stejně jako *Výchozí telefonu*. Právě proto existuje *Rozpoznávání řeči*: pravidla kompatibility Androidu **vyžadují**, aby u něj bylo automatické zesílení i potlačení šumu vypnuto, takže spolehlivě dodává nezpracovaný zvuk i na telefonech, které *Nezpracovaný* ignorují. Pokud přepnutí na *Nezpracovaný* nic nezmění, přepněte na *Rozpoznávání řeči*.
 
 Počítejte s tím, že volby bez zpracování budou znít **tišeji** – to je chybějící automatické zesílení, nikoli závada. Pokud indikátor úrovně vypadá nízko, vyrovnejte to zvýšením **Zesílení**.
 
@@ -106,9 +106,9 @@ Tato volba řídí Live Mode. Point Count má vlastní volbu nahrávání v krok
 - **Jen detekce** – uložit úseky kolem detekcí
 - **Vypnuto** – bez nahrávání zvuku
 
-### Kontext úseku
+### Kontext klipu
 
-Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext úseku** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Point Count používá stejnou hodnotu při volbě **Jen klipy** v nastavení a umožňuje ji tam změnit. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
+Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext klipu** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Point Count používá stejnou hodnotu při volbě **Jen klipy** v nastavení a umožňuje ji tam změnit. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
 
 ### Formát nahrávání
 
@@ -136,9 +136,9 @@ Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Lis
 
 Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit; obrazovka se může normálně vypnout. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
 
-## Odvozování
+## Inference
 
-### Délka okna
+### Doba okna
 
 Řídí délku analytického okna. Dostupné hodnoty jsou **1**, **3**, **5**, **7**, **10** a **15** sekund.
 
@@ -150,7 +150,7 @@ Určuje, jak konzervativní mají detekce být. Výchozí hodnota je **35 %**, c
 
 Posun na ose x aplikovaný na surové pravděpodobnostní skóre modelu před sdružováním skóre, geografickou filtrací a prahem spolehlivosti. Zvukový model BirdNET již obsahuje sigmoidní aktivaci, proto BirdNET Live nejprve převede každou pravděpodobnost zpět do prostoru logitů, přičte posun citlivosti a poté ji převede zpět na pravděpodobnost. Vyšší hodnoty činí detektor benevolentnějším – práh překonají i slabší nebo nejednoznačnější hlasy, za cenu více falešně pozitivních nálezů. Nižší hodnoty jsou přísnější a propustí jen jisté detekce. Výchozí hodnota **1,0** neaplikuje žádný posun a odpovídá referenci BirdNET. Zkuste **1,25**, pokud máte podezření, že model přehlíží vzdálené hlasy; klesněte na **0,75**, pokud vás zaplavují nekvalitní detekce běžných druhů. Citlivost se uplatní okamžitě: změna uprostřed Session se projeví od dalšího okna odvozování.
 
-### Frekvence odvozování
+### Rychlost inference
 
 Řídí, jak často BirdNET provádí odvozování. Posuvník používá stejné kroky
 **0,10–1,00 Hz** jako nastavení Survey a ARU. Okna jsou ukotvena k
@@ -216,7 +216,7 @@ Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v rež
 
 Vyberte **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Odstíny šedi** nebo **BirdNET**. **Turbo** je moderní duhová varianta podobná Jet.
 
-### Délka (rychlost posunu)
+### Doba trvání (rychlost posuvu)
 
 Řídí, kolik času je v okně spektrogramu vidět.
 
@@ -236,7 +236,7 @@ Aplikuje na spektrogram logaritmické škálování, aby se snáze četl.
 
 Když Nastavení otevřete z Analýzy souborů, jmenuje se tato sekce **Přehrávání** a obsahuje pouze nastavení přehrávání.
 
-### Překryv přehrávače v přehledu
+### Překryvná vrstva přehrávání v přehledu
 
 Po zapnutí (výchozí) otevře poslech zvukového úseku v přehledu Session složené jen z úseků (kde není k dispozici úplná nahrávka ani spektrogram) samostatný modální překryv přehrávače s ovládáním a náhledem spektrogramu, místo aby úsek přehrál na pozadí. Má-li Session úplný zvuk, toto nastavení se obchází a překryv přehrávače se nikdy nezobrazí.
 
@@ -244,7 +244,7 @@ Po zapnutí (výchozí) otevře poslech zvukového úseku v přehledu Session sl
 
 Ve výchozím stavu vypnuto. Po zapnutí se hlasová poznámka připojená k časované anotaci během přehledu Session přehraje automaticky ve chvíli, kdy přehrávací značka mine její zaznamenanou pozici. Poznámka se přimíchá přes nahrávku, místo aby ji pozastavila, takže svou mluvenou poznámku slyšíte v kontextu spolu s původním zvukem. Ponechte vypnuté, pokud dáváte přednost ručnímu spouštění poznámek klepnutím na jejich anotační štítek.
 
-### Ztlumení při hlasových poznámkách
+### Ztlumení při hlasové poznámce
 
 Zobrazuje se jen tehdy, je-li zapnuto **Automaticky přehrávat hlasové poznámky**. Určuje, nakolik se hlavní nahrávka ztlumí během přehrávání automatické hlasové poznámky. Vyšší hodnoty činí mluvené poznámky srozumitelnějšími; nižší hodnoty ponechávají pod poznámkou slyšet více z původní nahrávky.
 
@@ -252,15 +252,15 @@ Zobrazuje se jen tehdy, je-li zapnuto **Automaticky přehrávat hlasové poznám
 
 Tato nastavení určují, zda má BirdNET Live **předčítat detekce nahlas do sluchátek nebo přes reproduktor telefonu**, zatímco Session nahrává. Celá funkce je **ve výchozím stavu vypnutá**, protože mění akustické prostředí kolem mikrofonu – její zapnutí je vědomý kompromis. Neexistuje žádný průvodce nastavením: výběr míry podrobnosti × frekvence níže *je* celé nastavení, takže můžete kdykoli klepnout na jinou předvolbu a rozdíl hned slyšet. Intuice: při dlouhých surveyích nemůžete stále sledovat obrazovku; nenápadný hlas v uchu znamená, že můžete nechat oči na biotopu a přesto vědět, co se právě ozvalo.
 
-### Předčítat detekce nahlas (hlavní přepínač)
+### Číst detekce nahlas
 
 Ve výchozím stavu vypnuto. Po zapnutí aplikace vysloví každou přijatou detekci pomocí vestavěného hlasového výstupu vašeho zařízení. **Důrazně doporučujeme sluchátka** – při použití reproduktoru telefonu hrozí, že oznámení zachytí mikrofon a znovu je detekuje, proto aplikace kolem každé promluvy krátce ztlumí nahrávání, aby této smyčce zabránila (viz *Ztlumit mikrofon během mluvení* níže).
 
-### Předvolba podrobnosti
+### Sdílnost
 
 Kolik toho aplikace o každé detekci řekne. **Minimální** vysloví jen název druhu (nejvhodnější pro velmi dlouhé surveye, kde chcete pouze signál). **Vyvážená** je výchozí – krátké, obměňované formulace jako *„Červenka“*, *„Slyšet červenku“*, *„Zase červenka“*. **Upovídaná** přidává trochu více kontextu a blíží se tomu, jako by vedle vás někdo komentoval. **Vlastní** se objeví automaticky, jakmile ručně upravíte číselné hodnoty v části Pokročilé. Intuice: stejná nastavení omezování mohou působit buď příliš tiše, nebo příliš upovídaně podle formulace – podrobnost vám umožní zachovat tempo a měnit jen množství slov.
 
-### Předvolba frekvence
+### Četnost
 
 Jak často smí aplikace vůbec mluvit. Pět stupňů od nejtiššího po nejupovídanější. **Zřídka** a **Střídmě** mezi oznámeními dlouho vyčkávají a omezují jejich tempo – dobře se hodí pro několikahodinové surveye, kde chcete mít přehled o aktivitě, ale ne průběžný komentář. **Normálně** je výchozí, konverzační tempo. **Často** zkracuje mezery a zvedá strop; hodí se pro krátké Session režimu Live nebo když chcete zpětnou vazbu blíže reálnému času. **Neustále** zcela odstraní úvodní prodlevu a nechá aplikaci mluvit téměř v každém cyklu detekce – užitečné pro ukázky, přístupnost nebo když vám mezera před prvním oznámením u volby *Často* připadá příliš dlouhá. **Vlastní** se objeví, když změníte časová pole v části Pokročilé. Intuice: tohle je ten jediný knoflík, který rozhoduje, zda aplikace zůstane v pozadí, nebo se stane přítomností – klepněte na jinou předvolbu a nové tempo uslyšíte už v dalším cyklu detekce, bez tlačítka uložit.
 
@@ -296,7 +296,7 @@ offline map se rovněž vystředí na tyto souřadnice.
 
 Souřadnice použité, když je **Používat GPS** vypnuto. Zeměpisná šířka i délka jsou upravitelná textová pole, takže můžete přesnou hodnotu **napsat** nebo **vložit** zkopírovanou z jiné aplikace – mnohem přesnější než tahat posuvníkem po dotykové obrazovce. Zadávejte desetinné stupně (například `52.5200` a `13.4050`). Můžete také vložit spojený řetězec `šířka, délka` (oddělený čárkou, středníkem nebo mezerou) do *kteréhokoli* z polí a obě pole se vyplní naráz – odpovídá to tomu, co většina map a webů dává do schránky. Hodnoty mimo rozsah nebo nečíselný vstup se rovnou označí a neuloží; platné hodnoty se během psaní udrží. Intuice: nejčastějším důvodem pro ruční nastavení polohy je určení zvuku nahraného jinde, než kde právě jste, a tato poloha obvykle přichází jako text odjinud – psaní a vkládání z toho udělá jediný přesný krok. Pokud raději ukážete na místo, než abyste psali čísla, **Vybrat na mapě** otevře stejný celoobrazovkový výběr map jako obrazovky nastavení, přednastavený na aktuální souřadnice, a obě pole vyplní místem, na které klepnete.
 
-### Aktualizovat GPS teď
+### Aktualizovat GPS
 
 Vynutí nové určení polohy místo opakovaného použití poslední hodnoty z mezipaměti. Intuice: dotazy na GPS se ukládají do mezipaměti pro každou obrazovku zvlášť, aby obrazovka nastavení nemusela při každém otevření čekat na signál ze satelitů – tato mezipaměť ale může být o kilometry zastaralá, pokud jste od minulé Session přejeli na nové místo. Klepněte na to, když jste se přesunuli a chcete, aby geofiltr použil polohu *zde*, a ne tu, kde jste začínali ráno. Aktuální souřadnice z mezipaměti jsou uvedeny v podtitulku, takže si můžete ověřit, kde vás aplikace předpokládá. Pokud se polohu nepodaří určit do přibližně 10 sekund, aplikace se vrátí k poslední známé poloze z operačního systému a upozorní vás lištou SnackBar, abyste věděli, že hodnota je zastaralá.
 
@@ -349,7 +349,7 @@ Intuice: mnoho pracovních postupů potřebuje více formátů najednou – CSV 
 
 Zahrnout uložený zvuk vedle exportovaných tabulek nebo metadat, pokud to daný postup exportu podporuje. Sdílení jedné detekce se také řídí tímto nastavením: úplná nahrávka Session se ořízne na přesné počáteční a koncové časové značky detekce, zatímco Session pouze s detekcemi použije její uložený klip.
 
-### Zvuk vždy sdílet jako WAV
+### Vždy sdílet zvuk jako WAV
 
 Zobrazuje se jen tehdy, je-li zapnuto **Zahrnout zvukové soubory**. Po zapnutí se nahrávky FLAC před sdílením nebo exportem převedou na WAV. WAV je univerzálně kompatibilní, ale výrazně větší než FLAC, proto tuto volbu nechte vypnutou, pokud nástroj na přijímající straně neumí FLAC přečíst – některý starší desktopový analytický software a několik nahrávacích formulářů to dodnes neumí.
 
@@ -357,7 +357,7 @@ Zobrazuje se jen tehdy, je-li zapnuto **Zahrnout zvukové soubory**. Po zapnutí
 
 Po zapnutí nese exportní ZIP doprovodný soubor `*.metadata.json`, který popisuje, jak Session vznikla: verzi BirdNET Live, identitu modelu, snímek počasí pořízený na začátku Session a všechna varování o integritě zvuku zjištěná během nahrávání. Intuice: právě tyto údaje o původu vám (nebo tomu, kdo výsledky kontroluje) umožní Session po měsících zopakovat či ověřit. Vypněte je, chcete-li čistě sdílet jen zvuk a zvolené formáty – například vložit jediný soubor WAV do iNaturalist nebo eBird bez souborů specifických pro aplikaci.
 
-### Zahrnout HTML zprávu
+### Zahrnout HTML report
 
 Po zapnutí obsahuje každý exportní ZIP navíc soubor `<session>_report.html` vedle tabulky, zvukových úseků a GPX. Otevřete jej v libovolném prohlížeči a dostanete souhrn Session připravený k tisku: záhlaví s datem, místem, pozorovatelem a součty; interaktivní mapu trasy GPS a značek detekcí; kartu pro každou detekci s náhledem z taxonomie Cornell, názvy, štítkem skóre, vaším potvrzením, případnou zapsanou poznámkou a původním zvukovým úsekem ve vestavěném přehrávači; a použitá nastavení analýzy. Intuice: CSV je skvělé pro analytické postupy, ale nehodí se ke sdílení s netechnickým kolegou ani k vytištění krátkého terénního souhrnu – HTML zpráva tuto mezeru zaplní jedním klepnutím. Náhledy druhů a mapové dlaždice potřebují při prvním otevření souboru připojení (načítají se živě z API taxonomie BirdNET a z OpenStreetMap), ale vše ostatní – text, rozvržení, přehrávání zvuku, odkazy – funguje zcela offline. Vypněte to, pokud potřebujete jen surová data a chcete mít ZIP o pár kB menší.
 
@@ -376,13 +376,13 @@ Tato sekce určuje, **které služby třetích stran smí BirdNET Live vaším j
 
 ### Povolit mapové dlaždice
 
-Vyžadováno pro jakoukoli interaktivní mapu v aplikaci (výběr polohy, živou mapu Survey a mapu Session). Po zapnutí načítají mapové prvky rastrové dlaždice z veřejných serverů **OpenStreetMap**; dotazy na souřadnice dlaždic prozrazují, na jakou část světa se právě díváte. Dlaždice se ukládají lokálně do mezipaměti až na šest měsíců, s limitem 6000 dlaždic, aby opakované prohlížení map zůstalo efektivní a nerostlo bez omezení. Zapnutí této volby zapne také **Povolit vyhledávání názvů míst**, protože většina uživatelů, kteří načítají mapy, očekává, že se u Sessions zobrazí i čitelné názvy míst. Vyhledávání názvů míst můžete poté vypnout zvlášť. Jsou-li mapové dlaždice vypnuté, každá obrazovka s mapou přejde na zástupnou kartu, takže zbytek aplikace funguje dál bez úniku do sítě.
+Vyžadováno pro jakoukoli interaktivní mapu v aplikaci (výběr polohy, živou mapu Survey a mapu Session). Po zapnutí načítají mapové prvky rastrové dlaždice z veřejných serverů **OpenStreetMap**; dotazy na souřadnice dlaždic prozrazují, na jakou část světa se právě díváte. Dlaždice se ukládají lokálně do mezipaměti až na šest měsíců, s limitem 6000 dlaždic, aby opakované prohlížení map zůstalo efektivní a nerostlo bez omezení. Zapnutí této volby zapne také **Povolit vyhledání názvu místa**, protože většina uživatelů, kteří načítají mapy, očekává, že se u Sessions zobrazí i čitelné názvy míst. Vyhledávání názvů míst můžete poté vypnout zvlášť. Jsou-li mapové dlaždice vypnuté, každá obrazovka s mapou přejde na zástupnou kartu, takže zbytek aplikace funguje dál bez úniku do sítě.
 
-### Povolit vyhledávání názvů míst
+### Povolit vyhledání názvu místa
 
 Po zapnutí odesílá aplikace vaše zaznamenané souřadnice službě **Nominatim od OpenStreetMap**, aby zjistila krátký název místa (například „Berlín, Německo“), který se zobrazuje vedle Session v Knihovně Sessions a v přehledu Session. Intuice: číselné souřadnice jsou přesné, ale při procházení dlouhého seznamu Sessions se špatně čtou – název místa udělá ze seznamu něco, co přečtete na první pohled. Po vypnutí Sessions zobrazují jen surovou šířku a délku a Nominatim se nikdy nekontaktuje.
 
-### Povolit vyhledávání počasí
+### Povolit vyhledání počasí
 
 Po zapnutí zachytí každá uložená Session prostřednictvím **Open-Meteo** jednorázový snímek místních podmínek (teplotu, srážky, vítr, oblačnost) pro souřadnice nahrávky a čas ukončení. Snímek se objeví v přehledu Session pod řádkem polohy a promítne se do exportu JSON, bloku metadat Session i HTML zprávy. Intuice: počasí je jedním z nejsilnějších prediktorů ptačí aktivity a jeho automatické zachycení – aniž byste museli pamatovat na kontrolu jiné aplikace – dělá z každé Session úplnější záznam. Open-Meteo je bezplatná služba a nevyžaduje účet ani API klíč. Po vypnutí se žádná data o počasí nenačítají ani neukládají. Nastavení Point Count a Survey rovněž zobrazuje kompaktní kartu počasí u prvků polohy: o tento souhlas žádá jen v případě potřeby, po zapnutí ukáže náhled jako ikonu + teplotu + vítr a při ukládání Session znovu použije tentýž snímek z mezipaměti.
 
@@ -392,11 +392,11 @@ Po zapnutí zachytí každá uložená Session prostřednictvím **Open-Meteo** 
 
 ## Nebezpečná zóna
 
-### Resetovat úvodní průvodce
+### Obnovit úvod
 
 Zobrazí úvodní sekvenci znovu při příštím spuštění aplikace.
 
-### Resetovat všechna nastavení
+### Obnovit všechna nastavení
 
 Vrátí každou předvolbu na této obrazovce na výchozí hodnotu. Sessions, nahrávky, hlasové poznámky, exporty a mapové dlaždice v mezipaměti zůstanou nedotčené – smažou se jen uložené předvolby (posuvníky, přepínače, zvolené hodnoty). Po potvrzení se aplikace zavře, aby se nové výchozí hodnoty projevily při dalším spuštění.
 

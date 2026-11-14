@@ -51,7 +51,7 @@ Każdy znacznik czasu w Bibliotece Sessions — wiersze listy, nagłówki grup d
 
 Na każdym wierszu Session możesz działać na dwa sposoby:
 
-- **Menu z trzema kropkami** (:app-moreVert:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie korzysta z bieżących preferencji z Ustawienia → Eksport (format i „dołącz dźwięk”) i otwiera systemowy panel udostępniania od razu — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
+- **Menu z trzema kropkami** (:app-moreVert:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie otwiera okno, w którym pola **Dźwięk** i **Metadane** są na początku zgodne z Ustawienia → Eksportuj i synchronizuj i dotyczą tylko tego udostępnienia, a potem systemowy panel udostępniania — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
 - **Przesuń** wiersz w lewo lub w prawo, aby go usunąć. Przed usunięciem i tak pojawia się okno potwierdzenia, więc przypadkowe przesunięcie da się odwrócić.
 
 ## Co dalej

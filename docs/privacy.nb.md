@@ -48,7 +48,7 @@ Appen kan bruke følgende eksterne ressurser. Hver ressurs styres av en egen bry
 
 | Ressurs | Formål | Styres av | Sendes ved hver forespørsel |
 |---------|--------|-----------|-----------------------------|
-| Kartfliser (OpenStreetMap Foundation) | Grunnkart for posisjonsvelgeren, det direkte Survey-kartet og Session-kartet | **Innstillinger → Personvern → Tillat kartfliser** | Fliskoordinater `(z, x, y)`, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
+| Kartfliser (OpenStreetMap Foundation) | Grunnkart for posisjonsvelgeren, det direkte Survey-kartet og Session-kartet | **Innstillinger → Personvern → Tillat kart** | Fliskoordinater `(z, x, y)`, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 | Omvendt geokoding (OpenStreetMap Foundations Nominatim) | Gjør GPS-koordinater om til et lesbart stedsnavn for visning i en Session | **Innstillinger → Personvern → Tillat oppslag av stedsnavn** | Session-ens bredde- og lengdegrad, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 | Værøyeblikksbilde (OpenMeteo GmbH) | Engangsregistrering av lokale forhold ved opptakskoordinatene og sluttidspunktet | **Innstillinger → Personvern → Tillat væroppslag** | Session-ens bredde- og lengdegrad og sluttidspunkt, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 
@@ -60,7 +60,7 @@ Værforespørsler sender Session-ens bredde- og lengdegrad og sluttidspunkt til 
 
 **Tredjepartsbehandling og lagring:** BirdNET-Team driver ikke disse tjenestene og mottar ikke forespørselsdataene deres. OpenStreetMap Foundation kan behandle nettverkstilgangsdata og forespørselsdetaljer i henhold til sin [personvernerklæring](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo opplyser at webserverlogger for det gratis API-et kan inneholde IP-adresser og geografiske koordinater, og at loggene slettes etter 90 dager. Se deres [vilkår og personverninformasjon](https://open-meteo.com/en/terms). Leverandørene kan behandle data i andre land enn ditt. Returnerte stedsnavn og værdata lagres lokalt i Session-en og blir bare med i en eksport når du oppretter den.
 
-**Tilbaketrekking:** Du kan deaktivere hver av de tre tjenestene når som helst under **Innstillinger → Personvern**. Stedsnavn og værdata som allerede er lagret lokalt, forblir knyttet til Session-ene der de ble hentet. Slett disse Session-ene fra Session-biblioteket, eller bruk **Innstillinger → Faresone → Slett alle data** for å fjerne historiske data.
+**Tilbaketrekking:** Du kan deaktivere hver av de tre tjenestene når som helst under **Innstillinger → Personvern**. Stedsnavn og værdata som allerede er lagret lokalt, forblir knyttet til Session-ene der de ble hentet. Slett disse Session-ene fra Session-biblioteket, eller bruk **Innstillinger → Faresone → Slett all data** for å fjerne historiske data.
 
 **Appen starter ingen andre nettverksforespørsler selv.** Appen fungerer fullt ut frakoblet. Innhold du bevisst åpner i nettleseren, blant annet eksterne lenker og eksporterte HTML-rapporter, kan gjøre nettleserforespørsler som beskrevet nedenfor.
 
@@ -82,7 +82,7 @@ GPS-data lagres lokalt og tas bare med i eksporter når du uttrykkelig deler ell
 
 ## Dataeksport
 
-Du kan eksportere Session-data i flere formater (Raven Selection Tables, CSV, JSON, GPX) og velge en hvilken som helst kombinasjon under **Innstillinger → Eksport → Formater**. De valgte formatene samles i én ZIP-fil sammen med eventuelle lydklipp og den valgfrie HTML-rapporten. Eksporter opprettes lokalt og deles via systemets delingsmeny. Appen laster ikke opp eksportdata til noen server, bortsett fra til opplastingsmål du selv har lagt til (se nedenfor).
+Du kan eksportere Session-data i flere formater (Raven Selection Tables, CSV, JSON, GPX) og velge en hvilken som helst kombinasjon under **Innstillinger → Eksport og synk → Formater**. De valgte formatene samles i én ZIP-fil sammen med eventuelle lydklipp og den valgfrie HTML-rapporten. Eksporter opprettes lokalt og deles via systemets delingsmeny. Appen laster ikke opp eksportdata til noen server, bortsett fra til opplastingsmål du selv har lagt til (se nedenfor).
 
 ## Opplastingsmål
 
@@ -94,7 +94,7 @@ Opplastingsmål drives av prosjektledere, ikke av BirdNET-Team, etter deres egne
 
 ## Sletting av data
 
-Individuelle Sessions og tilhørende opptak kan slettes fra Session-biblioteket. For å slette BirdNET Lives lokale Sessions, opptak, talememoer, egendefinerte artslister, innstillinger og hurtigbuffere fra appen bruker du **Innstillinger → Faresone → Slett alle data**. Du kan også tømme BirdNET Lives applagring i operativsystemets innstillinger eller avinstallere appen.
+Individuelle Sessions og tilhørende opptak kan slettes fra Session-biblioteket. For å slette BirdNET Lives lokale Sessions, opptak, talememoer, egendefinerte artslister, innstillinger og hurtigbuffere fra appen bruker du **Innstillinger → Faresone → Slett all data**. Du kan også tømme BirdNET Lives applagring i operativsystemets innstillinger eller avinstallere appen.
 
 ## Kontakt
 

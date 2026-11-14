@@ -71,7 +71,7 @@ Faire glisser une ligne d'**en-tête d'espèce** (vers la gauche ou la droite) s
 
 ### Partage d'une seule détection
 
-L'entrée :app-share: **Partager la détection** utilise les mêmes choix que **Paramètres → Exporter et synchroniser**. Elle exporte uniquement cette détection dans les artefacts Raven, CSV, JSON, GPX, HTML et métadonnées de l'application sélectionnés. Lorsque **Inclure les fichiers audio** est activé, le paquet contient aussi l'audio de la détection ; **Toujours partager l'audio en WAV** est respecté. Avec tous les formats compagnons, HTML et métadonnées de l'application désactivés, la feuille de partage reçoit le clip audio brut plutôt qu'une archive ZIP.
+L'entrée :app-share: **Partager la détection** utilise les mêmes choix que **Paramètres → Export et synchronisation**. Elle exporte uniquement cette détection dans les artefacts Raven, CSV, JSON, GPX, HTML et métadonnées de l'application sélectionnés. Lorsque **Inclure les fichiers audio** est activé, le paquet contient aussi l'audio de la détection ; **Toujours partager l'audio en WAV** est respecté. Avec tous les formats compagnons, HTML et métadonnées de l'application désactivés, la feuille de partage reçoit le clip audio brut plutôt qu'une archive ZIP.
 
 La pièce jointe audio est résolue dans cet ordre :
 

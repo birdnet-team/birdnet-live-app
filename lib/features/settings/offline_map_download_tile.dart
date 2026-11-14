@@ -1,5 +1,5 @@
 // =============================================================================
-// Offline Map Download Tile (Settings → Location)
+// Offline Map Download Tile (Settings → Location & Species Filter)
 // =============================================================================
 //
 // Lets users pre-download map tiles for an area centered on their current GPS
@@ -55,7 +55,7 @@ const int _maxBundleBytes = 50 * 1024 * 1024;
 /// well under 2 req/s sustained.
 const int _concurrency = 4;
 
-/// Settings → Location tile that opens the offline-map download flow.
+/// Settings → Location & Species Filter tile that opens the offline-map download flow.
 class OfflineMapDownloadTile extends ConsumerWidget {
   const OfflineMapDownloadTile({super.key});
 

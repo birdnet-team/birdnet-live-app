@@ -56,7 +56,7 @@ Te ikony mają takie same kształty jak w aplikacji. Tutaj przyjmują kolor teks
 | Element | Znaczenie |
 |---|---|
 | :app-myLocation: **Bieżąca lokalizacja** | Użyj bieżącej pozycji GPS urządzenia. |
-| :app-editLocationAlt: **Współrzędne ręczne** | Wprowadź współrzędne ręcznie. |
+| :app-editLocationAlt: **Ręczne współrzędne** | Wprowadź współrzędne ręcznie. |
 | :app-locationOff: **Brak lokalizacji** | Pomiń lokalizację lub oznacz, że jest niedostępna. |
 | :app-locationOn: **Lokalizacja ustawiona** | Potwierdź lokalizację, pokaż współrzędne lub oznacz Session z mapą. |
 | :app-refresh: **Odśwież** | Odczytaj ponownie bieżącą lokalizację lub odśwież listę przewidywań. |

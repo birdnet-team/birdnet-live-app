@@ -121,7 +121,7 @@ Live 信息栏使用 :app-infoOutline:，后面跟着紧凑的标签，例如：
 Survey 面板使用：
 
 - :app-map: **地图** — 实时地图标签页
-- :app-graphicEq: **语谱图** — 语谱图标签页
+- :app-graphicEq: **声谱图** — 声谱图标签页
 - :app-summaryChart: **汇总** — 汇总标签页
 - :app-summaryChart: Survey 汇总视图中的统计标签
 

@@ -8,7 +8,7 @@ Na ekranie startowym dotknij karty **Tryb Live** z ikoną :app-micRounded:.
 
 ## Quick Listen
 
-Quick Listen zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać. Każdy z poniższych punktów wejścia otwiera tryb Live i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczne rozpoczynanie nagrywania**, i żaden z nich nie zmienia tego ustawienia.
+Quick Listen zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać. Każdy z poniższych punktów wejścia otwiera tryb Live i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczne rozpoczęcie nagrywania**, i żaden z nich nie zmienia tego ustawienia.
 
 ### Android: widżet na ekranie głównym
 

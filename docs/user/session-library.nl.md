@@ -51,7 +51,7 @@ Elk tijdstempel in de Session-bibliotheek — lijstrijen, dagkoppen, badges met 
 
 Elke Session-rij biedt twee manieren om er iets mee te doen:
 
-- Het **menu met drie punten** (:app-moreVert:) rechts op elke kaart opent een klein menu met **Openen**, **Delen** en **Verwijderen**. Delen gebruikt je huidige voorkeuren onder Instellingen → Export (formaat en "audiobestanden meesturen") en opent direct het deelvenster van het systeem — je hoeft het Session-overzicht niet eerst te openen om een Session naar een collega te sturen.
+- Het **menu met drie punten** (:app-moreVert:) rechts op elke kaart opent een klein menu met **Openen**, **Delen** en **Verwijderen**. Delen opent een dialoogvenster waarin de vakjes **Audio** en **Metagegevens** eerst overeenkomen met Instellingen → Exporteren en synchroniseren en alleen voor die keer gelden, en daarna het deelvenster van het systeem — je hoeft het Session-overzicht niet eerst te openen om een Session naar een collega te sturen.
 - **Veeg** de rij naar links of rechts om die te verwijderen. Er verschijnt nog steeds een bevestigingsvenster voordat er iets wordt verwijderd, zodat een onbedoelde veegbeweging te herstellen is.
 
 ## Wat er daarna gebeurt

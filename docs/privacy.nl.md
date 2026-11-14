@@ -82,11 +82,11 @@ GPS-gegevens worden lokaal opgeslagen en alleen in exports opgenomen wanneer je 
 
 ## Gegevens exporteren
 
-Je kunt sessiegegevens exporteren in meerdere formaten (Raven Selection Tables, CSV, JSON, GPX) en onder **Instellingen → Exporteren → Formaten** elke combinatie van formaten tegelijk aanvinken; de geselecteerde formaten worden samen in één ZIP gebundeld, naast de audioclips en het optionele zelfstandige HTML-rapport. Exports worden lokaal gegenereerd en gedeeld via het deelvenster van het systeem. De app uploadt geen exportgegevens naar een server, behalve naar uploadbestemmingen die je zelf hebt toegevoegd (zie hieronder).
+Je kunt sessiegegevens exporteren in meerdere formaten (Raven Selection Tables, CSV, JSON, GPX) en onder **Instellingen → Exporteren en synchroniseren → Formaten** elke combinatie van formaten tegelijk aanvinken; de geselecteerde formaten worden samen in één ZIP gebundeld, naast de audioclips en het optionele zelfstandige HTML-rapport. Exports worden lokaal gegenereerd en gedeeld via het deelvenster van het systeem. De app uploadt geen exportgegevens naar een server, behalve naar uploadbestemmingen die je zelf hebt toegevoegd (zie hieronder).
 
 ## Uploadbestemmingen
 
-Onder **Instellingen → Export & synchronisatie → Uploadbestemmingen** kun je de WebDAV-map van een project toevoegen, doorgaans een Nextcloud File Drop die een projectorganisator als link of QR-code met je heeft gedeeld. Er wordt niets geüpload totdat je een bestemming toevoegt en die vervolgens in het venster Delen aanvinkt, of automatische uploads voor ARU Sessions inschakelt. Uploads gaan rechtstreeks van je apparaat naar de server van de organisator via HTTPS. BirdNET-Team beheert geen tussenliggende server en ontvangt niets.
+Onder **Instellingen → Exporteren en synchroniseren → Uploadbestemmingen** kun je de WebDAV-map van een project toevoegen, doorgaans een Nextcloud File Drop die een projectorganisator als link of QR-code met je heeft gedeeld. Er wordt niets geüpload totdat je een bestemming toevoegt en die vervolgens in het venster Delen aanvinkt, of automatische uploads voor ARU Sessions inschakelt. Uploads gaan rechtstreeks van je apparaat naar de server van de organisator via HTTPS. BirdNET-Team beheert geen tussenliggende server en ontvangt niets.
 
 Een upload bevat dezelfde inhoud als een share: het JSON-record van de Session (detecties, tijden, coördinaten, en de namen van waarnemer en locatie als die zijn ingesteld), de audio, tabellen en het rapport die je eventueel hebt aangevinkt, de upload-id van je apparaat en de deelnemer-id die je hebt ingevuld, als je die hebt opgegeven. De inloggegevens van de bestemming worden opgeslagen in de sleutelhanger van het apparaat.
 

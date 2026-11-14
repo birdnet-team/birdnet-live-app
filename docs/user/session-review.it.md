@@ -71,7 +71,7 @@ Scorrendo la riga di un'**intestazione di specie** (a sinistra o a destra) si el
 
 ### Condivisione di una singola rilevazione
 
-La voce :app-share: **Condividi rilevazione** usa le stesse opzioni di **Impostazioni → Esporta e sincronizza**. Esporta solo questa rilevazione negli artefatti Raven, CSV, JSON, GPX, HTML e metadati dell'app selezionati. Quando **Includi file audio** è attivo, il pacchetto contiene anche l'audio della rilevazione; viene rispettata l'opzione **Condividi sempre l'audio come WAV**. Con tutti i formati complementari, HTML e metadati dell'app disattivati, il foglio di condivisione riceve il clip audio non compresso in uno ZIP.
+La voce :app-share: **Condividi rilevazione** usa le stesse opzioni di **Impostazioni → Esportazione e sincronizzazione**. Esporta solo questa rilevazione negli artefatti Raven, CSV, JSON, GPX, HTML e metadati dell'app selezionati. Quando **Includi file audio** è attivo, il pacchetto contiene anche l'audio della rilevazione; viene rispettata l'opzione **Condividi sempre l'audio come WAV**. Con tutti i formati complementari, HTML e metadati dell'app disattivati, il foglio di condivisione riceve il clip audio non compresso in uno ZIP.
 
 L'allegato audio viene determinato in questo ordine:
 

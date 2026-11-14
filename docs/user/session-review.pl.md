@@ -19,7 +19,7 @@ Możesz też otworzyć ponownie dowolną zapisaną Session z [Biblioteki Session
 
 Przegląd Session łączy odtwarzanie, poruszanie się po spektrogramie i listę gatunków. Przy Sessions trybu Survey może też pokazywać kontekst na mapie.
 
-Nagłówek podsumowania u góry ekranu zawiera datę, odznakę lokalizacji (szerokość i długość geograficzną oraz opcjonalnie ustaloną nazwę miejsca, gdy włączone jest **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie nazw miejsc**) oraz — gdy w chwili nagrywania włączone było **Ustawienia → Prywatność → Zezwalaj na sprawdzanie pogody** — **wiersz pogody** pod lokalizacją, pokazujący warunki zarejestrowane na koniec Session: jednowierszowy zapis w rodzaju *„20,1 °C · Słaby deszcz · 3,2 m/s SW”* poprzedzony ikoną pogody. Dotknij wiersza, aby rozwinąć mały panel z temperaturą, wiatrem, opadami i zachmurzeniem oraz informacją o źródle Open-Meteo. Ten sam odczyt trafia również do eksportu JSON, bloku metadanych Session i raportu HTML.
+Nagłówek podsumowania u góry ekranu zawiera datę, odznakę lokalizacji (szerokość i długość geograficzną oraz opcjonalnie ustaloną nazwę miejsca, gdy włączone jest **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie nazw miejsc**) oraz — gdy w chwili nagrywania włączone było **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie pogody** — **wiersz pogody** pod lokalizacją, pokazujący warunki zarejestrowane na koniec Session: jednowierszowy zapis w rodzaju *„20,1 °C · Słaby deszcz · 3,2 m/s SW”* poprzedzony ikoną pogody. Dotknij wiersza, aby rozwinąć mały panel z temperaturą, wiatrem, opadami i zachmurzeniem oraz informacją o źródle Open-Meteo. Ten sam odczyt trafia również do eksportu JSON, bloku metadanych Session i raportu HTML.
 
 Pasek spektrogramu nad odtwarzaczem jest interaktywny: dotknij, aby przeskoczyć, przeciągnij jednym palcem, aby przewijać oś czasu, i **rozsuń dwa palce, aby przybliżyć** wąskie okno czasowe — przydaje się, gdy chcesz sprawdzić rozkład nakładających się odgłosów albo rozłożyć na czynniki szybki tryl. Zsuń palce z powrotem, aby wrócić do domyślnego widoku 10 sekund. Przycisk odtwarzania w nagłówku gatunku zawsze wybiera pierwszy klaster, który faktycznie ma nagrany fragment, więc przycisk jest dostępny zawsze, gdy któreś z wykryć tego gatunku da się odtworzyć.
 
@@ -71,7 +71,7 @@ Przesunięcie wiersza z **nagłówkiem gatunku** (w lewo lub w prawo) usuwa nara
 
 ### Udostępnianie pojedynczego wykrycia
 
-Pozycja :app-share: **Udostępnij wykrycie** używa tych samych opcji co **Ustawienia → Eksport i synchronizacja**. Eksportuje tylko to wykrycie w wybranych artefaktach Raven, CSV, JSON, GPX, HTML i metadanych aplikacji. Gdy włączona jest opcja **Dołącz pliki audio**, pakiet zawiera też dźwięk wykrycia; opcja **Zawsze udostępniaj dźwięk jako WAV** jest respektowana. Gdy wszystkie formaty towarzyszące, HTML i metadane aplikacji są wyłączone, systemowy panel udostępniania otrzymuje surowy fragment dźwięku zamiast ZIP.
+Pozycja :app-share: **Udostępnij wykrycie** używa tych samych opcji co **Ustawienia → Eksportuj i synchronizuj**. Eksportuje tylko to wykrycie w wybranych artefaktach Raven, CSV, JSON, GPX, HTML i metadanych aplikacji. Gdy włączona jest opcja **Dołącz pliki audio**, pakiet zawiera też dźwięk wykrycia; opcja **Zawsze udostępniaj dźwięk jako WAV** jest respektowana. Gdy wszystkie formaty towarzyszące, HTML i metadane aplikacji są wyłączone, systemowy panel udostępniania otrzymuje surowy fragment dźwięku zamiast ZIP.
 
 Załącznik dźwiękowy jest ustalany w tej kolejności:
 

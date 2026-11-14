@@ -35,7 +35,7 @@ BirdNET-Team n'exploite aucun serveur applicatif et ne reçoit par BirdNET Live 
 | Résultats de détection | Espèces, confiance, horodatages | Fichiers JSON de session locaux |
 | Coordonnées GPS | Géomarquage des détections, traces de Relevé, prédictions du géo-modèle | Fichiers JSON de session locaux |
 | Métadonnées de session | Historique des sessions, révision, export | Fichiers JSON de session locaux |
-| Instantané météo (optionnel) | Capture ponctuelle de température, précipitations, vent, nébulosité et code météo par session quand **Autoriser la requête météo** est activé | Fichiers JSON de session locaux |
+| Instantané météo (optionnel) | Capture ponctuelle de température, précipitations, vent, nébulosité et code météo par session quand **Autoriser la recherche météo** est activé | Fichiers JSON de session locaux |
 | Réglages de l'app | Préférences utilisateur | SharedPreferences |
 
 ### Données hors-ligne intégrées
@@ -49,8 +49,8 @@ L'application peut accéder aux ressources externes ci-dessous. Chacune est cont
 | Ressource | Objectif | Contrôlé par | Envoyé à chaque requête |
 |-----------|----------|--------------|--------------------------|
 | Tuiles de carte (OpenStreetMap Foundation) | Carte de base pour le sélecteur de position, la carte en direct du Survey et la carte de la Session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)`, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
-| Géocodage inverse (Nominatim d'OpenStreetMap Foundation) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. « Paris, France ») pour l'affichage de la Session | **Paramètres → Confidentialité → Autoriser la recherche de nom de lieu** | Latitude/longitude de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
-| Instantané météo (OpenMeteo GmbH) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la requête météo** | Latitude/longitude et heure de fin de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
+| Géocodage inverse (Nominatim d'OpenStreetMap Foundation) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. « Paris, France ») pour l'affichage de la Session | **Paramètres → Confidentialité → Autoriser la recherche du nom du lieu** | Latitude/longitude de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
+| Instantané météo (OpenMeteo GmbH) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la recherche météo** | Latitude/longitude et heure de fin de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
 
 Les requêtes de tuiles de carte sont des requêtes HTTPS GET vers `tile.openstreetmap.org`. Les coordonnées identifient la zone de carte affichée. Comme toute requête Internet directe, elles exposent également votre adresse IP au fournisseur.
 
@@ -60,7 +60,7 @@ Les requêtes météo envoient la latitude/longitude de la session et l'horodata
 
 **Traitement et conservation par des tiers :** BirdNET-Team n'exploite pas ces services et ne reçoit pas les données de leurs requêtes. OpenStreetMap Foundation peut traiter les données d'accès réseau et les détails des requêtes conformément à sa [Politique de Confidentialité](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo indique que les journaux de son API gratuite peuvent contenir des adresses IP et des coordonnées géographiques et sont supprimés après 90 jours ; consultez ses [Conditions et règles de confidentialité](https://open-meteo.com/en/terms). Ces fournisseurs peuvent traiter les données dans d'autres pays. Les valeurs renvoyées sont stockées localement dans la Session et n'entrent dans un export que lorsque vous le créez.
 
-**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Paramètres → Confidentialité**. Les noms de lieu et instantanés météo déjà stockés localement restent attachés aux sessions où ils ont été capturés ; supprimez ces sessions depuis Session Library ou utilisez **Paramètres → Zone dangereuse → Effacer toutes les données** pour retirer ces données historiques.
+**Révocation :** vous pouvez désactiver l'un des trois services à tout moment sous **Paramètres → Confidentialité**. Les noms de lieu et instantanés météo déjà stockés localement restent attachés aux sessions où ils ont été capturés ; supprimez ces sessions depuis Session Library ou utilisez **Paramètres → Zone de danger → Supprimer toutes les données** pour retirer ces données historiques.
 
 **Aucune autre requête réseau n'est effectuée.** L'application fonctionne entièrement hors ligne.
 
@@ -82,7 +82,7 @@ Les données GPS sont stockées localement et incluses dans les exports uniqueme
 
 ## Export de Données
 
-Vous pouvez exporter les données de session dans plusieurs formats (Raven Selection Tables, CSV, JSON, GPX) et cocher n'importe quelle combinaison de formats à la fois sous **Paramètres → Exporter → Formats** ; les formats sélectionnés sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML autonome optionnel. Les exports sont générés localement et partagés via la feuille de partage du système. L'application ne téléverse aucune donnée d'export sur un serveur, sauf vers les destinations d'envoi que vous avez ajoutées vous-même (voir ci-dessous).
+Vous pouvez exporter les données de session dans plusieurs formats (Raven Selection Tables, CSV, JSON, GPX) et cocher n'importe quelle combinaison de formats à la fois sous **Paramètres → Export et synchronisation → Formats** ; les formats sélectionnés sont regroupés dans un ZIP unique avec les clips audio et le rapport HTML autonome optionnel. Les exports sont générés localement et partagés via la feuille de partage du système. L'application ne téléverse aucune donnée d'export sur un serveur, sauf vers les destinations d'envoi que vous avez ajoutées vous-même (voir ci-dessous).
 
 ## Destinations d'envoi
 
@@ -94,7 +94,7 @@ Les destinations sont exploitées par des organisateurs de projet, et non par Bi
 
 ## Suppression de Données
 
-Les sessions individuelles et leurs enregistrements peuvent être supprimés depuis Session Library. Pour effacer depuis l'application les sessions locales, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences et caches de BirdNET Live, utilisez **Paramètres → Zone dangereuse → Effacer toutes les données**. Vous pouvez aussi effacer le stockage de l'application BirdNET Live dans les réglages de votre système d'exploitation ou désinstaller l'application.
+Les sessions individuelles et leurs enregistrements peuvent être supprimés depuis Session Library. Pour effacer depuis l'application les sessions locales, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences et caches de BirdNET Live, utilisez **Paramètres → Zone de danger → Supprimer toutes les données**. Vous pouvez aussi effacer le stockage de l'application BirdNET Live dans les réglages de votre système d'exploitation ou désinstaller l'application.
 
 ## Contact
 

@@ -25,11 +25,11 @@ Ustawia język interfejsu.
 
 Steruje językiem nazw gatunków. **Systemowy** używa preferowanego języka telefonu, gdy dana nazwa jest dostępna, nawet jeśli interfejs wraca do angielskiego. **Zgodnie z aplikacją** używa zamiast tego języka interfejsu.
 
-### Pokazuj nazwy naukowe
+### Pokaż nazwy naukowe
 
 Pokazuje w całej aplikacji nazwy naukowe pod nazwami zwyczajowymi.
 
-### Pokazuj wszystkie wykryte gatunki
+### Pokaż wszystkie wykryte gatunki
 
 Tylko tryb Live i Point Count. Domyślnie wyłączone, więc ekrany te pokazują wyłącznie gatunki wykryte w ostatnim cyklu wnioskowania: w praktyce te, które właśnie się odzywają. Włącz tę opcję, aby każdy gatunek wykryty w trakcie trwającej Session pozostał widoczny na liście, nawet gdy przestanie się odzywać albo spadnie poniżej progu pewności.
 
@@ -43,7 +43,7 @@ Konfiguracja Survey, Point Count i ARU zapamiętuje ostatnio wprowadzoną, niepu
 
 Konfiguracja ARU zapamiętuje ostatni niepusty identyfikator ARU/stanowiska i wypełnia go przy kolejnym wdrożeniu. Gdy jest obecny, identyfikator trafia do nazwy Session ARU i nazw plików eksportu, dzięki czemu powtarzane wdrożenia w stałych miejscach pozostają rozpoznawalne również poza aplikacją.
 
-### Wyświetlanie znaczników czasu
+### Wyświetlanie znacznika czasu
 
 Steruje tym, jak czasy poszczególnych wykryć pojawiają się w Przeglądzie Session.
 
@@ -81,10 +81,10 @@ Jeden panel z dwoma niezależnymi elementami: **Mikrofon** — z którego wejśc
 | Opcja | Co robi |
 |---|---|
 | **Domyślne telefonu** | To, co Twój telefon robi zwykle, łącznie z przetwarzaniem mowy. Pierwotne zachowanie i nadal domyślne, aby nic nie zmieniało się istniejącym użytkownikom. |
-| **Bez przetwarzania** | Surowy sygnał z mikrofonu — bez redukcji szumów i automatycznego wzmocnienia. Zwykle najlepszy wybór dla ptaków. |
+| **Nieprzetworzone** | Surowy sygnał z mikrofonu — bez redukcji szumów i automatycznego wzmocnienia. Zwykle najlepszy wybór dla ptaków. |
 | **Rozpoznawanie mowy** | Również wyłącza redukcję szumów i automatyczne wzmocnienie, a działa na niemal każdym telefonie. |
 
-**Wypróbuj je i porównaj.** To, która wypada najlepiej, naprawdę zależy od urządzenia. *Bez przetwarzania* to ideał, ale Android honoruje je tylko na telefonach, których producent zadeklarował obsługę — na pozostałych po cichu wraca do ustawień domyślnych i brzmi identycznie jak *Domyślne systemu*. Właśnie do tego służy *Rozpoznawanie mowy*: reguły zgodności Androida **wymagają**, aby automatyczne wzmocnienie i redukcja szumów były przy nim wyłączone, więc niezawodnie dostarcza nieprzetworzony dźwięk nawet na telefonach, które ignorują *Bez przetwarzania*. Jeśli przełączenie na *Bez przetwarzania* niczego nie zmienia, przełącz na *Rozpoznawanie mowy*.
+**Wypróbuj je i porównaj.** To, która wypada najlepiej, naprawdę zależy od urządzenia. *Nieprzetworzone* to ideał, ale Android honoruje je tylko na telefonach, których producent zadeklarował obsługę — na pozostałych po cichu wraca do ustawień domyślnych i brzmi identycznie jak *Domyślne telefonu*. Właśnie do tego służy *Rozpoznawanie mowy*: reguły zgodności Androida **wymagają**, aby automatyczne wzmocnienie i redukcja szumów były przy nim wyłączone, więc niezawodnie dostarcza nieprzetworzony dźwięk nawet na telefonach, które ignorują *Nieprzetworzone*. Jeśli przełączenie na *Nieprzetworzone* niczego nie zmienia, przełącz na *Rozpoznawanie mowy*.
 
 Spodziewaj się, że opcje bez przetwarzania będą brzmieć **ciszej** — to brak automatycznego wzmocnienia, a nie usterka. Zwiększ **Wzmocnienie**, aby to nadrobić, jeśli wskaźnik poziomu wygląda nisko.
 
@@ -106,9 +106,9 @@ To ustawienie dotyczy Live Mode. Point Count ma osobny wybór nagrywania w kroku
 - **Tylko wykrycia** — zapisz fragmenty wokół wykryć
 - **Wyłączone** — bez nagrywania dźwięku
 
-### Kontekst fragmentu
+### Kontekst klipu
 
-Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst fragmentu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Point Count używa tej samej wartości przy wyborze **Klipy** w konfiguracji i pozwala ją tam zmienić. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
+Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst klipu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Point Count używa tej samej wartości przy wyborze **Klipy** w konfiguracji i pozwala ją tam zmienić. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
 
 ### Format nagrywania
 
@@ -116,13 +116,13 @@ Wybierz **WAV** albo **FLAC**. WAV jest większy, ale powszechnie zgodny i szybk
 
 To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plików** zachowuje zarządzaną przez aplikację kopię zaimportowanego pliku w jego oryginalnym formacie, dzięki czemu pliki MP3, AAC, WAV i FLAC pozostają możliwe do przejrzenia bez dodatkowego kroku konwersji.
 
-### Automatyczne zapisywanie Sessions (Live i Point Count)
+### Automatycznie zapisuj Sessions (Live i Point Count)
 
 Po włączeniu (domyślnie) zakończona Session trybu Live lub Point Count jest dodawana do biblioteki automatycznie w chwili jej zakończenia. Po wyłączeniu zakończona Session otwiera się w przeglądzie z oznaczeniem **niezapisana**: ikona zapisu jest podświetlona i musisz jej dotknąć, aby zachować Session. Wyjście z przeglądu bez zapisania odrzuca Session i jej nagrania. Pasuje to do krótkiego nasłuchiwania, gdy chcesz zachować jedynie sporadyczny ciekawy wynik, zamiast gromadzić każde krótkie nagranie. Wdrożenia Survey i ARU zawsze zapisują się automatycznie — długi, bezobsługowy przebieg jest zbyt cenny, aby stracić go przez zapomnienie o zapisie — więc ten przełącznik tam nie obowiązuje.
 
 Niezależnie od tego ustawienia tryb Live i Point Count zapisują częściową Session na starcie, co 30 sekund i gdy aplikacja opuszcza pierwszy plan, a zakończoną Session zapisują na dysku, zanim zwolnią mikrofon. Ogranicza to utratę danych po awarii, utracie zasilania lub gdy system zakończy aplikację działającą w tle: taka Session pojawia się w bibliotece, oznaczona jako przerwana, jeśli aplikacja zakończyła się w trakcie Session, i możesz ją tam usunąć, jeśli nie chcesz jej zachować. Przy wyłączonym automatycznym zapisywaniu zakończona Session, do której dotrzesz w przeglądzie, nadal otwiera się jako niezapisana i zostaje odrzucona, gdy wyjdziesz bez zapisania. Survey i ARU zapisują punkty kontrolne niezależnie od tego ustawienia.
 
-### Automatyczne rozpoczynanie nagrywania (tylko tryb Live)
+### Automatyczne rozpoczęcie nagrywania (tylko tryb Live)
 
 Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
 
@@ -136,21 +136,21 @@ To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Quick Listen](
 
 Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle; ekran może normalnie zgasnąć. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
 
-## Wnioskowanie
+## Inferencja
 
 ### Czas trwania okna
 
 Steruje długością okna analizy. Dostępne wartości to **1**, **3**, **5**, **7**, **10** i **15** sekund.
 
-### Próg pewności
+### Próg ufności
 
 Określa, jak zachowawcze mają być wykrycia. Domyślnie **35%**, co utrzymuje listę na żywo skupioną na mocniejszych dopasowaniach, a jednocześnie pozostawia miejsce dla odgłosów odległych lub częściowo zamaskowanych. Obniż go, jeśli inwentaryzujesz gatunki rzadkie lub ciche i planujesz przejrzeć więcej kandydatów później; podnieś, gdy hałas otoczenia lub częste fałszywe trafienia zapychają Session.
 
 ### Czułość
 
-Przesunięcie na osi x stosowane do surowych ocen prawdopodobieństwa modelu przed score-poolingiem, filtrowaniem geograficznym i progiem pewności. Model dźwiękowy BirdNET zawiera już aktywację sigmoidalną, więc BirdNET Live najpierw przelicza każde prawdopodobieństwo z powrotem do przestrzeni logitów, dodaje przesunięcie czułości, a następnie przelicza je z powrotem na prawdopodobieństwo. Wyższe wartości czynią detektor bardziej pobłażliwym — słabsze lub bardziej niejednoznaczne odgłosy przekraczają próg, kosztem większej liczby fałszywych trafień. Niższe wartości są surowsze i przepuszczają tylko pewne wykrycia. Domyślna wartość **1,0** nie stosuje żadnego przesunięcia i odpowiada wzorcowi BirdNET. Spróbuj **1,25**, jeśli podejrzewasz, że model pomija odległe odgłosy; zejdź do **0,75**, jeśli zalewają Cię niskiej jakości wykrycia pospolitych gatunków. Czułość jest stosowana od razu: zmiana w trakcie Session zadziała od następnego okna wnioskowania.
+Przesunięcie na osi x stosowane do surowych ocen prawdopodobieństwa modelu przed score-poolingiem, filtrowaniem geograficznym i progiem pewności. Model dźwiękowy BirdNET zawiera już aktywację sigmoidalną, więc BirdNET Live najpierw przelicza każde prawdopodobieństwo z powrotem do przestrzeni logitów, dodaje przesunięcie czułości, a następnie przelicza je z powrotem na prawdopodobieństwo. Wyższe wartości czynią detektor bardziej pobłażliwym — słabsze lub bardziej niejednoznaczne odgłosy przekraczają próg, kosztem większej liczby fałszywych trafień. Niższe wartości są surowsze i przepuszczają tylko pewne wykrycia. Domyślna wartość **1,0** nie stosuje żadnego przesunięcia i odpowiada wzorcowi BirdNET. Spróbuj **1,25**, jeśli podejrzewasz, że model pomija odległe odgłosy; zejdź do **0,75**, jeśli zalewają Cię niskiej jakości wykrycia pospolitych gatunków. Wrażliwość jest stosowana od razu: zmiana w trakcie Session zadziała od następnego okna wnioskowania.
 
-### Częstość wnioskowania
+### Szybkość wnioskowania
 
 Steruje tym, jak często BirdNET wykonuje wnioskowanie. Suwak używa tych samych
 kroków **0,10–1,00 Hz** co konfiguracja Survey i ARU. Okna są zakotwiczone w
@@ -215,11 +215,11 @@ Określa, ile miejsca na ekranie zajmuje spektrogram na żywo w trybach Live Mod
 
 Steruje rozdzielczością częstotliwościową spektrogramu.
 
-### Paleta kolorów
+### Mapa kolorów
 
 Wybierz **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Odcienie szarości** lub **BirdNET**. **Turbo** to nowoczesna opcja tęczowa, podobna do Jet.
 
-### Czas trwania (szybkość przewijania)
+### Czas trwania (prędkość przewijania)
 
 Steruje tym, ile czasu jest widoczne w oknie spektrogramu.
 
@@ -239,7 +239,7 @@ Steruje tym, jak gładko skalowany jest obraz spektrogramu. **Średnia** to domy
 
 Gdy otworzysz ustawienia z Analizy plików, ta sekcja nazywa się **Odtwarzanie nagranego dźwięku** i zawiera tylko ustawienia odtwarzania.
 
-### Nakładka odtwarzania w przeglądzie
+### Panel odtwarzania w Przeglądzie Session
 
 Po włączeniu (domyślnie) odsłuchanie fragmentu dźwiękowego w Przeglądzie Session złożonej wyłącznie z fragmentów (gdzie nie ma pełnego nagrania ani spektrogramu) otwiera osobną modalną nakładkę odtwarzacza ze sterowaniem odtwarzaniem i podglądem spektrogramu, zamiast odtwarzać fragment w tle. Jeśli Session ma pełny dźwięk, ustawienie to jest pomijane, a nakładka odtwarzania nigdy się nie pojawia.
 
@@ -247,7 +247,7 @@ Po włączeniu (domyślnie) odsłuchanie fragmentu dźwiękowego w Przeglądzie 
 
 Domyślnie wyłączone. Po włączeniu notatka głosowa dołączona do adnotacji ze znacznikiem czasu odtwarza się automatycznie podczas Przeglądu Session, gdy wskaźnik odtwarzania minie zapisaną pozycję. Notatka jest miksowana na nagraniu, zamiast je wstrzymywać, więc słyszysz swoją wypowiedź w kontekście, razem z oryginalnym dźwiękiem. Zostaw wyłączone, jeśli wolisz uruchamiać notatki ręcznie, dotykając ich odznaki adnotacji.
 
-### Ściszanie przy notatkach głosowych
+### Przyciszanie nagrania głównego
 
 Pokazywane tylko wtedy, gdy włączone jest **Automatyczne odtwarzanie notatek głosowych**. Określa, jak mocno ściszane jest główne nagranie w czasie odtwarzania automatycznej notatki głosowej. Wyższe wartości ułatwiają zrozumienie notatek; niższe pozostawiają więcej słyszalnego nagrania oryginalnego pod notatką.
 
@@ -255,15 +255,15 @@ Pokazywane tylko wtedy, gdy włączone jest **Automatyczne odtwarzanie notatek g
 
 Te ustawienia decydują, czy BirdNET Live ma **odczytywać wykrycia na głos przez słuchawki lub głośnik telefonu**, gdy trwa nagrywanie Session. Cała funkcja jest **domyślnie wyłączona**, ponieważ zmienia warunki akustyczne wokół mikrofonu — jej włączenie to świadomy kompromis. Nie ma kreatora konfiguracji: selektory rozwlekłości × częstości poniżej *są* całą konfiguracją, więc w dowolnej chwili możesz dotknąć innego ustawienia i od razu usłyszeć różnicę. Intuicja: przy długich liczeniach nie da się ciągle zerkać na ekran; dyskretny głos w uchu pozwala nie odrywać wzroku od siedliska i wciąż wiedzieć, co przed chwilą było słychać.
 
-### Odczytuj wykrycia na głos (przełącznik główny)
+### Wypowiadaj na głos informacje o wykryciach
 
 Domyślnie wyłączony. Po włączeniu aplikacja wypowiada każde zaakceptowane wykrycie za pomocą wbudowanej syntezy mowy urządzenia. **Zdecydowanie zalecane są słuchawki** — przy korzystaniu z głośnika telefonu komunikat może zostać wychwycony przez mikrofon i ponownie wykryty, dlatego aplikacja na chwilę wycisza nagrywanie wokół każdej wypowiedzi, aby zapobiec tej pętli (zobacz *Wyciszaj mikrofon podczas mówienia* poniżej).
 
-### Ustawienie rozwlekłości
+### Szczegółowość
 
 Ile aplikacja mówi o każdym wykryciu. **Minimalne** wypowiada samą nazwę gatunku (najlepsze przy bardzo długich liczeniach, gdy chcesz tylko sygnału). **Zrównoważone** to ustawienie domyślne — krótkie, zmienne zwroty w rodzaju *„Rudzik”*, *„Słychać rudzika”*, *„Znowu rudzik”*. **Rozmowne** dodaje nieco więcej kontekstu i bardziej przypomina kogoś, kto komentuje obok Ciebie. **Własne** pojawia się automatycznie, gdy ręcznie zmienisz wartości liczbowe w sekcji Zaawansowane. Intuicja: te same ustawienia ograniczania mogą sprawiać wrażenie zbyt cichych albo zbyt gadatliwych zależnie od sformułowań — rozwlekłość pozwala zachować rytm i regulować samą liczbę słów.
 
-### Ustawienie częstości
+### Częstotliwość
 
 Jak często aplikacja w ogóle może się odzywać. Pięć stopni od najcichszego do najbardziej rozmownego. **Rzadko** i **Oszczędnie** długo czekają między komunikatami i ograniczają ich tempo — dobrze sprawdzają się przy wielogodzinnych liczeniach, gdy chcesz mieć poczucie aktywności bez ciągłego komentarza. **Normalnie** to domyślny, konwersacyjny rytm. **Często** skraca przerwy i podnosi limit; pasuje do krótkich Sessions trybu Live albo gdy chcesz informacji zwrotnej bliżej czasu rzeczywistego. **Stale** całkowicie usuwa opóźnienie startowe i pozwala aplikacji odzywać się niemal w każdym cyklu wykrywania — przydatne przy pokazach, dla dostępności albo gdy przerwa przed pierwszym komunikatem przy ustawieniu *Często* wydaje Ci się za długa. **Własne** pojawia się, gdy zmienisz pola czasowe w sekcji Zaawansowane. Intuicja: to jedyne pokrętło decydujące o tym, czy aplikacja pozostaje w tle, czy staje się obecna — dotknij innego ustawienia, a nowy rytm usłyszysz w kolejnym cyklu wykrywania, bez przycisku zapisu.
 
@@ -285,7 +285,7 @@ Rozwijana sekcja z kilkoma przełącznikami kierowania dźwiękiem oraz selektor
 
 ## Lokalizacja i filtr gatunkowy
 
-### Używaj GPS
+### Użyj GPS
 
 Używaj GPS urządzenia zamiast współrzędnych wprowadzanych ręcznie. Na Androidzie
 pozycje pochodzą z systemowego dostawcy lokalizacji, a nie z Usług Google Play,
@@ -296,9 +296,9 @@ ARU otwierają się na ręcznym wprowadzaniu zapisanych współrzędnych, śledz
 GPS podczas Survey nie działa, a przygotowanie map offline również centruje się
 na tych współrzędnych.
 
-### Współrzędne ręczne
+### Ręczne współrzędne
 
-Współrzędne używane, gdy **Używaj GPS** jest wyłączone. Zarówno szerokość, jak i długość geograficzna to edytowalne pola tekstowe, więc możesz **wpisać** dokładną wartość albo **wkleić** skopiowaną z innej aplikacji — znacznie precyzyjniej niż przeciąganie suwaka po ekranie dotykowym. Wprowadź stopnie dziesiętne (na przykład `52.5200` i `13.4050`). Możesz też wkleić połączony ciąg `szerokość, długość` (rozdzielony przecinkiem, średnikiem lub spacją) do *dowolnego* z pól, a oba wypełnią się naraz — to odpowiada temu, co większość map i witryn umieszcza w schowku. Wartości spoza zakresu lub nieliczbowe są od razu oznaczane i nie są zapisywane; poprawne wartości utrzymują się w trakcie pisania. Intuicja: najczęstszym powodem ręcznego ustawienia lokalizacji jest oznaczenie dźwięku nagranego gdzie indziej, a ta lokalizacja zwykle przychodzi jako tekst z zewnątrz — pisanie i wklejanie zamieniają to w jeden dokładny krok. Jeśli wolisz wskazać miejsce, niż wpisywać liczby, **Wybierz na mapie** otwiera ten sam pełnoekranowy selektor map co ekrany konfiguracji, z bieżącymi współrzędnymi jako punktem wyjścia, i wypełnia oba pola miejscem, którego dotkniesz.
+Współrzędne używane, gdy **Użyj GPS** jest wyłączone. Zarówno szerokość, jak i długość geograficzna to edytowalne pola tekstowe, więc możesz **wpisać** dokładną wartość albo **wkleić** skopiowaną z innej aplikacji — znacznie precyzyjniej niż przeciąganie suwaka po ekranie dotykowym. Wprowadź stopnie dziesiętne (na przykład `52.5200` i `13.4050`). Możesz też wkleić połączony ciąg `szerokość, długość` (rozdzielony przecinkiem, średnikiem lub spacją) do *dowolnego* z pól, a oba wypełnią się naraz — to odpowiada temu, co większość map i witryn umieszcza w schowku. Wartości spoza zakresu lub nieliczbowe są od razu oznaczane i nie są zapisywane; poprawne wartości utrzymują się w trakcie pisania. Intuicja: najczęstszym powodem ręcznego ustawienia lokalizacji jest oznaczenie dźwięku nagranego gdzie indziej, a ta lokalizacja zwykle przychodzi jako tekst z zewnątrz — pisanie i wklejanie zamieniają to w jeden dokładny krok. Jeśli wolisz wskazać miejsce, niż wpisywać liczby, **Wybierz na mapie** otwiera ten sam pełnoekranowy selektor map co ekrany konfiguracji, z bieżącymi współrzędnymi jako punktem wyjścia, i wypełnia oba pola miejscem, którego dotkniesz.
 
 ### Odśwież GPS teraz
 
@@ -308,14 +308,14 @@ Wymusza świeże ustalenie pozycji zamiast ponownego użycia ostatniej zapamięt
 
 Pobieranie map offline jest obecnie ukryte, dopóki BirdNET Live korzysta z publicznej usługi kafelków OpenStreetMap. OpenStreetMap dopuszcza zwykłe interaktywne przeglądanie map z podaniem źródła, czytelnym identyfikatorem klienta i lokalnym buforowaniem, ale nie zezwala na masowe pobieranie z wyprzedzeniem ani funkcje pobierania map offline z `tile.openstreetmap.org`. Implementacja modułu pobierania jest zachowana na potrzeby przyszłego źródła kafelków, które wyraźnie dopuszcza pakiety offline.
 
-### Filtr gatunków
+### Filtr gatunkowy
 
 - **Wyłączony** — bez filtrowania geograficznego
 - **Filtr lokalizacji** — wyklucza gatunki poniżej progu geograficznego
 - **Adaptacyjny filtr lokalizacji** — wymaga tym większej pewności, im rzadszy jest tu gatunek
 - **Ważenie lokalizacją** — używa geomodelu jako dodatkowego sygnału ważącego
 
-### Próg filtra geograficznego
+### Próg geofiltra
 
 Pojawia się, gdy aktywny jest **Filtr lokalizacji** lub **Ważenie lokalizacją**. Filtr adaptacyjny wyznacza swoją granicę sam, na podstawie miejscowego składu gatunków, więc nie ma suwaka.
 
@@ -334,7 +334,7 @@ Stopniuje wymagania według tego, jak pospolity jest gatunek w Twojej lokalizacj
 
 Ponieważ poziomy opierają się na rankingu, działa to tak samo w bogatym gatunkowo lesie tropikalnym, jak i w Arktyce. Wykrycia, które przechodzą, zachowują pierwotny wynik — model lokalizacji decyduje wyłącznie o tym, czy je pokazać. Celem jest ograniczenie fałszywych trafień dla nielicznych gatunków bez utraty naprawdę wyraźnego nagrania takiego gatunku.
 
-## Eksport i synchronizacja
+## Eksportuj i synchronizuj
 
 Sekcja pokazuje trzy pozycje, z których każda podsumowuje swoje ustawienia: **Formaty**, **Zawartość** i **Miejsca docelowe przesyłania**. Pierwsze dwie otwierają stronę z polami opisanymi poniżej.
 
@@ -349,13 +349,13 @@ Zaznacz dowolną kombinację formatów eksportu — przy każdym zapisie i udost
 
 Intuicja: wiele sposobów pracy wymaga jednocześnie więcej niż jednego formatu — CSV do arkusza, tabeli Raven dla osoby pracującej na komputerze i JSON dla skryptu analitycznego. Rozplątywanie tego przełącznikiem jednego formatu oznaczało dawniej eksportowanie tej samej Session trzy razy. Teraz zaznaczasz wszystkie trzy raz i jadą razem w pliku ZIP.
 
-### Dołącz pliki dźwiękowe
+### Dołącz pliki audio
 
 Dołącz zapisany dźwięk obok eksportowanych tabel lub metadanych, jeśli dany sposób eksportu to obsługuje. Udostępnianie pojedynczego wykrycia także korzysta z tego ustawienia: pełne nagranie Session jest przycinane do dokładnych znaczników początku i końca tego wykrycia, a Session zawierająca tylko wykrycia używa zachowanego fragmentu.
 
 ### Zawsze udostępniaj dźwięk jako WAV
 
-Pokazywane tylko wtedy, gdy włączone jest **Dołącz pliki dźwiękowe**. Po włączeniu nagrania FLAC są konwertowane do WAV przed udostępnieniem lub eksportem. WAV jest zgodny ze wszystkim, ale znacznie większy niż FLAC, więc zostaw tę opcję wyłączoną, chyba że narzędzie po drugiej stronie nie potrafi odczytać FLAC — część starszego oprogramowania analitycznego na komputery i nieliczne formularze przesyłania wciąż tego nie potrafią.
+Pokazywane tylko wtedy, gdy włączone jest **Dołącz pliki audio**. Po włączeniu nagrania FLAC są konwertowane do WAV przed udostępnieniem lub eksportem. WAV jest zgodny ze wszystkim, ale znacznie większy niż FLAC, więc zostaw tę opcję wyłączoną, chyba że narzędzie po drugiej stronie nie potrafi odczytać FLAC — część starszego oprogramowania analitycznego na komputery i nieliczne formularze przesyłania wciąż tego nie potrafią.
 
 ### Dołącz metadane aplikacji
 
@@ -367,7 +367,7 @@ Po włączeniu każdy plik ZIP eksportu zawiera dodatkowo plik `<session>_report
 
 ### Udostępnianie samego dźwięku
 
-Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki dźwiękowe**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions z wieloma fragmentami wykryć nadal dają ZIP; przy udostępnianiu pojedynczego wykrycia przekazywany jest ten jeden surowy fragment.
+Odznacz każdy format **oraz** raport HTML **oraz** pole metadanych aplikacji, zostawiając tylko **Dołącz pliki audio**, a Udostępnij przekaże systemowemu panelowi surowe nagranie (na przykład `BirdNET_Live_…flac`) zamiast pliku ZIP. To najprostsza droga, aby wysłać Session prosto do iNaturalist, eBird albo dowolnej innej aplikacji oczekującej nieopakowanego pliku dźwiękowego. Sessions z wieloma fragmentami wykryć nadal dają ZIP; przy udostępnianiu pojedynczego wykrycia przekazywany jest ten jeden surowy fragment.
 
 ### Miejsca docelowe przesyłania
 
@@ -378,7 +378,7 @@ Lista lokalizacji WebDAV, do których można przesłać zakończoną Session, na
 
 Ta sekcja decyduje, **z jakimi usługami zewnętrznymi BirdNET Live może kontaktować się w Twoim imieniu**. Samo wnioskowanie działa w całości na Twoim urządzeniu — te przełączniki dotyczą wyłącznie opcjonalnych funkcji sieciowych, które wzbogacają korzystanie z aplikacji. Wszystkie trzy przełączniki są przy nowej instalacji **domyślnie wyłączone**; nic nie wychodzi na zewnątrz, dopóki na to nie pozwolisz. Intuicja: każdy przełącznik obejmuje jedną konkretną usługę i jedną konkretną korzyść, więc możesz włączyć dokładnie to, co przydaje się w Twojej pracy, i nic ponadto.
 
-### Zezwalaj na kafelki map
+### Zezwalaj na kafelki mapy
 
 Wymagane dla każdej interaktywnej mapy w aplikacji (selektora lokalizacji, mapy Survey na żywo i mapy Session). Po włączeniu widżety map pobierają kafelki rastrowe z publicznych serwerów **OpenStreetMap**; zapytania o współrzędne kafelków ujawniają, jaki obszar świata oglądasz. Kafelki są buforowane lokalnie do sześciu miesięcy, z limitem 6000 kafelków, aby powtarzane podglądy map pozostały wydajne i nie rosły w nieskończoność. Włączenie tej opcji włącza także **Zezwalaj na wyszukiwanie nazw miejsc**, ponieważ większość osób wczytujących mapy oczekuje, że Sessions pokażą również czytelne nazwy miejsc. Wyszukiwanie nazw miejsc możesz potem wyłączyć osobno. Gdy kafelki map są wyłączone, każdy ekran z mapą pokazuje kartę zastępczą, więc reszta aplikacji działa bez wycieku do sieci.
 
@@ -386,7 +386,7 @@ Wymagane dla każdej interaktywnej mapy w aplikacji (selektora lokalizacji, mapy
 
 Po włączeniu aplikacja wysyła zarejestrowane współrzędne do usługi **Nominatim od OpenStreetMap**, aby ustalić krótką nazwę miejsca (na przykład *„Berlin, Niemcy”*), pokazywaną obok Session w Bibliotece Sessions i w Przeglądzie Session. Intuicja: współrzędne liczbowe są dokładne, ale trudno je ogarnąć wzrokiem przy przewijaniu długiej listy Sessions — nazwa miejsca sprawia, że listę da się czytać od razu. Po wyłączeniu Sessions pokazują tylko surową szerokość i długość geograficzną, a Nominatim nie jest w ogóle odpytywany.
 
-### Zezwalaj na sprawdzanie pogody
+### Zezwalaj na wyszukiwanie pogody
 
 Po włączeniu każda zapisana Session rejestruje przez **Open-Meteo** jednorazowy zapis lokalnych warunków (temperatura, opady, wiatr, zachmurzenie) dla współrzędnych nagrania i czasu zakończenia. Zapis trafia do Przeglądu Session pod wierszem lokalizacji i jest powielany w eksporcie JSON, bloku metadanych Session i raporcie HTML. Intuicja: pogoda to jeden z najsilniejszych czynników wpływających na aktywność ptaków, a jej automatyczne rejestrowanie — bez konieczności pamiętania o sprawdzeniu osobnej aplikacji — czyni każdą Session pełniejszym zapisem. Open-Meteo jest usługą bezpłatną i nie wymaga ani konta, ani klucza API. Po wyłączeniu żadne dane pogodowe nie są pobierane ani zapisywane. Konfiguracja Point Count i Survey pokazuje też zwartą kartę pogody przy elementach lokalizacji: prosi o tę zgodę tylko wtedy, gdy jest potrzebna, po włączeniu pokazuje podgląd w postaci ikony + temperatury + wiatru i przy zapisie Session ponownie używa tego samego zapisu z pamięci podręcznej.
 
@@ -396,11 +396,11 @@ Wiersz **O aplikacji** otwiera ekran informacyjny w aplikacji.
 
 ## Strefa zagrożenia
 
-### Resetuj wprowadzenie
+### Zresetuj wprowadzenie
 
 Pokazuje sekwencję wprowadzenia ponownie przy następnym uruchomieniu aplikacji.
 
-### Resetuj wszystkie ustawienia
+### Zresetuj wszystkie ustawienia
 
 Przywraca każdą preferencję na tym ekranie do wartości domyślnej. Sessions, nagrania, notatki głosowe, eksporty i kafelki map w pamięci podręcznej pozostają nietknięte — kasowane są wyłącznie zapisane preferencje (suwaki, przełączniki, wybory w selektorach). Po potwierdzeniu aplikacja się zamyka, aby nowe wartości domyślne zadziałały przy kolejnym uruchomieniu.
 

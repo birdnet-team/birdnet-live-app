@@ -82,11 +82,11 @@ Dane GPS są przechowywane lokalnie i dołączane do eksportów tylko wtedy, gdy
 
 ## Eksport danych
 
-Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksportuj → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer, z wyjątkiem miejsc docelowych przesyłania, które dodasz samodzielnie (zobacz poniżej).
+Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksportuj i synchronizuj → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer, z wyjątkiem miejsc docelowych przesyłania, które dodasz samodzielnie (zobacz poniżej).
 
 ## Miejsca docelowe przesyłania
 
-W **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** możesz dodać folder WebDAV projektu, zazwyczaj Nextcloud File Drop, który organizator projektu udostępnił Ci jako link lub kod QR. Nic nie jest przesyłane, dopóki nie dodasz miejsca docelowego i nie zaznaczysz go w oknie dialogowym Udostępnij lub nie włączysz automatycznego przesyłania Sessions ARU. Przesłania trafiają prosto z Twojego urządzenia na serwer organizatora przez HTTPS. BirdNET-Team nie prowadzi żadnego serwera pośredniczącego i nic nie otrzymuje.
+W **Ustawienia → Eksportuj i synchronizuj → Miejsca docelowe przesyłania** możesz dodać folder WebDAV projektu, zazwyczaj Nextcloud File Drop, który organizator projektu udostępnił Ci jako link lub kod QR. Nic nie jest przesyłane, dopóki nie dodasz miejsca docelowego i nie zaznaczysz go w oknie dialogowym Udostępnij lub nie włączysz automatycznego przesyłania Sessions ARU. Przesłania trafiają prosto z Twojego urządzenia na serwer organizatora przez HTTPS. BirdNET-Team nie prowadzi żadnego serwera pośredniczącego i nic nie otrzymuje.
 
 Przesłanie zawiera tę samą treść co Udostępnienie: rekord JSON Session (wykrycia, czasy, współrzędne oraz nazwy obserwatora i miejsca, jeśli je ustawiono), zaznaczone przez Ciebie dźwięk, tabele i raport, identyfikator przesyłania Twojego urządzenia oraz wprowadzony przez Ciebie identyfikator uczestnika, jeśli go podano. Dane logowania do miejsca docelowego są przechowywane w pęku kluczy urządzenia.
 

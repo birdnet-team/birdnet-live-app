@@ -21,7 +21,7 @@ Um eine Einstellung anhand ihres Namens zu finden, tippen Sie in der App-Leiste 
 
 Legt die Sprache der Benutzeroberfläche fest.
 
-### Artennamen
+### Artnamen
 
 Steuert die Sprache der Artennamen. **System** verwendet die bevorzugte Sprache des Telefons, sofern der Name dort verfügbar ist, auch wenn die Oberfläche auf Englisch zurückfällt. **Der App folgen** verwendet stattdessen die Sprache der Oberfläche.
 
@@ -29,7 +29,7 @@ Steuert die Sprache der Artennamen. **System** verwendet die bevorzugte Sprache 
 
 Zeigt in der gesamten App wissenschaftliche Namen unter den gebräuchlichen Namen an.
 
-### Alle erkannten Arten anzeigen
+### Alle detektierten Arten anzeigen
 
 Nur Live-Modus und Point Count. Standardmäßig deaktiviert, sodass diese Bildschirme weiterhin nur Arten anzeigen, die im letzten Inferenzzyklus erkannt wurden – also praktisch die Arten, die gerade rufen. Schalten Sie die Option ein, damit jede während der laufenden Session erkannte Art in der Liste sichtbar bleibt, auch nachdem sie verstummt ist oder unter den Konfidenzschwellenwert fällt.
 
@@ -80,11 +80,11 @@ Ein Fenster mit zwei unabhängigen Steuerelementen: **Mikrofon** – von welchem
 
 | Option | Wirkung |
 |---|---|
-| **Telefonstandard** | Was Ihr Telefon normalerweise tut, einschließlich Sprachverarbeitung. Das ursprüngliche Verhalten und weiterhin die Voreinstellung, damit sich für bestehende Nutzende nichts ändert. |
-| **Unverarbeitet** | Das rohe Mikrofonsignal – keine Rauschunterdrückung, keine automatische Verstärkung. Für Vögel meist die beste Wahl. |
+| **Handy-Standard** | Was Ihr Telefon normalerweise tut, einschließlich Sprachverarbeitung. Das ursprüngliche Verhalten und weiterhin die Voreinstellung, damit sich für bestehende Nutzende nichts ändert. |
+| **Unbearbeitet** | Das rohe Mikrofonsignal – keine Rauschunterdrückung, keine automatische Verstärkung. Für Vögel meist die beste Wahl. |
 | **Spracherkennung** | Schaltet ebenfalls Rauschunterdrückung und automatische Verstärkung ab und funktioniert auf nahezu jedem Telefon. |
 
-**Probieren Sie sie aus und vergleichen Sie.** Welche Option gewinnt, hängt tatsächlich vom Gerät ab. *Unverarbeitet* ist das Ideal, aber Android setzt es nur auf Telefonen um, deren Hersteller Unterstützung dafür angibt – auf allen anderen fällt es stillschweigend zurück und klingt identisch zum *Systemstandard*. Dafür gibt es *Spracherkennung*: Androids Kompatibilitätsregeln **verlangen** dafür, dass automatische Verstärkung und Rauschunterdrückung abgeschaltet sind, sodass sie zuverlässig unverarbeitetes Audio liefert, selbst auf Telefonen, die *Unverarbeitet* ignorieren. Wenn der Wechsel zu *Unverarbeitet* nichts ändert, wechseln Sie zu *Spracherkennung*.
+**Probieren Sie sie aus und vergleichen Sie.** Welche Option gewinnt, hängt tatsächlich vom Gerät ab. *Unbearbeitet* ist das Ideal, aber Android setzt es nur auf Telefonen um, deren Hersteller Unterstützung dafür angibt – auf allen anderen fällt es stillschweigend zurück und klingt identisch zum *Handy-Standard*. Dafür gibt es *Spracherkennung*: Androids Kompatibilitätsregeln **verlangen** dafür, dass automatische Verstärkung und Rauschunterdrückung abgeschaltet sind, sodass sie zuverlässig unverarbeitetes Audio liefert, selbst auf Telefonen, die *Unbearbeitet* ignorieren. Wenn der Wechsel zu *Unbearbeitet* nichts ändert, wechseln Sie zu *Spracherkennung*.
 
 Erwarten Sie, dass die unverarbeiteten Optionen **leiser** klingen – das ist die fehlende automatische Verstärkung, kein Fehler. Erhöhen Sie **Verstärkung**, um das auszugleichen, wenn die Pegelanzeige niedrig aussieht.
 
@@ -241,31 +241,31 @@ Steuert, wie weich das Spektrogrammbild skaliert wird. **Mittel** ist die vorein
 
 Wenn die Einstellungen aus der Dateianalyse geöffnet werden, heißt dieser Abschnitt **Wiedergabe** und enthält nur die Wiedergabeeinstellungen.
 
-### Wiedergabe-Overlay in der Übersicht
+### Wiedergabe-Overlay in Review
 
 Wenn aktiviert (die Voreinstellung), öffnet das Anhören eines Audioclips in einer reinen Clip-Session-Übersicht (in der keine vollständige Audioaufnahme bzw. kein Spektrogramm verfügbar ist) ein eigenes modales Wiedergabe-Overlay mit Transportsteuerung und Spektrogrammvorschau, statt den Clip im Hintergrund abzuspielen. Verfügt eine Session über vollständiges Audio, wird diese Einstellung übergangen und das Wiedergabe-Overlay nie angezeigt.
 
-### Sprachnotizen automatisch abspielen
+### Sprachmemos automatisch abspielen
 
 Standardmäßig deaktiviert. Wenn aktiviert, wird eine an eine zeitgebundene Anmerkung angehängte Sprachnotiz während der Session-Übersicht automatisch abgespielt, sobald der Abspielkopf ihre aufgezeichnete Position überschreitet. Die Notiz wird über die Aufnahme gemischt, statt sie zu pausieren, sodass Sie Ihre gesprochene Notiz im Kontext gemeinsam mit dem Originalaudio hören. Lassen Sie sie deaktiviert, wenn Sie Notizen lieber manuell durch Antippen ihres Anmerkungs-Chips auslösen.
 
-### Absenkung bei Sprachnotizen
+### Sprachmemo-Ducking
 
-Wird nur angezeigt, wenn **Sprachnotizen automatisch abspielen** aktiviert ist. Steuert, wie stark die Hauptaufnahme abgesenkt wird, während eine automatische Sprachnotiz läuft. Höhere Werte machen gesprochene Notizen besser hörbar; niedrigere Werte lassen mehr von der Originalaufnahme unter der Notiz durchklingen.
+Wird nur angezeigt, wenn **Sprachmemos automatisch abspielen** aktiviert ist. Steuert, wie stark die Hauptaufnahme abgesenkt wird, während eine automatische Sprachnotiz läuft. Höhere Werte machen gesprochene Notizen besser hörbar; niedrigere Werte lassen mehr von der Originalaufnahme unter der Notiz durchklingen.
 
 ### Ansagen
 
 Diese Einstellungen steuern, ob BirdNET Live **Detektionen über Ihre Kopfhörer oder den Telefonlautsprecher vorliest**, während eine Session aufzeichnet. Die gesamte Funktion ist **standardmäßig deaktiviert**, weil sie die akustische Umgebung rund um das Mikrofon verändert – sie einzuschalten ist eine bewusste Abwägung. Es gibt keinen Einrichtungsassistenten: Die Auswahl aus Ausführlichkeit × Häufigkeit weiter unten *ist* die gesamte Einrichtung, Sie können also jederzeit eine andere Voreinstellung antippen und den Unterschied sofort hören. Die Intuition dahinter: In langen Surveys können Sie nicht ständig auf den Bildschirm schauen; eine dezente Stimme im Ohr bedeutet, dass Sie den Blick im Habitat lassen und trotzdem wissen, was gerade zu hören war.
 
-### Detektionen vorlesen (Hauptschalter)
+### Detektionen vorlesen
 
 Standardmäßig deaktiviert. Wenn aktiviert, spricht die App jede akzeptierte Detektion über die eingebaute Sprachausgabe Ihres Geräts. **Kopfhörer werden dringend empfohlen** – bei Nutzung des Telefonlautsprechers besteht die Gefahr, dass die Ansage vom Mikrofon aufgenommen und erneut detektiert wird. Deshalb schaltet die App den Recorder rund um jede Äußerung kurz stumm, um diese Schleife zu verhindern (siehe *Mikrofon während des Sprechens stummschalten* weiter unten).
 
-### Voreinstellung für die Ausführlichkeit
+### Ausführlichkeit
 
 Wie viel die App zu jeder Detektion sagt. **Minimal** spricht nur den Artnamen (am besten für sehr lange Surveys, in denen Sie nur den Hinweis wollen). **Ausgewogen** ist die Voreinstellung – kurze, abwechslungsreiche Formulierungen wie *„Rotkehlchen“*, *„Rotkehlchen gehört“*, *„Wieder ein Rotkehlchen“*. **Gesprächig** ergänzt etwas mehr Kontext und kommt dem Gefühl näher, dass jemand nebenher kommentiert. **Benutzerdefiniert** erscheint automatisch, wenn Sie die Zahlenwerte unter Erweitert von Hand anpassen. Die Intuition dahinter: Dieselben Drosselungseinstellungen können je nach Formulierung entweder zu still oder zu geschwätzig wirken – die Ausführlichkeit lässt Sie den Takt beibehalten und nur die Wortmenge regeln.
 
-### Voreinstellung für die Häufigkeit
+### Häufigkeit
 
 Wie oft die App überhaupt sprechen darf. Fünf Stufen von am leisesten bis am gesprächigsten. **Selten** und **Sparsam** warten lange zwischen Ansagen und begrenzen die Rate – gut geeignet für mehrstündige Surveys, in denen Sie ein Gefühl für die Aktivität wollen, aber keinen laufenden Kommentar. **Normal** ist der voreingestellte, gesprächsähnliche Takt. **Häufig** verkürzt die Abstände und hebt die Obergrenze an; passend für kurze Live-Sessions oder wenn Sie Rückmeldung näher an Echtzeit möchten. **Ständig** entfernt die Startverzögerung vollständig und lässt die App in nahezu jedem Detektionszyklus sprechen – nützlich für Vorführungen, Barrierefreiheit oder wenn Ihnen die Lücke bis zur ersten Ansage bei *Häufig* zu lang erscheint. **Benutzerdefiniert** erscheint, wenn Sie die Zeitfelder unter Erweitert ändern. Die Intuition dahinter: Das ist der eine Regler, der entscheidet, ob die App im Hintergrund bleibt oder zur Präsenz wird – tippen Sie eine andere Voreinstellung an, und Sie hören den neuen Takt schon im nächsten Detektionszyklus, ohne Speichern-Schaltfläche.
 
@@ -298,7 +298,7 @@ Survey, Point Count und ARU öffnen sich mit der manuellen Eingabe Ihrer
 gespeicherten Koordinaten, das GPS-Tracking der Survey läuft nicht, und auch
 die Vorbereitung von Offline-Karten zentriert auf diese Koordinaten.
 
-### Breiten-/Längengrad
+### Manuelle Koordinaten
 
 Die Koordinaten, die verwendet werden, wenn **GPS verwenden** deaktiviert ist. Breiten- und Längengrad sind beide bearbeitbare Textfelder, Sie können also einen exakten Wert **eingeben** oder einen aus einer anderen App kopierten Wert **einfügen** – weit präziser, als auf einem Touchscreen an einem Schieberegler zu ziehen. Geben Sie Dezimalgrad ein (z. B. `52.5200` und `13.4050`). Sie können auch eine kombinierte Zeichenfolge `Breitengrad, Längengrad` (getrennt durch Komma, Semikolon oder Leerzeichen) in *eines* der Felder einfügen, und beide Felder werden auf einmal gefüllt – das entspricht dem, was die meisten Karten und Websites in die Zwischenablage legen. Werte außerhalb des gültigen Bereichs oder nicht numerische Eingaben werden direkt markiert und nicht gespeichert; gültige Werte bleiben während der Eingabe erhalten. Die Intuition dahinter: Der häufigste Grund, einen Standort manuell zu setzen, ist die Bestimmung einer Aufnahme von einem anderen Ort als dem, an dem Sie gerade sind, und dieser Standort kommt meist als Text von anderswo – Eingeben und Einfügen machen daraus einen einzigen präzisen Schritt. Wenn Sie lieber auf eine Stelle zeigen als Zahlen einzugeben, öffnet **Auf Karte auswählen** dieselbe Vollbild-Kartenauswahl wie die Einrichtungsbildschirme, vorbelegt mit den aktuellen Koordinaten, und füllt beide Felder mit dem angetippten Ort.
 
@@ -317,7 +317,7 @@ Offline-Karten-Downloads sind derzeit ausgeblendet, solange BirdNET Live den öf
 - **Adaptiver Standortfilter** – umso mehr Sicherheit verlangen, je seltener eine Art hier ist
 - **Standortgewichtung** – das Geo-Modell als zusätzliches Gewichtungssignal verwenden
 
-### Geofilter-Schwellenwert
+### Geo-Filter-Schwellenwert
 
 Erscheint, wenn **Standortfilter** oder **Standortgewichtung** aktiv ist. Der adaptive Filter ermittelt seine Grenze selbst aus der örtlichen Artenzusammensetzung und hat deshalb keinen Regler.
 

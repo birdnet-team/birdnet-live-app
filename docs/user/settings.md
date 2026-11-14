@@ -86,7 +86,7 @@ One sheet with two independent controls: **Microphone** — which input to recor
 | **Unprocessed** | The raw microphone signal — no noise reduction, no automatic gain. Usually the best choice for birds. |
 | **Voice recognition** | Also turns off noise reduction and automatic gain, and works on nearly every phone. |
 
-**Try them and compare.** Which one wins genuinely depends on the handset. *Unprocessed* is the ideal, but Android only honours it on phones whose manufacturer declares support — on the rest it silently falls back and sounds identical to *System default*. That is what *Voice recognition* is for: Android's compatibility rules **require** automatic gain and noise suppression to be off for it, so it reliably delivers unprocessed audio even on phones that ignore *Unprocessed*. If switching to *Unprocessed* changes nothing, switch to *Voice recognition*.
+**Try them and compare.** Which one wins genuinely depends on the handset. *Unprocessed* is the ideal, but Android only honours it on phones whose manufacturer declares support — on the rest it silently falls back and sounds identical to *Phone default*. That is what *Voice recognition* is for: Android's compatibility rules **require** automatic gain and noise suppression to be off for it, so it reliably delivers unprocessed audio even on phones that ignore *Unprocessed*. If switching to *Unprocessed* changes nothing, switch to *Voice recognition*.
 
 Expect the unprocessed options to sound **quieter** — that is the automatic gain being gone, not a fault. Raise **Gain** to compensate if the level meter looks low.
 
@@ -255,15 +255,15 @@ Shown only when **Auto-play voice memos** is enabled. Controls how much the main
 
 These settings control whether BirdNET Live **reads detections aloud through your headphones or the phone speaker** while a session is recording. The whole feature is **off by default** because it changes the acoustic environment around the microphone — turning it on is a deliberate trade-off. There is no setup wizard: the verbosity × frequency pickers below *are* the entire setup, so you can tap a different preset at any time and immediately hear the difference. The intuition: in long surveys you can't keep glancing at the screen; a discreet voice in your ear means you can keep your eyes on the habitat and still know what was just heard.
 
-### Speak detections aloud (master toggle)
+### Speak detections aloud
 
 Off by default. When on, the app speaks each accepted detection using your device's built-in text-to-speech. **Headphones are strongly recommended** — using the phone speaker risks the announcement being picked up by the microphone and re-detected, so the app briefly mutes the recorder around each utterance to prevent that loop (see *Mute mic while speaking* below).
 
-### Verbosity preset
+### Verbosity
 
 How much the app says about each detection. **Minimal** speaks just the species name (best for very long surveys where you only want the cue). **Balanced** is the default — short, varied phrases like *"Robin"*, *"Heard a Robin"*, *"Robin again"*. **Chatty** adds a touch more context and is closer to having someone narrate alongside you. **Custom** appears automatically if you tweak the Advanced numerics by hand. The intuition: the same throttling settings can feel either too quiet or too noisy depending on phrasing — verbosity lets you keep the cadence and just dial the wordiness.
 
-### Frequency preset
+### Frequency
 
 How often the app is allowed to speak at all. Five steps from quietest to most talkative. **Rare** and **Sparse** wait a long time between announcements and cap the rate — well-suited to multi-hour surveys where you want a sense of activity without a running commentary. **Normal** is the default conversational cadence. **Frequent** shortens the gaps and lifts the cap; appropriate for short Live sessions or when you want closer-to-real-time feedback. **Constant** removes the startup delay entirely and lets the app speak on almost every detection cycle — useful for demos, accessibility, or whenever the gap before the first announcement on *Frequent* feels too long. **Custom** appears when you change the timing fields in Advanced. The intuition: this is the one knob that decides whether the app stays in the background or becomes a presence — tap a different preset and you'll hear the new cadence within the next detection cycle, no save button required.
 

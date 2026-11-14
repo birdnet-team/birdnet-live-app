@@ -51,7 +51,7 @@ Jeder in der Session-Bibliothek angezeigte Zeitstempel – Listenzeilen, Tages-K
 
 Jede Session-Zeile lässt sich auf zwei Arten bedienen:
 
-- Das **Drei-Punkte-Menü** (:app-moreVert:) rechts an jeder Karte öffnet ein kleines Menü mit **Öffnen**, **Teilen** und **Löschen**. Das Teilen nutzt Ihre aktuellen Einstellungen unter Einstellungen → Export (Format und „Audio einbeziehen“) und öffnet direkt das Teilen-Menü der Plattform – Sie müssen also nicht erst die Session-Übersicht öffnen, nur um eine Session an eine Kollegin oder einen Kollegen zu senden.
+- Das **Drei-Punkte-Menü** (:app-moreVert:) rechts an jeder Karte öffnet ein kleines Menü mit **Öffnen**, **Teilen** und **Löschen**. Das Teilen öffnet einen Dialog, dessen Kästchen **Audio** und **Metadaten** zunächst der Auswahl unter Einstellungen → Export & Sync entsprechen und nur für diesen Teilvorgang gelten, und danach das Teilen-Menü der Plattform – Sie müssen also nicht erst die Session-Übersicht öffnen, nur um eine Session an eine Kollegin oder einen Kollegen zu senden.
 - **Wischen** Sie die Zeile nach links oder rechts, um sie zu löschen. Vor dem Entfernen erscheint weiterhin ein Bestätigungsdialog, sodass ein versehentliches Wischen rückgängig gemacht werden kann.
 
 ## Was als Nächstes passiert

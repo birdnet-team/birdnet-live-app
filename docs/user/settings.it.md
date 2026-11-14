@@ -15,7 +15,7 @@ Le impostazioni sono raggruppate in sezioni come **Generale**, **Inferenza** e *
 
 Per trovare un'impostazione per nome, tocca il pulsante :app-searchRounded: nella barra dell'app e digita una parte del nome. I risultati mostrano ogni impostazione corrispondente con la relativa sezione; toccandone una si apre quella sezione e la schermata scorre fino all'impostazione. Un'impostazione che compare solo quando un altro interruttore è attivo (come la voce degli annunci mentre gli annunci sono disattivati) viene elencata solo una volta attivato quell'interruttore. Le impostazioni il cui nome corrisponde sono elencate per prime; digitando il nome di una sezione vengono elencate anche tutte le sue impostazioni. Le opzioni all'interno di una sottopagina o di un overlay, come i singoli formati di esportazione o le caselle di Ignora specie, si trovano tramite la relativa voce (**Formati**, **Contenuto**, **Ignora specie**).
 
-## Generali
+## Generale
 
 ### Lingua dell'app
 
@@ -25,7 +25,7 @@ Imposta la lingua dell'interfaccia.
 
 Controlla la lingua usata per i nomi delle specie. **Sistema** usa la lingua preferita del telefono quando quel nome è disponibile, anche se l'interfaccia ripiega sull'inglese. **Segui l'app** usa invece la lingua dell'interfaccia.
 
-### Mostra i nomi scientifici
+### Mostra nomi scientifici
 
 Mostra i nomi scientifici sotto i nomi comuni in tutta l'app.
 
@@ -43,7 +43,7 @@ La configurazione di Survey, Point Count e ARU ricorda l'ultimo nome di osservat
 
 La configurazione ARU ricorda l'ultimo ID ARU/stazione non vuoto e lo precompila per il deployment successivo. Quando è presente, l'ID viene incluso nel nome della Session ARU e nei nomi dei file di esportazione, così i deployment ripetuti su siti fissi restano identificabili anche fuori dall'app.
 
-### Visualizzazione dei timestamp
+### Visualizzazione marca temporale
 
 Controlla come compaiono gli orari delle singole rilevazioni nel riepilogo della Session.
 
@@ -80,11 +80,11 @@ Un pannello con due controlli indipendenti: **Microfono** — da quale ingresso 
 
 | Opzione | Cosa fa |
 |---|---|
-| **Predefinita del telefono** | Ciò che il telefono fa normalmente, elaborazione della voce inclusa. Il comportamento originario, e tuttora quello predefinito, così per gli utenti esistenti non cambia nulla. |
-| **Senza elaborazione** | Il segnale grezzo del microfono: nessuna riduzione del rumore, nessun guadagno automatico. Di solito la scelta migliore per gli uccelli. |
+| **Predef. del telefono** | Ciò che il telefono fa normalmente, elaborazione della voce inclusa. Il comportamento originario, e tuttora quello predefinito, così per gli utenti esistenti non cambia nulla. |
+| **Non elaborata** | Il segnale grezzo del microfono: nessuna riduzione del rumore, nessun guadagno automatico. Di solito la scelta migliore per gli uccelli. |
 | **Riconoscimento vocale** | Disattiva anch'esso riduzione del rumore e guadagno automatico, e funziona su quasi tutti i telefoni. |
 
-**Provale e confronta.** Quale vinca dipende davvero dal dispositivo. *Senza elaborazione* è l'ideale, ma Android la onora solo sui telefoni il cui produttore ne dichiara il supporto: sugli altri ripiega silenziosamente e suona identica a *Predefinita di sistema*. È a questo che serve *Riconoscimento vocale*: le regole di compatibilità di Android **richiedono** che con essa guadagno automatico e soppressione del rumore siano disattivati, quindi fornisce audio non elaborato in modo affidabile anche sui telefoni che ignorano *Senza elaborazione*. Se passare a *Senza elaborazione* non cambia nulla, passa a *Riconoscimento vocale*.
+**Provale e confronta.** Quale vinca dipende davvero dal dispositivo. *Non elaborata* è l'ideale, ma Android la onora solo sui telefoni il cui produttore ne dichiara il supporto: sugli altri ripiega silenziosamente e suona identica a *Predef. del telefono*. È a questo che serve *Riconoscimento vocale*: le regole di compatibilità di Android **richiedono** che con essa guadagno automatico e soppressione del rumore siano disattivati, quindi fornisce audio non elaborato in modo affidabile anche sui telefoni che ignorano *Non elaborata*. Se passare a *Non elaborata* non cambia nulla, passa a *Riconoscimento vocale*.
 
 Aspettati che le opzioni senza elaborazione suonino **più basse**: è l'assenza del guadagno automatico, non un difetto. Alza il **Guadagno** per compensare se l'indicatore di livello appare basso.
 
@@ -106,9 +106,9 @@ Questa impostazione controlla Live Mode. Point Count ha una scelta di registrazi
 - **Solo rilevazioni** — salva spezzoni attorno alle rilevazioni
 - **Disattivata** — nessuna registrazione audio
 
-### Contesto dello spezzone
+### Contesto clip
 
-Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto dello spezzone** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Point Count usa questo stesso valore quando scegli **Solo clip** nella configurazione e permette di modificarlo lì. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
+Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto clip** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Point Count usa questo stesso valore quando scegli **Solo clip** nella configurazione e permette di modificarlo lì. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
 
 ### Formato di registrazione
 
@@ -116,13 +116,13 @@ Scegli **WAV** o **FLAC**. WAV occupa di più, ma è ampiamente compatibile e ra
 
 Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi file** conserva una copia gestita dall'app del file importato nel formato originale, così i file MP3, AAC, WAV e FLAC restano consultabili senza un ulteriore passaggio di conversione.
 
-### Salva automaticamente le Sessions (Live e Point Count)
+### Salva le Sessions automaticamente (Live e Point Count)
 
 Una volta attivo (impostazione predefinita), una Session Live o Point Count completata viene aggiunta automaticamente alla tua libreria nel momento in cui termina. Se disattivato, una Session conclusa si apre nel riepilogo contrassegnata come **non salvata**: l'icona di salvataggio è evidenziata e devi toccarla per conservare la Session. Uscire dal riepilogo senza salvare elimina la Session e le sue registrazioni. È adatto agli ascolti rapidi, in cui vuoi conservare solo l'occasionale risultato interessante invece di accumulare ogni breve registrazione. I deployment Survey e ARU salvano sempre automaticamente — un'esecuzione lunga e non presidiata è troppo preziosa per perderla dimenticando di toccare Salva — quindi lì questo interruttore non si applica.
 
 Indipendentemente da questa impostazione, la modalità Live e Point Count salvano una Session parziale all'avvio, ogni 30 secondi e quando l'app lascia il primo piano, e scrivono la Session conclusa su disco prima di rilasciare il microfono. In questo modo si limita la perdita di dati dopo un arresto anomalo, un'interruzione di corrente o la chiusura dell'app da parte del sistema mentre era in background: una Session del genere compare nella libreria, contrassegnata come interrotta se l'app si è chiusa a metà Session, e puoi eliminarla da lì se non volevi conservarla. Con il salvataggio automatico disattivato, una Session conclusa che raggiungi nel riepilogo si apre comunque come non salvata e viene eliminata se esci senza salvare. Survey e ARU salvano i propri checkpoint indipendentemente da questa impostazione.
 
-### Avvia la registrazione automaticamente (solo modalità Live)
+### Avvia registrazione automaticamente (solo modalità Live)
 
 Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
 
@@ -219,7 +219,7 @@ Imposta quanto spazio dello schermo occupa lo spettrogramma in tempo reale in Li
 
 Controlla la risoluzione in frequenza dello spettrogramma.
 
-### Mappa dei colori
+### Mappa colori
 
 Scegli **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Scala di grigi** o **BirdNET**. **Turbo** è la moderna opzione arcobaleno simile a Jet.
 
@@ -243,7 +243,7 @@ Controlla con quanta morbidezza viene ridimensionata l'immagine dello spettrogra
 
 Quando le Impostazioni vengono aperte da Analisi file, questa sezione si chiama **Riproduzione** e contiene solo le impostazioni di riproduzione.
 
-### Overlay di riproduzione nel riepilogo
+### Overlay di riproduzione nella revisione
 
 Una volta attivo (impostazione predefinita), ascoltare uno spezzone audio in un riepilogo di Session composta solo da spezzoni (dove non è disponibile una registrazione completa né lo spettrogramma) apre un overlay modale di riproduzione dedicato, con controlli di trasporto e anteprima dello spettrogramma, invece di riprodurre lo spezzone in sottofondo. Se una Session ha l'audio completo, questa impostazione viene ignorata e l'overlay di riproduzione non compare mai.
 
@@ -251,7 +251,7 @@ Una volta attivo (impostazione predefinita), ascoltare uno spezzone audio in un 
 
 Disattivato per impostazione predefinita. Una volta attivo, un memo vocale allegato a un'annotazione con marca temporale viene riprodotto automaticamente durante il Riepilogo sessione nel momento in cui il cursore di riproduzione supera la posizione registrata. Il memo viene miscelato sopra la registrazione anziché metterla in pausa, così senti il tuo commento nel contesto insieme all'audio originale. Lascialo disattivato se preferisci avviare i memo manualmente toccando la relativa etichetta di annotazione.
 
-### Attenuazione con i memo vocali
+### Attenuazione dei memo vocali
 
 Mostrato solo quando **Riproduci automaticamente i memo vocali** è attivo. Controlla quanto viene abbassata la registrazione principale durante la riproduzione di un memo vocale automatico. Valori più alti rendono i memo più comprensibili; valori più bassi lasciano udire di più della registrazione originale sotto il memo.
 
@@ -259,17 +259,17 @@ Mostrato solo quando **Riproduci automaticamente i memo vocali** è attivo. Cont
 
 Queste impostazioni stabiliscono se BirdNET Live debba **leggere le rilevazioni ad alta voce nelle cuffie o dall'altoparlante del telefono** mentre una Session sta registrando. L'intera funzione è **disattivata per impostazione predefinita**, perché modifica l'ambiente acustico intorno al microfono: attivarla è un compromesso consapevole. Non esiste una procedura guidata: i selettori di livello di dettaglio × frequenza qui sotto *sono* l'intera configurazione, quindi puoi toccare un preset diverso in qualsiasi momento e sentire subito la differenza. L'intuizione: nei rilievi lunghi non puoi continuare a guardare lo schermo; una voce discreta all'orecchio ti permette di tenere gli occhi sull'habitat e sapere comunque cosa è appena stato sentito.
 
-### Leggi le rilevazioni ad alta voce (interruttore principale)
+### Pronuncia le rilevazioni
 
 Disattivato per impostazione predefinita. Una volta attivo, l'app pronuncia ogni rilevazione accettata usando la sintesi vocale integrata del dispositivo. **Le cuffie sono vivamente consigliate**: usando l'altoparlante del telefono c'è il rischio che l'annuncio venga captato dal microfono e rilevato di nuovo, perciò l'app silenzia brevemente la registrazione attorno a ogni pronuncia per evitare questo anello (vedi *Silenzia il microfono mentre parla* più avanti).
 
-### Preset del livello di dettaglio
+### Verbosità
 
-Quanto l'app dice di ogni rilevazione. **Minimo** pronuncia solo il nome della specie (ideale per rilievi molto lunghi in cui vuoi soltanto il segnale). **Bilanciato** è il valore predefinito: frasi brevi e variate come *«Pettirosso»*, *«Sentito un pettirosso»*, *«Ancora un pettirosso»*. **Loquace** aggiunge un po' più di contesto e si avvicina all'avere qualcuno che commenta accanto a te. **Personalizzato** compare automaticamente se modifichi a mano i valori numerici in Avanzate. L'intuizione: le stesse impostazioni di limitazione possono risultare troppo silenziose o troppo chiacchierone a seconda di come sono formulate; il livello di dettaglio ti permette di mantenere la cadenza e regolare solo la quantità di parole.
+Quanto l'app dice di ogni rilevazione. **Minimo** pronuncia solo il nome della specie (ideale per rilievi molto lunghi in cui vuoi soltanto il segnale). **Bilanciato** è il valore predefinito: frasi brevi e variate come *«Pettirosso»*, *«Sentito un pettirosso»*, *«Ancora un pettirosso»*. **Loquace** aggiunge un po' più di contesto e si avvicina all'avere qualcuno che commenta accanto a te. **Personalizzato** compare automaticamente se modifichi a mano i valori numerici in Avanzato. L'intuizione: le stesse impostazioni di limitazione possono risultare troppo silenziose o troppo chiacchierone a seconda di come sono formulate; il livello di dettaglio ti permette di mantenere la cadenza e regolare solo la quantità di parole.
 
-### Preset della frequenza
+### Frequenza
 
-Con quale frequenza all'app è consentito parlare. Cinque livelli, dal più silenzioso al più loquace. **Raro** e **Parco** attendono a lungo tra un annuncio e l'altro e ne limitano il ritmo: adatti a rilievi di più ore in cui vuoi percepire l'attività senza un commento continuo. **Normale** è la cadenza conversazionale predefinita. **Frequente** accorcia gli intervalli e alza il tetto; adatto a brevi Session Live o quando vuoi un riscontro più vicino al tempo reale. **Costante** elimina del tutto il ritardo iniziale e lascia parlare l'app in quasi ogni ciclo di rilevazione: utile per dimostrazioni, accessibilità, o quando l'attesa prima del primo annuncio con *Frequente* ti sembra troppo lunga. **Personalizzato** compare quando modifichi i campi temporali in Avanzate. L'intuizione: è l'unica manopola che decide se l'app resta sullo sfondo o diventa una presenza; tocca un preset diverso e sentirai la nuova cadenza già al ciclo di rilevazione successivo, senza pulsante di salvataggio.
+Con quale frequenza all'app è consentito parlare. Cinque livelli, dal più silenzioso al più loquace. **Raro** e **Parco** attendono a lungo tra un annuncio e l'altro e ne limitano il ritmo: adatti a rilievi di più ore in cui vuoi percepire l'attività senza un commento continuo. **Normale** è la cadenza conversazionale predefinita. **Frequente** accorcia gli intervalli e alza il tetto; adatto a brevi Session Live o quando vuoi un riscontro più vicino al tempo reale. **Costante** elimina del tutto il ritardo iniziale e lascia parlare l'app in quasi ogni ciclo di rilevazione: utile per dimostrazioni, accessibilità, o quando l'attesa prima del primo annuncio con *Frequente* ti sembra troppo lunga. **Personalizzato** compare quando modifichi i campi temporali in Avanzato. L'intuizione: è l'unica manopola che decide se l'app resta sullo sfondo o diventa una presenza; tocca un preset diverso e sentirai la nuova cadenza già al ciclo di rilevazione successivo, senza pulsante di salvataggio.
 
 ### Voce
 
@@ -277,7 +277,7 @@ Tocca la riga della voce per scegliere tra le voci di sintesi installate per la 
 
 **Velocità** va da 0,5× a 1,5×; il valore predefinito 1,0× è il ritmo «normale» della piattaforma. **Tono** va da 0,7× a 1,3×. Abbassare leggermente il tono e rallentare un po' può rendere gli annunci più comprensibili all'aperto, con vento o acqua che scorre sullo sfondo. *Riproduci un esempio* consente di ascoltare la voce scelta, lo stile di formulazione attuale, la velocità e il tono senza uscire dalle Impostazioni. Le modifiche si applicano all'annuncio successivo.
 
-### Avanzate
+### Avanzato
 
 Una sezione a scomparsa che espone alcuni interruttori di instradamento audio e il selettore della modalità di attivazione. In genere non serve aprirla: i preset di livello di dettaglio e frequenza qui sopra sono le uniche manopole che contano nell'uso quotidiano. I valori numerici della limitazione (tolleranza iniziale, intervallo minimo, massimo al minuto, silenzio nelle sequenze, azzeramento della recency) sono raccolti nel cursore **Frequenza**, così c'è un unico punto ovvio dove alzare o abbassare la cadenza.
 
@@ -289,7 +289,7 @@ Una sezione a scomparsa che espone alcuni interruttori di instradamento audio e 
 
 ## Posizione e filtro specie
 
-### Usa il GPS
+### Usa GPS
 
 Usa il GPS del dispositivo invece delle coordinate inserite manualmente. Su
 Android le posizioni provengono dal fornitore di localizzazione della
@@ -303,9 +303,9 @@ centra su quelle coordinate.
 
 ### Coordinate manuali
 
-Le coordinate usate quando **Usa il GPS** è disattivato. Sia la latitudine sia la longitudine sono campi di testo modificabili, quindi puoi **digitare** un valore esatto o **incollarne** uno copiato da un'altra app: molto più preciso che trascinare un cursore su uno schermo tattile. Inserisci gradi decimali (ad esempio `52.5200` e `13.4050`). Puoi anche incollare una stringa combinata `latitudine, longitudine` (separata da virgola, punto e virgola o spazio) in *uno qualsiasi* dei due campi e si compilano entrambi in un colpo solo, il che corrisponde a ciò che la maggior parte di mappe e siti web mette negli appunti. I valori fuori intervallo o non numerici vengono segnalati sul posto e non salvati; i valori validi restano mentre digiti. L'intuizione: il motivo più comune per impostare una posizione manuale è identificare un suono registrato altrove rispetto a dove sei ora, e quella posizione di solito arriva come testo da un'altra fonte: digitare e incollare la trasformano in un unico passaggio preciso. Se preferisci indicare un punto invece di digitare numeri, **Scegli sulla mappa** apre lo stesso selettore di mappa a schermo intero usato nelle schermate di configurazione, inizializzato con le coordinate correnti, e compila entrambi i campi con il punto che tocchi.
+Le coordinate usate quando **Usa GPS** è disattivato. Sia la latitudine sia la longitudine sono campi di testo modificabili, quindi puoi **digitare** un valore esatto o **incollarne** uno copiato da un'altra app: molto più preciso che trascinare un cursore su uno schermo tattile. Inserisci gradi decimali (ad esempio `52.5200` e `13.4050`). Puoi anche incollare una stringa combinata `latitudine, longitudine` (separata da virgola, punto e virgola o spazio) in *uno qualsiasi* dei due campi e si compilano entrambi in un colpo solo, il che corrisponde a ciò che la maggior parte di mappe e siti web mette negli appunti. I valori fuori intervallo o non numerici vengono segnalati sul posto e non salvati; i valori validi restano mentre digiti. L'intuizione: il motivo più comune per impostare una posizione manuale è identificare un suono registrato altrove rispetto a dove sei ora, e quella posizione di solito arriva come testo da un'altra fonte: digitare e incollare la trasformano in un unico passaggio preciso. Se preferisci indicare un punto invece di digitare numeri, **Scegli sulla mappa** apre lo stesso selettore di mappa a schermo intero usato nelle schermate di configurazione, inizializzato con le coordinate correnti, e compila entrambi i campi con il punto che tocchi.
 
-### Aggiorna il GPS adesso
+### Aggiorna GPS ora
 
 Forza una nuova localizzazione invece di riutilizzare l'ultimo valore memorizzato nella cache dall'app. L'intuizione: le richieste GPS vengono memorizzate in cache per singola schermata, così una schermata di configurazione non deve attendere un fix satellitare a ogni apertura, ma quella cache può essere vecchia di chilometri se dall'ultima Session ti sei spostato in un posto nuovo. Toccalo quando ti sei spostato e vuoi che il geofiltro usi *qui*, e non il punto in cui è iniziata la tua mattinata. Le coordinate correnti in cache sono indicate nel sottotitolo, così puoi verificare dove l'app pensa che tu sia. Se il GPS non ottiene un fix entro circa 10 secondi, l'app ripiega sull'ultima posizione nota fornita dal sistema operativo e ti avvisa con una SnackBar, così sai che il valore è obsoleto.
 
@@ -320,7 +320,7 @@ I download di mappe offline sono attualmente nascosti finché BirdNET Live usa i
 - **Filtro adattivo per posizione** — richiedere tanta più certezza quanto meno comune è la specie qui
 - **Ponderazione per posizione** — usa il geo-modello come segnale di ponderazione aggiuntivo
 
-### Soglia del geo-filtro
+### Soglia del filtro geografico
 
 Compare quando è attivo **Filtro per posizione** o **Ponderazione per posizione**. Il filtro adattivo ricava da sé la propria soglia dalla composizione locale delle specie, quindi non ha un cursore.
 
@@ -354,25 +354,25 @@ Spunta qualsiasi combinazione di formati di esportazione: ogni salvataggio o con
 
 L'intuizione: molti flussi di lavoro richiedono più di un formato alla volta — un CSV per il foglio di calcolo, una tabella Raven per chi rivede al computer e un JSON per lo script di analisi. Districare tutto questo con un selettore a formato singolo significava, un tempo, esportare tre volte la stessa Session. Ora ne spunti tre in una volta e viaggiano insieme nello ZIP.
 
-### Includi i file audio
+### Includi file audio
 
 Includi l'audio salvato accanto alle tabelle o ai metadati esportati, quando il flusso di esportazione lo supporta. Anche la condivisione di una singola rilevazione segue questa impostazione: una registrazione Session completa viene ritagliata alle marche temporali esatte di inizio e fine della rilevazione, mentre una Session con sole rilevazioni usa il suo clip conservato.
 
 ### Condividi sempre l'audio come WAV
 
-Mostrato solo quando **Includi i file audio** è attivo. Una volta attivo, le registrazioni FLAC vengono convertite in WAV prima della condivisione o dell'esportazione. WAV è universalmente compatibile ma nettamente più grande di FLAC, quindi lascialo disattivato a meno che lo strumento a destinazione non sappia leggere il FLAC: alcuni software di analisi desktop più datati e qualche modulo di caricamento ancora non ci riescono.
+Mostrato solo quando **Includi file audio** è attivo. Una volta attivo, le registrazioni FLAC vengono convertite in WAV prima della condivisione o dell'esportazione. WAV è universalmente compatibile ma nettamente più grande di FLAC, quindi lascialo disattivato a meno che lo strumento a destinazione non sappia leggere il FLAC: alcuni software di analisi desktop più datati e qualche modulo di caricamento ancora non ci riescono.
 
-### Includi i metadati dell'app
+### Includi metadati dell'app
 
 Una volta attivo, lo ZIP di esportazione contiene un file di corredo `*.metadata.json` che descrive come è stata prodotta la Session: versione di BirdNET Live, identità del modello, l'istantanea meteo acquisita all'inizio della Session e qualsiasi avviso sull'integrità dell'audio rilevato durante la registrazione. L'intuizione: è proprio questa tracciabilità a permettere a te (o a chi rivede) di riprodurre o verificare una Session mesi dopo. Disattivali quando vuoi condividere in modo pulito solo l'audio e i formati scelti, ad esempio caricare un singolo WAV su iNaturalist o eBird senza file specifici dell'app al seguito.
 
-### Includi il report HTML
+### Includi report HTML
 
 Una volta attivo, ogni ZIP di esportazione contiene anche un file `<session>_report.html` accanto alla tabella, agli spezzoni audio e al GPX. Aprilo in un qualsiasi browser e ottieni un riepilogo della Session pronto per la stampa: scheda di intestazione con data, luogo, osservatore e totali; una mappa interattiva della traccia GPS e dei marcatori di rilevazione; una scheda per ogni rilevazione con la miniatura della tassonomia Cornell, i nomi, l'etichetta del punteggio, la tua conferma, l'eventuale nota che hai scritto e lo spezzone audio originale in un lettore integrato; oltre alle impostazioni di analisi usate. L'intuizione: un CSV è ottimo per le pipeline di analisi ma inutile per condividere con un collaboratore non tecnico o per stampare un breve riepilogo di campo: il report HTML colma questa lacuna con un tocco. Le miniature delle specie e i tasselli della mappa richiedono una connessione alla prima apertura del file (vengono caricati in diretta dall'API di tassonomia di BirdNET e da OpenStreetMap), ma tutto il resto — testo, impaginazione, riproduzione audio, collegamenti — funziona interamente offline. Disattivalo se ti servono solo i dati grezzi e vuoi uno ZIP più leggero di qualche KB.
 
 ### Condivisione del solo audio
 
-Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi i file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions con più spezzoni di rilevazione producono comunque uno ZIP; condividendo una sola rilevazione viene consegnato quell'unico clip grezzo.
+Togli la spunta a ogni formato **e** al report HTML **e** alla casella dei metadati dell'app, lasciando solo **Includi file audio**: Condividi consegnerà al pannello di sistema la registrazione grezza (ad esempio `BirdNET_Live_…flac`) invece di uno ZIP. È la via più semplice per inviare una Session direttamente a iNaturalist, eBird o qualsiasi altra app che si aspetti un file audio non impacchettato. Le Sessions con più spezzoni di rilevazione producono comunque uno ZIP; condividendo una sola rilevazione viene consegnato quell'unico clip grezzo.
 
 ### Destinazioni di caricamento
 
@@ -383,15 +383,15 @@ Elenca gli spazi WebDAV in cui una Session conclusa può essere caricata, ad ese
 
 Questa sezione stabilisce **quali servizi di terze parti BirdNET Live può contattare per tuo conto**. L'inferenza vera e propria viene eseguita interamente sul tuo dispositivo: questi interruttori regolano solo funzioni di rete facoltative che arricchiscono l'esperienza. Su un'installazione nuova tutti e tre gli interruttori sono **disattivati per impostazione predefinita**; nulla esce finché non lo consenti. L'intuizione: ogni interruttore è circoscritto a un servizio concreto e a un beneficio concreto, così puoi attivare esattamente ciò che è utile al tuo lavoro e nient'altro.
 
-### Consenti i tasselli della mappa
+### Consenti tessere della mappa
 
-Necessario per qualsiasi mappa interattiva nell'app (il selettore di posizione, la mappa dal vivo di Survey e la mappa della Session). Una volta attivo, i componenti mappa scaricano tasselli raster dai server pubblici di **OpenStreetMap**; le richieste delle coordinate dei tasselli rivelano quale area del mondo stai guardando. I tasselli vengono memorizzati localmente in cache fino a sei mesi, con un tetto di 6000 tasselli, così le visualizzazioni ripetute restano efficienti senza crescere all'infinito. Attivarlo abilita anche **Consenti la ricerca dei nomi dei luoghi**, perché la maggior parte di chi carica le mappe si aspetta che le Sessions mostrino anche nomi di luogo leggibili. Puoi poi disattivare separatamente la ricerca dei nomi dei luoghi. Quando i tasselli sono disattivati, ogni schermata con mappa ripiega su una scheda segnaposto, così il resto dell'app continua a funzionare senza fughe verso la rete.
+Necessario per qualsiasi mappa interattiva nell'app (il selettore di posizione, la mappa dal vivo di Survey e la mappa della Session). Una volta attivo, i componenti mappa scaricano tasselli raster dai server pubblici di **OpenStreetMap**; le richieste delle coordinate dei tasselli rivelano quale area del mondo stai guardando. I tasselli vengono memorizzati localmente in cache fino a sei mesi, con un tetto di 6000 tasselli, così le visualizzazioni ripetute restano efficienti senza crescere all'infinito. Attivarlo abilita anche **Consenti ricerca nome luogo**, perché la maggior parte di chi carica le mappe si aspetta che le Sessions mostrino anche nomi di luogo leggibili. Puoi poi disattivare separatamente la ricerca dei nomi dei luoghi. Quando i tasselli sono disattivati, ogni schermata con mappa ripiega su una scheda segnaposto, così il resto dell'app continua a funzionare senza fughe verso la rete.
 
-### Consenti la ricerca dei nomi dei luoghi
+### Consenti ricerca nome luogo
 
 Una volta attivo, l'app invia le coordinate registrate al servizio **Nominatim di OpenStreetMap** per ricavare un nome di luogo breve (ad esempio *«Berlino, Germania»*), mostrato accanto alla Session nella Libreria delle sessioni e nel Riepilogo sessione. L'intuizione: le coordinate numeriche sono precise ma difficili da leggere a colpo d'occhio scorrendo un lungo elenco di Sessions; un nome di luogo rende l'elenco leggibile in un istante. Se disattivato, le Sessions mostrano solo latitudine e longitudine grezze e Nominatim non viene mai contattato.
 
-### Consenti la consultazione meteo
+### Consenti ricerca meteo
 
 Una volta attivo, ogni Session salvata acquisisce tramite **Open-Meteo** un'istantanea una tantum delle condizioni locali (temperatura, precipitazioni, vento, nuvolosità) alle coordinate di registrazione e all'orario di fine. L'istantanea compare nel Riepilogo sessione sotto la riga della posizione e viene riportata nell'esportazione JSON, nel blocco di metadati della Session e nel report HTML. L'intuizione: il meteo è uno dei predittori più forti dell'attività degli uccelli, e catturarlo automaticamente — senza doverti ricordare di consultare un'altra app — rende ogni Session un documento più completo. Open-Meteo è un servizio gratuito e non richiede né account né chiave API. Se disattivato, non viene recuperato né conservato alcun dato meteo. Anche la configurazione di Point Count e Survey mostra una scheda meteo compatta vicino ai controlli di posizione: chiede questo consenso solo quando serve, una volta abilitata mostra l'anteprima come icona + temperatura + vento e riutilizza la stessa istantanea in cache al salvataggio della Session.
 
@@ -399,19 +399,19 @@ Una volta attivo, ogni Session salvata acquisisce tramite **Open-Meteo** un'ista
 
 La riga **Informazioni** apre la schermata informativa all'interno dell'app.
 
-## Zona pericolosa
+## Zona di pericolo
 
-### Reimposta l'introduzione
+### Ripristina introduzione
 
 Mostra di nuovo la sequenza introduttiva al successivo avvio dell'app.
 
-### Reimposta tutte le impostazioni
+### Ripristina tutte le impostazioni
 
 Riporta ogni preferenza di questa schermata al valore predefinito. Sessions, registrazioni, memo vocali, esportazioni e tasselli della mappa in cache restano intatti: vengono cancellate solo le preferenze salvate (cursori, interruttori, scelte dei selettori). Dopo la conferma l'app si chiude, così i nuovi valori predefiniti hanno effetto al prossimo avvio.
 
 Utile quando non sei sicuro di quale cursore hai spostato rompendo qualcosa, o quando consegni il dispositivo a un'altra persona e vuoi una configurazione pulita senza perdere i dati raccolti.
 
-### Cancella tutti i dati
+### Elimina tutti i dati
 
 Elimina definitivamente Sessions, rilevazioni, registrazioni, memo vocali, elenchi di specie personalizzati, preferenze salvate e i dati in cache di mappe, nomi dei luoghi, meteo, riproduzione, riepilogo e condivisione. La finestra di conferma richiede di digitare `DELETE` e poi chiude l'app, così il prossimo avvio riparte da uno stato locale pulito.
 

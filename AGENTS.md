@@ -31,7 +31,7 @@ This file is for coding agents working in this repository.
 
 - lib/core: app-wide constants, services, theme, and infrastructure.
 - lib/shared: shared models, providers, utilities, and widgets.
-- lib/features: feature modules (about, announcements, aru, audio, explore, file_analysis, history, home, inference, live, onboarding, point_count, recording, settings, spectrogram, survey).
+- lib/features: feature modules (about, announcements, aru, audio, explore, file_analysis, history, home, inference, live, onboarding, point_count, recording, settings, spectrogram, survey, upload).
 - lib/l10n: ARB localization source files and generated localization outputs.
 - docs: user/developer documentation.
 - dev and tools: maintenance scripts, model pipelines, and release helpers.

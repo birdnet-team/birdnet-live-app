@@ -20,7 +20,7 @@
 //
 // ### "Use GPS" setting
 //
-// When the user turns off Settings → Location → Use GPS, the service stops
+// When the user turns off Settings → Location & Species Filter → Use GPS, the service stops
 // touching location hardware entirely and hands back the manually entered
 // coordinates instead.  Permission requests become no-ops.  This is enforced
 // here rather than at each call site so no feature can prompt behind the

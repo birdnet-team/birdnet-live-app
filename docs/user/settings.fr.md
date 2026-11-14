@@ -21,7 +21,7 @@ Pour trouver un réglage par son nom, appuyez sur le bouton :app-searchRounded: 
 
 Définit la langue de l'interface.
 
-### Noms d'espèces
+### Noms des espèces
 
 Contrôle la langue utilisée pour les noms d'espèces. **Système** utilise la langue préférée du téléphone lorsque ce nom est disponible, même si l'interface bascule en anglais. **Suivre l'application** utilise plutôt la langue de l'interface.
 
@@ -43,7 +43,7 @@ La configuration de Survey, Point Count et ARU mémorise le dernier nom d'observ
 
 La configuration ARU mémorise le dernier ID d'ARU/station non vide et le préremplit pour le déploiement suivant. Lorsqu'il est renseigné, l'ID figure dans le nom de la session ARU et dans les noms de fichiers d'export, de sorte que les déploiements répétés sur des sites fixes restent identifiables en dehors de l'application.
 
-### Affichage des horodatages
+### Affichage de l'horodatage
 
 Contrôle la façon dont les heures de chaque détection apparaissent dans le résumé de la session.
 
@@ -80,11 +80,11 @@ Un panneau avec deux commandes indépendantes : **Microphone** — depuis quelle
 
 | Option | Effet |
 |---|---|
-| **Réglage par défaut du téléphone** | Ce que fait normalement votre téléphone, traitement de la voix compris. Le comportement d'origine, et toujours celui par défaut, pour que rien ne change pour les utilisateurs existants. |
-| **Sans traitement** | Le signal brut du micro : ni réduction de bruit, ni gain automatique. Généralement le meilleur choix pour les oiseaux. |
+| **Défaut du téléphone** | Ce que fait normalement votre téléphone, traitement de la voix compris. Le comportement d'origine, et toujours celui par défaut, pour que rien ne change pour les utilisateurs existants. |
+| **Non traitée** | Le signal brut du micro : ni réduction de bruit, ni gain automatique. Généralement le meilleur choix pour les oiseaux. |
 | **Reconnaissance vocale** | Désactive elle aussi la réduction de bruit et le gain automatique, et fonctionne sur presque tous les téléphones. |
 
-**Essayez-les et comparez.** Laquelle l'emporte dépend réellement de l'appareil. *Sans traitement* est l'idéal, mais Android ne l'honore que sur les téléphones dont le fabricant déclare la prise en charge — sur les autres, il retombe silencieusement sur le comportement par défaut et sonne comme *Réglage par défaut du système*. C'est à cela que sert *Reconnaissance vocale* : les règles de compatibilité d'Android **exigent** que le gain automatique et la suppression de bruit soient désactivés pour ce mode, qui fournit donc un audio non traité de façon fiable, même sur les téléphones qui ignorent *Sans traitement*. Si passer à *Sans traitement* ne change rien, passez à *Reconnaissance vocale*.
+**Essayez-les et comparez.** Laquelle l'emporte dépend réellement de l'appareil. *Non traitée* est l'idéal, mais Android ne l'honore que sur les téléphones dont le fabricant déclare la prise en charge — sur les autres, il retombe silencieusement sur le comportement par défaut et sonne comme *Défaut du téléphone*. C'est à cela que sert *Reconnaissance vocale* : les règles de compatibilité d'Android **exigent** que le gain automatique et la suppression de bruit soient désactivés pour ce mode, qui fournit donc un audio non traité de façon fiable, même sur les téléphones qui ignorent *Non traitée*. Si passer à *Non traitée* ne change rien, passez à *Reconnaissance vocale*.
 
 Attendez-vous à ce que les options sans traitement sonnent **plus bas** : c'est l'absence de gain automatique, pas un défaut. Augmentez le **Gain** pour compenser si l'indicateur de niveau paraît faible.
 
@@ -106,9 +106,9 @@ Ce réglage concerne Live Mode. Point Count propose son propre choix d’enregis
 - **Détections uniquement** — enregistrer des extraits autour des détections
 - **Désactivé** — pas d'enregistrement audio
 
-### Contexte de l'extrait
+### Contexte du clip
 
-Lorsque **Détections uniquement** est actif, l'application affiche un unique curseur **Contexte de l'extrait** (0–5 s) qui fixe la quantité d'audio conservée **de part et d'autre** de chaque détection. Point Count utilise cette même valeur lorsque **Extraits** est sélectionné dans sa configuration et permet de la modifier à cet endroit. Chaque extrait dure `fenêtre d'analyse + 2 × contexte de l'extrait` : avec une fenêtre d'analyse de 3 s et le contexte par défaut de 1 s, l'extrait enregistré fait donc 5 s. Un contexte de 2 s donne un extrait de 7 s (2 s avant + 3 s d'audio analysé + 2 s après). Des valeurs plus élevées vous laissent plus de marge pour l'inspection visuelle ou des outils d'analyse externes, au prix d'espace disque ; 0 n'enregistre que la fenêtre analysée elle-même.
+Lorsque **Détections uniquement** est actif, l'application affiche un unique curseur **Contexte du clip** (0–5 s) qui fixe la quantité d'audio conservée **de part et d'autre** de chaque détection. Point Count utilise cette même valeur lorsque **Extraits** est sélectionné dans sa configuration et permet de la modifier à cet endroit. Chaque extrait dure `fenêtre d'analyse + 2 × contexte de l'extrait` : avec une fenêtre d'analyse de 3 s et le contexte par défaut de 1 s, l'extrait enregistré fait donc 5 s. Un contexte de 2 s donne un extrait de 7 s (2 s avant + 3 s d'audio analysé + 2 s après). Des valeurs plus élevées vous laissent plus de marge pour l'inspection visuelle ou des outils d'analyse externes, au prix d'espace disque ; 0 n'enregistre que la fenêtre analysée elle-même.
 
 ### Format d'enregistrement
 
@@ -116,7 +116,7 @@ Choisissez **WAV** ou **FLAC**. WAV est plus volumineux mais largement compatibl
 
 Ce réglage s'applique à l'audio enregistré par BirdNET Live. L'**Analyse de fichiers** conserve une copie gérée par l'application du fichier importé dans son format d'origine : les fichiers MP3, AAC, WAV et FLAC restent donc consultables sans étape de conversion supplémentaire.
 
-### Enregistrer les sessions automatiquement (Live et Point Count)
+### Enregistrer les Sessions automatiquement (Live et Point Count)
 
 Une fois activé (valeur par défaut), une session Live ou Point Count terminée est ajoutée automatiquement à votre bibliothèque dès qu'elle prend fin. Une fois désactivé, une session terminée s'ouvre dans le résumé avec la mention **non enregistrée** : l'icône d'enregistrement est mise en évidence et vous devez appuyer dessus pour conserver la session. Quitter le résumé sans enregistrer supprime la session et ses enregistrements. Cela convient aux écoutes rapides où vous ne souhaitez conserver qu'un résultat notable de temps en temps plutôt que d'accumuler chaque court enregistrement. Les déploiements Survey et ARU s'enregistrent toujours automatiquement — une longue session sans surveillance est trop précieuse pour être perdue faute d'avoir appuyé sur Enregistrer — ce commutateur ne s'y applique donc pas.
 
@@ -215,7 +215,7 @@ la dernière fenêtre de soutien.
 
 Définit la place qu'occupe le spectrogramme en direct à l'écran en Live Mode, Point Count, Survey et ARU. **Pleine** est la hauteur habituelle. **Moyenne** et **Petite** la réduisent à 75 % et 50 % et cèdent la différence à la liste des détections : le bon choix quand, sur un téléphone en portrait, vous suivez surtout la liste. **Désactivé** retire complètement le spectrogramme ; en Survey et ARU, l'onglet du spectrogramme disparaît aussi. En mode paysage, **Moyenne** et **Petite** raccourcissent le spectrogramme dans sa moitié d'écran (l'espace en dessous reste vide pour l'instant), et **Désactivé** laisse tout l'écran à la liste des détections. Les spectrogrammes des sessions enregistrées et de la lecture ne sont pas concernés.
 
-### Taille de FFT
+### Taille FFT
 
 Contrôle la résolution fréquentielle du spectrogramme.
 
@@ -243,31 +243,31 @@ Contrôle la finesse de mise à l'échelle de l'image du spectrogramme. **Moyenn
 
 Lorsque les Paramètres sont ouverts depuis l'Analyse de fichiers, cette section s'appelle **Lecture** et ne contient que les réglages de lecture.
 
-### Superposition de lecture dans le résumé
+### Superposition de lecture en révision
 
 Une fois activé (valeur par défaut), écouter un extrait audio dans un résumé de session composé uniquement d'extraits (où aucun enregistrement complet ni spectrogramme n'est disponible) ouvre une superposition de lecture modale dédiée, avec commandes de transport et aperçu du spectrogramme, au lieu de lire l'extrait en arrière-plan. Si une session dispose de l'audio complet, ce réglage est contourné et la superposition de lecture n'apparaît jamais.
 
-### Lire automatiquement les mémos vocaux
+### Lecture automatique des mémos vocaux
 
 Désactivé par défaut. Une fois activé, un mémo vocal joint à une annotation horodatée est lu automatiquement pendant le Résumé de la session, au moment où la tête de lecture franchit sa position enregistrée. Le mémo est mixé par-dessus l'enregistrement plutôt que de le mettre en pause, vous entendez donc votre commentaire en contexte, avec l'audio d'origine. Laissez-le désactivé si vous préférez déclencher les mémos manuellement en appuyant sur leur étiquette d'annotation.
 
-### Atténuation lors des mémos vocaux
+### Atténuation des mémos vocaux
 
-Affiché uniquement lorsque **Lire automatiquement les mémos vocaux** est activé. Contrôle de combien l'enregistrement principal est atténué pendant la lecture d'un mémo vocal automatique. Des valeurs plus élevées rendent les mémos plus faciles à comprendre ; des valeurs plus basses laissent entendre davantage de l'enregistrement d'origine sous le mémo.
+Affiché uniquement lorsque **Lecture automatique des mémos vocaux** est activé. Contrôle de combien l'enregistrement principal est atténué pendant la lecture d'un mémo vocal automatique. Des valeurs plus élevées rendent les mémos plus faciles à comprendre ; des valeurs plus basses laissent entendre davantage de l'enregistrement d'origine sous le mémo.
 
 ### Annonces
 
 Ces réglages déterminent si BirdNET Live doit **lire les détections à voix haute dans vos écouteurs ou par le haut-parleur du téléphone** pendant qu'une session enregistre. La fonction entière est **désactivée par défaut**, car elle modifie l'environnement acoustique autour du micro : l'activer est un compromis assumé. Il n'y a pas d'assistant de configuration : les sélecteurs de niveau de détail × fréquence ci-dessous *constituent* toute la configuration, vous pouvez donc appuyer sur un autre préréglage à tout moment et entendre la différence immédiatement. L'intuition : lors de longs relevés, vous ne pouvez pas garder les yeux sur l'écran ; une voix discrète à l'oreille vous permet de rester concentré sur l'habitat tout en sachant ce qui vient d'être entendu.
 
-### Lire les détections à voix haute (interrupteur principal)
+### Énoncer les détections
 
 Désactivé par défaut. Une fois activé, l'application énonce chaque détection acceptée à l'aide de la synthèse vocale intégrée de votre appareil. **Les écouteurs sont vivement recommandés** : avec le haut-parleur du téléphone, l'annonce risque d'être captée par le micro et détectée à nouveau ; l'application coupe donc brièvement l'enregistrement autour de chaque énoncé pour éviter cette boucle (voir *Couper le micro pendant la parole* plus bas).
 
-### Préréglage de niveau de détail
+### Verbosité
 
 Ce que l'application dit de chaque détection. **Minimal** énonce uniquement le nom de l'espèce (idéal pour les relevés très longs où vous ne voulez que le signal). **Équilibré** est le réglage par défaut : des formules courtes et variées comme *« Rougegorge »*, *« On entend un rougegorge »*, *« Encore un rougegorge »*. **Bavard** ajoute un peu plus de contexte et se rapproche d'un commentaire à vos côtés. **Personnalisé** apparaît automatiquement si vous ajustez à la main les valeurs numériques d'Avancé. L'intuition : les mêmes réglages de limitation peuvent sembler trop discrets ou trop bavards selon la formulation — le niveau de détail vous permet de conserver la cadence et de ne régler que le nombre de mots.
 
-### Préréglage de fréquence
+### Fréquence
 
 À quelle fréquence l'application est autorisée à parler. Cinq paliers, du plus discret au plus bavard. **Rare** et **Parcimonieux** attendent longtemps entre les annonces et en limitent le rythme : bien adaptés aux relevés de plusieurs heures où vous voulez percevoir l'activité sans commentaire continu. **Normal** est la cadence conversationnelle par défaut. **Fréquent** raccourcit les intervalles et relève le plafond ; adapté aux courtes sessions Live ou lorsque vous voulez un retour plus proche du temps réel. **Constant** supprime totalement le délai initial et laisse l'application parler à presque chaque cycle de détection : utile pour les démonstrations, l'accessibilité, ou lorsque l'attente avant la première annonce en mode *Fréquent* vous paraît trop longue. **Personnalisé** apparaît lorsque vous modifiez les champs de temporisation dans Avancé. L'intuition : c'est le seul réglage qui décide si l'application reste en arrière-plan ou devient une présence — appuyez sur un autre préréglage et vous entendrez la nouvelle cadence dès le cycle de détection suivant, sans bouton d'enregistrement.
 
@@ -320,7 +320,7 @@ Les téléchargements de cartes hors ligne sont masqués pour l'instant, tant qu
 - **Filtre adaptatif par position** — exiger d'autant plus de certitude que l'espèce est peu commune ici
 - **Pondération par position** — utiliser le géo-modèle comme signal de pondération supplémentaire
 
-### Seuil du géo-filtre
+### Seuil du filtre géographique
 
 Apparaît lorsque **Filtre par position** ou **Pondération par position** est actif. Le filtre adaptatif détermine lui-même son seuil à partir de la composition locale en espèces : il n'a donc pas de curseur.
 
@@ -362,7 +362,7 @@ Inclure l'audio enregistré à côté des tableaux ou métadonnées exportés lo
 
 Affiché uniquement lorsque **Inclure les fichiers audio** est activé. Une fois activé, les enregistrements FLAC sont convertis en WAV avant partage ou export. WAV est universellement compatible mais nettement plus volumineux que FLAC : laissez donc cette option désactivée, sauf si l'outil destinataire ne sait pas lire le FLAC — certains logiciels d'analyse de bureau anciens et quelques formulaires d'envoi ne le savent toujours pas.
 
-### Inclure les métadonnées de l'application
+### Inclure les métadonnées de l'app
 
 Une fois activé, l'archive ZIP d'export contient un fichier annexe `*.metadata.json` décrivant comment la session a été produite : version de BirdNET Live, identité du modèle, relevé météo capturé au début de la session et tout avertissement d'intégrité audio détecté pendant l'enregistrement. L'intuition : c'est cette traçabilité qui vous permet (ou permet à un relecteur) de reproduire ou de vérifier une session des mois plus tard. Désactivez-la lorsque vous voulez partager proprement uniquement l'audio et les formats choisis — par exemple déposer un seul fichier WAV sur iNaturalist ou eBird sans fichiers propres à l'application.
 
@@ -385,13 +385,13 @@ Cette section détermine **quels services tiers BirdNET Live peut contacter en v
 
 ### Autoriser les tuiles de carte
 
-Nécessaire pour toute carte interactive de l'application (le sélecteur de position, la carte en direct de Survey et la carte de la session). Une fois activé, les composants cartographiques récupèrent des tuiles raster depuis les serveurs publics d'**OpenStreetMap** ; les requêtes de coordonnées de tuiles révèlent quelle zone du monde vous consultez. Les tuiles sont mises en cache localement jusqu'à six mois, avec un plafond de 6000 tuiles pour que la consultation répétée des cartes reste efficace sans croître indéfiniment. Activer cette option active aussi **Autoriser la recherche de noms de lieux**, car la plupart des personnes qui chargent des cartes s'attendent également à voir des noms de lieux lisibles sur leurs sessions. Vous pouvez ensuite désactiver séparément la recherche de noms de lieux. Lorsque les tuiles de carte sont désactivées, chaque écran cartographique bascule sur une carte de substitution, si bien que le reste de l'application continue de fonctionner sans fuite réseau.
+Nécessaire pour toute carte interactive de l'application (le sélecteur de position, la carte en direct de Survey et la carte de la session). Une fois activé, les composants cartographiques récupèrent des tuiles raster depuis les serveurs publics d'**OpenStreetMap** ; les requêtes de coordonnées de tuiles révèlent quelle zone du monde vous consultez. Les tuiles sont mises en cache localement jusqu'à six mois, avec un plafond de 6000 tuiles pour que la consultation répétée des cartes reste efficace sans croître indéfiniment. Activer cette option active aussi **Autoriser la recherche du nom du lieu**, car la plupart des personnes qui chargent des cartes s'attendent également à voir des noms de lieux lisibles sur leurs sessions. Vous pouvez ensuite désactiver séparément la recherche de noms de lieux. Lorsque les tuiles de carte sont désactivées, chaque écran cartographique bascule sur une carte de substitution, si bien que le reste de l'application continue de fonctionner sans fuite réseau.
 
-### Autoriser la recherche de noms de lieux
+### Autoriser la recherche du nom du lieu
 
 Une fois activé, l'application envoie vos coordonnées enregistrées au service **Nominatim d'OpenStreetMap** afin d'obtenir un nom de lieu court (par exemple *« Berlin, Allemagne »*), affiché à côté de la session dans la Bibliothèque de sessions et le Résumé de la session. L'intuition : des coordonnées numériques sont précises mais difficiles à parcourir du regard dans une longue liste de sessions — un nom de lieu rend la liste lisible d'un coup d'œil. Une fois désactivé, les sessions n'affichent que la latitude et la longitude brutes, et Nominatim n'est jamais contacté.
 
-### Autoriser la consultation météo
+### Autoriser la recherche météo
 
 Une fois activé, chaque session enregistrée capture via **Open-Meteo** un relevé ponctuel des conditions locales (température, précipitations, vent, nébulosité) aux coordonnées d'enregistrement et à l'heure de fin. Le relevé apparaît dans le Résumé de la session sous la ligne de position et est repris dans l'export JSON, le bloc de métadonnées de la session et le rapport HTML. L'intuition : la météo est l'un des meilleurs prédicteurs de l'activité des oiseaux, et la capturer automatiquement — sans devoir penser à consulter une autre application — fait de chaque session un enregistrement plus complet. Open-Meteo est un service gratuit qui ne nécessite ni compte ni clé d'API. Une fois désactivé, aucune donnée météo n'est récupérée ni conservée. La configuration Point Count et Survey affiche également une carte météo compacte près des commandes de position : elle ne demande ce consentement que lorsque c'est nécessaire, présente le résultat sous forme d'icône + température + vent une fois activée, et réutilise le même relevé en cache lors de l'enregistrement de la session.
 
@@ -411,7 +411,7 @@ Rétablit chaque préférence de cet écran à sa valeur par défaut. Les sessio
 
 Utile lorsque vous ne savez plus quel curseur vous avez déplacé et qui a cassé quelque chose, ou lorsque vous confiez l'appareil à quelqu'un d'autre et voulez une configuration propre sans perdre les données collectées.
 
-### Effacer toutes les données
+### Supprimer toutes les données
 
 Supprime définitivement les sessions, détections, enregistrements, mémos vocaux, listes d'espèces personnalisées, préférences enregistrées, ainsi que les données en cache de cartes, noms de lieux, météo, lecture, résumé et partage. La boîte de dialogue de confirmation exige de saisir `DELETE`, puis ferme l'application afin que le prochain lancement reparte d'un état local vierge.
 

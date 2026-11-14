@@ -71,7 +71,7 @@ Al deslizar una fila de **encabezado de especie** (a izquierda o derecha) se eli
 
 ### Compartir una sola detección
 
-La opción :app-share: **Compartir detección** usa las mismas opciones que **Ajustes → Exportar y sincronizar**. Exporta solo esta detección en los artefactos Raven, CSV, JSON, GPX, HTML y metadatos de la app seleccionados. Cuando **Incluir archivos de audio** está activado, el paquete también contiene el audio de la detección; se respeta **Compartir siempre el audio como WAV**. Si se desactivan todos los formatos complementarios, HTML y los metadatos de la app, la hoja de compartir del sistema recibe el clip de audio sin ZIP.
+La opción :app-share: **Compartir detección** usa las mismas opciones que **Ajustes → Exportación y sincronización**. Exporta solo esta detección en los artefactos Raven, CSV, JSON, GPX, HTML y metadatos de la app seleccionados. Cuando **Incluir archivos de audio** está activado, el paquete también contiene el audio de la detección; se respeta **Compartir audio siempre como WAV**. Si se desactivan todos los formatos complementarios, HTML y los metadatos de la app, la hoja de compartir del sistema recibe el clip de audio sin ZIP.
 
 El audio adjunto se resuelve en este orden:
 

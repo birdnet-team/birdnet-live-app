@@ -67,7 +67,7 @@ BirdNET Live 会自动保存每个已完成的 Session，并在处理结束后�
 ## 推荐接着阅读
 
 - 如果想快速了解界面上反复出现的符号，请阅读[图标与控件](icons-and-controls.md)。
-- 在更改阈值、筛选、录音行为或语谱图显示之前，请阅读[设置](settings.md)。
+- 在更改阈值、筛选、录音行为或声谱图显示之前，请阅读[设置](settings.md)。
 - 打开您最常用工作方式的指南：[Live 模式](live-mode.md)、[Point Count 模式](point-count-mode.md)、[Survey 模式](survey-mode.md) 或[文件分析](file-analysis.md)。
 
 ## 权限

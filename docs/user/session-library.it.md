@@ -51,7 +51,7 @@ Ogni orario mostrato nella Libreria Sessions — righe dell'elenco, intestazioni
 
 Ogni riga di Session offre due modi per agire su di essa:
 
-- **Menu a tre punti** (:app-moreVert:) sulla destra di ogni scheda apre un piccolo menu con **Apri**, **Condividi** ed **Elimina**. La condivisione usa le tue preferenze attuali di Impostazioni → Esportazione (formato e "includi audio") e apre direttamente il foglio di condivisione del sistema — senza bisogno di aprire prima il Riepilogo sessione solo per inviare una Session a un collega.
+- **Menu a tre punti** (:app-moreVert:) sulla destra di ogni scheda apre un piccolo menu con **Apri**, **Condividi** ed **Elimina**. La condivisione apre una finestra di dialogo le cui caselle **Audio** e **Metadati** partono dalle scelte di Impostazioni → Esportazione e sincronizzazione e valgono solo per quella condivisione, poi apre il foglio di condivisione del sistema — senza bisogno di aprire prima il Riepilogo sessione solo per inviare una Session a un collega.
 - **Scorri** la riga verso sinistra o verso destra per eliminarla. Prima di rimuovere qualcosa appare comunque una finestra di conferma, così uno scorrimento accidentale è recuperabile.
 
 ## Cosa succede dopo

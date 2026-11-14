@@ -51,7 +51,7 @@ Cada carimbo de data/hora exibido nas Sessões — linhas da lista, cabeçalhos 
 
 Cada linha de Session tem duas formas de ação:
 
-- O **menu de três pontos** (:app-moreVert:) à direita de cada cartão abre um pequeno menu com **Abrir**, **Compartilhar** e **Excluir**. O compartilhamento usa suas preferências atuais de Configurações → Exportação (formato e "incluir áudio") e abre diretamente o menu de compartilhamento da plataforma — sem precisar abrir antes o Resumo da Session só para enviar uma Session a um colega.
+- O **menu de três pontos** (:app-moreVert:) à direita de cada cartão abre um pequeno menu com **Abrir**, **Compartilhar** e **Excluir**. O compartilhamento abre uma caixa de diálogo cujas opções **Áudio** e **Metadados** começam iguais às de Configurações → Exportação e sincronização e valem só para aquele compartilhamento, e depois abre o menu de compartilhamento da plataforma — sem precisar abrir antes o Resumo da Session só para enviar uma Session a um colega.
 - **Deslize** a linha para a esquerda ou para a direita para excluí-la. Uma caixa de confirmação ainda aparece antes de remover qualquer coisa, então um deslize acidental é recuperável.
 
 ## O que acontece a seguir

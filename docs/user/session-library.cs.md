@@ -51,7 +51,7 @@ Každý časový údaj v Knihovně Sessions — řádky seznamu, záhlaví denn�
 
 S každým řádkem session lze pracovat dvěma způsoby:
 
-- **Nabídka tří teček** (:app-moreVert:) vpravo na každé kartě otevře malou nabídku s položkami **Otevřít**, **Sdílet** a **Smazat**. Sdílení používá vaše aktuální nastavení v Nastavení → Export a synchronizace (formát a „zahrnout zvukové soubory“) a otevře systémový panel sdílení přímo — není nutné nejprve otevírat Přehled Session, abyste session poslali kolegovi.
+- **Nabídka tří teček** (:app-moreVert:) vpravo na každé kartě otevře malou nabídku s položkami **Otevřít**, **Sdílet** a **Smazat**. Sdílení otevře dialog, jehož volby **Zvuk** a **Metadata** jsou předvyplněné podle Nastavení → Export a synchronizace a platí jen pro toto sdílení, a poté systémový panel sdílení — není nutné nejprve otevírat Přehled Session, abyste session poslali kolegovi.
 - **Přejetí** řádku doleva nebo doprava jej smaže. Před odstraněním se stále zobrazí potvrzovací dialog, takže náhodné přejetí lze vrátit.
 
 ## Co následuje

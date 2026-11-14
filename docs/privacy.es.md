@@ -35,7 +35,7 @@ BirdNET-Team no opera un backend para la app y no recibe a través de BirdNET Li
 | Resultados de detección | Especies, confianza, marcas de tiempo | Archivos JSON de sesión locales |
 | Coordenadas GPS | Geoetiquetado de detecciones, trazas de Survey, predicciones del geomodelo | Archivos JSON de sesión locales |
 | Metadatos de sesión | Historial de sesiones, revisión, exportación | Archivos JSON de sesión locales |
-| Instantánea meteorológica (opcional) | Captura puntual de temperatura, precipitación, viento, nubosidad y código del tiempo por sesión cuando **Permitir consulta meteorológica** está activo | Archivos JSON de sesión locales |
+| Instantánea meteorológica (opcional) | Captura puntual de temperatura, precipitación, viento, nubosidad y código del tiempo por sesión cuando **Permitir consulta del clima** está activo | Archivos JSON de sesión locales |
 | Ajustes de la app | Preferencias del usuario | SharedPreferences |
 
 ### Datos offline integrados
@@ -48,9 +48,9 @@ La app puede acceder a los siguientes recursos externos. Cada recurso está cont
 
 | Recurso | Propósito | Controlado por | Enviado en cada solicitud |
 |---------|-----------|----------------|---------------------------|
-| Mosaicos de mapa (OpenStreetMap Foundation) | Mapa base para el selector de ubicación, el mapa en vivo de Survey y el mapa de la Session | **Ajustes → Privacidad → Permitir mosaicos de mapa** | Coordenadas de mosaico `(z, x, y)`, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
-| Geocodificación inversa (Nominatim de OpenStreetMap Foundation) | Resolver coordenadas GPS en un nombre de lugar legible (p. ej. “Madrid, España”) para mostrar en la Session | **Ajustes → Privacidad → Permitir búsqueda de nombre de lugar** | La latitud/longitud de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
-| Instantánea meteorológica (OpenMeteo GmbH) | Captura puntual de las condiciones locales (temperatura, precipitación, viento, nubosidad, código WMO) en las coordenadas de grabación y la hora de fin | **Ajustes → Privacidad → Permitir consulta meteorológica** | La latitud/longitud y hora de fin de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
+| Mosaicos de mapa (OpenStreetMap Foundation) | Mapa base para el selector de ubicación, el mapa en vivo de Survey y el mapa de la Session | **Ajustes → Privacidad → Permitir mosaicos del mapa** | Coordenadas de mosaico `(z, x, y)`, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
+| Geocodificación inversa (Nominatim de OpenStreetMap Foundation) | Resolver coordenadas GPS en un nombre de lugar legible (p. ej. “Madrid, España”) para mostrar en la Session | **Ajustes → Privacidad → Permitir búsqueda de nombre del lugar** | La latitud/longitud de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
+| Instantánea meteorológica (OpenMeteo GmbH) | Captura puntual de las condiciones locales (temperatura, precipitación, viento, nubosidad, código WMO) en las coordenadas de grabación y la hora de fin | **Ajustes → Privacidad → Permitir consulta del clima** | La latitud/longitud y hora de fin de la Session, su dirección IP como parte de la conexión de red y el user-agent de BirdNET Live |
 
 Las solicitudes de mosaicos de mapa son solicitudes HTTPS GET a `tile.openstreetmap.org`. Las coordenadas identifican la zona del mapa visualizada. Como cualquier solicitud directa por Internet, también exponen su dirección IP al proveedor.
 
@@ -60,7 +60,7 @@ Las solicitudes meteorológicas envían la latitud/longitud de la sesión y la m
 
 **Tratamiento y retención por terceros:** BirdNET-Team no opera estos servicios ni recibe los datos de sus solicitudes. OpenStreetMap Foundation puede tratar datos de acceso a la red y detalles de las solicitudes conforme a su [Política de Privacidad](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo indica que los registros de su API gratuita pueden contener direcciones IP y coordenadas geográficas y que se eliminan tras 90 días; consulte sus [Términos y Privacidad](https://open-meteo.com/en/terms). Estos proveedores pueden tratar datos en otros países. Los valores devueltos se guardan localmente en la Session y solo se incluyen en una exportación cuando usted la crea.
 
-**Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Los nombres de lugar e instantáneas meteorológicas ya almacenados localmente permanecen adjuntos a las sesiones donde se capturaron; elimine esas sesiones desde Session Library o use **Ajustes → Zona de peligro → Borrar todos los datos** para eliminar esos datos históricos.
+**Revocación:** puede desactivar cualquiera de los tres servicios en cualquier momento bajo **Ajustes → Privacidad**. Los nombres de lugar e instantáneas meteorológicas ya almacenados localmente permanecen adjuntos a las sesiones donde se capturaron; elimine esas sesiones desde Session Library o use **Ajustes → Zona de peligro → Eliminar todos los datos** para eliminar esos datos históricos.
 
 **No se realizan otras solicitudes de red.** La app funciona completamente sin conexión.
 
@@ -82,7 +82,7 @@ Los datos GPS se almacenan localmente y se incluyen en las exportaciones solo cu
 
 ## Exportación de datos
 
-Puede exportar los datos de sesión en varios formatos (Raven Selection Tables, CSV, JSON, GPX) y marcar cualquier combinación de formatos a la vez bajo **Ajustes → Exportar → Formatos**; los formatos seleccionados se agrupan en un único ZIP junto con los clips de audio y el informe HTML autónomo opcional. Las exportaciones se generan localmente y se comparten mediante la hoja de compartir del sistema. La app no sube los datos de exportación a ningún servidor, salvo a los destinos de subida que usted mismo haya añadido (véase más abajo).
+Puede exportar los datos de sesión en varios formatos (Raven Selection Tables, CSV, JSON, GPX) y marcar cualquier combinación de formatos a la vez bajo **Ajustes → Exportación y sincronización → Formatos**; los formatos seleccionados se agrupan en un único ZIP junto con los clips de audio y el informe HTML autónomo opcional. Las exportaciones se generan localmente y se comparten mediante la hoja de compartir del sistema. La app no sube los datos de exportación a ningún servidor, salvo a los destinos de subida que usted mismo haya añadido (véase más abajo).
 
 ## Destinos de subida
 
@@ -94,7 +94,7 @@ Los destinos los gestionan los organizadores de los proyectos, no BirdNET-Team, 
 
 ## Eliminación de datos
 
-Las sesiones individuales y sus grabaciones pueden eliminarse desde Session Library. Para borrar desde dentro de la app las sesiones locales, grabaciones, notas de voz, listas de especies personalizadas, preferencias y cachés de BirdNET Live, use **Ajustes → Zona de peligro → Borrar todos los datos**. También puede borrar el almacenamiento de la app BirdNET Live en los ajustes de su sistema operativo o desinstalar la app.
+Las sesiones individuales y sus grabaciones pueden eliminarse desde Session Library. Para borrar desde dentro de la app las sesiones locales, grabaciones, notas de voz, listas de especies personalizadas, preferencias y cachés de BirdNET Live, use **Ajustes → Zona de peligro → Eliminar todos los datos**. También puede borrar el almacenamiento de la app BirdNET Live en los ajustes de su sistema operativo o desinstalar la app.
 
 ## Contacto
 

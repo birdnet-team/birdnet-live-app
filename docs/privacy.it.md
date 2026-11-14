@@ -48,7 +48,7 @@ L'app può accedere alle seguenti risorse esterne. Ciascuna è controllata da un
 
 | Risorsa | Scopo | Controllato da | Inviato per ogni richiesta |
 |---------|-------|----------------|----------------------------|
-| Tile della mappa (OpenStreetMap Foundation) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della Session | **Impostazioni → Privacy → Consenti tile della mappa** | Coordinate del tile `(z, x, y)`, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
+| Tile della mappa (OpenStreetMap Foundation) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della Session | **Impostazioni → Privacy → Consenti tessere della mappa** | Coordinate del tile `(z, x, y)`, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 | Geocoding inverso (Nominatim di OpenStreetMap Foundation) | Risolvere coordinate GPS in un nome di luogo leggibile (es. “Roma, Italia”) per la visualizzazione della Session | **Impostazioni → Privacy → Consenti ricerca nome luogo** | Latitudine/longitudine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 | Snapshot meteo (OpenMeteo GmbH) | Cattura una tantum delle condizioni locali (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate di registrazione e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | Latitudine/longitudine e ora di fine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 
@@ -60,7 +60,7 @@ Le richieste meteo inviano la latitudine/longitudine della sessione e il timesta
 
 **Trattamento e conservazione da parte di terzi:** BirdNET-Team non gestisce questi servizi e non riceve i dati delle richieste. OpenStreetMap Foundation può trattare dati di accesso alla rete e dettagli delle richieste secondo la propria [Informativa sulla Privacy](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo dichiara che i log della sua API gratuita possono contenere indirizzi IP e coordinate geografiche e vengono eliminati dopo 90 giorni; consulta i suoi [Termini e Privacy](https://open-meteo.com/en/terms). I fornitori possono trattare i dati in altri Paesi. I valori restituiti vengono salvati localmente nella Session e inclusi in un'esportazione solo quando la crei.
 
-**Revoca:** puoi disattivare ciascuno dei tre servizi in qualsiasi momento da **Impostazioni → Privacy**. I nomi di luogo e gli snapshot meteo già archiviati localmente restano associati alle sessioni in cui sono stati acquisiti; elimina quelle sessioni dalla Libreria delle sessioni oppure usa **Impostazioni → Zona pericolosa → Cancella tutti i dati** per rimuovere quei dati storici.
+**Revoca:** puoi disattivare ciascuno dei tre servizi in qualsiasi momento da **Impostazioni → Privacy**. I nomi di luogo e gli snapshot meteo già archiviati localmente restano associati alle sessioni in cui sono stati acquisiti; elimina quelle sessioni dalla Libreria delle sessioni oppure usa **Impostazioni → Zona di pericolo → Elimina tutti i dati** per rimuovere quei dati storici.
 
 **Nessun'altra richiesta di rete viene effettuata.** L'app funziona completamente offline.
 
@@ -82,7 +82,7 @@ I dati GPS sono archiviati localmente e inclusi nelle esportazioni solo quando c
 
 ## Esportazione Dati
 
-Puoi esportare i dati di sessione in più formati (Raven Selection Tables, CSV, JSON, GPX) e spuntare qualsiasi combinazione di formati contemporaneamente sotto **Impostazioni → Esporta → Formati**; i formati selezionati vengono raggruppati in un unico ZIP insieme alle clip audio e al report HTML autonomo opzionale. Le esportazioni sono generate localmente e condivise tramite il pannello di condivisione del sistema. L'app non carica alcun dato di esportazione su server, tranne verso le destinazioni di caricamento che hai aggiunto tu stesso (vedi sotto).
+Puoi esportare i dati di sessione in più formati (Raven Selection Tables, CSV, JSON, GPX) e spuntare qualsiasi combinazione di formati contemporaneamente sotto **Impostazioni → Esportazione e sincronizzazione → Formati**; i formati selezionati vengono raggruppati in un unico ZIP insieme alle clip audio e al report HTML autonomo opzionale. Le esportazioni sono generate localmente e condivise tramite il pannello di condivisione del sistema. L'app non carica alcun dato di esportazione su server, tranne verso le destinazioni di caricamento che hai aggiunto tu stesso (vedi sotto).
 
 ## Destinazioni di caricamento
 
@@ -94,7 +94,7 @@ Le destinazioni sono gestite da chi organizza i progetti, non da BirdNET-Team, s
 
 ## Cancellazione Dati
 
-Le singole sessioni e le loro registrazioni possono essere eliminate dalla Libreria delle sessioni. Per cancellare dall'app le sessioni locali, le registrazioni, le note vocali, le liste di specie personalizzate, le preferenze e le cache di BirdNET Live, usa **Impostazioni → Zona pericolosa → Cancella tutti i dati**. Puoi anche cancellare lo spazio di archiviazione dell'app BirdNET Live nelle impostazioni del tuo sistema operativo o disinstallare l'app.
+Le singole sessioni e le loro registrazioni possono essere eliminate dalla Libreria delle sessioni. Per cancellare dall'app le sessioni locali, le registrazioni, le note vocali, le liste di specie personalizzate, le preferenze e le cache di BirdNET Live, usa **Impostazioni → Zona di pericolo → Elimina tutti i dati**. Puoi anche cancellare lo spazio di archiviazione dell'app BirdNET Live nelle impostazioni del tuo sistema operativo o disinstallare l'app.
 
 ## Contatti
 

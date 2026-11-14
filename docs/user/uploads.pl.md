@@ -60,7 +60,7 @@ Link dołączenia zawiera w jednym kawałku wszystko, czego potrzebuje uczestnik
 
 Naciśnij **Build link and QR code**. Wszystko dzieje się w Twojej przeglądarce; nic nie jest nigdzie wysyłane. Sekret znajduje się w części linku po `#`, której przeglądarki nigdy nie przesyłają do serwera WWW hostującego stronę.
 
-Możesz też najpierw dołączyć do miejsca docelowego na własnym telefonie (zobacz poniżej), a następnie otworzyć miejsce docelowe w **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** i dotknąć **Pokaż kod dołączenia**. Aplikacja pokazuje ten sam rodzaj kodu QR z przyciskiem **Kopiuj link**.
+Możesz też najpierw dołączyć do miejsca docelowego na własnym telefonie (zobacz poniżej), a następnie otworzyć miejsce docelowe w **Ustawienia → Eksportuj i synchronizuj → Miejsca docelowe przesyłania** i dotknąć **Pokaż kod dołączenia**. Aplikacja pokazuje ten sam rodzaj kodu QR z przyciskiem **Kopiuj link**.
 
 ### Rozdawanie
 
@@ -76,7 +76,7 @@ Jeden folder na urządzenie, jeden ZIP na Session i ukryte rejestracje `.birdnet
 
 ### Dołączanie do miejsca docelowego
 
-1. Otwórz **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** i dotknij **Dodaj miejsce docelowe**. Zeskanowanie kodu QR projektu aparatem lub dotknięcie otrzymanego linku dołączenia prowadzi do tego samego ekranu z już wypełnionym linkiem.
+1. Otwórz **Ustawienia → Eksportuj i synchronizuj → Miejsca docelowe przesyłania** i dotknij **Dodaj miejsce docelowe**. Zeskanowanie kodu QR projektu aparatem lub dotknięcie otrzymanego linku dołączenia prowadzi do tego samego ekranu z już wypełnionym linkiem.
 2. Wklej link dołączenia, link udostępnienia Nextcloud lub adres WebDAV w pole **Link dołączenia lub adres serwera**. Przycisk **Wklej** pobiera go ze schowka.
 3. Opcjonalnie wprowadź **Identyfikator uczestnika, imię lub e-mail**. Jest zapisywany z każdym przesłaniem, aby osoba prowadząca projekt wiedziała, kto je wysłał, i nigdy nie pojawia się w nazwach folderów. Pod polem aplikacja pokazuje **Twój identyfikator przesyłania**, czyli folder, do którego trafią Twoje przesłania.
 4. W przypadku zwykłego adresu WebDAV otwórz **Zaawansowane** i wprowadź **Nazwa użytkownika** oraz **Hasło lub token**. Link udostępnienia Nextcloud nie potrzebuje żadnego z nich; jeśli udostępnienie ma hasło, wpisz je jako hasło.
@@ -115,7 +115,7 @@ Przesyłanie zaczyna się od tej samej akcji **Udostępnij**, której już używ
 
 Gdy istnieje co najmniej jedno miejsce docelowe, okno dialogowe Udostępnij ma dwie karty:
 
-- **Zawartość** określa, co zawiera eksport: **Dźwięk** (pełne nagranie lub fragmenty wykryć, gdy zachowano tylko fragmenty) i **Metadane** (tabele, raport i plik metadanych aplikacji włączone w Eksport i synchronizacja). Pola na początku odpowiadają Twoim ustawieniom i dotyczą tylko tego udostępnienia.
+- **Zawartość** określa, co zawiera eksport: **Dźwięk** (pełne nagranie lub fragmenty wykryć, gdy zachowano tylko fragmenty) i **Metadane** (tabele, raport i plik metadanych aplikacji włączone w Eksportuj i synchronizuj). Pola na początku odpowiadają Twoim ustawieniom i dotyczą tylko tego udostępnienia.
 - **Wyślij do** wyświetla **Arkusz udostępniania** (inne aplikacje, pliki, wiadomości) i jedno pole na każde miejsce docelowe. Plakietka na karcie zlicza zaznaczone miejsca docelowe. Miejsca docelowe zaznaczone ostatnio są zaznaczone z góry, z wyjątkiem tych, do których ta Session już trafiła: zaczynają odznaczone i pokazują **Przesłano** z datą oraz **Zaznacz, aby przesłać ponownie**. Po otwarciu okna aplikacja po cichu sprawdza każde miejsce docelowe; jeśli serwer oświadcza, że odrzuciłby przesłanie, na przykład z powodu zmiany hasła lub usunięcia udostępnienia, wiersz zmienia kolor na czerwony i pokazuje powód.
 
 Odznacz **Arkusz udostępniania**, a przycisk będzie brzmieć **Prześlij**; gdy zaznaczone są oba, brzmi **Udostępnij i prześlij**. Pasek powiadomienia potwierdza, ile Sessions dodano do kolejki. Session zawsze trafia najpierw do kolejki i jest przesyłana w tle, więc możesz dalej pracować.
@@ -138,7 +138,7 @@ Ponowne przesłanie tej samej Session, na przykład po poprawieniu wykryć w Prz
 
 ## Tryb ARU
 
-Wdrożenia terenowe tworzą wiele Sessions, często gdy nikogo nie ma przy telefonie. Włącz **Przesyłaj Sessions ARU automatycznie** w miejscu docelowym, a każda zakończona ARU Session zostanie dodana do jego kolejki bez okna dialogowego, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksport i synchronizacja. Wdrożenie, które zapisuje każdy cykl jako osobną Session, przesyła cykl po cyklu; połączona Session wdrożenia nie jest przesyłana drugi raz.
+Wdrożenia terenowe tworzą wiele Sessions, często gdy nikogo nie ma przy telefonie. Włącz **Przesyłaj Sessions ARU automatycznie** w miejscu docelowym, a każda zakończona ARU Session zostanie dodana do jego kolejki bez okna dialogowego, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportuj i synchronizuj. Wdrożenie, które zapisuje każdy cykl jako osobną Session, przesyła cykl po cyklu; połączona Session wdrożenia nie jest przesyłana drugi raz.
 
 Zostaw włączone **Przesyłaj tylko przez Wi-Fi** dla stacji na planie komórkowym, chyba że plan udźwignie dźwięk, i rozważ nagrywanie w trybie **Tylko wykrycia** lub **Wyłączony**, gdy dźwięk byłby zbyt duży do wysłania. Przesłania wypływają wtedy, gdy tylko telefon zobaczy odpowiednią sieć, także gdy aplikacja jest w tle na Androidzie.
 

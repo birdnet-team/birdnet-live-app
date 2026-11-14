@@ -51,7 +51,7 @@ Cada marca de tiempo que se muestra en la Biblioteca de sesiones —filas de la 
 
 Cada fila de sesión tiene dos formas de actuar sobre ella:
 
-- **Menú de tres puntos** (:app-moreVert:) a la derecha de cada tarjeta abre un pequeño menú con **Abrir**, **Compartir** y **Eliminar**. Compartir usa tus preferencias actuales de Ajustes → Exportación (formato e "incluir audio") y abre directamente el menú de compartir de la plataforma, sin necesidad de abrir antes el Resumen de la sesión solo para enviar una sesión a un colega.
+- **Menú de tres puntos** (:app-moreVert:) a la derecha de cada tarjeta abre un pequeño menú con **Abrir**, **Compartir** y **Eliminar**. Compartir abre un diálogo cuyas casillas **Audio** y **Metadatos** parten de lo elegido en Ajustes → Exportación y sincronización y valen solo para ese envío, y después abre el menú de compartir de la plataforma, sin necesidad de abrir antes el Resumen de la sesión solo para enviar una sesión a un colega.
 - **Desliza** la fila hacia la izquierda o la derecha para eliminarla. Sigue apareciendo un cuadro de confirmación antes de que se elimine nada, de modo que un deslizamiento accidental es recuperable.
 
 ## Qué ocurre a continuación

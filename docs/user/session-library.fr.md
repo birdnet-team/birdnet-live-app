@@ -51,7 +51,7 @@ Chaque horodatage affiché dans la Bibliothèque de sessions — lignes de la li
 
 Chaque ligne de session offre deux façons d'agir dessus :
 
-- **Menu à trois points** (:app-moreVert:) à droite de chaque carte : ouvre un petit menu avec **Ouvrir**, **Partager** et **Supprimer**. Le partage utilise vos préférences actuelles dans Paramètres → Export et synchronisation (format et « inclure l'audio ») et ouvre directement la feuille de partage du système — inutile d'ouvrir d'abord le Résumé de la session pour envoyer une session à un collègue.
+- **Menu à trois points** (:app-moreVert:) à droite de chaque carte : ouvre un petit menu avec **Ouvrir**, **Partager** et **Supprimer**. Le partage ouvre une boîte de dialogue dont les cases **Audio** et **Métadonnées** reprennent au départ les choix de Paramètres → Export et synchronisation et ne valent que pour ce partage, puis la feuille de partage du système — inutile d'ouvrir d'abord le Résumé de la session pour envoyer une session à un collègue.
 - **Faites glisser** la ligne vers la gauche ou la droite pour la supprimer. Une boîte de dialogue de confirmation apparaît tout de même avant toute suppression : un glissement accidentel est donc récupérable.
 
 ## Que se passe-t-il ensuite

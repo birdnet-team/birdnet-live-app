@@ -82,7 +82,7 @@ GPS-Daten werden lokal gespeichert und nur dann in Exporte einbezogen, wenn Sie 
 
 ## Datenexport
 
-Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch, außer auf Upload-Ziele, die Sie selbst hinzugefügt haben (siehe unten).
+Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export & Sync → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch, außer auf Upload-Ziele, die Sie selbst hinzugefügt haben (siehe unten).
 
 ## Upload-Ziele
 

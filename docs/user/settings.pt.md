@@ -21,7 +21,7 @@ Para encontrar uma configuração pelo nome, toque no botão :app-searchRounded:
 
 Define o idioma da interface.
 
-### Nomes das espécies
+### Nomes de espécies
 
 Controla o idioma usado nos nomes das espécies. **Sistema** usa o idioma preferido do telefone quando esse nome está disponível, mesmo que a interface recorra ao inglês. **Seguir o aplicativo** usa o idioma da interface.
 
@@ -43,7 +43,7 @@ A configuração de Survey, Point Count e ARU guarda o último nome de observado
 
 A configuração de ARU guarda o último ID de ARU/estação não vazio e o preenche para a próxima implantação. Quando presente, o ID entra no nome da Session ARU e nos nomes de arquivo de exportação, de modo que implantações repetidas em pontos fixos continuam identificáveis fora do aplicativo.
 
-### Exibição de carimbos de data/hora
+### Exibição de carimbo de data/hora
 
 Controla como os horários de cada detecção aparecem no resumo da Session.
 
@@ -84,7 +84,7 @@ Um painel com dois controles independentes: **Microfone** — de qual entrada gr
 | **Sem processamento** | O sinal bruto do microfone: sem redução de ruído, sem ganho automático. Costuma ser a melhor opção para aves. |
 | **Reconhecimento de voz** | Também desliga a redução de ruído e o ganho automático, e funciona em praticamente qualquer telefone. |
 
-**Experimente e compare.** Qual delas vence realmente depende do aparelho. *Sem processamento* é o ideal, mas o Android só o respeita em telefones cujo fabricante declara suporte — nos demais ele recorre silenciosamente ao padrão e soa igual a *Padrão do sistema*. É para isso que existe *Reconhecimento de voz*: as regras de compatibilidade do Android **exigem** que, nesse modo, o ganho automático e a supressão de ruído estejam desligados, então ele entrega áudio não processado de forma confiável mesmo em telefones que ignoram *Sem processamento*. Se mudar para *Sem processamento* não alterar nada, mude para *Reconhecimento de voz*.
+**Experimente e compare.** Qual delas vence realmente depende do aparelho. *Sem processamento* é o ideal, mas o Android só o respeita em telefones cujo fabricante declara suporte — nos demais ele recorre silenciosamente ao padrão e soa igual a *Padrão do telefone*. É para isso que existe *Reconhecimento de voz*: as regras de compatibilidade do Android **exigem** que, nesse modo, o ganho automático e a supressão de ruído estejam desligados, então ele entrega áudio não processado de forma confiável mesmo em telefones que ignoram *Sem processamento*. Se mudar para *Sem processamento* não alterar nada, mude para *Reconhecimento de voz*.
 
 Espere que as opções sem processamento soem **mais baixas**: é a ausência do ganho automático, não um defeito. Aumente o **Ganho** para compensar se o medidor de nível parecer baixo.
 
@@ -106,9 +106,9 @@ Esta configuração controla Live Mode. Point Count tem sua própria opção de 
 - **Somente detecções** — salvar trechos ao redor das detecções
 - **Desativada** — sem gravação de áudio
 
-### Contexto do trecho
+### Contexto do clipe
 
-Quando **Somente detecções** está ativo, o aplicativo mostra um único controle **Contexto do trecho** (0–5 s) que define quanto áudio é preservado em **ambos os lados** de cada detecção. Point Count usa esse mesmo valor ao selecionar **Apenas clipes** na configuração e permite alterá-lo ali. Cada trecho dura `janela de análise + 2 × contexto do trecho`, então com uma janela de análise de 3 s e o contexto padrão de 1 s o trecho salvo tem 5 s. Definir o contexto em 2 s resulta em um trecho de 7 s (2 s antes + 3 s de áudio analisado + 2 s depois). Valores maiores dão mais margem para inspeção visual ou ferramentas externas de revisão ao custo de espaço em disco; 0 salva apenas a janela analisada.
+Quando **Somente detecções** está ativo, o aplicativo mostra um único controle **Contexto do clipe** (0–5 s) que define quanto áudio é preservado em **ambos os lados** de cada detecção. Point Count usa esse mesmo valor ao selecionar **Apenas clipes** na configuração e permite alterá-lo ali. Cada trecho dura `janela de análise + 2 × contexto do trecho`, então com uma janela de análise de 3 s e o contexto padrão de 1 s o trecho salvo tem 5 s. Definir o contexto em 2 s resulta em um trecho de 7 s (2 s antes + 3 s de áudio analisado + 2 s depois). Valores maiores dão mais margem para inspeção visual ou ferramentas externas de revisão ao custo de espaço em disco; 0 salva apenas a janela analisada.
 
 ### Formato de gravação
 
@@ -142,7 +142,7 @@ Android mostra uma notificação persistente com Abrir e Parar durante o funcion
 
 Controla o comprimento da janela de análise. Os valores disponíveis são **1**, **3**, **5**, **7**, **10** e **15** segundos.
 
-### Limite de confiança
+### Limiar de confiança
 
 Define quão conservadoras devem ser as detecções. O padrão é **35 %**, o que mantém a lista ao vivo focada em correspondências mais fortes e ainda deixa espaço para chamados distantes ou parcialmente mascarados. Reduza-o se estiver levantando espécies raras ou discretas e pretender revisar mais candidatos depois; aumente-o quando ruído de fundo ou falsos positivos frequentes estiverem lotando a Session.
 
@@ -213,11 +213,11 @@ respaldada e termina no fim da última janela de apoio.
 
 Define quanto da tela o espectrograma ao vivo ocupa em Live Mode, Point Count, Survey e ARU. **Completo** é a altura habitual. **Médio** e **Pequeno** a reduzem para 75% e 50% e cedem a diferença à lista de detecções, a escolha certa quando você olha sobretudo para a lista no celular em pé. **Desligado** remove o espectrograma por completo; em Survey e ARU a aba do espectrograma também desaparece. Na horizontal, **Médio** e **Pequeno** encurtam o espectrograma na sua metade da tela (o espaço abaixo fica vazio por enquanto), e **Desligado** deixa a tela inteira para a lista de detecções. Os espectrogramas das sessões salvas e da reprodução não são afetados.
 
-### Tamanho da FFT
+### Tamanho FFT
 
 Controla a resolução em frequência do espectrograma.
 
-### Mapa de cores
+### Paleta de cores
 
 Escolha **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Escala de cinza** ou **BirdNET**. **Turbo** é a opção arco-íris moderna, semelhante ao Jet.
 
@@ -241,31 +241,31 @@ Controla com que suavidade a imagem do espectrograma é escalonada. **Média** �
 
 Quando as Configurações são abertas pela Análise de arquivos, esta seção se chama **Reprodução** e contém apenas as configurações de reprodução.
 
-### Sobreposição de reprodução no resumo
+### Sobreposição de reprodução na revisão
 
 Quando ativado (o padrão), ouvir um trecho de áudio em um resumo de Session composto apenas por trechos (onde não há gravação completa nem espectrograma disponíveis) abre uma sobreposição modal de reprodução dedicada, com controles de transporte e prévia do espectrograma, em vez de reproduzir o trecho em segundo plano. Se uma Session tiver áudio completo, esta configuração é ignorada e a sobreposição de reprodução nunca aparece.
 
-### Reproduzir memorandos de voz automaticamente
+### Reproduzir memo de voz automaticamente
 
 Desativado por padrão. Quando ativado, um memorando de voz anexado a uma anotação com marcação de tempo é reproduzido automaticamente durante o Resumo da Session, no momento em que o cursor de reprodução cruza a posição registrada. O memorando é mixado sobre a gravação em vez de pausá-la, então você ouve seu comentário no contexto junto com o áudio original. Deixe desativado se preferir acionar os memorandos manualmente tocando na etiqueta da anotação.
 
-### Atenuação em memorandos de voz
+### Atenuação de memos de voz
 
-Mostrado apenas quando **Reproduzir memorandos de voz automaticamente** está ativado. Controla quanto a gravação principal é abaixada enquanto um memorando de voz automático toca. Valores mais altos deixam os memorandos mais fáceis de entender; valores mais baixos mantêm mais da gravação original audível sob o memorando.
+Mostrado apenas quando **Reproduzir memo de voz automaticamente** está ativado. Controla quanto a gravação principal é abaixada enquanto um memorando de voz automático toca. Valores mais altos deixam os memorandos mais fáceis de entender; valores mais baixos mantêm mais da gravação original audível sob o memorando.
 
 ### Anúncios
 
 Estas configurações controlam se o BirdNET Live deve **ler as detecções em voz alta pelos fones de ouvido ou pelo alto-falante do telefone** enquanto uma Session está gravando. O recurso inteiro vem **desativado por padrão**, porque muda o ambiente acústico ao redor do microfone: ativá-lo é uma escolha consciente. Não há assistente de configuração: os seletores de nível de detalhe × frequência abaixo *são* toda a configuração, então você pode tocar em outro preset a qualquer momento e ouvir a diferença na hora. A intuição: em levantamentos longos você não consegue ficar olhando a tela; uma voz discreta no ouvido permite manter os olhos no habitat e ainda assim saber o que acabou de ser ouvido.
 
-### Ler detecções em voz alta (botão principal)
+### Dizer detecções em voz alta
 
 Desativado por padrão. Quando ativado, o aplicativo fala cada detecção aceita usando a síntese de voz integrada do seu dispositivo. **Fones de ouvido são fortemente recomendados** — usar o alto-falante do telefone corre o risco de o anúncio ser captado pelo microfone e detectado de novo, por isso o aplicativo silencia brevemente a gravação em torno de cada fala para evitar esse laço (veja *Silenciar o microfone ao falar* abaixo).
 
-### Preset de nível de detalhe
+### Verbosidade
 
 Quanto o aplicativo diz sobre cada detecção. **Mínimo** fala apenas o nome da espécie (ideal para levantamentos muito longos em que você só quer o aviso). **Equilibrado** é o padrão: frases curtas e variadas como *"Pisco-de-peito-ruivo"*, *"Ouvi um pisco"*, *"Pisco de novo"*. **Falante** acrescenta um pouco mais de contexto e se aproxima de ter alguém comentando ao seu lado. **Personalizado** aparece automaticamente se você ajustar à mão os valores numéricos em Avançado. A intuição: as mesmas configurações de limitação podem soar silenciosas demais ou tagarelas demais dependendo da redação — o nível de detalhe permite manter a cadência e ajustar só a quantidade de palavras.
 
-### Preset de frequência
+### Frequência
 
 Com que frequência o aplicativo pode falar. Cinco níveis, do mais silencioso ao mais falante. **Raro** e **Econômico** esperam bastante entre anúncios e limitam o ritmo — bons para levantamentos de várias horas em que você quer perceber a atividade sem um comentário contínuo. **Normal** é a cadência conversacional padrão. **Frequente** encurta os intervalos e eleva o teto; adequado a Sessions curtas de Live ou quando você quer retorno mais próximo do tempo real. **Constante** remove por completo o atraso inicial e deixa o aplicativo falar em quase todos os ciclos de detecção — útil para demonstrações, acessibilidade, ou quando a espera até o primeiro anúncio em *Frequente* parecer longa demais. **Personalizado** aparece quando você altera os campos de tempo em Avançado. A intuição: este é o único botão que decide se o aplicativo fica em segundo plano ou se torna uma presença — toque em outro preset e você ouvirá a nova cadência já no próximo ciclo de detecção, sem botão de salvar.
 
@@ -317,7 +317,7 @@ Os downloads de mapas offline estão ocultos por enquanto, enquanto o BirdNET Li
 - **Filtro adaptativo por localização** — exigir mais confiança quanto menos comum for a espécie aqui
 - **Ponderação por localização** — usar o geomodelo como sinal de ponderação adicional
 
-### Limite do geofiltro
+### Limiar do filtro geográfico
 
 Aparece quando **Filtro por localização** ou **Ponderação por localização** está ativo. O filtro adaptativo deduz o seu próprio limite a partir da composição local de espécies, pelo que não tem cursor.
 
@@ -359,7 +359,7 @@ Incluir o áudio salvo junto às tabelas ou metadados exportados quando o fluxo 
 
 Mostrado apenas quando **Incluir arquivos de áudio** está ativado. Quando ativado, gravações FLAC são convertidas em WAV antes do compartilhamento ou da exportação. WAV é universalmente compatível, mas bem maior que FLAC, então deixe desativado a menos que a ferramenta do lado receptor não consiga ler FLAC — alguns softwares de análise de desktop mais antigos e alguns formulários de envio ainda não conseguem.
 
-### Incluir metadados do aplicativo
+### Incluir metadados do app
 
 Quando ativado, o ZIP de exportação leva um arquivo auxiliar `*.metadata.json` que descreve como a Session foi produzida: versão do BirdNET Live, identidade do modelo, o instantâneo de clima capturado no início da Session e quaisquer avisos de integridade de áudio detectados durante a gravação. A intuição: é essa procedência que permite a você (ou a quem revisar) reproduzir ou auditar uma Session meses depois. Desative quando quiser compartilhar de forma limpa apenas o áudio e os formatos escolhidos — por exemplo, enviar um único WAV ao iNaturalist ou eBird sem arquivos específicos do aplicativo junto.
 
@@ -382,9 +382,9 @@ Esta seção controla **quais serviços de terceiros o BirdNET Live pode contata
 
 ### Permitir blocos de mapa
 
-Necessário para qualquer mapa interativo do aplicativo (o seletor de localização, o mapa ao vivo do Survey e o mapa da Session). Quando ativado, os componentes de mapa buscam blocos raster nos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de blocos revelam qual área do mundo você está vendo. Os blocos ficam em cache local por até seis meses, com teto de 6000 blocos, para que visualizações repetidas continuem eficientes sem crescer sem limite. Ativar isso também habilita **Permitir busca de nomes de lugares**, porque a maioria de quem carrega mapas também espera que as Sessions mostrem nomes de lugares legíveis. Depois você pode desativar a busca de nomes de lugares separadamente. Com os blocos de mapa desativados, cada tela de mapa recorre a um cartão de espaço reservado, então o restante do aplicativo continua funcionando sem vazamento para a rede.
+Necessário para qualquer mapa interativo do aplicativo (o seletor de localização, o mapa ao vivo do Survey e o mapa da Session). Quando ativado, os componentes de mapa buscam blocos raster nos servidores públicos do **OpenStreetMap**; as requisições de coordenadas de blocos revelam qual área do mundo você está vendo. Os blocos ficam em cache local por até seis meses, com teto de 6000 blocos, para que visualizações repetidas continuem eficientes sem crescer sem limite. Ativar isso também habilita **Permitir busca de nome do local**, porque a maioria de quem carrega mapas também espera que as Sessions mostrem nomes de lugares legíveis. Depois você pode desativar a busca de nomes de lugares separadamente. Com os blocos de mapa desativados, cada tela de mapa recorre a um cartão de espaço reservado, então o restante do aplicativo continua funcionando sem vazamento para a rede.
 
-### Permitir busca de nomes de lugares
+### Permitir busca de nome do local
 
 Quando ativado, o aplicativo envia suas coordenadas registradas ao serviço **Nominatim do OpenStreetMap** para obter um nome de lugar curto (por exemplo, *"Berlim, Alemanha"*), exibido ao lado da Session na Biblioteca de Sessions e no Resumo da Session. A intuição: coordenadas numéricas são precisas, mas difíceis de percorrer com o olho em uma lista longa de Sessions — um nome de lugar torna a lista legível de imediato. Quando desativado, as Sessions mostram apenas a latitude e a longitude brutas, e o Nominatim nunca é contatado.
 
@@ -398,7 +398,7 @@ A linha **Sobre** abre a tela de informações dentro do aplicativo.
 
 ## Zona de perigo
 
-### Redefinir a introdução
+### Redefinir introdução
 
 Mostra a sequência de introdução novamente na próxima vez que o aplicativo for iniciado.
 
@@ -408,7 +408,7 @@ Restaura cada preferência desta tela ao valor padrão. Sessions, gravações, m
 
 Útil quando você não tem certeza de qual controle mexeu e quebrou algo, ou quando entrega o dispositivo a outra pessoa e quer uma configuração limpa sem perder os dados coletados.
 
-### Apagar todos os dados
+### Excluir todos os dados
 
 Exclui permanentemente Sessions, detecções, gravações, memorandos de voz, listas de espécies personalizadas, preferências salvas e os dados em cache de mapas, nomes de lugares, clima, reprodução, resumo e compartilhamento. A caixa de confirmação exige digitar `DELETE` e depois fecha o aplicativo, para que a próxima inicialização comece de um estado local limpo.
 

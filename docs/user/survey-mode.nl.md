@@ -139,7 +139,7 @@ De Survey-modus houdt tijdens het opnemen een blijvende voorgrondmelding zichtba
 - de verstreken tijd, het aantal detecties, het aantal soorten en de afgelegde afstand, en
 - de **drie meest recente unieke soorten** met hun betrouwbaarheid en een relatief tijdstempel (`zojuist`, `42s geleden`, `5m geleden`, `2u geleden`).
 
-De melding — titel, recente detecties en de statistiekregel onderaan — is volledig vertaald naar de gekozen taal van de app en gebruikt dezelfde voorkeuren voor de taal van soortnamen en *Wetenschappelijke namen tonen* als de kaarten in de app.
+De melding — titel, recente detecties en de statistiekregel onderaan — is volledig vertaald naar de gekozen taal van de app en gebruikt dezelfde voorkeuren voor de taal van soortnamen en *Toon wetenschappelijke namen* als de kaarten in de app.
 
 Soortmeldingen verschijnen (indien ingeschakeld) op een apart Android-meldingskanaal, zodat je meldingen los kunt dempen van de stille, doorlopende opnamemelding. Het meldingspictogram komt overeen met dat van de voorgrondmelding (een monochrome vogel), en de tekst van de melding toont alleen de *reden* — *"Eerste detectie van deze Survey"*, *"Staat op je waarnemingslijst"*, *"Op deze locatie gedetecteerd met minder dan 4% kans"* — terwijl de soortnaam in de vetgedrukte meldingstitel blijft staan, waar Android die het grootst weergeeft.
 

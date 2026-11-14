@@ -23,7 +23,7 @@ Ten krok udostępnia także wybór na mapie, odświeża GPS po powrocie z
 systemowych ekranów uprawnień i w razie potrzeby pokazuje przypomnienie o
 uprawnieniu do GPS w tle. W tym samym obszarze lokalizacji dostępna jest karta
 pogody. Jeśli dostęp do danych pogodowych jest wyłączony, karta prosi o zgodę
-**Zezwalaj na sprawdzanie pogody**; po włączeniu pokazuje podgląd miejsca z
+**Zezwalaj na wyszukiwanie pogody**; po włączeniu pokazuje podgląd miejsca z
 ikoną pogody, temperaturą i wiatrem. Ten sam zapisany w pamięci podręcznej
 odczyt z Open-Meteo zostanie użyty przy zapisie Survey.
 
@@ -139,7 +139,7 @@ Tryb Survey utrzymuje w trakcie nagrywania stałe powiadomienie pierwszoplanowe,
 - czas, który upłynął, liczbę wykryć, liczbę gatunków i przebyty dystans, oraz
 - **trzy ostatnie unikalne gatunki** wraz z ich pewnością i względnym znacznikiem czasu (`przed chwilą`, `42 s temu`, `5 min temu`, `2 godz. temu`).
 
-Powiadomienie — tytuł, ostatnie wykrycia i stopka ze statystykami — jest w pełni przetłumaczone na wybrany język aplikacji i korzysta z tych samych ustawień języka nazw gatunków i *Pokazuj nazwy naukowe* co karty w aplikacji.
+Powiadomienie — tytuł, ostatnie wykrycia i stopka ze statystykami — jest w pełni przetłumaczone na wybrany język aplikacji i korzysta z tych samych ustawień języka nazw gatunków i *Pokaż nazwy naukowe* co karty w aplikacji.
 
 Alerty gatunkowe (jeśli są włączone) pojawiają się na osobnym kanale powiadomień Androida, dzięki czemu możesz wyciszyć alerty niezależnie od cichego, trwającego powiadomienia o nagrywaniu. Ikona alertu odpowiada ikonie powiadomienia pierwszoplanowego (monochromatyczny ptak), a treść alertu pokazuje wyłącznie *powód* — *„Pierwsze wykrycie w tym Survey”*, *„Na Twojej liście obserwacyjnej”*, *„Wykryty w tej lokalizacji z prawdopodobieństwem poniżej 4%”* — pozostawiając nazwę gatunku w pogrubionym tytule powiadomienia, gdzie Android wyświetla ją największą czcionką.
 

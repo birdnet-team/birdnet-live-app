@@ -43,7 +43,7 @@ La configuración de Survey, Point Count y ARU recuerda el último nombre de obs
 
 La configuración de ARU recuerda el último ID de ARU/estación no vacío y lo rellena para el siguiente despliegue. Cuando está presente, el ID se incluye en el nombre de la sesión ARU y en los nombres de archivo de exportación, de modo que los despliegues repetidos en puntos fijos siguen siendo identificables fuera de la aplicación.
 
-### Visualización de marcas de tiempo
+### Visualización de marca temporal
 
 Controla cómo aparecen los tiempos de cada detección en la revisión de la sesión.
 
@@ -80,11 +80,11 @@ Un panel con dos controles independientes: **Micrófono** —desde qué entrada 
 
 | Opción | Qué hace |
 |---|---|
-| **Predeterminado del teléfono** | Lo que tu teléfono hace normalmente, procesamiento de voz incluido. El comportamiento original y todavía el predeterminado, para que nada cambie para los usuarios existentes. |
+| **Predet. del móvil** | Lo que tu teléfono hace normalmente, procesamiento de voz incluido. El comportamiento original y todavía el predeterminado, para que nada cambie para los usuarios existentes. |
 | **Sin procesar** | La señal cruda del micrófono: sin reducción de ruido ni ganancia automática. Suele ser la mejor opción para aves. |
 | **Reconocimiento de voz** | También desactiva la reducción de ruido y la ganancia automática, y funciona en casi cualquier teléfono. |
 
-**Pruébalas y compara.** Cuál gana depende realmente del terminal. *Sin procesar* es lo ideal, pero Android solo lo respeta en teléfonos cuyo fabricante declara compatibilidad; en el resto recurre silenciosamente al comportamiento por defecto y suena igual que *Predeterminado del sistema*. Para eso está *Reconocimiento de voz*: las reglas de compatibilidad de Android **exigen** que con él la ganancia automática y la supresión de ruido estén desactivadas, así que entrega audio sin procesar de forma fiable incluso en teléfonos que ignoran *Sin procesar*. Si cambiar a *Sin procesar* no cambia nada, cambia a *Reconocimiento de voz*.
+**Pruébalas y compara.** Cuál gana depende realmente del terminal. *Sin procesar* es lo ideal, pero Android solo lo respeta en teléfonos cuyo fabricante declara compatibilidad; en el resto recurre silenciosamente al comportamiento por defecto y suena igual que *Predet. del móvil*. Para eso está *Reconocimiento de voz*: las reglas de compatibilidad de Android **exigen** que con él la ganancia automática y la supresión de ruido estén desactivadas, así que entrega audio sin procesar de forma fiable incluso en teléfonos que ignoran *Sin procesar*. Si cambiar a *Sin procesar* no cambia nada, cambia a *Reconocimiento de voz*.
 
 Espera que las opciones sin procesar suenen **más bajas**: es la ausencia de ganancia automática, no un fallo. Sube la **Ganancia** para compensarlo si el medidor de nivel se ve bajo.
 
@@ -94,7 +94,7 @@ Espera que las opciones sin procesar suenen **más bajas**: es la ausencia de ga
 
 Amplificador lineal aplicado al audio entrante antes de que llegue al espectrograma y al clasificador. Déjalo en **1,0×** salvo que tu entrada sea sistemáticamente demasiado baja: por ejemplo, un micrófono de solapa de alta impedancia conectado a un teléfono, o una interfaz USB con el preamplificador demasiado bajo. Subir la ganancia por encima de 1,0 no hará aparecer por arte de magia cantos que el micrófono nunca captó; solo reescala lo que el micrófono entregó, así que los sonidos fuertes cercanos pueden saturar. Por debajo de 1,0 resulta útil en el caso poco frecuente de que una entrada demasiado fuerte sature el espectrograma.
 
-### Filtro paso alto (Hz)
+### Filtro de paso alto (Hz)
 
 Recorta el contenido de baja frecuencia antes de la inferencia mediante un filtro Butterworth de 24 dB/octava; el valor del control deslizante es la frecuencia de corte de −3 dB. **0 Hz lo desactiva.** Un corte de 100–200 Hz elimina viento, retumbe del tráfico y ruido de manipulación sin afectar a la mayoría de las especies; al acercarse a 500–1000 Hz empiezan a desaparecer los reclamos graves, los búhos, las aves galliformes y el bramido del avetoro, así que sube tanto solo si estás ignorando deliberadamente esas especies a cambio de un espectrograma mucho más limpio en un entorno urbano ruidoso. El corte que elijas debería verse como una línea horizontal nítida en el espectrograma en directo.
 
@@ -106,9 +106,9 @@ Este ajuste controla Live Mode. Point Count tiene su propia opción de grabació
 - **Solo detecciones** — guardar fragmentos alrededor de las detecciones
 - **Desactivado** — sin grabación de audio
 
-### Contexto del fragmento
+### Contexto del clip
 
-Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del fragmento** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Point Count usa este mismo valor al seleccionar **Solo clips** en su configuración y permite cambiarlo allí. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
+Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del clip** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Point Count usa este mismo valor al seleccionar **Solo clips** en su configuración y permite cambiarlo allí. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
 
 ### Formato de grabación
 
@@ -116,13 +116,13 @@ Elige **WAV** o **FLAC**. WAV ocupa más, pero es ampliamente compatible y rápi
 
 Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos** conserva una copia gestionada por la aplicación del archivo importado en su formato original, de modo que los archivos MP3, AAC, WAV y FLAC siguen siendo revisables sin un paso de conversión adicional.
 
-### Guardar sesiones automáticamente (Live y Point Count)
+### Guardar Sessions automáticamente (Live y Point Count)
 
 Al activarlo (el valor predeterminado), una sesión de Live o Point Count completada se añade a tu biblioteca automáticamente en el momento en que termina. Al desactivarlo, una sesión finalizada se abre en la revisión marcada como **sin guardar**: el icono de guardar aparece resaltado y debes tocarlo para conservar la sesión. Salir de la revisión sin guardar descarta la sesión y sus grabaciones. Esto encaja con escuchas rápidas en las que solo quieres conservar algún resultado destacable en lugar de acumular cada grabación corta. Los despliegues de Survey y ARU siempre se guardan automáticamente —una ejecución larga sin supervisión es demasiado valiosa como para perderla por olvidar tocar Guardar—, así que este interruptor no se aplica allí.
 
 Independientemente de este ajuste, el modo Live y Point Count guardan una sesión parcial al inicio, cada 30 segundos y cuando la aplicación deja el primer plano, y escriben la sesión terminada en el disco antes de liberar el micrófono. Así se limita la pérdida de datos tras un cierre inesperado, un corte de energía o si el sistema cierra la aplicación mientras estaba en segundo plano: esa sesión aparece en la biblioteca, marcada como interrumpida si la aplicación terminó a mitad de la sesión, y puedes borrarla allí si no querías conservarla. Con el guardado automático desactivado, una sesión terminada a la que llegas en la revisión sigue abriéndose como sin guardar y se descarta si sales sin guardar. Survey y ARU guardan sus puntos de control independientemente de este ajuste.
 
-### Iniciar la grabación automáticamente (solo modo Live)
+### Iniciar grabación automáticamente (solo modo Live)
 
 Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
 
@@ -138,7 +138,7 @@ Android muestra una notificación persistente con Abrir y Detener durante el fun
 
 ## Inferencia
 
-### Duración de la ventana
+### Duración de ventana
 
 Controla la longitud de la ventana de análisis. Los valores disponibles son **1**, **3**, **5**, **7**, **10** y **15** segundos.
 
@@ -150,7 +150,7 @@ Determina cómo de conservadoras deben ser las detecciones. El valor predetermin
 
 Un desplazamiento en el eje x aplicado a las puntuaciones de probabilidad brutas del modelo antes de la agrupación de puntuaciones, el filtrado geográfico y el umbral de confianza. El modelo de audio de BirdNET ya incluye una activación sigmoide, así que BirdNET Live primero convierte cada probabilidad de vuelta al espacio de logits, suma el sesgo de sensibilidad y luego la convierte de nuevo en probabilidad. Los valores más altos hacen el detector más permisivo: reclamos más débiles o ambiguos superan el umbral, a costa de más falsos positivos. Los valores más bajos son más estrictos y solo dejan pasar detecciones seguras. El valor predeterminado de **1,0** no aplica desplazamiento y coincide con la referencia de BirdNET. Prueba **1,25** si sospechas que el modelo se pierde reclamos lejanos; baja a **0,75** si te inundan detecciones de baja calidad de especies comunes. La sensibilidad se aplica en caliente: cambiarla a mitad de sesión surte efecto en la siguiente ventana de inferencia.
 
-### Frecuencia de inferencia
+### Tasa de inferencia
 
 Controla con qué frecuencia BirdNET ejecuta la inferencia. El control
 deslizante usa los mismos pasos de **0,10–1,00 Hz** que la configuración de
@@ -215,11 +215,11 @@ más alta y termina al final de la última ventana de apoyo.
 
 Define cuánto espacio de la pantalla ocupa el espectrograma en vivo en Live Mode, Point Count, Survey y ARU. **Completo** es la altura habitual. **Medio** y **Pequeño** la reducen al 75 % y al 50 % y ceden la diferencia a la lista de detecciones, la opción adecuada cuando en el teléfono en vertical miras sobre todo la lista. **Desactivado** quita el espectrograma por completo; en Survey y ARU desaparece también la pestaña del espectrograma. En horizontal, **Medio** y **Pequeño** acortan el espectrograma en su mitad de la pantalla (el espacio debajo queda vacío por ahora), y **Desactivado** deja toda la pantalla a la lista de detecciones. Los espectrogramas de las sesiones guardadas y de la reproducción no se ven afectados.
 
-### Tamaño de FFT
+### Tamaño FFT
 
 Controla la resolución en frecuencia del espectrograma.
 
-### Mapa de color
+### Paleta de colores
 
 Elige **Viridis**, **Magma**, **Plasma**, **Cividis**, **Jet**, **Turbo**, **Escala de grises** o **BirdNET**. **Turbo** es la opción arcoíris moderna, similar a Jet.
 
@@ -243,31 +243,31 @@ Controla con qué suavidad se escala la imagen del espectrograma. **Media** es e
 
 Cuando abres Ajustes desde Análisis de archivos, esta sección se llama **Reproducción** y solo contiene los ajustes de reproducción.
 
-### Superposición de reproducción en la revisión
+### Superposición de reproducción en revisión
 
 Al activarlo (el valor predeterminado), escuchar un fragmento de audio en una revisión de sesión compuesta solo por fragmentos (donde no hay grabación completa ni espectrograma disponibles) abre una superposición modal de reproducción propia, con controles de transporte y vista previa del espectrograma, en lugar de reproducir el fragmento en segundo plano. Si una sesión tiene audio completo, este ajuste se omite y la superposición de reproducción nunca se muestra.
 
-### Reproducir automáticamente las notas de voz
+### Reproducir notas de voz automáticamente
 
 Desactivado de forma predeterminada. Al activarlo, una nota de voz adjunta a una anotación con marca de tiempo se reproduce automáticamente durante la Revisión de la sesión en el momento en que el cursor de reproducción cruza su posición registrada. La nota se mezcla sobre la grabación en lugar de pausarla, así que oyes tu comentario en contexto junto al audio original. Déjalo desactivado si prefieres lanzar las notas manualmente tocando su etiqueta de anotación.
 
-### Atenuación con notas de voz
+### Atenuación de notas de voz
 
-Solo se muestra cuando **Reproducir automáticamente las notas de voz** está activado. Controla cuánto se baja la grabación principal mientras suena una nota de voz automática. Los valores más altos hacen las notas habladas más fáciles de oír; los más bajos dejan oír más de la grabación original por debajo de la nota.
+Solo se muestra cuando **Reproducir notas de voz automáticamente** está activado. Controla cuánto se baja la grabación principal mientras suena una nota de voz automática. Los valores más altos hacen las notas habladas más fáciles de oír; los más bajos dejan oír más de la grabación original por debajo de la nota.
 
 ### Anuncios
 
 Estos ajustes controlan si BirdNET Live **lee las detecciones en voz alta por los auriculares o el altavoz del teléfono** mientras una sesión está grabando. Toda la función está **desactivada de forma predeterminada** porque cambia el entorno acústico alrededor del micrófono: activarla es una decisión consciente. No hay asistente de configuración: los selectores de nivel de detalle × frecuencia que aparecen abajo *son* toda la configuración, así que puedes tocar otro preajuste en cualquier momento y oír la diferencia al instante. La intuición: en muestreos largos no puedes estar mirando la pantalla; una voz discreta al oído te permite mantener la vista en el hábitat y aun así saber qué se acaba de oír.
 
-### Leer detecciones en voz alta (interruptor principal)
+### Decir detecciones en voz alta
 
 Desactivado de forma predeterminada. Al activarlo, la aplicación pronuncia cada detección aceptada mediante la síntesis de voz integrada de tu dispositivo. **Se recomiendan encarecidamente los auriculares**: usar el altavoz del teléfono arriesga a que el anuncio sea captado por el micrófono y detectado de nuevo, por lo que la aplicación silencia brevemente la grabación alrededor de cada locución para evitar ese bucle (consulta *Silenciar el micrófono al hablar* más abajo).
 
-### Preajuste de nivel de detalle
+### Detalle
 
 Cuánto dice la aplicación sobre cada detección. **Mínimo** pronuncia solo el nombre de la especie (lo mejor para muestreos muy largos en los que solo quieres la señal). **Equilibrado** es el valor predeterminado: frases breves y variadas como *«Petirrojo»*, *«Se oye un petirrojo»*, *«Otra vez petirrojo»*. **Conversador** añade algo más de contexto y se acerca a tener a alguien comentando a tu lado. **Personalizado** aparece automáticamente si ajustas a mano los valores numéricos de Avanzado. La intuición: los mismos ajustes de limitación pueden resultar demasiado silenciosos o demasiado parlanchines según cómo estén redactados; el nivel de detalle te permite mantener el ritmo y regular solo la cantidad de palabras.
 
-### Preajuste de frecuencia
+### Frecuencia
 
 Con qué frecuencia se permite que la aplicación hable. Cinco pasos, del más silencioso al más hablador. **Raro** y **Escaso** esperan mucho entre anuncios y limitan el ritmo: van bien para muestreos de varias horas en los que quieres percibir la actividad sin un comentario continuo. **Normal** es la cadencia conversacional predeterminada. **Frecuente** acorta los intervalos y sube el tope; adecuado para sesiones cortas de Live o cuando quieres una respuesta más cercana al tiempo real. **Constante** elimina por completo el retraso inicial y deja que la aplicación hable en casi cada ciclo de detección: útil para demostraciones, accesibilidad, o cuando el hueco antes del primer anuncio con *Frecuente* se te hace largo. **Personalizado** aparece cuando cambias los campos de temporización en Avanzado. La intuición: este es el único mando que decide si la aplicación se queda en segundo plano o pasa a ser una presencia; toca otro preajuste y oirás la nueva cadencia en el siguiente ciclo de detección, sin botón de guardar.
 
@@ -357,11 +357,11 @@ La intuición: muchos flujos de trabajo necesitan más de un formato a la vez �
 
 Incluir el audio guardado junto a las tablas o metadatos exportados cuando el flujo de exportación lo admita. Compartir una sola detección también sigue este ajuste: una grabación completa de la Session se recorta a las marcas de inicio y fin exactas de esa detección, mientras que una Session solo de detecciones usa su clip conservado.
 
-### Compartir siempre el audio como WAV
+### Compartir audio siempre como WAV
 
 Solo se muestra cuando **Incluir archivos de audio** está activado. Al activarlo, las grabaciones FLAC se convierten a WAV antes de compartirlas o exportarlas. WAV es universalmente compatible, pero bastante más grande que FLAC, así que déjalo desactivado salvo que la herramienta de destino no pueda leer FLAC: algún software de análisis de escritorio antiguo y unos pocos formularios de subida todavía no pueden.
 
-### Incluir metadatos de la aplicación
+### Incluir metadatos de la app
 
 Al activarlo, el ZIP de exportación incorpora un archivo adjunto `*.metadata.json` que describe cómo se produjo la sesión: versión de BirdNET Live, identidad del modelo, la instantánea meteorológica capturada al inicio de la sesión y cualquier advertencia de integridad de audio detectada durante la grabación. La intuición: esa procedencia es lo que te permite (o permite a quien revisa) reproducir o auditar una sesión meses después. Desactívalo cuando quieras compartir de forma limpia solo el audio y los formatos que hayas elegido; por ejemplo, subir un único WAV a iNaturalist o eBird sin archivos específicos de la aplicación de por medio.
 
@@ -382,15 +382,15 @@ Lista los lugares WebDAV a los que se puede subir una Session finalizada, por ej
 
 Esta sección controla **a qué servicios de terceros puede contactar BirdNET Live en tu nombre**. La inferencia en sí se ejecuta íntegramente en tu dispositivo: estos interruptores solo rigen funciones de red opcionales que enriquecen la experiencia. Los tres interruptores están **desactivados de forma predeterminada** en una instalación nueva; no sale nada hacia fuera hasta que tú lo autorizas. La intuición: cada interruptor se limita a un servicio concreto y a un beneficio concreto, así que puedes habilitar exactamente lo que te resulte útil en tu trabajo y nada más.
 
-### Permitir teselas de mapa
+### Permitir mosaicos del mapa
 
-Necesario para cualquier mapa interactivo de la aplicación (el selector de ubicación, el mapa en directo de Survey y el mapa de la sesión). Al activarlo, los componentes de mapa obtienen teselas ráster de los servidores públicos de **OpenStreetMap**; las peticiones de coordenadas de teselas revelan qué zona del mundo estás viendo. Las teselas se almacenan localmente en caché hasta seis meses, con un tope de 6000 teselas para que las consultas repetidas de mapa sigan siendo eficientes sin crecer sin límite. Activarlo habilita también **Permitir búsqueda de nombres de lugar**, porque la mayoría de quienes cargan mapas esperan que las sesiones muestren además nombres de lugar legibles. Después puedes desactivar por separado la búsqueda de nombres de lugar. Cuando las teselas de mapa están desactivadas, cada pantalla de mapa recurre a una tarjeta de marcador de posición, de modo que el resto de la aplicación sigue funcionando sin fugas a la red.
+Necesario para cualquier mapa interactivo de la aplicación (el selector de ubicación, el mapa en directo de Survey y el mapa de la sesión). Al activarlo, los componentes de mapa obtienen teselas ráster de los servidores públicos de **OpenStreetMap**; las peticiones de coordenadas de teselas revelan qué zona del mundo estás viendo. Las teselas se almacenan localmente en caché hasta seis meses, con un tope de 6000 teselas para que las consultas repetidas de mapa sigan siendo eficientes sin crecer sin límite. Activarlo habilita también **Permitir búsqueda de nombre del lugar**, porque la mayoría de quienes cargan mapas esperan que las sesiones muestren además nombres de lugar legibles. Después puedes desactivar por separado la búsqueda de nombres de lugar. Cuando las teselas de mapa están desactivadas, cada pantalla de mapa recurre a una tarjeta de marcador de posición, de modo que el resto de la aplicación sigue funcionando sin fugas a la red.
 
-### Permitir búsqueda de nombres de lugar
+### Permitir búsqueda de nombre del lugar
 
 Al activarlo, la aplicación envía tus coordenadas registradas al servicio **Nominatim de OpenStreetMap** para resolver un nombre de lugar corto (por ejemplo, *«Berlín, Alemania»*) que se muestra junto a la sesión en la Biblioteca de sesiones y en la Revisión de la sesión. La intuición: las coordenadas numéricas son precisas pero difíciles de leer de un vistazo al recorrer una lista larga de sesiones; un nombre de lugar convierte la lista en algo legible al instante. Al desactivarlo, las sesiones muestran solo la latitud y longitud en bruto, y nunca se contacta con Nominatim.
 
-### Permitir consulta meteorológica
+### Permitir consulta del clima
 
 Al activarlo, cada sesión guardada captura mediante **Open-Meteo** una instantánea puntual de las condiciones locales (temperatura, precipitación, viento, nubosidad) en las coordenadas de grabación y la hora de finalización. La instantánea aparece en la Revisión de la sesión bajo la fila de ubicación y se refleja en la exportación JSON, el bloque de metadatos de la sesión y el informe HTML. La intuición: el tiempo es uno de los predictores más fuertes de la actividad de las aves, y capturarlo automáticamente —sin que tengas que acordarte de consultar otra aplicación— convierte cada sesión en un registro más completo. Open-Meteo es un servicio gratuito y no requiere cuenta ni clave de API. Al desactivarlo, no se obtienen ni se guardan datos meteorológicos. La configuración de Point Count y Survey también muestra una tarjeta meteorológica compacta cerca de los controles de ubicación: pide este consentimiento solo cuando hace falta, muestra el resultado como icono + temperatura + viento una vez habilitado, y reutiliza la misma instantánea en caché al guardar la sesión.
 
@@ -400,7 +400,7 @@ La fila **Acerca de** abre la pantalla de información dentro de la aplicación.
 
 ## Zona de peligro
 
-### Restablecer la introducción
+### Restablecer introducción
 
 Vuelve a mostrar la secuencia de introducción la próxima vez que se inicie la aplicación.
 
@@ -410,7 +410,7 @@ Devuelve cada preferencia de esta pantalla a su valor predeterminado. Las sesion
 
 Útil cuando no estás seguro de qué control moviste y algo dejó de funcionar, o cuando entregas el dispositivo a otra persona y quieres una configuración limpia sin perder los datos que has recogido.
 
-### Borrar todos los datos
+### Eliminar todos los datos
 
 Elimina de forma permanente sesiones, detecciones, grabaciones, notas de voz, listas de especies personalizadas, preferencias guardadas y los datos en caché de mapas, nombres de lugar, meteorología, reproducción, revisión y compartición. El diálogo de confirmación exige escribir `DELETE` y después cierra la aplicación, de modo que el siguiente inicio parta de un estado local limpio.
 
