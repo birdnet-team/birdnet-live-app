@@ -11,15 +11,13 @@ and the same icons for controls they share with Settings or each other.
 - Opening Settings from Home shows the full screen.
 - Opening Settings from Live, Survey, Point Count, or File Analysis filters the screen to the relevant sections.
 
+## Finding a Setting
+
+Settings are grouped into sections such as **General**, **Inference**, and **Privacy**. The screen opens with every section collapsed, so it starts as a short list of section names with a short description each. Tap a section header to expand it, and again to collapse it; several sections can be open at once. While you scroll through an open section, its title stays at the top of the screen, so you can collapse a long section without scrolling back up.
+
+To find a setting by name, tap the :app-searchRounded: button in the app bar and type part of the name. Results show each matching setting with its section; tapping one opens that section and scrolls to the setting. A setting that only appears once another switch is on (such as the announcement voice while announcements are off) is listed once that switch is on. Settings whose own name matches are listed first; typing a section name also lists all of its settings. Options inside a sub-page or overlay, such as the individual export formats or the Ignore species checkboxes, are found through their entry (**Formats**, **Content**, **Ignore species**).
+
 ## General
-
-### Theme
-
-Choose **Dark**, **Light**, or **System**.
-
-If **Dynamic Color** is enabled, BirdNET Live also tries to match your Android device's system palette. This has an effect only on supported Android devices; on iPhone and iPad the app keeps using the standard BirdNET Live theme, so turning the toggle on there changes nothing.
-
-Enable **High Contrast Theme** to use a black-and-white light or dark UI palette with heavier text and bordered surfaces instead of tinted cards. It follows the **Dark**, **Light**, or **System** theme choice, overrides Dynamic Color while enabled, and preserves danger, warning, validation, mode, score, and spectrogram colors.
 
 ### App Language
 
@@ -60,7 +58,17 @@ When **Absolute** is selected, an additional **Show seconds in timestamps** togg
 
 Storage and exports always use UTC instants regardless of this setting, so the choice never affects the data — only the way it's displayed.
 
-## Audio
+## Appearance
+
+### Theme
+
+Choose **Dark**, **Light**, or **System**.
+
+If **Dynamic Color** is enabled, BirdNET Live also tries to match your Android device's system palette. This has an effect only on supported Android devices; on iPhone and iPad the app keeps using the standard BirdNET Live theme, so turning the toggle on there changes nothing.
+
+Enable **High Contrast Theme** to use a black-and-white light or dark UI palette with heavier text and bordered surfaces instead of tinted cards. It follows the **Dark**, **Light**, or **System** theme choice, overrides Dynamic Color while enabled, and preserves danger, warning, validation, mode, score, and spectrogram colors.
+
+## Audio & Recording
 
 These controls appear in audio-driven live workflows.
 
@@ -91,6 +99,46 @@ Linear amplifier applied to incoming audio before it reaches the spectrogram and
 ### High-pass filter (Hz)
 
 Cuts low-frequency content before inference using a 24 dB/octave Butterworth filter — the slider value is the −3 dB cutoff. **0 Hz disables it.** A 100–200 Hz cutoff strips wind, traffic rumble, and handling noise without touching most species; pushing toward 500–1000 Hz starts removing low whoots, owls, grouse, and bittern booms, so only go that high if you are deliberately ignoring those species in exchange for a much cleaner spectrogram in a noisy urban environment. The cutoff you pick should be visible as a sharp horizontal line on the live spectrogram.
+
+### Recording mode
+
+This setting controls Live Mode. Point Count has its own recording choice on
+the Analysis Settings step of setup; new Point Counts default to Full. Survey
+also has a separate recording choice in its setup.
+
+- **Full** — save the whole recording
+- **Detections only** — save clips around detections
+- **Off** — no audio recording
+
+### Clip context
+
+When **Detections only** is active, the app shows a single **Clip context** slider (0–5 s) that sets how much audio is preserved on **both sides** of each detection. Point Count uses this same value when Clips is selected in setup, and can change it there. Each clip is `analysis window + 2 × clip context` long, so with a 3 s analysis window and the default 1 s context the saved clip is 5 s. Setting the context to 2 s yields a 7 s clip (2 s pre-roll + 3 s analyzed audio + 2 s post-roll). Larger values give you more room for visual inspection or external review tools at the cost of disk space; 0 saves only the analyzed window itself.
+
+### Recording format
+
+Choose **WAV** or **FLAC**. WAV is larger but widely compatible and quick to inspect. FLAC keeps the same lossless audio quality while using less storage, which is usually better for long sessions.
+
+This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps an app-managed copy of the imported file in its original format, so MP3, AAC, WAV, and FLAC uploads stay reviewable without an extra conversion step.
+
+### Save sessions automatically (Live and Point Count)
+
+When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
+
+Whatever this setting says, Live Mode and Point Count save a partial Session at the start, every 30 seconds, and when the app leaves the foreground, and they write the finished Session to disk before the microphone is released. This limits data loss after a crash, a power loss, or the system ending the app while it ran in the background: such a Session appears in the library, marked as interrupted when the app ended mid-session, and can be deleted there if you did not want to keep it. With automatic saving disabled, a finished Session you reach in review still opens as unsaved and is discarded when you leave without saving. Survey and ARU save checkpoints independently of this setting.
+
+### Auto-start recording (Live mode only)
+
+When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
+
+This setting governs opening Live mode from inside the app. [Quick Listen](live-mode.md) — the Android widget, or the iOS shortcut, Siri phrase, and app-icon action — starts listening when triggered, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
+
+### Continue with screen off
+
+**Live Mode** pauses audio capture and identification when you lock the screen or leave the app, then resumes the same Session when you return. This is off by default. After the first such return, a one-time dialog explains how to enable background listening. You can also change the switch directly in Live Mode settings. When enabled, choose a **Maximum background time** of 15, 30, 60, or 120 minutes (30 minutes by default). The timer starts when the app goes into the background. Returning to the app before it expires cancels that timer; leaving again starts a new one. Reaching the limit ends the Session automatically and opens review with the stop reason shown. The existing automatic-saving setting still decides whether the completed Session is kept immediately or marked unsaved in review.
+
+**Point Count** continues in the background by default when you lock the screen or switch to another app while the screen stays on, and ends at its selected count duration. Its **Continue with screen off** switch appears only in the first setup step. Turn it off there if you want either action to end the count early. The question mark beside the switch explains this behavior. A Point Count cannot pause and later resume without creating a gap in the timed protocol. The Ready screen summarizes the choice before you start, and Session Review shows the reason if the count ended early.
+
+Android shows a persistent notification with an Open and Stop action while either mode is allowed to run in the background. The screen is free to turn off normally. If background operation cannot start, keep the app open: Live Mode will pause and Point Count will end when the app goes into the background. If you leave the app while a Point Count is still starting, the count is canceled and a message explains why; set it up again to start a new count. On Windows, minimizing the window never pauses Live Mode or ends a Point Count, whatever these switches are set to.
 
 ## Inference
 
@@ -159,7 +207,7 @@ of the last supporting window.
 
 ## Spectrogram
 
-### Size
+### Spectrogram size
 
 Sets how much of the screen the live scrolling spectrogram takes in Live Mode, Point Count, Survey, and ARU. **Full** is the usual height. **Medium** and **Small** shrink it to 75% and 50% of that and hand the difference to the detection list — the setting to reach for when you mostly watch the list on a phone in portrait. **Off** removes the spectrogram entirely; in Survey and ARU the spectrogram tab disappears as well. In landscape, **Medium** and **Small** shorten the spectrogram within its half of the screen (the space below it stays empty for now), and **Off** hands the whole screen to the detection list. Session Review and other playback spectrograms are not affected.
 
@@ -183,13 +231,29 @@ Sets the upper display frequency.
 
 Applies logarithmic scaling to the spectrogram for easier visual reading.
 
-### Quality
+### Spectrogram quality
 
 Controls how smoothly the spectrogram image is scaled. **Medium** is the default balance. Choose **Low** on older phones when scrolling stutters or the device gets hot; choose **High** when you prefer smoother visuals and your device has enough GPU headroom. The intuition: this changes rendering cost only, not the audio analysis or detection results.
 
-## Announcements
+## Playback & Announcements
 
-This section controls whether BirdNET Live **reads detections aloud through your headphones or the phone speaker** while a session is recording. The whole feature is **off by default** because it changes the acoustic environment around the microphone — turning it on is a deliberate trade-off. There is no setup wizard: the verbosity × frequency pickers below *are* the entire setup, so you can tap a different preset at any time and immediately hear the difference. The intuition: in long surveys you can't keep glancing at the screen; a discreet voice in your ear means you can keep your eyes on the habitat and still know what was just heard.
+When Settings is opened from File Analysis, this section is named **Playback** and holds only the playback settings.
+
+### Playback overlay in review
+
+When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
+
+### Auto-play voice memos
+
+Off by default. When enabled, a voice memo attached to a timed annotation plays automatically during Session Review the moment the playhead crosses its recorded position. The memo is mixed on top of the recording rather than pausing it, so you hear your spoken note in context alongside the original audio. Leave it off if you prefer to trigger memos manually by tapping their annotation chip.
+
+### Voice memo ducking
+
+Shown only when **Auto-play voice memos** is enabled. Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make spoken memos easier to hear; lower values keep more of the original recording audible underneath the memo.
+
+### Announcements
+
+These settings control whether BirdNET Live **reads detections aloud through your headphones or the phone speaker** while a session is recording. The whole feature is **off by default** because it changes the acoustic environment around the microphone — turning it on is a deliberate trade-off. There is no setup wizard: the verbosity × frequency pickers below *are* the entire setup, so you can tap a different preset at any time and immediately hear the difference. The intuition: in long surveys you can't keep glancing at the screen; a discreet voice in your ear means you can keep your eyes on the habitat and still know what was just heard.
 
 ### Speak detections aloud (master toggle)
 
@@ -219,63 +283,7 @@ A disclosure that exposes a handful of audio-routing toggles plus the trigger-mo
 - **Cue tone before speaking** — Plays a short, quiet tone before each utterance so your ear has a moment to switch from passive listening to attending to the voice. On by default. Particularly helpful when announcements are infrequent or when you have music playing in the background.
 - **What to announce** — Picks which detections are eligible for an announcement at all. *Every detection* (default) lets the throttling decide. *First time per session* announces a species only the first time it appears in the current session. *Watchlist only* limits announcements to species on your watchlist (useful for targeted survey work where you want to hear about your priority taxa and nothing else).
 
-## Recording
-
-### Mode
-
-This setting controls Live Mode. Point Count has its own recording choice on
-the Analysis Settings step of setup; new Point Counts default to Full. Survey
-also has a separate recording choice in its setup.
-
-- **Full** — save the whole recording
-- **Detections only** — save clips around detections
-- **Off** — no audio recording
-
-### Clip context
-
-When **Detections only** is active, the app shows a single **Clip context** slider (0–5 s) that sets how much audio is preserved on **both sides** of each detection. Point Count uses this same value when Clips is selected in setup, and can change it there. Each clip is `analysis window + 2 × clip context` long, so with a 3 s analysis window and the default 1 s context the saved clip is 5 s. Setting the context to 2 s yields a 7 s clip (2 s pre-roll + 3 s analyzed audio + 2 s post-roll). Larger values give you more room for visual inspection or external review tools at the cost of disk space; 0 saves only the analyzed window itself.
-
-### Format
-
-Choose **WAV** or **FLAC**. WAV is larger but widely compatible and quick to inspect. FLAC keeps the same lossless audio quality while using less storage, which is usually better for long sessions.
-
-This setting applies to audio recorded by BirdNET Live. **File Analysis** keeps an app-managed copy of the imported file in its original format, so MP3, AAC, WAV, and FLAC uploads stay reviewable without an extra conversion step.
-
-### Auto-start recording (Live mode only)
-
-When enabled, Live mode begins recording as soon as the screen opens and the model finishes loading — no need to tap the microphone button. Useful for kiosk-style deployments, hands-free use (e.g. mounting the device in the field), or any workflow where the user already knows that opening Live always means "start now". Disabled by default so an accidental tap on the Live tile from the home screen does not silently begin a session. The auto-start fires only once per screen visit, so stopping a session and tapping the mic again still works as a manual restart.
-
-This setting governs opening Live mode from inside the app. [Quick Listen](live-mode.md) — the Android widget, or the iOS shortcut, Siri phrase, and app-icon action — starts listening when triggered, whatever this is set to, and leaves the setting untouched. If a Point Count, Survey, File Analysis, or ARU Mode Session is already running or starting, it preserves that Session and asks you to stop it first instead.
-
-### Continue with screen off
-
-**Live Mode** pauses audio capture and identification when you lock the screen or leave the app, then resumes the same Session when you return. This is off by default. After the first such return, a one-time dialog explains how to enable background listening. You can also change the switch directly in Live Mode settings. When enabled, choose a **Maximum background time** of 15, 30, 60, or 120 minutes (30 minutes by default). The timer starts when the app goes into the background. Returning to the app before it expires cancels that timer; leaving again starts a new one. Reaching the limit ends the Session automatically and opens review with the stop reason shown. The existing automatic-saving setting still decides whether the completed Session is kept immediately or marked unsaved in review.
-
-**Point Count** continues in the background by default when you lock the screen or switch to another app while the screen stays on, and ends at its selected count duration. Its **Continue with screen off** switch appears only in the first setup step. Turn it off there if you want either action to end the count early. The question mark beside the switch explains this behavior. A Point Count cannot pause and later resume without creating a gap in the timed protocol. The Ready screen summarizes the choice before you start, and Session Review shows the reason if the count ended early.
-
-Android shows a persistent notification with an Open and Stop action while either mode is allowed to run in the background. The screen is free to turn off normally. If background operation cannot start, keep the app open: Live Mode will pause and Point Count will end when the app goes into the background. If you leave the app while a Point Count is still starting, the count is canceled and a message explains why; set it up again to start a new count. On Windows, minimizing the window never pauses Live Mode or ends a Point Count, whatever these switches are set to.
-
-### Save sessions automatically (Live and Point Count)
-
-When enabled (the default), a completed Live or Point Count session is added to your library automatically the moment it finishes. When disabled, a finished session opens in review marked as **unsaved**: the save icon is highlighted and you must tap it to keep the session. Leaving review without saving discards the session and its recordings. This suits quick listening sessions where you only want to keep the occasional noteworthy result instead of accumulating every short recording. Survey and ARU deployments always save automatically — a long unattended run is too costly to lose by forgetting to tap Save — so this toggle does not apply there.
-
-Whatever this setting says, Live Mode and Point Count save a partial Session at the start, every 30 seconds, and when the app leaves the foreground, and they write the finished Session to disk before the microphone is released. This limits data loss after a crash, a power loss, or the system ending the app while it ran in the background: such a Session appears in the library, marked as interrupted when the app ended mid-session, and can be deleted there if you did not want to keep it. With automatic saving disabled, a finished Session you reach in review still opens as unsaved and is discarded when you leave without saving. Survey and ARU save checkpoints independently of this setting.
-
-## Playback
-
-### Playback overlay in review
-
-When enabled (which is the default), reviewing an audio clip in a clips-only Session Review (where no full audio recording/spectrogram is available) triggers a dedicated modal player overlay with transport controls and a spectrogram preview, rather than playing the clip in the background. If a session has full audio, this setting is bypassed and the playback overlay is never shown.
-
-### Auto-play voice memos
-
-Off by default. When enabled, a voice memo attached to a timed annotation plays automatically during Session Review the moment the playhead crosses its recorded position. The memo is mixed on top of the recording rather than pausing it, so you hear your spoken note in context alongside the original audio. Leave it off if you prefer to trigger memos manually by tapping their annotation chip.
-
-### Voice memo ducking
-
-Shown only when **Auto-play voice memos** is enabled. Controls how much the main recording is lowered while an automatic voice memo plays. Higher values make spoken memos easier to hear; lower values keep more of the original recording audible underneath the memo.
-
-## Location
+## Location & Species Filter
 
 ### Use GPS
 

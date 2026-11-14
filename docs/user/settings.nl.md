@@ -9,15 +9,13 @@ De knop :app-helpOutline: naast een instelling opent een korte uitleg. De instel
 - Open je de instellingen vanaf het startscherm, dan zie je het volledige scherm.
 - Open je de instellingen vanuit Live, Survey, Point Count of Bestandsanalyse, dan wordt het scherm gefilterd tot de relevante secties.
 
+## Een instelling vinden
+
+Instellingen zijn gegroepeerd in secties zoals **Algemeen**, **Inference** en **Privacy**. Het scherm opent met alle secties ingeklapt en begint dus als een korte lijst met sectienamen, elk met een korte beschrijving. Tik op een sectiekop om de sectie uit te klappen en nog een keer om haar weer in te klappen; er kunnen meerdere secties tegelijk open zijn. Terwijl je door een geopende sectie scrolt, blijft de titel bovenaan het scherm staan, zodat je een lange sectie kunt inklappen zonder terug omhoog te scrollen.
+
+Om een instelling op naam te vinden, tik je op de knop :app-searchRounded: in de app-balk en typ je een deel van de naam. De resultaten tonen elke overeenkomende instelling met de bijbehorende sectie; tik je er een aan, dan wordt die sectie geopend en scrolt het scherm naar de instelling. Een instelling die pas verschijnt wanneer een andere schakelaar aanstaat (zoals de stem voor de meldingen terwijl de meldingen uitstaan), wordt pas vermeld zodra die schakelaar aanstaat. Instellingen waarvan de eigen naam overeenkomt, staan bovenaan; typ je een sectienaam, dan worden ook alle instellingen van die sectie getoond. Opties binnen een subpagina of overlay, zoals de afzonderlijke exportformaten of de selectievakjes van Soorten negeren, vind je via hun ingang (**Formaten**, **Inhoud**, **Soorten negeren**).
+
 ## Algemeen
-
-### Thema
-
-Kies **Donker**, **Licht** of **Systeem**.
-
-Staat **Dynamische kleuren** aan, dan probeert BirdNET Live ook het systeemkleurenpalet van je Android-toestel over te nemen. Dat heeft alleen effect op ondersteunde Android-toestellen; op iPhone en iPad blijft de app het standaardthema van BirdNET Live gebruiken, dus de schakelaar aanzetten verandert daar niets.
-
-Zet **Thema met hoog contrast** aan voor een zwart-wit licht of donker interfacepalet met zwaardere tekst en omkaderde vlakken in plaats van getinte kaarten. Het volgt de keuze **Donker**, **Licht** of **Systeem**, overschrijft Dynamische kleuren zolang het aanstaat, en behoudt de kleuren voor gevaar, waarschuwing, validatie, modus, score en spectrogram.
 
 ### App-taal
 
@@ -58,7 +56,17 @@ Is **Absoluut** gekozen, dan verschijnt de extra schakelaar **Seconden in tijdst
 
 Opslag en exports gebruiken ongeacht deze instelling altijd UTC-tijdstippen, dus de keuze beïnvloedt nooit de gegevens — alleen de manier waarop ze worden getoond.
 
-## Audio
+## Weergave
+
+### Thema
+
+Kies **Donker**, **Licht** of **Systeem**.
+
+Staat **Dynamische kleuren** aan, dan probeert BirdNET Live ook het systeemkleurenpalet van je Android-toestel over te nemen. Dat heeft alleen effect op ondersteunde Android-toestellen; op iPhone en iPad blijft de app het standaardthema van BirdNET Live gebruiken, dus de schakelaar aanzetten verandert daar niets.
+
+Zet **Thema met hoog contrast** aan voor een zwart-wit licht of donker interfacepalet met zwaardere tekst en omkaderde vlakken in plaats van getinte kaarten. Het volgt de keuze **Donker**, **Licht** of **Systeem**, overschrijft Dynamische kleuren zolang het aanstaat, en behoudt de kleuren voor gevaar, waarschuwing, validatie, modus, score en spectrogram.
+
+## Audio en opname
 
 Deze bediening verschijnt in live workflows die op audio draaien.
 
@@ -89,6 +97,44 @@ Lineaire versterker die op binnenkomende audio wordt toegepast voordat die het s
 ### Hoogdoorlaatfilter (Hz)
 
 Snijdt laagfrequente inhoud weg vóór de inferentie met een Butterworth-filter van 24 dB/octaaf — de waarde van de schuifregelaar is de −3 dB-grensfrequentie. **0 Hz schakelt het uit.** Een grens van 100–200 Hz haalt wind, verkeersgerommel en hanteergeluid weg zonder de meeste soorten te raken; richting 500–1000 Hz verdwijnen lage roepen, uilen, hoenders en het boemen van de roerdomp, dus ga alleen zo hoog wanneer je die soorten bewust negeert in ruil voor een veel schoner spectrogram in een lawaaiige stedelijke omgeving. De gekozen grens hoort als een scherpe horizontale lijn zichtbaar te zijn in het live spectrogram.
+
+### Opnamemodus
+
+Deze instelling regelt Live Mode. Point Count heeft een eigen opnamekeuze bij de analyse-instellingen; nieuwe tellingen gebruiken standaard **Vol**. Survey heeft ook een aparte opnamekeuze in de wizard.
+
+- **Volledig** — de hele opname bewaren
+- **Alleen detecties** — fragmenten rond detecties bewaren
+- **Uit** — geen audio-opname
+
+### Fragmentcontext
+
+Is **Alleen detecties** actief, dan toont de app één schuifregelaar **Fragmentcontext** (0–5 s) die bepaalt hoeveel audio er aan **beide zijden** van elke detectie bewaard blijft. Point Count gebruikt dezelfde waarde als je **Clips** kiest in de wizard en kan haar daar wijzigen. Elk fragment duurt `analysevenster + 2 × fragmentcontext`, dus met een analysevenster van 3 s en de standaardcontext van 1 s is het bewaarde fragment 5 s. Zet je de context op 2 s, dan levert dat een fragment van 7 s op (2 s aanloop + 3 s geanalyseerde audio + 2 s uitloop). Grotere waarden geven je meer ruimte voor visuele inspectie of externe controlegereedschappen, ten koste van schijfruimte; 0 bewaart alleen het geanalyseerde venster zelf.
+
+### Opnameformaat
+
+Kies **WAV** of **FLAC**. WAV is groter, maar breed compatibel en snel te inspecteren. FLAC behoudt dezelfde verliesvrije audiokwaliteit met minder opslag, wat voor lange Sessions doorgaans beter is.
+
+Deze instelling geldt voor audio die BirdNET Live opneemt. **Bestandsanalyse** bewaart een door de app beheerde kopie van het geïmporteerde bestand in het oorspronkelijke formaat, zodat MP3-, AAC-, WAV- en FLAC-uploads zonder extra conversiestap na te kijken blijven.
+
+### Sessions automatisch opslaan (Live en Point Count)
+
+Staat die aan (de standaard), dan wordt een afgeronde Live- of Point Count-Session automatisch aan je bibliotheek toegevoegd op het moment dat die eindigt. Staat die uit, dan opent een afgeronde Session in het overzicht met de markering **niet opgeslagen**: het opslaanpictogram licht op en je moet erop tikken om de Session te bewaren. Verlaat je het overzicht zonder op te slaan, dan worden de Session en de opnamen weggegooid. Dat past bij kort meeluisteren waarbij je alleen af en toe een opmerkelijk resultaat wilt bewaren in plaats van elke korte opname te verzamelen. Survey- en ARU-inzetten slaan altijd automatisch op — een lange onbemande run is te kostbaar om te verliezen door het opslaan te vergeten — dus daar geldt deze schakelaar niet.
+
+Los van deze instelling slaan de Live-modus en Point Count een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app de voorgrond verlaat, en schrijven ze de afgeronde Session naar de opslag voordat de microfoon wordt vrijgegeven. Zo blijft gegevensverlies beperkt na een crash, stroomuitval of wanneer het systeem de app op de achtergrond beëindigt: zo'n Session verschijnt in de bibliotheek, gemarkeerd als onderbroken als de app midden in de Session is gestopt, en je kunt die daar verwijderen als je die niet wilde bewaren. Staat automatisch opslaan uit, dan opent een afgeronde Session die je in het overzicht bereikt nog steeds als niet opgeslagen en wordt die weggegooid als je zonder opslaan weggaat. Survey en ARU slaan hun tussenstanden op, ongeacht deze instelling.
+
+### Opname automatisch starten (alleen Live-modus)
+
+Staat die aan, dan begint de Live-modus met opnemen zodra het scherm opent en het model klaar is met laden — zonder dat je op de microfoonknop hoeft te tikken. Handig voor kioskachtige opstellingen, handsfree gebruik (bijvoorbeeld het toestel in het veld gemonteerd) of elke workflow waarbij Live openen sowieso "nu starten" betekent. Staat standaard uit, zodat een onbedoelde tik op de Live-tegel op het startscherm niet stilzwijgend een Session begint. Het automatisch starten gebeurt maar één keer per schermbezoek, dus een Session stoppen en opnieuw op de microfoon tikken werkt gewoon als handmatige herstart.
+
+Deze instelling regelt het openen van de Live-modus binnen de app. [Quick Listen](live-mode.md) — de Android-widget, of op iOS de opdracht, de Siri-zin en de actie in het app-pictogram — begint te luisteren zodra het wordt gestart, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
+
+### Doorgaan met uitgeschakeld scherm
+
+**Live Mode** pauzeert audio-opname en herkenning bij vergrendelen of verlaten van de app en hervat dezelfde Session bij terugkomst. Doorgaan op de achtergrond staat standaard uit. Na de eerste terugkomst legt een eenmalige dialoog uit hoe je het inschakelt; de schakelaar staat ook in de Live Mode-instellingen. Kies een **Maximale achtergrondtijd** van 15, 30, 60 of 120 minuten (standaard 30). De timer begint bij verlaten, vervalt bij terugkomst vóór de limiet en begint opnieuw bij een volgend vertrek. De limiet beëindigt de Session en opent het overzicht met de stopreden. Automatisch opslaan bepaalt nog steeds of ze meteen wordt bewaard of als niet opgeslagen verschijnt.
+
+**Point Count** gaat standaard door bij vergrendelen of wisselen van app met het scherm aan en eindigt na de gekozen duur. **Doorgaan met uitgeschakeld scherm** staat alleen in de eerste wizardstap. Zet het uit om bij deze acties eerder te stoppen. Het vraagteken verklaart het gedrag. Pauzeren en hervatten zou een gat in het getimede protocol maken. Het gereedscherm vat de keuze samen en het Session-overzicht toont de reden bij vroegtijdig stoppen.
+
+Android toont tijdens achtergrondgebruik een blijvende melding met Openen en Stoppen; het scherm mag normaal uitgaan. Kan achtergrondgebruik niet starten, houd de app dan open: op de achtergrond pauzeert Live Mode en eindigt Point Count. De app verlaten tijdens het starten van een Point Count annuleert die met een melding; stel de telling opnieuw in. In Windows pauzeert minimaliseren nooit Live Mode en beëindigt het nooit Point Count, ongeacht deze schakelaars.
 
 ## Inferentie
 
@@ -163,7 +209,7 @@ ondersteunende venster.
 
 ## Spectrogram
 
-### Grootte
+### Spectrogramgrootte
 
 Bepaalt hoeveel van het scherm het live spectrogram inneemt in Live Mode, Point Count, Survey en ARU. **Volledig** is de gebruikelijke hoogte. **Gemiddeld** en **Klein** verkleinen die tot 75% en 50% en geven het verschil aan de detectielijst – de juiste keuze als je op een telefoon in portretstand vooral naar de lijst kijkt. **Uit** verwijdert het spectrogram helemaal; in Survey en ARU verdwijnt ook het spectrogramtabblad. In liggende stand maken **Gemiddeld** en **Klein** het spectrogram in zijn schermhelft lager (de ruimte eronder blijft voorlopig leeg), en **Uit** geeft het hele scherm aan de detectielijst. Spectrogrammen van opgeslagen sessies en bij afspelen blijven ongewijzigd.
 
@@ -187,13 +233,29 @@ Stelt de bovenste weergegeven frequentie in.
 
 Past logaritmische schaling toe op het spectrogram, zodat het makkelijker af te lezen is.
 
-### Kwaliteit
+### Spectrogramkwaliteit
 
 Bepaalt hoe vloeiend het spectrogrambeeld wordt geschaald. **Gemiddeld** is de standaardbalans. Kies **Laag** op oudere telefoons wanneer het scrollen hapert of het toestel warm wordt; kies **Hoog** wanneer je vloeiender beeld verkiest en je toestel genoeg GPU-ruimte heeft. De gedachte erachter: dit verandert alleen de renderkosten, niet de audioanalyse of de detectieresultaten.
 
-## Meldingen
+## Afspelen en aankondigingen
 
-Deze sectie bepaalt of BirdNET Live **detecties hardop voorleest via je koptelefoon of de telefoonluidspreker** terwijl een Session opneemt. De hele functie staat **standaard uit**, omdat die de akoestische omgeving rond de microfoon verandert — aanzetten is een bewuste afweging. Er is geen instelwizard: de kiezers voor uitgebreidheid × frequentie hieronder *zijn* de volledige instelling, dus je kunt op elk moment een andere voorinstelling aantikken en het verschil meteen horen. De gedachte erachter: tijdens lange Surveys kun je niet steeds op het scherm kijken; een discrete stem in je oor betekent dat je je blik op het habitat kunt houden en toch weet wat er zojuist te horen was.
+Open je de instellingen vanuit Bestandsanalyse, dan heet deze sectie **Afspelen** en bevat ze alleen de afspeelinstellingen.
+
+### Weergave-overlay in het overzicht
+
+Staat die aan (de standaard), dan opent het beluisteren van een audiofragment in een Session-overzicht met alleen fragmenten (waar geen volledige audio-opname of spectrogram beschikbaar is) een eigen modale speleroverlay met transportbediening en een spectrogramvoorbeeld, in plaats van het fragment op de achtergrond af te spelen. Heeft een Session volledige audio, dan wordt deze instelling overgeslagen en verschijnt de weergave-overlay nooit.
+
+### Spraaknotities automatisch afspelen
+
+Staat standaard uit. Staat die aan, dan speelt een spraaknotitie die aan een annotatie met tijdstempel hangt automatisch af tijdens het Session-overzicht, op het moment dat de afspeelkop de opgenomen positie passeert. De notitie wordt over de opname heen gemengd in plaats van die te pauzeren, zodat je je gesproken notitie in context naast de originele audio hoort. Laat die uit als je notities liever handmatig start door op hun annotatiechip te tikken.
+
+### Demping bij spraaknotities
+
+Wordt alleen getoond wanneer **Spraaknotities automatisch afspelen** aanstaat. Bepaalt hoeveel de hoofdopname wordt verlaagd terwijl een automatische spraaknotitie speelt. Hogere waarden maken gesproken notities beter verstaanbaar; lagere waarden laten meer van de oorspronkelijke opname onder de notitie doorklinken.
+
+### Meldingen
+
+Deze instellingen bepalen of BirdNET Live **detecties hardop voorleest via je koptelefoon of de telefoonluidspreker** terwijl een Session opneemt. De hele functie staat **standaard uit**, omdat die de akoestische omgeving rond de microfoon verandert — aanzetten is een bewuste afweging. Er is geen instelwizard: de kiezers voor uitgebreidheid × frequentie hieronder *zijn* de volledige instelling, dus je kunt op elk moment een andere voorinstelling aantikken en het verschil meteen horen. De gedachte erachter: tijdens lange Surveys kun je niet steeds op het scherm kijken; een discrete stem in je oor betekent dat je je blik op het habitat kunt houden en toch weet wat er zojuist te horen was.
 
 ### Detecties hardop voorlezen (hoofdschakelaar)
 
@@ -223,61 +285,7 @@ Een uitklapbaar deel met een handvol schakelaars voor het routeren van audio, pl
 - **Signaaltoon vóór het spreken** — Speelt vóór elke uitspraak een korte, zachte toon zodat je oor even de tijd heeft om van passief luisteren over te schakelen op aandacht voor de stem. Staat standaard aan. Vooral handig wanneer meldingen zeldzaam zijn of wanneer er muziek op de achtergrond speelt.
 - **Wat er wordt gemeld** — Bepaalt welke detecties überhaupt in aanmerking komen voor een melding. *Elke detectie* (standaard) laat het afremmen beslissen. *Eerste keer per Session* meldt een soort alleen de eerste keer dat die in de huidige Session voorkomt. *Alleen waarnemingslijst* beperkt meldingen tot soorten op je waarnemingslijst (handig bij gericht Survey-werk waarbij je alleen over je prioritaire taxa wilt horen en verder niets).
 
-## Opname
-
-### Modus
-
-Deze instelling regelt Live Mode. Point Count heeft een eigen opnamekeuze bij de analyse-instellingen; nieuwe tellingen gebruiken standaard **Vol**. Survey heeft ook een aparte opnamekeuze in de wizard.
-
-- **Volledig** — de hele opname bewaren
-- **Alleen detecties** — fragmenten rond detecties bewaren
-- **Uit** — geen audio-opname
-
-### Fragmentcontext
-
-Is **Alleen detecties** actief, dan toont de app één schuifregelaar **Fragmentcontext** (0–5 s) die bepaalt hoeveel audio er aan **beide zijden** van elke detectie bewaard blijft. Point Count gebruikt dezelfde waarde als je **Clips** kiest in de wizard en kan haar daar wijzigen. Elk fragment duurt `analysevenster + 2 × fragmentcontext`, dus met een analysevenster van 3 s en de standaardcontext van 1 s is het bewaarde fragment 5 s. Zet je de context op 2 s, dan levert dat een fragment van 7 s op (2 s aanloop + 3 s geanalyseerde audio + 2 s uitloop). Grotere waarden geven je meer ruimte voor visuele inspectie of externe controlegereedschappen, ten koste van schijfruimte; 0 bewaart alleen het geanalyseerde venster zelf.
-
-### Formaat
-
-Kies **WAV** of **FLAC**. WAV is groter, maar breed compatibel en snel te inspecteren. FLAC behoudt dezelfde verliesvrije audiokwaliteit met minder opslag, wat voor lange Sessions doorgaans beter is.
-
-Deze instelling geldt voor audio die BirdNET Live opneemt. **Bestandsanalyse** bewaart een door de app beheerde kopie van het geïmporteerde bestand in het oorspronkelijke formaat, zodat MP3-, AAC-, WAV- en FLAC-uploads zonder extra conversiestap na te kijken blijven.
-
-### Opname automatisch starten (alleen Live-modus)
-
-Staat die aan, dan begint de Live-modus met opnemen zodra het scherm opent en het model klaar is met laden — zonder dat je op de microfoonknop hoeft te tikken. Handig voor kioskachtige opstellingen, handsfree gebruik (bijvoorbeeld het toestel in het veld gemonteerd) of elke workflow waarbij Live openen sowieso "nu starten" betekent. Staat standaard uit, zodat een onbedoelde tik op de Live-tegel op het startscherm niet stilzwijgend een Session begint. Het automatisch starten gebeurt maar één keer per schermbezoek, dus een Session stoppen en opnieuw op de microfoon tikken werkt gewoon als handmatige herstart.
-
-Deze instelling regelt het openen van de Live-modus binnen de app. [Quick Listen](live-mode.md) — de Android-widget, of op iOS de opdracht, de Siri-zin en de actie in het app-pictogram — begint te luisteren zodra het wordt gestart, wat deze instelling ook is, en laat de instelling ongemoeid. Loopt of start er al een Session van Point Count, Survey, Bestandsanalyse of de ARU-modus, dan blijft die Session behouden en word je gevraagd die eerst te stoppen.
-
-### Doorgaan met uitgeschakeld scherm
-
-**Live Mode** pauzeert audio-opname en herkenning bij vergrendelen of verlaten van de app en hervat dezelfde Session bij terugkomst. Doorgaan op de achtergrond staat standaard uit. Na de eerste terugkomst legt een eenmalige dialoog uit hoe je het inschakelt; de schakelaar staat ook in de Live Mode-instellingen. Kies een **Maximale achtergrondtijd** van 15, 30, 60 of 120 minuten (standaard 30). De timer begint bij verlaten, vervalt bij terugkomst vóór de limiet en begint opnieuw bij een volgend vertrek. De limiet beëindigt de Session en opent het overzicht met de stopreden. Automatisch opslaan bepaalt nog steeds of ze meteen wordt bewaard of als niet opgeslagen verschijnt.
-
-**Point Count** gaat standaard door bij vergrendelen of wisselen van app met het scherm aan en eindigt na de gekozen duur. **Doorgaan met uitgeschakeld scherm** staat alleen in de eerste wizardstap. Zet het uit om bij deze acties eerder te stoppen. Het vraagteken verklaart het gedrag. Pauzeren en hervatten zou een gat in het getimede protocol maken. Het gereedscherm vat de keuze samen en het Session-overzicht toont de reden bij vroegtijdig stoppen.
-
-Android toont tijdens achtergrondgebruik een blijvende melding met Openen en Stoppen; het scherm mag normaal uitgaan. Kan achtergrondgebruik niet starten, houd de app dan open: op de achtergrond pauzeert Live Mode en eindigt Point Count. De app verlaten tijdens het starten van een Point Count annuleert die met een melding; stel de telling opnieuw in. In Windows pauzeert minimaliseren nooit Live Mode en beëindigt het nooit Point Count, ongeacht deze schakelaars.
-
-### Sessions automatisch opslaan (Live en Point Count)
-
-Staat die aan (de standaard), dan wordt een afgeronde Live- of Point Count-Session automatisch aan je bibliotheek toegevoegd op het moment dat die eindigt. Staat die uit, dan opent een afgeronde Session in het overzicht met de markering **niet opgeslagen**: het opslaanpictogram licht op en je moet erop tikken om de Session te bewaren. Verlaat je het overzicht zonder op te slaan, dan worden de Session en de opnamen weggegooid. Dat past bij kort meeluisteren waarbij je alleen af en toe een opmerkelijk resultaat wilt bewaren in plaats van elke korte opname te verzamelen. Survey- en ARU-inzetten slaan altijd automatisch op — een lange onbemande run is te kostbaar om te verliezen door het opslaan te vergeten — dus daar geldt deze schakelaar niet.
-
-Los van deze instelling slaan de Live-modus en Point Count een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app de voorgrond verlaat, en schrijven ze de afgeronde Session naar de opslag voordat de microfoon wordt vrijgegeven. Zo blijft gegevensverlies beperkt na een crash, stroomuitval of wanneer het systeem de app op de achtergrond beëindigt: zo'n Session verschijnt in de bibliotheek, gemarkeerd als onderbroken als de app midden in de Session is gestopt, en je kunt die daar verwijderen als je die niet wilde bewaren. Staat automatisch opslaan uit, dan opent een afgeronde Session die je in het overzicht bereikt nog steeds als niet opgeslagen en wordt die weggegooid als je zonder opslaan weggaat. Survey en ARU slaan hun tussenstanden op, ongeacht deze instelling.
-
-## Weergave
-
-### Weergave-overlay in het overzicht
-
-Staat die aan (de standaard), dan opent het beluisteren van een audiofragment in een Session-overzicht met alleen fragmenten (waar geen volledige audio-opname of spectrogram beschikbaar is) een eigen modale speleroverlay met transportbediening en een spectrogramvoorbeeld, in plaats van het fragment op de achtergrond af te spelen. Heeft een Session volledige audio, dan wordt deze instelling overgeslagen en verschijnt de weergave-overlay nooit.
-
-### Spraaknotities automatisch afspelen
-
-Staat standaard uit. Staat die aan, dan speelt een spraaknotitie die aan een annotatie met tijdstempel hangt automatisch af tijdens het Session-overzicht, op het moment dat de afspeelkop de opgenomen positie passeert. De notitie wordt over de opname heen gemengd in plaats van die te pauzeren, zodat je je gesproken notitie in context naast de originele audio hoort. Laat die uit als je notities liever handmatig start door op hun annotatiechip te tikken.
-
-### Demping bij spraaknotities
-
-Wordt alleen getoond wanneer **Spraaknotities automatisch afspelen** aanstaat. Bepaalt hoeveel de hoofdopname wordt verlaagd terwijl een automatische spraaknotitie speelt. Hogere waarden maken gesproken notities beter verstaanbaar; lagere waarden laten meer van de oorspronkelijke opname onder de notitie doorklinken.
-
-## Locatie
+## Locatie en soortenfilter
 
 ### GPS gebruiken
 

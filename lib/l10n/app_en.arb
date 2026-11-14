@@ -1011,6 +1011,18 @@
   "@settingsLocation": {
     "description": "Location settings section title"
   },
+  "settingsLocationSpeciesFilter": "Location & Species Filter",
+  "@settingsLocationSpeciesFilter": {
+    "description": "Title of the Settings section with location and species filter settings"
+  },
+  "settingsSearchHint": "Search settings…",
+  "@settingsSearchHint": {
+    "description": "Hint text of the search field at the top of the Settings screen"
+  },
+  "settingsSearchNoResults": "No settings found",
+  "@settingsSearchNoResults": {
+    "description": "Shown when the Settings search matches no setting"
+  },
   "settingsUseGps": "Use GPS",
   "@settingsUseGps": {
     "description": "Toggle for GPS location"
@@ -1873,6 +1885,14 @@
   "@settingsPlaybackDescription": {
     "description": "Subtitle for the Playback settings section"
   },
+  "settingsPlaybackAnnouncements": "Playback & Announcements",
+  "@settingsPlaybackAnnouncements": {
+    "description": "Title of the Settings section that combines Playback and Announcements"
+  },
+  "settingsPlaybackAnnouncementsDescription": "Session review playback, and spoken detections while recording.",
+  "@settingsPlaybackAnnouncementsDescription": {
+    "description": "Subtitle for the combined Playback & Announcements settings section"
+  },
   "settingsPlaybackVoiceMemos": "Auto-play voice memos",
   "@settingsPlaybackVoiceMemos": {
     "description": "Toggle to auto-play voice memos during session review playback"
@@ -2095,9 +2115,17 @@
   "@settingsSampleRate": {
     "description": "Audio sample rate setting label"
   },
-  "settingsGeneralDescription": "Appearance, language, and display preferences. Toggle scientific names for detailed species identification.",
+  "settingsGeneralDescription": "Language and display preferences. Toggle scientific names for detailed species identification.",
   "@settingsGeneralDescription": {
     "description": "Subtitle for General settings section"
+  },
+  "settingsAppearance": "Appearance",
+  "@settingsAppearance": {
+    "description": "Title of the Appearance settings section (theme, colors, contrast)"
+  },
+  "settingsAppearanceDescription": "Light or dark theme, colors, and contrast.",
+  "@settingsAppearanceDescription": {
+    "description": "Subtitle for Appearance settings section"
   },
   "settingsAudioDescription": "Microphone input, gain, and filtering. Increase gain in quiet environments; use the high-pass filter to reduce wind noise.",
   "@settingsAudioDescription": {
@@ -2114,6 +2142,14 @@
   "settingsRecordingDescription": "Save audio to disk during live sessions. Full mode records everything; detection-only mode saves clips around identified species.",
   "@settingsRecordingDescription": {
     "description": "Subtitle for Recording settings section"
+  },
+  "settingsAudioRecording": "Audio & Recording",
+  "@settingsAudioRecording": {
+    "description": "Title of the Settings section that combines Audio and Recording"
+  },
+  "settingsAudioRecordingDescription": "Microphone input, gain, and filtering, and how audio is saved during a session.",
+  "@settingsAudioRecordingDescription": {
+    "description": "Subtitle for the combined Audio & Recording settings section"
   },
   "settingsLocationDescription": "GPS and geographic species filtering. The geo-model uses your coordinates to predict local species and filter unlikely detections.",
   "@settingsLocationDescription": {
@@ -3863,14 +3899,6 @@
   "@settingsHelpPrivacyAllowWeather": {
     "description": "Long-form help for the Open-Meteo privacy toggle"
   },
-  "settingsAnnouncements": "Announcements",
-  "@settingsAnnouncements": {
-    "description": "Settings section header for spoken detection announcements"
-  },
-  "settingsAnnouncementsDescription": "Speak detections aloud through your headphones or the phone speaker while a session is recording.",
-  "@settingsAnnouncementsDescription": {
-    "description": "Settings section subtitle"
-  },
   "settingsAnnouncementsEnabled": "Speak detections aloud",
   "@settingsAnnouncementsEnabled": {
     "description": "Master toggle for the announcements feature"
@@ -4132,11 +4160,11 @@
   "@audioSourceVoiceRecognitionDescription": {
     "description": "Description of the Voice recognition audio source option in the picker"
   },
-  "settingsRecordingFormat": "Format",
+  "settingsRecordingFormat": "Recording format",
   "@settingsRecordingFormat": {
     "description": "Recording format setting label"
   },
-  "settingsRecordingMode": "Mode",
+  "settingsRecordingMode": "Recording mode",
   "@settingsRecordingMode": {
     "description": "Recording mode setting label"
   },

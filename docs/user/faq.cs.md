@@ -30,7 +30,7 @@ Odpověď: Přesnost závisí na kvalitě záznamu, vzdálenosti, šumu v pozad�
 ## Nahrávání
 
 **Otázka: Kde se ukládají nahrávky?**
-Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Nahrávání → Formát**.
+Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Zvuk a nahrávání → Formát nahrávání**.
 
 **Otázka: Mohu analyzovat existující nahrávky?**
 A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soubor, nastavte umístění a parametry a klepněte na Analyzovat. Mezi podporované formáty patří WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA a AMR.

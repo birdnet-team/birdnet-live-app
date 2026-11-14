@@ -31,7 +31,7 @@
 - Keep user-facing strings in all 13 locales: `en`, `de`, `cs`, `es`, `fr`, `it`, `pt`, `nl`, `nb`, `pl`, `ru`, `zh`, `ko`.
 - Use `l10n.keyName` in widgets; after ARB edits run `flutter gen-l10n` and ensure 0 untranslated messages.
 - Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
-- Add/modify settings via `PrefKeys` + settings providers/UI, and update `docs/user/settings.md` with user-facing rationale.
+- Add/modify settings via `PrefKeys` + settings providers/UI, and update `docs/user/settings.md` with user-facing rationale; add the tile's title to `_searchEntries` in `settings_screen.dart` so Settings search finds it.
 - Use `AppIcons` (`lib/shared/utils/app_icons.dart`) instead of raw `Symbols.*` or `Icons.*` in app code.
 - Keep Dart file header block comments (`// ===...`).
 - No hardcoded model/API thresholds/config values when constants/config already exist.

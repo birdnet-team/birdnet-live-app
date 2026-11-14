@@ -9,15 +9,13 @@ Przycisk :app-helpOutline: obok ustawienia otwiera krótkie wyjaśnienie. Kreato
 - Otwarcie ustawień z ekranu startowego pokazuje pełny ekran.
 - Otwarcie ustawień z trybu Live, Survey, Point Count lub Analizy plików zawęża ekran do istotnych sekcji.
 
+## Znajdowanie ustawienia
+
+Ustawienia są pogrupowane w sekcje, takie jak **Ogólne**, **Inferencja** i **Prywatność**. Ekran otwiera się ze wszystkimi sekcjami zwiniętymi, więc na początku jest krótką listą nazw sekcji, z których każda ma krótki opis. Dotknij nagłówka sekcji, aby ją rozwinąć, i ponownie, aby ją zwinąć; jednocześnie może być otwartych kilka sekcji. Gdy przewijasz otwartą sekcję, jej tytuł pozostaje u góry ekranu, więc możesz zwinąć długą sekcję bez przewijania z powrotem w górę.
+
+Aby znaleźć ustawienie po nazwie, dotknij przycisku :app-searchRounded: na pasku aplikacji i wpisz część nazwy. Wyniki pokazują każde pasujące ustawienie wraz z jego sekcją; dotknięcie wyniku otwiera tę sekcję i przewija do ustawienia. Ustawienie, które pojawia się dopiero po włączeniu innego przełącznika (na przykład głos komunikatów, gdy komunikaty głosowe są wyłączone), trafia na listę dopiero po włączeniu tego przełącznika. Ustawienia, których własna nazwa pasuje do wpisanego tekstu, są wymienione jako pierwsze; wpisanie nazwy sekcji wyświetla też wszystkie jej ustawienia. Opcje wewnątrz podstrony lub nakładki, takie jak poszczególne formaty eksportu czy pola wyboru w opcji Ignoruj gatunki, znajdziesz przez ich pozycję w ustawieniach (**Formaty**, **Zawartość**, **Ignoruj gatunki**).
+
 ## Ogólne
-
-### Motyw
-
-Wybierz **Ciemny**, **Jasny** lub **Systemowy**.
-
-Jeśli włączysz **Kolory dynamiczne**, BirdNET Live spróbuje też dopasować się do systemowej palety barw Twojego urządzenia z Androidem. Działa to tylko na obsługiwanych urządzeniach z Androidem; na iPhonie i iPadzie aplikacja nadal używa standardowego motywu BirdNET Live, więc włączenie przełącznika niczego tam nie zmieni.
-
-Włącz **Motyw o wysokim kontraście**, aby korzystać z czarno-białej jasnej lub ciemnej palety interfejsu z grubszym tekstem i obramowanymi powierzchniami zamiast barwionych kart. Podąża on za wyborem **Ciemny**, **Jasny** lub **Systemowy**, ma pierwszeństwo przed Kolorami dynamicznymi, dopóki jest włączony, i zachowuje kolory ostrzeżeń, zagrożeń, walidacji, trybów, ocen i spektrogramu.
 
 ### Język aplikacji
 
@@ -58,7 +56,17 @@ Gdy wybrane jest **Bezwzględne**, pojawia się dodatkowy przełącznik **Pokazu
 
 Zapis i eksporty niezależnie od tego ustawienia zawsze używają momentów w UTC, więc wybór nigdy nie wpływa na dane — tylko na sposób ich wyświetlania.
 
-## Dźwięk
+## Wygląd
+
+### Motyw
+
+Wybierz **Ciemny**, **Jasny** lub **Systemowy**.
+
+Jeśli włączysz **Kolory dynamiczne**, BirdNET Live spróbuje też dopasować się do systemowej palety barw Twojego urządzenia z Androidem. Działa to tylko na obsługiwanych urządzeniach z Androidem; na iPhonie i iPadzie aplikacja nadal używa standardowego motywu BirdNET Live, więc włączenie przełącznika niczego tam nie zmieni.
+
+Włącz **Motyw o wysokim kontraście**, aby korzystać z czarno-białej jasnej lub ciemnej palety interfejsu z grubszym tekstem i obramowanymi powierzchniami zamiast barwionych kart. Podąża on za wyborem **Ciemny**, **Jasny** lub **Systemowy**, ma pierwszeństwo przed Kolorami dynamicznymi, dopóki jest włączony, i zachowuje kolory ostrzeżeń, zagrożeń, walidacji, trybów, ocen i spektrogramu.
+
+## Audio i nagrywanie
 
 Te elementy pojawiają się w trybach pracy na żywo opartych na dźwięku.
 
@@ -89,6 +97,44 @@ Liniowy wzmacniacz stosowany do przychodzącego dźwięku, zanim trafi do spektr
 ### Filtr górnoprzepustowy (Hz)
 
 Odcina niskie częstotliwości przed wnioskowaniem za pomocą filtru Butterwortha 24 dB/oktawę — wartość suwaka to częstotliwość odcięcia −3 dB. **0 Hz go wyłącza.** Odcięcie 100–200 Hz usuwa wiatr, dudnienie ruchu ulicznego i odgłosy trzymania urządzenia, nie naruszając większości gatunków; przy 500–1000 Hz zaczynają znikać niskie pohukiwania, sowy, kuraki i buczenie bąka, więc idź tak wysoko tylko wtedy, gdy świadomie pomijasz te gatunki w zamian za znacznie czystszy spektrogram w hałaśliwym środowisku miejskim. Wybrane odcięcie powinno być widoczne jako ostra pozioma linia na spektrogramie na żywo.
+
+### Tryb nagrywania
+
+To ustawienie dotyczy Live Mode. Point Count ma osobny wybór nagrywania w kroku ustawień analizy; nowe liczenia domyślnie używają **Pełny**. Survey także ma osobny wybór w konfiguracji.
+
+- **Pełne** — zapisz całe nagranie
+- **Tylko wykrycia** — zapisz fragmenty wokół wykryć
+- **Wyłączone** — bez nagrywania dźwięku
+
+### Kontekst fragmentu
+
+Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst fragmentu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Point Count używa tej samej wartości przy wyborze **Klipy** w konfiguracji i pozwala ją tam zmienić. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
+
+### Format nagrywania
+
+Wybierz **WAV** albo **FLAC**. WAV jest większy, ale powszechnie zgodny i szybki w podglądzie. FLAC zachowuje tę samą bezstratną jakość dźwięku, zajmując mniej miejsca, co zwykle lepiej sprawdza się przy długich Sessions.
+
+To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plików** zachowuje zarządzaną przez aplikację kopię zaimportowanego pliku w jego oryginalnym formacie, dzięki czemu pliki MP3, AAC, WAV i FLAC pozostają możliwe do przejrzenia bez dodatkowego kroku konwersji.
+
+### Automatyczne zapisywanie Sessions (Live i Point Count)
+
+Po włączeniu (domyślnie) zakończona Session trybu Live lub Point Count jest dodawana do biblioteki automatycznie w chwili jej zakończenia. Po wyłączeniu zakończona Session otwiera się w przeglądzie z oznaczeniem **niezapisana**: ikona zapisu jest podświetlona i musisz jej dotknąć, aby zachować Session. Wyjście z przeglądu bez zapisania odrzuca Session i jej nagrania. Pasuje to do krótkiego nasłuchiwania, gdy chcesz zachować jedynie sporadyczny ciekawy wynik, zamiast gromadzić każde krótkie nagranie. Wdrożenia Survey i ARU zawsze zapisują się automatycznie — długi, bezobsługowy przebieg jest zbyt cenny, aby stracić go przez zapomnienie o zapisie — więc ten przełącznik tam nie obowiązuje.
+
+Niezależnie od tego ustawienia tryb Live i Point Count zapisują częściową Session na starcie, co 30 sekund i gdy aplikacja opuszcza pierwszy plan, a zakończoną Session zapisują na dysku, zanim zwolnią mikrofon. Ogranicza to utratę danych po awarii, utracie zasilania lub gdy system zakończy aplikację działającą w tle: taka Session pojawia się w bibliotece, oznaczona jako przerwana, jeśli aplikacja zakończyła się w trakcie Session, i możesz ją tam usunąć, jeśli nie chcesz jej zachować. Przy wyłączonym automatycznym zapisywaniu zakończona Session, do której dotrzesz w przeglądzie, nadal otwiera się jako niezapisana i zostaje odrzucona, gdy wyjdziesz bez zapisania. Survey i ARU zapisują punkty kontrolne niezależnie od tego ustawienia.
+
+### Automatyczne rozpoczynanie nagrywania (tylko tryb Live)
+
+Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
+
+To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Quick Listen](live-mode.md) — widżet w Androidzie albo skrót, fraza Siri i akcja ikony w iOS — po uruchomieniu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
+
+### Kontynuuj przy wyłączonym ekranie
+
+**Live Mode** wstrzymuje przechwytywanie i identyfikację po zablokowaniu ekranu lub opuszczeniu aplikacji i wznawia tę samą Session po powrocie. Kontynuacja w tle jest domyślnie wyłączona. Po pierwszym powrocie jednorazowe okno wyjaśnia jej włączenie; przełącznik jest też w ustawieniach Live Mode. Wybierz **Maksymalny czas w tle**: 15, 30, 60 lub 120 minut (domyślnie 30). Zegar zaczyna działać po wyjściu, jest anulowany przy powrocie przed limitem i uruchamia się ponownie przy kolejnym wyjściu. Limit kończy Session i otwiera przegląd z przyczyną. Automatyczny zapis nadal decyduje, czy zostanie od razu zachowana, czy oznaczona jako niezapisana.
+
+**Point Count** domyślnie trwa po zablokowaniu ekranu lub zmianie aplikacji przy włączonym ekranie i kończy się po wybranym czasie. Przełącznik **Kontynuuj przy wyłączonym ekranie** jest tylko w pierwszym kroku konfiguracji. Wyłącz go, aby te działania kończyły liczenie wcześniej. Znak zapytania wyjaśnia zachowanie. Wstrzymanie i wznowienie tworzyłoby lukę w protokole czasowym. Ekran gotowości podsumowuje wybór, a przegląd Session pokazuje powód wcześniejszego zakończenia.
+
+Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle; ekran może normalnie zgasnąć. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
 
 ## Wnioskowanie
 
@@ -161,7 +207,7 @@ kończy się na końcu ostatniego okna potwierdzającego.
 
 ## Spektrogram
 
-### Rozmiar
+### Rozmiar spektrogramu
 
 Określa, ile miejsca na ekranie zajmuje spektrogram na żywo w trybach Live Mode, Point Count, Survey i ARU. **Pełny** to zwykła wysokość. **Średni** i **Mały** zmniejszają ją do 75% i 50%, a różnicę oddają liście wykryć – to właściwy wybór, gdy na telefonie w pionie patrzysz głównie na listę. **Wyłączony** całkowicie usuwa spektrogram; w Survey i ARU znika też karta spektrogramu. W orientacji poziomej **Średni** i **Mały** skracają spektrogram w jego połowie ekranu (miejsce pod nim na razie pozostaje puste), a **Wyłączony** oddaje cały ekran liście wykryć. Spektrogramy zapisanych sesji i odtwarzania pozostają bez zmian.
 
@@ -185,13 +231,29 @@ Ustawia górną wyświetlaną częstotliwość.
 
 Stosuje skalowanie logarytmiczne do spektrogramu, aby łatwiej było go odczytać.
 
-### Jakość
+### Jakość spektrogramu
 
 Steruje tym, jak gładko skalowany jest obraz spektrogramu. **Średnia** to domyślny kompromis. Wybierz **Niską** na starszych telefonach, gdy przewijanie się zacina lub urządzenie się nagrzewa; wybierz **Wysoką**, gdy wolisz płynniejszy obraz, a Twoje urządzenie ma zapas mocy GPU. Intuicja: zmienia to wyłącznie koszt renderowania, a nie analizę dźwięku ani wyniki wykryć.
 
-## Komunikaty głosowe
+## Odtwarzanie i ogłoszenia
 
-Ta sekcja decyduje, czy BirdNET Live ma **odczytywać wykrycia na głos przez słuchawki lub głośnik telefonu**, gdy trwa nagrywanie Session. Cała funkcja jest **domyślnie wyłączona**, ponieważ zmienia warunki akustyczne wokół mikrofonu — jej włączenie to świadomy kompromis. Nie ma kreatora konfiguracji: selektory rozwlekłości × częstości poniżej *są* całą konfiguracją, więc w dowolnej chwili możesz dotknąć innego ustawienia i od razu usłyszeć różnicę. Intuicja: przy długich liczeniach nie da się ciągle zerkać na ekran; dyskretny głos w uchu pozwala nie odrywać wzroku od siedliska i wciąż wiedzieć, co przed chwilą było słychać.
+Gdy otworzysz ustawienia z Analizy plików, ta sekcja nazywa się **Odtwarzanie nagranego dźwięku** i zawiera tylko ustawienia odtwarzania.
+
+### Nakładka odtwarzania w przeglądzie
+
+Po włączeniu (domyślnie) odsłuchanie fragmentu dźwiękowego w Przeglądzie Session złożonej wyłącznie z fragmentów (gdzie nie ma pełnego nagrania ani spektrogramu) otwiera osobną modalną nakładkę odtwarzacza ze sterowaniem odtwarzaniem i podglądem spektrogramu, zamiast odtwarzać fragment w tle. Jeśli Session ma pełny dźwięk, ustawienie to jest pomijane, a nakładka odtwarzania nigdy się nie pojawia.
+
+### Automatyczne odtwarzanie notatek głosowych
+
+Domyślnie wyłączone. Po włączeniu notatka głosowa dołączona do adnotacji ze znacznikiem czasu odtwarza się automatycznie podczas Przeglądu Session, gdy wskaźnik odtwarzania minie zapisaną pozycję. Notatka jest miksowana na nagraniu, zamiast je wstrzymywać, więc słyszysz swoją wypowiedź w kontekście, razem z oryginalnym dźwiękiem. Zostaw wyłączone, jeśli wolisz uruchamiać notatki ręcznie, dotykając ich odznaki adnotacji.
+
+### Ściszanie przy notatkach głosowych
+
+Pokazywane tylko wtedy, gdy włączone jest **Automatyczne odtwarzanie notatek głosowych**. Określa, jak mocno ściszane jest główne nagranie w czasie odtwarzania automatycznej notatki głosowej. Wyższe wartości ułatwiają zrozumienie notatek; niższe pozostawiają więcej słyszalnego nagrania oryginalnego pod notatką.
+
+### Komunikaty głosowe
+
+Te ustawienia decydują, czy BirdNET Live ma **odczytywać wykrycia na głos przez słuchawki lub głośnik telefonu**, gdy trwa nagrywanie Session. Cała funkcja jest **domyślnie wyłączona**, ponieważ zmienia warunki akustyczne wokół mikrofonu — jej włączenie to świadomy kompromis. Nie ma kreatora konfiguracji: selektory rozwlekłości × częstości poniżej *są* całą konfiguracją, więc w dowolnej chwili możesz dotknąć innego ustawienia i od razu usłyszeć różnicę. Intuicja: przy długich liczeniach nie da się ciągle zerkać na ekran; dyskretny głos w uchu pozwala nie odrywać wzroku od siedliska i wciąż wiedzieć, co przed chwilą było słychać.
 
 ### Odczytuj wykrycia na głos (przełącznik główny)
 
@@ -221,61 +283,7 @@ Rozwijana sekcja z kilkoma przełącznikami kierowania dźwiękiem oraz selektor
 - **Sygnał przed wypowiedzią** — Odtwarza przed każdą wypowiedzią krótki, cichy sygnał, aby ucho miało chwilę na przejście z biernego słuchania do skupienia się na głosie. Domyślnie włączone. Szczególnie pomocne, gdy komunikaty są rzadkie albo gdy w tle gra muzyka.
 - **Co ogłaszać** — Wybiera, które wykrycia w ogóle kwalifikują się do komunikatu. *Każde wykrycie* (domyślnie) pozostawia decyzję ograniczaniu. *Pierwszy raz w Session* ogłasza gatunek tylko przy jego pierwszym wystąpieniu w bieżącej Session. *Tylko lista obserwacyjna* ogranicza komunikaty do gatunków z Twojej listy obserwacyjnej (przydatne przy ukierunkowanych liczeniach, gdy chcesz słyszeć wyłącznie o priorytetowych taksonach).
 
-## Nagrywanie
-
-### Tryb
-
-To ustawienie dotyczy Live Mode. Point Count ma osobny wybór nagrywania w kroku ustawień analizy; nowe liczenia domyślnie używają **Pełny**. Survey także ma osobny wybór w konfiguracji.
-
-- **Pełne** — zapisz całe nagranie
-- **Tylko wykrycia** — zapisz fragmenty wokół wykryć
-- **Wyłączone** — bez nagrywania dźwięku
-
-### Kontekst fragmentu
-
-Gdy aktywne jest **Tylko wykrycia**, aplikacja pokazuje jeden suwak **Kontekst fragmentu** (0–5 s), który ustala, ile dźwięku zostaje zachowane po **obu stronach** każdego wykrycia. Point Count używa tej samej wartości przy wyborze **Klipy** w konfiguracji i pozwala ją tam zmienić. Każdy fragment trwa `okno analizy + 2 × kontekst fragmentu`, więc przy oknie analizy 3 s i domyślnym kontekście 1 s zapisany fragment ma 5 s. Ustawienie kontekstu na 2 s daje fragment 7 s (2 s przed + 3 s analizowanego dźwięku + 2 s po). Większe wartości dają więcej miejsca na oględziny wzrokowe lub zewnętrzne narzędzia oceny kosztem miejsca na dysku; wartość 0 zapisuje wyłącznie samo analizowane okno.
-
-### Format
-
-Wybierz **WAV** albo **FLAC**. WAV jest większy, ale powszechnie zgodny i szybki w podglądzie. FLAC zachowuje tę samą bezstratną jakość dźwięku, zajmując mniej miejsca, co zwykle lepiej sprawdza się przy długich Sessions.
-
-To ustawienie dotyczy dźwięku nagrywanego przez BirdNET Live. **Analiza plików** zachowuje zarządzaną przez aplikację kopię zaimportowanego pliku w jego oryginalnym formacie, dzięki czemu pliki MP3, AAC, WAV i FLAC pozostają możliwe do przejrzenia bez dodatkowego kroku konwersji.
-
-### Automatyczne rozpoczynanie nagrywania (tylko tryb Live)
-
-Po włączeniu tryb Live zaczyna nagrywać, gdy tylko ekran się otworzy, a model zakończy wczytywanie — bez dotykania przycisku mikrofonu. Przydatne przy stanowiskach typu kiosk, pracy bez rąk (na przykład urządzenie zamontowane w terenie) albo w każdym sposobie pracy, w którym otwarcie trybu Live i tak oznacza „zaczynamy teraz”. Domyślnie wyłączone, aby przypadkowe dotknięcie kafelka Live na ekranie startowym nie rozpoczęło po cichu Session. Automatyczny start uruchamia się tylko raz na jedno wejście na ekran, więc zatrzymanie Session i ponowne dotknięcie mikrofonu nadal działa jako ręczne wznowienie.
-
-To ustawienie dotyczy otwierania trybu Live wewnątrz aplikacji. [Quick Listen](live-mode.md) — widżet w Androidzie albo skrót, fraza Siri i akcja ikony w iOS — po uruchomieniu zaczyna nasłuchiwać niezależnie od tego ustawienia i go nie zmienia. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo ARU, tamta Session zostaje zachowana, a aplikacja poprosi o jej wcześniejsze zatrzymanie.
-
-### Kontynuuj przy wyłączonym ekranie
-
-**Live Mode** wstrzymuje przechwytywanie i identyfikację po zablokowaniu ekranu lub opuszczeniu aplikacji i wznawia tę samą Session po powrocie. Kontynuacja w tle jest domyślnie wyłączona. Po pierwszym powrocie jednorazowe okno wyjaśnia jej włączenie; przełącznik jest też w ustawieniach Live Mode. Wybierz **Maksymalny czas w tle**: 15, 30, 60 lub 120 minut (domyślnie 30). Zegar zaczyna działać po wyjściu, jest anulowany przy powrocie przed limitem i uruchamia się ponownie przy kolejnym wyjściu. Limit kończy Session i otwiera przegląd z przyczyną. Automatyczny zapis nadal decyduje, czy zostanie od razu zachowana, czy oznaczona jako niezapisana.
-
-**Point Count** domyślnie trwa po zablokowaniu ekranu lub zmianie aplikacji przy włączonym ekranie i kończy się po wybranym czasie. Przełącznik **Kontynuuj przy wyłączonym ekranie** jest tylko w pierwszym kroku konfiguracji. Wyłącz go, aby te działania kończyły liczenie wcześniej. Znak zapytania wyjaśnia zachowanie. Wstrzymanie i wznowienie tworzyłoby lukę w protokole czasowym. Ekran gotowości podsumowuje wybór, a przegląd Session pokazuje powód wcześniejszego zakończenia.
-
-Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle; ekran może normalnie zgasnąć. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
-
-### Automatyczne zapisywanie Sessions (Live i Point Count)
-
-Po włączeniu (domyślnie) zakończona Session trybu Live lub Point Count jest dodawana do biblioteki automatycznie w chwili jej zakończenia. Po wyłączeniu zakończona Session otwiera się w przeglądzie z oznaczeniem **niezapisana**: ikona zapisu jest podświetlona i musisz jej dotknąć, aby zachować Session. Wyjście z przeglądu bez zapisania odrzuca Session i jej nagrania. Pasuje to do krótkiego nasłuchiwania, gdy chcesz zachować jedynie sporadyczny ciekawy wynik, zamiast gromadzić każde krótkie nagranie. Wdrożenia Survey i ARU zawsze zapisują się automatycznie — długi, bezobsługowy przebieg jest zbyt cenny, aby stracić go przez zapomnienie o zapisie — więc ten przełącznik tam nie obowiązuje.
-
-Niezależnie od tego ustawienia tryb Live i Point Count zapisują częściową Session na starcie, co 30 sekund i gdy aplikacja opuszcza pierwszy plan, a zakończoną Session zapisują na dysku, zanim zwolnią mikrofon. Ogranicza to utratę danych po awarii, utracie zasilania lub gdy system zakończy aplikację działającą w tle: taka Session pojawia się w bibliotece, oznaczona jako przerwana, jeśli aplikacja zakończyła się w trakcie Session, i możesz ją tam usunąć, jeśli nie chcesz jej zachować. Przy wyłączonym automatycznym zapisywaniu zakończona Session, do której dotrzesz w przeglądzie, nadal otwiera się jako niezapisana i zostaje odrzucona, gdy wyjdziesz bez zapisania. Survey i ARU zapisują punkty kontrolne niezależnie od tego ustawienia.
-
-## Odtwarzanie
-
-### Nakładka odtwarzania w przeglądzie
-
-Po włączeniu (domyślnie) odsłuchanie fragmentu dźwiękowego w Przeglądzie Session złożonej wyłącznie z fragmentów (gdzie nie ma pełnego nagrania ani spektrogramu) otwiera osobną modalną nakładkę odtwarzacza ze sterowaniem odtwarzaniem i podglądem spektrogramu, zamiast odtwarzać fragment w tle. Jeśli Session ma pełny dźwięk, ustawienie to jest pomijane, a nakładka odtwarzania nigdy się nie pojawia.
-
-### Automatyczne odtwarzanie notatek głosowych
-
-Domyślnie wyłączone. Po włączeniu notatka głosowa dołączona do adnotacji ze znacznikiem czasu odtwarza się automatycznie podczas Przeglądu Session, gdy wskaźnik odtwarzania minie zapisaną pozycję. Notatka jest miksowana na nagraniu, zamiast je wstrzymywać, więc słyszysz swoją wypowiedź w kontekście, razem z oryginalnym dźwiękiem. Zostaw wyłączone, jeśli wolisz uruchamiać notatki ręcznie, dotykając ich odznaki adnotacji.
-
-### Ściszanie przy notatkach głosowych
-
-Pokazywane tylko wtedy, gdy włączone jest **Automatyczne odtwarzanie notatek głosowych**. Określa, jak mocno ściszane jest główne nagranie w czasie odtwarzania automatycznej notatki głosowej. Wyższe wartości ułatwiają zrozumienie notatek; niższe pozostawiają więcej słyszalnego nagrania oryginalnego pod notatką.
-
-## Lokalizacja
+## Lokalizacja i filtr gatunkowy
 
 ### Używaj GPS
 

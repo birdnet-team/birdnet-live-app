@@ -30,7 +30,7 @@ A: De nauwkeurigheid hangt af van de opnamekwaliteit, de afstand, het achtergron
 ## Opnemen
 
 **V: Waar worden opnamen bewaard?**
-A: In de documentenmap van de app onder `recordings/<session-id>/`, als WAV of FLAC afhankelijk van **Instellingen → Opname → Formaat**.
+A: In de documentenmap van de app onder `recordings/<session-id>/`, als WAV of FLAC afhankelijk van **Instellingen → Audio en opname → Opnameformaat**.
 
 **V: Kan ik bestaande opnamen analyseren?**
 A: Ja. Open Bestandsanalyse vanaf het startscherm, kies een audiobestand, stel de locatie en parameters in en tik op Analyseren. Ondersteunde formaten zijn onder meer WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA en AMR.

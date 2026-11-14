@@ -30,7 +30,7 @@ O: Dokładność zależy od jakości nagrania, odległości, hałasu otoczenia i
 ## Nagrywanie
 
 **P: Gdzie zapisywane są nagrania?**
-O: W katalogu dokumentów aplikacji, w `recordings/<session-id>/`, jako WAV lub FLAC, zależnie od **Ustawienia → Nagrywanie → Format**.
+O: W katalogu dokumentów aplikacji, w `recordings/<session-id>/`, jako WAV lub FLAC, zależnie od **Ustawienia → Audio i nagrywanie → Format nagrywania**.
 
 **P: Czy mogę analizować istniejące nagrania?**
 O: Tak. Otwórz Analizę plików z ekranu startowego, wybierz plik dźwiękowy, ustaw lokalizację i parametry, a następnie dotknij Analizuj. Obsługiwane formaty to między innymi WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA i AMR.
