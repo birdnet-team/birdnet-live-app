@@ -14,9 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.
 - The two models the app runs are now also packaged for use in other applications: both ONNX files, one labels file for both with common names in 36 languages, a usage guide, the Apache 2.0 model license, and the acceptable use policy.
 - With **Show all detected species** on, a species that has stopped vocalizing now keeps a chip in the Live Mode and Point Count list with the highest confidence it reached in the session, in the confidence color (#307).
+- Settings opens as a short list of collapsible sections whose title stays in view while you scroll through it, with a search button in the app bar that finds a setting by name and opens its section.
 
 ### Changed
 
+- Settings sections are regrouped: **Appearance** (Theme, Dynamic Color, High Contrast Theme) is split from General, Audio and Recording are merged into **Audio & Recording**, Playback and Announcements into **Playback & Announcements**, and Location is now **Location & Species Filter**. The recording **Mode** and **Format** settings are now **Recording mode** and **Recording format**.
 - New models: the BirdNET+ V3.0 audio model replaces V3.0-preview3.1, with the November 2026 geo-model and BirdNET+ Taxonomy v0.5. The app now identifies 10,048 species (8,984 birds, 422 amphibians, 330 insects, 312 mammals): about 500 are new, and 237 species of the previous model are no longer detected because the new models do not cover them.
 - A species is now included only if the geo-model predicts it at 3% or more somewhere in the world, so every species the app can detect can also pass the location filter.
 - Species names follow the current taxonomy. Saved Sessions are not changed: a detection stored under an older scientific name shows the current name, picture, translation, and links, and species the new model no longer detects keep theirs.
