@@ -13,8 +13,8 @@
 //     species count, max confidence, top species).
 //   - Activity timeline: canvas bar-chart of detections per time-bin.
 //   - Track + marker map (Leaflet from CDN - online only).
-//   - Per-species cards: collapsible, thumbnail, confidence badge, count,
-//     eBird / iNaturalist / Wikipedia links.
+//   - Per-species cards: collapsible, thumbnail, BirdNET ID, confidence
+//     badge, count, eBird / iNaturalist / Wikipedia links.
 //     > Each occurrence: timestamp, confidence pill, and inline `<audio>`
 //       player when a clip is bundled.
 //   - Search & sort toolbar: filter by name, sort by time / count /
@@ -77,22 +77,24 @@ String buildHtmlReport(
   // no matter what the browser refuses to fetch.
   final osmLinkHtml = hasMap ? _buildOsmLinkHtml(_sessionCenter(session)) : '';
 
-  // Quick stats for the header bar.
-  final speciesSet = detections.map((d) => d.scientificName).toSet();
-  final speciesCount = speciesSet.length;
+  // Quick stats for the header bar. Species are keyed like the cards below:
+  // by current scientific name, so an older and a current name count once.
+  String speciesKey(DetectionRecord d) =>
+      taxonomy?.canonicalScientificName(d.scientificName) ?? d.scientificName;
   var maxConf = 0.0;
   final speciesCounts = <String, int>{};
   for (final d in detections) {
     if (d.confidence > maxConf) maxConf = d.confidence;
-    speciesCounts[d.scientificName] =
-        (speciesCounts[d.scientificName] ?? 0) + 1;
+    final key = speciesKey(d);
+    speciesCounts[key] = (speciesCounts[key] ?? 0) + 1;
   }
+  final speciesCount = speciesCounts.length;
   String topSpeciesHtml = '';
   if (speciesCounts.isNotEmpty) {
     final topSci = speciesCounts.entries
         .reduce((a, b) => a.value >= b.value ? a : b)
         .key;
-    final topDet = detections.firstWhere((d) => d.scientificName == topSci);
+    final topDet = detections.firstWhere((d) => speciesKey(d) == topSci);
     final topCommon = _localizedCommon(topDet, taxonomy, speciesLocale);
     topSpeciesHtml = '<span>Top: <strong>${_esc(topCommon)}</strong></span>';
   }
@@ -438,6 +440,7 @@ section.card h2 {
 }
 .det-title .common { font-size: 16px; font-weight: 600; }
 .det-title .sci { font-size: 12px; color: var(--text-muted); font-style: italic; }
+.det-title .birdnet-id { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .det-stats {
   display: flex;
   align-items: center;
@@ -1160,12 +1163,13 @@ String _buildDataPayload(
   final dets = <Map<String, dynamic>>[];
   for (var i = 0; i < session.detections.length; i++) {
     final d = session.detections[i];
-    final encodedSci = Uri.encodeComponent(d.scientificName);
     final clipName = clipFileMap?[i];
+    final birdnetId = _birdnetId(d.scientificName, taxonomy);
     dets.add({
       'common': _localizedCommon(d, taxonomy, speciesLocale),
       'sci':
           taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName,
+      if (birdnetId.isNotEmpty) 'birdnetId': birdnetId,
       'conf': d.confidence,
       'lat': d.latitude,
       'lon': d.longitude,
@@ -1174,8 +1178,7 @@ String _buildDataPayload(
       'altAccuracy': d.altitudeAccuracy,
       'fixTime': d.locationFixTime?.toUtc().toIso8601String(),
       'clip': clipName != null ? Uri.encodeComponent(clipName) : null,
-      'img':
-          'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb',
+      'img': _speciesThumbUrl(d.scientificName, taxonomy),
     });
   }
 
@@ -1262,6 +1265,23 @@ int _timelineDurationSeconds(LiveSession session) {
 
 // -- Detection cards ---------------------------------------------------------
 
+/// Thumbnail URL of a species on the taxonomy image service.
+///
+/// The service is keyed by the taxonomy's own scientific name, so the URL is
+/// derived from the bundled entry where there is one: a detection stored
+/// under an older name, or a sound class whose model label differs from the
+/// taxonomy name, would otherwise ask for a picture that does not exist.
+String _speciesThumbUrl(String scientificName, TaxonomyService? taxonomy) {
+  const mediumSuffix = 'size=medium';
+  final bundled = taxonomy?.lookup(scientificName)?.imageUrl;
+  if (bundled != null && bundled.endsWith(mediumSuffix)) {
+    final base = bundled.substring(0, bundled.length - mediumSuffix.length);
+    return '${base}size=thumb';
+  }
+  final encodedSci = Uri.encodeComponent(scientificName);
+  return 'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb';
+}
+
 String _buildDetectionsHtml(
   LiveSession session, {
   Map<int, String>? clipFileMap,
@@ -1271,10 +1291,13 @@ String _buildDetectionsHtml(
   if (session.detections.isEmpty) return '';
   final timeFmt = DateFormat('HH:mm:ss');
 
-  // Group detections by scientific name.
+  // Group detections by species. The key is the species' current scientific
+  // name, so a Session that spans a taxonomy revision (a Survey resumed after
+  // an update) still shows one card per species.
   final indices = <String, List<int>>{};
   for (var i = 0; i < session.detections.length; i++) {
-    final sci = session.detections[i].scientificName;
+    final stored = session.detections[i].scientificName;
+    final sci = taxonomy?.canonicalScientificName(stored) ?? stored;
     indices.putIfAbsent(sci, () => []).add(i);
   }
   final speciesStats =
@@ -1320,11 +1343,10 @@ String _buildDetectionsHtml(
     final bestPct = (bestConf * 100).round();
     final bestClass = bestConf >= 0.7 ? 'high' : (bestConf < 0.4 ? 'low' : '');
 
-    final encodedSci = Uri.encodeComponent(sci);
-    final imgUrl =
-        'https://birdnet.cornell.edu/taxonomy/api/image/$encodedSci?size=thumb';
+    final imgUrl = _speciesThumbUrl(sci, taxonomy);
 
     final taxon = taxonomy?.lookup(sci);
+    final birdnetId = _birdnetId(sci, taxonomy);
     final ebirdUrl = taxon?.ebirdUrl;
     final inatUrl = taxon?.inatUrl;
     String? wikiUrl;
@@ -1339,6 +1361,7 @@ String _buildDetectionsHtml(
     buf.writeln(
       '<div class="detection collapsed"'
       ' data-sci="${_esc(sci.toLowerCase())}"'
+      '${birdnetId.isNotEmpty ? ' data-birdnet-id="${_esc(birdnetId)}"' : ''}'
       ' data-common="${_esc(common.toLowerCase())}"'
       ' data-count="${ids.length}"'
       ' data-conf="${bestConf.toStringAsFixed(4)}"'
@@ -1359,6 +1382,9 @@ String _buildDetectionsHtml(
     buf.writeln('      <div class="det-title">');
     buf.writeln('        <span class="common">${_esc(common)}</span>');
     buf.writeln('        <span class="sci">${_esc(sci)}</span>');
+    if (birdnetId.isNotEmpty) {
+      buf.writeln('        <span class="birdnet-id">${_esc(birdnetId)}</span>');
+    }
     buf.writeln('      </div>');
     buf.writeln('      <div class="det-stats">');
     buf.writeln('        <span class="score $bestClass">$bestPct%</span>');
@@ -1517,6 +1543,12 @@ String _buildFooterContextHtml(
     items.add(('Geo model', geoModelText));
   }
 
+  // BirdNET IDs are only meaningful together with their taxonomy version.
+  final taxonomyText = _taxonomySummary(_mapAt(metadata, 'taxonomy'));
+  if (taxonomyText != null) {
+    items.add(('Taxonomy', taxonomyText));
+  }
+
   items.add(('Analysis settings', _analysisSettingsSummary(session, metadata)));
 
   if (items.isEmpty) return '';
@@ -1553,6 +1585,16 @@ String? _modelSummary(
     if (speciesCount != null) '$speciesCount species',
     if (includeSampleRate && sampleRate != null) '$sampleRate Hz',
   ].join(' | ');
+}
+
+String? _taxonomySummary(Map<String, dynamic>? taxonomy) {
+  if (taxonomy == null || taxonomy.isEmpty) return null;
+  final name = _stringAt(taxonomy, 'name');
+  final version = _stringAt(taxonomy, 'version');
+  if (name == null) return version == null ? null : 'v$version';
+  // The bundled name already ends in its version; do not print it twice.
+  if (version == null || name.contains(version)) return name;
+  return '$name | v$version';
 }
 
 String _analysisSettingsSummary(
@@ -1739,6 +1781,13 @@ String _localizedCommon(
   if (sp == null) return d.commonName;
   final localized = sp.commonNameForLocale(speciesLocale);
   return localized.isNotEmpty ? localized : d.commonName;
+}
+
+/// BirdNET taxonomy ID for a stored scientific name, or `''` when the
+/// taxonomy does not resolve it. Never invented.
+String _birdnetId(String scientificName, TaxonomyService? taxonomy) {
+  if (taxonomy == null || scientificName.isEmpty) return '';
+  return taxonomy.lookup(scientificName)?.birdnetId ?? '';
 }
 
 String _modeLabel(SessionType type) {

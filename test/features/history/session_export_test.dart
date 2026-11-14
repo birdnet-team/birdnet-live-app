@@ -71,6 +71,40 @@ TaxonomyService _localizedTaxonomy() {
   );
 }
 
+/// Taxonomy with BirdNET IDs. `Parus caeruleus` is an older name that
+/// resolves to the current `Cyanistes caeruleus` row, the way a detection
+/// stored by an earlier app version does.
+TaxonomyService _idTaxonomy() {
+  return TaxonomyService()..loadFromCsv(
+    'birdnet_id,scientific_name,scientific_name_aliases,common_name\n'
+    'BN07148,Turdus merula,,Eurasian Blackbird\n'
+    'BN02030,Cyanistes caeruleus,Parus caeruleus,Eurasian Blue Tit',
+  );
+}
+
+/// One resolvable detection, one stored under an older alias name, one
+/// user-specified free-text entry, and one the taxonomy does not know.
+LiveSession _idSession() {
+  final start = DateTime.utc(2025, 6, 15, 8);
+  DetectionRecord det(String sci, String common, int seconds) =>
+      DetectionRecord(
+        scientificName: sci,
+        commonName: common,
+        confidence: 0.9,
+        timestamp: start.add(Duration(seconds: seconds)),
+        latitude: 52.52,
+        longitude: 13.405,
+      );
+  return _makeSession(
+    detections: [
+      det('Turdus merula', 'Eurasian Blackbird', 10),
+      det('Parus caeruleus', 'Blue Tit', 20),
+      det('', 'Distant woodpecker drumming', 30),
+      det('Unknown species', 'Unknown species', 40),
+    ],
+  );
+}
+
 /// The expected BirdNET_Live export prefix for the test session
 /// (2025-06-15 08:00:00 UTC, no session number). Built from local time so
 /// the test stays timezone-agnostic â€” export filenames are always rendered
@@ -173,6 +207,141 @@ void main() {
     );
   });
 
+  group('BirdNET ID in exports', () {
+    const expectedIds = ['BN07148', 'BN02030', '', ''];
+
+    test('Raven adds a BirdNET ID column after Scientific Name', () {
+      final rows = buildRavenSelectionTable(
+        _idSession(),
+        taxonomy: _idTaxonomy(),
+      ).trim().split('\n').map((line) => line.split('\t')).toList();
+      final header = rows.first;
+      final idx = header.indexOf('BirdNET ID');
+
+      expect(idx, header.indexOf('Scientific Name') + 1);
+      expect(header[idx + 1], 'Confidence');
+      expect([for (final row in rows.skip(1)) row[idx]], expectedIds);
+      // The older name is exported as the current one, next to its ID.
+      expect(rows[2][idx - 1], 'Cyanistes caeruleus');
+      // Every row keeps the full column count, including empty IDs.
+      expect(rows.map((row) => row.length).toSet(), {header.length});
+    });
+
+    test('CSV adds a BirdNET ID column after Scientific Name', () {
+      final rows = buildCsvExport(
+        _idSession(),
+        taxonomy: _idTaxonomy(),
+      ).trim().split('\n').map((line) => line.split(',')).toList();
+      final header = rows.first;
+      final idx = header.indexOf('BirdNET ID');
+
+      expect(idx, header.indexOf('Scientific Name') + 1);
+      expect(header[idx + 1], 'Confidence');
+      expect([for (final row in rows.skip(1)) row[idx]], expectedIds);
+      expect(rows[2][idx - 1], 'Cyanistes caeruleus');
+      expect(rows.map((row) => row.length).toSet(), {header.length});
+    });
+
+    test('JSON adds birdnetId next to scientificName and omits unknowns', () {
+      final detections =
+          (jsonDecode(buildJsonExport(_idSession(), taxonomy: _idTaxonomy()))
+                  as Map<String, dynamic>)['detections']
+              as List;
+
+      expect(detections[0]['birdnetId'], 'BN07148');
+      expect(detections[1]['birdnetId'], 'BN02030');
+      expect(detections[1]['scientificName'], 'Cyanistes caeruleus');
+      expect((detections[2] as Map).containsKey('birdnetId'), isFalse);
+      expect((detections[3] as Map).containsKey('birdnetId'), isFalse);
+      expect(
+        (detections[0] as Map).keys.toList().indexOf('birdnetId'),
+        (detections[0] as Map).keys.toList().indexOf('scientificName') + 1,
+      );
+    });
+
+    test('GPX carries the ID as a waypoint extension, never in <name>', () {
+      final waypoints = buildGpxExport(_idSession(), taxonomy: _idTaxonomy())
+          .split('<wpt ')
+          .skip(1)
+          .map((chunk) => chunk.substring(0, chunk.indexOf('</wpt>')))
+          .toList();
+
+      expect(
+        waypoints[0],
+        contains(
+          '<extensions><birdnet:birdnetId>BN07148</birdnet:birdnetId>'
+          '</extensions>',
+        ),
+      );
+      expect(
+        waypoints[1],
+        contains('<birdnet:birdnetId>BN02030</birdnet:birdnetId>'),
+      );
+      expect(waypoints[0], contains('<name>Eurasian Blackbird</name>'));
+      expect(waypoints[2], isNot(contains('<extensions>')));
+      expect(waypoints[3], isNot(contains('<extensions>')));
+    });
+
+    test('GPX keeps altitude and ID in one extensions element', () {
+      final session = _idSession();
+      final first = session.detections.first;
+      session.detections[0] = DetectionRecord(
+        scientificName: first.scientificName,
+        commonName: first.commonName,
+        confidence: first.confidence,
+        timestamp: first.timestamp,
+        latitude: first.latitude,
+        longitude: first.longitude,
+        altitude: 34.5,
+        altitudeReference: AltitudeReference.meanSeaLevel,
+      );
+      final gpx = buildGpxExport(session, taxonomy: _idTaxonomy());
+      final waypoint = gpx.substring(
+        gpx.indexOf('<wpt'),
+        gpx.indexOf('</wpt>'),
+      );
+
+      expect('<extensions>'.allMatches(waypoint), hasLength(1));
+      expect(
+        waypoint,
+        contains(
+          '34.5</birdnet:altitude>'
+          '<birdnet:birdnetId>BN07148</birdnet:birdnetId></extensions>',
+        ),
+      );
+    });
+
+    test('IDs are empty or omitted when no taxonomy is supplied', () {
+      final session = _idSession();
+      final ravenHeader = buildRavenSelectionTable(session)
+          .split('\n')
+          .first
+          .split('\t');
+      final ravenRow = buildRavenSelectionTable(session)
+          .split('\n')[1]
+          .split('\t');
+      final csvLines = buildCsvExport(session).split('\n');
+
+      expect(ravenRow[ravenHeader.indexOf('BirdNET ID')], '');
+      expect(
+        csvLines[1].split(',')[csvLines.first.split(',').indexOf('BirdNET ID')],
+        '',
+      );
+      expect(buildJsonExport(session), isNot(contains('birdnetId')));
+      expect(buildGpxExport(session), isNot(contains('birdnetId')));
+    });
+
+    test('metadata carries the taxonomy the IDs refer to', () {
+      const taxonomy = {
+        'name': 'BirdNET+ Taxonomy v0.5-Nov2026',
+        'version': '0.5-Nov2026',
+      };
+
+      expect(buildExportMetadata(taxonomy: taxonomy)['taxonomy'], taxonomy);
+      expect(buildExportMetadata().containsKey('taxonomy'), isFalse);
+    });
+  });
+
   group('buildRavenSelectionTable', () {
     test('header row has correct columns including Begin File', () {
       final session = _makeSession();
@@ -266,7 +435,7 @@ void main() {
         clipContextSecondsOverride: 1,
       ).split('\n');
       expect(clipRows[2].split('\t').sublist(3, 5), ['6.000', '9.000']);
-      expect(clipRows[2].split('\t')[11], '2025-06-15T08:35:10.000Z');
+      expect(clipRows[2].split('\t')[12], '2025-06-15T08:35:10.000Z');
     });
 
     test('resumed session: global annotation ends at recorded duration', () {
@@ -359,7 +528,7 @@ void main() {
       expect(cols1[6], '16000.0'); // High Freq
       expect(cols1[8], 'Eurasian Blackbird'); // Common Name
       expect(cols1[9], 'Turdus merula'); // Scientific Name
-      expect(cols1[10], '0.9500'); // Confidence
+      expect(cols1[11], '0.9500'); // Confidence
 
       // Second detection.
       final cols2 = lines[2].split('\t');
@@ -412,13 +581,13 @@ void main() {
       expect(cols1[3], '1.000');
       expect(cols1[4], '4.000');
       // Survey Time retains the absolute detection timestamp.
-      expect(cols1[11], '2025-06-15T08:00:10.000Z');
+      expect(cols1[12], '2025-06-15T08:00:10.000Z');
 
       final cols2 = lines[2].split('\t');
       expect(cols2[7], '${_prefix}_clip_002_European_Robin.flac');
       expect(cols2[3], '6.000');
       expect(cols2[4], '9.000');
-      expect(cols2[11], '2025-06-15T08:00:25.000Z');
+      expect(cols2[12], '2025-06-15T08:00:25.000Z');
     });
 
     test('clip sequence follows map order and the context override', () {
@@ -606,7 +775,7 @@ void main() {
 
       expect(cols[3], '1.000');
       expect(cols[4], '4.000');
-      expect(cols[11], '2025-06-15T08:00:05.000Z');
+      expect(cols[12], '2025-06-15T08:00:05.000Z');
     });
 
     test('includes Latitude/Longitude when detections have coordinates', () {
@@ -676,7 +845,7 @@ void main() {
       );
       expect(table.split('\n').first, contains('Survey Time (UTC)'));
       final cols = table.split('\n')[1].split('\t');
-      expect(cols[11], '2025-06-15T08:00:10.000Z');
+      expect(cols[12], '2025-06-15T08:00:10.000Z');
     });
 
     test('Survey Time emits ISO UTC without a display preference', () {
@@ -701,7 +870,7 @@ void main() {
       expect(header, contains('Survey Time (UTC)'));
       expect(header, isNot(contains('Survey Time (s)')));
       final cols = table.split('\n')[1].split('\t');
-      expect(cols[11], '2025-06-15T08:00:10.000Z');
+      expect(cols[12], '2025-06-15T08:00:10.000Z');
     });
   });
 
@@ -1047,7 +1216,7 @@ void main() {
               .map((f) => f.name)
               .toList();
           expect(rows.map((row) => row[7]).toList(), audioNames);
-          expect(header[11], 'Survey Time (UTC)');
+          expect(header[12], 'Survey Time (UTC)');
           for (var i = 0; i < rows.length; i++) {
             final row = rows[i];
             expect(row.length, header.length);
@@ -1059,7 +1228,7 @@ void main() {
               '${_prefix}_clip_${(i + 1).toString().padLeft(3, '0')}_Eurasian_Blackbird.wav',
             );
             expect(
-              row[11],
+              row[12],
               detections[retained[i]].timestamp.toUtc().toIso8601String(),
             );
             final audio = archive.firstWhere((f) => f.name == row[7]);
