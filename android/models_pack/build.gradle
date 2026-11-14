@@ -2,7 +2,7 @@
 // models_pack — Install-time asset pack for the BirdNET ONNX models
 // =============================================================================
 //
-// Ships the two large ONNX model files (~152 MB audio classifier + ~6 MB
+// Ships the two large ONNX model files (~67 MB audio classifier + ~8 MB
 // geo model) outside of the App Bundle's base module so that the
 // compressed base download stays under Google Play's 200 MB limit.
 //

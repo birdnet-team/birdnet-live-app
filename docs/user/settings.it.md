@@ -143,6 +143,14 @@ Apre un pannello con filtri binari di inferenza. Seleziona **Uccelli**, **Mammif
 
 Il filtro azzera esattamente le probabilità ignorate dei modelli geografico e audio subito dopo l’attivazione sigmoide e prima dell’aggregazione temporale. Non possono contribuire ai risultati successivi né diventare rilevazioni mostrate, salvate, annunciate o esportate. Le modifiche durante una Session attiva di Live Mode, Point Count, Survey o ARU valgono dalla finestra successiva; l’analisi file usa i valori scelti all’avvio.
 
+### Suoni non animali
+
+Disattivato per impostazione predefinita. Oltre alla fauna, il modello riconosce 16 classi di suoni non animali: aereo, imbarcazione, motosega, motore, esplosione, fuoco, fuochi d’artificio, arma da fuoco, martello, veicolo a motore, musica, utensile elettrico, sega, sirena, treno e clacson. Attiva l’interruttore per farle segnalare come qualsiasi altra rilevazione in ogni modalità, con un’immagine, una descrizione e un nome nella lingua dei nomi delle specie.
+
+Una sirena non ha un areale, quindi i filtri di posizione non rimuovono mai le classi di suoni ed Esplora non le elenca. Sono escluse anche dal conteggio di **Ignora specie**. Una modifica vale dalla finestra di inferenza successiva di una Session in corso di Live Mode, Point Count, Survey o ARU; l’analisi file usa il valore scelto all’avvio dell’analisi. Le classi di suoni segnalate compaiono tra le rilevazioni della Session e sono incluse nel suo conteggio delle specie.
+
+L’interruttore è disattivato per impostazione predefinita perché BirdNET Live identifica la fauna selvatica e un’auto di passaggio non c’entra con la maggior parte degli elenchi di specie. Attivalo quando ti interessano i suoni in sé, ad esempio per documentare motoseghe, spari o traffico in un sito di monitoraggio.
+
 BirdNET Live leviga internamente i punteggi sulle finestre di inferenza
 recenti per ridurre i falsi positivi isolati. Questo pooling non è esposto come
 impostazione utente; per impostazione predefinita usa il pooling adattivo

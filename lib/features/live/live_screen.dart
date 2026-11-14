@@ -1175,11 +1175,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       ref.read(liveControllerProvider).setSensitivity(next);
     });
     ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
-      final names = await ref.read(ignoredSpeciesNamesProvider.future);
-      final geoScores = await ref.read(geoScoresProvider.future);
+      // Fails open like a session start: without a geo-model the taxon and
+      // sound-class rules still apply, so a switch never silently does
+      // nothing.
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
+      );
+      if (!mounted) return;
       ref
           .read(liveControllerProvider)
-          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
+          .setSpeciesIgnoreFilter(
+            scientificNames: geoInputs.ignoredSpeciesNames,
+            geoScores: geoInputs.geoScores,
+          );
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

@@ -63,16 +63,16 @@ void main() {
     final appDirEarly = await getApplicationDocumentsDirectory();
     tempDir = '${appDirEarly.path}/mem_stress_test';
     await Directory(tempDir).create(recursive: true);
+    // Always rewrite the copy: a file left by an earlier run may be a
+    // different model than the one bundled now.
     final audioOnnxPath = '$tempDir/audio_model.onnx';
-    if (!File(audioOnnxPath).existsSync()) {
-      await File(audioOnnxPath).writeAsBytes(
-        modelData.buffer.asUint8List(
-          modelData.offsetInBytes,
-          modelData.lengthInBytes,
-        ),
-        flush: true,
-      );
-    }
+    await File(audioOnnxPath).writeAsBytes(
+      modelData.buffer.asUint8List(
+        modelData.offsetInBytes,
+        modelData.lengthInBytes,
+      ),
+      flush: true,
+    );
     audioModel = ClassifierModel();
     await audioModel.loadModelFromFile(
       audioOnnxPath,
@@ -96,22 +96,21 @@ void main() {
 
     // Extract geo ONNX to temp path.
     final geoOnnxPath = '$tempDir/geo_model.onnx';
-    if (!File(geoOnnxPath).existsSync()) {
-      final geoData = await rootBundle.load(
-        'assets/models/${geoConfig['modelFile']}',
-      );
-      await File(geoOnnxPath).writeAsBytes(
-        geoData.buffer.asUint8List(
-          geoData.offsetInBytes,
-          geoData.lengthInBytes,
-        ),
-        flush: true,
-      );
-    }
+    final geoData = await rootBundle.load(
+      'assets/models/${geoConfig['modelFile']}',
+    );
+    await File(geoOnnxPath).writeAsBytes(
+      geoData.buffer.asUint8List(geoData.offsetInBytes, geoData.lengthInBytes),
+      flush: true,
+    );
 
     geoModel = GeoModel();
     geoModel.loadLabels(geoLabelsText);
-    await geoModel.loadModel(geoOnnxPath);
+    await geoModel.loadModel(
+      geoOnnxPath,
+      inputName: geoConfig['inputName'] as String,
+      outputName: geoConfig['outputName'] as String,
+    );
     debugPrint(
       '[MemStress] geo model loaded '
       '(${geoModel.labels.length} species)',

@@ -39,7 +39,6 @@ void main() {
       expect(sp.birdnetId, 'BN00498');
       expect(sp.ebirdCode, 'gretit1');
       expect(sp.inatId, 12345);
-      expect(sp.observationsCount, 10000);
       expect(sp.imageUrl, 'https://example.com/img.webp');
       expect(sp.imageAuthor, 'John Doe');
       expect(sp.imageLicense, 'cc-by-nc');

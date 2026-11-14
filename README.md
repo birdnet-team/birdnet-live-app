@@ -9,7 +9,7 @@
    <img src="https://img.shields.io/badge/flutter-%3E%3D3.47-blue.svg" alt="Flutter >=3.47">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
   <img src="https://img.shields.io/badge/version-1.3.1-orange.svg" alt="Version">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
 </p>
 
 Built for field researchers, conservationists, and birders, BirdNET Live identifies bird species in real time using on-device BirdNET+ inference — no internet required. Built with Flutter for Android, iOS, and Windows.
@@ -71,7 +71,7 @@ Built for field researchers, conservationists, and birders, BirdNET Live identif
 - **Explore** — Browse species expected at your location using the BirdNET geo-model
 - **Session Library** — Review, edit, and export past sessions with audio playback
 - **Export** — Raven Pro, CSV, JSON, GPX, and ZIP bundle formats
-- **On-device inference** — BirdNET+ model (9,789 species), no internet required
+- **On-device inference** — BirdNET+ model (10,048 species), no internet required
 - **FLAC recording** — Pure Dart encoder for compressed audio (50–60% reduction)
 - **Landscape & tablet layouts** — Adaptive UI for phones and tablets in both orientations
 - **Localization** — UI translations and spoken announcement phrasing for English, German, Czech, Spanish, French, Italian, Portuguese, Dutch, Norwegian Bokmål, Polish, Russian, Simplified Chinese, and Korean
@@ -211,8 +211,14 @@ test/             # Tests mirroring lib/ structure
 
 BirdNET Live runs fully on-device, so the model assets are part of the checkout/build rather than downloaded by the app at runtime. The large `.onnx` files in `assets/models/` are tracked with Git LFS:
 
-- `BirdNET+_V3.0-preview3.1_Global_10K-pruned_FP16.onnx` — audio classifier (~65 MB)
-- `BirdNET+_Geomodel_V3.0.4_Global_10K-pruned_FP16.onnx` — location-based species model (~13 MB)
+- `BirdNET+_V3.0_Global_10K_FP16_BNL.onnx` — audio classifier (~67 MB)
+- `BirdNET+_Geomodel_V3.0.4_Global_10K_FP16_BNL.onnx` — location-based species model (~8 MB)
+
+"BNL" marks the BirdNET Live build of the BirdNET+ V3.0 models: pruned to the species both models share and rewritten for on-device speed. How these files are built is documented in [docs/developer/model-update.md](docs/developer/model-update.md).
+
+### Using the models in other applications
+
+The same two files are available as a standalone package together with one labels file for both models (`BirdNET+_V3.0_Global_10K_Labels.csv`, with common names in 36 languages), a short usage guide, the [model license](MODEL_LICENSE) (Apache 2.0), and the [acceptable use policy](ACCEPTABLE_USE.md). The model build writes the package to `dev/models/november2026/release/`; see [Standalone release](docs/developer/model-update.md#standalone-release). For the full BirdNET+ V3.0 model in all formats, see [birdnet-V3.0-dev](https://github.com/birdnet-team/birdnet-V3.0-dev).
 
 Release APKs for sideloading keep those models inside `flutter_assets`. Play Store App Bundles move the `.onnx` files into the install-time `models_pack` asset pack so the base module stays below Play's size limit while still working offline after installation.
 

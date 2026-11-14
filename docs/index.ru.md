@@ -6,7 +6,7 @@ BirdNET Live — приложение на Flutter для полевых исс�
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live — приложение на Flutter для полевых исс�
 - **Обзор** - просмотр видов, ожидаемых в вашей местности, по геомодели BirdNET
 - **Библиотека Sessions** - просмотр, редактирование и экспорт прошлых Sessions с воспроизведением звука
 - **Экспорт** - форматы Raven Pro, CSV, JSON, GPX и ZIP-архивы с метаданными происхождения
-- **Вычисления на устройстве** - модель BirdNET+ охватывает 9789 видов, интернет не нужен
+- **Вычисления на устройстве** - модель BirdNET+ охватывает 10 048 видов, интернет не нужен
 - **Запись в FLAC** - сжатый звук и файлы меньшего размера для длительных учётов
 - **Доступность** - подписи для программ чтения с экрана, подсказки и необязательные голосовые объявления об обнаружениях
 - **Адаптивная вёрстка** - интерфейс подстраивается под телефон, планшет, книжную и альбомную ориентацию

@@ -211,6 +211,19 @@ String _evidenceField(DetectionRecord d) => switch (d.evidence) {
 String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
     taxonomy?.displayScientificName(d.scientificName) ?? d.scientificName;
 
+/// BirdNET taxonomy ID (e.g. `BN07148`) for a detection, or `''` when unknown.
+///
+/// Detections store only their names, so the ID is resolved at export time.
+/// That also covers sessions recorded by older app versions, as long as
+/// [TaxonomyService.lookup] still resolves the stored scientific name. A
+/// species with no taxonomy row (free-text manual entries, unknown-species
+/// placeholders) yields an empty ID rather than an invented one. The ID is
+/// only meaningful together with the taxonomy version in the export metadata.
+String _birdnetId(DetectionRecord d, {TaxonomyService? taxonomy}) {
+  if (taxonomy == null || d.scientificName.isEmpty) return '';
+  return taxonomy.lookup(d.scientificName)?.birdnetId ?? '';
+}
+
 /// Generates a Raven-compatible selection table from session detections.
 ///
 /// [clipFileMap] maps detection indices to exported filenames in sound-file
@@ -221,7 +234,8 @@ String _displaySci(DetectionRecord d, {TaxonomyService? taxonomy}) =>
 ///
 /// Common Name is rendered in the user's species locale when [taxonomy] is
 /// supplied; Scientific Name is always emitted regardless of any UI toggle
-/// so the export remains scientifically authoritative.
+/// so the export remains scientifically authoritative. BirdNET ID follows it
+/// and is empty for species the taxonomy does not resolve.
 ///
 /// Latitude / Longitude columns are included when any detection has
 /// coordinates (typical for surveys).
@@ -253,7 +267,7 @@ String buildRavenSelectionTable(
     'Selection\tView\tChannel\t'
     'Begin Time (s)\tEnd Time (s)\t'
     'Low Freq (Hz)\tHigh Freq (Hz)\tBegin File\t'
-    'Common Name\tScientific Name\tConfidence'
+    'Common Name\tScientific Name\tBirdNET ID\tConfidence'
     '\tSurvey Time (UTC)'
     '\tReview Status\tReviewed At (UTC)'
     '${hasCoords ? '\tLatitude\tLongitude' : ''}'
@@ -337,6 +351,7 @@ String buildRavenSelectionTable(
       '$beginFile\t'
       '$commonName\t'
       '${_displaySci(d, taxonomy: taxonomy)}\t'
+      '${_birdnetId(d, taxonomy: taxonomy)}\t'
       '${d.confidence.toStringAsFixed(4)}'
       '$surveyTimeSuffix'
       '$reviewSuffix'
@@ -359,7 +374,8 @@ String buildRavenSelectionTable(
 /// is added with the session-relative offset.
 ///
 /// Common Name is rendered in the user's species locale when [taxonomy] is
-/// supplied; Scientific Name is always emitted.
+/// supplied; Scientific Name is always emitted, followed by BirdNET ID (empty
+/// for species the taxonomy does not resolve).
 ///
 /// Latitude / Longitude columns are included when any detection has
 /// coordinates.
@@ -395,7 +411,7 @@ String buildCsvExport(
       : 'Survey Time (s)';
   buf.writeln(
     'Timestamp (UTC),Begin Time (s),End Time (s),'
-    'Common Name,Scientific Name,Confidence'
+    'Common Name,Scientific Name,BirdNET ID,Confidence'
     '${hasFileRefs ? ',File' : ''}'
     ',$surveyTimeHeader'
     ',Review Status,Reviewed At (UTC)'
@@ -481,6 +497,7 @@ String buildCsvExport(
       '${endSec.toStringAsFixed(3)},'
       '$commonName,'
       '$sciName,'
+      '${_csvField(_birdnetId(d, taxonomy: taxonomy))},'
       '${d.confidence.toStringAsFixed(4)}'
       '$fileRef'
       '$surveyTimeRef'
@@ -507,7 +524,9 @@ String buildCsvExport(
 /// that are not already persisted on the session itself. The export module has
 /// no Riverpod / SharedPrefs dependency on purpose. `audioModel` typically
 /// contains `name`, `version`, `description`, `speciesCount`, `sampleRate` from
-/// `model_config.json`.
+/// `model_config.json`. `taxonomy` is its `taxonomy` block (`name`, `version`):
+/// the `birdnetId` values in an export are only meaningful together with the
+/// taxonomy version they were resolved against.
 Map<String, dynamic> buildExportMetadata({
   String? device,
   String? os,
@@ -516,6 +535,7 @@ Map<String, dynamic> buildExportMetadata({
   String? appPackageName,
   Map<String, dynamic>? audioModel,
   Map<String, dynamic>? geoModel,
+  Map<String, dynamic>? taxonomy,
   Map<String, dynamic>? prefs,
   String? speciesLocale,
   LiveSession? session,
@@ -561,6 +581,7 @@ Map<String, dynamic> buildExportMetadata({
       'typeMetadata': typeMetadata,
     if (slimAudioModel != null) 'audioModel': slimAudioModel,
     if (slimGeoModel != null) 'geoModel': slimGeoModel,
+    if (taxonomy != null && taxonomy.isNotEmpty) 'taxonomy': taxonomy,
     if (speciesLocale != null) 'speciesLocale': speciesLocale,
     if (settingsMetadata.isNotEmpty) 'settings': settingsMetadata,
   };
@@ -824,6 +845,7 @@ String buildJsonExport(
       // absoluteToRelative), rebased onto the trimmed extent when the
       // session was trimmed; keeps resumed sessions aligned.
       final beginSec = session.trimmedRelative(d.timestamp);
+      final birdnetId = _birdnetId(d, taxonomy: taxonomy);
       return {
         'timestamp': d.timestamp.toUtc().toIso8601String(),
         'beginTimeSec': num.parse(beginSec.toStringAsFixed(3)),
@@ -833,6 +855,7 @@ String buildJsonExport(
           speciesLocale: speciesLocale,
         ),
         'scientificName': _displaySci(d, taxonomy: taxonomy),
+        if (birdnetId.isNotEmpty) 'birdnetId': birdnetId,
         'confidence': num.parse(d.confidence.toStringAsFixed(4)),
         if (d.latitude != null) 'latitude': d.latitude,
         if (d.longitude != null) 'longitude': d.longitude,
@@ -1519,7 +1542,8 @@ String _buildAnnotationsText(LiveSession session) {
 ///
 /// Contains:
 ///   • `<trk>` with `<trkseg>` of GPS track points
-///   • `<wpt>` for each detection with lat/lon coordinates
+///   • `<wpt>` for each detection with lat/lon coordinates; its
+///     `<extensions>` carry the species' BirdNET ID when it resolves
 String buildGpxExport(
   LiveSession session, {
   TaxonomyService? taxonomy,
@@ -1594,9 +1618,13 @@ String buildGpxExport(
     if (d.isReviewed) {
       buf.writeln('    <sym>${d.reviewStatus.name}</sym>');
     }
-    if (d.altitude != null) {
+    final birdnetId = _birdnetId(d, taxonomy: taxonomy);
+    if (d.altitude != null || birdnetId.isNotEmpty) {
       buf.writeln(
-        '    <extensions>${_gpxAltitudeExtension(d.altitude!, d.altitudeReference, d.altitudeAccuracy, d.locationFixTime)}</extensions>',
+        '    <extensions>'
+        '${d.altitude != null ? _gpxAltitudeExtension(d.altitude!, d.altitudeReference, d.altitudeAccuracy, d.locationFixTime) : ''}'
+        '${birdnetId.isNotEmpty ? '<birdnet:birdnetId>${_xmlEscape(birdnetId)}</birdnet:birdnetId>' : ''}'
+        '</extensions>',
       );
     }
     buf.writeln('  </wpt>');

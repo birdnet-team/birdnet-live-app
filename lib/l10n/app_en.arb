@@ -388,10 +388,6 @@
   "@aboutModelVersion": {
     "description": "Audio model section title in about screen"
   },
-  "aboutModelName": "BirdNET+ V3.0-preview3.1 Global 10K-pruned (FP16)",
-  "@aboutModelName": {
-    "description": "Audio model name shown in about screen"
-  },
   "aboutSpeciesCount": "{count} species",
   "@aboutSpeciesCount": {
     "description": "Species count label",
@@ -421,17 +417,9 @@
   "@aboutGeoModel": {
     "description": "Geo-model section title"
   },
-  "aboutGeoModelName": "BirdNET+ Geomodel V3.0.4 Global 10K-pruned (FP16)",
-  "@aboutGeoModelName": {
-    "description": "Geo-model name shown in about screen"
-  },
   "aboutTaxonomy": "Taxonomy",
   "@aboutTaxonomy": {
     "description": "Taxonomy section title in about screen"
-  },
-  "aboutTaxonomyName": "BirdNET+ Taxonomy v0.2-jun2026",
-  "@aboutTaxonomyName": {
-    "description": "Taxonomy version name shown in about screen"
   },
   "aboutCredits": "Developed by",
   "@aboutCredits": {
@@ -2015,6 +2003,18 @@
   "settingsHelpIgnoreSpecies": "Selected species are assigned a score of zero before temporal pooling, so they cannot become displayed or saved detections.",
   "@settingsHelpIgnoreSpecies": {
     "description": "Help text for species ignore settings"
+  },
+  "settingsIncludeSoundClasses": "Non-animal sounds",
+  "@settingsIncludeSoundClasses": {
+    "description": "Title of the switch that turns on reporting of the model's non-animal sound classes"
+  },
+  "settingsIncludeSoundClassesDescription": "Also report sounds such as engines, sirens, chainsaws, and music.",
+  "@settingsIncludeSoundClassesDescription": {
+    "description": "Subtitle of the non-animal sounds switch"
+  },
+  "settingsHelpIncludeSoundClasses": "The model recognizes a few non-animal sound classes in addition to wildlife. They are off by default. When on, they are reported like any other detection. Location filters do not apply to them, and they are not listed in Explore.",
+  "@settingsHelpIncludeSoundClasses": {
+    "description": "Help text for the non-animal sounds switch"
   },
   "settingsIgnoreCommonSpecies": "Ignore common species above",
   "@settingsIgnoreCommonSpecies": {

@@ -142,6 +142,14 @@ Abre um painel com filtros binários de inferência. Marque **Aves**, **Mamífer
 
 O filtro zera exatamente as probabilidades ignoradas dos modelos geográfico e de áudio logo após a ativação sigmoide e antes da agregação temporal. Elas não contribuem para resultados posteriores nem viram detecções exibidas, salvas, anunciadas ou exportadas. Alterações durante uma Session ativa de Live Mode, Point Count, Survey ou ARU valem na próxima janela; a análise de arquivos usa os valores selecionados no início.
 
+### Sons não animais
+
+Desativado por padrão. Além da fauna, o modelo reconhece 16 classes de sons não animais: aeronave, barco, motosserra, motor, explosão, fogo, fogos de artifício, arma de fogo, martelo, veículo motorizado, música, ferramenta elétrica, serra, sirene, trem e buzina. Ative a chave para que sejam relatadas como qualquer outra detecção em todos os modos, com uma imagem, uma descrição e um nome no idioma dos nomes de espécies.
+
+Uma sirene não tem área de distribuição, então os filtros de localização nunca removem as classes de som e Explorar não as lista. Elas também ficam fora da contagem de **Ignorar espécies**. Uma alteração vale a partir da próxima janela de inferência de uma Session em andamento de Live Mode, Point Count, Survey ou ARU; a análise de arquivos usa o valor selecionado no início da análise. As classes de som relatadas aparecem entre as detecções da Session e entram na contagem de espécies dela.
+
+A chave fica desativada por padrão porque o BirdNET Live é um identificador de fauna e um carro passando não tem lugar na maioria das listas de espécies. Ative-a quando os próprios sons forem de interesse, por exemplo para documentar motosserras, tiros ou tráfego em um local de monitoramento.
+
 O BirdNET Live suaviza internamente as pontuações ao longo das janelas de
 inferência recentes para reduzir falsos positivos isolados. Esse agrupamento
 não é exposto como configuração de usuário; por padrão usa agrupamento

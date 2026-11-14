@@ -19,9 +19,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          ignoredSpeciesNamesProvider.overrideWith(
-            (ref) async => {'Species one', 'Species two'},
-          ),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 2),
         ],
         child: const MaterialApp(
           locale: Locale('en'),
@@ -48,6 +46,47 @@ void main() {
     expect(find.text('Birds'), findsOneWidget);
   });
 
+  testWidgets('non-animal sounds are off by default and the switch persists', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 0),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SettingsScreen(settingsContext: SettingsContext.fileAnalysis),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Non-animal sounds'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+
+    final tile = find.widgetWithText(SwitchListTile, 'Non-animal sounds');
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(
+      tester.getCenter(find.text('Ignore species')).dy,
+      lessThan(tester.getCenter(find.text('Non-animal sounds')).dy),
+    );
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    expect(prefs.getBool(PrefKeys.includeSoundClasses), isTrue);
+  });
+
   testWidgets('shows all ignore controls and persists checkbox changes', (
     tester,
   ) async {
@@ -58,9 +97,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          ignoredSpeciesNamesProvider.overrideWith(
-            (ref) async => {'Species one', 'Species two'},
-          ),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 2),
         ],
         child: const MaterialApp(
           locale: Locale('en'),

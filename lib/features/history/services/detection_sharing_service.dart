@@ -5,6 +5,7 @@
 // `share_plus`. The payload is intentionally terse and field-tool friendly:
 //
 //   BirdNET Live — Eurasian Wren (Troglodytes troglodytes)
+//   BirdNET ID: BN07148
 //   87% · 2026-05-06T13:45:22Z
 //   geo:50.7374,7.0982
 //
@@ -87,7 +88,7 @@ Future<ShareResult> shareDetection(
   bool useAbsoluteSurveyTime = false,
   Rect? sharePositionOrigin,
 }) async {
-  final body = _buildBody(detection);
+  final body = _buildBody(detection, taxonomy: taxonomy);
   final subject = _buildSubject(detection);
   File? audioFile;
   var audioIsFullDetectionSpan = false;
@@ -731,11 +732,16 @@ String _buildSubject(DetectionRecord d) {
   return 'BirdNET Live: $name';
 }
 
-String _buildBody(DetectionRecord d) {
+String _buildBody(DetectionRecord d, {TaxonomyService? taxonomy}) {
   final pct = (d.confidence * 100).round();
   final ts = d.timestamp.toUtc().toIso8601String();
+  // Resolved at share time; omitted when the species has no taxonomy row.
+  final birdnetId = d.scientificName.isEmpty
+      ? null
+      : taxonomy?.lookup(d.scientificName)?.birdnetId;
   final lines = <String>[
     'BirdNET Live \u2014 ${d.commonName} (${d.scientificName})',
+    if (birdnetId != null && birdnetId.isNotEmpty) 'BirdNET ID: $birdnetId',
     '$pct% \u00b7 $ts',
   ];
   if (d.latitude != null && d.longitude != null) {

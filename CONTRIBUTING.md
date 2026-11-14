@@ -132,7 +132,7 @@ BirdNET Live is translated in several places, and a language is only complete wh
 
 > **Do not stop at the ARB file.** The announcement templates are not in ARB (they are variant *lists*, which ARB cannot model — see `assets/announcements/README.md` for the reasoning and the full guide). A missing or incomplete template file falls back to English **silently**, so the app can look fully translated while the voice is not.
 
-Species common names and species descriptions are **not** translated in this repository. They come from the [BirdNET taxonomy](https://birdnet.cornell.edu/taxonomy/) and Wikipedia; maintainers bundle them. If a species name is wrong in your language, open an issue rather than editing `assets/models/taxonomy.csv`.
+Species common names and species descriptions are **not** translated in this repository. They come from the [BirdNET taxonomy](https://birdnet.tu-chemnitz.de/taxonomy/) and Wikipedia; maintainers bundle them. If a species name is wrong in your language, open an issue rather than editing `assets/models/taxonomy.csv`.
 
 ### Supported Locales
 
@@ -215,7 +215,7 @@ In the paths below, `<loc>` is the language code (for example `ko`). Keep every 
 | 5 | iOS strings | Add a `<loc>` entry to every key in `ios/Runner/InfoPlist.xcstrings` (app name and permission prompts) and `ios/Runner/Localizable.xcstrings` (Shortcuts/Siri action), and add `<loc>` to `knownRegions` in `ios/Runner.xcodeproj/project.pbxproj`. iOS uses Apple's codes, for example `zh-Hans` for `zh`. | Contributor (maintainers can do the project file) |
 | 6 | Announcement tests | Add `<loc>` to the locale lists in `test/features/announcements/templates_buckets_test.dart`, `templates_commonness_test.dart`, and `templates_gender_lint_test.dart`. If the language has articles or gendered demonstratives, list them in the gender-lint map. | Contributor |
 | 7 | Species-name lookup | If the taxonomy stores the language's species names under a different code than the app locale (Bokmål `nb` → `no`, Chinese `zh` → `zh-CN`), add the alias in `lib/shared/models/taxonomy_species.dart` with a test in `test/shared/models/taxonomy_species_test.dart`. If the language is missing from the species-language picker (`_speciesLanguages` in `settings_screen.dart`) but the taxonomy has names for it, add it there. | Contributor or maintainer |
-| 8 | Species descriptions | Build `assets/species_data/descriptions_<loc>.json.gz`, add `<loc>` to `SpeciesDescriptionService.availableLocales` (and its test), and add it to `DESCRIPTION_LOCALES` in the species bundle script. The script is maintainer tooling and not in the repository. | Maintainer |
+| 8 | Species descriptions | Build `assets/species_data/descriptions_<loc>.json.gz`, add `<loc>` to `SpeciesDescriptionService.availableLocales` (and its test), add it to `DESCRIPTION_LOCALES` in `tools/build_species_bundle.py`, translate the 16 sound class descriptions in `tools/sound_class_descriptions.json`, then rebuild the bundle (see `docs/developer/species-bundle.md`). | Maintainer |
 
 ### On the docs site
 

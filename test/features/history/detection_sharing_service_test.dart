@@ -21,6 +21,7 @@ import 'package:birdnet_live/features/recording/audio_decoder.dart';
 import 'package:birdnet_live/features/recording/flac_encoder.dart';
 import 'package:birdnet_live/features/recording/wav_writer.dart';
 import 'package:birdnet_live/shared/models/altitude_reference.dart';
+import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
@@ -220,6 +221,76 @@ void main() {
         expect(payload['locationFixTime'], start.toIso8601String());
       },
     );
+
+    group('BirdNET ID', () {
+      // `Nannus troglodytes` is an older name for the current row, the way a
+      // detection stored by an earlier app version resolves.
+      final taxonomy = TaxonomyService()
+        ..loadFromCsv(
+          'birdnet_id,scientific_name,scientific_name_aliases,common_name\n'
+          'BN07148,Troglodytes troglodytes,Nannus troglodytes,Eurasian Wren',
+        );
+      DetectionRecord det(String sci, String common) => DetectionRecord(
+        scientificName: sci,
+        commonName: common,
+        confidence: 0.9,
+        timestamp: DateTime.utc(2026, 5, 11, 10),
+      );
+
+      test('is a line of the text payload when the species resolves', () async {
+        for (final sci in ['Troglodytes troglodytes', 'Nannus troglodytes']) {
+          await shareDetection(det(sci, 'Eurasian Wren'), taxonomy: taxonomy);
+          expect(
+            fakeSharePlatform.lastParams!.text!.split('\n')[1],
+            'BirdNET ID: BN07148',
+          );
+        }
+      });
+
+      test('is left out of the text payload when it does not', () async {
+        for (final detection in [
+          det('', 'Distant drumming'),
+          det('Unknown species', 'Unknown species'),
+        ]) {
+          await shareDetection(detection, taxonomy: taxonomy);
+          expect(
+            fakeSharePlatform.lastParams!.text,
+            isNot(contains('BirdNET ID')),
+          );
+        }
+        await shareDetection(det('Troglodytes troglodytes', 'Eurasian Wren'));
+        expect(
+          fakeSharePlatform.lastParams!.text,
+          isNot(contains('BirdNET ID')),
+        );
+      });
+
+      test('reaches the shared documents of a single detection', () async {
+        Future<Map<String, dynamic>> sharedJson(DetectionRecord d) async {
+          await shareDetection(
+            d,
+            formats: const {'json'},
+            includeAudio: false,
+            taxonomy: taxonomy,
+          );
+          final decoded = jsonDecode(
+            await File(fakeSharePlatform.lastParams!.files!.single.path)
+                .readAsString(),
+          ) as Map<String, dynamic>;
+          return (decoded['detections'] as List).single as Map<String, dynamic>;
+        }
+
+        expect(
+          (await sharedJson(det('Nannus troglodytes', 'Wren')))['birdnetId'],
+          'BN07148',
+        );
+        expect(
+          (await sharedJson(det('', 'Distant drumming')))
+              .containsKey('birdnetId'),
+          isFalse,
+        );
+      });
+    });
 
     test('shares a saved FLAC detection clip as valid WAV', () async {
       final clip = File(p.join(tmp.path, 'kept_clip.flac'));

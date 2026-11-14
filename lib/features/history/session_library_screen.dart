@@ -1464,16 +1464,18 @@ class _SpeciesGroupedView extends ConsumerWidget {
     final taxonomy = ref.watch(taxonomyServiceProvider).value;
     final showSciNames = ref.watch(showSciNamesProvider);
 
-    // Group: scientificName → set of sessions containing it.
+    // Group: species → set of sessions containing it. The key is the
+    // species' current scientific name, so sessions recorded before and
+    // after a taxonomy revision land in one group.
     final speciesMap = <String, _SpeciesGroup>{};
     for (final session in sessions) {
       for (final d in session.detections) {
+        final key =
+            taxonomy?.canonicalScientificName(d.scientificName) ??
+            d.scientificName;
         final group = speciesMap.putIfAbsent(
-          d.scientificName,
-          () => _SpeciesGroup(
-            scientificName: d.scientificName,
-            commonName: d.commonName,
-          ),
+          key,
+          () => _SpeciesGroup(scientificName: key, commonName: d.commonName),
         );
         group.sessionIds.add(session.id);
       }
@@ -1499,6 +1501,7 @@ class _SpeciesGroupedView extends ConsumerWidget {
           g.commonName,
           g.scientificName,
           taxon?.displayScientificName,
+          if (taxon != null) ...taxon.aliases,
           taxon?.commonName,
           taxon?.commonNameAlt,
           if (taxon?.commonNames != null) ...taxon!.commonNames!.values,

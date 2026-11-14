@@ -6,7 +6,7 @@ BirdNET Live è un'app Flutter pensata per chi fa ricerca sul campo, per chi si 
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live è un'app Flutter pensata per chi fa ricerca sul campo, per chi si 
 - **Esplora** - Sfoglia le specie attese nella tua posizione usando il geo-modello BirdNET
 - **Libreria Sessions** - Esamina, modifica ed esporta le Sessions passate con riproduzione audio
 - **Esportazione** - Formati Raven Pro, CSV, JSON, GPX e pacchetto ZIP con metadati di provenienza
-- **Inferenza sul dispositivo** - Il modello BirdNET+ copre 9.789 specie, senza necessità di connessione a Internet
+- **Inferenza sul dispositivo** - Il modello BirdNET+ copre 10.048 specie, senza necessità di connessione a Internet
 - **Registrazione FLAC** - Acquisizione audio compressa con file più piccoli per Survey lunghi
 - **Accessibilità** - Etichette per screen reader, descrizioni comando e annunci vocali opzionali delle rilevazioni
 - **Layout adattivi** - Interfacce adattabili per telefono, tablet, orientamento verticale e orizzontale

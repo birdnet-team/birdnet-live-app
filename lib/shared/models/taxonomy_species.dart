@@ -11,8 +11,11 @@
 //
 // ### Data sources
 //
-// 1. **Local CSV** (`birdnet_taxonomy_0.1-Mar2026.csv`) — bundled with the
-//    app, provides offline access to names, IDs, and image URLs.
+// 1. **Local CSV** (`assets/models/taxonomy.csv`, written by
+//    `tools/build_species_bundle.py`) — bundled with the app, provides
+//    offline access to names, IDs, and image URLs. It holds one row per class
+//    of the audio model plus one row per species an earlier release could
+//    detect, so sessions recorded with an older model keep resolving.
 // 2. **Taxonomy API** (`https://birdnet.cornell.edu/taxonomy/api/`) — live
 //    endpoint for descriptions, Wikipedia excerpts, and fresh images.
 //
@@ -31,12 +34,14 @@ class TaxonomySpecies {
     required this.scientificName,
     required this.commonName,
     this.canonicalScientificName,
+    this.aliases = const [],
+    this.inModel = true,
+    this.recordType = speciesRecordType,
     this.commonNameAlt,
     this.taxonGroup = '',
     this.birdnetId,
     this.ebirdCode,
     this.inatId,
-    this.observationsCount,
     this.imageUrl,
     this.imageAuthor,
     this.imageLicense,
@@ -47,19 +52,37 @@ class TaxonomySpecies {
     this.wikipediaUrls,
   });
 
-  /// Binomial scientific name (primary key for matching).
+  /// `record_type` of an animal species.
+  static const speciesRecordType = 'species';
+
+  /// `record_type` of a non-animal sound class (engine, siren, music, …).
+  static const soundClassRecordType = 'sound_class';
+
+  /// Scientific name (primary key for matching).
   ///
-  /// This is the model label name; it is the join key used by detections and
-  /// sessions, and may be an older synonym for some species.
+  /// This is the current model label name for species the model detects and
+  /// the taxonomy name for species only earlier models detected. Sound
+  /// classes carry their class name here (e.g. `Aircraft`).
   final String scientificName;
 
-  /// Canonical (taxonomy) scientific name for display.
-  ///
-  /// Equals [scientificName] for the vast majority of species; differs only
-  /// where the model label uses an older synonym (e.g. `Hypsiboas faber` ->
-  /// `Boana faber`).  Prefer [displayScientificName] when showing a name to
-  /// the user.
+  /// Scientific name to show in the UI; see [displayScientificName].
   final String? canonicalScientificName;
+
+  /// Other scientific names that resolve to this entry.
+  ///
+  /// These are synonyms and older names: a session recorded before a taxonomy
+  /// revision stores the name of its day (e.g. `Emberiza schoeniclus`), and
+  /// `TaxonomyService.lookup` follows the alias to the current entry.
+  final List<String> aliases;
+
+  /// Whether the current audio model has a class for this entry.
+  ///
+  /// False for species that only earlier models could detect; they stay in
+  /// the taxonomy so existing sessions keep their names and images.
+  final bool inModel;
+
+  /// Taxonomy record type: [speciesRecordType] or [soundClassRecordType].
+  final String recordType;
 
   /// English common name.
   final String commonName;
@@ -78,9 +101,6 @@ class TaxonomySpecies {
 
   /// iNaturalist taxon ID.
   final int? inatId;
-
-  /// Observation count from data sources.
-  final int? observationsCount;
 
   /// Medium image URL from the taxonomy API.
   final String? imageUrl;
@@ -110,10 +130,12 @@ class TaxonomySpecies {
   // Convenience getters
   // ---------------------------------------------------------------------------
 
-  /// Canonical scientific name to show in the UI.
+  /// Whether this entry is a non-animal sound class rather than a species.
+  bool get isSoundClass => recordType == soundClassRecordType;
+
+  /// Scientific name to show in the UI.
   ///
-  /// Falls back to the model label [scientificName] when no canonical name is
-  /// available.
+  /// Falls back to [scientificName] when no canonical name is available.
   String get displayScientificName =>
       (canonicalScientificName != null && canonicalScientificName!.isNotEmpty)
       ? canonicalScientificName!
@@ -121,8 +143,7 @@ class TaxonomySpecies {
 
   /// Bundled asset image path (480x320 WebP).
   ///
-  /// Falls back to the placeholder image if [birdnetId] is null
-  /// (9 species with no taxonomy entry).
+  /// Falls back to the placeholder image if [birdnetId] is null.
   String get assetImagePath => birdnetId != null
       ? 'assets/species_images/$birdnetId.webp'
       : 'assets/images/dummy_species.png';
@@ -203,10 +224,14 @@ class TaxonomySpecies {
   ///
   /// CSV header:
   /// ```
-  /// birdnet_id,scientific_name,common_name,common_name_alt,taxon_group,
-  /// inat_id,ebird_code,...,image_url,image_author,image_license,
-  /// image_source,common_name_en,common_name_de,...
+  /// birdnet_id,scientific_name,canonical_scientific_name,
+  /// scientific_name_aliases,in_model,record_type,common_name,
+  /// common_name_alt,taxon_group,inat_id,ebird_code,...,image_url,
+  /// image_author,image_license,image_source,common_name_en,...
   /// ```
+  ///
+  /// `scientific_name_aliases` is a `|`-separated list. A missing `in_model`
+  /// or `record_type` column means "in the model" and "species".
   factory TaxonomySpecies.fromCsvRow(Map<String, String> row) {
     // Extract localized common names from common_name_* columns and
     // Wikipedia URLs from wikipedia_url_* columns.
@@ -229,12 +254,17 @@ class TaxonomySpecies {
       scientificName: row['scientific_name'] ?? '',
       commonName: row['common_name'] ?? '',
       canonicalScientificName: _nonEmpty(row['canonical_scientific_name']),
+      aliases: [
+        for (final alias in (row['scientific_name_aliases'] ?? '').split('|'))
+          if (alias.trim().isNotEmpty) alias.trim(),
+      ],
+      inModel: row['in_model'] != '0',
+      recordType: _nonEmpty(row['record_type']) ?? speciesRecordType,
       commonNameAlt: _nonEmpty(row['common_name_alt']),
       taxonGroup: row['taxon_group'] ?? '',
       birdnetId: _nonEmpty(row['birdnet_id']),
       ebirdCode: _nonEmpty(row['ebird_code']),
       inatId: int.tryParse(row['inat_id'] ?? ''),
-      observationsCount: int.tryParse(row['observations_count'] ?? ''),
       imageUrl: _nonEmpty(row['image_url']),
       imageAuthor: _nonEmpty(row['image_author']),
       imageLicense: _nonEmpty(row['image_license']),
@@ -257,7 +287,6 @@ class TaxonomySpecies {
       birdnetId: json['birdnet_id'] as String?,
       ebirdCode: json['ebird_code'] as String?,
       inatId: json['inat_id'] as int?,
-      observationsCount: json['observations_count'] as int?,
       imageUrl: image?['medium'] as String?,
       imageAuthor: image?['author'] as String?,
       imageLicense: image?['license'] as String?,
