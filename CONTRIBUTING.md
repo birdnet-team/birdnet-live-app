@@ -156,7 +156,7 @@ Keep to the register listed for the locale when you edit it.
 
 ### Translation Rules (UI strings)
 
-- Keep these terms in English in every locale: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart, Gain. Colormap names (Viridis, Plasma, …) and model version strings stay as they are too. In descriptive prose a natural local term is fine.
+- Keep these terms in English in every locale: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart. Colormap names (Viridis, Plasma, …) and model version strings stay as they are too. In descriptive prose a natural local term is fine.
 - Language names in the language picker are written in their own language ("Deutsch", "한국어").
 - Write taxonomically agnostic help text: "species" rather than "bird species", "animal sounds" rather than "birdsong".
 - Prefer gender-neutral wording where it is natural and idiomatic in the target language.

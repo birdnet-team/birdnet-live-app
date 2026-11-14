@@ -41,7 +41,7 @@ This file is for coding agents working in this repository.
 - Always keep user-facing strings translated in all 13 locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh (Simplified Chinese), ko.
 - After ARB edits, run flutter gen-l10n and verify no missing keys.
 - Use l10n keys in UI; do not hardcode user-facing text.
-- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart, Gain.
+- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart.
 - Keep each locale's register (formal/informal) as listed in the Supported Locales table in CONTRIBUTING.md.
 - A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product. The contributor-facing version with who-does-what is "Adding a New Language" in CONTRIBUTING.md; keep the two lists in sync:
   - `lib/l10n/app_<loc>.arb` (UI strings)
