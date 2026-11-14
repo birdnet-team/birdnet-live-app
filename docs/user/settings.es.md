@@ -9,15 +9,13 @@ El botón :app-helpOutline: junto a un ajuste abre una breve explicación. Los a
 - Abrir Ajustes desde Inicio muestra la pantalla completa.
 - Abrir Ajustes desde Live, Survey, Point Count o Análisis de archivos filtra la pantalla a las secciones relevantes.
 
+## Cómo encontrar un ajuste
+
+Los ajustes están agrupados en secciones como **General**, **Inferencia** y **Privacidad**. La pantalla se abre con todas las secciones contraídas, así que empieza como una lista corta de nombres de sección, cada uno con una breve descripción. Toca el encabezado de una sección para expandirla y vuelve a tocarlo para contraerla; puede haber varias secciones abiertas a la vez. Mientras te desplazas por una sección abierta, su título permanece en la parte superior de la pantalla, así que puedes contraer una sección larga sin tener que volver arriba.
+
+Para encontrar un ajuste por su nombre, toca el botón :app-searchRounded: de la barra superior y escribe parte del nombre. Los resultados muestran cada ajuste coincidente junto con su sección; al tocar uno se abre esa sección y la pantalla se desplaza hasta el ajuste. Un ajuste que solo aparece cuando otro interruptor está activado (como la voz de los anuncios mientras los anuncios están desactivados) se muestra en los resultados una vez que ese interruptor está activado. Los ajustes cuyo propio nombre coincide aparecen primero; al escribir el nombre de una sección también se muestran todos sus ajustes. Las opciones que están dentro de una subpágina o una superposición, como los formatos de exportación individuales o las casillas de Ignorar especies, se encuentran a través de su entrada (**Formatos**, **Contenido**, **Ignorar especies**).
+
 ## General
-
-### Tema
-
-Elige **Oscuro**, **Claro** o **Sistema**.
-
-Si **Color dinámico** está activado, BirdNET Live también intenta adoptar la paleta del sistema de tu dispositivo Android. Esto solo tiene efecto en dispositivos Android compatibles; en iPhone y iPad la aplicación sigue usando el tema estándar de BirdNET Live, así que activar el interruptor allí no cambia nada.
-
-Activa **Tema de alto contraste** para usar una paleta de interfaz en blanco y negro, clara u oscura, con texto más grueso y superficies con borde en lugar de tarjetas tintadas. Sigue la elección **Oscuro**, **Claro** o **Sistema**, tiene prioridad sobre el color dinámico mientras está activo y conserva los colores de peligro, advertencia, validación, modo, puntuación y espectrograma.
 
 ### Idioma de la aplicación
 
@@ -35,7 +33,7 @@ Muestra los nombres científicos bajo los nombres comunes en toda la aplicación
 
 Solo en modo Live y Point Count. Desactivado de forma predeterminada, por lo que estas pantallas siguen mostrando únicamente las especies detectadas en el último ciclo de inferencia: en la práctica, las que están vocalizando ahora mismo. Actívalo para que cada especie detectada durante la sesión en curso permanezca visible en la lista, incluso después de dejar de vocalizar o de caer por debajo del umbral de confianza.
 
-Cuando está activado, aparece **Orden de la lista de especies**. **Más recientes primero** muestra arriba las especies que están vocalizando, ordenadas por su confianza actual, y después las especies retenidas por su detección más reciente. **Confianza** ordena por la confianza más alta alcanzada por cada especie durante la sesión, **Alfabéticamente** por el nombre común localizado y **Apariciones** por el número de detecciones. En cualquier modo de orden, el porcentaje y la barra de confianza solo aparecen mientras esa especie está vocalizando (las filas retenidas de especies que han callado se atenúan), y las detecciones repetidas muestran un contador al final de la fila del nombre común.
+Cuando está activado, aparece **Orden de la lista de especies**. **Más recientes primero** muestra arriba las especies que están vocalizando, ordenadas por su confianza actual, y después las especies retenidas por su detección más reciente. **Confianza** ordena por la confianza más alta alcanzada por cada especie durante la sesión, **Alfabéticamente** por el nombre común localizado y **Apariciones** por el número de detecciones. En cualquier modo de orden, el porcentaje y la barra de confianza solo aparecen mientras esa especie está vocalizando (las filas retenidas de especies que han callado se atenúan), y las detecciones repetidas muestran un contador al final de la fila del nombre común. Cuando una especie deja de vocalizar, un segundo indicador detrás de él muestra la mayor confianza que alcanzó durante la Session, en el color de confianza.
 
 ### Nombre del observador
 
@@ -58,7 +56,17 @@ Cuando se selecciona **Absoluto**, aparece un interruptor adicional: **Mostrar s
 
 El almacenamiento y las exportaciones usan siempre instantes en UTC, independientemente de este ajuste, así que la elección nunca afecta a los datos, solo a cómo se muestran.
 
-## Audio
+## Apariencia
+
+### Tema
+
+Elige **Oscuro**, **Claro** o **Sistema**.
+
+Si **Color dinámico** está activado, BirdNET Live también intenta adoptar la paleta del sistema de tu dispositivo Android. Esto solo tiene efecto en dispositivos Android compatibles; en iPhone y iPad la aplicación sigue usando el tema estándar de BirdNET Live, así que activar el interruptor allí no cambia nada.
+
+Activa **Tema de alto contraste** para usar una paleta de interfaz en blanco y negro, clara u oscura, con texto más grueso y superficies con borde en lugar de tarjetas tintadas. Sigue la elección **Oscuro**, **Claro** o **Sistema**, tiene prioridad sobre el color dinámico mientras está activo y conserva los colores de peligro, advertencia, validación, modo, puntuación y espectrograma.
+
+## Audio y grabación
 
 Estos controles aparecen en los flujos de trabajo en directo basados en audio.
 
@@ -89,6 +97,44 @@ Amplificador lineal aplicado al audio entrante antes de que llegue al espectrogr
 ### Filtro paso alto (Hz)
 
 Recorta el contenido de baja frecuencia antes de la inferencia mediante un filtro Butterworth de 24 dB/octava; el valor del control deslizante es la frecuencia de corte de −3 dB. **0 Hz lo desactiva.** Un corte de 100–200 Hz elimina viento, retumbe del tráfico y ruido de manipulación sin afectar a la mayoría de las especies; al acercarse a 500–1000 Hz empiezan a desaparecer los reclamos graves, los búhos, las aves galliformes y el bramido del avetoro, así que sube tanto solo si estás ignorando deliberadamente esas especies a cambio de un espectrograma mucho más limpio en un entorno urbano ruidoso. El corte que elijas debería verse como una línea horizontal nítida en el espectrograma en directo.
+
+### Modo de grabación
+
+Este ajuste controla Live Mode. Point Count tiene su propia opción de grabación en el paso de ajustes de análisis; los nuevos conteos usan **Completa** de forma predeterminada. Survey también tiene una opción independiente en su configuración.
+
+- **Completa** — guardar toda la grabación
+- **Solo detecciones** — guardar fragmentos alrededor de las detecciones
+- **Desactivado** — sin grabación de audio
+
+### Contexto del fragmento
+
+Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del fragmento** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Point Count usa este mismo valor al seleccionar **Solo clips** en su configuración y permite cambiarlo allí. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
+
+### Formato de grabación
+
+Elige **WAV** o **FLAC**. WAV ocupa más, pero es ampliamente compatible y rápido de inspeccionar. FLAC mantiene la misma calidad de audio sin pérdidas usando menos almacenamiento, lo que suele ser mejor para sesiones largas.
+
+Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos** conserva una copia gestionada por la aplicación del archivo importado en su formato original, de modo que los archivos MP3, AAC, WAV y FLAC siguen siendo revisables sin un paso de conversión adicional.
+
+### Guardar sesiones automáticamente (Live y Point Count)
+
+Al activarlo (el valor predeterminado), una sesión de Live o Point Count completada se añade a tu biblioteca automáticamente en el momento en que termina. Al desactivarlo, una sesión finalizada se abre en la revisión marcada como **sin guardar**: el icono de guardar aparece resaltado y debes tocarlo para conservar la sesión. Salir de la revisión sin guardar descarta la sesión y sus grabaciones. Esto encaja con escuchas rápidas en las que solo quieres conservar algún resultado destacable en lugar de acumular cada grabación corta. Los despliegues de Survey y ARU siempre se guardan automáticamente —una ejecución larga sin supervisión es demasiado valiosa como para perderla por olvidar tocar Guardar—, así que este interruptor no se aplica allí.
+
+Independientemente de este ajuste, el modo Live y Point Count guardan una sesión parcial al inicio, cada 30 segundos y cuando la aplicación deja el primer plano, y escriben la sesión terminada en el disco antes de liberar el micrófono. Así se limita la pérdida de datos tras un cierre inesperado, un corte de energía o si el sistema cierra la aplicación mientras estaba en segundo plano: esa sesión aparece en la biblioteca, marcada como interrumpida si la aplicación terminó a mitad de la sesión, y puedes borrarla allí si no querías conservarla. Con el guardado automático desactivado, una sesión terminada a la que llegas en la revisión sigue abriéndose como sin guardar y se descarta si sales sin guardar. Survey y ARU guardan sus puntos de control independientemente de este ajuste.
+
+### Iniciar la grabación automáticamente (solo modo Live)
+
+Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
+
+Este ajuste rige la apertura del modo Live desde dentro de la aplicación. [Quick Listen](live-mode.md) — el widget de Android o, en iOS, el atajo, la frase de Siri y la acción del icono — empieza a escuchar al activarse, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
+
+### Continuar con la pantalla apagada
+
+**Live Mode** pausa la captura y la identificación al bloquear la pantalla o salir de la aplicación y reanuda la misma Session al volver. Continuar en segundo plano está desactivado de forma predeterminada. Tras la primera vuelta, un diálogo explica cómo activarlo; también puedes usar el interruptor de los ajustes de Live Mode. Elige un **Tiempo máximo en segundo plano** de 15, 30, 60 o 120 minutos (30 de forma predeterminada). El temporizador empieza al salir, se cancela si vuelves antes del límite y vuelve a empezar en cada salida. Al agotarse, termina la Session y abre el resumen con el motivo. El guardado automático sigue determinando si se conserva inmediatamente o aparece sin guardar.
+
+**Point Count** continúa de forma predeterminada al bloquear la pantalla o cambiar de aplicación con la pantalla encendida y termina tras la duración elegida. Su interruptor **Continuar con la pantalla apagada** solo aparece en el primer paso de configuración. Desactívalo para terminar antes al realizar esas acciones. El signo de interrogación explica el comportamiento. Pausar y reanudar dejaría un hueco en el protocolo cronometrado. La pantalla de listo resume la elección y el resumen de la Session muestra el motivo de un final anticipado.
+
+Android muestra una notificación persistente con Abrir y Detener durante el funcionamiento en segundo plano; la pantalla puede apagarse normalmente. Si no puede iniciarse, mantén la aplicación abierta: en segundo plano Live Mode se pausa y Point Count termina. Salir durante el inicio de un Point Count lo cancela con un mensaje; configúralo de nuevo. En Windows, minimizar nunca pausa Live Mode ni termina Point Count, independientemente de estos interruptores.
 
 ## Inferencia
 
@@ -143,6 +189,14 @@ Abre un panel con filtros binarios de inferencia. Marca **Aves**, **Mamíferos**
 
 El filtro pone exactamente a cero las probabilidades ignoradas de los modelos geográfico y de audio inmediatamente después de la activación sigmoide y antes de la agrupación temporal. No pueden contribuir a resultados posteriores ni convertirse en detecciones mostradas, guardadas, anunciadas o exportadas. Los cambios durante una Session activa de Live Mode, Point Count, Survey o ARU se aplican a la siguiente ventana; el análisis de archivos usa los valores elegidos al iniciar.
 
+### Sonidos no animales
+
+Desactivado de forma predeterminada. Además de fauna, el modelo reconoce 16 clases de sonidos no animales: aeronave, bote, motosierra, motor, explosión, fuego, fuegos artificiales, arma de fuego, martillo, vehículo de motor, música, herramienta eléctrica, sierra, sirena, tren y bocina. Activa el interruptor para que se notifiquen como cualquier otra detección en todos los modos, con una imagen, una descripción y un nombre en el idioma de los nombres de especies.
+
+Una sirena no tiene área de distribución, así que los filtros de ubicación nunca eliminan las clases de sonido y Explorar no las muestra. Tampoco se incluyen en el recuento de **Ignorar especies**. Un cambio se aplica a la siguiente ventana de inferencia de una Session en curso de Live Mode, Point Count, Survey o ARU; el análisis de archivos usa el valor elegido al iniciar el análisis. Las clases de sonido notificadas aparecen entre las detecciones de la Session y se incluyen en su recuento de especies.
+
+El interruptor está desactivado de forma predeterminada porque BirdNET Live es un identificador de fauna y un coche que pasa no tiene cabida en la mayoría de las listas de especies. Actívalo cuando te interesen los sonidos en sí, por ejemplo para documentar motosierras, disparos o tráfico en un punto de seguimiento.
+
 BirdNET Live suaviza internamente las puntuaciones a lo largo de las ventanas
 de inferencia recientes para reducir falsos positivos puntuales. Esta
 agrupación no se expone como ajuste de usuario; de forma predeterminada usa
@@ -157,7 +211,7 @@ más alta y termina al final de la última ventana de apoyo.
 
 ## Espectrograma
 
-### Tamaño
+### Tamaño del espectrograma
 
 Define cuánto espacio de la pantalla ocupa el espectrograma en vivo en Live Mode, Point Count, Survey y ARU. **Completo** es la altura habitual. **Medio** y **Pequeño** la reducen al 75 % y al 50 % y ceden la diferencia a la lista de detecciones, la opción adecuada cuando en el teléfono en vertical miras sobre todo la lista. **Desactivado** quita el espectrograma por completo; en Survey y ARU desaparece también la pestaña del espectrograma. En horizontal, **Medio** y **Pequeño** acortan el espectrograma en su mitad de la pantalla (el espacio debajo queda vacío por ahora), y **Desactivado** deja toda la pantalla a la lista de detecciones. Los espectrogramas de las sesiones guardadas y de la reproducción no se ven afectados.
 
@@ -181,13 +235,29 @@ Establece la frecuencia superior mostrada.
 
 Aplica escalado logarítmico al espectrograma para leerlo con más facilidad.
 
-### Calidad
+### Calidad del espectrograma
 
 Controla con qué suavidad se escala la imagen del espectrograma. **Media** es el equilibrio predeterminado. Elige **Baja** en teléfonos antiguos cuando el desplazamiento se entrecorta o el dispositivo se calienta; elige **Alta** cuando prefieras una imagen más suave y tu dispositivo tenga margen de GPU. La intuición: esto solo cambia el coste de renderizado, no el análisis de audio ni los resultados de detección.
 
-## Anuncios
+## Reproducción y anuncios
 
-Esta sección controla si BirdNET Live **lee las detecciones en voz alta por los auriculares o el altavoz del teléfono** mientras una sesión está grabando. Toda la función está **desactivada de forma predeterminada** porque cambia el entorno acústico alrededor del micrófono: activarla es una decisión consciente. No hay asistente de configuración: los selectores de nivel de detalle × frecuencia que aparecen abajo *son* toda la configuración, así que puedes tocar otro preajuste en cualquier momento y oír la diferencia al instante. La intuición: en muestreos largos no puedes estar mirando la pantalla; una voz discreta al oído te permite mantener la vista en el hábitat y aun así saber qué se acaba de oír.
+Cuando abres Ajustes desde Análisis de archivos, esta sección se llama **Reproducción** y solo contiene los ajustes de reproducción.
+
+### Superposición de reproducción en la revisión
+
+Al activarlo (el valor predeterminado), escuchar un fragmento de audio en una revisión de sesión compuesta solo por fragmentos (donde no hay grabación completa ni espectrograma disponibles) abre una superposición modal de reproducción propia, con controles de transporte y vista previa del espectrograma, en lugar de reproducir el fragmento en segundo plano. Si una sesión tiene audio completo, este ajuste se omite y la superposición de reproducción nunca se muestra.
+
+### Reproducir automáticamente las notas de voz
+
+Desactivado de forma predeterminada. Al activarlo, una nota de voz adjunta a una anotación con marca de tiempo se reproduce automáticamente durante la Revisión de la sesión en el momento en que el cursor de reproducción cruza su posición registrada. La nota se mezcla sobre la grabación en lugar de pausarla, así que oyes tu comentario en contexto junto al audio original. Déjalo desactivado si prefieres lanzar las notas manualmente tocando su etiqueta de anotación.
+
+### Atenuación con notas de voz
+
+Solo se muestra cuando **Reproducir automáticamente las notas de voz** está activado. Controla cuánto se baja la grabación principal mientras suena una nota de voz automática. Los valores más altos hacen las notas habladas más fáciles de oír; los más bajos dejan oír más de la grabación original por debajo de la nota.
+
+### Anuncios
+
+Estos ajustes controlan si BirdNET Live **lee las detecciones en voz alta por los auriculares o el altavoz del teléfono** mientras una sesión está grabando. Toda la función está **desactivada de forma predeterminada** porque cambia el entorno acústico alrededor del micrófono: activarla es una decisión consciente. No hay asistente de configuración: los selectores de nivel de detalle × frecuencia que aparecen abajo *son* toda la configuración, así que puedes tocar otro preajuste en cualquier momento y oír la diferencia al instante. La intuición: en muestreos largos no puedes estar mirando la pantalla; una voz discreta al oído te permite mantener la vista en el hábitat y aun así saber qué se acaba de oír.
 
 ### Leer detecciones en voz alta (interruptor principal)
 
@@ -217,61 +287,7 @@ Una sección desplegable que expone unos cuantos interruptores de enrutado de au
 - **Tono de aviso antes de hablar** — Reproduce un tono breve y suave antes de cada locución para que tu oído tenga un momento para pasar de la escucha pasiva a atender a la voz. Activado de forma predeterminada. Especialmente útil cuando los anuncios son poco frecuentes o cuando tienes música de fondo.
 - **Qué anunciar** — Elige qué detecciones son siquiera candidatas a un anuncio. *Cada detección* (predeterminado) deja que decida la limitación. *Primera vez por sesión* anuncia una especie solo la primera vez que aparece en la sesión actual. *Solo lista de seguimiento* limita los anuncios a las especies de tu lista de seguimiento (útil en trabajos de muestreo dirigidos, en los que quieres oír solo tus taxones prioritarios y nada más).
 
-## Grabación
-
-### Modo
-
-Este ajuste controla Live Mode. Point Count tiene su propia opción de grabación en el paso de ajustes de análisis; los nuevos conteos usan **Completa** de forma predeterminada. Survey también tiene una opción independiente en su configuración.
-
-- **Completa** — guardar toda la grabación
-- **Solo detecciones** — guardar fragmentos alrededor de las detecciones
-- **Desactivado** — sin grabación de audio
-
-### Contexto del fragmento
-
-Cuando **Solo detecciones** está activo, la aplicación muestra un único control **Contexto del fragmento** (0–5 s) que fija cuánto audio se conserva a **ambos lados** de cada detección. Point Count usa este mismo valor al seleccionar **Solo clips** en su configuración y permite cambiarlo allí. Cada fragmento dura `ventana de análisis + 2 × contexto del fragmento`, así que con una ventana de análisis de 3 s y el contexto predeterminado de 1 s el fragmento guardado es de 5 s. Con un contexto de 2 s se obtiene un fragmento de 7 s (2 s previos + 3 s de audio analizado + 2 s posteriores). Los valores mayores te dan más margen para la inspección visual o para herramientas de revisión externas a costa de espacio en disco; 0 guarda solo la ventana analizada.
-
-### Formato
-
-Elige **WAV** o **FLAC**. WAV ocupa más, pero es ampliamente compatible y rápido de inspeccionar. FLAC mantiene la misma calidad de audio sin pérdidas usando menos almacenamiento, lo que suele ser mejor para sesiones largas.
-
-Este ajuste se aplica al audio grabado por BirdNET Live. **Análisis de archivos** conserva una copia gestionada por la aplicación del archivo importado en su formato original, de modo que los archivos MP3, AAC, WAV y FLAC siguen siendo revisables sin un paso de conversión adicional.
-
-### Iniciar la grabación automáticamente (solo modo Live)
-
-Al activarlo, el modo Live empieza a grabar en cuanto se abre la pantalla y el modelo termina de cargarse, sin tener que tocar el botón del micrófono. Útil para instalaciones tipo quiosco, uso con las manos libres (por ejemplo, el dispositivo montado en el campo) o cualquier flujo en el que abrir Live ya signifique «empezar ahora». Desactivado de forma predeterminada para que un toque accidental en el mosaico de Live desde la pantalla de inicio no comience una sesión en silencio. El inicio automático se produce solo una vez por visita a la pantalla, así que detener una sesión y volver a tocar el micrófono sigue funcionando como reinicio manual.
-
-Este ajuste rige la apertura del modo Live desde dentro de la aplicación. [Quick Listen](live-mode.md) — el widget de Android o, en iOS, el atajo, la frase de Siri y la acción del icono — empieza a escuchar al activarse, sea cual sea este ajuste, y no lo modifica. Si ya hay una sesión de Point Count, Survey, Análisis de archivos o modo ARU en marcha o iniciándose, se conserva esa sesión y se te pide que la detengas primero.
-
-### Continuar con la pantalla apagada
-
-**Live Mode** pausa la captura y la identificación al bloquear la pantalla o salir de la aplicación y reanuda la misma Session al volver. Continuar en segundo plano está desactivado de forma predeterminada. Tras la primera vuelta, un diálogo explica cómo activarlo; también puedes usar el interruptor de los ajustes de Live Mode. Elige un **Tiempo máximo en segundo plano** de 15, 30, 60 o 120 minutos (30 de forma predeterminada). El temporizador empieza al salir, se cancela si vuelves antes del límite y vuelve a empezar en cada salida. Al agotarse, termina la Session y abre el resumen con el motivo. El guardado automático sigue determinando si se conserva inmediatamente o aparece sin guardar.
-
-**Point Count** continúa de forma predeterminada al bloquear la pantalla o cambiar de aplicación con la pantalla encendida y termina tras la duración elegida. Su interruptor **Continuar con la pantalla apagada** solo aparece en el primer paso de configuración. Desactívalo para terminar antes al realizar esas acciones. El signo de interrogación explica el comportamiento. Pausar y reanudar dejaría un hueco en el protocolo cronometrado. La pantalla de listo resume la elección y el resumen de la Session muestra el motivo de un final anticipado.
-
-Android muestra una notificación persistente con Abrir y Detener durante el funcionamiento en segundo plano; la pantalla puede apagarse normalmente. Si no puede iniciarse, mantén la aplicación abierta: en segundo plano Live Mode se pausa y Point Count termina. Salir durante el inicio de un Point Count lo cancela con un mensaje; configúralo de nuevo. En Windows, minimizar nunca pausa Live Mode ni termina Point Count, independientemente de estos interruptores.
-
-### Guardar sesiones automáticamente (Live y Point Count)
-
-Al activarlo (el valor predeterminado), una sesión de Live o Point Count completada se añade a tu biblioteca automáticamente en el momento en que termina. Al desactivarlo, una sesión finalizada se abre en la revisión marcada como **sin guardar**: el icono de guardar aparece resaltado y debes tocarlo para conservar la sesión. Salir de la revisión sin guardar descarta la sesión y sus grabaciones. Esto encaja con escuchas rápidas en las que solo quieres conservar algún resultado destacable en lugar de acumular cada grabación corta. Los despliegues de Survey y ARU siempre se guardan automáticamente —una ejecución larga sin supervisión es demasiado valiosa como para perderla por olvidar tocar Guardar—, así que este interruptor no se aplica allí.
-
-Mientras el guardado automático está activado, el modo Live y Point Count también guardan una sesión parcial al inicio, cada 30 segundos y cuando la aplicación deja el primer plano. Así se limita la pérdida de datos tras un cierre inesperado o un corte de energía. Con el ajuste desactivado, estos guardados intermedios no se conservan. Survey y ARU guardan sus puntos de control independientemente de este ajuste.
-
-## Reproducción
-
-### Superposición de reproducción en la revisión
-
-Al activarlo (el valor predeterminado), escuchar un fragmento de audio en una revisión de sesión compuesta solo por fragmentos (donde no hay grabación completa ni espectrograma disponibles) abre una superposición modal de reproducción propia, con controles de transporte y vista previa del espectrograma, en lugar de reproducir el fragmento en segundo plano. Si una sesión tiene audio completo, este ajuste se omite y la superposición de reproducción nunca se muestra.
-
-### Reproducir automáticamente las notas de voz
-
-Desactivado de forma predeterminada. Al activarlo, una nota de voz adjunta a una anotación con marca de tiempo se reproduce automáticamente durante la Revisión de la sesión en el momento en que el cursor de reproducción cruza su posición registrada. La nota se mezcla sobre la grabación en lugar de pausarla, así que oyes tu comentario en contexto junto al audio original. Déjalo desactivado si prefieres lanzar las notas manualmente tocando su etiqueta de anotación.
-
-### Atenuación con notas de voz
-
-Solo se muestra cuando **Reproducir automáticamente las notas de voz** está activado. Controla cuánto se baja la grabación principal mientras suena una nota de voz automática. Los valores más altos hacen las notas habladas más fáciles de oír; los más bajos dejan oír más de la grabación original por debajo de la nota.
-
-## Ubicación
+## Ubicación y filtro de especies
 
 ### Usar GPS
 
@@ -324,6 +340,8 @@ Como los niveles se basan en el orden, esto funciona igual en un bosque tropical
 
 ## Exportación y sincronización
 
+La sección muestra tres entradas, cada una resumiendo sus opciones: **Formatos**, **Contenido** y **Destinos de subida**. Las dos primeras abren una página con las casillas descritas abajo.
+
 ### Formatos
 
 Marca cualquier combinación de formatos de exportación: cada guardado o compartición empaquetará todos los formatos seleccionados juntos en un único ZIP. Si eliges un solo formato sin fragmentos de audio ni informe HTML, obtendrás un archivo suelto (por ejemplo, `session.csv`) en lugar de un ZIP, por compatibilidad con versiones anteriores:
@@ -354,6 +372,11 @@ Al activarlo, cada ZIP de exportación contiene además un archivo `<session>_re
 ### Compartir solo el audio
 
 Desmarca todos los formatos **y** el informe HTML **y** la casilla de metadatos de la aplicación, dejando solo **Incluir archivos de audio**, y Compartir entregará al panel del sistema la grabación en bruto (por ejemplo, `BirdNET_Live_…flac`) en lugar de un ZIP. Esa es la vía más directa para enviar una sesión a iNaturalist, eBird o cualquier otra aplicación que espere un archivo de audio sin empaquetar. Las Sessions con varios fragmentos de detección siguen produciendo un ZIP; al compartir una sola detección se entrega ese único clip en bruto.
+
+### Destinos de subida
+
+Lista los lugares WebDAV a los que se puede subir una Session finalizada, por ejemplo el File Drop de Nextcloud de quien dirige el proyecto o el servidor de referencia de `tools/webdav_drop_server`. Añade uno pegando el enlace de acceso o el enlace compartido que recibiste, o escaneando el código QR del proyecto con la cámara; una dirección WebDAV normal con usuario y contraseña funciona mediante los campos avanzados. No se guarda nada hasta que la prueba de conexión se supera. La pantalla del destino tiene además **Mostrar código de acceso**, que muestra el mismo enlace como código QR (más Copiar enlace) para que un segundo teléfono se una sin escribir. La prueba crea el archivo de registro del dispositivo en el servidor, en una carpeta oculta `.birdnet-live`, y avisa cuando la credencial también puede listar la carpeta (un recurso de solo escritura es más seguro para todos) y, además, cuando ese recurso listable no tiene contraseña. Cada destino tiene su propio nombre, un interruptor «Subir solo con Wi-Fi» y otro «Subir las Sessions ARU automáticamente»; este último pone en cola cada ARU Session finalizada para ese destino sin preguntar. Para subir, toca Compartir en una Session o en una selección de la biblioteca de Sessions y marca el destino en la pestaña **Enviar a** del diálogo (una insignia en la pestaña cuenta las marcas y la lista se desplaza, así que el diálogo mantiene la misma altura con cualquier número de destinos); allí puedes desmarcar la hoja de compartir para solo subir, y los destinos marcados la última vez vienen premarcados. Las subidas en cola se ejecutan mientras la app está abierta (y, en Android, también en segundo plano cuando hay una red adecuada), se reintentan con esperas crecientes, aguardan al Wi-Fi si se les pide y muestran su estado como primera línea bajo el título de la Session en la biblioteca y como icono de nube en la revisión de la Session (toca cualquiera para ver detalles por destino, Reintentar y Quitar); la línea desaparece cuando ninguno de sus destinos sigue existiendo en los ajustes. Cada subida es un único archivo ZIP, con el nombre de la exportación de Compartir y que contiene el registro JSON de la Session más todo lo que Compartir incluiría, dentro de una carpeta con el código de ocho caracteres de este dispositivo (se muestra como **Tu ID de subida** al unirse y arriba en la lista de destinos). Allí se puede indicar un identificador de participante opcional, como nombre, correo o ID de participante; viaja en los metadatos de la subida y en el registro del dispositivo, nunca en una ruta. Volver a subir una Session sustituye ese archivo; un File Drop de Nextcloud nunca sobrescribe y conserva la copia anterior con un nombre numerado. Las subidas van en un solo sentido: no se descarga nada y borrar una Session en el dispositivo nunca la elimina del servidor. Las credenciales se guardan en el llavero del dispositivo, nunca en los datos exportados. Todo el flujo de trabajo, desde la creación del recurso compartido hasta el seguimiento de una subida, se describe en [Subidas](uploads.md). Motivo: los proyectos de campo recogen datos de muchos teléfonos, y un único enlace pegado con una prueba verificada evita casi todos los errores de configuración. Consulta la incidencia #284.
+
 
 ## Privacidad
 

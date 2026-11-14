@@ -186,6 +186,20 @@ void main() {
     },
   );
 
+  test('records the bundled taxonomy next to the model blocks', () async {
+    final metadata = await buildSessionExportMetadata(
+      makeSession(),
+      speciesLocale: 'en',
+    );
+
+    // BirdNET IDs in an export are only meaningful with this version.
+    final taxonomy = metadata['taxonomy'] as Map<String, dynamic>;
+    expect(taxonomy['name'], isA<String>());
+    expect(taxonomy['version'], isA<String>());
+    expect(taxonomy['version'], isNotEmpty);
+    expect(metadata['audioModel'], isA<Map<String, dynamic>>());
+  });
+
   test('adds point count timing as type-specific metadata', () async {
     final session = makeSession()
       ..type = SessionType.pointCount

@@ -7,7 +7,8 @@
 // Captures:
 //   * App name + version + build number + package name (PackageInfo).
 //   * Readable device model and OS version, without a device ID.
-//   * Both ONNX model blocks from `assets/models/model_config.json`.
+//   * Both ONNX model blocks from `assets/models/model_config.json`, plus
+//     its taxonomy block (the version the exported BirdNET IDs refer to).
 //   * A curated snapshot of relevant SharedPreferences key/value pairs.
 //   * Session-level provenance (id, type, timestamps, observer, weather…)
 //     via `buildExportMetadata` in `session_export.dart`.
@@ -55,6 +56,7 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
 
   Map<String, dynamic>? audioModel;
   Map<String, dynamic>? geoModel;
+  Map<String, dynamic>? taxonomy;
   try {
     final raw = await rootBundle.loadString(AppConstants.modelConfigAssetPath);
     final decoded = json.decode(raw) as Map<String, dynamic>;
@@ -62,6 +64,8 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
     if (am is Map) audioModel = Map<String, dynamic>.from(am);
     final gm = decoded['geoModel'];
     if (gm is Map) geoModel = Map<String, dynamic>.from(gm);
+    final tx = decoded['taxonomy'];
+    if (tx is Map) taxonomy = Map<String, dynamic>.from(tx);
   } catch (_) {
     /* non-fatal */
   }
@@ -83,6 +87,7 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
     appPackageName: appPackageName,
     audioModel: audioModel,
     geoModel: geoModel,
+    taxonomy: taxonomy,
     prefs: prefsMap,
     speciesLocale: speciesLocale,
     session: session,

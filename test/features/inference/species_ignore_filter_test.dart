@@ -8,7 +8,7 @@ void main() {
     'Mammal one': 'Mammalia',
     'Frog one': 'Amphibia',
     'Moth one': 'Insecta',
-    'Fish one': 'Actinopterygii',
+    'Siren': 'Anthropogenic',
   };
 
   group('SpeciesIgnoreFilter.ignoredScientificNames', () {
@@ -16,20 +16,17 @@ void main() {
       const settings = SpeciesIgnoreSettings(
         ignoreBirds: true,
         ignoreInsects: true,
+        includeSoundClasses: true,
         commonGeoScoreCutoff: 0.99,
       );
 
       final ignored = SpeciesIgnoreFilter.ignoredScientificNames(
         classByScientificName: classes,
         settings: settings,
-        geoScores: const {
-          'Mammal one': 0.991,
-          'Frog one': 0.989,
-          'Fish one': 1.0,
-        },
+        geoScores: const {'Mammal one': 0.991, 'Frog one': 0.989},
       );
 
-      expect(ignored, {'Bird one', 'Moth one', 'Mammal one', 'Fish one'});
+      expect(ignored, {'Bird one', 'Moth one', 'Mammal one'});
     });
 
     test('defaults to no taxon groups and a 100 percent cutoff', () {
@@ -40,19 +37,53 @@ void main() {
       final ignored = SpeciesIgnoreFilter.ignoredScientificNames(
         classByScientificName: classes,
         settings: settings,
-        geoScores: const {'Bird one': 0.98, 'Fish one': 1.0},
+        geoScores: const {'Bird one': 0.98, 'Frog one': 1.0},
       );
-      expect(ignored, isEmpty);
+      // No animal is ignored by default.
+      expect(ignored, {'Siren'});
     });
 
     test('does not ignore a geo score exactly equal to the cutoff', () {
       final ignored = SpeciesIgnoreFilter.ignoredScientificNames(
         classByScientificName: classes,
-        settings: const SpeciesIgnoreSettings(commonGeoScoreCutoff: 0.9),
-        geoScores: const {'Fish one': 0.9},
+        settings: const SpeciesIgnoreSettings(
+          includeSoundClasses: true,
+          commonGeoScoreCutoff: 0.9,
+        ),
+        geoScores: const {'Frog one': 0.9},
       );
 
       expect(ignored, isEmpty);
+    });
+
+    test('sound classes are ignored until the user opts in', () {
+      const off = SpeciesIgnoreSettings();
+      expect(off.includeSoundClasses, isFalse);
+      expect(off.ignoresClass('Anthropogenic'), isTrue);
+      expect(off.ignoresClass('Geophony'), isTrue);
+      expect(off.ignoresClass('Music'), isTrue);
+
+      const on = SpeciesIgnoreSettings(includeSoundClasses: true);
+      expect(on.ignoresClass('Anthropogenic'), isFalse);
+
+      expect(
+        SpeciesIgnoreFilter.ignoredScientificNames(
+          classByScientificName: classes,
+          settings: on,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('opting into sound classes does not change the animal toggles', () {
+      const settings = SpeciesIgnoreSettings(
+        ignoreMammals: true,
+        includeSoundClasses: true,
+      );
+      expect(settings.ignoresClass('Mammalia'), isTrue);
+      expect(settings.ignoresClass('Aves'), isFalse);
+      // A label without a class is not a sound class.
+      expect(const SpeciesIgnoreSettings().ignoresClass(''), isFalse);
     });
   });
 
@@ -70,19 +101,15 @@ void main() {
     final labels = [
       const Species(
         index: 0,
-        id: 1,
         scientificName: 'Bird one',
         commonName: 'Bird',
         className: 'Aves',
-        order: 'Order',
       ),
       const Species(
         index: 1,
-        id: 2,
         scientificName: 'Frog one',
         commonName: 'Frog',
         className: 'Amphibia',
-        order: 'Order',
       ),
     ];
     final original = [0.92, 0.61];

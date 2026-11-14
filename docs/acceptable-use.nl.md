@@ -15,6 +15,7 @@ Gebruikers moeten:
 - BirdNET-voorspellingen verantwoord gebruiken, met het besef dat modeluitvoer probabilistisch is en fout-positieven of fout-negatieven kan bevatten.
 - Waarnemingen waar passend verifiëren voordat wetenschappelijke, natuurbehouds- of beheersbeslissingen worden genomen.
 - De mogelijke ecologische impact van het publiceren van gevoelige soortlocaties overwegen.
+- Alleen gegevens uploaden of delen die je mag doorgeven. Uploadbestemmingen worden beheerd door projectorganisatoren onder hun eigen privacy- en beveiligingsregels; vraag de organisator om details en upload geen gegevens die je als privé of vertrouwelijk beschouwt.
 
 ## Onaanvaardbaar gebruik
 

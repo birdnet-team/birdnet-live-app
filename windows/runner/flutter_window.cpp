@@ -83,6 +83,8 @@ bool FlutterWindow::OnCreate() {
       [this](std::function<void()> callback) {
         RunOnMainThread(std::move(callback));
       });
+  secure_store_channel_ = std::make_unique<SecureStoreChannel>(
+      flutter_controller_->engine()->messenger());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -104,6 +106,7 @@ void FlutterWindow::OnDestroy() {
     main_thread_queue_->decode_generation.fetch_add(1);
     main_thread_queue_->Close();
   }
+  secure_store_channel_ = nullptr;
   tts_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;

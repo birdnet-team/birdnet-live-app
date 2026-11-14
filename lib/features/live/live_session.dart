@@ -19,6 +19,7 @@ import '../../shared/models/weather_snapshot.dart';
 
 import '../../shared/models/gps_point.dart';
 import '../../shared/models/altitude_reference.dart';
+import '../../shared/utils/uuid.dart';
 import '../aru/aru_schedule.dart';
 import '../inference/models/detection.dart';
 import '../inference/models/species.dart';
@@ -44,6 +45,7 @@ class SessionSettings {
     this.ignoreMammals,
     this.ignoreAmphibians,
     this.ignoreInsects,
+    this.includeSoundClasses,
     this.ignoreCommonGeoScoreCutoff,
     this.poolingMode,
     this.poolingWindows,
@@ -137,6 +139,9 @@ class SessionSettings {
   final bool? ignoreMammals;
   final bool? ignoreAmphibians;
   final bool? ignoreInsects;
+
+  /// Whether non-animal sound classes were reported in this session.
+  final bool? includeSoundClasses;
   final double? ignoreCommonGeoScoreCutoff;
 
   /// Score pooling mode (`avg`, `max`, `lme`, `adaptive_lme_peak`, etc.)
@@ -229,6 +234,7 @@ class SessionSettings {
       ignoreMammals: json['ignoreMammals'] as bool?,
       ignoreAmphibians: json['ignoreAmphibians'] as bool?,
       ignoreInsects: json['ignoreInsects'] as bool?,
+      includeSoundClasses: json['includeSoundClasses'] as bool?,
       ignoreCommonGeoScoreCutoff: (json['ignoreCommonGeoScoreCutoff'] as num?)
           ?.toDouble(),
       poolingMode: json['poolingMode'] as String?,
@@ -277,6 +283,7 @@ class SessionSettings {
     if (ignoreMammals != null) 'ignoreMammals': ignoreMammals,
     if (ignoreAmphibians != null) 'ignoreAmphibians': ignoreAmphibians,
     if (ignoreInsects != null) 'ignoreInsects': ignoreInsects,
+    if (includeSoundClasses != null) 'includeSoundClasses': includeSoundClasses,
     if (ignoreCommonGeoScoreCutoff != null)
       'ignoreCommonGeoScoreCutoff': ignoreCommonGeoScoreCutoff,
     if (poolingMode != null) 'poolingMode': poolingMode,
@@ -1064,6 +1071,7 @@ class AruDeploymentMetadata {
 class LiveSession {
   LiveSession({
     required this.id,
+    String? uuid,
     required this.startTime,
     this.type = SessionType.live,
     this.sessionNumber,
@@ -1092,7 +1100,8 @@ class LiveSession {
     this.aruMetadata,
     int? recordedDurationSeconds,
     List<SessionSegment>? segments,
-  }) : detections = detections ?? [],
+  }) : uuid = uuid ?? generateUuidV4(),
+       detections = detections ?? [],
        annotations = annotations ?? [],
        gpsTrack = gpsTrack ?? [],
        segments = segments ?? [],
@@ -1100,6 +1109,17 @@ class LiveSession {
 
   /// Unique session identifier (ISO 8601 timestamp-based).
   final String id;
+
+  /// Globally unique identity, independent of [id], the file name, and
+  /// [displayName].
+  ///
+  /// Assigned once at creation and persisted with the session, so it survives
+  /// renames, trims, exports, and re-imports on another device. Two devices
+  /// can produce the same timestamp [id]; they cannot produce the same UUID.
+  /// Sessions saved by builds without this field receive one the first time
+  /// `SessionRepository.load` reads them and are saved back; until then a
+  /// legacy session parsed elsewhere carries a fresh, unsaved value.
+  final String uuid;
 
   /// The type of session (live, file upload, point count, survey).
   SessionType type;
@@ -1367,6 +1387,7 @@ class LiveSession {
   factory LiveSession.fromJson(Map<String, dynamic> json) {
     return LiveSession(
       id: json['id'] as String,
+      uuid: json['uuid'] as String?,
       type: SessionType.values.firstWhere(
         (t) => t.name == (json['type'] as String?),
         orElse: () => SessionType.live,
@@ -1437,6 +1458,7 @@ class LiveSession {
   /// Serialize to JSON.
   Map<String, dynamic> toJson() => {
     'id': id,
+    'uuid': uuid,
     if (type != SessionType.live) 'type': type.name,
     if (sessionNumber != null) 'sessionNumber': sessionNumber,
     'startTime': startTime.toUtc().toIso8601String(),

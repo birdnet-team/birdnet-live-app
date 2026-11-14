@@ -2,7 +2,8 @@
 // AnnouncementsSettingsSection
 // =============================================================================
 //
-// The Settings → Announcements section. Pulled into its own file (rather
+// The announcements controls of Settings → Playback & Announcements. Pulled
+// into its own file (rather
 // than dropped inline into settings_screen.dart) because it owns a small
 // cluster of interacting controls — master toggle, two "what it says"
 // pickers (verbosity + frequency), a Voice group (voice picker, speed,
@@ -51,20 +52,13 @@ String _resolveVoiceLanguage(WidgetRef ref) {
   return ui.PlatformDispatcher.instance.locale.toLanguageTag();
 }
 
-/// Settings section for the Announcements feature.
+/// Announcements controls shown inside the Settings → Playback &
+/// Announcements section.
 ///
-/// Returns a `Column` with a [Divider] at the bottom so it drops into
-/// existing Settings layouts without further wrapping.
+/// Returns a `Column` of the controls only; `settings_screen.dart` supplies
+/// the collapsible section header and the divider around it.
 class AnnouncementsSettingsSection extends ConsumerWidget {
-  const AnnouncementsSettingsSection({
-    super.key,
-    required this.sectionHeader,
-    required this.titleWithHelp,
-  });
-
-  /// Builder for the small section header used in `settings_screen.dart`.
-  final Widget Function({required String title, required String subtitle})
-  sectionHeader;
+  const AnnouncementsSettingsSection({super.key, required this.titleWithHelp});
 
   /// Builder for an inline title row with a "?" affordance.
   final Widget Function({required String title, String? helpBody})
@@ -77,10 +71,6 @@ class AnnouncementsSettingsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        sectionHeader(
-          title: l10n.settingsAnnouncements,
-          subtitle: l10n.settingsAnnouncementsDescription,
-        ),
         SwitchListTile(
           title: titleWithHelp(
             title: l10n.settingsAnnouncementsEnabled,
@@ -97,7 +87,6 @@ class AnnouncementsSettingsSection extends ConsumerWidget {
           _VoiceGroup(titleWithHelp: titleWithHelp),
           _AdvancedDisclosure(titleWithHelp: titleWithHelp),
         ],
-        const Divider(),
       ],
     );
   }

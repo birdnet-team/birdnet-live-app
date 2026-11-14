@@ -458,6 +458,7 @@ class LiveController {
         ignoreMammals: ignoreSettings.ignoreMammals,
         ignoreAmphibians: ignoreSettings.ignoreAmphibians,
         ignoreInsects: ignoreSettings.ignoreInsects,
+        includeSoundClasses: ignoreSettings.includeSoundClasses,
         ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
         poolingMode: poolingMode,
         poolingWindows: poolingWindows,
@@ -848,12 +849,10 @@ class LiveController {
 
       // Restrict to the intersection of both models: only keep detections
       // for species the geo-model also knows, regardless of filter mode.
-      final geoNames = _geoModelSpeciesNames;
-      final filteredDetections = geoNames == null
-          ? speciesFiltered
-          : speciesFiltered
-                .where((d) => geoNames.contains(d.species.scientificName))
-                .toList();
+      final filteredDetections = SpeciesFilter.restrictToGeoModelSpecies(
+        speciesFiltered,
+        _geoModelSpeciesNames,
+      );
 
       // Update the live detection list (replaced each cycle, like the PWA).
       // Each species appears at most once with its current score.

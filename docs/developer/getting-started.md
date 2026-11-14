@@ -62,6 +62,6 @@ flutter build ios        # Build iOS (requires macOS)
 
 ## Model Assets
 
-BirdNET Live ships two ONNX models in `assets/models/`: the BirdNET+ audio classifier (~152 MB) and the BirdNET geo-model (~6 MB). Both are tracked with Git LFS and are bundled with local builds after `git lfs pull`.
+BirdNET Live ships two ONNX models in `assets/models/`: the BirdNET+ audio classifier (~67 MB) and the BirdNET geo-model (~8 MB). Both are tracked with Git LFS and are bundled with local builds after `git lfs pull`.
 
 You only need the Python model build pipeline in `dev/` when updating or rebuilding the models themselves. Day-to-day app development uses the checked-in LFS model artifacts.

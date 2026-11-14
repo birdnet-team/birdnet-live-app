@@ -8,7 +8,10 @@ Häufig gestellte Fragen.
 A: Nein. Die gesamte Inferenz läuft auf dem Gerät mithilfe des ONNX-Modells. Die einzigen Netzwerkfunktionen sind optional und standardmäßig deaktiviert: Kartenkacheln und Ortsnamen-Suche von OpenStreetMap, Wettermomentaufnahmen von Open-Meteo sowie Abfragen von Artenbildern und -beschreibungen aus der Taxonomie-API. Siehe [Einstellungen → Datenschutz](settings.md#datenschutz).
 
 **F: Wie viele Arten können identifiziert werden?**
-A: Das BirdNET+ V3.0-Modell identifiziert 9.789 Arten weltweit – Vögel, Amphibien, Säugetiere und Insekten (die taxonomisch abgeglichene, reduzierte Schnittmenge aus Audio-Klassifikator und Geomodell).
+A: Das BirdNET+ V3.0-Modell identifiziert 10.048 Arten weltweit – Vögel, Amphibien, Säugetiere und Insekten (die taxonomisch abgeglichene, reduzierte Schnittmenge aus Audio-Klassifikator und Geomodell). Außerdem erkennt es 16 nicht-tierische Geräusche wie Motoren, Sirenen und Musik; diese sind ausgeschaltet, solange Sie [Nicht-tierische Geräusche](settings.md#nicht-tierische-geräusche) nicht einschalten.
+
+**F: Eine Art in einer älteren Session hat einen neuen Namen oder wird nicht mehr erkannt. Habe ich etwas verloren?**
+A: Nein. Ein Modell-Update kann Arten umbenennen, um der aktuellen Taxonomie zu folgen, und Arten entfernen, die das neue Modell nicht abdeckt. Gespeicherte Sessions werden nicht verändert: Eine ältere Detektion wird unter dem aktuellen Namen der Art angezeigt, mit Bild, Übersetzung und Links, und Arten, die das Modell nicht mehr erkennt, bleiben genau wie aufgezeichnet in Ihren Sessions und Exporten.
 
 **F: Welche Plattformen werden unterstützt?**
 A: Android (8.0+), iOS (15.0+) und Windows (experimentell).
@@ -27,7 +30,7 @@ A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hinterg
 ## Aufnahme
 
 **F: Wo werden Aufnahmen gespeichert?**
-A: Im Dokumentenverzeichnis der App unter `recordings/<session-id>/`. Je nach **Einstellungen → Aufnahme → Format** als WAV oder FLAC.
+A: Im Dokumentenverzeichnis der App unter `recordings/<session-id>/`. Je nach **Einstellungen → Audio & Aufnahme → Aufnahmeformat** als WAV oder FLAC.
 
 **F: Kann ich vorhandene Aufnahmen analysieren?**
 A: Ja. Öffnen Sie die Dateianalyse auf dem Startbildschirm, wählen Sie eine Audiodatei, legen Sie Standort und Parameter fest und tippen Sie auf „Analysieren“. Zu den unterstützten Formaten gehören WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA und AMR.

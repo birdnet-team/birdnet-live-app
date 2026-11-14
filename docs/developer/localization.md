@@ -37,12 +37,12 @@ Both surfaces are complete for all 13 locales, and both must stay complete when 
 
 ## Translation Conventions
 
-- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode, Raven Selection Table, Smart, Gain — these are established field terms and stay in English in every locale.
+- **Technical terms kept in English**: Point Count, Survey, Session, Live Mode, Raven Selection Table, Smart — these are established field terms and stay in English in every locale.
 - **Format identifiers kept as-is**: WAV, FLAC, CSV, JSON, GPX.
 - **Prefer gender-neutral wording**: Use gender-neutral forms where they are natural and idiomatic in the target language.
 - **Keep register consistent**: Within each locale, use either formal or informal phrasing consistently; do not mix styles.
 - **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
-- **Gain**: Kept as "Gain" in every locale (universal audio term).
+- **Gain**: Translated with each locale's own audio term (for example Verstärkung, Ganancia, 增益). French, Norwegian, and Korean use "Gain" because that is their term too.
 - **Settings labels**: All setting titles, mode names, color map names, and status messages are localized.
 - **Help text**: Written to be taxonomically agnostic ("species" not "bird species", "animal sounds" not "birdsong").
 
@@ -69,7 +69,7 @@ Both surfaces are complete for all 13 locales, and both must stay complete when 
     flutter gen-l10n
     ```
 
-4. If adding a new language, include it in the app language selector and supported locale configuration — **and add `assets/announcements/templates_<locale>.json`**, or the app will speak English in that language.
+4. If adding a new language, follow the full checklist in [CONTRIBUTING.md › Adding a New Language](https://github.com/birdnet-team/birdnet-live-app/blob/main/CONTRIBUTING.md#adding-a-new-language). Besides the ARB file it covers `assets/announcements/templates_<locale>.json` (without it the app speaks English), the language picker, native Android and iOS strings, policies, and the docs site.
 
 5. Use in a widget:
 

@@ -97,17 +97,17 @@ Future<void> main(List<String> args) async {
   if (!outDir.existsSync()) outDir.createSync(recursive: true);
 
   if (!notesOnly) {
+    final aabSrc = File(
+      '${root.path}/build/app/outputs/bundle/release/app-release.aab',
+    );
     await _runFlutterBuild([
       'build',
       'appbundle',
       '--release',
       '--obfuscate',
       '--split-debug-info=build/symbols/V$version',
-    ]);
+    ], output: aabSrc);
 
-    final aabSrc = File(
-      '${root.path}/build/app/outputs/bundle/release/app-release.aab',
-    );
     if (!aabSrc.existsSync()) {
       stderr.writeln('ERROR: AAB not found at ${aabSrc.path}');
       stderr.writeln(
@@ -122,11 +122,11 @@ Future<void> main(List<String> args) async {
     aabSrc.copySync(aabDst.path);
     stdout.writeln('Copied AAB → ${aabDst.path}');
 
-    await _runFlutterBuild(['build', 'apk', '--release']);
-
     final apkSrc = File(
       '${root.path}/build/app/outputs/flutter-apk/app-release.apk',
     );
+    await _runFlutterBuild(['build', 'apk', '--release'], output: apkSrc);
+
     if (!apkSrc.existsSync()) {
       stderr.writeln('ERROR: APK not found at ${apkSrc.path}');
       exit(2);
@@ -357,7 +357,11 @@ String _stubReleaseNotes(String since, String current) {
   return stub.toString();
 }
 
-Future<void> _runFlutterBuild(List<String> args) async {
+Future<void> _runFlutterBuild(List<String> args, {required File output}) async {
+  // Remove the previous output first. The exit code is not trusted (see
+  // below), so the artifact's existence is the real success check — a stale
+  // file from an earlier build would otherwise pass it after a failed build.
+  if (output.existsSync()) output.deleteSync();
   stdout.writeln('Running: flutter ${args.join(' ')}');
   // Inherit stdio so the user sees progress live. Don't trust exit code
   // — javac's obsolete-options warnings make it unreliable on Windows.

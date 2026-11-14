@@ -60,6 +60,8 @@ See the [Developer Getting Started](getting-started.md) guide for environment se
 - [Testing](testing.md) — Test strategy and running tests
 - [Code Style](code-style.md) — Conventions and standards
 - [Species Bundle](species-bundle.md) — Rebuild bundled species images and metadata
+- [Updating the Models](model-update.md) — Replace the audio model, geo-model, and taxonomy without orphaning existing Sessions
+- [Model Export Checklist](model-export-checklist.md) — What the app needs from an ONNX export, and the graph rewrites the build applies
 - [Building](building.md) — Build commands and release notes
 - [Build Performance](build-performance.md) — why Windows builds are slow, what helped, what not to touch
 - [Releasing](releasing.md) — Version bumping and release process

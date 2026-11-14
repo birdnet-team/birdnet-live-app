@@ -1,7 +1,12 @@
 BirdNET Model License
 
-The trained model weights bundled in assets/models/ are licensed under the
-Apache License, Version 2.0.
+The trained model weights bundled in assets/models/, the label files that
+accompany them, and the standalone release of both (BirdNET+ V3.0 Global 10K
+BNL) are licensed under the Apache License, Version 2.0.
+
+Expectations for responsible use of the models are described in
+ACCEPTABLE_USE.md; that document is guidance and does not add conditions to
+this license.
 
 Apache License
 Version 2.0, January 2004

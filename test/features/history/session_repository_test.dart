@@ -116,6 +116,42 @@ void main() {
       expect(loaded, isNull);
     });
 
+    test('a legacy session without a uuid gets one saved on load', () async {
+      final session = makeSession(detections: [makeDetection()]);
+      await repo.save(session);
+      final file = File(p.join(tempDir.path, '${session.id}.json'));
+      final legacy =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>
+            ..remove('uuid');
+      await file.writeAsString(jsonEncode(legacy));
+
+      final first = (await repo.load(session.id))!;
+      expect(first.uuid, isNotEmpty);
+      final stored =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      expect(stored['uuid'], first.uuid);
+      expect(stored['detections'], hasLength(1));
+
+      final second = (await repo.load(session.id))!;
+      expect(second.uuid, first.uuid);
+    });
+
+    test('a checkpoint without a uuid is not rewritten on load', () async {
+      final session = makeSession(endTime: null);
+      await repo.saveCheckpoint(session);
+      final file = File(p.join(tempDir.path, '${session.id}.json'));
+      final legacy =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>
+            ..remove('uuid');
+      final legacyText = jsonEncode(legacy);
+      await file.writeAsString(legacyText);
+      SessionRepository.resetForNewProcess();
+
+      final loaded = (await repo.load(session.id))!;
+      expect(loaded.stopReason, SessionStopReason.interrupted);
+      expect(await file.readAsString(), legacyText);
+    });
+
     test('save overwrites existing session', () async {
       final session1 = makeSession(detections: [makeDetection()]);
       await repo.save(session1);

@@ -2,6 +2,11 @@
 
 This file is for coding agents working in this repository.
 
+## Contributions
+
+- When helping someone prepare a contribution (pull request, translation, new language, docs fix), read [CONTRIBUTING.md](CONTRIBUTING.md) first and follow it: code style, settings/docs/changelog rules, translation rules and per-locale register, the new-language checklist, and the PR guidelines all apply to agent-written changes.
+- If this file and CONTRIBUTING.md disagree, flag it to the user and keep both in sync rather than silently picking one.
+
 ## Mission
 
 - Keep changes small, safe, and easy to review.
@@ -36,18 +41,23 @@ This file is for coding agents working in this repository.
 - Always keep user-facing strings translated in all 13 locales: en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh (Simplified Chinese), ko.
 - After ARB edits, run flutter gen-l10n and verify no missing keys.
 - Use l10n keys in UI; do not hardcode user-facing text.
-- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
-- A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product:
+- Keep these technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart.
+- Keep each locale's register (formal/informal) as listed in the Supported Locales table in CONTRIBUTING.md.
+- A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product. The contributor-facing version with who-does-what is "Adding a New Language" in CONTRIBUTING.md; keep the two lists in sync:
   - `lib/l10n/app_<loc>.arb` (UI strings)
   - `assets/announcements/templates_<loc>.json` (spoken announcements; a missing file falls back to English silently)
-  - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `dev/build_species_bundle.py`. After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; `dev/birdnet_taxonomy_*.json` already carries the URLs.
+  - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `tools/build_species_bundle.py` + the 16 sound class descriptions in `tools/sound_class_descriptions.json` (the taxonomy has them in English only). After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; the taxonomy JSON in `tools/data/` already carries the URLs.
   - the app-language dropdown in `lib/features/settings/settings_screen.dart`
-  - `AppConstants.policyDocsLocales` + `docs/privacy.<loc>.md` + `docs/acceptable-use.<loc>.md` + the `mkdocs.yml` locale block
-  - `docs/index.<loc>.md` + `docs/user/*.<loc>.md` (the MkDocs user guide) + the locale's `nav_translations` block in `mkdocs.yml`. The Developer Guide and API Reference stay English.
+  - `android/app/src/main/res/values-<loc>/strings.xml` (Quick Listen widget labels)
+  - iOS: a `<loc>` entry for every key in `ios/Runner/InfoPlist.xcstrings` (permission prompts) and `ios/Runner/Localizable.xcstrings` (Shortcuts/Siri), plus `knownRegions` in `ios/Runner.xcodeproj/project.pbxproj` (Apple codes, e.g. `zh-Hans`)
+  - species names: an alias in `TaxonomySpecies` (`lib/shared/models/taxonomy_species.dart`) when the taxonomy column code differs from the app locale (`nb` → `no`, `zh` → `zh-CN`), and the `_speciesLanguages` map in `settings_screen.dart`
+  - `AppConstants.policyDocsLocales` + `docs/privacy.<loc>.md` + `docs/acceptable-use.<loc>.md` + the `mkdocs.yml` locale block + `test/core/constants/app_constants_test.dart`
+  - `docs/index.<loc>.md` + `docs/user/*.<loc>.md` (the MkDocs user guide) + `AppConstants.docsLocales` + the locale's `nav_translations` block in `mkdocs.yml`. The Developer Guide and API Reference stay English.
   - `dev/store/store-desc.md` (all five sections: both subtitles, promo text, short description, keywords)
   - `dev/mockups/`: slide titles/subtitles belong in `mockups.copy.md` (then run `node sync-copy.js`), not inline in `mockups.config.js` — copy.md is the source of truth and only overlays languages it defines. In `mockups.config.js` add the language's `name` plus an entry in both `featureGraphic.taglines` and `featureGraphicHomeSubtitles`; the feature graphic falls back to English silently when either is missing. Render with `node render-mockups.js --lang <loc>`, then again with `--ipad`, then `--feature-graphic --lang <loc>` (13 images per locale).
   - the locale list in `dev/build_release.dart` so stubbed Play/App Store release notes include it
-  - the locale lists in `test/features/announcements/templates_*_test.dart`
+  - the locale lists in `test/features/announcements/templates_*_test.dart` (plus determiners in the gender-lint map if the language has them) and `test/shared/services/species_description_service_test.dart`
+  - locale lists in docs: `README.md` localization bullet, `docs/developer/localization.md`, `assets/announcements/README.md`, the CONTRIBUTING.md Supported Locales table, this file, and `.github/copilot-instructions.md`
 - Use AppIcons from lib/shared/utils/app_icons.dart, not raw Icons.* or Symbols.* in app code.
 - Do not hardcode thresholds or model config values when constants/config already exist.
 
@@ -63,6 +73,7 @@ This file is for coding agents working in this repository.
 
 - For new/changed settings:
 - Update PrefKeys and related providers/UI.
+- Add the tile's title to `_searchEntries` in `lib/features/settings/settings_screen.dart` so Settings search finds it.
 - Document rationale in docs/user/settings.md.
 - Document user-visible behavior changes in CHANGELOG.md.
 - Prefer frequent, small documentation updates over large delayed updates.
@@ -76,12 +87,21 @@ This file is for coding agents working in this repository.
 ## Species Bundle and Assets
 
 - `assets/species_images/dummy.webp` is the hand-crafted fallback image shown for species with no dedicated taxonomy image. It is NOT generated by the build pipeline and must never be deleted.
-- When rebuilding the species bundle (`dev/build_species_bundle.py`), the script clears `assets/species_images/` — `dummy.webp` is explicitly preserved. If you add other hand-crafted assets to that directory, add their filenames to `PRESERVED_OUTPUT_FILES` in the script.
-- To refresh the bundle with a new taxonomy version:
-  1. Download the latest taxonomy JSON from `https://birdnet.cornell.edu/taxonomy/api/download/json` and save to `dev/birdnet_taxonomy_{version}.json` (check `/taxonomy/docs` for current API version).
-  2. Update `DEFAULT_TAXONOMY_JSON` in `dev/build_species_bundle.py` to point to the new file.
-  3. Run `python dev/build_species_bundle.py` from the repo root with the `.venv` active.
-- The taxonomy API also provides `/api/download/csv` for the CSV format used by `dev/models/june2026/build_june2026.py`.
+- When rebuilding the species bundle (`tools/build_species_bundle.py`), the script clears `assets/species_images/` — `dummy.webp` is explicitly preserved. If you add other hand-crafted assets to that directory, add their filenames to `PRESERVED_OUTPUT_FILES` in the script.
+- The bundle must be built from the taxonomy version the shipped models were built against (`TAXONOMY_VERSION` in the script): the audio labels join the taxonomy by BirdNET ID, and the script stops if an ID resolves to a different scientific name. To rebuild:
+  1. `python tools/download_taxonomy_json.py` (saves the export from `https://birdnet.tu-chemnitz.de/taxonomy/api/download/json` into `tools/data/`).
+  2. `python tools/build_species_bundle.py` from the repo root with the `.venv` active.
+- Workflow and file formats: `docs/developer/species-bundle.md`.
+
+## Model and Taxonomy Updates
+
+- Follow `docs/developer/model-update.md`. The build scripts are in `dev/models/<update>/` (tracked; the model inputs next to them are not).
+- Sessions store the scientific name a species had when it was detected and are never rewritten. Do not add code that stores a label index or a BirdNET ID with a detection, and do not migrate stored names.
+- Every name a release has ever stored must keep resolving: renamed species through `scientific_name_aliases` in `taxonomy.csv`, species the model no longer detects through `tools/legacy_species.csv`, and species the taxonomy has dropped altogether through `tools/retired_species.json` (record) plus `tools/retired_species_images/` (picture). `test/shared/services/taxonomy_continuity_test.dart` enforces this without exceptions; never weaken it to make a model update pass.
+- Compare species across Sessions with `TaxonomyService.canonicalScientificName`, not with the stored string.
+- Never give two different models the same file name and version: the on-device copy is named `<file name>_v<version>`.
+- Do not carry a label correction (such as the old American/Mangrove Yellow Warbler swap) into a new model without testing it against that model with field recordings. The same goes for score blacklist multipliers: a new model starts with every entry at 1.0.
+- Non-animal sound classes are opt-in (`includeSoundClasses`), have no geo-model output, and must stay out of the model's species count (About, taxon group counts), the **Ignore species** count, Explore, species pickers, and Survey species alerts. A sound class the user opted into and that was detected is part of that Session: it is listed with its detections and included in the Session's species count.
 
 ## Audio, Maps, and Runtime Safety
 
@@ -96,6 +116,12 @@ This file is for coding agents working in this repository.
 - ONNX assets are managed with Git LFS.
 - Keep model behavior JSON-driven via assets/models/model_config.json.
 - ARM64 rule: sensitive compute may require FP32 casting for stable output.
+
+## Device Testing
+
+- The developer's phones carry real sessions. Never run `adb uninstall`, `pm clear`, or `flutter run --uninstall-first` against them, and never delete or overwrite the app's data.
+- Install only builds signed with the key the installed app already has, so the install is an in-place upgrade and the data survives. On the developer machine the installed app is signed with the local debug keystore, so a plain debug build (`flutter build apk --debug` + `adb install -r`) is safe; a release-signed build would be refused as a signature mismatch and must not be forced through a reinstall.
+- Before installing, confirm the signature matches: compare `apksigner verify --print-certs` on the installed `base.apk` (pulled via `adb shell pm path`) against the keystore you are building with.
 
 ## Build and Release
 

@@ -15,6 +15,7 @@ Users should:
 - Use BirdNET predictions responsibly, recognizing that model outputs are probabilistic and may contain false positives or false negatives.
 - Verify observations where appropriate before making scientific, conservation, or management decisions.
 - Consider the potential ecological impact of publishing sensitive species locations.
+- Upload or share only data you are entitled to pass on. Upload destinations are run by project organizers under their own privacy and security rules; ask the organizer for details, and do not upload data you consider private or confidential.
 
 ## Unacceptable Uses
 

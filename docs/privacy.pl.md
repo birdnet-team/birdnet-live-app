@@ -1,6 +1,6 @@
 # Polityka prywatności BirdNET Live
 
-**Ostatnia aktualizacja:** 6 sierpnia 2026 r.
+**Ostatnia aktualizacja:** 29 października 2026 r.
 
 Niniejsza Polityka prywatności dotyczy **BirdNET Live** (dalej **aplikacja**). Aplikacja jest rozwijana i oferowana przez **BirdNET-Team** (dalej **deweloper** lub **my**).
 
@@ -25,7 +25,7 @@ Cała analiza dźwięku i identyfikacja gatunków ptaków odbywają się **w ca�
 
 ## Przetwarzanie danych osobowych
 
-BirdNET-Team nie prowadzi zaplecza serwerowego aplikacji i nie otrzymuje za pośrednictwem BirdNET Live Twoich nagrań, lokalizacji, danych Session ani innych danych osobowych. Aplikacja nie ma kont użytkowników, reklam, analityki, śledzenia ani telemetrii. Przetwarza jednak dźwięk i lokalizację na Twoim urządzeniu, a tylko po włączeniu opcjonalnej funkcji sieciowej wysyła informacje opisane w sekcji **Zasoby zewnętrzne** bezpośrednio do wskazanego dostawcy zewnętrznego.
+BirdNET-Team nie prowadzi zaplecza serwerowego aplikacji i nie otrzymuje za pośrednictwem BirdNET Live Twoich nagrań, lokalizacji, danych Session ani innych danych osobowych. Aplikacja nie ma kont użytkowników, reklam, analityki, śledzenia ani telemetrii. Przetwarza jednak dźwięk i lokalizację na Twoim urządzeniu, a tylko po włączeniu opcjonalnej funkcji sieciowej wysyła informacje opisane w sekcji **Zasoby zewnętrzne** bezpośrednio do wskazanego dostawcy zewnętrznego lub, tylko gdy dodasz takie miejsce i zdecydujesz się przesłać dane, dane Session opisane w sekcji **Miejsca docelowe przesyłania** bezpośrednio na serwer organizatora projektu.
 
 ### Dane przechowywane lokalnie na Twoim urządzeniu:
 
@@ -82,7 +82,15 @@ Dane GPS są przechowywane lokalnie i dołączane do eksportów tylko wtedy, gdy
 
 ## Eksport danych
 
-Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksportuj → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer.
+Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksportuj → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer, z wyjątkiem miejsc docelowych przesyłania, które dodasz samodzielnie (zobacz poniżej).
+
+## Miejsca docelowe przesyłania
+
+W **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** możesz dodać folder WebDAV projektu, zazwyczaj Nextcloud File Drop, który organizator projektu udostępnił Ci jako link lub kod QR. Nic nie jest przesyłane, dopóki nie dodasz miejsca docelowego i nie zaznaczysz go w oknie dialogowym Udostępnij lub nie włączysz automatycznego przesyłania Sessions ARU. Przesłania trafiają prosto z Twojego urządzenia na serwer organizatora przez HTTPS. BirdNET-Team nie prowadzi żadnego serwera pośredniczącego i nic nie otrzymuje.
+
+Przesłanie zawiera tę samą treść co Udostępnienie: rekord JSON Session (wykrycia, czasy, współrzędne oraz nazwy obserwatora i miejsca, jeśli je ustawiono), zaznaczone przez Ciebie dźwięk, tabele i raport, identyfikator przesyłania Twojego urządzenia oraz wprowadzony przez Ciebie identyfikator uczestnika, jeśli go podano. Dane logowania do miejsca docelowego są przechowywane w pęku kluczy urządzenia.
+
+Miejsca docelowe są prowadzone przez organizatorów projektów, nie przez BirdNET-Team, według ich własnych zasad prywatności i bezpieczeństwa. Zapytaj organizatora, kto może odczytać dane i jak długo są przechowywane. Odpowiadasz za to, co przesyłasz: nie wysyłaj danych, które uważasz za prywatne lub poufne albo których nie możesz przekazywać dalej. Aplikacja nigdy niczego nie pobiera ani nie usuwa z miejsca docelowego, a usunięcie Session na Twoim urządzeniu nie usuwa przesłanych kopii.
 
 ## Usuwanie danych
 

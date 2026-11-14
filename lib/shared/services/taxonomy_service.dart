@@ -4,7 +4,16 @@
 //
 // Provides species information from the bundled taxonomy CSV, parsed once at
 // startup.  Covers names, IDs, image metadata, and localized common names
-// for all ~9,789 model species.
+// for every class of the audio model, plus the species only earlier models
+// could detect.
+//
+// ### Older names
+//
+// Sessions store the scientific name a species had when it was detected.
+// Taxonomies move on: genera are split, species are lumped, a model update
+// drops a class.  `lookup` therefore resolves a name in two steps, first as a
+// current name and then as an alias of a current entry, and
+// `canonicalScientificName` gives the one name to compare species by.
 //
 // ### Usage
 //
@@ -17,7 +26,7 @@
 //
 // ### Caching
 //
-// The CSV lookup is O(1) via a HashMap keyed by scientific name.
+// The CSV lookup is O(1) via HashMaps keyed by scientific name and alias.
 //
 // ### Reusability
 //
@@ -66,7 +75,10 @@ Map<String, TaxonomySpecies> parseTaxonomyCsv(String csvContent) {
   return index;
 }
 
-/// Simple CSV line parser handling commas within quotes.
+/// CSV line parser: commas inside quotes, and `""` as a literal quote.
+///
+/// Fields never span lines; `tools/build_species_bundle.py` refuses to write
+/// a value with a line break.
 List<String> _parseCsvLine(String line) {
   final result = <String>[];
   var current = StringBuffer();
@@ -75,7 +87,12 @@ List<String> _parseCsvLine(String line) {
   for (var i = 0; i < line.length; i++) {
     final char = line[i];
     if (char == '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && i + 1 < line.length && line[i + 1] == '"') {
+        current.write('"');
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
     } else if (char == ',' && !inQuotes) {
       result.add(current.toString().trim());
       current = StringBuffer();
@@ -103,20 +120,54 @@ class TaxonomyService {
   /// CSV-sourced species indexed by scientific name.
   final Map<String, TaxonomySpecies> _csvIndex = {};
 
+  /// Alias scientific name -> key of the entry in [_csvIndex] it belongs to.
+  final Map<String, String> _aliasIndex = {};
+
   /// Whether the CSV has been loaded.
   bool get isLoaded => _csvIndex.isNotEmpty;
 
-  /// Number of species in the CSV index.
-  int get speciesCount => _csvIndex.length;
+  /// Number of species the current audio model can detect.
+  ///
+  /// Sound classes and species only earlier models detected are not counted.
+  int get speciesCount => _modelSpecies.length;
 
-  /// Count of species per taxon group (e.g. {"Aves": 4597, "Mammalia": 232}).
+  /// Number of non-animal sound classes the current audio model can detect.
+  int get soundClassCount => _csvIndex.values
+      .where((species) => species.inModel && species.isSoundClass)
+      .length;
+
+  /// Count of model species per taxon group
+  /// (e.g. {"Aves": 4597, "Mammalia": 232}).
   Map<String, int> get taxonGroupCounts {
     final counts = <String, int>{};
-    for (final species in _csvIndex.values) {
+    for (final species in _modelSpecies) {
       final group = species.taxonGroup;
       if (group.isNotEmpty) counts[group] = (counts[group] ?? 0) + 1;
     }
     return counts;
+  }
+
+  Iterable<TaxonomySpecies> get _modelSpecies => _csvIndex.values.where(
+    (species) => species.inModel && !species.isSoundClass,
+  );
+
+  void _setIndex(Map<String, TaxonomySpecies> index) {
+    _csvIndex
+      ..clear()
+      ..addAll(index);
+    _aliasIndex.clear();
+    for (final species in index.values) {
+      for (final alias in species.aliases) {
+        // A current name always wins over a synonym of another entry.
+        if (!index.containsKey(alias)) {
+          _aliasIndex.putIfAbsent(alias, () => species.scientificName);
+        }
+      }
+    }
+    debugPrint(
+      '[TaxonomyService] loaded ${_csvIndex.length} entries and '
+      '${_aliasIndex.length} aliases from CSV',
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -130,16 +181,12 @@ class TaxonomyService {
   /// Synchronous, and the bundled CSV is ~11 MB — at app scale prefer
   /// [loadFromCsvBytes], which does the same work off the main isolate.
   void loadFromCsv(String csvContent) {
-    _csvIndex
-      ..clear()
-      ..addAll(parseTaxonomyCsv(csvContent));
-
-    debugPrint('[TaxonomyService] loaded ${_csvIndex.length} species from CSV');
+    _setIndex(parseTaxonomyCsv(csvContent));
   }
 
   /// Decode and parse the taxonomy CSV on a background isolate.
   ///
-  /// The bundled CSV is ~11 MB over ~9,800 rows, which takes the parser well
+  /// The bundled CSV is ~13 MB over ~10,400 rows, which takes the parser well
   /// past a second on a mid-range phone. Run on the main isolate that stalls
   /// every pending callback behind it — including the image decode for the
   /// main menu's logo — so the parse is handed to `compute()` instead. The
@@ -151,11 +198,7 @@ class TaxonomyService {
       debugLabel: 'taxonomy CSV parse',
     );
 
-    _csvIndex
-      ..clear()
-      ..addAll(index);
-
-    debugPrint('[TaxonomyService] loaded ${_csvIndex.length} species from CSV');
+    _setIndex(index);
   }
 
   // ---------------------------------------------------------------------------
@@ -163,15 +206,30 @@ class TaxonomyService {
   // ---------------------------------------------------------------------------
 
   /// Look up a species by scientific name (CSV only, offline).
+  ///
+  /// [scientificName] may be a current name or an older name the taxonomy
+  /// lists as an alias; both resolve to the current entry.
   TaxonomySpecies? lookup(String scientificName) {
-    return _csvIndex[scientificName];
+    final direct = _csvIndex[scientificName];
+    if (direct != null) return direct;
+    final key = _aliasIndex[scientificName];
+    return key == null ? null : _csvIndex[key];
   }
 
-  /// Canonical scientific name to display for a model-label [scientificName].
+  /// The scientific name that identifies a species across taxonomy revisions.
   ///
-  /// Returns the taxonomy-canonical name when the species resolves, otherwise
+  /// Returns the key of the entry [scientificName] resolves to, or the input
+  /// unchanged when it does not resolve.  Compare species by this value, not
+  /// by the stored string: a detection stored as `Emberiza schoeniclus` and
+  /// one stored as `Schoeniclus schoeniclus` are the same species.
+  String canonicalScientificName(String scientificName) =>
+      lookup(scientificName)?.scientificName ?? scientificName;
+
+  /// Scientific name to display for a stored or model-label [scientificName].
+  ///
+  /// Returns the current taxonomy name when the species resolves, otherwise
   /// the input is returned unchanged.  Use this wherever a scientific name is
-  /// shown to the user so that older model-label synonyms are normalized.
+  /// shown to the user so that older names are normalized.
   String displayScientificName(String scientificName) =>
       lookup(scientificName)?.displayScientificName ?? scientificName;
 
@@ -190,11 +248,16 @@ class TaxonomyService {
   /// sorts by descending geo score, then alphabetically. Searching only the
   /// two names visible to the user avoids scanning every bundled locale on
   /// each edit.
+  ///
+  /// Only species the current model can detect are searched. Entries kept for
+  /// older sessions resolve through [lookup] but are not offered for picking.
+  /// Pass [includeSoundClasses] to offer the non-animal sound classes too.
   List<TaxonomySpecies> search(
     String query, {
     required String locale,
     Map<String, double>? geoScores,
     int limit = 50,
+    bool includeSoundClasses = false,
   }) {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return const [];
@@ -208,11 +271,16 @@ class TaxonomyService {
 
     final matches = <({bool exact, String name, TaxonomySpecies species})>[];
     for (final species in _csvIndex.values) {
+      if (!species.inModel) continue;
+      if (species.isSoundClass && !includeSoundClasses) continue;
       final localizedName = species.commonNameForLocale(locale).toLowerCase();
       final names = <String>[
         species.scientificName.toLowerCase(),
         species.displayScientificName.toLowerCase(),
         localizedName,
+        // Older scientific names, so a search for the name a field guide or
+        // an earlier app version used still finds the species.
+        for (final alias in species.aliases) alias.toLowerCase(),
       ];
       if (!tokens.every((token) => names.any((name) => name.contains(token)))) {
         continue;
@@ -269,7 +337,7 @@ class TaxonomyService {
   /// Looks up the BirdNET ID from the CSV index.  Returns the placeholder
   /// image path when the species is not found.
   String assetImagePath(String scientificName) {
-    final species = _csvIndex[scientificName];
-    return species?.assetImagePath ?? 'assets/images/dummy_species.png';
+    return lookup(scientificName)?.assetImagePath ??
+        'assets/images/dummy_species.png';
   }
 }

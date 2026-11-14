@@ -30,11 +30,9 @@ void main() {
 
   const species = Species(
     index: 0,
-    id: 1,
     scientificName: 'Turdus merula',
     commonName: 'Common Blackbird',
     className: 'Aves',
-    order: 'Passeriformes',
   );
   final start = DateTime.utc(2026, 8, 6, 12);
 

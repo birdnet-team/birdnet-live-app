@@ -5,6 +5,7 @@ import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/shared/models/altitude_reference.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
 import 'package:birdnet_live/shared/models/weather_snapshot.dart';
+import 'package:birdnet_live/shared/services/taxonomy_service.dart';
 
 LiveSession _sessionWithDetections() {
   final session = LiveSession(
@@ -198,6 +199,140 @@ void main() {
       expect(html, isNot(contains('pooling avg')));
       expect(html, isNot(contains('Audio preprocessing')));
       expect(html, isNot(contains('high-pass 200 Hz')));
+    });
+
+    test('shows the taxonomy the BirdNET IDs refer to in the footer', () {
+      final html = buildHtmlReport(
+        _sessionWithDetections(),
+        metadata: const {
+          'taxonomy': {
+            'name': 'BirdNET+ Taxonomy v0.5-Nov2026',
+            'version': '0.5-Nov2026',
+          },
+        },
+      );
+      final split = buildHtmlReport(
+        _sessionWithDetections(),
+        metadata: const {
+          'taxonomy': {'name': 'Test Taxonomy', 'version': '0.9'},
+        },
+      );
+
+      expect(
+        html,
+        contains(
+          '<span class="label">Taxonomy</span>'
+          '<span class="value">BirdNET+ Taxonomy v0.5-Nov2026</span>',
+        ),
+      );
+      expect(
+        split,
+        contains('<span class="value">Test Taxonomy | v0.9</span>'),
+      );
+      expect(
+        buildHtmlReport(_sessionWithDetections()),
+        isNot(contains('<span class="label">Taxonomy</span>')),
+      );
+    });
+
+    test('species cards carry the BirdNET ID when the species resolves', () {
+      // `Parus caeruleus` is an older name for the `Cyanistes caeruleus` row,
+      // the way a detection stored by an earlier app version resolves.
+      final taxonomy = TaxonomyService()
+        ..loadFromCsv(
+          'birdnet_id,scientific_name,scientific_name_aliases,common_name\n'
+          'BN07148,Turdus merula,,Eurasian Blackbird\n'
+          'BN02030,Cyanistes caeruleus,Parus caeruleus,Eurasian Blue Tit',
+        );
+      DetectionRecord det(String sci, String common, int minute) =>
+          DetectionRecord(
+            scientificName: sci,
+            commonName: common,
+            confidence: 0.8,
+            timestamp: DateTime.utc(2026, 5, 28, 10, minute),
+          );
+      final session = LiveSession(
+        id: 'id-session',
+        startTime: DateTime.utc(2026, 5, 28, 10),
+        endTime: DateTime.utc(2026, 5, 28, 10, 10),
+        settings: const SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1.0,
+          speciesFilterMode: 'off',
+        ),
+        detections: [
+          det('Turdus merula', 'Eurasian Blackbird', 1),
+          det('Parus caeruleus', 'Blue Tit', 2),
+          det('', 'Distant drumming', 3),
+          det('Unknown species', 'Unknown species', 4),
+        ],
+      );
+
+      final html = buildHtmlReport(session, taxonomy: taxonomy);
+
+      expect(
+        html,
+        contains('data-sci="turdus merula" data-birdnet-id="BN07148"'),
+      );
+      expect(html, contains('<span class="birdnet-id">BN07148</span>'));
+      expect(
+        html,
+        contains('data-sci="cyanistes caeruleus" data-birdnet-id="BN02030"'),
+      );
+      expect(html, contains('<span class="birdnet-id">BN02030</span>'));
+      expect('data-birdnet-id='.allMatches(html), hasLength(2));
+      expect('<span class="birdnet-id">'.allMatches(html), hasLength(2));
+      expect('"birdnetId":'.allMatches(html), hasLength(2));
+      expect(html, contains('"birdnetId":"BN02030"'));
+
+      final bare = buildHtmlReport(session);
+      expect(bare, isNot(contains('data-birdnet-id=')));
+      expect(bare, isNot(contains('"birdnetId"')));
+    });
+
+    test('an older and a current name of one species share a card', () {
+      // A Survey resumed after a model update holds both names.
+      final taxonomy = TaxonomyService()
+        ..loadFromCsv(
+          'birdnet_id,scientific_name,scientific_name_aliases,common_name,'
+          'image_url\n'
+          'BN02030,Cyanistes caeruleus,Parus caeruleus,Eurasian Blue Tit,'
+          'https://birdnet.cornell.edu/taxonomy/api/image/'
+          'Cyanistes%20caeruleus?size=medium',
+        );
+      DetectionRecord det(String sci, int minute) => DetectionRecord(
+        scientificName: sci,
+        commonName: 'Blue Tit',
+        confidence: 0.8,
+        timestamp: DateTime.utc(2026, 5, 28, 10, minute),
+      );
+      final session = LiveSession(
+        id: 'resumed-session',
+        startTime: DateTime.utc(2026, 5, 28, 10),
+        endTime: DateTime.utc(2026, 5, 28, 10, 10),
+        settings: const SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1.0,
+          speciesFilterMode: 'off',
+        ),
+        detections: [det('Parus caeruleus', 1), det('Cyanistes caeruleus', 2)],
+      );
+
+      final html = buildHtmlReport(session, taxonomy: taxonomy);
+
+      expect('data-sci="cyanistes caeruleus"'.allMatches(html), hasLength(1));
+      expect(html, isNot(contains('data-sci="parus caeruleus"')));
+      // The picture is requested under the taxonomy's name for both.
+      expect(html, contains('Cyanistes%20caeruleus?size=thumb'));
+      expect(html, isNot(contains('Parus%20caeruleus')));
+
+      // Without a taxonomy the stored names are all there is to go by.
+      final bare = buildHtmlReport(session);
+      expect(bare, contains('data-sci="parus caeruleus"'));
+      expect(bare, contains('data-sci="cyanistes caeruleus"'));
+      expect(bare, contains('Parus%20caeruleus?size=thumb'));
     });
 
     test(

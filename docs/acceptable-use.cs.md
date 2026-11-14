@@ -15,6 +15,7 @@ Uživatelé by měli:
 - Používat predikce BirdNET odpovědně a mít na paměti, že výstupy modelu jsou pravděpodobnostní a mohou obsahovat falešně pozitivní nebo falešně negativní výsledky.
 - Podle potřeby ověřovat pozorování před vědeckými, ochranářskými nebo manažerskými rozhodnutími.
 - Zvážit možný ekologický dopad zveřejňování lokalit citlivých druhů.
+- Nahrávat nebo sdílet pouze data, která jsou oprávněni předávat dál. Cíle nahrávání provozují organizátoři projektů podle vlastních pravidel ochrany soukromí a zabezpečení; o podrobnosti požádat organizátora a nenahrávat data, která považují za soukromá nebo důvěrná.
 
 ## Nepřijatelné použití
 

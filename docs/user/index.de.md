@@ -56,6 +56,10 @@ Mehrere Audiodateien gebündelt verarbeiten und analysieren. (Demnächst)
 
 Eine geplante ARU-Einsatz-Session anlegen, vollständiges Zyklus-Audio oder behaltene Detektionsclips aufzeichnen, während aktiver Zyklen Live-Inferenz ausführen und geplante Aufnahmezyklen verfolgen.
 
+### [Uploads](uploads.md)
+
+Abgeschlossene Sessions in den Ordner eines Projekts senden: Einrichten eines Nextcloud-File-Drop- oder WebDAV-Ziels, Beitrittslinks und QR-Codes, der Reiter „Senden an“, der Upload-Status und automatische ARU-Uploads.
+
 ## Referenz
 
 ### [FAQ](faq.md)

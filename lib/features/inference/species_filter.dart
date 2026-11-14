@@ -17,6 +17,14 @@
 // | `geoMerge`     | Multiply audio score by geo-model probability.         |
 // | `customList`   | Keep only species whose scientific name is in the list.|
 //
+// ### Sound classes
+//
+// The audio model also has a few non-animal sound classes (engines, sirens,
+// music, …).  A siren has no range, so the geo-model has no output for it and
+// the three geo modes pass sound classes through unchanged.  Whether they are
+// reported at all is the user's choice (`SpeciesIgnoreSettings`), applied to
+// the scores before this filter runs.
+//
 // ### Score merging (geoMerge)
 //
 // When merging, the final confidence is:
@@ -121,20 +129,73 @@ abstract final class SpeciesFilter {
 
       case SpeciesFilterMode.geoExclude:
         if (geoScores == null) return detections;
-        return _excludeByGeo(detections, geoScores, geoThreshold);
+        return _applyToSpeciesOnly(
+          detections,
+          (species) => _excludeByGeo(species, geoScores, geoThreshold),
+        );
 
       case SpeciesFilterMode.geoAdaptive:
         if (geoScores == null) return detections;
-        return _adaptiveGeoFilter(detections, geoScores, confidenceThreshold);
+        return _applyToSpeciesOnly(
+          detections,
+          (species) =>
+              _adaptiveGeoFilter(species, geoScores, confidenceThreshold),
+        );
 
       case SpeciesFilterMode.geoMerge:
         if (geoScores == null) return detections;
-        return _mergeWithGeo(detections, geoScores, confidenceThreshold);
+        return _applyToSpeciesOnly(
+          detections,
+          (species) => _mergeWithGeo(species, geoScores, confidenceThreshold),
+        );
 
       case SpeciesFilterMode.customList:
         if (customSpecies == null || customSpecies.isEmpty) return detections;
         return _filterByCustomList(detections, customSpecies);
     }
+  }
+
+  /// Keep only detections of species the geo-model also knows.
+  ///
+  /// The app reports the intersection of both models whatever the filter
+  /// mode.  Sound classes are not species and have no geo-model output, so
+  /// they are kept.  A null [geoModelSpeciesNames] (geo-model not loaded)
+  /// keeps everything.
+  static List<Detection> restrictToGeoModelSpecies(
+    List<Detection> detections,
+    Set<String>? geoModelSpeciesNames,
+  ) {
+    if (geoModelSpeciesNames == null) return detections;
+    return detections
+        .where(
+          (d) =>
+              d.species.isSoundClass ||
+              geoModelSpeciesNames.contains(d.species.scientificName),
+        )
+        .toList();
+  }
+
+  /// Run a geo [filter] over the animal species in [detections] and leave the
+  /// sound classes as they are, keeping the result sorted by confidence.
+  static List<Detection> _applyToSpeciesOnly(
+    List<Detection> detections,
+    List<Detection> Function(List<Detection> species) filter,
+  ) {
+    final soundClasses = [
+      for (final d in detections)
+        if (d.species.isSoundClass) d,
+    ];
+    if (soundClasses.isEmpty) return filter(detections);
+
+    final result = [
+      ...filter([
+        for (final d in detections)
+          if (!d.species.isSoundClass) d,
+      ]),
+      ...soundClasses,
+    ];
+    result.sort((a, b) => b.confidence.compareTo(a.confidence));
+    return result;
   }
 
   // ---------------------------------------------------------------------------
@@ -187,7 +248,7 @@ abstract final class SpeciesFilter {
   ) {
     // Rank-relative rather than absolute: the bar is set by how this species
     // ranks among the ones actually expected here, using the same scale the
-    // Explore screen shows.  Only ~300 of ~9800 scores clear the inclusion
+    // Explore screen shows.  Only a few hundred of ~10,000 scores clear the inclusion
     // threshold, so this is cheap enough to redo each inference cycle.
     final neutralOccurrence = ExploreTierScale.fromGeoScores(geoScores)
         .minRawFor(ExploreTier.abundant);

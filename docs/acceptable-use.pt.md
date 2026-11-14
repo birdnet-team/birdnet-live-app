@@ -15,6 +15,7 @@ Os usuários devem:
 - Usar as previsões do BirdNET de forma responsável, reconhecendo que as saídas do modelo são probabilísticas e podem conter falsos positivos ou falsos negativos.
 - Verificar observações quando apropriado antes de tomar decisões científicas, de conservação ou de gestão.
 - Considerar o possível impacto ecológico da publicação de localizações de espécies sensíveis.
+- Enviar ou compartilhar somente dados que você tenha o direito de repassar. Os destinos de envio são operados por organizadores de projeto sob suas próprias regras de privacidade e segurança; peça detalhes ao organizador e não envie dados que considere privados ou confidenciais.
 
 ## Usos inaceitáveis
 

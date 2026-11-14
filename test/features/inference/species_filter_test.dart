@@ -16,11 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// Build a test species.
 Species _sp(int idx, String sciName) => Species(
   index: idx,
-  id: idx,
   scientificName: sciName,
   commonName: 'Common $idx',
   className: 'Aves',
-  order: 'Order',
 );
 
 /// Build a test detection.
