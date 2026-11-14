@@ -271,6 +271,10 @@ class SpeciesAlertNotifier {
       channelDescription: 'Heads-up alerts for new species during a survey.',
       importance: Importance.high,
       priority: Priority.high,
+      // Readable on a locked phone without enabling sensitive content
+      // system-wide. The ongoing survey notification already lists the same
+      // species there, so this exposes nothing new.
+      visibility: NotificationVisibility.public,
       playSound: _sound,
       enableVibration: _vibrate,
       styleInformation: BigTextStyleInformation(body),

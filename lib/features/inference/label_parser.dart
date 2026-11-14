@@ -6,9 +6,12 @@
 // The default format is semicolon-delimited CSV:
 //
 // ```
-// idx;id;sci_name;com_name;class;order
-// 0;3;Abeillia abeillei;Emerald-chinned Hummingbird;Aves;Apodiformes
+// idx;birdnet_id;sci_name;com_name;class
+// 0;BN00001;Abeillia abeillei;Emerald-chinned Hummingbird;Aves
 // ```
+//
+// Fields are split on the delimiter with no quoting, so a name must never
+// contain it. The model build checks that when it writes the file.
 //
 // The delimiter, header presence, and column mapping are all configurable via
 // [LabelsConfig] so the parser works with any model's label format.
@@ -30,7 +33,8 @@ import 'models/species.dart';
 /// Parses a species labels file into a list of [Species].
 ///
 /// The returned list is ordered by model output index (0 – N-1) so that
-/// `labels[i]` corresponds to output tensor position `i`.
+/// `labels[i]` corresponds to output tensor position `i`. Parsing fails if
+/// the file's indices do not form exactly that sequence.
 abstract final class LabelParser {
   // ---------------------------------------------------------------------------
   // Default column mapping (BirdNET format)
@@ -38,11 +42,10 @@ abstract final class LabelParser {
 
   static const _defaultColumns = {
     'index': 'idx',
-    'id': 'id',
+    'birdnetId': 'birdnet_id',
     'scientificName': 'sci_name',
     'commonName': 'com_name',
     'className': 'class',
-    'order': 'order',
   };
 
   /// Parse a delimited labels [content] string into species entries.
@@ -51,8 +54,9 @@ abstract final class LabelParser {
   /// mapping are taken from it.  When omitted, the BirdNET defaults apply
   /// (semicolon delimiter, header row, standard column names).
   ///
-  /// Throws [FormatException] if a required column is missing or a data line
-  /// cannot be parsed.
+  /// Throws [FormatException] if a required column is missing, a data line
+  /// cannot be parsed, a scientific name occurs twice, or the indices are not
+  /// exactly 0 – N-1.
   static List<Species> parse(String content, {LabelsConfig? config}) {
     final delimiter = config?.delimiter ?? ';';
     final hasHeader = config?.hasHeader ?? true;
@@ -91,8 +95,10 @@ abstract final class LabelParser {
 
     // Ensure we have at least a scientificName mapping.
     if (!colIndex.containsKey('scientificName')) {
-      throw const FormatException(
-        'Labels config must map at least "scientificName" to a column.',
+      throw FormatException(
+        'Labels file has no "${columns['scientificName'] ?? 'scientificName'}" '
+        'column; check the delimiter and the column mapping in the model '
+        'config.',
       );
     }
 
@@ -105,11 +111,10 @@ abstract final class LabelParser {
       final autoIndex = i - dataStart;
 
       final indexVal = _intAt(parts, colIndex['index']) ?? autoIndex;
-      final idVal = _intAt(parts, colIndex['id']) ?? indexVal;
+      final birdnetId = _stringAt(parts, colIndex['birdnetId']) ?? '';
       final sciName = _stringAt(parts, colIndex['scientificName']) ?? '';
       final comName = _stringAt(parts, colIndex['commonName']) ?? sciName;
       final clsName = _stringAt(parts, colIndex['className']) ?? '';
-      final ord = _stringAt(parts, colIndex['order']) ?? '';
 
       if (sciName.isEmpty) {
         throw FormatException(
@@ -120,17 +125,34 @@ abstract final class LabelParser {
       species.add(
         Species(
           index: indexVal,
-          id: idVal,
+          birdnetId: birdnetId,
           scientificName: sciName,
           commonName: comName,
           className: clsName,
-          order: ord,
         ),
       );
     }
 
     // Sort by index to guarantee alignment with model output tensor.
     species.sort((a, b) => a.index.compareTo(b.index));
+
+    // `labels[i]` is read as "the class at output position i" everywhere, so
+    // a gap or a repeated index would silently shift every later species.
+    final names = <String>{};
+    for (var i = 0; i < species.length; i++) {
+      if (species[i].index != i) {
+        throw FormatException(
+          'Label indices must be 0 to ${species.length - 1} without gaps or '
+          'repeats; found ${species[i].index} at position $i.',
+        );
+      }
+      if (!names.add(species[i].scientificName)) {
+        throw FormatException(
+          'Scientific name "${species[i].scientificName}" occurs twice in '
+          'the labels file.',
+        );
+      }
+    }
 
     return species;
   }

@@ -94,8 +94,10 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
       final descService = ref.read(speciesDescriptionServiceProvider);
 
       final detail = taxonomyService.lookup(widget.scientificName);
+      // Descriptions are keyed by the current name; the overlay may have been
+      // opened from a detection stored under an older one.
       final description = await descService.getDescription(
-        widget.scientificName,
+        detail?.scientificName ?? widget.scientificName,
         locale,
       );
 
@@ -176,7 +178,9 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                     ),
                     if (ref
                         .watch(detectedSpeciesSetProvider)
-                        .contains(widget.scientificName))
+                        .contains(
+                          _detail?.scientificName ?? widget.scientificName,
+                        ))
                       const Positioned(
                         top: 12,
                         right: 12,
@@ -266,7 +270,10 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
               // at a glance how often (and when last) they have logged
               // this species. Skipped entirely when the species has never
               // been detected — there's nothing useful to show.
-              _DetectionStatsTile(scientificName: widget.scientificName),
+              _DetectionStatsTile(
+                scientificName:
+                    _detail?.scientificName ?? widget.scientificName,
+              ),
 
               // ── Loading skeleton (shimmer placeholder for the bio paragraph) ─
               if (_loading)
@@ -301,7 +308,10 @@ class _SpeciesInfoSheetState extends ConsumerState<_SpeciesInfoSheet> {
                 ],
 
                 // ── 48-Week Probability Chart ──────────────────────────────
-                _WeeklyProbabilityChart(scientificName: widget.scientificName),
+                _WeeklyProbabilityChart(
+                  scientificName:
+                      _detail?.scientificName ?? widget.scientificName,
+                ),
 
                 // ── External links ───────────────────────────────
                 if (_detail != null) ...[
@@ -719,6 +729,7 @@ class _DetectionStatsTile extends ConsumerWidget {
     final highContrast = AppTheme.isHighContrastTheme(theme);
     final l10n = AppLocalizations.of(context)!;
     final asyncSessions = ref.watch(sessionListProvider);
+    final taxonomy = ref.watch(taxonomyServiceProvider).value;
 
     return asyncSessions.when(
       loading: () => const SizedBox.shrink(),
@@ -734,7 +745,12 @@ class _DetectionStatsTile extends ConsumerWidget {
         for (final session in sessions) {
           var inThisSession = 0;
           for (final d in session.detections) {
-            if (d.scientificName != scientificName) continue;
+            // Compare by species: a detection stored before a taxonomy
+            // revision carries the older name.
+            final detected =
+                taxonomy?.canonicalScientificName(d.scientificName) ??
+                d.scientificName;
+            if (detected != scientificName) continue;
             inThisSession++;
             // DetectionRecord.timestamp is already an absolute wall-clock
             // time so we can compare directly across sessions.

@@ -56,6 +56,10 @@ Procesa y analiza varios archivos de audio a la vez. (Próximamente)
 
 Crea una Session de despliegue ARU programada, graba audio completo de cada ciclo o clips de detección retenidos, ejecuta inferencia en vivo durante los ciclos activos y haz un seguimiento de los ciclos de grabación planificados.
 
+### [Subidas](uploads.md)
+
+Envía las sesiones terminadas a la carpeta de un proyecto: la configuración de un destino File Drop de Nextcloud o WebDAV, los enlaces de acceso y los códigos QR, la pestaña Enviar a, el estado de las subidas y las subidas automáticas de ARU.
+
 ## Referencia
 
 ### [Preguntas frecuentes](faq.md)

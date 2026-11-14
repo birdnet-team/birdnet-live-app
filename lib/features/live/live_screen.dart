@@ -29,6 +29,7 @@ import '../inference/advanced_pooling_params.dart';
 import '../recording/recording_service.dart';
 import '../settings/settings_screen.dart';
 import '../spectrogram/spectrogram_widget.dart';
+import '../upload/upload_providers.dart';
 import 'live_controller.dart';
 import 'live_detection_display.dart';
 import 'live_providers.dart';
@@ -500,7 +501,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       _checkpointWriter = SessionCheckpointWriter(
         repository: repo,
         session: () => controller.session,
-        shouldSave: () => ref.read(saveSessionAutomaticallyProvider),
       )..start();
       if (_appBackgrounded) {
         await _pauseSessionForBackground();
@@ -976,14 +976,53 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         debugPrint('LiveScreen: wakelock release failed: $error\n$stack');
       }
 
-      // Keep capture alive until the controller is done: it drains pending
-      // clip post-roll before closing the recording, and every last-moment
-      // clip would otherwise wait for audio that can no longer arrive. In the
-      // background the audio I/O is also what keeps iOS from suspending the
-      // app before the Session is saved.
+      // Keep capture alive until the Session is on disk. The controller
+      // drains pending clip post-roll before closing the recording, and every
+      // last-moment clip would otherwise wait for audio that can no longer
+      // arrive. In the background the audio I/O is also the only thing that
+      // keeps iOS from suspending the app, so the save has to come before it
+      // ends: a session that ran out with the screen off used to be lost when
+      // capture stopped first and the app never got as far as the save.
       final LiveSession? finalized;
+      var persisted = false;
       try {
         finalized = await controller.finalizeSession();
+        if (finalized != null) {
+          final session = finalized;
+          if (backgroundLimitReached) {
+            session.stopReason = SessionStopReason.backgroundLimit;
+            session.stopReasonValue = backgroundMinutes;
+          }
+          session.latitude ??= cachedLocation?.latitude;
+          session.longitude ??= cachedLocation?.longitude;
+          if (session.latitude == cachedLocation?.latitude &&
+              session.longitude == cachedLocation?.longitude) {
+            session.altitude ??= cachedLocation?.altitude;
+            session.altitudeAccuracy ??= cachedLocation?.altitudeAccuracy;
+            session.altitudeReference ??= cachedLocation?.altitudeReference;
+            session.locationFixTime ??= cachedLocation?.timestamp;
+          }
+
+          try {
+            session.sessionNumber = await repo.nextSessionNumber(session.type);
+          } catch (error, stack) {
+            debugPrint('LiveScreen: session numbering failed: $error\n$stack');
+          }
+
+          // Written whatever *Save sessions automatically* says. With the
+          // setting off the review still opens as unsaved and leaving without
+          // saving deletes the Session; a process the system ends before then
+          // keeps it instead of losing it.
+          try {
+            await repo.save(session);
+            if (await repo.load(session.id) == null) {
+              throw StateError('Saved Live Mode Session could not be reopened');
+            }
+            persisted = true;
+          } catch (error, stack) {
+            debugPrint('LiveScreen: session save failed: $error\n$stack');
+          }
+        }
       } finally {
         try {
           await captureNotifier.stop();
@@ -1004,52 +1043,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
         return;
       }
       final session = finalized;
-      if (backgroundLimitReached) {
-        session.stopReason = SessionStopReason.backgroundLimit;
-        session.stopReasonValue = backgroundMinutes;
-      }
-      session.latitude ??= cachedLocation?.latitude;
-      session.longitude ??= cachedLocation?.longitude;
-      if (session.latitude == cachedLocation?.latitude &&
-          session.longitude == cachedLocation?.longitude) {
-        session.altitude ??= cachedLocation?.altitude;
-        session.altitudeAccuracy ??= cachedLocation?.altitudeAccuracy;
-        session.altitudeReference ??= cachedLocation?.altitudeReference;
-        session.locationFixTime ??= cachedLocation?.timestamp;
-      }
 
-      try {
-        session.sessionNumber = await repo.nextSessionNumber(session.type);
-      } catch (error, stack) {
-        debugPrint('LiveScreen: session numbering failed: $error\n$stack');
-      }
-
-      var saved = false;
-      if (autoSave) {
+      final saved = autoSave && persisted;
+      if (saved) {
         try {
-          await repo.save(session);
-          if (await repo.load(session.id) == null) {
-            throw StateError('Saved Live Mode Session could not be reopened');
+          final listed = await container.refresh(sessionListProvider.future);
+          if (!listed.any((item) => item.id == session.id)) {
+            throw StateError(
+              'Saved Live Mode Session missing from Session Library',
+            );
           }
-          saved = true;
         } catch (error, stack) {
-          debugPrint('LiveScreen: session save failed: $error\n$stack');
+          debugPrint('LiveScreen: library refresh failed: $error\n$stack');
+          container.invalidate(sessionListProvider);
         }
-        if (saved) {
-          try {
-            final listed = await container.refresh(sessionListProvider.future);
-            if (!listed.any((item) => item.id == session.id)) {
-              throw StateError('Saved Live Mode Session missing from library');
-            }
-          } catch (error, stack) {
-            debugPrint('LiveScreen: library refresh failed: $error\n$stack');
-            container.invalidate(sessionListProvider);
-          }
-        }
-      }
-
-      if (!autoSave) {
-        await repo.deleteMetadataOnly(session.id);
+        await autoEnqueueSession(container.read, session);
       }
 
       // Release the old service before review permits a new session to start.
@@ -1142,6 +1150,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final speciesDetectionCounts = showAllDetectedSpecies
         ? buildSpeciesDetectionCounts(allDetections)
         : null;
+    final speciesMaxConfidences = showAllDetectedSpecies
+        ? buildSpeciesMaxConfidences(
+            sessionDetections: allDetections,
+            currentDetections: currentDetections,
+          )
+        : null;
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -1167,11 +1181,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
       ref.read(liveControllerProvider).setSensitivity(next);
     });
     ref.listen(speciesIgnoreSettingsProvider, (_, _) async {
-      final names = await ref.read(ignoredSpeciesNamesProvider.future);
-      final geoScores = await ref.read(geoScoresProvider.future);
+      // Fails open like a session start: without a geo-model the taxon and
+      // sound-class rules still apply, so a switch never silently does
+      // nothing.
+      final geoInputs = await readGeoFilterInputs(
+        read: ref.read,
+        invalidate: (provider) {
+          if (mounted) ref.invalidate(provider);
+        },
+      );
+      if (!mounted) return;
       ref
           .read(liveControllerProvider)
-          .setSpeciesIgnoreFilter(scientificNames: names, geoScores: geoScores);
+          .setSpeciesIgnoreFilter(
+            scientificNames: geoInputs.ignoredSpeciesNames,
+            geoScores: geoInputs.geoScores,
+          );
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);
@@ -1212,6 +1237,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             currentDetectionCount: currentDetections.length,
             activeDetections: activeDetections,
             speciesDetectionCounts: speciesDetectionCounts,
+            speciesMaxConfidences: speciesMaxConfidences,
             detections: detections,
           ),
         ),
@@ -1231,6 +1257,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     required int currentDetectionCount,
     required Set<DetectionRecord>? activeDetections,
     required Map<String, int>? speciesDetectionCounts,
+    required Map<String, double>? speciesMaxConfidences,
     required List<DetectionRecord> detections,
   }) {
     final isLandscape =
@@ -1266,6 +1293,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
           showTips: true,
           activeDetections: activeDetections,
           speciesDetectionCounts: speciesDetectionCounts,
+          speciesMaxConfidences: speciesMaxConfidences,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,

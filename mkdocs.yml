@@ -69,6 +69,7 @@ plugins:
       name: Deutsch
       build: true
       nav_translations:
+        Uploads: Uploads
         API Integration: API-Integration
         API Reference: API-Referenz
         Architecture: Architektur
@@ -87,6 +88,8 @@ plugins:
         Inference Engine: Inferenz-Engine
         Live Mode: Live-Modus
         Localization: Lokalisierung
+        Model Export Checklist: Checkliste für den Modellexport
+        Updating the Models: Modelle aktualisieren
         Overview: Überblick
         Point Count Mode: Point-Count-Modus
         Privacy Policy: Datenschutzrichtlinie
@@ -107,6 +110,7 @@ plugins:
       name: Čeština
       build: true
       nav_translations:
+        Uploads: Nahrávání
         API Integration: Integrace API
         API Reference: Reference API
         Architecture: Architektura
@@ -125,6 +129,8 @@ plugins:
         Inference Engine: Inference Engine
         Live Mode: Režim Live
         Localization: Lokalizace
+        Model Export Checklist: Kontrolní seznam exportu modelu
+        Updating the Models: Aktualizace modelů
         Overview: Přehled
         Point Count Mode: Režim Point Count
         Privacy Policy: Zásady ochrany osobních údajů
@@ -145,6 +151,7 @@ plugins:
       name: Español
       build: true
       nav_translations:
+        Uploads: Subidas
         API Integration: Integración API
         API Reference: Referencia de API
         Architecture: Arquitectura
@@ -163,6 +170,8 @@ plugins:
         Inference Engine: Motor de inferencia
         Live Mode: Modo Live
         Localization: Localización
+        Model Export Checklist: Lista de verificación de exportación del modelo
+        Updating the Models: Actualización de los modelos
         Overview: Descripción general
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidad
@@ -183,6 +192,7 @@ plugins:
       name: Français
       build: true
       nav_translations:
+        Uploads: Envois
         API Integration: Intégration d'API
         API Reference: Référence API
         Architecture: Architecture
@@ -201,6 +211,8 @@ plugins:
         Inference Engine: Moteur d'inférence
         Live Mode: Mode En direct
         Localization: Localisation
+        Model Export Checklist: Liste de contrôle d'export du modèle
+        Updating the Models: Mise à jour des modèles
         Overview: Aperçu
         Point Count Mode: Mode Point d'écoute
         Privacy Policy: Politique de confidentialité
@@ -221,6 +233,7 @@ plugins:
       name: Italiano
       build: true
       nav_translations:
+        Uploads: Caricamenti
         API Integration: Integrazione API
         API Reference: Riferimento API
         Architecture: Architettura
@@ -239,6 +252,8 @@ plugins:
         Inference Engine: Motore di inferenza
         Live Mode: Modalità Live
         Localization: Localizzazione
+        Model Export Checklist: Checklist per l'esportazione del modello
+        Updating the Models: Aggiornamento dei modelli
         Overview: Panoramica
         Point Count Mode: Modalità Point Count
         Privacy Policy: Informativa sulla privacy
@@ -260,6 +275,7 @@ plugins:
       build: true
 
       nav_translations:
+        Uploads: Envios
         API Integration: Integração de API
         API Reference: Referência de API
         Architecture: Arquitetura
@@ -278,6 +294,8 @@ plugins:
         Inference Engine: Motor de inferência
         Live Mode: Modo Live
         Localization: Localização
+        Model Export Checklist: Lista de verificação de exportação do modelo
+        Updating the Models: Atualização dos modelos
         Overview: Visão geral
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidade
@@ -298,6 +316,7 @@ plugins:
       name: Nederlands
       build: true
       nav_translations:
+        Uploads: Uploads
         API Integration: API-integratie
         API Reference: API-referentie
         Architecture: Architectuur
@@ -316,6 +335,8 @@ plugins:
         Inference Engine: Inferentie-engine
         Live Mode: Live-modus
         Localization: Lokalisatie
+        Model Export Checklist: Checklist modelexport
+        Updating the Models: Modellen bijwerken
         Overview: Overzicht
         Point Count Mode: Point Count-modus
         Privacy Policy: Privacybeleid
@@ -336,6 +357,7 @@ plugins:
       name: Polski
       build: true
       nav_translations:
+        Uploads: Przesyłanie
         API Integration: Integracja API
         API Reference: Dokumentacja API
         Architecture: Architektura
@@ -354,6 +376,8 @@ plugins:
         Inference Engine: Silnik wnioskowania
         Live Mode: Tryb Live
         Localization: Lokalizacja
+        Model Export Checklist: Lista kontrolna eksportu modelu
+        Updating the Models: Aktualizacja modeli
         Overview: Przegląd
         Point Count Mode: Tryb Point Count
         Privacy Policy: Polityka prywatności
@@ -374,6 +398,7 @@ plugins:
       name: Norsk bokmål
       build: true
       nav_translations:
+        Uploads: Opplastinger
         API Integration: API-integrasjon
         API Reference: API-referanse
         Architecture: Arkitektur
@@ -392,6 +417,8 @@ plugins:
         Inference Engine: Inferensmotor
         Live Mode: Live Mode
         Localization: Lokalisering
+        Model Export Checklist: Sjekkliste for modelleksport
+        Updating the Models: Oppdatere modellene
         Overview: Oversikt
         Point Count Mode: Point Count-modus
         Privacy Policy: Personvernerklæring
@@ -412,6 +439,7 @@ plugins:
       name: Русский
       build: true
       nav_translations:
+        Uploads: Загрузки
         API Integration: Интеграция с API
         API Reference: Справочник API
         Architecture: Архитектура
@@ -430,6 +458,8 @@ plugins:
         Inference Engine: Движок вычислений
         Live Mode: Режим Live
         Localization: Локализация
+        Model Export Checklist: Чеклист экспорта модели
+        Updating the Models: Обновление моделей
         Overview: Обзор раздела
         Point Count Mode: Режим Point Count
         Privacy Policy: Политика конфиденциальности
@@ -450,6 +480,7 @@ plugins:
       name: 简体中文
       build: true
       nav_translations:
+        Uploads: 上传
         API Integration: API 集成
         API Reference: API 参考
         Architecture: 架构
@@ -468,6 +499,8 @@ plugins:
         Inference Engine: 推理引擎
         Live Mode: Live 模式
         Localization: 本地化
+        Model Export Checklist: 模型导出检查清单
+        Updating the Models: 更新模型
         Overview: 概览
         Point Count Mode: Point Count 模式
         Privacy Policy: 隐私政策
@@ -488,6 +521,7 @@ plugins:
       name: 한국어
       build: true
       nav_translations:
+        Uploads: 업로드
         API Integration: API 연동
         API Reference: API 참조
         Architecture: 아키텍처
@@ -506,6 +540,8 @@ plugins:
         Inference Engine: 추론 엔진
         Live Mode: Live Mode
         Localization: 현지화
+        Model Export Checklist: 모델 내보내기 체크리스트
+        Updating the Models: 모델 업데이트
         Overview: 개요
         Point Count Mode: Point Count 모드
         Privacy Policy: 개인정보 처리방침
@@ -537,6 +573,7 @@ nav:
   - File Analysis: user/file-analysis.md
   - Batch Analysis: user/batch-analysis.md
   - ARU Mode: user/aru-mode.md
+  - Uploads: user/uploads.md
   - Settings: user/settings.md
   - FAQ: user/faq.md
 - Developer Guide:
@@ -551,9 +588,12 @@ nav:
   - State Management: developer/state-management.md
   - Audio Pipeline: developer/audio-pipeline.md
   - Inference Engine: developer/inference-engine.md
+  - Updating the Models: developer/model-update.md
+  - Model Export Checklist: developer/model-export-checklist.md
   - Spectrogram: developer/spectrogram.md
   - Localization: developer/localization.md
   - Share Targets: developer/share-targets.md
+  - Upload Drop Server: developer/upload-drop-server.md
   - Storage: developer/database.md
   - API Integration: developer/api-integration.md
   - Releasing: developer/releasing.md

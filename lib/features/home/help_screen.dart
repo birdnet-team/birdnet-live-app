@@ -299,7 +299,7 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
                 _HelpCard(
                   icon: AppIcons.myLocation,
-                  title: l10n.settingsLocation,
+                  title: l10n.settingsLocationSpeciesFilter,
                   summary: l10n.helpTipGeoFilter,
                   children: [
                     _HelpText(l10n.helpLocationSettingsBody),
@@ -308,8 +308,8 @@ class _HelpScreenState extends State<HelpScreen> {
                 ),
                 _HelpCard(
                   icon: AppIcons.micRounded,
-                  title: l10n.settingsAudio,
-                  summary: l10n.audioSourcePickerHint,
+                  title: l10n.settingsAudioRecording,
+                  summary: l10n.settingsAudioRecordingDescription,
                   children: [
                     _HelpParagraph(
                       l10n.audioSourceMicrophone,
@@ -319,14 +319,7 @@ class _HelpScreenState extends State<HelpScreen> {
                       l10n.settingsHighPassFilter,
                       l10n.helpHighPassBody,
                     ),
-                    const _GuideLink(page: 'settings/'),
-                  ],
-                ),
-                _HelpCard(
-                  icon: AppIcons.saveRounded,
-                  title: l10n.settingsRecording,
-                  summary: l10n.settingsRecordingDescription,
-                  children: [
+                    const SizedBox(height: 12),
                     _HelpText(l10n.settingsHelpRecordingMode),
                     const SizedBox(height: 12),
                     _HelpText(l10n.settingsHelpRecordingFormat),

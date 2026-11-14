@@ -1,6 +1,6 @@
 # Privacy Policy for BirdNET Live
 
-**Last updated:** August 6, 2026
+**Last updated:** October 29, 2026
 
 This Privacy Policy applies to **BirdNET Live** (the **app**). The app is developed and offered by **BirdNET-Team** (the **developer**, **we**, or **us**).
 
@@ -25,7 +25,7 @@ No audio data is ever transmitted to external servers.
 
 ## Personal Information Handling
 
-BirdNET-Team does **not** operate an app backend and does not receive your recordings, location, Session data, or other personal information through BirdNET Live. The app has no user accounts, advertising, analytics, tracking, or telemetry. The app does process audio and location on your device and, only when you enable an optional network feature, sends the information described under **External Resources** directly to the named third-party provider.
+BirdNET-Team does **not** operate an app backend and does not receive your recordings, location, Session data, or other personal information through BirdNET Live. The app has no user accounts, advertising, analytics, tracking, or telemetry. The app does process audio and location on your device and, only when you enable an optional network feature, sends the information described under **External Resources** directly to the named third-party provider, or, only when you add one and choose to upload, the Session data described under **Upload Destinations** directly to a project organizer's server.
 
 ### Data stored locally on your device:
 
@@ -82,7 +82,15 @@ GPS data is stored locally and included in exports only when you explicitly shar
 
 ## Data Export
 
-You can export session data in multiple formats (Raven Selection Tables, CSV, JSON, GPX) and tick any combination of formats at once under **Settings → Export → Formats**; selected formats are bundled together inside a single ZIP next to any audio clips and the optional self-contained HTML report. Exports are generated locally and shared via the system share sheet. The app does not upload export data to any server.
+You can export session data in multiple formats (Raven Selection Tables, CSV, JSON, GPX) and tick any combination of formats at once under **Settings → Export → Formats**; selected formats are bundled together inside a single ZIP next to any audio clips and the optional self-contained HTML report. Exports are generated locally and shared via the system share sheet. The app does not upload export data to any server, except to upload destinations you added yourself (see below).
+
+## Upload Destinations
+
+Under **Settings → Export & Sync → Upload destinations** you can add a project's WebDAV folder, usually a Nextcloud File Drop that a project organizer shared with you as a link or QR code. Nothing is uploaded until you add a destination and then tick it in the Share dialog, or switch on automatic uploads for ARU Sessions. Uploads go straight from your device to the organizer's server over HTTPS. BirdNET-Team runs no server in between and receives nothing.
+
+An upload contains the same content as a Share: the Session's JSON record (detections, times, coordinates, and observer and location names if set), any audio, tables, and report you ticked, your device's upload ID, and the participant identifier you entered, if any. The destination's credential is stored in the device keychain.
+
+Destinations are run by project organizers, not by BirdNET-Team, under their own privacy and security rules. Ask the organizer who can read the data and how long it is kept. You are responsible for what you upload: do not send data you consider private or confidential, or that you may not pass on. The app never downloads or deletes anything from a destination, and deleting a Session on your device does not remove uploaded copies.
 
 ## Data Deletion
 

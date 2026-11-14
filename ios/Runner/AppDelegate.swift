@@ -22,6 +22,13 @@ import UserNotifications
   /// Text-to-speech for spoken announcements; see TtsChannel.swift.
   private var ttsChannel: TtsChannel?
 
+  /// Keychain-backed credential store for upload destinations; see
+  /// SecureStoreChannel.swift.
+  private var secureStoreChannel: SecureStoreChannel?
+
+  /// Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.swift.
+  private var connectivityChannel: ConnectivityChannel?
+
   /// A Quick Listen action (App Intent, `birdnetlive://` URL, or home-screen
   /// quick action; see QuickAction.swift) waiting for Dart. Same contract as
   /// Android's `pendingQuickAction` in MainActivity.kt: set on cold and warm
@@ -41,6 +48,22 @@ import UserNotifications
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  /// The system woke or relaunched the app because a background upload ended
+  /// (UploadTransferChannel.swift). Everything else keeps going to plugins.
+  override func application(
+    _ application: UIApplication,
+    handleEventsForBackgroundURLSession identifier: String,
+    completionHandler: @escaping () -> Void
+  ) {
+    if identifier == UploadTransferChannel.sessionIdentifier {
+      UploadTransferChannel.shared.handleEvents(completionHandler: completionHandler)
+      return
+    }
+    super.application(
+      application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler
+    )
+  }
+
   /// Register only after the implicit engine exists. Under the scene lifecycle,
   /// AppDelegate's window is not available during application launch.
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
@@ -48,6 +71,10 @@ import UserNotifications
     let messenger = engineBridge.applicationRegistrar.messenger()
 
     ttsChannel = TtsChannel(messenger: messenger)
+    secureStoreChannel = SecureStoreChannel(messenger: messenger)
+    connectivityChannel = ConnectivityChannel(messenger: messenger)
+    // Background uploads; see UploadTransferChannel.swift.
+    UploadTransferChannel.shared.attach(messenger: messenger)
 
     let deviceDescriptionChannel = FlutterMethodChannel(
       name: "com.birdnet/device_description",

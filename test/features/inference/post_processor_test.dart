@@ -17,11 +17,9 @@ List<Species> _dummyLabels(int count) => List.generate(
   count,
   (i) => Species(
     index: i,
-    id: i,
     scientificName: 'Species $i',
     commonName: 'Bird $i',
     className: 'Aves',
-    order: 'Order',
   ),
 );
 

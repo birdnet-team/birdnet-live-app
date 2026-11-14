@@ -8,7 +8,10 @@ Veelgestelde vragen.
 A: Nee. Alle inferentie draait op het toestel zelf met het ONNX-model. De enige netwerkfuncties zijn optioneel en staan standaard uit: kaarttegels en het opzoeken van plaatsnamen via OpenStreetMap, weermomentopnamen via Open-Meteo, en het ophalen van soortafbeeldingen en -beschrijvingen via de taxonomie-API. Zie [Instellingen → Privacy](settings.md#privacy).
 
 **V: Hoeveel soorten kan de app herkennen?**
-A: Het BirdNET+ V3.0-model herkent 9.789 soorten wereldwijd — vogels, amfibieën, zoogdieren en insecten (de taxonomisch afgestemde, gesnoeide doorsnede van de audioclassifier en het geomodel).
+A: Het BirdNET+ V3.0-model herkent 10.048 soorten wereldwijd — vogels, amfibieën, zoogdieren en insecten (de taxonomisch afgestemde, gesnoeide doorsnede van de audioclassifier en het geomodel). Het herkent ook 16 niet-dierlijke geluiden, zoals motoren, sirenes en muziek; die staan uit tenzij je [Niet-dierlijke geluiden](settings.md#niet-dierlijke-geluiden) aanzet.
+
+**V: Een soort in een oudere Session heeft een nieuwe naam of wordt niet meer gedetecteerd. Ben ik iets kwijt?**
+A: Nee. Een modelupdate kan soorten hernoemen volgens de huidige taxonomie en soorten laten vallen die het nieuwe model niet dekt. Opgeslagen Sessions worden niet gewijzigd: een oudere detectie wordt getoond onder de huidige naam van de soort, met afbeelding, vertaling en links, en soorten die het model niet meer detecteert, blijven in je Sessions en exports staan zoals ze zijn vastgelegd.
 
 **V: Welke platformen worden ondersteund?**
 A: Android (8.0+), iOS (15.0+) en Windows (experimenteel).
@@ -27,7 +30,7 @@ A: De nauwkeurigheid hangt af van de opnamekwaliteit, de afstand, het achtergron
 ## Opnemen
 
 **V: Waar worden opnamen bewaard?**
-A: In de documentenmap van de app onder `recordings/<session-id>/`, als WAV of FLAC afhankelijk van **Instellingen → Opname → Formaat**.
+A: In de documentenmap van de app onder `recordings/<session-id>/`, als WAV of FLAC afhankelijk van **Instellingen → Audio en opname → Opnameformaat**.
 
 **V: Kan ik bestaande opnamen analyseren?**
 A: Ja. Open Bestandsanalyse vanaf het startscherm, kies een audiobestand, stel de locatie en parameters in en tik op Analyseren. Ondersteunde formaten zijn onder meer WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA en AMR.

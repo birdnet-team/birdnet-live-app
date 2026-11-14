@@ -7,6 +7,22 @@ It validates the local files and removes existing assets whose names differ
 only in capitalization before uploading. Exact filename matches are replaced
 by the uploader; unrelated release assets are preserved.
 
+## Re-running a Failed Release Build
+
+[release.yml](release.yml) runs when a GitHub Release is published. If one of
+its build jobs fails, do not re-publish the release: fix the cause on `main`,
+then open `Actions > Release > Run workflow`, pick the branch to build
+(normally `main`), enter the existing tag in `tag` (for example `v1.3.0`), and
+tick only the platforms that still need artifacts. Or from the CLI:
+
+```bash
+gh workflow run release.yml --ref main -f tag=v1.3.0 -f build_android=true -f build_windows=false
+```
+
+The manual run builds the selected branch, not the tag's commit, so keep the
+difference to the fix itself. Exact-name assets on the release are replaced;
+the WinGet submission job only runs for a real release event.
+
 ## CI Configuration Reference
 
 Configure the following repository-level GitHub Actions settings in `Settings > Secrets and variables > Actions`.

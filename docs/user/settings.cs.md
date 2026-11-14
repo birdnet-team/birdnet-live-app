@@ -9,15 +9,13 @@ Tlačítko :app-helpOutline: vedle nastavení otevře krátké vysvětlení. Pr�
 - Otevření nastavení z domovské obrazovky zobrazí celou obrazovku.
 - Otevření nastavení z režimu Live, Survey, Point Count nebo Analýzy souborů zúží obrazovku na relevantní sekce.
 
+## Jak najít nastavení
+
+Nastavení jsou seskupena do sekcí, například **Obecné**, **Inference** a **Soukromí**. Obrazovka se otevře se všemi sekcemi sbalenými, takže zpočátku tvoří krátký seznam názvů sekcí, každý s krátkým popisem. Klepnutím na záhlaví sekci rozbalíte a dalším klepnutím ji sbalíte; otevřených může být několik sekcí najednou. Když procházíte otevřenou sekcí, její název zůstává u horního okraje obrazovky, takže dlouhou sekci sbalíte, aniž byste se museli vracet nahoru.
+
+Chcete-li najít nastavení podle názvu, klepněte na tlačítko :app-searchRounded: v horní liště a zadejte část názvu. Výsledky ukazují každé odpovídající nastavení spolu s jeho sekcí; klepnutím na výsledek se sekce otevře a obrazovka se posune k danému nastavení. Nastavení, které se zobrazí až po zapnutí jiného přepínače (například hlas oznámení, dokud jsou oznámení vypnutá), se ve výsledcích objeví teprve po zapnutí tohoto přepínače. Nastavení, jejichž vlastní název odpovídá, jsou uvedena jako první; zadáním názvu sekce se zobrazí také všechna její nastavení. Možnosti na podstránce nebo v překryvu, například jednotlivé formáty exportu nebo zaškrtávací políčka v seznamu Ignorovat druhy, najdete přes jejich položku (**Formáty**, **Obsah**, **Ignorovat druhy**).
+
 ## Obecné
-
-### Motiv
-
-Vyberte **Tmavý**, **Světlý** nebo **Systémový**.
-
-Je-li zapnuta **Dynamická barva**, pokusí se BirdNET Live navíc převzít systémovou paletu vašeho zařízení s Androidem. To má vliv pouze na podporovaných zařízeních s Androidem; na iPhonu a iPadu aplikace nadále používá standardní motiv BirdNET Live, takže zapnutí přepínače tam nic nezmění.
-
-Zapněte **Vysoce kontrastní motiv**, chcete-li používat černobílou světlou nebo tmavou paletu rozhraní se silnějším písmem a orámovanými plochami místo barevných karet. Řídí se volbou **Tmavý**, **Světlý** nebo **Systémový**, po dobu zapnutí má přednost před Dynamickou barvou a zachovává barvy pro nebezpečí, varování, ověření, režimy, skóre a spektrogram.
 
 ### Jazyk aplikace
 
@@ -35,7 +33,7 @@ Zobrazuje v celé aplikaci vědecké názvy pod běžnými názvy.
 
 Pouze režim Live a Point Count. Ve výchozím nastavení vypnuto, takže tyto obrazovky zobrazují jen druhy detekované v posledním cyklu odvozování – tedy prakticky ty, které se právě ozývají. Zapněte, aby každý druh detekovaný během probíhající Session zůstal v seznamu viditelný i poté, co přestane zpívat nebo klesne pod práh spolehlivosti.
 
-Je-li tato volba zapnuta, objeví se **Řazení seznamu druhů**. **Nejnovější první** zobrazí nahoře druhy, které se právě ozývají, seřazené podle aktuální spolehlivosti, a za nimi zachované druhy podle poslední detekce. **Spolehlivost** řadí podle nejvyšší spolehlivosti, které druh během Session dosáhl, **Abecedně** podle lokalizovaného běžného názvu a **Výskyty** podle počtu detekcí. V každém režimu řazení se procento a pruh spolehlivosti zobrazují jen po dobu, kdy se druh právě ozývá (zachované řádky umlklých druhů jsou ztlumené), a u opakovaných detekcí se na konci řádku s běžným názvem zobrazí počítadlo.
+Je-li tato volba zapnuta, objeví se **Řazení seznamu druhů**. **Nejnovější první** zobrazí nahoře druhy, které se právě ozývají, seřazené podle aktuální spolehlivosti, a za nimi zachované druhy podle poslední detekce. **Spolehlivost** řadí podle nejvyšší spolehlivosti, které druh během Session dosáhl, **Abecedně** podle lokalizovaného běžného názvu a **Výskyty** podle počtu detekcí. V každém režimu řazení se procento a pruh spolehlivosti zobrazují jen po dobu, kdy se druh právě ozývá (zachované řádky umlklých druhů jsou ztlumené), a u opakovaných detekcí se na konci řádku s běžným názvem zobrazí počítadlo. Jakmile druh přestane vokalizovat, druhý štítek za ním ukazuje nejvyšší konfidenci, které druh během Session dosáhl, v barvě konfidence.
 
 ### Jméno pozorovatele
 
@@ -58,7 +56,17 @@ Je-li vybráno **Absolutní**, objeví se navíc přepínač **Zobrazovat sekund
 
 Ukládání i exporty používají bez ohledu na toto nastavení vždy okamžiky v UTC, volba tedy nikdy neovlivní data – pouze způsob jejich zobrazení.
 
-## Zvuk
+## Vzhled
+
+### Motiv
+
+Vyberte **Tmavý**, **Světlý** nebo **Systémový**.
+
+Je-li zapnuta **Dynamická barva**, pokusí se BirdNET Live navíc převzít systémovou paletu vašeho zařízení s Androidem. To má vliv pouze na podporovaných zařízeních s Androidem; na iPhonu a iPadu aplikace nadále používá standardní motiv BirdNET Live, takže zapnutí přepínače tam nic nezmění.
+
+Zapněte **Vysoce kontrastní motiv**, chcete-li používat černobílou světlou nebo tmavou paletu rozhraní se silnějším písmem a orámovanými plochami místo barevných karet. Řídí se volbou **Tmavý**, **Světlý** nebo **Systémový**, po dobu zapnutí má přednost před Dynamickou barvou a zachovává barvy pro nebezpečí, varování, ověření, režimy, skóre a spektrogram.
+
+## Zvuk a nahrávání
 
 Tyto prvky se objevují v živých pracovních postupech založených na zvuku.
 
@@ -89,6 +97,44 @@ Lineární zesilovač aplikovaný na příchozí zvuk dříve, než dorazí do s
 ### Horní propust (Hz)
 
 Ořezává nízkofrekvenční obsah před odvozováním pomocí Butterworthova filtru 24 dB/oktávu – hodnota na posuvníku je mezní frekvence −3 dB. **0 Hz jej vypíná.** Mez 100–200 Hz odstraní vítr, dunění dopravy a manipulační ruch, aniž by zasáhla většinu druhů; směrem k 500–1000 Hz začnou mizet hluboké houkání, sovy, tetřevovití i dunění bukače, takže tak vysoko jděte jen tehdy, pokud tyto druhy vědomě pomíjíte výměnou za výrazně čistší spektrogram v hlučném městském prostředí. Zvolená mez by měla být na živém spektrogramu vidět jako ostrá vodorovná čára.
+
+### Režim nahrávání
+
+Tato volba řídí Live Mode. Point Count má vlastní volbu nahrávání v kroku nastavení analýzy; nové Point Count používají výchozí **Úplné**. Survey má také samostatnou volbu nahrávání v průvodci.
+
+- **Úplné** – uložit celou nahrávku
+- **Jen detekce** – uložit úseky kolem detekcí
+- **Vypnuto** – bez nahrávání zvuku
+
+### Kontext úseku
+
+Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext úseku** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Point Count používá stejnou hodnotu při volbě **Jen klipy** v nastavení a umožňuje ji tam změnit. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
+
+### Formát nahrávání
+
+Vyberte **WAV** nebo **FLAC**. WAV je větší, ale široce kompatibilní a rychle se kontroluje. FLAC zachovává stejnou bezeztrátovou kvalitu zvuku při menší spotřebě místa, což je u dlouhých Session obvykle lepší.
+
+Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza souborů** uchovává aplikací spravovanou kopii importovaného souboru v původním formátu, takže nahrané soubory MP3, AAC, WAV a FLAC zůstávají k dispozici k procházení bez dalšího převodu.
+
+### Automaticky ukládat Sessions (Live a Point Count)
+
+Po zapnutí (výchozí) se dokončená Session režimu Live nebo Point Count přidá do vaší knihovny automaticky ve chvíli, kdy skončí. Po vypnutí se dokončená Session otevře v přehledu s označením **neuloženo**: ikona uložení je zvýrazněná a musíte na ni klepnout, aby se Session zachovala. Odchod z přehledu bez uložení Session i s nahrávkami zahodí. To se hodí pro krátký poslech, kdy chcete uchovat jen občasný pozoruhodný výsledek místo hromadění každé krátké nahrávky. Nasazení Survey a ARU se ukládají vždy automaticky – dlouhý běh bez dozoru je příliš cenný, aby se ztratil kvůli zapomenutému uložení – takže tam se tento přepínač neuplatní.
+
+Nezávisle na tomto nastavení ukládají režim Live a Point Count rozpracovanou Session při spuštění, každých 30 sekund a když aplikace opustí popředí, a dokončenou Session zapíšou na disk ještě před uvolněním mikrofonu. Tím se omezí ztráta dat po pádu aplikace, výpadku napájení nebo když systém aplikaci na pozadí ukončí: taková Session se objeví v knihovně – s označením přerušená, pokud aplikace skončila uprostřed Session – a můžete ji tam smazat, pokud jste si ji nechtěli ponechat. Při vypnutém automatickém ukládání se dokončená Session, ke které se dostanete v přehledu, dál otevře jako neuložená a při odchodu bez uložení se zahodí. Survey a ARU ukládají průběžný stav nezávisle na tomto nastavení.
+
+### Automaticky spustit nahrávání (jen režim Live)
+
+Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
+
+Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
+
+### Pokračovat při vypnuté obrazovce
+
+**Live Mode** při zamknutí obrazovky nebo opuštění aplikace pozastaví záznam i rozpoznávání a po návratu pokračuje ve stejné Session. Pokračování na pozadí je ve výchozím nastavení vypnuté. Po prvním návratu jednorázový dialog vysvětlí zapnutí; přepínač je také v nastavení Live Mode. Po zapnutí zvolte **Maximální dobu na pozadí** 15, 30, 60 nebo 120 minut (výchozí: 30). Časovač začíná při přechodu na pozadí, včasný návrat jej zruší a další odchod spustí nový. Dosažení limitu ukončí Session a otevře přehled s důvodem ukončení. Automatické ukládání nadále určuje, zda se Session ihned uchová, nebo zobrazí jako neuložená.
+
+**Point Count** ve výchozím nastavení pokračuje při zamknutí i přepnutí do jiné aplikace se zapnutou obrazovkou a končí po zvolené době. Přepínač **Pokračovat při vypnuté obrazovce** je pouze v prvním kroku nastavení. Vypněte jej, pokud mají tyto akce sčítání předčasně ukončit. Otazník vysvětluje chování. Pozastavení a obnovení by vytvořilo mezeru v časovaném protokolu. Obrazovka připravenosti shrnuje volbu a přehled Session ukazuje důvod předčasného konce.
+
+Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit; obrazovka se může normálně vypnout. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
 
 ## Odvozování
 
@@ -138,6 +184,14 @@ Posuvník **Ignorovat běžné druhy nad** má rozsah **80–100 %** a potlačuj
 
 Filtr nastavuje ignorované pravděpodobnosti geografického i zvukového modelu přesně na nulu hned po sigmoidní aktivaci a před časovým sdružováním skóre. Nemohou ovlivnit pozdější sdružený výsledek ani se zobrazit, uložit, oznámit či exportovat jako detekce. Změny během aktivní Session v Live Mode, Point Count, Survey nebo ARU platí od příštího okna inference; analýza souborů používá hodnoty zvolené při spuštění.
 
+### Jiné než zvířecí zvuky
+
+Ve výchozím nastavení vypnuto. Kromě volně žijících živočichů model rozpozná 16 tříd jiných než zvířecích zvuků: letadlo, člun, řetězová pila, motor, výbuch, oheň, ohňostroj, palná zbraň, kladivo, motorové vozidlo, hudba, elektrické nářadí, pila, siréna, vlak a klakson. Zapnete-li přepínač, hlásí se ve všech režimech jako každá jiná detekce – s obrázkem, popisem a názvem v jazyce názvů druhů.
+
+Siréna nemá areál výskytu, takže filtry podle polohy třídy zvuků nikdy neodstraní a v části Prozkoumejte se tyto třídy nezobrazují. Nezapočítávají se ani do počtu v panelu **Ignorovat druhy**. Změna během probíhající Session v Live Mode, Point Count, Survey nebo ARU platí od příštího okna inference; analýza souborů používá hodnotu zvolenou při spuštění analýzy. Hlášené třídy zvuků se zobrazují mezi detekcemi dané Session a započítávají se do jejího počtu druhů.
+
+Přepínač je ve výchozím nastavení vypnutý, protože BirdNET Live slouží k určování volně žijících živočichů a projíždějící auto do většiny seznamů druhů nepatří. Zapněte jej, pokud vás zajímají samotné zvuky, například chcete-li na monitorovací lokalitě dokumentovat motorové pily, výstřely nebo dopravu.
+
 BirdNET Live interně vyhlazuje skóre napříč nedávnými okny odvozování, aby
 omezil jednorázové falešně pozitivní nálezy. Toto sdružování není dostupné
 jako uživatelské nastavení; ve výchozím stavu se používá adaptivní sdružování
@@ -150,7 +204,7 @@ nejvyšší podložené skóre a končí na konci posledního podpůrného okna.
 
 ## Spektrogram
 
-### Velikost
+### Velikost spektrogramu
 
 Určuje, kolik místa na obrazovce zabírá živě rolující spektrogram v režimech Live Mode, Point Count, Survey a ARU. **Plná** je obvyklá výška. **Střední** a **Malá** ji zmenší na 75 % a 50 % a rozdíl přenechají seznamu detekcí – to se hodí, když na telefonu na výšku sledujete hlavně seznam. **Vypnuto** spektrogram zcela odstraní; v režimech Survey a ARU zmizí i karta spektrogramu. Na šířku **Střední** a **Malá** zkrátí spektrogram v jeho polovině obrazovky (místo pod ním zatím zůstává prázdné) a **Vypnuto** přenechá celou obrazovku seznamu detekcí. Spektrogramy uložených záznamů a při přehrávání nejsou ovlivněny.
 
@@ -174,13 +228,29 @@ Nastavuje horní zobrazovanou frekvenci.
 
 Aplikuje na spektrogram logaritmické škálování, aby se snáze četl.
 
-### Kvalita
+### Kvalita spektrogramu
 
 Řídí, jak hladce se obraz spektrogramu škáluje. **Střední** je výchozí kompromis. Na starších telefonech zvolte **Nízkou**, pokud posun trhá nebo se zařízení zahřívá; zvolte **Vysokou**, pokud dáváte přednost hladšímu obrazu a vaše zařízení má dost výkonu GPU. Intuice: mění to pouze náročnost vykreslování, nikoli analýzu zvuku ani výsledky detekce.
 
-## Hlasová oznámení
+## Přehrávání a hlasová oznámení
 
-Tato sekce určuje, zda má BirdNET Live **předčítat detekce nahlas do sluchátek nebo přes reproduktor telefonu**, zatímco Session nahrává. Celá funkce je **ve výchozím stavu vypnutá**, protože mění akustické prostředí kolem mikrofonu – její zapnutí je vědomý kompromis. Neexistuje žádný průvodce nastavením: výběr míry podrobnosti × frekvence níže *je* celé nastavení, takže můžete kdykoli klepnout na jinou předvolbu a rozdíl hned slyšet. Intuice: při dlouhých surveyích nemůžete stále sledovat obrazovku; nenápadný hlas v uchu znamená, že můžete nechat oči na biotopu a přesto vědět, co se právě ozvalo.
+Když Nastavení otevřete z Analýzy souborů, jmenuje se tato sekce **Přehrávání** a obsahuje pouze nastavení přehrávání.
+
+### Překryv přehrávače v přehledu
+
+Po zapnutí (výchozí) otevře poslech zvukového úseku v přehledu Session složené jen z úseků (kde není k dispozici úplná nahrávka ani spektrogram) samostatný modální překryv přehrávače s ovládáním a náhledem spektrogramu, místo aby úsek přehrál na pozadí. Má-li Session úplný zvuk, toto nastavení se obchází a překryv přehrávače se nikdy nezobrazí.
+
+### Automaticky přehrávat hlasové poznámky
+
+Ve výchozím stavu vypnuto. Po zapnutí se hlasová poznámka připojená k časované anotaci během přehledu Session přehraje automaticky ve chvíli, kdy přehrávací značka mine její zaznamenanou pozici. Poznámka se přimíchá přes nahrávku, místo aby ji pozastavila, takže svou mluvenou poznámku slyšíte v kontextu spolu s původním zvukem. Ponechte vypnuté, pokud dáváte přednost ručnímu spouštění poznámek klepnutím na jejich anotační štítek.
+
+### Ztlumení při hlasových poznámkách
+
+Zobrazuje se jen tehdy, je-li zapnuto **Automaticky přehrávat hlasové poznámky**. Určuje, nakolik se hlavní nahrávka ztlumí během přehrávání automatické hlasové poznámky. Vyšší hodnoty činí mluvené poznámky srozumitelnějšími; nižší hodnoty ponechávají pod poznámkou slyšet více z původní nahrávky.
+
+### Hlasová oznámení
+
+Tato nastavení určují, zda má BirdNET Live **předčítat detekce nahlas do sluchátek nebo přes reproduktor telefonu**, zatímco Session nahrává. Celá funkce je **ve výchozím stavu vypnutá**, protože mění akustické prostředí kolem mikrofonu – její zapnutí je vědomý kompromis. Neexistuje žádný průvodce nastavením: výběr míry podrobnosti × frekvence níže *je* celé nastavení, takže můžete kdykoli klepnout na jinou předvolbu a rozdíl hned slyšet. Intuice: při dlouhých surveyích nemůžete stále sledovat obrazovku; nenápadný hlas v uchu znamená, že můžete nechat oči na biotopu a přesto vědět, co se právě ozvalo.
 
 ### Předčítat detekce nahlas (hlavní přepínač)
 
@@ -210,61 +280,7 @@ Rozbalovací část s několika přepínači směrování zvuku a výběrem rež
 - **Signál před promluvou** – Před každou promluvou přehraje krátký tichý tón, aby vaše ucho mělo chvíli na přechod z pasivního poslechu k pozornosti vůči hlasu. Ve výchozím stavu zapnuto. Zvlášť užitečné, jsou-li oznámení řídká nebo hraje-li na pozadí hudba.
 - **Co oznamovat** – Určuje, které detekce vůbec připadají v úvahu pro oznámení. *Každou detekci* (výchozí) ponechá rozhodnutí na omezování. *Poprvé za Session* oznámí druh jen při jeho prvním výskytu v aktuální Session. *Jen sledovaný seznam* omezí oznámení na druhy z vašeho sledovaného seznamu (užitečné při cílené survey práci, kdy chcete slyšet pouze o prioritních taxonech).
 
-## Nahrávání
-
-### Režim
-
-Tato volba řídí Live Mode. Point Count má vlastní volbu nahrávání v kroku nastavení analýzy; nové Point Count používají výchozí **Úplné**. Survey má také samostatnou volbu nahrávání v průvodci.
-
-- **Úplné** – uložit celou nahrávku
-- **Jen detekce** – uložit úseky kolem detekcí
-- **Vypnuto** – bez nahrávání zvuku
-
-### Kontext úseku
-
-Je-li aktivní **Jen detekce**, zobrazí aplikace jediný posuvník **Kontext úseku** (0–5 s), který určuje, kolik zvuku se zachová na **obou stranách** každé detekce. Point Count používá stejnou hodnotu při volbě **Jen klipy** v nastavení a umožňuje ji tam změnit. Každý úsek trvá `analytické okno + 2 × kontext úseku`, takže při analytickém okně 3 s a výchozím kontextu 1 s má uložený úsek 5 s. Kontext 2 s dá úsek 7 s (2 s před + 3 s analyzovaného zvuku + 2 s po). Vyšší hodnoty vám dají více prostoru pro vizuální kontrolu nebo externí nástroje, za cenu místa na disku; hodnota 0 uloží jen samotné analyzované okno.
-
-### Formát
-
-Vyberte **WAV** nebo **FLAC**. WAV je větší, ale široce kompatibilní a rychle se kontroluje. FLAC zachovává stejnou bezeztrátovou kvalitu zvuku při menší spotřebě místa, což je u dlouhých Session obvykle lepší.
-
-Toto nastavení platí pro zvuk, který nahrává BirdNET Live. **Analýza souborů** uchovává aplikací spravovanou kopii importovaného souboru v původním formátu, takže nahrané soubory MP3, AAC, WAV a FLAC zůstávají k dispozici k procházení bez dalšího převodu.
-
-### Automaticky spustit nahrávání (jen režim Live)
-
-Po zapnutí začne režim Live nahrávat, jakmile se obrazovka otevře a model se načte – bez klepnutí na tlačítko mikrofonu. Užitečné pro instalace typu kiosek, práci bez rukou (například zařízení upevněné v terénu) nebo pro jakýkoli postup, kde otevření režimu Live stejně znamená „začínáme teď“. Ve výchozím stavu vypnuto, aby náhodné klepnutí na dlaždici Live na domovské obrazovce tiše nezahájilo Session. Automatické spuštění proběhne jen jednou za návštěvu obrazovky, takže zastavení Session a opětovné klepnutí na mikrofon nadále funguje jako ruční restart.
-
-Toto nastavení se týká otevírání režimu Live uvnitř aplikace. [Quick Listen](live-mode.md) — widget v Androidu, nebo zkratka, fráze pro Siri a akce ikony v iOS — po spuštění začne poslouchat bez ohledu na toto nastavení a nastavení nemění. Pokud již běží nebo se spouští Session režimu Point Count, Survey, Analýzy souborů nebo ARU, tato Session se zachová a budete požádáni, abyste ji nejprve zastavili.
-
-### Pokračovat při vypnuté obrazovce
-
-**Live Mode** při zamknutí obrazovky nebo opuštění aplikace pozastaví záznam i rozpoznávání a po návratu pokračuje ve stejné Session. Pokračování na pozadí je ve výchozím nastavení vypnuté. Po prvním návratu jednorázový dialog vysvětlí zapnutí; přepínač je také v nastavení Live Mode. Po zapnutí zvolte **Maximální dobu na pozadí** 15, 30, 60 nebo 120 minut (výchozí: 30). Časovač začíná při přechodu na pozadí, včasný návrat jej zruší a další odchod spustí nový. Dosažení limitu ukončí Session a otevře přehled s důvodem ukončení. Automatické ukládání nadále určuje, zda se Session ihned uchová, nebo zobrazí jako neuložená.
-
-**Point Count** ve výchozím nastavení pokračuje při zamknutí i přepnutí do jiné aplikace se zapnutou obrazovkou a končí po zvolené době. Přepínač **Pokračovat při vypnuté obrazovce** je pouze v prvním kroku nastavení. Vypněte jej, pokud mají tyto akce sčítání předčasně ukončit. Otazník vysvětluje chování. Pozastavení a obnovení by vytvořilo mezeru v časovaném protokolu. Obrazovka připravenosti shrnuje volbu a přehled Session ukazuje důvod předčasného konce.
-
-Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit; obrazovka se může normálně vypnout. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
-
-### Automaticky ukládat Sessions (Live a Point Count)
-
-Po zapnutí (výchozí) se dokončená Session režimu Live nebo Point Count přidá do vaší knihovny automaticky ve chvíli, kdy skončí. Po vypnutí se dokončená Session otevře v přehledu s označením **neuloženo**: ikona uložení je zvýrazněná a musíte na ni klepnout, aby se Session zachovala. Odchod z přehledu bez uložení Session i s nahrávkami zahodí. To se hodí pro krátký poslech, kdy chcete uchovat jen občasný pozoruhodný výsledek místo hromadění každé krátké nahrávky. Nasazení Survey a ARU se ukládají vždy automaticky – dlouhý běh bez dozoru je příliš cenný, aby se ztratil kvůli zapomenutému uložení – takže tam se tento přepínač neuplatní.
-
-Dokud je automatické ukládání zapnuté, režim Live a Point Count navíc ukládají rozpracovanou Session při spuštění, každých 30 sekund a když aplikace opustí popředí. Tím se omezí ztráta dat po pádu aplikace nebo výpadku napájení. Při vypnutém nastavení se tato průběžná uložení neuchovávají. Survey a ARU ukládají průběžný stav nezávisle na tomto nastavení.
-
-## Přehrávání
-
-### Překryv přehrávače v přehledu
-
-Po zapnutí (výchozí) otevře poslech zvukového úseku v přehledu Session složené jen z úseků (kde není k dispozici úplná nahrávka ani spektrogram) samostatný modální překryv přehrávače s ovládáním a náhledem spektrogramu, místo aby úsek přehrál na pozadí. Má-li Session úplný zvuk, toto nastavení se obchází a překryv přehrávače se nikdy nezobrazí.
-
-### Automaticky přehrávat hlasové poznámky
-
-Ve výchozím stavu vypnuto. Po zapnutí se hlasová poznámka připojená k časované anotaci během přehledu Session přehraje automaticky ve chvíli, kdy přehrávací značka mine její zaznamenanou pozici. Poznámka se přimíchá přes nahrávku, místo aby ji pozastavila, takže svou mluvenou poznámku slyšíte v kontextu spolu s původním zvukem. Ponechte vypnuté, pokud dáváte přednost ručnímu spouštění poznámek klepnutím na jejich anotační štítek.
-
-### Ztlumení při hlasových poznámkách
-
-Zobrazuje se jen tehdy, je-li zapnuto **Automaticky přehrávat hlasové poznámky**. Určuje, nakolik se hlavní nahrávka ztlumí během přehrávání automatické hlasové poznámky. Vyšší hodnoty činí mluvené poznámky srozumitelnějšími; nižší hodnoty ponechávají pod poznámkou slyšet více z původní nahrávky.
-
-## Poloha
+## Poloha a filtr druhů
 
 ### Používat GPS
 
@@ -316,6 +332,8 @@ Protože stupně vycházejí z pořadí, funguje to v druhově bohatém tropick�
 
 ## Export a synchronizace
 
+Sekce zobrazuje tři položky, z nichž každá shrnuje svou volbu: **Formáty**, **Obsah** a **Cíle nahrávání**. První dvě otevírají stránku s políčky popsanými níže.
+
 ### Formáty
 
 Zaškrtněte libovolnou kombinaci exportních formátů – při každém uložení či sdílení se všechny zvolené formáty sbalí společně do jednoho ZIP. Zvolíte-li jediný formát bez zvukových úseků a bez HTML zprávy, dostanete kvůli zpětné kompatibilitě samostatný soubor (například `session.csv`) místo ZIP:
@@ -346,6 +364,11 @@ Po zapnutí obsahuje každý exportní ZIP navíc soubor `<session>_report.html`
 ### Sdílení pouze zvuku
 
 Odškrtněte každý formát **i** HTML zprávu **i** políčko metadat aplikace, takže zůstane jen **Zahrnout zvukové soubory**: pak Sdílet předá systémovému panelu surovou nahrávku (například `BirdNET_Live_…flac`) místo ZIP. To je nejjednodušší cesta, jak poslat Session přímo do iNaturalist, eBird nebo jakékoli jiné aplikace, která očekává nezabalený zvukový soubor. Sessions složené z více úseků detekcí stále vytvoří ZIP; při sdílení jedné detekce se předá její jediný surový klip.
+
+### Cíle nahrávání
+
+Seznam úložišť WebDAV, do kterých lze nahrát dokončenou Session, například Nextcloud File Drop vedoucího projektu nebo referenční drop server v `tools/webdav_drop_server`. Cíl přidáte vložením obdrženého odkazu pro připojení nebo odkazu na sdílení, případně naskenováním QR kódu projektu fotoaparátem; běžná adresa WebDAV s uživatelským jménem a heslem funguje přes rozšířená pole. Nic se neuloží, dokud neprojde test připojení. Obrazovka cíle má také **Zobrazit kód pro připojení**, který ukáže stejný odkaz jako QR kód (plus Kopírovat odkaz), aby se druhý telefon připojil bez psaní. Test vytvoří na serveru registrační soubor zařízení ve skryté složce `.birdnet-live` a upozorní, pokud přihlašovací údaje umožňují i výpis složky (sdílení jen pro zápis je bezpečnější pro všechny), a navíc pokud takové vypsatelné sdílení nemá heslo. Každý cíl má vlastní název, přepínač „Nahrávat pouze přes Wi-Fi“ a přepínač „Nahrávat ARU Sessions automaticky“; ten druhý zařadí každou dokončenou ARU Session do fronty pro daný cíl bez dotazu. Pro nahrání klepněte u Session nebo u výběru v knihovně Sessions na Sdílet a zaškrtněte cíl na kartě **Odeslat do** v dialogu (odznak na kartě počítá zaškrtnutí a seznam se posouvá, takže dialog má stále stejnou výšku bez ohledu na počet cílů); dialog sdílení lze tam odškrtnout, pokud chcete pouze nahrát, a naposledy zaškrtnuté cíle jsou příště předvyplněné. Nahrávání ve frontě běží, dokud je aplikace otevřená (v Androidu také na pozadí, jakmile je k dispozici vhodná síť), opakuje se s rostoucími prodlevami, podle potřeby čeká na Wi-Fi a svůj stav zobrazuje jako první řádek pod názvem Session v knihovně Sessions a jako ikonu mraku v kontrole Session (klepnutím zobrazíte podrobnosti podle cíle, Zkusit znovu a Odebrat); řádek zmizí, jakmile žádný z jeho cílů už v nastavení neexistuje. Každé nahrání je jeden soubor ZIP, pojmenovaný jako export Sdílení a obsahující záznam JSON Session i vše, co by Sdílení přiložilo, ve složce pojmenované osmimístným kódem tohoto zařízení (zobrazuje se při připojení a nahoře v seznamu cílů jako **Vaše ID pro nahrávání**). Tam lze nepovinně zadat identifikátor účastníka, například jméno, e-mail nebo ID účastníka; ten se ukládá do metadat nahrání a registrace zařízení, nikdy do cesty. Opětovné nahrání Session tento soubor nahradí; Nextcloud File Drop nikdy nepřepisuje a starší kopii místo toho ponechá pod očíslovaným názvem. Nahrávání probíhá jen jedním směrem: nic se nestahuje a smazání Session v zařízení ji ze serveru nikdy neodstraní. Přihlašovací údaje jsou uloženy v klíčence zařízení, nikdy v exportovaných datech. Celý pracovní postup, od vytvoření sdílení až po sledování nahrání, popisuje [Nahrávání](uploads.md). Zdůvodnění: terénní projekty sbírají data z mnoha telefonů a jediný vložený odkaz s ověřeným testem odstraní téměř každou chybu při nastavení. Viz issue #284.
+
 
 ## Soukromí
 

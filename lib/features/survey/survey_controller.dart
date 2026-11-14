@@ -461,6 +461,7 @@ class SurveyController {
               ignoreMammals: ignoreSettings.ignoreMammals,
               ignoreAmphibians: ignoreSettings.ignoreAmphibians,
               ignoreInsects: ignoreSettings.ignoreInsects,
+              includeSoundClasses: ignoreSettings.includeSoundClasses,
               ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
               poolingMode: poolingMode,
               poolingWindows: poolingWindows,
@@ -1265,12 +1266,10 @@ class SurveyController {
         confidenceThreshold: confidenceThreshold / 100.0,
       );
 
-      final geoNames = _geoModelSpeciesNames;
-      final filteredDetections = geoNames == null
-          ? speciesFiltered
-          : speciesFiltered
-                .where((d) => geoNames.contains(d.species.scientificName))
-                .toList();
+      final filteredDetections = SpeciesFilter.restrictToGeoModelSpecies(
+        speciesFiltered,
+        _geoModelSpeciesNames,
+      );
 
       // Update live detection list.
       _currentLiveDetections = [

@@ -5,8 +5,8 @@
 BirdNET Live to aplikacja napisana we Flutterze, przeznaczona dla badaczy terenowych, osób zajmujących się ochroną przyrody i ornitologów, którzy potrzebują wiarygodnych dowodów akustycznych w terenie. Klasyfikator dźwięku BirdNET+ i geomodel działają bezpośrednio na Twoim urządzeniu, więc po instalacji rozpoznawanie gatunków działa całkowicie bez internetu.
 
 <p align="center">
-  <img src="https://img.shields.io/badge/latest-v1.2.1-orange.svg" alt="Latest release: v1.2.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live to aplikacja napisana we Flutterze, przeznaczona dla badaczy tereno
 - **Przeglądaj** - przeglądaj gatunki spodziewane w Twojej lokalizacji według geomodelu BirdNET
 - **Biblioteka Sessions** - przeglądaj, edytuj i eksportuj wcześniejsze Sessions wraz z odtwarzaniem dźwięku
 - **Eksport** - formaty Raven Pro, CSV, JSON, GPX i paczki ZIP z metadanymi pochodzenia
-- **Wnioskowanie na urządzeniu** - model BirdNET+ obejmuje 9789 gatunków, bez internetu
+- **Wnioskowanie na urządzeniu** - model BirdNET+ obejmuje 10 048 gatunków, bez internetu
 - **Nagrywanie FLAC** - skompresowany dźwięk i mniejsze pliki przy długich liczeniach
 - **Dostępność** - etykiety dla czytników ekranu, podpowiedzi i opcjonalne komunikaty głosowe o wykryciach
 - **Układy responsywne** - interfejs dopasowany do telefonu, tabletu, orientacji pionowej i poziomej
@@ -56,11 +56,15 @@ BirdNET Live jest dostępny w [Google Play](https://play.google.com/store/apps/d
 
 Na Androidzie możesz też zainstalować aplikację ręcznie jako podpisany plik APK: pobierz najnowsze wydanie ze [strony wydań na GitHubie](https://github.com/birdnet-team/birdnet-live-app/releases/latest), przenieś plik `.apk` na telefon i otwórz go, aby zainstalować. Być może trzeba będzie najpierw zezwolić w ustawieniach urządzenia na instalację z nieznanych źródeł.
 
-> **Uwaga:** plik APK zajmuje około 260 MB, ponieważ zawiera zasoby modelu BirdNET+ oraz wszystkie zdjęcia gatunków do użytku offline.
+> **Uwaga:** plik APK zajmuje około 320 MB, ponieważ zawiera zasoby modelu BirdNET+ oraz wszystkie zdjęcia gatunków do użytku offline.
 
 ## Dla programistów
 
 Zajrzyj do [Developer Guide](developer/index.md) po informacje o architekturze, budowaniu i współtworzeniu. Dokumentacja dla programistów jest dostępna wyłącznie po angielsku.
+
+## Finansowanie
+
+BirdNET Live powstaje w ramach projektu RangerSound finansowanego przez Deutsche Bundesstiftung Umwelt (projekt 39263/01). RangerSound to wspólny projekt Uniwersytetu Technicznego w Chemnitz, Universität Würzburg i Parku Narodowego Lasu Bawarskiego.
 
 ## Licencja
 

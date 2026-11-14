@@ -44,11 +44,11 @@ void main() {
       expect(model.labels[1].commonName, 'Eurasian Blackbird');
     });
 
-    test('extracts numeric IDs', () {
+    test('extracts IDs', () {
       final model = GeoModel();
       model.loadLabels(_testLabels);
-      expect(model.labels[0].id, 1044390);
-      expect(model.labels[2].id, 1044392);
+      expect(model.labels[0].id, '1044390');
+      expect(model.labels[2].id, '1044392');
     });
 
     test('assigns sequential indices starting from 0', () {
@@ -74,10 +74,28 @@ void main() {
       expect(model.labels.length, 2);
     });
 
-    test('skips lines with fewer than 2 tab-separated fields', () {
+    test('rejects a line with fewer than 2 tab-separated fields', () {
+      // Line i names model output i. Skipping a bad line would move every
+      // later species onto its neighbor's score.
       final model = GeoModel();
-      model.loadLabels('1\tA\tA\nmalformed_line\n2\tB\tB');
-      expect(model.labels.length, 2);
+      expect(
+        () => model.loadLabels('1\tA\tA\nmalformed_line\n2\tB\tB'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('rejects a line with an empty scientific name', () {
+      final model = GeoModel();
+      expect(
+        () => model.loadLabels('1\tA\tA\n2\t\tB'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('keeps the label id as text', () {
+      final model = GeoModel();
+      model.loadLabels('BN07148\tParus major\tGreat Tit');
+      expect(model.labels.single.id, 'BN07148');
     });
 
     test('handles empty input', () {
@@ -206,7 +224,7 @@ void main() {
     test('toString includes name and scientific name', () {
       const sp = GeoSpecies(
         index: 0,
-        id: 42,
+        id: 'BN07148',
         scientificName: 'Parus major',
         commonName: 'Great Tit',
       );

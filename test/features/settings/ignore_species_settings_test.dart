@@ -8,6 +8,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Scrolls [text] to the middle of the list, clear of the pinned section
+/// header.
+Future<void> _reveal(WidgetTester tester, String text) async {
+  await Scrollable.ensureVisible(
+    tester.element(find.text(text, skipOffstage: false)),
+    alignment: 0.5,
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('appears below Inference rate and opens the modal overlay', (
     tester,
@@ -19,9 +29,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          ignoredSpeciesNamesProvider.overrideWith(
-            (ref) async => {'Species one', 'Species two'},
-          ),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 2),
         ],
         child: const MaterialApp(
           locale: Locale('en'),
@@ -32,11 +40,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('Ignore species'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
+    // Sections start collapsed.
+    await tester.tap(find.text('Inference'));
+    await tester.pumpAndSettle();
+    await _reveal(tester, 'Ignore species');
 
     expect(
       tester.getCenter(find.text('Inference rate')).dy,
@@ -46,6 +53,46 @@ void main() {
     await tester.tap(find.text('Ignore species'));
     await tester.pumpAndSettle();
     expect(find.text('Birds'), findsOneWidget);
+  });
+
+  testWidgets('non-animal sounds are off by default and the switch persists', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 0),
+        ],
+        child: const MaterialApp(
+          locale: Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SettingsScreen(settingsContext: SettingsContext.fileAnalysis),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // Sections start collapsed.
+    await tester.tap(find.text('Inference'));
+    await tester.pumpAndSettle();
+    await _reveal(tester, 'Non-animal sounds');
+
+    final tile = find.widgetWithText(SwitchListTile, 'Non-animal sounds');
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    expect(
+      tester.getCenter(find.text('Ignore species')).dy,
+      lessThan(tester.getCenter(find.text('Non-animal sounds')).dy),
+    );
+
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    expect(prefs.getBool(PrefKeys.includeSoundClasses), isTrue);
   });
 
   testWidgets('shows all ignore controls and persists checkbox changes', (
@@ -58,9 +105,7 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          ignoredSpeciesNamesProvider.overrideWith(
-            (ref) async => {'Species one', 'Species two'},
-          ),
+          ignoredSpeciesCountProvider.overrideWith((ref) async => 2),
         ],
         child: const MaterialApp(
           locale: Locale('en'),

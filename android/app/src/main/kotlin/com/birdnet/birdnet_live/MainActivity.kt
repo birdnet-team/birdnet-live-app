@@ -62,6 +62,9 @@ class MainActivity: FlutterActivity() {
     private var pendingSharedMedia: Map<String, String?>? = null
     private var sharedMediaChannel: MethodChannel? = null
     private var ttsChannel: TtsChannel? = null
+    private var secureStoreChannel: SecureStoreChannel? = null
+    private var connectivityChannel: ConnectivityChannel? = null
+    private var uploadWorkChannel: UploadWorkChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -70,6 +73,7 @@ class MainActivity: FlutterActivity() {
         super.onCreate(savedInstanceState)
         captureAruNotificationAction(intent)
         captureQuickAction(intent)
+        captureJoinLink(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
@@ -81,6 +85,7 @@ class MainActivity: FlutterActivity() {
         setIntent(intent)
         captureAruNotificationAction(intent)
         captureQuickAction(intent)
+        captureJoinLink(intent)
         ForegroundService.handleNotificationContentIntent(intent)
     }
 
@@ -92,6 +97,19 @@ class MainActivity: FlutterActivity() {
         // thread (see TtsChannel.kt).
         ttsChannel?.dispose()
         ttsChannel = TtsChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Keystore-backed credential store for upload destinations; see
+        // SecureStoreChannel.kt.
+        secureStoreChannel?.dispose()
+        secureStoreChannel = SecureStoreChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Network type for "Upload on Wi-Fi only"; see ConnectivityChannel.kt.
+        connectivityChannel?.dispose()
+        connectivityChannel = ConnectivityChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Background upload scheduling; see UploadWorker.kt.
+        uploadWorkChannel?.dispose()
+        uploadWorkChannel = UploadWorkChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
@@ -464,6 +482,24 @@ class MainActivity: FlutterActivity() {
         intent.removeExtra(ARU_NOTIFICATION_ACTION_EXTRA)
     }
 
+    // An upload-destination join link (#284) opened from the camera app or a
+    // browser. Travels as the quick action "join:<url>" so Dart's existing
+    // quick-action listener can route it; see lib/app.dart.
+    private fun isJoinLink(uri: Uri): Boolean =
+        (uri.scheme == "birdnetlive" && uri.host == "join") ||
+            (uri.scheme == "https" && uri.host == "birdnet-team.github.io" &&
+                (uri.path ?: "").startsWith("/birdnet-live-app/join"))
+
+    private fun captureJoinLink(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) return
+        val uri = intent.data ?: return
+        if (!isJoinLink(uri)) return
+        intent.data = null
+        val action = "join:$uri"
+        pendingQuickAction = action
+        quickActionIntentChannel?.invokeMethod("onQuickAction", action)
+    }
+
     private fun captureQuickAction(intent: Intent?) {
         val action = intent?.getStringExtra(
             QuickListenContract.QUICK_ACTION_EXTRA
@@ -487,7 +523,7 @@ class MainActivity: FlutterActivity() {
             Intent.ACTION_VIEW -> intent.data
             else -> null
         }
-        if (uri == null) return
+        if (uri == null || isJoinLink(uri)) return
 
         if (intent.action == Intent.ACTION_SEND) {
             intent.removeExtra(Intent.EXTRA_STREAM)

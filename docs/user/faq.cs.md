@@ -8,7 +8,10 @@
 Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jediné síťové funkce jsou volitelné a ve výchozím nastavení vypnuté: mapové dlaždice a vyhledávání názvů míst z OpenStreetMap, snímky počasí z Open-Meteo a načítání obrázků a popisů druhů z API taxonomie. Viz [Nastavení → Soukromí](settings.md#soukromí).
 
 **Otázka: Kolik druhů dokáže identifikovat?**
-Odpověď: Model BirdNET+ V3.0 identifikuje 9 789 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu).
+Odpověď: Model BirdNET+ V3.0 identifikuje 10 048 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu). Rozpozná také 16 jiných než zvířecích zvuků, například motory, sirény a hudbu; ty jsou vypnuté, dokud nezapnete volbu [Jiné než zvířecí zvuky](settings.md#jiné-než-zvířecí-zvuky).
+
+**Otázka: Druh ve starší Session má nový název nebo už není detekován. Ztratilo se něco?**
+Odpověď: Ne. Aktualizace modelu může druhy přejmenovat podle aktuální taxonomie a vypustit druhy, které nový model nepokrývá. Uložené Sessions se nemění: starší detekce se zobrazí pod aktuálním názvem druhu, s obrázkem, překladem a odkazy, a druhy, které model už nedetekuje, zůstávají ve vašich Sessions a exportech přesně tak, jak byly zaznamenány.
 
 **Otázka: Jaké platformy jsou podporovány?**
 Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).
@@ -27,7 +30,7 @@ Odpověď: Přesnost závisí na kvalitě záznamu, vzdálenosti, šumu v pozad�
 ## Nahrávání
 
 **Otázka: Kde se ukládají nahrávky?**
-Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Nahrávání → Formát**.
+Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Zvuk a nahrávání → Formát nahrávání**.
 
 **Otázka: Mohu analyzovat existující nahrávky?**
 A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soubor, nastavte umístění a parametry a klepněte na Analyzovat. Mezi podporované formáty patří WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA a AMR.

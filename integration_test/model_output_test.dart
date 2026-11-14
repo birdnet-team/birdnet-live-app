@@ -38,6 +38,7 @@ void main() {
   late int windowSamples;
   late double confidenceThreshold;
   late int topK;
+  late int expectedClassCount;
 
   setUpAll(() async {
     // --- Load model config ---
@@ -45,9 +46,9 @@ void main() {
       'assets/models/model_config.json',
     );
     final configMap = jsonDecode(configJson) as Map<String, dynamic>;
-    config = ModelConfig.fromJson(
-      configMap['audioModel'] as Map<String, dynamic>,
-    );
+    final audioConfig = configMap['audioModel'] as Map<String, dynamic>;
+    config = ModelConfig.fromJson(audioConfig);
+    expectedClassCount = audioConfig['classCount'] as int;
 
     // --- Load labels ---
     final labelsCsv = await rootBundle.loadString(
@@ -77,7 +78,12 @@ void main() {
 
     // --- Load test fixture metadata ---
     // Push before running: adb push assets/test_fixtures /data/local/tmp/test_fixtures
-    const fixtureDir = '/data/local/tmp/test_fixtures';
+    // On desktop, point this at the checkout instead:
+    //   --dart-define=TEST_FIXTURES_DIR=<repo>/assets/test_fixtures
+    const fixtureDir = String.fromEnvironment(
+      'TEST_FIXTURES_DIR',
+      defaultValue: '/data/local/tmp/test_fixtures',
+    );
     final metaFile = File('$fixtureDir/test_windows_meta.json');
     expect(
       metaFile.existsSync(),
@@ -87,6 +93,14 @@ void main() {
     );
     final metaJson = await metaFile.readAsString();
     final meta = jsonDecode(metaJson) as Map<String, dynamic>;
+    // Reference detections are only valid for the model they were made with.
+    expect(
+      meta['modelFile'],
+      config.onnx.modelFile,
+      reason:
+          'The pushed fixtures were generated for a different model. Run '
+          'dev/run_onnx_reference.py and push assets/test_fixtures again.',
+    );
     fixtureWindows = (meta['windows'] as List).cast<Map<String, dynamic>>();
     windowSamples = meta['windowSamples'] as int;
     confidenceThreshold = (meta['confidenceThreshold'] as num).toDouble();
@@ -200,9 +214,10 @@ void main() {
 
     final output = await model.predict(chunk, windowSamples: windowSamples);
 
-    // BirdNET V3.0-preview3.1 pruned to the 9,789-species audio∩geo set.
+    // One score per label, and as many as the model config announces
+    // (species shared with the geo-model plus the sound classes).
     expect(output.predictions.length, equals(labels.length));
-    expect(output.predictions.length, equals(9789));
+    expect(output.predictions.length, equals(expectedClassCount));
 
     // Embeddings should be 1,280-dimensional.
     expect(output.embeddings, isNotNull);

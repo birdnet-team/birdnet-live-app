@@ -56,6 +56,10 @@ Zpracování a analýza více zvukových souborů hromadně. (Již brzy)
 
 Vytvoření naplánované session nasazení ARU, nahrávání plného zvuku cyklů nebo uchovaných detekčních klipů, spouštění živé inference během aktivních cyklů a sledování plánovaných nahrávacích cyklů.
 
+### [Nahrávání](uploads.md)
+
+Odesílání dokončených Sessions do složky projektu: nastavení cíle Nextcloud File Drop nebo WebDAV, odkazy pro připojení a QR kódy, karta Odeslat do, stav nahrávání a automatické nahrávání ARU.
+
 ## Reference
 
 ### [FAQ](faq.md)

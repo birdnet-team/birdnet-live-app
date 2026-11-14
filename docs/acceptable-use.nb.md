@@ -15,6 +15,7 @@ Brukere skal:
 - Bruke BirdNET-prediksjoner ansvarlig og være klar over at modellresultater er sannsynlighetsbaserte og kan inneholde falske positive eller falske negative resultater.
 - Kontrollere observasjoner der det er relevant, før de brukes til vitenskapelige beslutninger eller beslutninger om naturvern og forvaltning.
 - Vurdere den mulige økologiske virkningen av å publisere posisjoner for sårbare arter.
+- Bare laste opp eller dele data de har rett til å gi videre. Opplastingsmål drives av prosjektledere etter deres egne regler for personvern og sikkerhet; spør prosjektlederen om detaljer, og ikke last opp data du anser som private eller fortrolige.
 
 ## Uakseptabel bruk
 

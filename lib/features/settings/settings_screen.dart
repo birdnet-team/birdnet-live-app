@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:birdnet_live/l10n/app_localizations.dart';
@@ -13,11 +15,15 @@ import '../../shared/widgets/content_width_constraint.dart';
 import '../../shared/widgets/inference_rate_limit_note.dart';
 import '../../shared/widgets/map_picker_screen.dart';
 import '../about/about_screen.dart';
+import '../announcements/announcements_providers.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
 import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_size.dart';
+import '../upload/upload_destinations_screen.dart';
+import '../upload/upload_providers.dart';
+import 'export_options_screens.dart';
 import 'offline_map_download_tile.dart';
 
 bool get _showOfflineMapDownloadSetting => false;
@@ -95,9 +101,19 @@ enum SettingsContext {
 /// the given screen.  Defaults to [SettingsContext.all] which shows
 /// everything.
 ///
-/// Categories: General, Audio, Inference, Spectrogram, Recording, Export,
-/// About.
-class SettingsScreen extends ConsumerWidget {
+/// Categories: General, Appearance, Audio & Recording, Inference,
+/// Spectrogram, Playback & Announcements (Playback in File Analysis),
+/// Location & Species Filter, Export & Sync, Privacy, Danger Zone, plus a
+/// plain About row.
+///
+/// Every category is a collapsible section. The screen always opens with all
+/// of them collapsed (the state is not persisted), so it starts as a short
+/// list of categories. The title row of an expanded section stays pinned
+/// while its settings scroll, so a long section can be collapsed without
+/// scrolling back up. The search icon in the app bar turns the title into a search
+/// field that finds a setting by name and opens its section; see
+/// `_searchEntries`.
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key, this.settingsContext = SettingsContext.all});
 
   /// Which screen opened this settings page — controls section visibility.
@@ -109,6 +125,12 @@ class SettingsScreen extends ConsumerWidget {
   /// when the screen is opened with [SettingsContext.all] everything shows.
   static const Map<String, Set<SettingsContext>> _sectionContexts = {
     'general': {
+      SettingsContext.live,
+      SettingsContext.survey,
+      SettingsContext.pointCount,
+      SettingsContext.fileAnalysis,
+    },
+    'appearance': {
       SettingsContext.live,
       SettingsContext.survey,
       SettingsContext.pointCount,
@@ -171,6 +193,63 @@ class SettingsScreen extends ConsumerWidget {
     },
   };
 
+  @override
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  /// Section id of the Danger Zone, which appears wherever General does.
+  static const String _dangerSection = 'danger';
+
+  static const Duration _expandDuration = Duration(milliseconds: 200);
+
+  /// Ids of the expanded sections. Not persisted: the screen always opens
+  /// with every section collapsed.
+  final Set<String> _expandedSections = {};
+
+  /// Lets a search result scroll to its section.
+  final Map<String, GlobalKey> _sectionKeys = {};
+
+  /// Expanded sections scrolled past their start, whose title row is
+  /// therefore pinned over their settings and draws a separator line.
+  Set<String> _pinnedSections = const {};
+
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  bool _searchVisible = false;
+  String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updatePinnedSections);
+  }
+
+  void _updatePinnedSections() {
+    final offset = _scrollController.offset;
+    final pinned = <String>{};
+    for (final id in _expandedSections) {
+      final section = _sectionKeys[id]?.currentContext?.findRenderObject();
+      if (section == null) continue;
+      final start = RenderAbstractViewport.of(section)
+          .getOffsetToReveal(section, 0)
+          .offset;
+      if (start < offset - 0.5) pinned.add(id);
+    }
+    if (!setEquals(pinned, _pinnedSections)) {
+      setState(() => _pinnedSections = pinned);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  SettingsContext get settingsContext => widget.settingsContext;
+
   /// Returns `true` if [section] should be visible for the current context.
   bool _showSection(String section) {
     if (settingsContext == SettingsContext.all) return true;
@@ -178,720 +257,1320 @@ class SettingsScreen extends ConsumerWidget {
     final effective = settingsContext == SettingsContext.aru
         ? SettingsContext.survey
         : settingsContext;
-    return _sectionContexts[section]?.contains(effective) ?? true;
+    final tag = section == _dangerSection ? 'general' : section;
+    return SettingsScreen._sectionContexts[tag]?.contains(effective) ?? true;
+  }
+
+  String _sectionTitle(AppLocalizations l10n, String id) => switch (id) {
+    'general' => l10n.settingsGeneral,
+    'appearance' => l10n.settingsAppearance,
+    'audio' => l10n.settingsAudioRecording,
+    'inference' => l10n.settingsInference,
+    'spectrogram' => l10n.settingsSpectrogram,
+    // Announcements share the Playback section where they are available.
+    'playback' =>
+      _showSection('announcements')
+          ? l10n.settingsPlaybackAnnouncements
+          : l10n.settingsPlayback,
+    'location' => l10n.settingsLocationSpeciesFilter,
+    'export' => l10n.settingsExport,
+    'privacy' => l10n.settingsPrivacy,
+    _ => l10n.settingsDangerZone,
+  };
+
+  void _toggleSection(String id) {
+    final collapsing = _expandedSections.contains(id);
+    if (collapsing) _scrollToSectionStartIfPinned(id);
+    setState(() {
+      if (!_expandedSections.remove(id)) _expandedSections.add(id);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) _updatePinnedSections();
+    });
+  }
+
+  /// A section collapsed through its pinned header would otherwise leave the
+  /// list at an offset that now belongs to settings further down, scrolling
+  /// the header just tapped out of view.
+  void _scrollToSectionStartIfPinned(String id) {
+    final section = _sectionKeys[id]?.currentContext?.findRenderObject();
+    if (section == null || !_scrollController.hasClients) return;
+    final start = RenderAbstractViewport.of(section)
+        .getOffsetToReveal(section, 0)
+        .offset;
+    if (start < _scrollController.offset) _scrollController.jumpTo(start);
+  }
+
+  /// The settings the search field can find, as (section id, setting title),
+  /// in screen order: exactly the tiles the current context and the current
+  /// values of other settings show. A setting hidden behind a switch that is
+  /// off is left out until that switch is on.
+  ///
+  /// Keep in sync with the tiles in [build], conditions included: a setting
+  /// missing here still works but cannot be found by search. A title must
+  /// equal the tile's title text, which is how [_openSearchResult] locates
+  /// the tile. Call from [build] only; it watches providers.
+  List<({String section, String title})> _searchEntries(AppLocalizations l10n) {
+    final liveOrPointCount =
+        settingsContext == SettingsContext.live ||
+        settingsContext == SettingsContext.pointCount ||
+        settingsContext == SettingsContext.all;
+    final live =
+        settingsContext == SettingsContext.live ||
+        settingsContext == SettingsContext.all;
+    final pointCount = settingsContext == SettingsContext.pointCount;
+    final recordingMode = pointCount
+        ? ref.watch(pointCountRecordingModeProvider)
+        : ref.watch(recordingModeProvider);
+    final useGps = ref.watch(useGpsProvider);
+    final speciesFilter = ref.watch(speciesFilterModeProvider);
+    final titles = <String, List<String>>{
+      'general': [
+        l10n.settingsAppLanguage,
+        l10n.settingsSpeciesLanguage,
+        l10n.settingsShowSciNames,
+        if (liveOrPointCount) ...[
+          l10n.settingsShowAllDetectedSpecies,
+          if (ref.watch(showAllDetectedSpeciesProvider))
+            l10n.settingsDetectedSpeciesSortMode,
+        ],
+        l10n.settingsTimestampDisplayMode,
+        if (ref.watch(timestampDisplayModeProvider) == 'absolute')
+          l10n.settingsTimestampShowSeconds,
+      ],
+      'appearance': [
+        l10n.settingsTheme,
+        l10n.settingsDynamicColor,
+        l10n.settingsHighContrastTheme,
+      ],
+      'audio': [
+        l10n.settingsAudioSource,
+        l10n.settingsGain,
+        l10n.settingsHighPassFilter,
+        if (_showSection('recording')) ...[
+          if (!pointCount) ...[
+            l10n.settingsRecordingMode,
+            if (recordingMode == 'detections') l10n.surveyClipContext,
+          ],
+          if (recordingMode != 'off') l10n.settingsRecordingFormat,
+          if (liveOrPointCount) l10n.settingsSaveSessionAutomatically,
+          if (live) ...[
+            l10n.settingsLiveAutoStart,
+            l10n.settingsLiveBackground,
+            if (ref.watch(liveBackgroundEnabledProvider))
+              l10n.settingsLiveBackgroundMaxTime,
+          ],
+        ],
+      ],
+      'inference': [
+        l10n.settingsWindowDuration,
+        l10n.settingsConfidenceThreshold,
+        l10n.settingsSensitivity,
+        l10n.settingsInferenceRate,
+        l10n.settingsIgnoreSpecies,
+        l10n.settingsIncludeSoundClasses,
+      ],
+      'spectrogram': [
+        l10n.settingsSpectrogramSize,
+        l10n.settingsFftSize,
+        l10n.settingsColorMap,
+        l10n.settingsSpectrogramDuration,
+        l10n.settingsFrequencyRange,
+        l10n.settingsLogAmplitude,
+        l10n.settingsSpectrogramQuality,
+      ],
+      'playback': [
+        l10n.settingsPlaybackOverlay,
+        l10n.settingsPlaybackVoiceMemos,
+        if (ref.watch(playbackVoiceMemosProvider))
+          l10n.settingsPlaybackVoiceMemoDucking,
+        if (_showSection('announcements')) ...[
+          l10n.settingsAnnouncementsEnabled,
+          // The toggles inside the Advanced disclosure are not listed: they
+          // are only on screen while the disclosure is open.
+          if (ref.watch(announcementsEnabledProvider)) ...[
+            l10n.settingsAnnouncementsVerbosity,
+            l10n.settingsAnnouncementsFrequency,
+            l10n.settingsAnnouncementsVoice,
+            l10n.settingsAnnouncementsVoiceRate,
+            l10n.settingsAnnouncementsVoicePitch,
+            l10n.settingsAnnouncementsAdvanced,
+          ],
+        ],
+      ],
+      'location': [
+        l10n.settingsUseGps,
+        if (useGps) l10n.settingsGpsRefresh else l10n.settingsManualCoordinates,
+        l10n.settingsSpeciesFilter,
+        if (speciesFilter != 'off' && speciesFilter != 'geoAdaptive')
+          l10n.settingsGeoThreshold,
+      ],
+      'export': [
+        l10n.settingsExportFormatsTitle,
+        l10n.settingsExportContentTitle,
+        l10n.uploadDestinations,
+      ],
+      'privacy': [
+        l10n.settingsPrivacyAllowMap,
+        l10n.settingsPrivacyAllowReverseGeocoding,
+        l10n.settingsPrivacyAllowWeather,
+      ],
+      _dangerSection: [
+        l10n.settingsResetOnboarding,
+        l10n.settingsResetAll,
+        l10n.settingsClearData,
+      ],
+    };
+    return [
+      for (final MapEntry(key: section, value: sectionTitles) in titles.entries)
+        if (_showSection(section))
+          for (final title in sectionTitles) (section: section, title: title),
+    ];
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _searchVisible = !_searchVisible;
+      _searchController.clear();
+      _query = '';
+    });
+  }
+
+  /// Leaves search, expands the result's section, and scrolls to the setting.
+  Future<void> _openSearchResult(({String section, String title}) entry) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    final wasExpanded = _expandedSections.contains(entry.section);
+    _searchController.clear();
+    setState(() {
+      _searchVisible = false;
+      _query = '';
+      _expandedSections.add(entry.section);
+    });
+    if (!wasExpanded && !reducedMotion) {
+      // The list only reaches its final length once the section has
+      // unfolded (the animation starts a frame after the state change, hence
+      // the margin); before that a setting near the end is out of reach.
+      await Future<void>.delayed(_expandDuration * 1.5);
+    }
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    final sectionContext = _sectionKeys[entry.section]?.currentContext;
+    if (sectionContext == null || !sectionContext.mounted) return;
+    Element? tile;
+    void visit(Element element) {
+      if (tile != null) return;
+      final widget = element.widget;
+      if (widget is Text && widget.data == entry.title) {
+        tile = element;
+      } else {
+        element.visitChildren(visit);
+      }
+    }
+
+    sectionContext.visitChildElements(visit);
+    await Scrollable.ensureVisible(
+      tile ?? sectionContext,
+      alignment: tile == null ? 0 : 0.3,
+      duration: reducedMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  Widget _buildSearchResults(AppLocalizations l10n, ThemeData theme) {
+    final query = _query.trim().toLowerCase();
+    // Settings whose own name matches come first, in screen order; settings
+    // that match only through their section's name follow.
+    final entries = _searchEntries(l10n);
+    final titleMatches = [
+      for (final entry in entries)
+        if (entry.title.toLowerCase().contains(query)) entry,
+    ];
+    final results = [
+      ...titleMatches,
+      for (final entry in entries)
+        if (!titleMatches.contains(entry) &&
+            _sectionTitle(l10n, entry.section).toLowerCase().contains(query))
+          entry,
+    ];
+    if (results.isEmpty) {
+      return Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                AppIcons.searchOff,
+                size: 40,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.settingsSearchNoResults,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        final entry = results[index];
+        return ListTile(
+          title: Text(entry.title),
+          subtitle: Text(_sectionTitle(l10n, entry.section)),
+          trailing: const Icon(AppIcons.chevronRight),
+          onTap: () => _openSearchResult(entry),
+        );
+      },
+    );
+  }
+
+  /// One collapsible settings section; its title comes from [_sectionTitle].
+  Widget _section({
+    required String id,
+    String? subtitle,
+    required List<Widget> children,
+    bool showDivider = true,
+  }) {
+    final expanded = _expandedSections.contains(id);
+    // No animation when the platform asks for reduced motion.
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : _expandDuration;
+    // Only the title row is pinned, so the pinned area stays one line high
+    // whatever the text size; the description scrolls away with the
+    // settings. Inside the group the row is pinned only while the group is
+    // on screen: the next section pushes it out.
+    return SliverMainAxisGroup(
+      key: _sectionKeys.putIfAbsent(id, GlobalKey.new),
+      slivers: [
+        PinnedHeaderSliver(
+          child: _SectionHeader(
+            title: _sectionTitle(AppLocalizations.of(context)!, id),
+            expanded: expanded,
+            showSeparator: expanded && _pinnedSections.contains(id),
+            duration: duration,
+            onToggle: () => _toggleSection(id),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: _SectionBody(
+            subtitle: subtitle,
+            expanded: expanded,
+            duration: duration,
+            onToggle: () => _toggleSection(id),
+            showDivider: showDivider,
+            children: children,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final searching = _query.trim().isNotEmpty;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.settings)),
-      body: ContentWidthConstraint(
-        child: ListView(
-          children: [
-            // --- General ---
-            if (_showSection('general')) ...[
-              _SectionHeader(
-                title: l10n.settingsGeneral,
-                subtitle: l10n.settingsGeneralDescription,
-              ),
-              _ThemeTile(l10n: l10n),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsDynamicColor,
-                  helpBody: l10n.settingsHelpDynamicColor,
-                ),
-                subtitle: Text(l10n.settingsDynamicColorDescription),
-                value: ref.watch(dynamicColorProvider),
-                onChanged: (v) =>
-                    ref.read(dynamicColorProvider.notifier).set(v),
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsHighContrastTheme,
-                  helpBody: l10n.settingsHelpHighContrastTheme,
-                ),
-                value: ref.watch(highContrastThemeProvider),
-                onChanged: (v) =>
-                    ref.read(highContrastThemeProvider.notifier).set(v),
-              ),
-              _LanguageTile(l10n: l10n),
-              _SpeciesLanguageTile(l10n: l10n),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsShowSciNames,
-                  helpBody: l10n.settingsHelpShowSciNames,
-                ),
-                value: ref.watch(showSciNamesProvider),
-                onChanged: (v) =>
-                    ref.read(showSciNamesProvider.notifier).set(v),
-              ),
-              if (settingsContext == SettingsContext.live ||
-                  settingsContext == SettingsContext.pointCount ||
-                  settingsContext == SettingsContext.all) ...[
-                SwitchListTile(
-                  title: SettingHelpTitle(
-                    title: l10n.settingsShowAllDetectedSpecies,
-                    helpBody: l10n.settingsHelpShowAllDetectedSpecies,
+    return PopScope(
+      // Back closes an open search before it leaves Settings.
+      canPop: !_searchVisible,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _toggleSearch();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // Same pattern as the Session Library: the search icon turns the
+          // title into the search field.
+          title: _searchVisible
+              ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: l10n.settingsSearchHint,
+                    border: InputBorder.none,
                   ),
-                  subtitle: Text(
-                    l10n.settingsShowAllDetectedSpeciesDescription,
-                  ),
-                  value: ref.watch(showAllDetectedSpeciesProvider),
-                  onChanged: (v) =>
-                      ref.read(showAllDetectedSpeciesProvider.notifier).set(v),
-                ),
-                if (ref.watch(showAllDetectedSpeciesProvider))
-                  _ChoiceTile<String>(
-                    title: l10n.settingsDetectedSpeciesSortMode,
-                    value: ref.watch(detectedSpeciesSortModeProvider),
-                    options: {
-                      DetectedSpeciesSortMode.newest:
-                          l10n.settingsDetectedSpeciesSortNewest,
-                      DetectedSpeciesSortMode.confidence:
-                          l10n.settingsDetectedSpeciesSortConfidence,
-                      DetectedSpeciesSortMode.alphabetical:
-                          l10n.settingsDetectedSpeciesSortAlphabetical,
-                      DetectedSpeciesSortMode.occurrences:
-                          l10n.settingsDetectedSpeciesSortOccurrences,
-                    },
-                    subtitle: _detectedSpeciesSortHelp(
-                      l10n,
-                      ref.watch(detectedSpeciesSortModeProvider),
-                    ),
-                    helpBody: _detectedSpeciesSortHelp(
-                      l10n,
-                      ref.watch(detectedSpeciesSortModeProvider),
-                    ),
-                    onChanged: (v) => ref
-                        .read(detectedSpeciesSortModeProvider.notifier)
-                        .set(v),
-                  ),
-              ],
-              ListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsTimestampDisplayMode,
-                  helpBody: l10n.settingsHelpTimestampDisplayMode,
-                ),
-                subtitle: Text(l10n.settingsTimestampDisplayModeDescription),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<String>(
-                    segments: [
-                      ButtonSegment(
-                        value: 'relative',
-                        label: _SegmentLabel(
-                          text: l10n.settingsTimestampDisplayModeRelative,
-                        ),
-                      ),
-                      ButtonSegment(
-                        value: 'absolute',
-                        label: _SegmentLabel(
-                          text: l10n.settingsTimestampDisplayModeAbsolute,
-                        ),
-                      ),
-                    ],
-                    selected: {ref.watch(timestampDisplayModeProvider)},
-                    onSelectionChanged: (selected) {
-                      HapticFeedback.selectionClick();
-                      ref
-                          .read(timestampDisplayModeProvider.notifier)
-                          .set(selected.first);
-                    },
-                    showSelectedIcon: false,
-                    style: ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
-              ),
-              if (ref.watch(timestampDisplayModeProvider) == 'absolute')
-                SwitchListTile(
-                  title: SettingHelpTitle(
-                    title: l10n.settingsTimestampShowSeconds,
-                    helpBody: l10n.settingsHelpTimestampShowSeconds,
-                  ),
-                  subtitle: Text(l10n.settingsTimestampShowSecondsDescription),
-                  value: ref.watch(timestampShowSecondsProvider),
-                  onChanged: (v) =>
-                      ref.read(timestampShowSecondsProvider.notifier).set(v),
-                ),
-              const Divider(),
-            ],
-
-            // --- Audio ---
-            if (_showSection('audio')) ...[
-              _SectionHeader(
-                title: l10n.settingsAudio,
-                subtitle: l10n.settingsAudioDescription,
-              ),
-              const AudioSourceTile(),
-              _SliderTile(
-                title: l10n.settingsGain,
-                helpBody: l10n.settingsHelpGain,
-                value: ref.watch(audioGainProvider),
-                min: 0.0,
-                max: 2.0,
-                divisions: 20,
-                format: (v) => v.toStringAsFixed(1),
-                onChanged: (v) => ref.read(audioGainProvider.notifier).set(v),
-              ),
-              _SliderTile(
-                title: l10n.settingsHighPassFilter,
-                helpBody: l10n.settingsHelpHighPassFilter,
-                value: ref.watch(highPassFilterProvider),
-                min: 0,
-                max: 1000,
-                divisions: 100,
-                format: (v) => '${v.toInt()} Hz',
-                onChanged: (v) =>
-                    ref.read(highPassFilterProvider.notifier).set(v),
-              ),
-              const Divider(),
-            ],
-
-            // --- Inference ---
-            if (_showSection('inference')) ...[
-              _SectionHeader(
-                title: l10n.settingsInference,
-                subtitle: l10n.settingsInferenceDescription,
-              ),
-              _DiscreteSliderTile<int>(
-                title: l10n.settingsWindowDuration,
-                helpBody: l10n.settingsHelpWindowDuration,
-                value: ref.watch(windowDurationProvider),
-                values: const [1, 3, 5, 7, 10, 15],
-                format: (v) => '${v}s',
-                onChanged: (v) =>
-                    ref.read(windowDurationProvider.notifier).set(v),
-              ),
-              _SliderTile(
-                title: l10n.settingsConfidenceThreshold,
-                helpBody: l10n.settingsHelpConfidenceThreshold,
-                value: ref.watch(confidenceThresholdProvider).toDouble(),
-                min: 0,
-                max: 100,
-                divisions: 100,
-                format: (v) => '${v.toInt()}%',
-                onChanged: (v) => ref
-                    .read(confidenceThresholdProvider.notifier)
-                    .set(v.toInt()),
-              ),
-              _SliderTile(
-                title: l10n.settingsSensitivity,
-                helpBody: l10n.settingsHelpSensitivity,
-                value: ref.watch(sensitivityProvider),
-                min: 0.5,
-                max: 1.5,
-                divisions: 20,
-                format: (v) => v.toStringAsFixed(2),
-                onChanged: (v) => ref.read(sensitivityProvider.notifier).set(v),
-              ),
-              _DiscreteSliderTile<double>(
-                title: l10n.settingsInferenceRate,
-                helpBody: l10n.settingsHelpInferenceRate,
-                value: ref.watch(inferenceRateProvider),
-                values: inferenceRateHzValues,
-                format: (v) => '${v.toStringAsFixed(2)} Hz',
-                note: const InferenceRateLimitNote(),
-                onChanged: (v) =>
-                    ref.read(inferenceRateProvider.notifier).set(v),
-              ),
-              ListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsIgnoreSpecies,
-                  helpBody: l10n.settingsHelpIgnoreSpecies,
-                ),
-                subtitle: Text(l10n.settingsIgnoreSpeciesDescription),
-                trailing: const Icon(AppIcons.chevronRight),
-                onTap: () => showIgnoreSpeciesSettingsSheet(context, ref),
-              ),
-              if (_showAdvancedInferenceSettings)
-                const _AdvancedInferenceTuning(),
-              const Divider(),
-            ],
-
-            // --- Spectrogram ---
-            if (_showSection('spectrogram')) ...[
-              _SectionHeader(
-                title: l10n.settingsSpectrogram,
-                subtitle: l10n.settingsSpectrogramDescription,
-              ),
-              _ChoiceTile<SpectrogramSize>(
-                title: l10n.settingsSpectrogramSize,
-                helpBody: l10n.settingsHelpSpectrogramSize,
-                value: ref.watch(spectrogramSizeProvider),
-                options: {
-                  SpectrogramSize.full: l10n.settingsSpectrogramSizeFull,
-                  SpectrogramSize.medium: l10n.settingsSpectrogramSizeMedium,
-                  SpectrogramSize.small: l10n.settingsSpectrogramSizeSmall,
-                  SpectrogramSize.off: l10n.settingsSpectrogramSizeOff,
-                },
-                onChanged: (v) =>
-                    ref.read(spectrogramSizeProvider.notifier).set(v),
-              ),
-              _ChoiceTile<int>(
-                title: l10n.settingsFftSize,
-                helpBody: l10n.settingsHelpFftSize,
-                value: ref.watch(fftSizeProvider),
-                options: const {
-                  512: '512',
-                  1024: '1024',
-                  2048: '2048',
-                  4096: '4096',
-                },
-                onChanged: (v) => ref.read(fftSizeProvider.notifier).set(v),
-              ),
-              _ColorMapChoiceTile(
-                title: l10n.settingsColorMap,
-                helpBody: l10n.settingsHelpColorMap,
-                value: ref.watch(colorMapProvider),
-                options: {
-                  'viridis': l10n.settingsColorMapViridis,
-                  'magma': l10n.settingsColorMapMagma,
-                  'plasma': l10n.settingsColorMapPlasma,
-                  'cividis': l10n.settingsColorMapCividis,
-                  'jet': l10n.settingsColorMapJet,
-                  'turbo': l10n.settingsColorMapTurbo,
-                  'grayscale': l10n.settingsColorMapGrayscale,
-                  'birdnet': l10n.settingsColorMapBirdnet,
-                },
-                onChanged: (v) => ref.read(colorMapProvider.notifier).set(v),
-              ),
-              _ChoiceTile<int>(
-                title: l10n.settingsSpectrogramDuration,
-                helpBody: l10n.settingsHelpSpectrogramDuration,
-                value: ref.watch(spectrogramDurationProvider),
-                options: const {
-                  5: '5 s',
-                  10: '10 s',
-                  15: '15 s',
-                  20: '20 s',
-                  30: '30 s',
-                },
-                onChanged: (v) =>
-                    ref.read(spectrogramDurationProvider.notifier).set(v),
-              ),
-              _ChoiceTile<int>(
-                title: l10n.settingsFrequencyRange,
-                helpBody: l10n.settingsHelpFrequencyRange,
-                value: ref.watch(spectrogramMaxFreqProvider),
-                options: const {
-                  4000: '4 kHz',
-                  6000: '6 kHz',
-                  8000: '8 kHz',
-                  10000: '10 kHz',
-                  12000: '12 kHz',
-                  16000: '16 kHz',
-                },
-                onChanged: (v) =>
-                    ref.read(spectrogramMaxFreqProvider.notifier).set(v),
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsLogAmplitude,
-                  helpBody: l10n.settingsHelpLogAmplitude,
-                ),
-                value: ref.watch(logAmplitudeProvider),
-                onChanged: (v) =>
-                    ref.read(logAmplitudeProvider.notifier).set(v),
-              ),
-              _ChoiceTile<String>(
-                title: l10n.settingsSpectrogramQuality,
-                helpBody: l10n.settingsHelpSpectrogramQuality,
-                value: ref.watch(spectrogramQualityProvider),
-                options: {
-                  'low': l10n.settingsSpectrogramQualityLow,
-                  'medium': l10n.settingsSpectrogramQualityMedium,
-                  'high': l10n.settingsSpectrogramQualityHigh,
-                },
-                onChanged: (v) =>
-                    ref.read(spectrogramQualityProvider.notifier).set(v),
-              ),
-              const Divider(),
-            ],
-
-            // --- Recording ---
-            if (_showSection('recording')) ...[
-              _SectionHeader(
-                title: l10n.settingsRecording,
-                subtitle: settingsContext == SettingsContext.pointCount
-                    ? null
-                    : l10n.settingsRecordingDescription,
-              ),
-              if (settingsContext != SettingsContext.pointCount)
-                _ChoiceTile<String>(
-                  title: l10n.settingsRecordingMode,
-                  helpBody: l10n.settingsHelpRecordingMode,
-                  value: ref.watch(recordingModeProvider),
-                  options: {
-                    'full': l10n.settingsRecordingModeFull,
-                    'detections': l10n.settingsRecordingModeDetections,
-                    'off': l10n.settingsRecordingModeOff,
-                  },
-                  onChanged: (v) =>
-                      ref.read(recordingModeProvider.notifier).set(v),
-                ),
-              // Clip context (visible only when recording mode = detections)
-              if (settingsContext != SettingsContext.pointCount &&
-                  ref.watch(recordingModeProvider) == 'detections') ...[
-                ListTile(
-                  title: Text(l10n.surveyClipContext),
-                  subtitle: Text(l10n.surveyClipContextDescription),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Semantics(
-                    label: l10n.surveyClipContext,
-                    value: '\u00b1${ref.watch(clipContextProvider)}s',
-                    child: Slider(
-                      value: ref.watch(clipContextProvider).toDouble(),
-                      min: 0,
-                      max: 5,
-                      divisions: 5,
-                      label: '\u00b1${ref.watch(clipContextProvider)}s',
-                      onChanged: (v) =>
-                          ref.read(clipContextProvider.notifier).set(v.round()),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              // Audio file format only matters when something is being
-              // recorded; hiding it for mode = off avoids implying that the
-              // setting has any effect.
-              if ((settingsContext == SettingsContext.pointCount
-                      ? ref.watch(pointCountRecordingModeProvider)
-                      : ref.watch(recordingModeProvider)) !=
-                  'off')
-                _ChoiceTile<String>(
-                  title: l10n.settingsRecordingFormat,
-                  helpBody: l10n.settingsHelpRecordingFormat,
-                  value: ref.watch(recordingFormatProvider),
-                  options: const {'wav': 'WAV', 'flac': 'FLAC'},
-                  onChanged: (v) =>
-                      ref.read(recordingFormatProvider.notifier).set(v),
-                ),
-              // Auto-save tile applies to the attended field modes that use
-              // these Recording settings (Live + Point Count). Survey and ARU
-              // deployments always auto-save — losing a long unattended run by
-              // forgetting to save would be costly — so the toggle is hidden
-              // for those contexts.
-              if (settingsContext == SettingsContext.live ||
-                  settingsContext == SettingsContext.pointCount ||
-                  settingsContext == SettingsContext.all)
-                SwitchListTile(
-                  title: SettingHelpTitle(
-                    title: l10n.settingsSaveSessionAutomatically,
-                    helpBody: l10n.settingsHelpSaveSessionAutomatically,
-                  ),
-                  subtitle: Text(
-                    l10n.settingsSaveSessionAutomaticallyDescription,
-                  ),
-                  value: ref.watch(saveSessionAutomaticallyProvider),
-                  onChanged: (v) => ref
-                      .read(saveSessionAutomaticallyProvider.notifier)
-                      .set(v),
-                ),
-              // Auto-start tile is Live-only — the survey / point-count
-              // setup wizards already gate session start behind their own
-              // multi-step flows where an auto-start would skip required
-              // configuration.
-              if (settingsContext == SettingsContext.live ||
-                  settingsContext == SettingsContext.all)
-                SwitchListTile(
-                  title: SettingHelpTitle(
-                    title: l10n.settingsLiveAutoStart,
-                    helpBody: l10n.settingsHelpLiveAutoStart,
-                  ),
-                  subtitle: Text(l10n.settingsLiveAutoStartDescription),
-                  value: ref.watch(liveAutoStartProvider),
-                  onChanged: (v) =>
-                      ref.read(liveAutoStartProvider.notifier).set(v),
-                ),
-              if (settingsContext == SettingsContext.live ||
-                  settingsContext == SettingsContext.all) ...[
-                SwitchListTile(
-                  title: SettingHelpTitle(
-                    title: l10n.settingsLiveBackground,
-                    helpBody: l10n.settingsHelpLiveBackground,
-                  ),
-                  subtitle: Text(l10n.settingsLiveBackgroundDescription),
-                  value: ref.watch(liveBackgroundEnabledProvider),
-                  onChanged: (v) =>
-                      ref.read(liveBackgroundEnabledProvider.notifier).set(v),
-                ),
-                if (ref.watch(liveBackgroundEnabledProvider))
-                  _ChoiceTile<int>(
-                    title: l10n.settingsLiveBackgroundMaxTime,
-                    helpBody: l10n.settingsHelpLiveBackgroundMaxTime,
-                    value: ref.watch(liveBackgroundMaxMinutesProvider),
-                    options: {
-                      for (final minutes in liveBackgroundMaxMinuteOptions)
-                        minutes: l10n.pointCountDurationMinutes(minutes),
-                    },
-                    onChanged: (v) => ref
-                        .read(liveBackgroundMaxMinutesProvider.notifier)
-                        .set(v),
-                  ),
-              ],
-              const Divider(),
-            ],
-
-            // --- Playback ---
-            if (_showSection('playback')) ...[
-              _SectionHeader(
-                title: l10n.settingsPlayback,
-                subtitle: l10n.settingsPlaybackDescription,
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsPlaybackOverlay,
-                  helpBody: l10n.settingsHelpPlaybackOverlay,
-                ),
-                subtitle: Text(l10n.settingsPlaybackOverlayDescription),
-                value: ref.watch(sessionReviewPlaybackOverlayProvider),
-                onChanged: (v) => ref
-                    .read(sessionReviewPlaybackOverlayProvider.notifier)
-                    .set(v),
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsPlaybackVoiceMemos,
-                  helpBody: l10n.settingsHelpPlaybackVoiceMemos,
-                ),
-                subtitle: Text(l10n.settingsPlaybackVoiceMemosDescription),
-                value: ref.watch(playbackVoiceMemosProvider),
-                onChanged: (v) =>
-                    ref.read(playbackVoiceMemosProvider.notifier).set(v),
-              ),
-              if (ref.watch(playbackVoiceMemosProvider))
-                _SliderTile(
-                  title: l10n.settingsPlaybackVoiceMemoDucking,
-                  helpBody: l10n.settingsHelpPlaybackVoiceMemoDucking,
-                  value: ref.watch(playbackVoiceMemoDuckingProvider),
-                  min: 0.0,
-                  max: 0.95,
-                  divisions: 19,
-                  format: (v) => '${(v * 100).round()}%',
-                  onChanged: (v) => ref
-                      .read(playbackVoiceMemoDuckingProvider.notifier)
-                      .set(v),
-                ),
-              const Divider(),
-            ],
-
-            // --- Announcements ---
-            if (_showSection('announcements'))
-              AnnouncementsSettingsSection(
-                sectionHeader: ({
-                  required String title,
-                  required String subtitle,
-                }) => _SectionHeader(title: title, subtitle: subtitle),
-                titleWithHelp: ({required String title, String? helpBody}) =>
-                    SettingHelpTitle(title: title, helpBody: helpBody),
-              ),
-
-            // --- Location / Geo ---
-            if (_showSection('location')) ...[
-              _SectionHeader(
-                title: l10n.settingsLocation,
-                subtitle: l10n.settingsLocationDescription,
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsUseGps,
-                  helpBody: l10n.settingsHelpUseGps,
-                ),
-                subtitle: Text(l10n.settingsUseGpsDescription),
-                value: ref.watch(useGpsProvider),
-                onChanged: (v) => ref.read(useGpsProvider.notifier).set(v),
-              ),
-              if (!ref.watch(useGpsProvider)) ...[
-                const _ManualCoordinatesTile(),
-              ],
-              if (ref.watch(useGpsProvider)) const _GpsRefreshTile(),
-              if (_showOfflineMapDownloadSetting && ref.watch(useGpsProvider))
-                const OfflineMapDownloadTile(),
-              _ChoiceTile<String>(
-                title: l10n.settingsSpeciesFilter,
-                helpBody: l10n.settingsHelpSpeciesFilter,
-                value: ref.watch(speciesFilterModeProvider),
-                options: {
-                  'off': l10n.settingsFilterOff,
-                  'geoExclude': l10n.settingsFilterGeoExclude,
-                  'geoAdaptive': l10n.settingsFilterGeoAdaptive,
-                  'geoMerge': l10n.settingsFilterGeoMerge,
-                },
-                onChanged: (v) =>
-                    ref.read(speciesFilterModeProvider.notifier).set(v),
-              ),
-              // Adaptive mode derives its own bar from the local score
-              // distribution, so the manual threshold does not apply there.
-              if (ref.watch(speciesFilterModeProvider) != 'off' &&
-                  ref.watch(speciesFilterModeProvider) != 'geoAdaptive')
-                _SliderTile(
-                  title: l10n.settingsGeoThreshold,
-                  helpBody: l10n.settingsHelpGeoThreshold,
-                  value: ref.watch(geoThresholdProvider),
-                  min: 0.0,
-                  max: 0.5,
-                  divisions: 50,
-                  format: (v) => v.toStringAsFixed(2),
-                  onChanged: (v) =>
-                      ref.read(geoThresholdProvider.notifier).set(v),
-                ),
-              const Divider(),
-            ],
-
-            // --- Export ---
-            if (_showSection('export')) ...[
-              _SectionHeader(
-                title: l10n.settingsExport,
-                subtitle: l10n.settingsExportDescription,
-              ),
-              _ExportFormatChecklist(),
-              CheckboxListTile(
-                dense: true,
-                title: SettingHelpTitle(
-                  title: l10n.settingsIncludeAudioFiles,
-                  helpBody: l10n.settingsHelpIncludeAudioFiles,
-                ),
-                value: ref.watch(includeAudioProvider),
-                onChanged: (v) =>
-                    ref.read(includeAudioProvider.notifier).set(v ?? false),
-              ),
-              if (ref.watch(includeAudioProvider))
-                CheckboxListTile(
-                  dense: true,
-                  title: SettingHelpTitle(
-                    title: l10n.settingsShareAudioAsWav,
-                    helpBody: l10n.settingsHelpShareAudioAsWav,
-                  ),
-                  value: ref.watch(shareAudioAsWavProvider),
-                  onChanged: (v) => ref
-                      .read(shareAudioAsWavProvider.notifier)
-                      .set(v ?? false),
-                ),
-              CheckboxListTile(
-                dense: true,
-                title: SettingHelpTitle(
-                  title: l10n.settingsExportAppMetadata,
-                  helpBody: l10n.settingsHelpExportAppMetadata,
-                ),
-                value: ref.watch(includeAppMetadataProvider),
-                onChanged: (v) => ref
-                    .read(includeAppMetadataProvider.notifier)
-                    .set(v ?? false),
-              ),
-              CheckboxListTile(
-                dense: true,
-                title: SettingHelpTitle(
-                  title: l10n.settingsExportHtmlReport,
-                  helpBody: l10n.settingsHelpExportHtmlReport,
-                ),
-                value: ref.watch(exportHtmlReportProvider),
-                onChanged: (v) =>
-                    ref.read(exportHtmlReportProvider.notifier).set(v ?? false),
-              ),
-              const Divider(),
-            ],
-
-            // --- Privacy ---
-            if (_showSection('privacy')) ...[
-              _SectionHeader(
-                title: l10n.settingsPrivacy,
-                subtitle: l10n.settingsPrivacyDescription,
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsPrivacyAllowMap,
-                  helpBody: l10n.settingsHelpPrivacyAllowMap,
-                ),
-                subtitle: Text(l10n.settingsPrivacyAllowMapSubtitle),
-                value: ref.watch(privacyAllowMapProvider),
-                onChanged: (v) =>
-                    ref.read(privacyAllowMapProvider.notifier).set(v),
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsPrivacyAllowReverseGeocoding,
-                  helpBody: l10n.settingsHelpPrivacyAllowReverseGeocoding,
-                ),
-                subtitle: Text(
-                  l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
-                ),
-                value: ref.watch(privacyAllowReverseGeocodingProvider),
-                onChanged: (v) => ref
-                    .read(privacyAllowReverseGeocodingProvider.notifier)
-                    .set(v),
-              ),
-              SwitchListTile(
-                title: SettingHelpTitle(
-                  title: l10n.settingsPrivacyAllowWeather,
-                  helpBody: l10n.settingsHelpPrivacyAllowWeather,
-                ),
-                subtitle: Text(l10n.settingsPrivacyAllowWeatherSubtitle),
-                value: ref.watch(privacyAllowWeatherProvider),
-                onChanged: (v) =>
-                    ref.read(privacyAllowWeatherProvider.notifier).set(v),
-              ),
-              const Divider(),
-            ],
-
-            // --- Announcements ---
-            // Section moved up: it now renders right after Spectrogram
-            // (see above). Kept the comment marker here as a redirect
-            // breadcrumb so future readers searching for it find the
-            // new location.
-
-            // --- About ---
-            if (_showSection('about'))
-              ListTile(
-                title: Text(l10n.about),
-                trailing: const Icon(AppIcons.chevronRight),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const AboutScreen(),
-                    ),
-                  );
-                },
-              ),
-
-            // --- Danger Zone ---
-            if (_showSection('general')) ...[
-              const Divider(),
-              _SectionHeader(
-                title: l10n.settingsDangerZone,
-                subtitle: l10n.settingsDangerZoneDescription,
-              ),
-              ListTile(
-                title: Text(l10n.settingsResetOnboarding),
-                onTap: () => _showResetOnboardingDialog(context, ref, l10n),
-              ),
-              ListTile(
-                title: Text(l10n.settingsResetAll),
-                subtitle: Text(l10n.settingsResetAllSubtitle),
-                onTap: () => _showResetAllSettingsDialog(context, l10n),
-              ),
-              ListTile(
-                title: Text(
-                  l10n.settingsClearData,
-                  style: TextStyle(color: theme.colorScheme.error),
-                ),
-                onTap: () => _showClearDataDialog(context, l10n),
-              ),
-            ],
-
-            const SizedBox(height: 32),
+                  style: theme.textTheme.titleMedium,
+                  onChanged: (value) => setState(() => _query = value),
+                )
+              : Text(l10n.settings),
+          actions: [
+            IconButton(
+              icon: Icon(_searchVisible ? AppIcons.close : AppIcons.search),
+              tooltip: _searchVisible
+                  ? l10n.tooltipClearSearch
+                  : l10n.tooltipSearch,
+              onPressed: _toggleSearch,
+            ),
           ],
+        ),
+        body: ContentWidthConstraint(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // The list stays mounted under the search results, so leaving
+              // search returns to the same scroll position with every tile's
+              // state intact.
+              Offstage(
+                offstage: searching,
+                child: TickerMode(
+                  enabled: !searching,
+                  child: Padding(
+                    // Side insets only (display cutouts in landscape). This
+                    // context is above the Scaffold, so its top padding is the
+                    // status bar, which the app bar already covers; the bottom
+                    // inset is added after the last sliver.
+                    padding: MediaQuery.paddingOf(context)
+                        .copyWith(top: 0, bottom: 0),
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      slivers: [
+                        // --- General ---
+                        if (_showSection('general'))
+                          _section(
+                            id: 'general',
+                            subtitle: l10n.settingsGeneralDescription,
+                            children: [
+                              _LanguageTile(l10n: l10n),
+                              _SpeciesLanguageTile(l10n: l10n),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsShowSciNames,
+                                  helpBody: l10n.settingsHelpShowSciNames,
+                                ),
+                                value: ref.watch(showSciNamesProvider),
+                                onChanged: (v) => ref
+                                    .read(showSciNamesProvider.notifier)
+                                    .set(v),
+                              ),
+                              if (settingsContext == SettingsContext.live ||
+                                  settingsContext ==
+                                      SettingsContext.pointCount ||
+                                  settingsContext == SettingsContext.all) ...[
+                                SwitchListTile(
+                                  title: SettingHelpTitle(
+                                    title: l10n.settingsShowAllDetectedSpecies,
+                                    helpBody:
+                                        l10n.settingsHelpShowAllDetectedSpecies,
+                                  ),
+                                  subtitle: Text(
+                                    l10n.settingsShowAllDetectedSpeciesDescription,
+                                  ),
+                                  value: ref.watch(
+                                    showAllDetectedSpeciesProvider,
+                                  ),
+                                  onChanged: (v) => ref
+                                      .read(
+                                        showAllDetectedSpeciesProvider.notifier,
+                                      )
+                                      .set(v),
+                                ),
+                                if (ref.watch(showAllDetectedSpeciesProvider))
+                                  _ChoiceTile<String>(
+                                    title: l10n.settingsDetectedSpeciesSortMode,
+                                    value: ref.watch(
+                                      detectedSpeciesSortModeProvider,
+                                    ),
+                                    options: {
+                                      DetectedSpeciesSortMode.newest: l10n
+                                          .settingsDetectedSpeciesSortNewest,
+                                      DetectedSpeciesSortMode.confidence: l10n
+                                          .settingsDetectedSpeciesSortConfidence,
+                                      DetectedSpeciesSortMode.alphabetical: l10n
+                                          .settingsDetectedSpeciesSortAlphabetical,
+                                      DetectedSpeciesSortMode.occurrences: l10n
+                                          .settingsDetectedSpeciesSortOccurrences,
+                                    },
+                                    subtitle: _detectedSpeciesSortHelp(
+                                      l10n,
+                                      ref.watch(
+                                        detectedSpeciesSortModeProvider,
+                                      ),
+                                    ),
+                                    helpBody: _detectedSpeciesSortHelp(
+                                      l10n,
+                                      ref.watch(
+                                        detectedSpeciesSortModeProvider,
+                                      ),
+                                    ),
+                                    onChanged: (v) => ref
+                                        .read(
+                                          detectedSpeciesSortModeProvider
+                                              .notifier,
+                                        )
+                                        .set(v),
+                                  ),
+                              ],
+                              ListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsTimestampDisplayMode,
+                                  helpBody:
+                                      l10n.settingsHelpTimestampDisplayMode,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsTimestampDisplayModeDescription,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  12,
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: SegmentedButton<String>(
+                                    segments: [
+                                      ButtonSegment(
+                                        value: 'relative',
+                                        label: _SegmentLabel(
+                                          text: l10n
+                                              .settingsTimestampDisplayModeRelative,
+                                        ),
+                                      ),
+                                      ButtonSegment(
+                                        value: 'absolute',
+                                        label: _SegmentLabel(
+                                          text: l10n
+                                              .settingsTimestampDisplayModeAbsolute,
+                                        ),
+                                      ),
+                                    ],
+                                    selected: {
+                                      ref.watch(timestampDisplayModeProvider),
+                                    },
+                                    onSelectionChanged: (selected) {
+                                      HapticFeedback.selectionClick();
+                                      ref
+                                          .read(
+                                            timestampDisplayModeProvider
+                                                .notifier,
+                                          )
+                                          .set(selected.first);
+                                    },
+                                    showSelectedIcon: false,
+                                    style: ButtonStyle(
+                                      visualDensity: VisualDensity.compact,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (ref.watch(timestampDisplayModeProvider) ==
+                                  'absolute')
+                                SwitchListTile(
+                                  title: SettingHelpTitle(
+                                    title: l10n.settingsTimestampShowSeconds,
+                                    helpBody:
+                                        l10n.settingsHelpTimestampShowSeconds,
+                                  ),
+                                  subtitle: Text(
+                                    l10n.settingsTimestampShowSecondsDescription,
+                                  ),
+                                  value: ref.watch(
+                                    timestampShowSecondsProvider,
+                                  ),
+                                  onChanged: (v) => ref
+                                      .read(
+                                        timestampShowSecondsProvider.notifier,
+                                      )
+                                      .set(v),
+                                ),
+                            ],
+                          ),
+
+                        // --- Appearance ---
+                        if (_showSection('appearance'))
+                          _section(
+                            id: 'appearance',
+                            subtitle: l10n.settingsAppearanceDescription,
+                            children: [
+                              _ThemeTile(l10n: l10n),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsDynamicColor,
+                                  helpBody: l10n.settingsHelpDynamicColor,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsDynamicColorDescription,
+                                ),
+                                value: ref.watch(dynamicColorProvider),
+                                onChanged: (v) => ref
+                                    .read(dynamicColorProvider.notifier)
+                                    .set(v),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsHighContrastTheme,
+                                  helpBody: l10n.settingsHelpHighContrastTheme,
+                                ),
+                                value: ref.watch(highContrastThemeProvider),
+                                onChanged: (v) => ref
+                                    .read(highContrastThemeProvider.notifier)
+                                    .set(v),
+                              ),
+                            ],
+                          ),
+
+                        // --- Audio ---
+                        if (_showSection('audio'))
+                          _section(
+                            id: 'audio',
+                            // Point Count picks its recording mode in its own
+                            // setup, so the saving half of the description would
+                            // not match what the section shows there.
+                            subtitle:
+                                settingsContext == SettingsContext.pointCount
+                                ? l10n.settingsAudioDescription
+                                : l10n.settingsAudioRecordingDescription,
+                            children: [
+                              const AudioSourceTile(),
+                              _SliderTile(
+                                title: l10n.settingsGain,
+                                helpBody: l10n.settingsHelpGain,
+                                value: ref.watch(audioGainProvider),
+                                min: 0.0,
+                                max: 2.0,
+                                divisions: 20,
+                                format: (v) => v.toStringAsFixed(1),
+                                onChanged: (v) =>
+                                    ref.read(audioGainProvider.notifier).set(v),
+                              ),
+                              _SliderTile(
+                                title: l10n.settingsHighPassFilter,
+                                helpBody: l10n.settingsHelpHighPassFilter,
+                                value: ref.watch(highPassFilterProvider),
+                                min: 0,
+                                max: 1000,
+                                divisions: 100,
+                                format: (v) => '${v.toInt()} Hz',
+                                onChanged: (v) => ref
+                                    .read(highPassFilterProvider.notifier)
+                                    .set(v),
+                              ),
+                              // --- Recording (same section) ---
+                              if (_showSection('recording')) ...[
+                                if (settingsContext !=
+                                    SettingsContext.pointCount)
+                                  _ChoiceTile<String>(
+                                    title: l10n.settingsRecordingMode,
+                                    helpBody: l10n.settingsHelpRecordingMode,
+                                    value: ref.watch(recordingModeProvider),
+                                    options: {
+                                      'full': l10n.settingsRecordingModeFull,
+                                      'detections':
+                                          l10n.settingsRecordingModeDetections,
+                                      'off': l10n.settingsRecordingModeOff,
+                                    },
+                                    onChanged: (v) => ref
+                                        .read(recordingModeProvider.notifier)
+                                        .set(v),
+                                  ),
+                                // Clip context (visible only when recording mode = detections)
+                                if (settingsContext !=
+                                        SettingsContext.pointCount &&
+                                    ref.watch(recordingModeProvider) ==
+                                        'detections') ...[
+                                  ListTile(
+                                    title: Text(l10n.surveyClipContext),
+                                    subtitle: Text(
+                                      l10n.surveyClipContextDescription,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Semantics(
+                                      label: l10n.surveyClipContext,
+                                      value:
+                                          '\u00b1${ref.watch(clipContextProvider)}s',
+                                      child: Slider(
+                                        value: ref
+                                            .watch(clipContextProvider)
+                                            .toDouble(),
+                                        min: 0,
+                                        max: 5,
+                                        divisions: 5,
+                                        label:
+                                            '\u00b1${ref.watch(clipContextProvider)}s',
+                                        onChanged: (v) => ref
+                                            .read(clipContextProvider.notifier)
+                                            .set(v.round()),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                                // Audio file format only matters when something is being
+                                // recorded; hiding it for mode = off avoids implying that the
+                                // setting has any effect.
+                                if ((settingsContext ==
+                                            SettingsContext.pointCount
+                                        ? ref.watch(
+                                            pointCountRecordingModeProvider,
+                                          )
+                                        : ref.watch(recordingModeProvider)) !=
+                                    'off')
+                                  _ChoiceTile<String>(
+                                    title: l10n.settingsRecordingFormat,
+                                    helpBody: l10n.settingsHelpRecordingFormat,
+                                    value: ref.watch(recordingFormatProvider),
+                                    options: const {
+                                      'wav': 'WAV',
+                                      'flac': 'FLAC',
+                                    },
+                                    onChanged: (v) => ref
+                                        .read(recordingFormatProvider.notifier)
+                                        .set(v),
+                                  ),
+                                // Auto-save tile applies to the attended field modes that use
+                                // these Recording settings (Live + Point Count). Survey and ARU
+                                // deployments always auto-save — losing a long unattended run by
+                                // forgetting to save would be costly — so the toggle is hidden
+                                // for those contexts.
+                                if (settingsContext == SettingsContext.live ||
+                                    settingsContext ==
+                                        SettingsContext.pointCount ||
+                                    settingsContext == SettingsContext.all)
+                                  SwitchListTile(
+                                    title: SettingHelpTitle(
+                                      title:
+                                          l10n.settingsSaveSessionAutomatically,
+                                      helpBody: l10n
+                                          .settingsHelpSaveSessionAutomatically,
+                                    ),
+                                    subtitle: Text(
+                                      l10n.settingsSaveSessionAutomaticallyDescription,
+                                    ),
+                                    value: ref.watch(
+                                      saveSessionAutomaticallyProvider,
+                                    ),
+                                    onChanged: (v) => ref
+                                        .read(
+                                          saveSessionAutomaticallyProvider
+                                              .notifier,
+                                        )
+                                        .set(v),
+                                  ),
+                                // Auto-start tile is Live-only — the survey / point-count
+                                // setup wizards already gate session start behind their own
+                                // multi-step flows where an auto-start would skip required
+                                // configuration.
+                                if (settingsContext == SettingsContext.live ||
+                                    settingsContext == SettingsContext.all)
+                                  SwitchListTile(
+                                    title: SettingHelpTitle(
+                                      title: l10n.settingsLiveAutoStart,
+                                      helpBody: l10n.settingsHelpLiveAutoStart,
+                                    ),
+                                    subtitle: Text(
+                                      l10n.settingsLiveAutoStartDescription,
+                                    ),
+                                    value: ref.watch(liveAutoStartProvider),
+                                    onChanged: (v) => ref
+                                        .read(liveAutoStartProvider.notifier)
+                                        .set(v),
+                                  ),
+                                if (settingsContext == SettingsContext.live ||
+                                    settingsContext == SettingsContext.all) ...[
+                                  SwitchListTile(
+                                    title: SettingHelpTitle(
+                                      title: l10n.settingsLiveBackground,
+                                      helpBody: l10n.settingsHelpLiveBackground,
+                                    ),
+                                    subtitle: Text(
+                                      l10n.settingsLiveBackgroundDescription,
+                                    ),
+                                    value: ref.watch(
+                                      liveBackgroundEnabledProvider,
+                                    ),
+                                    onChanged: (v) => ref
+                                        .read(
+                                          liveBackgroundEnabledProvider
+                                              .notifier,
+                                        )
+                                        .set(v),
+                                  ),
+                                  if (ref.watch(liveBackgroundEnabledProvider))
+                                    _ChoiceTile<int>(
+                                      title: l10n.settingsLiveBackgroundMaxTime,
+                                      helpBody: l10n
+                                          .settingsHelpLiveBackgroundMaxTime,
+                                      value: ref.watch(
+                                        liveBackgroundMaxMinutesProvider,
+                                      ),
+                                      options: {
+                                        for (final minutes
+                                            in liveBackgroundMaxMinuteOptions)
+                                          minutes: l10n
+                                              .pointCountDurationMinutes(
+                                                minutes,
+                                              ),
+                                      },
+                                      onChanged: (v) => ref
+                                          .read(
+                                            liveBackgroundMaxMinutesProvider
+                                                .notifier,
+                                          )
+                                          .set(v),
+                                    ),
+                                ],
+                              ],
+                            ],
+                          ),
+
+                        // --- Inference ---
+                        if (_showSection('inference'))
+                          _section(
+                            id: 'inference',
+                            subtitle: l10n.settingsInferenceDescription,
+                            children: [
+                              _DiscreteSliderTile<int>(
+                                title: l10n.settingsWindowDuration,
+                                helpBody: l10n.settingsHelpWindowDuration,
+                                value: ref.watch(windowDurationProvider),
+                                values: const [1, 3, 5, 7, 10, 15],
+                                format: (v) => '${v}s',
+                                onChanged: (v) => ref
+                                    .read(windowDurationProvider.notifier)
+                                    .set(v),
+                              ),
+                              _SliderTile(
+                                title: l10n.settingsConfidenceThreshold,
+                                helpBody: l10n.settingsHelpConfidenceThreshold,
+                                value: ref
+                                    .watch(confidenceThresholdProvider)
+                                    .toDouble(),
+                                min: 0,
+                                max: 100,
+                                divisions: 100,
+                                format: (v) => '${v.toInt()}%',
+                                onChanged: (v) => ref
+                                    .read(confidenceThresholdProvider.notifier)
+                                    .set(v.toInt()),
+                              ),
+                              _SliderTile(
+                                title: l10n.settingsSensitivity,
+                                helpBody: l10n.settingsHelpSensitivity,
+                                value: ref.watch(sensitivityProvider),
+                                min: 0.5,
+                                max: 1.5,
+                                divisions: 20,
+                                format: (v) => v.toStringAsFixed(2),
+                                onChanged: (v) => ref
+                                    .read(sensitivityProvider.notifier)
+                                    .set(v),
+                              ),
+                              _DiscreteSliderTile<double>(
+                                title: l10n.settingsInferenceRate,
+                                helpBody: l10n.settingsHelpInferenceRate,
+                                value: ref.watch(inferenceRateProvider),
+                                values: inferenceRateHzValues,
+                                format: (v) => '${v.toStringAsFixed(2)} Hz',
+                                note: const InferenceRateLimitNote(),
+                                onChanged: (v) => ref
+                                    .read(inferenceRateProvider.notifier)
+                                    .set(v),
+                              ),
+                              ListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsIgnoreSpecies,
+                                  helpBody: l10n.settingsHelpIgnoreSpecies,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsIgnoreSpeciesDescription,
+                                ),
+                                trailing: const Icon(AppIcons.chevronRight),
+                                onTap: () => showIgnoreSpeciesSettingsSheet(
+                                  context,
+                                  ref,
+                                ),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsIncludeSoundClasses,
+                                  helpBody:
+                                      l10n.settingsHelpIncludeSoundClasses,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsIncludeSoundClassesDescription,
+                                ),
+                                value: ref.watch(includeSoundClassesProvider),
+                                onChanged: (v) => ref
+                                    .read(includeSoundClassesProvider.notifier)
+                                    .set(v),
+                              ),
+                              if (_showAdvancedInferenceSettings)
+                                const _AdvancedInferenceTuning(),
+                            ],
+                          ),
+
+                        // --- Spectrogram ---
+                        if (_showSection('spectrogram'))
+                          _section(
+                            id: 'spectrogram',
+                            subtitle: l10n.settingsSpectrogramDescription,
+                            children: [
+                              _ChoiceTile<SpectrogramSize>(
+                                title: l10n.settingsSpectrogramSize,
+                                helpBody: l10n.settingsHelpSpectrogramSize,
+                                value: ref.watch(spectrogramSizeProvider),
+                                options: {
+                                  SpectrogramSize.full:
+                                      l10n.settingsSpectrogramSizeFull,
+                                  SpectrogramSize.medium:
+                                      l10n.settingsSpectrogramSizeMedium,
+                                  SpectrogramSize.small:
+                                      l10n.settingsSpectrogramSizeSmall,
+                                  SpectrogramSize.off:
+                                      l10n.settingsSpectrogramSizeOff,
+                                },
+                                onChanged: (v) => ref
+                                    .read(spectrogramSizeProvider.notifier)
+                                    .set(v),
+                              ),
+                              _ChoiceTile<int>(
+                                title: l10n.settingsFftSize,
+                                helpBody: l10n.settingsHelpFftSize,
+                                value: ref.watch(fftSizeProvider),
+                                options: const {
+                                  512: '512',
+                                  1024: '1024',
+                                  2048: '2048',
+                                  4096: '4096',
+                                },
+                                onChanged: (v) =>
+                                    ref.read(fftSizeProvider.notifier).set(v),
+                              ),
+                              _ColorMapChoiceTile(
+                                title: l10n.settingsColorMap,
+                                helpBody: l10n.settingsHelpColorMap,
+                                value: ref.watch(colorMapProvider),
+                                options: {
+                                  'viridis': l10n.settingsColorMapViridis,
+                                  'magma': l10n.settingsColorMapMagma,
+                                  'plasma': l10n.settingsColorMapPlasma,
+                                  'cividis': l10n.settingsColorMapCividis,
+                                  'jet': l10n.settingsColorMapJet,
+                                  'turbo': l10n.settingsColorMapTurbo,
+                                  'grayscale': l10n.settingsColorMapGrayscale,
+                                  'birdnet': l10n.settingsColorMapBirdnet,
+                                },
+                                onChanged: (v) =>
+                                    ref.read(colorMapProvider.notifier).set(v),
+                              ),
+                              _ChoiceTile<int>(
+                                title: l10n.settingsSpectrogramDuration,
+                                helpBody: l10n.settingsHelpSpectrogramDuration,
+                                value: ref.watch(spectrogramDurationProvider),
+                                options: const {
+                                  5: '5 s',
+                                  10: '10 s',
+                                  15: '15 s',
+                                  20: '20 s',
+                                  30: '30 s',
+                                },
+                                onChanged: (v) => ref
+                                    .read(spectrogramDurationProvider.notifier)
+                                    .set(v),
+                              ),
+                              _ChoiceTile<int>(
+                                title: l10n.settingsFrequencyRange,
+                                helpBody: l10n.settingsHelpFrequencyRange,
+                                value: ref.watch(spectrogramMaxFreqProvider),
+                                options: const {
+                                  4000: '4 kHz',
+                                  6000: '6 kHz',
+                                  8000: '8 kHz',
+                                  10000: '10 kHz',
+                                  12000: '12 kHz',
+                                  16000: '16 kHz',
+                                },
+                                onChanged: (v) => ref
+                                    .read(spectrogramMaxFreqProvider.notifier)
+                                    .set(v),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsLogAmplitude,
+                                  helpBody: l10n.settingsHelpLogAmplitude,
+                                ),
+                                value: ref.watch(logAmplitudeProvider),
+                                onChanged: (v) => ref
+                                    .read(logAmplitudeProvider.notifier)
+                                    .set(v),
+                              ),
+                              _ChoiceTile<String>(
+                                title: l10n.settingsSpectrogramQuality,
+                                helpBody: l10n.settingsHelpSpectrogramQuality,
+                                value: ref.watch(spectrogramQualityProvider),
+                                options: {
+                                  'low': l10n.settingsSpectrogramQualityLow,
+                                  'medium':
+                                      l10n.settingsSpectrogramQualityMedium,
+                                  'high': l10n.settingsSpectrogramQualityHigh,
+                                },
+                                onChanged: (v) => ref
+                                    .read(spectrogramQualityProvider.notifier)
+                                    .set(v),
+                              ),
+                            ],
+                          ),
+
+                        // --- Playback ---
+                        if (_showSection('playback'))
+                          _section(
+                            id: 'playback',
+                            subtitle: _showSection('announcements')
+                                ? l10n.settingsPlaybackAnnouncementsDescription
+                                : l10n.settingsPlaybackDescription,
+                            children: [
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsPlaybackOverlay,
+                                  helpBody: l10n.settingsHelpPlaybackOverlay,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsPlaybackOverlayDescription,
+                                ),
+                                value: ref.watch(
+                                  sessionReviewPlaybackOverlayProvider,
+                                ),
+                                onChanged: (v) => ref
+                                    .read(
+                                      sessionReviewPlaybackOverlayProvider
+                                          .notifier,
+                                    )
+                                    .set(v),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsPlaybackVoiceMemos,
+                                  helpBody: l10n.settingsHelpPlaybackVoiceMemos,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsPlaybackVoiceMemosDescription,
+                                ),
+                                value: ref.watch(playbackVoiceMemosProvider),
+                                onChanged: (v) => ref
+                                    .read(playbackVoiceMemosProvider.notifier)
+                                    .set(v),
+                              ),
+                              if (ref.watch(playbackVoiceMemosProvider))
+                                _SliderTile(
+                                  title: l10n.settingsPlaybackVoiceMemoDucking,
+                                  helpBody:
+                                      l10n.settingsHelpPlaybackVoiceMemoDucking,
+                                  value: ref.watch(
+                                    playbackVoiceMemoDuckingProvider,
+                                  ),
+                                  min: 0.0,
+                                  max: 0.95,
+                                  divisions: 19,
+                                  format: (v) => '${(v * 100).round()}%',
+                                  onChanged: (v) => ref
+                                      .read(
+                                        playbackVoiceMemoDuckingProvider
+                                            .notifier,
+                                      )
+                                      .set(v),
+                                ),
+                              // --- Announcements (same section) ---
+                              if (_showSection('announcements'))
+                                AnnouncementsSettingsSection(
+                                  titleWithHelp:
+                                      ({
+                                        required String title,
+                                        String? helpBody,
+                                      }) => SettingHelpTitle(
+                                        title: title,
+                                        helpBody: helpBody,
+                                      ),
+                                ),
+                            ],
+                          ),
+
+                        // --- Location / Geo ---
+                        if (_showSection('location'))
+                          _section(
+                            id: 'location',
+                            subtitle: l10n.settingsLocationDescription,
+                            children: [
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsUseGps,
+                                  helpBody: l10n.settingsHelpUseGps,
+                                ),
+                                subtitle: Text(l10n.settingsUseGpsDescription),
+                                value: ref.watch(useGpsProvider),
+                                onChanged: (v) =>
+                                    ref.read(useGpsProvider.notifier).set(v),
+                              ),
+                              if (!ref.watch(useGpsProvider)) ...[
+                                const _ManualCoordinatesTile(),
+                              ],
+                              if (ref.watch(useGpsProvider))
+                                const _GpsRefreshTile(),
+                              if (_showOfflineMapDownloadSetting &&
+                                  ref.watch(useGpsProvider))
+                                const OfflineMapDownloadTile(),
+                              _ChoiceTile<String>(
+                                title: l10n.settingsSpeciesFilter,
+                                helpBody: l10n.settingsHelpSpeciesFilter,
+                                value: ref.watch(speciesFilterModeProvider),
+                                options: {
+                                  'off': l10n.settingsFilterOff,
+                                  'geoExclude': l10n.settingsFilterGeoExclude,
+                                  'geoAdaptive': l10n.settingsFilterGeoAdaptive,
+                                  'geoMerge': l10n.settingsFilterGeoMerge,
+                                },
+                                onChanged: (v) => ref
+                                    .read(speciesFilterModeProvider.notifier)
+                                    .set(v),
+                              ),
+                              // Adaptive mode derives its own bar from the local score
+                              // distribution, so the manual threshold does not apply there.
+                              if (ref.watch(speciesFilterModeProvider) !=
+                                      'off' &&
+                                  ref.watch(speciesFilterModeProvider) !=
+                                      'geoAdaptive')
+                                _SliderTile(
+                                  title: l10n.settingsGeoThreshold,
+                                  helpBody: l10n.settingsHelpGeoThreshold,
+                                  value: ref.watch(geoThresholdProvider),
+                                  min: 0.0,
+                                  max: 0.5,
+                                  divisions: 50,
+                                  format: (v) => v.toStringAsFixed(2),
+                                  onChanged: (v) => ref
+                                      .read(geoThresholdProvider.notifier)
+                                      .set(v),
+                                ),
+                            ],
+                          ),
+
+                        // --- Export ---
+                        if (_showSection('export'))
+                          _section(
+                            id: 'export',
+                            subtitle: l10n.settingsExportDescription,
+                            children: [
+                              // Three entries, each summarizing its group; the first two
+                              // open export_options_screens.dart.
+                              ListTile(
+                                leading: const Icon(AppIcons.listAlt),
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsExportFormatsTitle,
+                                  helpBody: l10n.settingsHelpExportFormat,
+                                ),
+                                subtitle: Text(
+                                  exportFormatsSummary(
+                                    l10n,
+                                    ref.watch(exportSelectionProvider),
+                                  ),
+                                ),
+                                trailing: const Icon(AppIcons.chevronRight),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const ExportFormatsScreen(),
+                                  ),
+                                ),
+                              ),
+                              ListTile(
+                                leading: const Icon(AppIcons.audioFileOutlined),
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsExportContentTitle,
+                                  helpBody: l10n.settingsHelpExportContent,
+                                ),
+                                subtitle: Text(
+                                  exportContentSummary(
+                                    l10n,
+                                    includeAudio: ref.watch(
+                                      includeAudioProvider,
+                                    ),
+                                    audioAsWav: ref.watch(
+                                      shareAudioAsWavProvider,
+                                    ),
+                                    htmlReport: ref.watch(
+                                      exportHtmlReportProvider,
+                                    ),
+                                    appMetadata: ref.watch(
+                                      includeAppMetadataProvider,
+                                    ),
+                                  ),
+                                ),
+                                trailing: const Icon(AppIcons.chevronRight),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const ExportContentScreen(),
+                                  ),
+                                ),
+                              ),
+                              ListTile(
+                                leading: const Icon(AppIcons.cloudUpload),
+                                title: SettingHelpTitle(
+                                  title: l10n.uploadDestinations,
+                                  helpBody: l10n.settingsHelpUploadDestinations,
+                                ),
+                                subtitle: Text(switch (ref
+                                    .watch(uploadDestinationsProvider)
+                                    .value) {
+                                  null => l10n.uploadDestinationsSubtitleNone,
+                                  final list when list.isEmpty =>
+                                    l10n.uploadDestinationsSubtitleNone,
+                                  final list =>
+                                    l10n.uploadDestinationsSubtitleCount(
+                                      list.length,
+                                    ),
+                                }),
+                                trailing: const Icon(AppIcons.chevronRight),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const UploadDestinationsScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+
+                        // --- Privacy ---
+                        if (_showSection('privacy'))
+                          _section(
+                            id: 'privacy',
+                            subtitle: l10n.settingsPrivacyDescription,
+                            children: [
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsPrivacyAllowMap,
+                                  helpBody: l10n.settingsHelpPrivacyAllowMap,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsPrivacyAllowMapSubtitle,
+                                ),
+                                value: ref.watch(privacyAllowMapProvider),
+                                onChanged: (v) => ref
+                                    .read(privacyAllowMapProvider.notifier)
+                                    .set(v),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title:
+                                      l10n.settingsPrivacyAllowReverseGeocoding,
+                                  helpBody: l10n
+                                      .settingsHelpPrivacyAllowReverseGeocoding,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsPrivacyAllowReverseGeocodingSubtitle,
+                                ),
+                                value: ref.watch(
+                                  privacyAllowReverseGeocodingProvider,
+                                ),
+                                onChanged: (v) => ref
+                                    .read(
+                                      privacyAllowReverseGeocodingProvider
+                                          .notifier,
+                                    )
+                                    .set(v),
+                              ),
+                              SwitchListTile(
+                                title: SettingHelpTitle(
+                                  title: l10n.settingsPrivacyAllowWeather,
+                                  helpBody:
+                                      l10n.settingsHelpPrivacyAllowWeather,
+                                ),
+                                subtitle: Text(
+                                  l10n.settingsPrivacyAllowWeatherSubtitle,
+                                ),
+                                value: ref.watch(privacyAllowWeatherProvider),
+                                onChanged: (v) => ref
+                                    .read(privacyAllowWeatherProvider.notifier)
+                                    .set(v),
+                              ),
+                            ],
+                          ),
+
+                        // --- About ---
+                        if (_showSection('about'))
+                          SliverToBoxAdapter(
+                            child: ListTile(
+                              title: Text(l10n.about),
+                              trailing: const Icon(AppIcons.chevronRight),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const AboutScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                        // --- Danger Zone ---
+                        if (_showSection(_dangerSection)) ...[
+                          const SliverToBoxAdapter(child: Divider()),
+                          _section(
+                            id: _dangerSection,
+                            subtitle: l10n.settingsDangerZoneDescription,
+                            showDivider: false,
+                            children: [
+                              ListTile(
+                                title: Text(l10n.settingsResetOnboarding),
+                                onTap: () => _showResetOnboardingDialog(
+                                  context,
+                                  ref,
+                                  l10n,
+                                ),
+                              ),
+                              ListTile(
+                                title: Text(l10n.settingsResetAll),
+                                subtitle: Text(l10n.settingsResetAllSubtitle),
+                                onTap: () =>
+                                    _showResetAllSettingsDialog(context, l10n),
+                              ),
+                              ListTile(
+                                title: Text(
+                                  l10n.settingsClearData,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
+                                  ),
+                                ),
+                                onTap: () =>
+                                    _showClearDataDialog(context, l10n),
+                              ),
+                            ],
+                          ),
+                        ],
+
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 32 + MediaQuery.paddingOf(context).bottom,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (searching) _buildSearchResults(l10n, theme),
+            ],
+          ),
         ),
       ),
     );
@@ -1081,7 +1760,7 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final ignoredSpeciesNames = ref.watch(ignoredSpeciesNamesProvider);
+    final ignoredSpeciesCount = ref.watch(ignoredSpeciesCountProvider);
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -1116,9 +1795,9 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                     const Icon(AppIcons.filterList, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ignoredSpeciesNames.when(
-                        data: (names) => Text(
-                          l10n.settingsIgnoredSpeciesCount(names.length),
+                      child: ignoredSpeciesCount.when(
+                        data: (count) => Text(
+                          l10n.settingsIgnoredSpeciesCount(count),
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         loading: () =>
@@ -1127,7 +1806,7 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                             Text(l10n.settingsIgnoredSpeciesCountUnavailable),
                       ),
                     ),
-                    if (ignoredSpeciesNames.isLoading)
+                    if (ignoredSpeciesCount.isLoading)
                       const SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
@@ -1196,37 +1875,178 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
 // Helper widgets
 // ---------------------------------------------------------------------------
 
+/// Title row of a settings category: the title and a chevron; tapping it
+/// expands or collapses the category.
+///
+/// Opaque, because it is pinned at the top while the category's settings
+/// scroll underneath it.
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.subtitle});
+  const _SectionHeader({
+    required this.title,
+    required this.expanded,
+    required this.showSeparator,
+    required this.duration,
+    required this.onToggle,
+  });
+
   final String title;
-  final String? subtitle;
+  final bool expanded;
+
+  /// Draws a line under the row while settings are scrolling beneath it.
+  final bool showSeparator;
+  final Duration duration;
+  final VoidCallback onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (subtitle != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text(
-                subtitle!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.scaffoldBackgroundColor,
+      child: Semantics(
+        button: true,
+        expanded: expanded,
+        child: InkWell(
+          onTap: onToggle,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: showSeparator
+                      ? theme.colorScheme.outlineVariant
+                      : Colors.transparent,
                 ),
               ),
             ),
-        ],
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: duration,
+                    child: Icon(
+                      AppIcons.expandMore,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+/// Everything of a settings category below its title row: the description,
+/// the settings (folded away while collapsed), and the divider that separates
+/// it from the next category.
+class _SectionBody extends StatefulWidget {
+  const _SectionBody({
+    required this.subtitle,
+    required this.expanded,
+    required this.duration,
+    required this.onToggle,
+    required this.children,
+    required this.showDivider,
+  });
+
+  final String? subtitle;
+  final bool expanded;
+  final Duration duration;
+  final VoidCallback onToggle;
+  final List<Widget> children;
+  final bool showDivider;
+
+  @override
+  State<_SectionBody> createState() => _SectionBodyState();
+}
+
+class _SectionBodyState extends State<_SectionBody>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+    value: widget.expanded ? 1 : 0,
+  )..addStatusListener(_onStatusChanged);
+  late final CurvedAnimation _size = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeInOut,
+  );
+
+  /// The settings stay built while they fold away and are dropped once the
+  /// section is fully closed.
+  void _onStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed) setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(_SectionBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _controller.duration = widget.duration;
+    if (widget.expanded != oldWidget.expanded) {
+      if (widget.expanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _size.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitle = widget.subtitle;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Tapping the description toggles the section like the title row
+        // does; for screen readers the title row is the button.
+        InkWell(
+          onTap: widget.onToggle,
+          excludeFromSemantics: true,
+          child: Padding(
+            // Right inset keeps the text clear of the chevron column.
+            padding: const EdgeInsets.fromLTRB(16, 0, 48, 12),
+            child: subtitle == null
+                ? const SizedBox(width: double.infinity)
+                : Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+          ),
+        ),
+        if (widget.expanded || !_controller.isDismissed)
+          SizeTransition(
+            sizeFactor: _size,
+            alignment: Alignment.topCenter,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: widget.children,
+            ),
+          ),
+        if (widget.showDivider) const Divider(height: 1),
+      ],
     );
   }
 }
@@ -2247,57 +3067,6 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             )
           : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// _ExportFormatChecklist — multi-select export formats (I2)
-// ---------------------------------------------------------------------------
-//
-// Replaces the single-choice export-format selector with a row of
-// independent checkboxes. The pipeline bundles every enabled format
-// into the export ZIP, so users can grab Raven + CSV + JSON in one
-// share. Selection is persisted via [exportSelectionProvider]. Unticking
-// every format (together with the audio / metadata / HTML report boxes)
-// shares the raw audio file on its own — see [buildSessionExport].
-// ---------------------------------------------------------------------------
-
-class _ExportFormatChecklist extends ConsumerWidget {
-  const _ExportFormatChecklist();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final selection = ref.watch(exportSelectionProvider);
-    // (token, display label, per-format help). Labels stay in English as
-    // technical terms; only the help bodies are localized.
-    final formats = <(String, String, String)>[
-      ('raven', 'Raven Selection Table', l10n.settingsHelpExportRaven),
-      ('csv', 'CSV', l10n.settingsHelpExportCsv),
-      ('json', 'JSON', l10n.settingsHelpExportJson),
-      ('gpx', 'GPX (track + waypoints)', l10n.settingsHelpExportGpx),
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: SettingHelpTitle(
-            title: l10n.settingsExportFormat,
-            helpBody: l10n.settingsHelpExportFormat,
-          ),
-        ),
-        for (final fmt in formats)
-          CheckboxListTile(
-            dense: true,
-            title: SettingHelpTitle(title: fmt.$2, helpBody: fmt.$3),
-            value: selection.contains(fmt.$1),
-            onChanged: (v) => ref
-                .read(exportSelectionProvider.notifier)
-                .toggle(fmt.$1, v ?? false),
-          ),
-      ],
     );
   }
 }

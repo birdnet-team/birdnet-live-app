@@ -183,4 +183,78 @@ void main() {
       expect(prefs.getBool(PrefKeys.globalSpeciesHistorySeeded), isTrue);
     });
   });
+
+  // A species first seen under an older scientific name must still count as
+  // seen once the taxonomy (and the model's labels) use the new name.
+  group('GlobalSpeciesHistory.canonicalize', () {
+    String canonical(String name) => switch (name) {
+      'Emberiza schoeniclus' => 'Schoeniclus schoeniclus',
+      'Acanthis cabaret' => 'Acanthis flammea',
+      _ => name,
+    };
+
+    test('rewrites older names and persists the result', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.globalSpeciesHistory: json.encode([
+          'Emberiza schoeniclus',
+          'Parus major',
+        ]),
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final history = GlobalSpeciesHistory(prefs)..load();
+
+      await history.canonicalize(canonical);
+
+      expect(history.contains('Schoeniclus schoeniclus'), isTrue);
+      expect(history.contains('Emberiza schoeniclus'), isFalse);
+      expect(history.contains('Parus major'), isTrue);
+      expect(
+        json.decode(prefs.getString(PrefKeys.globalSpeciesHistory)!),
+        ['Parus major', 'Schoeniclus schoeniclus'],
+      );
+    });
+
+    test('merges an old name into a species already seen', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.globalSpeciesHistory: json.encode([
+          'Acanthis cabaret',
+          'Acanthis flammea',
+        ]),
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final history = GlobalSpeciesHistory(prefs)..load();
+
+      await history.canonicalize(canonical);
+
+      expect(history.all, {'Acanthis flammea'});
+    });
+
+    test('keeps names the taxonomy does not know', () async {
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.globalSpeciesHistory: json.encode(['Turdus poliocephalus']),
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final history = GlobalSpeciesHistory(prefs)..load();
+
+      await history.canonicalize(canonical);
+
+      expect(history.all, {'Turdus poliocephalus'});
+    });
+
+    test('does not notify or write when nothing changes', () async {
+      final stored = json.encode(['Parus major']);
+      SharedPreferences.setMockInitialValues({
+        PrefKeys.globalSpeciesHistory: stored,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final history = GlobalSpeciesHistory(prefs)..load();
+      var notified = 0;
+      history.addListener(() => notified++);
+
+      await history.canonicalize(canonical);
+
+      expect(notified, 0);
+      expect(prefs.getString(PrefKeys.globalSpeciesHistory), stored);
+    });
+  });
 }

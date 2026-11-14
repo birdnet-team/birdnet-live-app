@@ -49,6 +49,7 @@ class SurveyAlertCoordinator {
     this.inAppToast = true,
     this.onDelivered,
     this.nameLocalizer,
+    this.isSoundClass,
     DateTime Function()? clock,
     Duration tickInterval = const Duration(seconds: 5),
   }) : _clock = clock ?? DateTime.now {
@@ -92,6 +93,14 @@ class SurveyAlertCoordinator {
   /// English common name from the detection is used.
   final String Function(String sciName, String fallback)? nameLocalizer;
 
+  /// Whether a detection's scientific name is a non-animal sound class.
+  ///
+  /// Species alerts are about species. A sound class has no geo-model score,
+  /// so "rare here" would fire for every siren, and it would enter the
+  /// lifetime species history as if it were one. When this returns true the
+  /// detection is not considered for any alert mode.
+  final bool Function(String sciName)? isSoundClass;
+
   late final SurveyAlertEngine _engine;
   late final AlertThrottler _throttler;
   Timer? _tickTimer;
@@ -107,6 +116,7 @@ class SurveyAlertCoordinator {
   void onDetection(DetectionRecord record) {
     if (mode == AlertMode.off) return;
     final name = record.scientificName;
+    if (isSoundClass?.call(name) ?? false) return;
     final firstInSession = _sessionSpeciesSeen.add(name);
     final candidate = _engine.evaluate(record, firstInSession: firstInSession);
     if (candidate == null) return;
