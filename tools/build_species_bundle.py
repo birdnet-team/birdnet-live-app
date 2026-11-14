@@ -72,7 +72,7 @@ DEFAULT_WEBP_QUALITY = 70
 DEFAULT_DOWNLOAD_WORKERS = 50
 
 # App interface languages — one gzip description file per locale
-DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it", "nl", "pl", "ru"]
+DESCRIPTION_LOCALES = ["en", "de", "fr", "es", "cs", "pt", "it", "nl", "pl", "ru", "uk"]
 
 # Wikipedia URL locales — emitted as wikipedia_url_{locale} columns in
 # taxonomy.csv and consumed by the app (taxonomy_species.dart).
