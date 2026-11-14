@@ -46,6 +46,7 @@ class DetectionList extends StatelessWidget {
     this.emptyAlignment = Alignment.center,
     this.activeDetections,
     this.speciesDetectionCounts,
+    this.speciesMaxConfidences,
     this.columns = 1,
   }) : assert(columns >= 1, 'columns must be at least 1');
 
@@ -85,6 +86,14 @@ class DetectionList extends StatelessWidget {
   /// Live and Point Count pass this only when all-species display floats
   /// current detections to the top.
   final Map<String, int>? speciesDetectionCounts;
+
+  /// Optional highest confidence (0–1) each species reached in the session,
+  /// by scientific name.
+  ///
+  /// Live and Point Count pass this only for the all-species display, so a
+  /// retained row still shows how confident the model was at its best. Rows
+  /// in [activeDetections] show their current confidence instead.
+  final Map<String, double>? speciesMaxConfidences;
 
   /// Optional per-detection action contract. When non-null and
   /// non-empty, each tile gets an inline confirm checkmark (if
@@ -183,6 +192,7 @@ class DetectionList extends StatelessWidget {
       actions: actions,
       showConfidence: isActivelyDetected,
       detectionCount: speciesDetectionCounts?[det.scientificName],
+      maxConfidence: speciesMaxConfidences?[det.scientificName],
     );
     // When the host wires a delete action, also expose it as a
     // horizontal swipe shortcut. The host's undo SnackBar covers
@@ -226,6 +236,7 @@ class DetectionTile extends ConsumerWidget {
     this.actions,
     this.showConfidence = true,
     this.detectionCount,
+    this.maxConfidence,
   });
 
   final DetectionRecord detection;
@@ -242,6 +253,12 @@ class DetectionTile extends ConsumerWidget {
 
   /// Cumulative number of session detection events for this species.
   final int? detectionCount;
+
+  /// Highest confidence (0–1) this species reached in the session. Shown as
+  /// a chip in the score color on retained rows only: while [showConfidence]
+  /// is true the row already shows the current score, and a second, different
+  /// percentage next to it would be confusing.
+  final double? maxConfidence;
 
   /// Height of a tile whose common name fits on one line, with the
   /// confidence row shown. [DetectionList] uses it to decide how many tiles
@@ -340,6 +357,24 @@ class DetectionTile extends ConsumerWidget {
                                 ),
                                 child: _DetectionCountChip(
                                   count: detectionCount!,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (maxConfidence != null && !showConfidence)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Tooltip(
+                              message: l10n.sessionHighestConfidence(
+                                (maxConfidence! * 100).round(),
+                              ),
+                              child: Semantics(
+                                label: l10n.sessionHighestConfidence(
+                                  (maxConfidence! * 100).round(),
+                                ),
+                                excludeSemantics: true,
+                                child: _MaxConfidenceChip(
+                                  confidence: maxConfidence!,
                                 ),
                               ),
                             ),
@@ -537,6 +572,40 @@ class _DetectionCountChip extends StatelessWidget {
         '×$count',
         style: theme.textTheme.labelSmall?.copyWith(
           color: theme.colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Highest session confidence of a species, filled with its score color.
+class _MaxConfidenceChip extends StatelessWidget {
+  const _MaxConfidenceChip({required this.confidence});
+
+  final double confidence;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final background = ScoreColors.of(context).forScore(confidence);
+    // The score ramp spans pale to deep tones in both themes, so pick the
+    // label color per bucket instead of per theme.
+    final foreground =
+        ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+        ? Colors.white
+        : Colors.black;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        '${(confidence * 100).round()}%',
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: foreground,
           fontWeight: FontWeight.w600,
         ),
       ),

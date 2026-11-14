@@ -37,10 +37,10 @@ List<DetectionRecord> buildLiveDetectionDisplayList({
       ...currentDetections,
     ]),
     detectionCounts: buildSpeciesDetectionCounts(sessionDetections),
-    maxConfidenceBySpecies: _maxConfidenceBySpecies([
-      ...sessionDetections,
-      ...currentDetections,
-    ]),
+    maxConfidenceBySpecies: buildSpeciesMaxConfidences(
+      sessionDetections: sessionDetections,
+      currentDetections: currentDetections,
+    ),
     localizedName: localizedCommonName ?? ((detection) => detection.commonName),
     sortMode: DetectedSpeciesSortMode.normalize(sortMode),
   );
@@ -75,21 +75,27 @@ Map<String, DateTime> _latestTimestampBySpecies(
   return timestamps;
 }
 
-/// Highest confidence ever observed per species across the given detections.
+/// Highest confidence each species reached during the current session.
 ///
 /// Session detection records hold the per-window peak, so taking the maximum
-/// across every record yields the strongest score the species achieved during
-/// the session — used to keep confidence sorting stable even after a species
-/// stops actively vocalizing.
-Map<String, double> _maxConfidenceBySpecies(List<DetectionRecord> detections) {
+/// across every record (plus the current cycle, which may not be saved yet)
+/// yields the strongest score the species achieved. It keeps confidence
+/// sorting stable after a species stops vocalizing and feeds the peak
+/// confidence chip of the all-species list.
+Map<String, double> buildSpeciesMaxConfidences({
+  required List<DetectionRecord> sessionDetections,
+  List<DetectionRecord> currentDetections = const [],
+}) {
   final maxima = <String, double>{};
-  for (final detection in detections) {
-    final existing = maxima[detection.scientificName];
-    if (existing == null || detection.confidence > existing) {
-      maxima[detection.scientificName] = detection.confidence;
+  for (final detections in [sessionDetections, currentDetections]) {
+    for (final detection in detections) {
+      final existing = maxima[detection.scientificName];
+      if (existing == null || detection.confidence > existing) {
+        maxima[detection.scientificName] = detection.confidence;
+      }
     }
   }
-  return maxima;
+  return Map<String, double>.unmodifiable(maxima);
 }
 
 void _sortDetectionDisplayList(

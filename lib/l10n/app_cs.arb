@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Přehled Session",
   "sessionNoDetections": "Žádné detekce v této Session.",
   "sessionSpeciesCount": "{count} druhů",
+  "sessionHighestConfidence": "Nejvyšší konfidence: {percent} %",
   "sessionDetectionCount": "{count} detekcí",
   "sessionClusterShowMore": "Zobrazit dalších {count}",
   "sessionDiscard": "Zahodit",

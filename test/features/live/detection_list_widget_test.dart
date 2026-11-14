@@ -2,6 +2,7 @@
 // Detection List Widget Tests
 // =============================================================================
 
+import 'package:birdnet_live/core/theme/score_colors.dart';
 import 'package:birdnet_live/features/live/widgets/detection_list_widget.dart';
 import 'package:birdnet_live/features/live/widgets/live_tips.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
@@ -36,6 +37,7 @@ void main() {
     List<DetectionRecord> detections = const [],
     Set<DetectionRecord>? activeDetections,
     Map<String, int>? speciesDetectionCounts,
+    Map<String, double>? speciesMaxConfidences,
     int columns = 1,
     double? height,
   }) {
@@ -45,6 +47,7 @@ void main() {
       showTips: showTips,
       activeDetections: activeDetections,
       speciesDetectionCounts: speciesDetectionCounts,
+      speciesMaxConfidences: speciesMaxConfidences,
       columns: columns,
     );
     return ProviderScope(
@@ -181,5 +184,78 @@ void main() {
       find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.75),
       findsOneWidget,
     );
+  });
+
+  testWidgets('shows the highest confidence chip in the score color', (
+    tester,
+  ) async {
+    final detection = record('A');
+
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        isActive: true,
+        detections: [detection],
+        // Retained row: the current-confidence text and bar are hidden, so
+        // the chip is the only place the score shows.
+        activeDetections: Set<DetectionRecord>.identity(),
+        speciesDetectionCounts: const {'A': 3},
+        speciesMaxConfidences: const {'A': 0.874},
+      ),
+    );
+
+    expect(find.text('87%'), findsOneWidget);
+    // The confidence chip is always the last one in the row.
+    expect(
+      tester.getTopLeft(find.text('87%')).dx,
+      greaterThan(tester.getTopRight(find.text(countChipText)).dx),
+    );
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    final chip = tester.widget<Container>(
+      find.ancestor(of: find.text('87%'), matching: find.byType(Container)),
+    );
+    expect(
+      (chip.decoration! as BoxDecoration).color,
+      ScoreColors.light.forScore(0.874),
+    );
+    expect(find.byTooltip('Highest confidence: 87%'), findsOneWidget);
+  });
+
+  testWidgets('hides the highest confidence chip while the species is active', (
+    tester,
+  ) async {
+    final detection = record('A');
+
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        isActive: true,
+        detections: [detection],
+        activeDetections: Set<DetectionRecord>.identity()..add(detection),
+        speciesMaxConfidences: const {'A': 0.874},
+      ),
+    );
+
+    // The row shows its current confidence; the peak would be a second,
+    // different percentage on the same row.
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text('87%'), findsNothing);
+    expect(find.byTooltip('Highest confidence: 87%'), findsNothing);
+  });
+
+  testWidgets('omits the highest confidence chip when not provided', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      buildSubject(
+        showTips: false,
+        isActive: true,
+        detections: [record('A')],
+        activeDetections: Set<DetectionRecord>.identity(),
+      ),
+    );
+
+    expect(find.byTooltip('Highest confidence: 80%'), findsNothing);
+    expect(find.text('80%'), findsNothing);
   });
 }

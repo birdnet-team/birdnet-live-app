@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Exports now carry each species' BirdNET ID: a `BirdNET ID` column after `Scientific Name` in CSV and Raven Selection Tables, a `birdnetId` field in JSON, a waypoint extension in GPX, and a label in the HTML report. Sessions recorded with earlier versions get it too, export metadata names the taxonomy version the IDs refer to, and scripts that read CSV or Raven columns by position need updating.
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.
 - The two models the app runs are now also packaged for use in other applications: both ONNX files, one labels file for both with common names in 36 languages, a usage guide, the Apache 2.0 model license, and the acceptable use policy.
+- With **Show all detected species** on, a species that has stopped vocalizing now keeps a chip in the Live Mode and Point Count list with the highest confidence it reached in the session, in the confidence color (#307).
 
 ### Changed
 

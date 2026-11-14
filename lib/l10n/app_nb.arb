@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Øktgjennomgang",
   "sessionNoDetections": "Ingen deteksjoner i denne økten.",
   "sessionSpeciesCount": "{count} arter",
+  "sessionHighestConfidence": "Høyest sikkerhet: {percent} %",
   "sessionDetectionCount": "{count} deteksjoner",
   "sessionClusterShowMore": "Vis {count} til",
   "sessionDiscard": "Forkast",

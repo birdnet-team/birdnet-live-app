@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Обзор Session",
   "sessionNoDetections": "В течение этого session обнаружений нет.",
   "sessionSpeciesCount": "{count} видов",
+  "sessionHighestConfidence": "Наивысшая уверенность: {percent} %",
   "sessionDetectionCount": "{count} обнаружений",
   "sessionClusterShowMore": "Показать еще {count}",
   "sessionDiscard": "Отказаться",

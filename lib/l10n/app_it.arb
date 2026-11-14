@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Riepilogo Session",
   "sessionNoDetections": "Nessuna rilevazione in questa Session.",
   "sessionSpeciesCount": "{count} specie",
+  "sessionHighestConfidence": "Confidenza più alta: {percent}%",
   "sessionDetectionCount": "{count} rilevazioni",
   "sessionClusterShowMore": "Mostra altri {count}",
   "sessionDiscard": "Elimina",

@@ -1104,6 +1104,16 @@
       }
     }
   },
+  "sessionHighestConfidence": "Highest confidence: {percent}%",
+  "@sessionHighestConfidence": {
+    "description": "Tooltip and screen-reader label of the chip showing the highest confidence a species reached in the running session",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "87"
+      }
+    }
+  },
   "sessionDetectionCount": "{count} detections",
   "@sessionDetectionCount": {
     "description": "Detection count label",

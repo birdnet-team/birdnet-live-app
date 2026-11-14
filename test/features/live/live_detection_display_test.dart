@@ -314,6 +314,30 @@ void main() {
     expect(result.single.endTimestamp, end);
   });
 
+  test('reports the highest confidence per species', () {
+    final base = DateTime(2026, 7, 5, 10);
+    DetectionRecord scored(String name, double confidence, int minute) {
+      return DetectionRecord(
+        scientificName: name,
+        commonName: name,
+        confidence: confidence,
+        timestamp: base.add(Duration(minutes: minute)),
+      );
+    }
+
+    final maxima = buildSpeciesMaxConfidences(
+      sessionDetections: [
+        scored('A', 0.20, 2),
+        scored('B', 0.60, 1),
+        scored('A', 0.95, 0),
+      ],
+      // The current cycle can run ahead of the saved session records.
+      currentDetections: [scored('B', 0.70, 3), scored('C', 0.40, 3)],
+    );
+
+    expect(maxima, {'A': 0.95, 'B': 0.70, 'C': 0.40});
+  });
+
   test('counts cumulative detection events by species', () {
     final base = DateTime(2026, 7, 5, 10);
     final counts = buildSpeciesDetectionCounts([

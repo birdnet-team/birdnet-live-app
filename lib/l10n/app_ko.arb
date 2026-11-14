@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Session 검토",
   "sessionNoDetections": "이 Session에는 감지 결과가 없습니다.",
   "sessionSpeciesCount": "{count}종",
+  "sessionHighestConfidence": "최고 신뢰도: {percent}%",
   "sessionDetectionCount": "감지 {count}건",
   "sessionClusterShowMore": "{count}개 더 보기",
   "sessionDiscard": "삭제",

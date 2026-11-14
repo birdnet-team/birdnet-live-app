@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Session-overzicht",
   "sessionNoDetections": "Geen detecties in deze session.",
   "sessionSpeciesCount": "{count} soorten",
+  "sessionHighestConfidence": "Hoogste vertrouwen: {percent}%",
   "sessionDetectionCount": "{count} detecties",
   "sessionClusterShowMore": "Laat {count} meer zien",
   "sessionDiscard": "Weggooien",
