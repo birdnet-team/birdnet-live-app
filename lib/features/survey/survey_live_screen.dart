@@ -553,7 +553,13 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
     final wlName = ref.read(surveyAlertWatchlistNameProvider);
     if (mode == AlertMode.watchlist && wlName.isNotEmpty) {
       try {
-        watchlist = await CustomSpeciesList.load(wlName);
+        // A list saved before a taxonomy revision holds the names of its
+        // day; match on the names the model reports now.
+        final taxonomy = await ref.read(taxonomyServiceProvider.future);
+        watchlist = {
+          for (final name in await CustomSpeciesList.load(wlName))
+            taxonomy.canonicalScientificName(name),
+        };
       } catch (_) {
         watchlist = const <String>{};
       }
@@ -575,6 +581,11 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
       inAppToast: ref.read(surveyAlertInAppToastProvider),
       onDelivered: _onAlertDelivered,
       nameLocalizer: _buildNameLocalizer(),
+      // Read lazily, like the localizer: the taxonomy may finish loading
+      // after the survey starts.
+      isSoundClass: (sciName) =>
+          ref.read(taxonomyServiceProvider).value?.lookup(sciName)?.isSoundClass ??
+          false,
     );
     await controller.setAlertCoordinator(coord);
   }

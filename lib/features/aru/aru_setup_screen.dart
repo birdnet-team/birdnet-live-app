@@ -338,6 +338,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       ignoreMammals: ref.read(ignoreMammalsProvider),
       ignoreAmphibians: ref.read(ignoreAmphibiansProvider),
       ignoreInsects: ref.read(ignoreInsectsProvider),
+      includeSoundClasses: ref.read(includeSoundClassesProvider),
       ignoreCommonGeoScoreCutoff: ref.read(ignoreCommonGeoScoreCutoffProvider),
       poolingMode: ref.read(scorePoolingProvider),
       poolingWindows: ref.read(scorePoolingWindowsProvider),
