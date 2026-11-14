@@ -102,6 +102,10 @@ abstract final class AppConstants {
   /// fall back to when a device cannot keep up with its schedule.
   static const double minInferenceRateHz = 0.1;
 
+  /// Highest inference rate the app offers, in Hz: the last step of the
+  /// inference-rate slider.
+  static const double maxInferenceRateHz = 1.0;
+
   /// How much the live modes lower the inference rate, in Hz, each time the
   /// schedule falls behind capture.
   static const double inferenceRateDownshiftStepHz = 0.3;
@@ -111,6 +115,16 @@ abstract final class AppConstants {
   /// is a stall that drains on its own; a run of them that keeps growing
   /// means the model is slower than the schedule.
   static const int lateWindowsBeforeInferenceDownshift = 3;
+
+  /// Inference cycles a session measures before it reports the rate this
+  /// device can sustain. A rate the device was lowered to is raised again
+  /// from that report.
+  static const int cyclesBeforeInferenceRateRecovery = 30;
+
+  /// Share of a hop the slowest measured cycle may fill for that hop's rate
+  /// to count as sustainable. Half leaves room for a busy moment, so a rate
+  /// that is raised again is not lowered straight away.
+  static const double inferenceRateRecoveryHeadroom = 0.5;
 }
 
 /// SharedPreferences key constants.
@@ -134,8 +148,19 @@ abstract final class PrefKeys {
 
   /// Highest inference rate this device is known to sustain: the rate a live
   /// mode last had to lower to because the device fell behind. Absent until
-  /// that has happened; kept for good, since a slow device stays slow.
+  /// that has happened, raised when a session measures headroom, and removed
+  /// once the device sustains the highest rate.
   static const String inferenceRateDeviceLimit = 'inference_rate_device_limit';
+
+  /// Suffix of the key holding the rate a mode had before the device limit
+  /// lowered it. Present only while that rate is still lowered; the user
+  /// setting the rate removes it.
+  static const String inferenceRateBeforeLimitSuffix = '_before_device_limit';
+
+  /// Suffix of the flag that a rate setting was checked once for a limit
+  /// applied by a version that did not yet remember the rate before it.
+  static const String inferenceRateLimitMigratedSuffix =
+      '_device_limit_migrated';
   static const String speciesFilterMode = 'species_filter_mode';
   static const String sensitivity = 'sensitivity';
 

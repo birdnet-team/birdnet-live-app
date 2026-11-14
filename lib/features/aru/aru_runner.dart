@@ -117,6 +117,7 @@ class AruRunner {
     final liveController = _ref.read(liveControllerProvider);
     liveController.onStateChanged = _onInferenceStateChanged;
     liveController.onInferenceRateLowered = _onInferenceRateLowered;
+    liveController.onSustainableInferenceRate = _onSustainableInferenceRate;
 
     if (_running) return;
     // Reset transient flags so a fresh deployment is not blocked by state left
@@ -278,6 +279,20 @@ class AruRunner {
       _bumpSessionRevision();
     }
     unawaited(applyInferenceRateLimit(inferenceRateHz, read: _ref.read));
+  }
+
+  /// A cycle measured the rate this device can sustain. A rate the device
+  /// was lowered to earlier is raised again from it, for the next
+  /// deployment; see [applyInferenceRateHeadroom].
+  void _onSustainableInferenceRate(double inferenceRateHz) {
+    if (!_running) return;
+    unawaited(
+      applyInferenceRateHeadroom(
+        inferenceRateHz,
+        read: _ref.read,
+        rate: aruInferenceRateProvider,
+      ),
+    );
   }
 
   Future<void> _syncDetectionsFromInference() async {
@@ -569,6 +584,10 @@ class AruRunner {
     }
     if (liveController.onInferenceRateLowered == _onInferenceRateLowered) {
       liveController.onInferenceRateLowered = null;
+    }
+    if (liveController.onSustainableInferenceRate ==
+        _onSustainableInferenceRate) {
+      liveController.onSustainableInferenceRate = null;
     }
   }
 

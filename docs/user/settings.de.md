@@ -168,17 +168,21 @@ stattdessen eine [Überlappung](file-analysis.md).
 
 Kommt ein Gerät mit der gewählten Rate nicht mit – die Inferenz liegt bei
 mehreren Fenstern hintereinander einen ganzen Schritt hinter der Aufnahme
-zurück –, senkt die Session die Rate um 0,30 Hz, und solange das Gerät
-weiter zurückfällt erneut, bis minimal 0,10 Hz. Die gesenkte Rate wird dann
-zur Einstellung aller Modi: Live Mode, Point Count, Survey und ARU samt
-ihren Einrichtungsassistenten, damit die nächste Session überall mit einer
-Rate startet, die dieses Gerät durchhält. Die Einstellungen und die
-Assistenten zeigen unter dem Schieberegler einen Hinweis, dass das Gerät
-oberhalb dieser Rate bekanntermaßen zu langsam ist. Der Hinweis bleibt, denn
-ein langsames Gerät bleibt langsam; die Regler lassen sich weiterhin frei
-einstellen. Ohne diese Absenkung staut sich auf einem langsamen Gerät ein
-Rückstand an, der irgendwann das Audio überschreibt, aus dem die
-Detektionsclips geschnitten werden, und Detektionen bleiben ohne Audio.
+zurück –, senkt die Session die Rate um 0,30 Hz, und solange das Gerät weiter
+zurückfällt erneut, bis minimal 0,10 Hz. Die gesenkte Rate wird dann zur
+Einstellung aller Modi: Live Mode, Point Count, Survey und ARU samt ihren
+Einrichtungsassistenten, damit die nächste Session überall mit einer Rate
+startet, die dieses Gerät durchhält. Die Einstellungen und die Assistenten
+zeigen unter dem Schieberegler einen Hinweis, dass das Gerät oberhalb dieser
+Rate bekanntermaßen zu langsam ist. Der Hinweis ist nicht endgültig: Jede
+Session misst, wie lange ihre Inferenz dauert, und bei genügend Reserve steigt
+die Grenze, und die von ihr gesenkten Raten steigen mit, höchstens bis zu
+ihrem früheren Wert. Sobald das Gerät 1,00 Hz durchhält, verschwindet der
+Hinweis. Eine selbst eingestellte Rate wird nie angehoben, und die Regler
+lassen sich weiterhin frei einstellen. Ohne diese Absenkung staut sich auf
+einem langsamen Gerät ein Rückstand an, der irgendwann das Audio überschreibt,
+aus dem die Detektionsclips geschnitten werden, und Detektionen bleiben ohne
+Audio.
 
 ### Arten ignorieren
 

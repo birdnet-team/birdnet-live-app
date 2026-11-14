@@ -164,17 +164,20 @@ stavu **0,70 Hz** jako střední cestu; **0,30 Hz** zůstává výslovnou volbou
 maximální výdrž baterie. Analýza souborů frekvenci inference nemá — místo ní
 používá nastavení [překryvu](file-analysis.md).
 
-Pokud zařízení zvolenou frekvenci nestíhá — inference za zachytáváním
-zaostává o celý krok u několika oken po sobě —, Session frekvenci sníží o
-0,30 Hz, a dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz.
-Snížená frekvence se pak stane nastavením všech režimů: Live, Point Count,
-Survey i ARU včetně jejich průvodců nastavením, takže další Session kdekoli
-začne frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
+Pokud zařízení zvolenou frekvenci nestíhá — inference za zachytáváním zaostává
+o celý krok u několika oken po sobě —, Session frekvenci sníží o 0,30 Hz, a
+dokud zařízení zaostává dál, snižuje ji znovu, nejníže na 0,10 Hz. Snížená
+frekvence se pak stane nastavením všech režimů: Live, Point Count, Survey i
+ARU včetně jejich průvodců nastavením, takže další Session kdekoli začne
+frekvencí, kterou toto zařízení zvládne. Nastavení i průvodci pak pod
 posuvníkem zobrazují poznámku, že zařízení je nad touto frekvencí prokazatelně
-příliš pomalé. Poznámka zůstává, protože pomalé zařízení zůstává pomalé;
-posuvníky lze dál libovolně nastavit. Bez toho se na pomalém zařízení hromadí
-zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují klipy detekcí, a
-detekce zůstanou bez zvuku.
+příliš pomalé. Poznámka není trvalá: každá Session měří, jak dlouho její
+inference trvá, a při dostatečné rezervě se limit zvýší a s ním i frekvence,
+které snížil, nejvýše na jejich dřívější hodnotu. Jakmile zařízení zvládne
+1,00 Hz, poznámka zmizí. Frekvence, kterou jste nastavili sami, se nikdy
+nezvyšuje, a posuvníky lze dál libovolně nastavit. Bez toho se na pomalém
+zařízení hromadí zpoždění, které nakonec přepíše zvuk, z něhož se vystřihují
+klipy detekcí, a detekce zůstanou bez zvuku.
 
 ### Ignorovat druhy
 

@@ -36,6 +36,25 @@ double loweredInferenceRate(double inferenceRateHz) {
   return (tenths < floorTenths ? floorTenths : tenths) / 10;
 }
 
+/// The highest rate a device sustains when its slowest cycle ran for
+/// [slowestCycle].
+///
+/// The cycle has to fit in [AppConstants.inferenceRateRecoveryHeadroom] of a
+/// hop. The result is on the slider's 0.1 Hz grid, between
+/// [AppConstants.minInferenceRateHz] and [AppConstants.maxInferenceRateHz].
+double sustainableInferenceRate(Duration slowestCycle) {
+  final floorTenths = (AppConstants.minInferenceRateHz * 10).round();
+  final ceilingTenths = (AppConstants.maxInferenceRateHz * 10).round();
+  if (slowestCycle <= Duration.zero) return ceilingTenths / 10;
+  final rateHz =
+      AppConstants.inferenceRateRecoveryHeadroom *
+      Duration.microsecondsPerSecond /
+      slowestCycle.inMicroseconds;
+  // The epsilon keeps a cycle of exactly half a hop on its own grid step.
+  final tenths = (rateHz * 10 + 1e-9).floor();
+  return tenths.clamp(floorTenths, ceilingTenths) / 10;
+}
+
 /// A scheduled window together with the audio it covers.
 class InferenceWindowAudio {
   const InferenceWindowAudio({
@@ -86,14 +105,42 @@ class InferenceWindowDriver {
   int _ringBufferResetGeneration = 0;
 
   /// Windows in a row that came out at least a hop late, each later than the
-  /// one before. See [_trackBacklog].
+  /// one before and each after a cycle that itself ran a hop or longer. See
+  /// [_trackBacklog].
   int _lateTakes = 0;
   int _previousLateSamples = 0;
+
+  /// How long the last finished cycle kept the schedule busy — its own
+  /// duration plus [_minimumDelay] — or null before the first one.
+  Duration? _lastCycleDuration;
+
+  /// Whether the cycle now running took a window, so its duration is that of
+  /// real model work rather than of a wakeup that found nothing to do.
+  bool _windowTaken = false;
+
+  /// Cycles measured since the last report, and the slowest of them.
+  int _measuredCycles = 0;
+  Duration _slowestCycle = Duration.zero;
+
+  /// Highest rate reported through [onSustainableInferenceRate] since
+  /// [start], and whether the rate was lowered since then.
+  double _reportedSustainableRate = 0;
+  bool _loweredSinceStart = false;
 
   /// Called after the driver lowered the rate on its own, with the new rate.
   ///
   /// See [_trackBacklog] for when that happens.
   void Function(double inferenceRateHz)? onInferenceRateLowered;
+
+  /// Called with the rate this device was measured to sustain; see
+  /// [sustainableInferenceRate].
+  ///
+  /// Reported after every [AppConstants.cyclesBeforeInferenceRateRecovery]
+  /// cycles that took a window, and only when it is higher than what this
+  /// run already reported. A run that had to lower its rate reports nothing.
+  /// The rate may be above or below the one the schedule runs at: a cycle
+  /// takes the same time at any rate.
+  void Function(double inferenceRateHz)? onSustainableInferenceRate;
 
   bool get isRunning => _scheduler != null;
 
@@ -138,6 +185,12 @@ class InferenceWindowDriver {
     _sampleBase = ringBuffer.totalWritten - buffered;
     _ringBufferResetGeneration = ringBuffer.resetGeneration;
     _resetBacklogTracking();
+    // The cycles measured so far carry over: a cycle takes the same time in
+    // every run, and short runs — an ARU cycle, a resume after a pause —
+    // would otherwise never add up to a report.
+    _windowTaken = false;
+    _reportedSustainableRate = 0;
+    _loweredSinceStart = false;
 
     _scheduler = RealtimeInferenceScheduler(
       sampleRate: sampleRate,
@@ -177,14 +230,43 @@ class InferenceWindowDriver {
 
     _timer = Timer(_delayUntilNextWindow(scheduler), () {
       if (!isActive()) return;
+      final stopwatch = Stopwatch()..start();
       unawaited(
         runCycle().whenComplete(() {
           if (identical(scheduler, _scheduler)) {
+            recordCycleDuration(stopwatch.elapsed);
             arm(isActive: isActive, runCycle: runCycle);
           }
         }),
       );
     });
+  }
+
+  /// Note how long the cycle that just finished ran. [arm] does this for the
+  /// cycles it runs.
+  @visibleForTesting
+  void recordCycleDuration(Duration duration) {
+    // The next cycle cannot start sooner than the shortest wakeup allows.
+    _lastCycleDuration = duration + _minimumDelay;
+    if (!_windowTaken) return;
+    _windowTaken = false;
+
+    if (duration > _slowestCycle) _slowestCycle = duration;
+    if (++_measuredCycles < AppConstants.cyclesBeforeInferenceRateRecovery) {
+      return;
+    }
+    final sustainable = sustainableInferenceRate(_slowestCycle);
+    _measuredCycles = 0;
+    _slowestCycle = Duration.zero;
+    if (_loweredSinceStart || sustainable <= _reportedSustainableRate) return;
+    _reportedSustainableRate = sustainable;
+    onSustainableInferenceRate?.call(sustainable);
+  }
+
+  /// The cycle that took the current window did not get a result from the
+  /// model, so how long it ran says nothing about how fast the device is.
+  void discardCycleMeasurement() {
+    _windowTaken = false;
   }
 
   /// Take the next complete window and read its audio, or null if there is
@@ -210,6 +292,7 @@ class InferenceWindowDriver {
 
     final window = scheduler.takeNext(_relativeWritten());
     if (window == null) return null;
+    _windowTaken = true;
     _trackBacklog(scheduler, _relativeWritten() - window.endSample);
 
     final windowEndSample = _sampleBase + window.endSample;
@@ -233,7 +316,16 @@ class InferenceWindowDriver {
   /// is taken. A whole hop late means the next window was already complete
   /// before this one was read. One such window is a stall — a slow frame, a
   /// save — and drains on its own; a run of them, each later than the last,
-  /// means the model is slower than the schedule. Left alone, that backlog
+  /// means the model is slower than the schedule.
+  ///
+  /// Lateness alone does not show whose fault it is, so a late window only
+  /// counts when the cycle before it ran for a hop or longer. A backlog that
+  /// was already there when the first cycle ran, or one that piled up while
+  /// something else held the app, is drained by cycles that are each shorter
+  /// than a hop; lowering the rate for it would brand a fast device as slow
+  /// for good.
+  ///
+  /// Left alone, a backlog the model cannot drain
   /// grows until the buffer overruns, and well before that the detection
   /// clips, cut from the same buffer after a post-roll wait, find their
   /// windows overwritten and are silently skipped. Dropping the rate a step
@@ -242,7 +334,12 @@ class InferenceWindowDriver {
   void _trackBacklog(RealtimeInferenceScheduler scheduler, int lateSamples) {
     final growing = lateSamples >= _previousLateSamples;
     _previousLateSamples = lateSamples;
-    if (lateSamples < scheduler.hopSamples || !growing) {
+    final lastCycle = _lastCycleDuration;
+    final slowCycle =
+        lastCycle != null &&
+        lastCycle.inMicroseconds * scheduler.sampleRate >=
+            scheduler.hopSamples * Duration.microsecondsPerSecond;
+    if (lateSamples < scheduler.hopSamples || !growing || !slowCycle) {
       _lateTakes = 0;
       return;
     }
@@ -256,6 +353,7 @@ class InferenceWindowDriver {
     scheduler.setInferenceRate(lowered, _relativeWritten());
     final lateSeconds = (lateSamples / scheduler.sampleRate).toStringAsFixed(1);
     if (lowered < current) {
+      _loweredSinceStart = true;
       debugPrint(
         '[$debugLabel] inference ran ${lateSeconds}s behind capture; '
         'lowering the rate from $current Hz to $lowered Hz',
@@ -272,6 +370,7 @@ class InferenceWindowDriver {
   void _resetBacklogTracking() {
     _lateTakes = 0;
     _previousLateSamples = 0;
+    _lastCycleDuration = null;
   }
 
   int _relativeWritten() => ringBuffer.totalWritten - _sampleBase;

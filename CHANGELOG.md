@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The note that a device is too slow for higher inference rates is no longer permanent: sessions measure how long inference takes, raise the rates that were lowered automatically back toward their earlier values, and remove the note once the device sustains 1.00 Hz. A rate you set yourself is never raised.
 - Settings sections are regrouped: **Appearance** (Theme, Dynamic Color, High Contrast Theme) is split from General, Audio and Recording are merged into **Audio & Recording**, Playback and Announcements into **Playback & Announcements**, and Location is now **Location & Species Filter**. The recording **Mode** and **Format** settings are now **Recording mode** and **Recording format**.
 - New models: the BirdNET+ V3.0 audio model replaces V3.0-preview3.1, with the November 2026 geo-model and BirdNET+ Taxonomy v0.5. The app now identifies 10,048 species (8,984 birds, 422 amphibians, 330 insects, 312 mammals): about 500 are new, and 237 species of the previous model are no longer detected because the new models do not cover them.
 - A species is now included only if the geo-model predicts it at 3% or more somewhere in the world, so every species the app can detect can also pass the location filter.
@@ -34,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Survey species alerts now show the species on the Android lock screen instead of "Contents hidden", matching the ongoing Survey notification (#308).
 - Translations were revised in every language: mistranslated, untranslated, and inconsistent labels and help texts are corrected, Portuguese is Brazilian throughout, Russian counts such as "21 вид" use the right form, and the translated user guide names every setting as the app does.
 - The empty watchlist hint in Survey setup pointed to a Settings page that does not exist; it now names the **New watchlist** button.
+- The inference rate is no longer lowered on a device that keeps up: a Survey could start with a backlog from its own setup time, and a backlog not caused by the model counted as the device being too slow.
 
 ## [1.3.1] - 2026-11-02
 

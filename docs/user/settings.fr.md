@@ -174,12 +174,16 @@ que l'appareil continue de prendre du retard, jusqu'à 0,10 Hz au minimum. La
 fréquence abaissée devient alors la valeur de tous les modes : Live, Point
 Count, Survey et ARU, et donc de leurs assistants de configuration, afin que
 la Session suivante, quel que soit le mode, démarre à une fréquence que cet
-appareil peut tenir. Les Paramètres et les assistants affichent sous le curseur
-une note indiquant que l'appareil est connu pour être trop lent au-delà de
-cette fréquence. La note reste, car un appareil lent reste lent ; les curseurs
-restent librement réglables. Sans cela, un appareil lent accumule un retard
-qui finit par écraser l'audio dont sont tirés les extraits de détection,
-et les détections restent sans audio.
+appareil peut tenir. Les Paramètres et les assistants affichent sous le
+curseur une note indiquant que l'appareil est connu pour être trop lent
+au-delà de cette fréquence. La note n'est pas définitive : chaque Session
+mesure la durée de son inférence et, lorsque la marge est suffisante, la
+limite remonte, et les fréquences qu'elle avait abaissées remontent avec elle,
+au plus jusqu'à leur valeur précédente. Dès que l'appareil tient 1,00 Hz, la
+note disparaît. Une fréquence que vous avez réglée vous-même n'est jamais
+augmentée, et les curseurs restent librement réglables. Sans cela, un appareil
+lent accumule un retard qui finit par écraser l'audio dont sont tirés les
+extraits de détection, et les détections restent sans audio.
 
 ### Ignorer des espèces
 

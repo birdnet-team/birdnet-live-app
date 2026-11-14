@@ -167,16 +167,20 @@ ustawienia [nakładania](file-analysis.md).
 
 Jeśli urządzenie nie nadąża za wybraną częstotliwością — analiza przez kilka
 kolejnych okien pozostaje o cały krok w tyle za rejestracją — Session obniża
-częstotliwość o 0,30 Hz, i ponownie, dopóki urządzenie wciąż nie nadąża, najniżej
-do 0,10 Hz. Obniżona częstotliwość staje się wtedy ustawieniem wszystkich trybów:
-Live, Point Count, Survey i ARU, a więc także ich kreatorów konfiguracji, aby
-kolejna Session w dowolnym trybie zaczynała się z częstotliwością, którą to
-urządzenie jest w stanie utrzymać. Ustawienia i kreatory pokazują pod
-suwakiem notatkę, że urządzenie jest zbyt wolne powyżej tej częstotliwości.
-Notatka pozostaje, bo wolne urządzenie pozostaje wolne; suwaki nadal można
-dowolnie ustawiać. Bez tego na wolnym urządzeniu narasta zaległość, która w
-końcu nadpisuje dźwięk, z którego wycinane są klipy wykryć, i wykrycia
-zostają bez dźwięku.
+częstotliwość o 0,30 Hz, i ponownie, dopóki urządzenie wciąż nie nadąża,
+najniżej do 0,10 Hz. Obniżona częstotliwość staje się wtedy ustawieniem
+wszystkich trybów: Live, Point Count, Survey i ARU, a więc także ich kreatorów
+konfiguracji, aby kolejna Session w dowolnym trybie zaczynała się z
+częstotliwością, którą to urządzenie jest w stanie utrzymać. Ustawienia i
+kreatory pokazują pod suwakiem notatkę, że urządzenie jest zbyt wolne powyżej
+tej częstotliwości. Notatka nie jest trwała: każda Session mierzy, jak długo
+trwa jej analiza, a przy wystarczającym zapasie limit rośnie, a wraz z nim
+obniżone przez niego częstotliwości, najwyżej do ich wcześniejszej wartości.
+Gdy urządzenie utrzymuje 1,00 Hz, notatka znika. Częstotliwość ustawiona
+samodzielnie nigdy nie jest podnoszona, a suwaki nadal można dowolnie
+ustawiać. Bez tego na wolnym urządzeniu narasta zaległość, która w końcu
+nadpisuje dźwięk, z którego wycinane są klipy wykryć, i wykrycia zostają bez
+dźwięku.
 
 ### Ignoruj gatunki
 

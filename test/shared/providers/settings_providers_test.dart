@@ -9,6 +9,22 @@ import 'package:birdnet_live/features/spectrogram/spectrogram_size.dart';
 import 'package:birdnet_live/shared/providers/app_providers.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
 
+/// Live Mode measured that the device sustains [rate].
+Future<void> liveHeadroom(ProviderContainer container, double rate) =>
+    applyInferenceRateHeadroom(
+      rate,
+      read: container.read,
+      rate: inferenceRateProvider,
+    );
+
+/// A Survey measured that the device sustains [rate].
+Future<void> surveyHeadroom(ProviderContainer container, double rate) =>
+    applyInferenceRateHeadroom(
+      rate,
+      read: container.read,
+      rate: surveyInferenceRateProvider,
+    );
+
 void main() {
   group('inference rate limit', () {
     late ProviderContainer container;
@@ -57,13 +73,124 @@ void main() {
     });
 
     test('the user setting a rate keeps the note', () async {
-      // A device that fell behind once is still a slow device.
+      // Only a measurement lifts the limit, not a choice.
       await applyInferenceRateLimit(0.7, read: container.read);
 
       await container.read(inferenceRateProvider.notifier).set(1.0);
 
       expect(container.read(inferenceRateProvider), 1.0);
       expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+    });
+
+    test(
+      'measured headroom restores lowered rates and lifts the note',
+      () async {
+        // Live at 1.0, Survey at its 0.7 default, both lowered to 0.4.
+        await applyInferenceRateLimit(0.4, read: container.read);
+        expect(container.read(inferenceRateProvider), 0.4);
+        expect(container.read(surveyInferenceRateProvider), 0.4);
+
+        // Live Mode measures part of the way: the limit and its own rate
+        // follow, Survey waits for its own measurement.
+        await liveHeadroom(container, 0.6);
+        expect(container.read(inferenceRateDeviceLimitProvider), 0.6);
+        expect(container.read(inferenceRateProvider), 0.6);
+        expect(container.read(surveyInferenceRateProvider), 0.4);
+
+        // All the way: the note goes, and Live Mode is back where it was.
+        await liveHeadroom(container, 1.0);
+        expect(container.read(inferenceRateDeviceLimitProvider), isNull);
+        expect(container.read(inferenceRateProvider), 1.0);
+        expect(container.read(surveyInferenceRateProvider), 0.4);
+
+        // A Survey measuring later still gets its rate back, though the
+        // limit is gone, and stops at what it was before.
+        await surveyHeadroom(container, 1.0);
+        expect(container.read(surveyInferenceRateProvider), 0.7);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.containsKey(PrefKeys.inferenceRateDeviceLimit), isFalse);
+      },
+    );
+
+    test('headroom never raises a rate the user chose', () async {
+      // A Survey deliberately at 0.3 was never lowered by the limit.
+      await container.read(surveyInferenceRateProvider.notifier).set(0.3);
+      await applyInferenceRateLimit(0.7, read: container.read);
+      // Live was lowered, then the user picked a rate themselves.
+      await container.read(inferenceRateProvider.notifier).set(0.5);
+
+      await liveHeadroom(container, 1.0);
+      await surveyHeadroom(container, 1.0);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), isNull);
+      expect(container.read(surveyInferenceRateProvider), 0.3);
+      expect(container.read(inferenceRateProvider), 0.5);
+    });
+
+    test('headroom does nothing on a device without a limit', () async {
+      await container.read(inferenceRateProvider.notifier).set(0.4);
+
+      await liveHeadroom(container, 1.0);
+      await surveyHeadroom(container, 1.0);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), isNull);
+      expect(container.read(inferenceRateProvider), 0.4);
+    });
+
+    test('headroom below the limit leaves everything alone', () async {
+      await applyInferenceRateLimit(0.7, read: container.read);
+
+      await liveHeadroom(container, 0.5);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), 0.7);
+      expect(container.read(inferenceRateProvider), 0.7);
+    });
+  });
+
+  group('Device inference rate limit from an earlier version', () {
+    Future<ProviderContainer> containerWith(Map<String, Object> values) async {
+      SharedPreferences.setMockInitialValues(values);
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test(
+      'a rate sitting on the limit is restored to the mode default',
+      () async {
+        // 1.3.x lowered every mode to 0.4 without remembering what it was.
+        final container = await containerWith({
+          PrefKeys.inferenceRateDeviceLimit: 0.4,
+          PrefKeys.inferenceRate: 0.4,
+          PrefKeys.surveyInferenceRate: 0.4,
+        });
+
+        await liveHeadroom(container, 1.0);
+        await surveyHeadroom(container, 1.0);
+
+        expect(container.read(inferenceRateDeviceLimitProvider), isNull);
+        expect(container.read(inferenceRateProvider), 1.0);
+        expect(container.read(surveyInferenceRateProvider), 0.7);
+      },
+    );
+
+    test('a Survey at its default and a rate off the limit stay', () async {
+      final container = await containerWith({
+        PrefKeys.inferenceRateDeviceLimit: 0.7,
+        PrefKeys.inferenceRate: 0.5,
+        PrefKeys.surveyInferenceRate: 0.7,
+      });
+
+      await liveHeadroom(container, 1.0);
+      await surveyHeadroom(container, 1.0);
+
+      expect(container.read(inferenceRateDeviceLimitProvider), isNull);
+      expect(container.read(inferenceRateProvider), 0.5);
+      expect(container.read(surveyInferenceRateProvider), 0.7);
     });
   });
 

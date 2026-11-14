@@ -8,7 +8,8 @@ import '../providers/settings_providers.dart';
 /// rate: this device is known to be too slow above the rate it was lowered
 /// to. Settings and every setup wizard show the same note, so the limit reads
 /// the same wherever the rate can be set. Renders nothing while the device
-/// has never fallen behind, and stays once it has — a slow device stays slow.
+/// has no limit: it never fell behind, or a later session measured that it
+/// sustains the highest rate after all (see [applyInferenceRateHeadroom]).
 class InferenceRateLimitNote extends ConsumerWidget {
   const InferenceRateLimitNote({super.key, this.padding = EdgeInsets.zero});
 

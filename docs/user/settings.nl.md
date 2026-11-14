@@ -170,14 +170,18 @@ Als een apparaat de gekozen frequentie niet bijhoudt — de inferentie loopt bij
 meerdere vensters achter elkaar een hele stap achter op de opname —, verlaagt
 de Session de frequentie met 0,30 Hz, en opnieuw zolang het apparaat blijft
 achterlopen, tot minimaal 0,10 Hz. De verlaagde frequentie wordt dan de
-instelling van alle modi: Live, Point Count, Survey en ARU, en dus ook van
-hun instelwizards, zodat de volgende Session waar dan ook start met een
-frequentie die dit apparaat aankan. Instellingen en de wizards tonen onder de
+instelling van alle modi: Live, Point Count, Survey en ARU, en dus ook van hun
+instelwizards, zodat de volgende Session waar dan ook start met een frequentie
+die dit apparaat aankan. Instellingen en de wizards tonen onder de
 schuifregelaar een melding dat het apparaat boven die frequentie te traag is
-gebleken. De melding blijft staan, want een traag apparaat blijft traag; de
-regelaars blijven vrij in te stellen. Zonder dit bouwt een traag apparaat een
-achterstand op die uiteindelijk de audio overschrijft waaruit de
-detectiefragmenten worden geknipt, en blijven detecties zonder audio achter.
+gebleken. De melding is niet blijvend: elke Session meet hoe lang de
+inferentie duurt, en bij genoeg marge gaat de grens omhoog, en de frequenties
+die erdoor verlaagd waren gaan mee omhoog, hooguit tot hun eerdere waarde.
+Zodra het apparaat 1,00 Hz aankan, verdwijnt de melding. Een frequentie die je
+zelf hebt ingesteld wordt nooit verhoogd, en de regelaars blijven vrij in te
+stellen. Zonder dit bouwt een traag apparaat een achterstand op die
+uiteindelijk de audio overschrijft waaruit de detectiefragmenten worden
+geknipt, en blijven detecties zonder audio achter.
 
 ### Soorten negeren
 
