@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
       - run: pip install mkdocs mkdocs-material mkdocs-static-i18n pymdown-extensions
       - run: mkdocs build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site/
 
