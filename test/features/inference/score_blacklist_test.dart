@@ -183,11 +183,10 @@ void main() {
         fractions: fractions,
       );
 
-      // The entries were tuned for earlier models. For the current model
-      // they are all 1.0 (no effect) until field recordings show which
-      // species it still over-reports; see docs/developer/model-update.md.
+      // Checks that every entry names a class of the model and takes
+      // effect, not which multipliers are set: those are tuned against
+      // field recordings; see docs/developer/model-update.md.
       expect(fractions, isNotEmpty);
-      expect(fractions.values, everyElement(1.0));
       final commonNames = {for (final label in labels) label.commonName};
       expect(commonNames, containsAll(fractions.keys));
       expect(

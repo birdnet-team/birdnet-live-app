@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Species names follow the current taxonomy. Saved Sessions are not changed: a detection stored under an older scientific name shows the current name, picture, translation, and links, and species the new model no longer detects keep theirs.
 - The audio model is rebuilt for speed: the spectrogram step now runs multithreaded, and only the convolutions use half precision. Batch Analysis inference is about three times faster on a desktop CPU; phones were not re-measured with this model.
 - Species descriptions now cover about 99% of species in ten of the twelve description languages; some languages previously covered as little as 17%.
-- The score reductions earlier models needed for 18 over-reported species (such as Common Pheasant, Red Fox, and several owls) are switched off for the new model until field recordings show which of them it still over-reports.
 - The About screen reads the model and taxonomy names and the species count from the bundled models instead of a hand-maintained copy.
 
 ### Fixed

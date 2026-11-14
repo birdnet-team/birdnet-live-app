@@ -161,10 +161,10 @@ Run everything from the repository root with the Python environment active
 - **Score blacklist.** `…_ScoreBlacklist.json` is a hand-curated map from
   English common name to a score multiplier. The build re-keys it onto the new
   labels and fails if an entry has no class left. The multipliers were tuned
-  for earlier models, so for the November 2026 model every entry is set to
-  1.0 (no effect): the names stay as the list of species to watch, and a
-  multiplier below 1.0 goes back in only for a species that field recordings
-  show the new model still over-reports.
+  for earlier models, so a new model starts with every entry at 1.0 (no
+  effect): the names stay as the list of species to watch, and a multiplier
+  below 1.0 goes back in only for a species that field recordings show the
+  new model still over-reports.
 - **Geo-model score distribution.** The Explore tiers and the adaptive
   location filter are calibrated on the distribution of geo-model scores
   (`lib/features/inference/geo_abundance.dart`,
