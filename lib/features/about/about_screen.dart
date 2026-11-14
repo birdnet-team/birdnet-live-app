@@ -26,6 +26,12 @@ class AboutScreen extends ConsumerWidget {
     final highContrast = AppTheme.isHighContrastTheme(theme);
     final packageInfo = ref.watch(packageInfoProvider);
     final taxonomyAsync = ref.watch(taxonomyServiceProvider);
+    // Names and counts come from the bundled model config, so this card
+    // always describes the models that are actually shipped.
+    final modelConfig = ref.watch(modelConfigJsonProvider).value;
+    String configName(String block) =>
+        (modelConfig?[block] as Map<String, dynamic>?)?['name'] as String? ??
+        '';
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.about)),
@@ -73,8 +79,8 @@ class AboutScreen extends ConsumerWidget {
 
             // Combined model info — audio model + geo-model in one card.
             // Shows the model display name for each plus the shared species
-            // count once at the bottom (both ship with the same 9,789-species
-            // intersection, so repeating it on two cards was redundant).
+            // count once at the bottom (both models cover the same species,
+            // so repeating it on two cards was redundant).
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -89,7 +95,7 @@ class AboutScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(l10n.aboutModelName),
+                    Text(configName('audioModel')),
                     const SizedBox(height: 12),
                     Text(
                       l10n.aboutGeoModel,
@@ -99,7 +105,7 @@ class AboutScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(l10n.aboutGeoModelName),
+                    Text(configName('geoModel')),
                     const SizedBox(height: 12),
                     Text(
                       l10n.aboutTaxonomy,
@@ -109,18 +115,18 @@ class AboutScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(l10n.aboutTaxonomyName),
+                    Text(configName('taxonomy')),
                     const SizedBox(height: 12),
                     Text(
                       () {
-                        final base = l10n.aboutSpeciesCount(
-                          AppConstants.speciesCount,
-                        );
                         final taxonomy = taxonomyAsync.maybeWhen(
                           data: (v) => v,
                           orElse: () => null,
                         );
-                        if (taxonomy == null) return base;
+                        if (taxonomy == null) return '';
+                        final base = l10n.aboutSpeciesCount(
+                          taxonomy.speciesCount,
+                        );
                         final counts = taxonomy.taxonGroupCounts;
                         final groupLabels = <String, String>{
                           'Aves': l10n.taxonGroupAves,
