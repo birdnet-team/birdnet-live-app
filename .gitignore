@@ -8,6 +8,14 @@
 !/dev/store/
 !/dev/store/store-desc.md
 /dev/mockups/output/
+# Model build pipeline: the scripts are tracked, the model inputs they read
+# (ONNX files, label files, taxonomy exports, scan results) are not.
+!/dev/models/
+/dev/models/*
+!/dev/models/november2026/
+/dev/models/november2026/*
+!/dev/models/november2026/*.py
+!/dev/run_onnx_reference.py
 assets/species_images/*
 !assets/species_images/dummy.webp
 assets/species_data/*

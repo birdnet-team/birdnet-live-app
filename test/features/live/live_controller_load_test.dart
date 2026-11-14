@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:birdnet_live/features/audio/ring_buffer.dart';
@@ -13,11 +17,27 @@ import 'package:birdnet_live/features/recording/recording_service.dart';
 // by the menu, and again by the Live screen if the user gets there before the
 // warm-up finishes.  These tests pin the guarantees the Live screen relies on.
 //
-// The model itself cannot load under `flutter test` (no path_provider, no
-// bundled ONNX), so every load here settles into [LiveState.error].  That is
-// fine — and deliberate: the contract under test is about *joining* and
-// *settling*, and the error path is also the one that used to strand the user.
+// The model must not load here, so every load settles into
+// [LiveState.error].  That is fine — and deliberate: the contract under test
+// is about *joining* and *settling*, and the error path is also the one that
+// used to strand the user.
+//
+// The failure is arranged rather than assumed.  On a desktop host
+// path_provider works under `flutter test`, so an unguarded load would extract
+// the real model into the developer's Documents folder and only then fail.
+// The asset channel below serves every bundled file except the ONNX models,
+// which makes the load fail before anything is written.
 // =============================================================================
+
+/// Serve assets from the project directory, but report `.onnx` files as
+/// missing.
+Future<ByteData?> _assetsWithoutModels(ByteData? message) async {
+  final key = Uri.decodeFull(utf8.decode(message!.buffer.asUint8List()));
+  if (key.endsWith('.onnx')) return null;
+  final file = File(key);
+  if (!file.existsSync()) return null;
+  return ByteData.sublistView(await file.readAsBytes());
+}
 
 LiveController buildController() {
   final ringBuffer = RingBuffer();
@@ -29,6 +49,18 @@ LiveController buildController() {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler('flutter/assets', _assetsWithoutModels);
+    rootBundle.clear();
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler('flutter/assets', null);
+    rootBundle.clear();
+  });
 
   test('concurrent callers join one load instead of starting a second', () async {
     final controller = buildController();

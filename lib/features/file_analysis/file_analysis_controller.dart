@@ -505,6 +505,7 @@ class FileAnalysisController {
           ignoreMammals: ignoreSettings.ignoreMammals,
           ignoreAmphibians: ignoreSettings.ignoreAmphibians,
           ignoreInsects: ignoreSettings.ignoreInsects,
+          includeSoundClasses: ignoreSettings.includeSoundClasses,
           ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
           poolingMode: poolingMode,
           poolingWindows: maxPoolWindows,
@@ -578,13 +579,10 @@ class FileAnalysisController {
         );
 
         // Restrict to geo-model species intersection.
-        if (geoModelSpeciesNames != null) {
-          filtered = filtered
-              .where(
-                (d) => geoModelSpeciesNames.contains(d.species.scientificName),
-              )
-              .toList();
-        }
+        filtered = SpeciesFilter.restrictToGeoModelSpecies(
+          filtered,
+          geoModelSpeciesNames,
+        );
 
         final windowEnd = windowTimestamp.add(
           Duration(milliseconds: (windowDuration * 1000).round()),

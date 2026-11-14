@@ -45,6 +45,7 @@ class SessionSettings {
     this.ignoreMammals,
     this.ignoreAmphibians,
     this.ignoreInsects,
+    this.includeSoundClasses,
     this.ignoreCommonGeoScoreCutoff,
     this.poolingMode,
     this.poolingWindows,
@@ -138,6 +139,9 @@ class SessionSettings {
   final bool? ignoreMammals;
   final bool? ignoreAmphibians;
   final bool? ignoreInsects;
+
+  /// Whether non-animal sound classes were reported in this session.
+  final bool? includeSoundClasses;
   final double? ignoreCommonGeoScoreCutoff;
 
   /// Score pooling mode (`avg`, `max`, `lme`, `adaptive_lme_peak`, etc.)
@@ -230,6 +234,7 @@ class SessionSettings {
       ignoreMammals: json['ignoreMammals'] as bool?,
       ignoreAmphibians: json['ignoreAmphibians'] as bool?,
       ignoreInsects: json['ignoreInsects'] as bool?,
+      includeSoundClasses: json['includeSoundClasses'] as bool?,
       ignoreCommonGeoScoreCutoff: (json['ignoreCommonGeoScoreCutoff'] as num?)
           ?.toDouble(),
       poolingMode: json['poolingMode'] as String?,
@@ -278,6 +283,7 @@ class SessionSettings {
     if (ignoreMammals != null) 'ignoreMammals': ignoreMammals,
     if (ignoreAmphibians != null) 'ignoreAmphibians': ignoreAmphibians,
     if (ignoreInsects != null) 'ignoreInsects': ignoreInsects,
+    if (includeSoundClasses != null) 'includeSoundClasses': includeSoundClasses,
     if (ignoreCommonGeoScoreCutoff != null)
       'ignoreCommonGeoScoreCutoff': ignoreCommonGeoScoreCutoff,
     if (poolingMode != null) 'poolingMode': poolingMode,

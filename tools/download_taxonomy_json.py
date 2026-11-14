@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_OUTPUT_DIR = ROOT / "tools" / "data"
-DOWNLOAD_URL = "https://birdnet.cornell.edu/taxonomy/api/download/json"
+DOWNLOAD_URL = "https://birdnet.tu-chemnitz.de/taxonomy/api/download/json"
 USER_AGENT = "BirdNET-Live-Builder/1.0"
 
 

@@ -415,6 +415,16 @@ class SettingsScreen extends ConsumerWidget {
                 trailing: const Icon(AppIcons.chevronRight),
                 onTap: () => showIgnoreSpeciesSettingsSheet(context, ref),
               ),
+              SwitchListTile(
+                title: SettingHelpTitle(
+                  title: l10n.settingsIncludeSoundClasses,
+                  helpBody: l10n.settingsHelpIncludeSoundClasses,
+                ),
+                subtitle: Text(l10n.settingsIncludeSoundClassesDescription),
+                value: ref.watch(includeSoundClassesProvider),
+                onChanged: (v) =>
+                    ref.read(includeSoundClassesProvider.notifier).set(v),
+              ),
               if (_showAdvancedInferenceSettings)
                 const _AdvancedInferenceTuning(),
               const Divider(),
@@ -1108,7 +1118,7 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final ignoredSpeciesNames = ref.watch(ignoredSpeciesNamesProvider);
+    final ignoredSpeciesCount = ref.watch(ignoredSpeciesCountProvider);
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -1143,9 +1153,9 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                     const Icon(AppIcons.filterList, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ignoredSpeciesNames.when(
-                        data: (names) => Text(
-                          l10n.settingsIgnoredSpeciesCount(names.length),
+                      child: ignoredSpeciesCount.when(
+                        data: (count) => Text(
+                          l10n.settingsIgnoredSpeciesCount(count),
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                         loading: () =>
@@ -1154,7 +1164,7 @@ class _IgnoreSpeciesSettingsSheet extends ConsumerWidget {
                             Text(l10n.settingsIgnoredSpeciesCountUnavailable),
                       ),
                     ),
-                    if (ignoredSpeciesNames.isLoading)
+                    if (ignoredSpeciesCount.isLoading)
                       const SizedBox.square(
                         dimension: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),

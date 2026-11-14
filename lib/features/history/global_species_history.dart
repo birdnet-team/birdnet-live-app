@@ -35,6 +35,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../shared/providers/app_providers.dart';
+import '../explore/explore_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_session.dart';
 
@@ -107,6 +108,22 @@ class GlobalSpeciesHistory extends ChangeNotifier {
     return added;
   }
 
+  /// Rewrites every stored name to the name [canonical] returns for it and
+  /// persists the result if anything changed.
+  ///
+  /// The set outlives taxonomy revisions: a species first seen as
+  /// `Emberiza schoeniclus` is stored under that name, and the current model
+  /// reports it as `Schoeniclus schoeniclus`. Without this pass the species
+  /// would count as never seen and fire a "first ever" alert again. Names
+  /// the taxonomy does not know are kept as they are.
+  Future<void> canonicalize(String Function(String name) canonical) async {
+    final mapped = {for (final name in _seen) canonical(name)};
+    if (mapped.length == _seen.length && mapped.containsAll(_seen)) return;
+    _seen = mapped;
+    notifyListeners();
+    await _persist();
+  }
+
   /// Wipes the persisted set. Used by the "Clear all data" diagnostic
   /// action and by tests.
   Future<void> clear() async {
@@ -165,27 +182,35 @@ final globalSpeciesHistoryProvider =
       // off the synchronous path; alerts that fire before seeding completes
       // will see an empty history (false positives biased toward MORE alerts,
       // which is the safe direction for a one-time migration).
-      if (!(prefs.getBool(PrefKeys.globalSpeciesHistorySeeded) ?? false)) {
-        final repo = ref.read(sessionRepositoryProvider);
-        Future(() async {
-          try {
+      final needsSeed =
+          !(prefs.getBool(PrefKeys.globalSpeciesHistorySeeded) ?? false);
+      final repo = ref.read(sessionRepositoryProvider);
+      Future(() async {
+        try {
+          if (needsSeed) {
             final sessions = await repo.listAll();
             await seedGlobalSpeciesHistory(
               history: history,
               prefs: prefs,
               sessions: sessions,
             );
-          } catch (_) {
-            /* non-fatal */
           }
-        });
-      }
+          // Bring names stored under an older taxonomy up to date, after the
+          // seed so session names from before a revision are covered too.
+          final taxonomy = await ref.read(taxonomyServiceProvider.future);
+          await history.canonicalize(taxonomy.canonicalScientificName);
+        } catch (_) {
+          /* non-fatal */
+        }
+      });
 
       return history;
     });
 
-/// Set of every scientific name found in any saved session, derived live
-/// from [sessionListProvider].
+/// Set of every species found in any saved session, derived live from
+/// [sessionListProvider] and keyed by the species' current scientific name
+/// (`TaxonomyService.canonicalScientificName`), so a detection stored under
+/// an older name still marks the species as detected.
 ///
 /// Used by the Explore screen's "detected" checkmark badges (on species
 /// thumbnails and in the species info overlay). We deliberately do NOT
@@ -198,12 +223,17 @@ final globalSpeciesHistoryProvider =
 /// invalidates [sessionListProvider]).
 final detectedSpeciesSetProvider = Provider<Set<String>>((ref) {
   final asyncSessions = ref.watch(sessionListProvider);
+  final taxonomy = ref.watch(taxonomyServiceProvider).value;
   return asyncSessions.maybeWhen(
     data: (sessions) {
       final names = <String>{};
       for (final s in sessions) {
         for (final d in s.detections) {
-          if (d.scientificName.isNotEmpty) names.add(d.scientificName);
+          if (d.scientificName.isEmpty) continue;
+          names.add(
+            taxonomy?.canonicalScientificName(d.scientificName) ??
+                d.scientificName,
+          );
         }
       }
       return names;

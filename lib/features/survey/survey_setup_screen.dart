@@ -1659,12 +1659,18 @@ class _CreateWatchlistScreenState
       }
       final bytes = await file.xFile.readAsBytes();
       final content = utf8.decode(bytes, allowMalformed: true);
-      final names = CustomSpeciesList.parse(content);
+      final svc = ref.read(taxonomyServiceProvider).value;
+      // A list written for an earlier taxonomy may use older names; keep the
+      // current name of each species so the list matches what the model
+      // reports and what the picker shows as selected.
+      final names = {
+        for (final name in CustomSpeciesList.parse(content))
+          svc?.canonicalScientificName(name) ?? name,
+      };
       if (names.isEmpty) {
         setState(() => _error = l10n.surveyAlertCreateListImportError);
         return;
       }
-      final svc = ref.read(taxonomyServiceProvider).value;
       final speciesLocale = ref.read(effectiveSpeciesLocaleProvider);
       setState(() {
         _selected.addAll(names);

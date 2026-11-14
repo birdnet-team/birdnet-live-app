@@ -58,8 +58,8 @@ class GeoSpecies {
   /// Zero-based index in the geo-model output vector.
   final int index;
 
-  /// Sparse internal ID (from the labels file).
-  final int id;
+  /// ID from the labels file (the BirdNET taxonomy ID).
+  final String id;
 
   /// Binomial scientific name.
   final String scientificName;
@@ -143,23 +143,28 @@ class GeoModel {
   /// Parse the geo-model's labels file (tab-delimited, no header).
   ///
   /// Each line: `id\tscientific_name\tcommon_name`
+  ///
+  /// Line `i` names output `i`, so a line that cannot be parsed is an error:
+  /// skipping it would shift every later species onto the wrong score.
   void loadLabels(String labelsText) {
     final lines = labelsText.split('\n').where((l) => l.trim().isNotEmpty);
     final parsed = <GeoSpecies>[];
-    var idx = 0;
     for (final line in lines) {
       final parts = line.split('\t');
-      if (parts.length >= 2) {
-        parsed.add(
-          GeoSpecies(
-            index: idx,
-            id: int.tryParse(parts[0].trim()) ?? 0,
-            scientificName: parts[1].trim(),
-            commonName: parts.length >= 3 ? parts[2].trim() : parts[1].trim(),
-          ),
+      if (parts.length < 2 || parts[1].trim().isEmpty) {
+        throw FormatException(
+          'Geo-model labels line ${parsed.length + 1} is not '
+          '"id<TAB>scientific name<TAB>common name": "$line"',
         );
-        idx++;
       }
+      parsed.add(
+        GeoSpecies(
+          index: parsed.length,
+          id: parts[0].trim(),
+          scientificName: parts[1].trim(),
+          commonName: parts.length >= 3 ? parts[2].trim() : parts[1].trim(),
+        ),
+      );
     }
     _labels = parsed;
     debugPrint('[GeoModel] loaded ${_labels.length} labels');
@@ -167,11 +172,12 @@ class GeoModel {
 
   /// Load the geo-model ONNX file from a path on disk.
   ///
-  /// [inputName] and [outputName] configure the tensor names.
+  /// [inputName] and [outputName] are the tensor names from the `geoModel`
+  /// block of the model config.
   Future<void> loadModel(
     String modelPath, {
-    String inputName = 'input',
-    String outputName = 'output',
+    required String inputName,
+    required String outputName,
   }) async {
     _inputName = inputName;
     _outputName = outputName;
@@ -242,10 +248,12 @@ class GeoModel {
     try {
       outputs = await session.run({_inputName: inputTensor});
 
-      // Prefer the configured output name; fall back to first output.
-      final outputTensor = outputs[_outputName] ?? outputs.values.firstOrNull;
+      final outputTensor = outputs[_outputName];
       if (outputTensor == null) {
-        throw StateError('Geo-model returned no output');
+        throw StateError(
+          'Geo-model has no output named "$_outputName" '
+          '(outputs: ${outputs.keys.join(', ')})',
+        );
       }
       final raw = await outputTensor.asFlattenedList();
       final probabilities = raw is List<double>
@@ -254,12 +262,18 @@ class GeoModel {
           ? raw.toList()
           : raw.map((e) => (e as num).toDouble()).toList(growable: false);
 
+      // A labels file that does not match the model would pair species with
+      // the wrong scores; refuse instead of truncating to the shorter list.
+      if (probabilities.length != _labels.length) {
+        throw StateError(
+          'Geo-model returned ${probabilities.length} scores for '
+          '${_labels.length} labels',
+        );
+      }
+
       // Build the result map.
       final scores = <String, double>{};
-      final count = probabilities.length < _labels.length
-          ? probabilities.length
-          : _labels.length;
-      for (var i = 0; i < count; i++) {
+      for (var i = 0; i < _labels.length; i++) {
         scores[_labels[i].scientificName] = probabilities[i];
       }
 
@@ -297,7 +311,7 @@ class GeoModel {
           (l) => l.scientificName == entry.key,
           orElse: () => GeoSpecies(
             index: -1,
-            id: 0,
+            id: '',
             scientificName: entry.key,
             commonName: entry.key,
           ),
