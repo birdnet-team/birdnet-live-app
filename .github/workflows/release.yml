@@ -53,7 +53,7 @@ jobs:
     if: github.event_name == 'release' || inputs.build_android
     steps:
       - name: Download source snapshot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: repo-source
           path: .
@@ -177,7 +177,7 @@ jobs:
     if: github.event_name == 'release' || inputs.build_windows
     steps:
       - name: Download source snapshot
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: repo-source
           path: .
