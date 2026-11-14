@@ -30,7 +30,7 @@ R: A precisão depende da qualidade da gravação, da distância, do ruído de f
 ## Gravação
 
 **P: Onde as gravações são salvas?**
-R: No diretório de documentos do aplicativo em `recordings/<session-id>/`. Em WAV ou FLAC, conforme **Configurações → Gravação → Formato**.
+R: No diretório de documentos do aplicativo em `recordings/<session-id>/`. Em WAV ou FLAC, conforme **Configurações → Áudio e gravação → Formato de gravação**.
 
 **P: Posso analisar gravações existentes?**
 R: Sim. Abra Análise de Arquivo na tela inicial, escolha um arquivo de áudio, defina a localização e os parâmetros e toque em Analisar. Os formatos suportados incluem WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA e AMR.

@@ -30,7 +30,7 @@ A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hinterg
 ## Aufnahme
 
 **F: Wo werden Aufnahmen gespeichert?**
-A: Im Dokumentenverzeichnis der App unter `recordings/<session-id>/`. Je nach **Einstellungen → Aufnahme → Format** als WAV oder FLAC.
+A: Im Dokumentenverzeichnis der App unter `recordings/<session-id>/`. Je nach **Einstellungen → Audio & Aufnahme → Aufnahmeformat** als WAV oder FLAC.
 
 **F: Kann ich vorhandene Aufnahmen analysieren?**
 A: Ja. Öffnen Sie die Dateianalyse auf dem Startbildschirm, wählen Sie eine Audiodatei, legen Sie Standort und Parameter fest und tippen Sie auf „Analysieren“. Zu den unterstützten Formaten gehören WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA und AMR.

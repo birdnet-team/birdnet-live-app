@@ -30,7 +30,7 @@ R : La précision dépend de la qualité de l’enregistrement, de la distance,
 ## Enregistrement
 
 **Q : Où sont sauvegardés les enregistrements ?**
-R : Dans le répertoire des documents de l'application sous `recordings/<session-id>/`. Au format WAV ou FLAC selon **Paramètres → Enregistrement → Format**.
+R : Dans le répertoire des documents de l'application sous `recordings/<session-id>/`. Au format WAV ou FLAC selon **Paramètres → Audio et enregistrement → Format d'enregistrement**.
 
 **Q : Puis-je analyser des enregistrements existants ?**
 R : Oui. Ouvrez File Analysis depuis l'écran d'accueil, choisissez un fichier audio, définissez l'emplacement et les paramètres, puis appuyez sur Analyser. Les formats pris en charge incluent WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA et AMR.

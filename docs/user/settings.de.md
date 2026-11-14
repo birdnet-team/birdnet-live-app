@@ -9,15 +9,13 @@ Die Schaltfläche :app-helpOutline: neben einer Einstellung öffnet eine kurze E
 - Wenn Sie die Einstellungen vom Startbildschirm aus öffnen, wird der vollständige Bildschirm angezeigt.
 - Wenn Sie die Einstellungen aus Live, Survey, Point Count oder der Dateianalyse öffnen, wird der Bildschirm auf die relevanten Abschnitte gefiltert.
 
+## Eine Einstellung finden
+
+Die Einstellungen sind in Abschnitte wie **Allgemein**, **Inferenz** und **Datenschutz** gegliedert. Der Bildschirm öffnet sich mit eingeklappten Abschnitten und beginnt daher als kurze Liste von Abschnittsnamen mit jeweils einer kurzen Beschreibung. Tippen Sie auf die Kopfzeile eines Abschnitts, um ihn aufzuklappen, und erneut, um ihn wieder einzuklappen; es können mehrere Abschnitte gleichzeitig geöffnet sein. Während Sie durch einen geöffneten Abschnitt scrollen, bleibt sein Titel am oberen Bildschirmrand stehen, sodass Sie einen langen Abschnitt einklappen können, ohne wieder nach oben zu scrollen.
+
+Um eine Einstellung anhand ihres Namens zu finden, tippen Sie in der App-Leiste auf die Schaltfläche :app-searchRounded: und geben Sie einen Teil des Namens ein. Die Ergebnisse zeigen jede passende Einstellung mit ihrem Abschnitt; wenn Sie auf ein Ergebnis tippen, wird dieser Abschnitt geöffnet und zur Einstellung gescrollt. Eine Einstellung, die erst erscheint, wenn ein anderer Schalter eingeschaltet ist (etwa die Stimme der Ansagen, solange die Ansagen ausgeschaltet sind), wird erst aufgeführt, sobald dieser Schalter eingeschaltet ist. Einstellungen, deren eigener Name passt, stehen zuerst; wenn Sie einen Abschnittsnamen eingeben, werden außerdem alle Einstellungen dieses Abschnitts aufgeführt. Optionen auf einer Unterseite oder in einem Overlay, etwa die einzelnen Exportformate oder die Kontrollkästchen unter Arten ignorieren, finden Sie über den zugehörigen Eintrag (**Formate**, **Inhalt**, **Arten ignorieren**).
+
 ## Allgemein
-
-### Design
-
-Wählen Sie **Dunkel**, **Hell** oder **System**.
-
-Wenn **Dynamische Farben** aktiviert ist, versucht BirdNET Live zusätzlich, die Systemfarbpalette Ihres Android-Geräts zu übernehmen. Das wirkt sich nur auf unterstützten Android-Geräten aus; auf iPhone und iPad behält die App das Standarddesign von BirdNET Live bei, sodass das Einschalten dort nichts ändert.
-
-Aktivieren Sie **Kontrastreiches Design**, um eine schwarz-weiße helle oder dunkle Oberflächenpalette mit kräftigerem Text und umrandeten Flächen statt eingefärbter Karten zu verwenden. Sie folgt der Auswahl **Dunkel**, **Hell** oder **System**, setzt Dynamische Farben außer Kraft, solange sie aktiv ist, und behält die Farben für Gefahr, Warnung, Validierung, Modus, Score und Spektrogramm bei.
 
 ### App-Sprache
 
@@ -58,7 +56,17 @@ Wenn **Absolut** ausgewählt ist, erscheint zusätzlich der Schalter **Sekunden 
 
 Speicherung und Exporte verwenden unabhängig von dieser Einstellung immer UTC-Zeitpunkte, die Wahl beeinflusst also nie die Daten – nur ihre Darstellung.
 
-## Audio
+## Erscheinungsbild
+
+### Design
+
+Wählen Sie **Dunkel**, **Hell** oder **System**.
+
+Wenn **Dynamische Farben** aktiviert ist, versucht BirdNET Live zusätzlich, die Systemfarbpalette Ihres Android-Geräts zu übernehmen. Das wirkt sich nur auf unterstützten Android-Geräten aus; auf iPhone und iPad behält die App das Standarddesign von BirdNET Live bei, sodass das Einschalten dort nichts ändert.
+
+Aktivieren Sie **Kontrastreiches Design**, um eine schwarz-weiße helle oder dunkle Oberflächenpalette mit kräftigerem Text und umrandeten Flächen statt eingefärbter Karten zu verwenden. Sie folgt der Auswahl **Dunkel**, **Hell** oder **System**, setzt Dynamische Farben außer Kraft, solange sie aktiv ist, und behält die Farben für Gefahr, Warnung, Validierung, Modus, Score und Spektrogramm bei.
+
+## Audio & Aufnahme
 
 Diese Steuerelemente erscheinen in audiogesteuerten Live-Arbeitsabläufen.
 
@@ -89,6 +97,44 @@ Linearer Verstärker, der auf eingehendes Audio angewendet wird, bevor es das Sp
 ### Hochpassfilter (Hz)
 
 Schneidet tieffrequente Anteile vor der Inferenz mit einem Butterworth-Filter mit 24 dB/Oktave ab – der Schiebereglerwert ist die −3-dB-Grenzfrequenz. **0 Hz deaktiviert ihn.** Eine Grenzfrequenz von 100–200 Hz entfernt Wind, Verkehrsdröhnen und Handhabungsgeräusche, ohne die meisten Arten zu beeinträchtigen; in Richtung 500–1000 Hz beginnen tiefe Rufe, Eulen, Raufußhühner und das Dröhnen der Rohrdommel zu verschwinden. Gehen Sie also nur so hoch, wenn Sie diese Arten bewusst ignorieren und dafür ein deutlich saubereres Spektrogramm in einer lauten städtischen Umgebung erhalten wollen. Die gewählte Grenzfrequenz sollte als scharfe waagerechte Linie im Live-Spektrogramm sichtbar sein.
+
+### Aufnahmemodus
+
+Diese Einstellung steuert Live Mode. Point Count hat eine eigene Aufnahmeauswahl im Schritt für Analyseeinstellungen; neue Point Counts verwenden standardmäßig **Vollständig**. Survey hat ebenfalls eine eigene Aufnahmeauswahl in der Einrichtung.
+
+- **Vollständig** – die gesamte Aufnahme speichern
+- **Nur Detektionen** – Clips rund um Detektionen speichern
+- **Aus** – keine Audioaufnahme
+
+### Clip-Kontext
+
+Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen Schieberegler **Clip-Kontext** (0–5 s), der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Point Count verwendet denselben Wert, wenn in der Einrichtung **Clips** ausgewählt ist, und kann ihn dort ändern. Jeder Clip ist `Analysefenster + 2 × Clip-Kontext` lang, mit einem Analysefenster von 3 s und dem voreingestellten Kontext von 1 s ist der gespeicherte Clip also 5 s lang. Ein Kontext von 2 s ergibt einen Clip von 7 s (2 s Vorlauf + 3 s analysiertes Audio + 2 s Nachlauf). Größere Werte geben Ihnen mehr Spielraum für die visuelle Prüfung oder externe Auswertungswerkzeuge, kosten aber Speicherplatz; 0 speichert nur das analysierte Fenster selbst.
+
+### Aufnahmeformat
+
+Wählen Sie **WAV** oder **FLAC**. WAV ist größer, aber weithin kompatibel und schnell zu prüfen. FLAC behält dieselbe verlustfreie Audioqualität bei geringerem Speicherbedarf, was für lange Sessions meist besser ist.
+
+Diese Einstellung gilt für Audio, das BirdNET Live aufnimmt. Die **Dateianalyse** behält eine von der App verwaltete Kopie der importierten Datei in ihrem Originalformat, sodass MP3-, AAC-, WAV- und FLAC-Uploads ohne zusätzlichen Konvertierungsschritt durchsehbar bleiben.
+
+### Sessions automatisch speichern (Live und Point Count)
+
+Wenn aktiviert (die Voreinstellung), wird eine abgeschlossene Live- oder Point-Count-Session in dem Moment automatisch zu Ihrer Bibliothek hinzugefügt, in dem sie endet. Wenn deaktiviert, öffnet sich eine beendete Session in der Übersicht als **nicht gespeichert**: Das Speichersymbol ist hervorgehoben und Sie müssen es antippen, um die Session zu behalten. Verlassen Sie die Übersicht ohne zu speichern, werden Session und Aufnahmen verworfen. Das eignet sich für kurzes Hineinhören, bei dem Sie nur gelegentlich ein bemerkenswertes Ergebnis behalten wollen, statt jede kurze Aufnahme anzusammeln. Survey- und ARU-Einsätze speichern immer automatisch – ein langer unbeaufsichtigter Lauf ist zu wertvoll, um ihn durch vergessenes Speichern zu verlieren –, dieser Schalter gilt dort also nicht.
+
+Unabhängig von dieser Einstellung sichern Live-Modus und Point Count beim Start, alle 30 Sekunden und beim Verlassen des Vordergrunds eine Teil-Session und schreiben die fertige Session auf den Speicher, bevor das Mikrofon freigegeben wird. Das begrenzt Datenverluste nach einem Absturz, einem Stromausfall oder wenn das System die App im Hintergrund beendet: Eine solche Session erscheint in der Bibliothek – als unterbrochen markiert, wenn die App mitten in der Session beendet wurde – und kann dort gelöscht werden, falls Sie sie nicht behalten wollten. Bei deaktiviertem automatischem Speichern öffnet sich eine beendete Session, die Sie in der Übersicht erreichen, weiterhin als nicht gespeichert und wird verworfen, wenn Sie die Übersicht ohne Speichern verlassen. Survey und ARU sichern ihre Zwischenstände unabhängig von dieser Einstellung.
+
+### Aufnahme automatisch starten (nur Live-Modus)
+
+Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet ist und das Modell geladen wurde – ohne die Mikrofonschaltfläche antippen zu müssen. Nützlich für Kiosk-artige Aufstellungen, freihändige Nutzung (z. B. das Gerät im Feld montiert) oder jeden Ablauf, bei dem das Öffnen von Live ohnehin „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Antippen der Live-Kachel auf dem Startbildschirm nicht stillschweigend eine Session beginnt. Der automatische Start erfolgt nur einmal pro Bildschirmbesuch, sodass ein Beenden der Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
+
+Diese Einstellung betrifft das Öffnen des Live-Modus innerhalb der App. [Quick Listen](live-mode.md) — das Android-Widget oder unter iOS der Kurzbefehl, der Siri-Satz und die Aktion im App-Symbol — beginnt beim Auslösen zu lauschen, unabhängig von dieser Einstellung, und lässt die Einstellung unberührt. Läuft oder startet bereits eine Session von Point Count, Survey, Dateianalyse oder ARU-Modus, bleibt diese Session erhalten und Sie werden gebeten, sie zuerst zu beenden.
+
+### Bei ausgeschaltetem Bildschirm fortsetzen
+
+**Live Mode** pausiert beim Sperren des Bildschirms oder Verlassen der App Audioerfassung und Erkennung und setzt dieselbe Session bei Ihrer Rückkehr fort. Das Fortsetzen im Hintergrund ist standardmäßig deaktiviert. Nach der ersten Rückkehr erklärt ein einmaliger Dialog die Aktivierung; der Schalter ist auch direkt in den Live Mode-Einstellungen verfügbar. Wählen Sie nach der Aktivierung eine **Maximale Hintergrundzeit** von 15, 30, 60 oder 120 Minuten (Standard: 30). Der Timer beginnt beim Wechsel in den Hintergrund, wird bei rechtzeitiger Rückkehr abgebrochen und startet beim erneuten Verlassen neu. Das Limit beendet die Session automatisch und öffnet die Übersicht mit dem Stoppgrund. Die Einstellung zum automatischen Speichern bestimmt weiterhin, ob sie sofort behalten oder als nicht gespeichert angezeigt wird.
+
+**Point Count** läuft standardmäßig beim Sperren oder Wechseln zu einer anderen App im Hintergrund weiter, auch bei eingeschaltetem Bildschirm, und endet nach der gewählten Dauer. Sein Schalter **Bei ausgeschaltetem Bildschirm fortsetzen** erscheint nur im ersten Einrichtungsschritt. Deaktivieren Sie ihn, um die Zählung bei diesen Aktionen vorzeitig zu beenden. Das Fragezeichen erklärt das Verhalten. Pausieren und Fortsetzen würden eine Lücke im zeitgebundenen Protokoll erzeugen. Der Bereitschaftsbildschirm fasst die Auswahl zusammen; die Session-Übersicht zeigt den Grund eines vorzeitigen Endes.
+
+Android zeigt während des Hintergrundbetriebs eine dauerhafte Benachrichtigung mit Öffnen und Stopp; der Bildschirm kann normal ausgehen. Kann der Hintergrundbetrieb nicht starten, halten Sie die App geöffnet: Im Hintergrund pausiert Live Mode und Point Count endet. Verlassen Sie die App während des Starts eines Point Count, wird er mit einer Meldung abgebrochen; richten Sie ihn erneut ein. Unter Windows pausiert oder beendet das Minimieren keinen dieser Modi, unabhängig von den Schaltern.
 
 ## Inferenz
 
@@ -163,7 +209,7 @@ stärksten gestützten Score und endet am Ende des letzten stützenden Fensters.
 
 ## Spektrogramm
 
-### Größe
+### Spektrogrammgröße
 
 Legt fest, wie viel Platz das live mitlaufende Spektrogramm in Live Mode, Point Count, Survey und ARU auf dem Bildschirm einnimmt. **Voll** ist die gewohnte Höhe. **Mittel** und **Klein** verkleinern sie auf 75 % bzw. 50 % und geben den Unterschied an die Erkennungsliste ab – die richtige Wahl, wenn Sie auf dem Telefon im Hochformat vor allem die Liste im Blick haben. **Aus** entfernt das Spektrogramm ganz; in Survey und ARU verschwindet auch der Spektrogramm-Tab. Im Querformat verkürzen **Mittel** und **Klein** das Spektrogramm in seiner Bildschirmhälfte (der Platz darunter bleibt vorerst leer), und **Aus** überlässt der Erkennungsliste den ganzen Bildschirm. Spektrogramme gespeicherter Sessions und bei der Wiedergabe sind nicht betroffen.
 
@@ -187,13 +233,29 @@ Legt die obere Anzeigefrequenz fest.
 
 Wendet eine logarithmische Skalierung auf das Spektrogramm an, damit es leichter abzulesen ist.
 
-### Qualität
+### Spektrogramm-Qualität
 
 Steuert, wie weich das Spektrogrammbild skaliert wird. **Mittel** ist die voreingestellte Balance. Wählen Sie **Niedrig** auf älteren Telefonen, wenn das Scrollen stockt oder das Gerät heiß wird; wählen Sie **Hoch**, wenn Sie eine weichere Darstellung bevorzugen und Ihr Gerät genügend GPU-Reserven hat. Die Intuition dahinter: Das ändert nur den Rendering-Aufwand, nicht die Audioanalyse oder die Detektionsergebnisse.
 
-## Ansagen
+## Wiedergabe & Ansagen
 
-Dieser Abschnitt steuert, ob BirdNET Live **Detektionen über Ihre Kopfhörer oder den Telefonlautsprecher vorliest**, während eine Session aufzeichnet. Die gesamte Funktion ist **standardmäßig deaktiviert**, weil sie die akustische Umgebung rund um das Mikrofon verändert – sie einzuschalten ist eine bewusste Abwägung. Es gibt keinen Einrichtungsassistenten: Die Auswahl aus Ausführlichkeit × Häufigkeit weiter unten *ist* die gesamte Einrichtung, Sie können also jederzeit eine andere Voreinstellung antippen und den Unterschied sofort hören. Die Intuition dahinter: In langen Surveys können Sie nicht ständig auf den Bildschirm schauen; eine dezente Stimme im Ohr bedeutet, dass Sie den Blick im Habitat lassen und trotzdem wissen, was gerade zu hören war.
+Wenn die Einstellungen aus der Dateianalyse geöffnet werden, heißt dieser Abschnitt **Wiedergabe** und enthält nur die Wiedergabeeinstellungen.
+
+### Wiedergabe-Overlay in der Übersicht
+
+Wenn aktiviert (die Voreinstellung), öffnet das Anhören eines Audioclips in einer reinen Clip-Session-Übersicht (in der keine vollständige Audioaufnahme bzw. kein Spektrogramm verfügbar ist) ein eigenes modales Wiedergabe-Overlay mit Transportsteuerung und Spektrogrammvorschau, statt den Clip im Hintergrund abzuspielen. Verfügt eine Session über vollständiges Audio, wird diese Einstellung übergangen und das Wiedergabe-Overlay nie angezeigt.
+
+### Sprachnotizen automatisch abspielen
+
+Standardmäßig deaktiviert. Wenn aktiviert, wird eine an eine zeitgebundene Anmerkung angehängte Sprachnotiz während der Session-Übersicht automatisch abgespielt, sobald der Abspielkopf ihre aufgezeichnete Position überschreitet. Die Notiz wird über die Aufnahme gemischt, statt sie zu pausieren, sodass Sie Ihre gesprochene Notiz im Kontext gemeinsam mit dem Originalaudio hören. Lassen Sie sie deaktiviert, wenn Sie Notizen lieber manuell durch Antippen ihres Anmerkungs-Chips auslösen.
+
+### Absenkung bei Sprachnotizen
+
+Wird nur angezeigt, wenn **Sprachnotizen automatisch abspielen** aktiviert ist. Steuert, wie stark die Hauptaufnahme abgesenkt wird, während eine automatische Sprachnotiz läuft. Höhere Werte machen gesprochene Notizen besser hörbar; niedrigere Werte lassen mehr von der Originalaufnahme unter der Notiz durchklingen.
+
+### Ansagen
+
+Diese Einstellungen steuern, ob BirdNET Live **Detektionen über Ihre Kopfhörer oder den Telefonlautsprecher vorliest**, während eine Session aufzeichnet. Die gesamte Funktion ist **standardmäßig deaktiviert**, weil sie die akustische Umgebung rund um das Mikrofon verändert – sie einzuschalten ist eine bewusste Abwägung. Es gibt keinen Einrichtungsassistenten: Die Auswahl aus Ausführlichkeit × Häufigkeit weiter unten *ist* die gesamte Einrichtung, Sie können also jederzeit eine andere Voreinstellung antippen und den Unterschied sofort hören. Die Intuition dahinter: In langen Surveys können Sie nicht ständig auf den Bildschirm schauen; eine dezente Stimme im Ohr bedeutet, dass Sie den Blick im Habitat lassen und trotzdem wissen, was gerade zu hören war.
 
 ### Detektionen vorlesen (Hauptschalter)
 
@@ -223,61 +285,7 @@ Ein aufklappbarer Bereich mit einigen Schaltern zur Audioführung sowie der Ausw
 - **Signalton vor dem Sprechen** – Spielt vor jeder Äußerung einen kurzen, leisen Ton, damit Ihr Ohr einen Moment hat, vom passiven Hören zur Aufmerksamkeit für die Stimme zu wechseln. Standardmäßig aktiviert. Besonders hilfreich, wenn Ansagen selten sind oder im Hintergrund Musik läuft.
 - **Was angesagt wird** – Legt fest, welche Detektionen überhaupt für eine Ansage infrage kommen. *Jede Detektion* (Voreinstellung) überlässt die Entscheidung der Drosselung. *Erstes Mal pro Session* sagt eine Art nur beim ersten Auftreten in der aktuellen Session an. *Nur Beobachtungsliste* beschränkt Ansagen auf Arten Ihrer Beobachtungsliste (nützlich für gezielte Survey-Arbeit, bei der Sie nur von Ihren prioritären Taxa hören wollen und von nichts sonst).
 
-## Aufnahme
-
-### Modus
-
-Diese Einstellung steuert Live Mode. Point Count hat eine eigene Aufnahmeauswahl im Schritt für Analyseeinstellungen; neue Point Counts verwenden standardmäßig **Vollständig**. Survey hat ebenfalls eine eigene Aufnahmeauswahl in der Einrichtung.
-
-- **Vollständig** – die gesamte Aufnahme speichern
-- **Nur Detektionen** – Clips rund um Detektionen speichern
-- **Aus** – keine Audioaufnahme
-
-### Clip-Kontext
-
-Wenn **Nur Detektionen** aktiv ist, zeigt die App einen einzelnen Schieberegler **Clip-Kontext** (0–5 s), der festlegt, wie viel Audio auf **beiden Seiten** jeder Detektion erhalten bleibt. Point Count verwendet denselben Wert, wenn in der Einrichtung **Clips** ausgewählt ist, und kann ihn dort ändern. Jeder Clip ist `Analysefenster + 2 × Clip-Kontext` lang, mit einem Analysefenster von 3 s und dem voreingestellten Kontext von 1 s ist der gespeicherte Clip also 5 s lang. Ein Kontext von 2 s ergibt einen Clip von 7 s (2 s Vorlauf + 3 s analysiertes Audio + 2 s Nachlauf). Größere Werte geben Ihnen mehr Spielraum für die visuelle Prüfung oder externe Auswertungswerkzeuge, kosten aber Speicherplatz; 0 speichert nur das analysierte Fenster selbst.
-
-### Format
-
-Wählen Sie **WAV** oder **FLAC**. WAV ist größer, aber weithin kompatibel und schnell zu prüfen. FLAC behält dieselbe verlustfreie Audioqualität bei geringerem Speicherbedarf, was für lange Sessions meist besser ist.
-
-Diese Einstellung gilt für Audio, das BirdNET Live aufnimmt. Die **Dateianalyse** behält eine von der App verwaltete Kopie der importierten Datei in ihrem Originalformat, sodass MP3-, AAC-, WAV- und FLAC-Uploads ohne zusätzlichen Konvertierungsschritt durchsehbar bleiben.
-
-### Aufnahme automatisch starten (nur Live-Modus)
-
-Wenn aktiviert, beginnt der Live-Modus mit der Aufnahme, sobald der Bildschirm geöffnet ist und das Modell geladen wurde – ohne die Mikrofonschaltfläche antippen zu müssen. Nützlich für Kiosk-artige Aufstellungen, freihändige Nutzung (z. B. das Gerät im Feld montiert) oder jeden Ablauf, bei dem das Öffnen von Live ohnehin „jetzt starten“ bedeutet. Standardmäßig deaktiviert, damit ein versehentliches Antippen der Live-Kachel auf dem Startbildschirm nicht stillschweigend eine Session beginnt. Der automatische Start erfolgt nur einmal pro Bildschirmbesuch, sodass ein Beenden der Session und erneutes Antippen des Mikrofons weiterhin als manueller Neustart funktioniert.
-
-Diese Einstellung betrifft das Öffnen des Live-Modus innerhalb der App. [Quick Listen](live-mode.md) — das Android-Widget oder unter iOS der Kurzbefehl, der Siri-Satz und die Aktion im App-Symbol — beginnt beim Auslösen zu lauschen, unabhängig von dieser Einstellung, und lässt die Einstellung unberührt. Läuft oder startet bereits eine Session von Point Count, Survey, Dateianalyse oder ARU-Modus, bleibt diese Session erhalten und Sie werden gebeten, sie zuerst zu beenden.
-
-### Bei ausgeschaltetem Bildschirm fortsetzen
-
-**Live Mode** pausiert beim Sperren des Bildschirms oder Verlassen der App Audioerfassung und Erkennung und setzt dieselbe Session bei Ihrer Rückkehr fort. Das Fortsetzen im Hintergrund ist standardmäßig deaktiviert. Nach der ersten Rückkehr erklärt ein einmaliger Dialog die Aktivierung; der Schalter ist auch direkt in den Live Mode-Einstellungen verfügbar. Wählen Sie nach der Aktivierung eine **Maximale Hintergrundzeit** von 15, 30, 60 oder 120 Minuten (Standard: 30). Der Timer beginnt beim Wechsel in den Hintergrund, wird bei rechtzeitiger Rückkehr abgebrochen und startet beim erneuten Verlassen neu. Das Limit beendet die Session automatisch und öffnet die Übersicht mit dem Stoppgrund. Die Einstellung zum automatischen Speichern bestimmt weiterhin, ob sie sofort behalten oder als nicht gespeichert angezeigt wird.
-
-**Point Count** läuft standardmäßig beim Sperren oder Wechseln zu einer anderen App im Hintergrund weiter, auch bei eingeschaltetem Bildschirm, und endet nach der gewählten Dauer. Sein Schalter **Bei ausgeschaltetem Bildschirm fortsetzen** erscheint nur im ersten Einrichtungsschritt. Deaktivieren Sie ihn, um die Zählung bei diesen Aktionen vorzeitig zu beenden. Das Fragezeichen erklärt das Verhalten. Pausieren und Fortsetzen würden eine Lücke im zeitgebundenen Protokoll erzeugen. Der Bereitschaftsbildschirm fasst die Auswahl zusammen; die Session-Übersicht zeigt den Grund eines vorzeitigen Endes.
-
-Android zeigt während des Hintergrundbetriebs eine dauerhafte Benachrichtigung mit Öffnen und Stopp; der Bildschirm kann normal ausgehen. Kann der Hintergrundbetrieb nicht starten, halten Sie die App geöffnet: Im Hintergrund pausiert Live Mode und Point Count endet. Verlassen Sie die App während des Starts eines Point Count, wird er mit einer Meldung abgebrochen; richten Sie ihn erneut ein. Unter Windows pausiert oder beendet das Minimieren keinen dieser Modi, unabhängig von den Schaltern.
-
-### Sessions automatisch speichern (Live und Point Count)
-
-Wenn aktiviert (die Voreinstellung), wird eine abgeschlossene Live- oder Point-Count-Session in dem Moment automatisch zu Ihrer Bibliothek hinzugefügt, in dem sie endet. Wenn deaktiviert, öffnet sich eine beendete Session in der Übersicht als **nicht gespeichert**: Das Speichersymbol ist hervorgehoben und Sie müssen es antippen, um die Session zu behalten. Verlassen Sie die Übersicht ohne zu speichern, werden Session und Aufnahmen verworfen. Das eignet sich für kurzes Hineinhören, bei dem Sie nur gelegentlich ein bemerkenswertes Ergebnis behalten wollen, statt jede kurze Aufnahme anzusammeln. Survey- und ARU-Einsätze speichern immer automatisch – ein langer unbeaufsichtigter Lauf ist zu wertvoll, um ihn durch vergessenes Speichern zu verlieren –, dieser Schalter gilt dort also nicht.
-
-Unabhängig von dieser Einstellung sichern Live-Modus und Point Count beim Start, alle 30 Sekunden und beim Verlassen des Vordergrunds eine Teil-Session und schreiben die fertige Session auf den Speicher, bevor das Mikrofon freigegeben wird. Das begrenzt Datenverluste nach einem Absturz, einem Stromausfall oder wenn das System die App im Hintergrund beendet: Eine solche Session erscheint in der Bibliothek – als unterbrochen markiert, wenn die App mitten in der Session beendet wurde – und kann dort gelöscht werden, falls Sie sie nicht behalten wollten. Bei deaktiviertem automatischem Speichern öffnet sich eine beendete Session, die Sie in der Übersicht erreichen, weiterhin als nicht gespeichert und wird verworfen, wenn Sie die Übersicht ohne Speichern verlassen. Survey und ARU sichern ihre Zwischenstände unabhängig von dieser Einstellung.
-
-## Wiedergabe
-
-### Wiedergabe-Overlay in der Übersicht
-
-Wenn aktiviert (die Voreinstellung), öffnet das Anhören eines Audioclips in einer reinen Clip-Session-Übersicht (in der keine vollständige Audioaufnahme bzw. kein Spektrogramm verfügbar ist) ein eigenes modales Wiedergabe-Overlay mit Transportsteuerung und Spektrogrammvorschau, statt den Clip im Hintergrund abzuspielen. Verfügt eine Session über vollständiges Audio, wird diese Einstellung übergangen und das Wiedergabe-Overlay nie angezeigt.
-
-### Sprachnotizen automatisch abspielen
-
-Standardmäßig deaktiviert. Wenn aktiviert, wird eine an eine zeitgebundene Anmerkung angehängte Sprachnotiz während der Session-Übersicht automatisch abgespielt, sobald der Abspielkopf ihre aufgezeichnete Position überschreitet. Die Notiz wird über die Aufnahme gemischt, statt sie zu pausieren, sodass Sie Ihre gesprochene Notiz im Kontext gemeinsam mit dem Originalaudio hören. Lassen Sie sie deaktiviert, wenn Sie Notizen lieber manuell durch Antippen ihres Anmerkungs-Chips auslösen.
-
-### Absenkung bei Sprachnotizen
-
-Wird nur angezeigt, wenn **Sprachnotizen automatisch abspielen** aktiviert ist. Steuert, wie stark die Hauptaufnahme abgesenkt wird, während eine automatische Sprachnotiz läuft. Höhere Werte machen gesprochene Notizen besser hörbar; niedrigere Werte lassen mehr von der Originalaufnahme unter der Notiz durchklingen.
-
-## Standort
+## Standort & Artenfilter
 
 ### GPS verwenden
 

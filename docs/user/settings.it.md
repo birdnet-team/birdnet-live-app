@@ -9,15 +9,13 @@ Il pulsante :app-helpOutline: accanto a un'impostazione apre una breve spiegazio
 - Aprire le Impostazioni dalla Home mostra la schermata completa.
 - Aprire le Impostazioni da Live, Survey, Point Count o Analisi file restringe la schermata alle sezioni pertinenti.
 
+## Trovare un'impostazione
+
+Le impostazioni sono raggruppate in sezioni come **Generale**, **Inferenza** e **Privacy**. La schermata si apre con tutte le sezioni compresse, quindi all'inizio è un breve elenco di nomi di sezione, ciascuno con una breve descrizione. Tocca l'intestazione di una sezione per espanderla e toccala di nuovo per comprimerla; più sezioni possono essere aperte contemporaneamente. Mentre scorri una sezione aperta, il suo titolo resta in alto nella schermata, così puoi comprimere una sezione lunga senza tornare su.
+
+Per trovare un'impostazione per nome, tocca il pulsante :app-searchRounded: nella barra dell'app e digita una parte del nome. I risultati mostrano ogni impostazione corrispondente con la relativa sezione; toccandone una si apre quella sezione e la schermata scorre fino all'impostazione. Un'impostazione che compare solo quando un altro interruttore è attivo (come la voce degli annunci mentre gli annunci sono disattivati) viene elencata solo una volta attivato quell'interruttore. Le impostazioni il cui nome corrisponde sono elencate per prime; digitando il nome di una sezione vengono elencate anche tutte le sue impostazioni. Le opzioni all'interno di una sottopagina o di un overlay, come i singoli formati di esportazione o le caselle di Ignora specie, si trovano tramite la relativa voce (**Formati**, **Contenuto**, **Ignora specie**).
+
 ## Generali
-
-### Tema
-
-Scegli **Scuro**, **Chiaro** o **Sistema**.
-
-Se **Colore dinamico** è attivo, BirdNET Live cerca anche di adottare la palette di sistema del tuo dispositivo Android. Ha effetto solo sui dispositivi Android supportati; su iPhone e iPad l'app continua a usare il tema standard di BirdNET Live, quindi attivare l'interruttore lì non cambia nulla.
-
-Attiva **Tema ad alto contrasto** per usare una palette dell'interfaccia in bianco e nero, chiara o scura, con testo più marcato e superfici bordate invece di schede colorate. Segue la scelta **Scuro**, **Chiaro** o **Sistema**, ha la precedenza sul colore dinamico finché è attivo e conserva i colori di pericolo, avviso, convalida, modalità, punteggio e spettrogramma.
 
 ### Lingua dell'app
 
@@ -58,7 +56,17 @@ Quando è selezionato **Assoluto** compare l'interruttore aggiuntivo **Mostra i 
 
 Archiviazione ed esportazioni usano sempre istanti in UTC, indipendentemente da questa impostazione: la scelta non incide quindi mai sui dati, ma solo su come vengono mostrati.
 
-## Audio
+## Aspetto
+
+### Tema
+
+Scegli **Scuro**, **Chiaro** o **Sistema**.
+
+Se **Colore dinamico** è attivo, BirdNET Live cerca anche di adottare la palette di sistema del tuo dispositivo Android. Ha effetto solo sui dispositivi Android supportati; su iPhone e iPad l'app continua a usare il tema standard di BirdNET Live, quindi attivare l'interruttore lì non cambia nulla.
+
+Attiva **Tema ad alto contrasto** per usare una palette dell'interfaccia in bianco e nero, chiara o scura, con testo più marcato e superfici bordate invece di schede colorate. Segue la scelta **Scuro**, **Chiaro** o **Sistema**, ha la precedenza sul colore dinamico finché è attivo e conserva i colori di pericolo, avviso, convalida, modalità, punteggio e spettrogramma.
+
+## Audio e registrazione
 
 Questi controlli compaiono nei flussi di lavoro dal vivo basati sull'audio.
 
@@ -89,6 +97,44 @@ Amplificatore lineare applicato all'audio in ingresso prima che raggiunga lo spe
 ### Filtro passa-alto (Hz)
 
 Taglia il contenuto a bassa frequenza prima dell'inferenza con un filtro di Butterworth a 24 dB/ottava: il valore del cursore è la frequenza di taglio a −3 dB. **0 Hz lo disattiva.** Un taglio a 100–200 Hz elimina vento, rimbombo del traffico e rumori di manipolazione senza toccare la maggior parte delle specie; avvicinandosi a 500–1000 Hz iniziano a sparire i richiami gravi, i rapaci notturni, i galliformi e il "boato" del tarabuso, quindi sali così in alto solo se stai deliberatamente ignorando quelle specie in cambio di uno spettrogramma molto più pulito in un ambiente urbano rumoroso. Il taglio che scegli dovrebbe essere visibile come una netta linea orizzontale sullo spettrogramma dal vivo.
+
+### Modalità di registrazione
+
+Questa impostazione controlla Live Mode. Point Count ha una scelta di registrazione indipendente nel passaggio delle impostazioni di analisi; i nuovi conteggi usano **Completa** per impostazione predefinita. Anche Survey ha una scelta separata nella configurazione.
+
+- **Completa** — salva l'intera registrazione
+- **Solo rilevazioni** — salva spezzoni attorno alle rilevazioni
+- **Disattivata** — nessuna registrazione audio
+
+### Contesto dello spezzone
+
+Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto dello spezzone** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Point Count usa questo stesso valore quando scegli **Solo clip** nella configurazione e permette di modificarlo lì. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
+
+### Formato di registrazione
+
+Scegli **WAV** o **FLAC**. WAV occupa di più, ma è ampiamente compatibile e rapido da ispezionare. FLAC mantiene la stessa qualità audio senza perdita occupando meno spazio, cosa di solito preferibile per Session lunghe.
+
+Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi file** conserva una copia gestita dall'app del file importato nel formato originale, così i file MP3, AAC, WAV e FLAC restano consultabili senza un ulteriore passaggio di conversione.
+
+### Salva automaticamente le Sessions (Live e Point Count)
+
+Una volta attivo (impostazione predefinita), una Session Live o Point Count completata viene aggiunta automaticamente alla tua libreria nel momento in cui termina. Se disattivato, una Session conclusa si apre nel riepilogo contrassegnata come **non salvata**: l'icona di salvataggio è evidenziata e devi toccarla per conservare la Session. Uscire dal riepilogo senza salvare elimina la Session e le sue registrazioni. È adatto agli ascolti rapidi, in cui vuoi conservare solo l'occasionale risultato interessante invece di accumulare ogni breve registrazione. I deployment Survey e ARU salvano sempre automaticamente — un'esecuzione lunga e non presidiata è troppo preziosa per perderla dimenticando di toccare Salva — quindi lì questo interruttore non si applica.
+
+Indipendentemente da questa impostazione, la modalità Live e Point Count salvano una Session parziale all'avvio, ogni 30 secondi e quando l'app lascia il primo piano, e scrivono la Session conclusa su disco prima di rilasciare il microfono. In questo modo si limita la perdita di dati dopo un arresto anomalo, un'interruzione di corrente o la chiusura dell'app da parte del sistema mentre era in background: una Session del genere compare nella libreria, contrassegnata come interrotta se l'app si è chiusa a metà Session, e puoi eliminarla da lì se non volevi conservarla. Con il salvataggio automatico disattivato, una Session conclusa che raggiungi nel riepilogo si apre comunque come non salvata e viene eliminata se esci senza salvare. Survey e ARU salvano i propri checkpoint indipendentemente da questa impostazione.
+
+### Avvia la registrazione automaticamente (solo modalità Live)
+
+Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
+
+Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. [Quick Listen](live-mode.md) — il widget Android oppure, su iOS, il comando rapido, la frase per Siri e l'azione dell'icona — inizia ad ascoltare quando viene avviato, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
+
+### Continua a schermo spento
+
+**Live Mode** sospende acquisizione e identificazione quando blocchi lo schermo o lasci l’app, poi riprende la stessa Session al ritorno. La continuazione in background è disattivata per impostazione predefinita. Dopo il primo ritorno, un dialogo spiega come attivarla; l’interruttore è anche nelle impostazioni di Live Mode. Scegli un **Tempo massimo in background** di 15, 30, 60 o 120 minuti (30 predefiniti). Il timer parte uscendo, si annulla se torni prima della scadenza e riparte alla successiva uscita. Al limite termina la Session e apre il riepilogo con il motivo. Il salvataggio automatico determina ancora se conservarla subito o mostrarla come non salvata.
+
+**Point Count** continua per impostazione predefinita quando blocchi lo schermo o cambi app a schermo acceso e termina alla durata scelta. L’interruttore **Continua a schermo spento** appare solo nel primo passaggio di configurazione. Disattivalo per terminare prima in questi casi. Il punto interrogativo spiega il comportamento. Una pausa seguita dalla ripresa creerebbe un’interruzione nel protocollo a tempo. La schermata di pronto riassume la scelta e il riepilogo della Session mostra il motivo di una fine anticipata.
+
+Android mostra una notifica persistente con Apri e Interrompi durante il funzionamento in background; lo schermo può spegnersi normalmente. Se il funzionamento non può iniziare, tieni l’app aperta: in background Live Mode si sospende e Point Count termina. Uscire durante l’avvio di un Point Count lo annulla con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non sospende mai Live Mode né termina Point Count, indipendentemente dagli interruttori.
 
 ## Inferenza
 
@@ -165,7 +211,7 @@ supporto.
 
 ## Spettrogramma
 
-### Dimensione
+### Dimensione dello spettrogramma
 
 Imposta quanto spazio dello schermo occupa lo spettrogramma in tempo reale in Live Mode, Point Count, Survey e ARU. **Intera** è l'altezza abituale. **Media** e **Piccola** la riducono al 75% e al 50% e cedono la differenza all'elenco dei rilevamenti: la scelta giusta quando sul telefono in verticale guardi soprattutto l'elenco. **Disattivato** rimuove del tutto lo spettrogramma; in Survey e ARU scompare anche la scheda dello spettrogramma. In orizzontale **Media** e **Piccola** accorciano lo spettrogramma nella sua metà dello schermo (lo spazio sotto resta vuoto per ora), e **Disattivato** lascia tutto lo schermo all'elenco dei rilevamenti. Gli spettrogrammi delle sessioni salvate e della riproduzione non sono interessati.
 
@@ -189,13 +235,29 @@ Imposta la frequenza massima visualizzata.
 
 Applica allo spettrogramma una scala logaritmica per renderlo più leggibile.
 
-### Qualità
+### Qualità dello spettrogramma
 
 Controlla con quanta morbidezza viene ridimensionata l'immagine dello spettrogramma. **Media** è l'equilibrio predefinito. Scegli **Bassa** sui telefoni più datati quando lo scorrimento scatta o il dispositivo si scalda; scegli **Alta** se preferisci un rendering più fluido e il tuo dispositivo ha margine di GPU. L'intuizione: questo cambia solo il costo di rendering, non l'analisi audio né i risultati delle rilevazioni.
 
-## Annunci
+## Riproduzione e annunci
 
-Questa sezione stabilisce se BirdNET Live debba **leggere le rilevazioni ad alta voce nelle cuffie o dall'altoparlante del telefono** mentre una Session sta registrando. L'intera funzione è **disattivata per impostazione predefinita**, perché modifica l'ambiente acustico intorno al microfono: attivarla è un compromesso consapevole. Non esiste una procedura guidata: i selettori di livello di dettaglio × frequenza qui sotto *sono* l'intera configurazione, quindi puoi toccare un preset diverso in qualsiasi momento e sentire subito la differenza. L'intuizione: nei rilievi lunghi non puoi continuare a guardare lo schermo; una voce discreta all'orecchio ti permette di tenere gli occhi sull'habitat e sapere comunque cosa è appena stato sentito.
+Quando le Impostazioni vengono aperte da Analisi file, questa sezione si chiama **Riproduzione** e contiene solo le impostazioni di riproduzione.
+
+### Overlay di riproduzione nel riepilogo
+
+Una volta attivo (impostazione predefinita), ascoltare uno spezzone audio in un riepilogo di Session composta solo da spezzoni (dove non è disponibile una registrazione completa né lo spettrogramma) apre un overlay modale di riproduzione dedicato, con controlli di trasporto e anteprima dello spettrogramma, invece di riprodurre lo spezzone in sottofondo. Se una Session ha l'audio completo, questa impostazione viene ignorata e l'overlay di riproduzione non compare mai.
+
+### Riproduci automaticamente i memo vocali
+
+Disattivato per impostazione predefinita. Una volta attivo, un memo vocale allegato a un'annotazione con marca temporale viene riprodotto automaticamente durante il Riepilogo sessione nel momento in cui il cursore di riproduzione supera la posizione registrata. Il memo viene miscelato sopra la registrazione anziché metterla in pausa, così senti il tuo commento nel contesto insieme all'audio originale. Lascialo disattivato se preferisci avviare i memo manualmente toccando la relativa etichetta di annotazione.
+
+### Attenuazione con i memo vocali
+
+Mostrato solo quando **Riproduci automaticamente i memo vocali** è attivo. Controlla quanto viene abbassata la registrazione principale durante la riproduzione di un memo vocale automatico. Valori più alti rendono i memo più comprensibili; valori più bassi lasciano udire di più della registrazione originale sotto il memo.
+
+### Annunci
+
+Queste impostazioni stabiliscono se BirdNET Live debba **leggere le rilevazioni ad alta voce nelle cuffie o dall'altoparlante del telefono** mentre una Session sta registrando. L'intera funzione è **disattivata per impostazione predefinita**, perché modifica l'ambiente acustico intorno al microfono: attivarla è un compromesso consapevole. Non esiste una procedura guidata: i selettori di livello di dettaglio × frequenza qui sotto *sono* l'intera configurazione, quindi puoi toccare un preset diverso in qualsiasi momento e sentire subito la differenza. L'intuizione: nei rilievi lunghi non puoi continuare a guardare lo schermo; una voce discreta all'orecchio ti permette di tenere gli occhi sull'habitat e sapere comunque cosa è appena stato sentito.
 
 ### Leggi le rilevazioni ad alta voce (interruttore principale)
 
@@ -225,61 +287,7 @@ Una sezione a scomparsa che espone alcuni interruttori di instradamento audio e 
 - **Tono prima di parlare** — Riproduce un tono breve e discreto prima di ogni pronuncia, così l'orecchio ha un istante per passare dall'ascolto passivo all'attenzione verso la voce. Attivo per impostazione predefinita. Particolarmente utile quando gli annunci sono radi o c'è musica di sottofondo.
 - **Cosa annunciare** — Sceglie quali rilevazioni siano idonee a un annuncio. *Ogni rilevazione* (predefinito) lascia decidere alla limitazione. *Prima volta per Session* annuncia una specie solo alla sua prima comparsa nella Session corrente. *Solo lista di controllo* limita gli annunci alle specie della tua lista (utile in rilievi mirati, dove vuoi sentire solo i taxa prioritari e nient'altro).
 
-## Registrazione
-
-### Modalità
-
-Questa impostazione controlla Live Mode. Point Count ha una scelta di registrazione indipendente nel passaggio delle impostazioni di analisi; i nuovi conteggi usano **Completa** per impostazione predefinita. Anche Survey ha una scelta separata nella configurazione.
-
-- **Completa** — salva l'intera registrazione
-- **Solo rilevazioni** — salva spezzoni attorno alle rilevazioni
-- **Disattivata** — nessuna registrazione audio
-
-### Contesto dello spezzone
-
-Quando **Solo rilevazioni** è attivo, l'app mostra un unico cursore **Contesto dello spezzone** (0–5 s) che stabilisce quanto audio venga conservato su **entrambi i lati** di ogni rilevazione. Point Count usa questo stesso valore quando scegli **Solo clip** nella configurazione e permette di modificarlo lì. Ogni spezzone dura `finestra di analisi + 2 × contesto dello spezzone`, quindi con una finestra di analisi di 3 s e il contesto predefinito di 1 s lo spezzone salvato è di 5 s. Impostando il contesto a 2 s si ottiene uno spezzone di 7 s (2 s prima + 3 s di audio analizzato + 2 s dopo). Valori più alti danno più margine per l'ispezione visiva o per strumenti di revisione esterni, a scapito dello spazio su disco; 0 salva solo la finestra analizzata.
-
-### Formato
-
-Scegli **WAV** o **FLAC**. WAV occupa di più, ma è ampiamente compatibile e rapido da ispezionare. FLAC mantiene la stessa qualità audio senza perdita occupando meno spazio, cosa di solito preferibile per Session lunghe.
-
-Questa impostazione riguarda l'audio registrato da BirdNET Live. L'**Analisi file** conserva una copia gestita dall'app del file importato nel formato originale, così i file MP3, AAC, WAV e FLAC restano consultabili senza un ulteriore passaggio di conversione.
-
-### Avvia la registrazione automaticamente (solo modalità Live)
-
-Una volta attivo, la modalità Live inizia a registrare appena la schermata si apre e il modello finisce di caricarsi, senza dover toccare il pulsante del microfono. Utile per installazioni tipo chiosco, uso a mani libere (ad esempio il dispositivo montato sul campo) o qualunque flusso in cui aprire Live significhi già «si comincia adesso». Disattivato per impostazione predefinita, così un tocco accidentale sul riquadro Live nella schermata iniziale non avvia silenziosamente una Session. L'avvio automatico scatta una sola volta per visita alla schermata, quindi arrestare una Session e toccare di nuovo il microfono continua a funzionare come riavvio manuale.
-
-Questa impostazione riguarda l'apertura della modalità Live dall'interno dell'app. [Quick Listen](live-mode.md) — il widget Android oppure, su iOS, il comando rapido, la frase per Siri e l'azione dell'icona — inizia ad ascoltare quando viene avviato, qualunque sia questa impostazione, e non la modifica. Se una Session di Point Count, Survey, Analisi file o modalità ARU è già in corso o in avvio, quella Session viene preservata e ti viene chiesto di arrestarla prima.
-
-### Continua a schermo spento
-
-**Live Mode** sospende acquisizione e identificazione quando blocchi lo schermo o lasci l’app, poi riprende la stessa Session al ritorno. La continuazione in background è disattivata per impostazione predefinita. Dopo il primo ritorno, un dialogo spiega come attivarla; l’interruttore è anche nelle impostazioni di Live Mode. Scegli un **Tempo massimo in background** di 15, 30, 60 o 120 minuti (30 predefiniti). Il timer parte uscendo, si annulla se torni prima della scadenza e riparte alla successiva uscita. Al limite termina la Session e apre il riepilogo con il motivo. Il salvataggio automatico determina ancora se conservarla subito o mostrarla come non salvata.
-
-**Point Count** continua per impostazione predefinita quando blocchi lo schermo o cambi app a schermo acceso e termina alla durata scelta. L’interruttore **Continua a schermo spento** appare solo nel primo passaggio di configurazione. Disattivalo per terminare prima in questi casi. Il punto interrogativo spiega il comportamento. Una pausa seguita dalla ripresa creerebbe un’interruzione nel protocollo a tempo. La schermata di pronto riassume la scelta e il riepilogo della Session mostra il motivo di una fine anticipata.
-
-Android mostra una notifica persistente con Apri e Interrompi durante il funzionamento in background; lo schermo può spegnersi normalmente. Se il funzionamento non può iniziare, tieni l’app aperta: in background Live Mode si sospende e Point Count termina. Uscire durante l’avvio di un Point Count lo annulla con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non sospende mai Live Mode né termina Point Count, indipendentemente dagli interruttori.
-
-### Salva automaticamente le Sessions (Live e Point Count)
-
-Una volta attivo (impostazione predefinita), una Session Live o Point Count completata viene aggiunta automaticamente alla tua libreria nel momento in cui termina. Se disattivato, una Session conclusa si apre nel riepilogo contrassegnata come **non salvata**: l'icona di salvataggio è evidenziata e devi toccarla per conservare la Session. Uscire dal riepilogo senza salvare elimina la Session e le sue registrazioni. È adatto agli ascolti rapidi, in cui vuoi conservare solo l'occasionale risultato interessante invece di accumulare ogni breve registrazione. I deployment Survey e ARU salvano sempre automaticamente — un'esecuzione lunga e non presidiata è troppo preziosa per perderla dimenticando di toccare Salva — quindi lì questo interruttore non si applica.
-
-Indipendentemente da questa impostazione, la modalità Live e Point Count salvano una Session parziale all'avvio, ogni 30 secondi e quando l'app lascia il primo piano, e scrivono la Session conclusa su disco prima di rilasciare il microfono. In questo modo si limita la perdita di dati dopo un arresto anomalo, un'interruzione di corrente o la chiusura dell'app da parte del sistema mentre era in background: una Session del genere compare nella libreria, contrassegnata come interrotta se l'app si è chiusa a metà Session, e puoi eliminarla da lì se non volevi conservarla. Con il salvataggio automatico disattivato, una Session conclusa che raggiungi nel riepilogo si apre comunque come non salvata e viene eliminata se esci senza salvare. Survey e ARU salvano i propri checkpoint indipendentemente da questa impostazione.
-
-## Riproduzione
-
-### Overlay di riproduzione nel riepilogo
-
-Una volta attivo (impostazione predefinita), ascoltare uno spezzone audio in un riepilogo di Session composta solo da spezzoni (dove non è disponibile una registrazione completa né lo spettrogramma) apre un overlay modale di riproduzione dedicato, con controlli di trasporto e anteprima dello spettrogramma, invece di riprodurre lo spezzone in sottofondo. Se una Session ha l'audio completo, questa impostazione viene ignorata e l'overlay di riproduzione non compare mai.
-
-### Riproduci automaticamente i memo vocali
-
-Disattivato per impostazione predefinita. Una volta attivo, un memo vocale allegato a un'annotazione con marca temporale viene riprodotto automaticamente durante il Riepilogo sessione nel momento in cui il cursore di riproduzione supera la posizione registrata. Il memo viene miscelato sopra la registrazione anziché metterla in pausa, così senti il tuo commento nel contesto insieme all'audio originale. Lascialo disattivato se preferisci avviare i memo manualmente toccando la relativa etichetta di annotazione.
-
-### Attenuazione con i memo vocali
-
-Mostrato solo quando **Riproduci automaticamente i memo vocali** è attivo. Controlla quanto viene abbassata la registrazione principale durante la riproduzione di un memo vocale automatico. Valori più alti rendono i memo più comprensibili; valori più bassi lasciano udire di più della registrazione originale sotto il memo.
-
-## Posizione
+## Posizione e filtro specie
 
 ### Usa il GPS
 
