@@ -150,6 +150,25 @@ some detection carries one) and as an `evidence` key in JSON.
 
 The `_buildAnnotationsText()` helper formats annotations as plain text with timestamp labels.
 
+Every detection output carries the species' BirdNET ID (e.g. `BN07148`). It is
+resolved at export time with `TaxonomyService.lookup(scientificName)?.birdnetId`
+and never stored on `DetectionRecord`, so sessions recorded by older app
+versions get it too: `lookup` follows taxonomy aliases from an older scientific
+name to the current entry. A species that does not resolve (free-text manual
+entries, unknown-species placeholders) has no ID; never invent one.
+
+| Output | Where the ID goes | Unresolved |
+|--------|-------------------|------------|
+| CSV / Raven | `BirdNET ID` column right after `Scientific Name` | empty cell |
+| JSON | `birdnetId` key right after `scientificName` | key omitted |
+| GPX | `<birdnet:birdnetId>` in the waypoint `<extensions>` | element omitted |
+| HTML report | `data-birdnet-id` and a label on the species card, `birdnetId` in `SESSION_DATA` | omitted |
+| Single-detection text share | `BirdNET ID: …` line | line omitted |
+
+An ID is only meaningful with its taxonomy version, so `buildExportMetadata()`
+copies the `taxonomy` block (`name`, `version`) of `model_config.json` next to
+`audioModel` / `geoModel`, and the HTML report footer shows it as "Taxonomy".
+
 Audio never passes through memory as a whole. A trimmed recording and any
 FLAC-to-WAV conversion (the "share audio as WAV" setting) are written to a
 staging directory by the streaming slicer in `session_audio_trim.dart`, added
