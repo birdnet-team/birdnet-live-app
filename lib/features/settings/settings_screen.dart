@@ -275,6 +275,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     'location' => l10n.settingsLocationSpeciesFilter,
     'export' => l10n.settingsExport,
     'privacy' => l10n.settingsPrivacy,
+    'about' => l10n.about,
     _ => l10n.settingsDangerZone,
   };
 
@@ -415,6 +416,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         l10n.settingsPrivacyAllowReverseGeocoding,
         l10n.settingsPrivacyAllowWeather,
       ],
+      // Not a section: a single row that opens the About screen.
+      'about': [l10n.about],
       _dangerSection: [
         l10n.settingsResetOnboarding,
         l10n.settingsResetAll,
@@ -436,10 +439,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
+  void _openAbout() {
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const AboutScreen()));
+  }
+
   /// Leaves search, expands the result's section, and scrolls to the setting.
   Future<void> _openSearchResult(({String section, String title}) entry) async {
     FocusManager.instance.primaryFocus?.unfocus();
     final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    if (entry.section == 'about') {
+      _toggleSearch();
+      _openAbout();
+      return;
+    }
     final wasExpanded = _expandedSections.contains(entry.section);
     _searchController.clear();
     setState(() {
@@ -521,12 +534,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     }
     return ListView.builder(
+      // The settings list owns the screen's primary scroll controller.
+      primary: false,
       itemCount: results.length,
       itemBuilder: (context, index) {
         final entry = results[index];
         return ListTile(
           title: Text(entry.title),
-          subtitle: Text(_sectionTitle(l10n, entry.section)),
+          // The About row is its own "section"; do not print it twice.
+          subtitle: entry.section == 'about'
+              ? null
+              : Text(_sectionTitle(l10n, entry.section)),
           trailing: const Icon(AppIcons.chevronRight),
           onTap: () => _openSearchResult(entry),
         );
@@ -582,7 +600,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final theme = Theme.of(context);
     final searching = _query.trim().isNotEmpty;
 
-    return PopScope(
+    final screen = PopScope(
       // Back closes an open search before it leaves Settings.
       canPop: !_searchVisible,
       onPopInvokedWithResult: (didPop, _) {
@@ -624,15 +642,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               // state intact.
               Offstage(
                 offstage: searching,
-                child: TickerMode(
-                  enabled: !searching,
-                  child: Padding(
-                    // Side insets only (display cutouts in landscape). This
-                    // context is above the Scaffold, so its top padding is the
-                    // status bar, which the app bar already covers; the bottom
-                    // inset is added after the last sliver.
-                    padding: MediaQuery.paddingOf(context)
-                        .copyWith(top: 0, bottom: 0),
+                child: _InertWhile(
+                  inert: searching,
+                  child: SafeArea(
+                    // Side insets only (display cutouts in landscape), and
+                    // consumed here: a plain Padding left them in MediaQuery,
+                    // so every ListTile added them a second time. The app bar
+                    // covers the top inset; the bottom one is added after the
+                    // last sliver.
+                    top: false,
+                    bottom: false,
                     child: CustomScrollView(
                       controller: _scrollController,
                       slivers: [
@@ -1512,13 +1531,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: ListTile(
                               title: Text(l10n.about),
                               trailing: const Icon(AppIcons.chevronRight),
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => const AboutScreen(),
-                                  ),
-                                );
-                              },
+                              onTap: _openAbout,
                             ),
                           ),
 
@@ -1573,6 +1586,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
       ),
+    );
+    // The list has its own controller (the pinned titles follow it), so
+    // hand that controller to the Scaffold as the primary one: tapping the
+    // iOS status bar then scrolls Settings to the top, as it did when the
+    // screen was a plain list.
+    return PrimaryScrollController(
+      controller: _scrollController,
+      child: screen,
     );
   }
 
@@ -3067,6 +3088,24 @@ class _GpsRefreshTileState extends ConsumerState<_GpsRefreshTile> {
             )
           : const Icon(AppIcons.refresh),
       onTap: _refreshing ? null : _refresh,
+    );
+  }
+}
+
+/// Keeps a subtree that is mounted but hidden from doing anything: its
+/// animations are paused and keyboard focus cannot enter it. `Offstage`
+/// alone stops neither.
+class _InertWhile extends StatelessWidget {
+  const _InertWhile({required this.inert, required this.child});
+
+  final bool inert;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TickerMode(
+      enabled: !inert,
+      child: ExcludeFocus(excluding: inert, child: child),
     );
   }
 }

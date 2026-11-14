@@ -1,3 +1,4 @@
+import 'package:birdnet_live/features/about/about_screen.dart';
 import 'package:birdnet_live/features/audio/audio_providers.dart';
 import 'package:birdnet_live/features/explore/explore_providers.dart';
 import 'package:birdnet_live/features/settings/settings_screen.dart';
@@ -135,6 +136,27 @@ void main() {
     expect(_titleRowTop(tester, 'General'), appBarBottom);
   });
 
+  testWidgets('a side display cutout insets the tiles only once', (
+    tester,
+  ) async {
+    const inset = 48.0;
+    final ratio = tester.view.devicePixelRatio;
+    tester.view.padding = FakeViewPadding(
+      left: inset * ratio,
+      right: inset * ratio,
+    );
+    addTearDown(tester.view.resetPadding);
+    await _pumpSettings(tester);
+    await _tapSection(tester, 'General');
+
+    final listLeft = tester.getTopLeft(find.byType(CustomScrollView)).dx;
+    final tileLeft = tester.getTopLeft(find.byType(SwitchListTile).first).dx;
+    final titleLeft = tester.getTopLeft(find.text('Show scientific names')).dx;
+    expect(tileLeft, listLeft);
+    // ListTile's own 16 dp content padding, not the cutout a second time.
+    expect(titleLeft - tileLeft, 16);
+  });
+
   testWidgets('Audio and Recording share one section above Inference', (
     tester,
   ) async {
@@ -215,6 +237,54 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Allow weather lookup').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('search finds About and opens the About screen', (tester) async {
+    await _pumpSettings(tester);
+
+    await _search(tester, 'about');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'About'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AboutScreen), findsOneWidget);
+  });
+
+  testWidgets('the hidden list cannot take keyboard focus during search', (
+    tester,
+  ) async {
+    await _pumpSettings(tester);
+    await _tapSection(tester, 'General');
+    bool listExcluded() => tester
+        .widget<ExcludeFocus>(
+          find
+              .ancestor(
+                of: find.byType(CustomScrollView, skipOffstage: false),
+                matching: find.byType(ExcludeFocus, skipOffstage: false),
+              )
+              .first,
+        )
+        .excluding;
+    expect(listExcluded(), isFalse);
+
+    await _search(tester, 'gain');
+    await tester.pumpAndSettle();
+    expect(listExcluded(), isTrue);
+  });
+
+  testWidgets('the settings list is the primary scroll view, also in search', (
+    tester,
+  ) async {
+    await _pumpSettings(tester);
+    // What a tap on the iOS status bar scrolls to the top.
+    ScrollController primary() =>
+        PrimaryScrollController.of(tester.element(find.byType(Scaffold)));
+    expect(primary().positions, hasLength(1));
+
+    await _search(tester, 'e');
+    await tester.pumpAndSettle();
+    expect(find.byType(ListView), findsOneWidget);
+    expect(primary().positions, hasLength(1));
   });
 
   testWidgets('a section name lists its settings; no match says so', (
