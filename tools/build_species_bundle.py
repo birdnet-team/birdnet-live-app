@@ -61,6 +61,12 @@ LEGACY_TAXONOMY_JSON = ROOT / "dev" / f"birdnet_taxonomy_{TAXONOMY_VERSION}.json
 TAXONOMY_DOWNLOAD_URL = "https://birdnet.tu-chemnitz.de/taxonomy/api/download/json"
 LEGACY_SPECIES_CSV = TOOLS_DIR / "legacy_species.csv"
 SOUND_CLASS_NAMES_JSON = TOOLS_DIR / "sound_class_names.json"
+# Hand-maintained (the two files above are written by the model build):
+# translations of the sound class descriptions, and the full records and
+# pictures of species no taxonomy export carries any more.
+SOUND_CLASS_DESCRIPTIONS_JSON = TOOLS_DIR / "sound_class_descriptions.json"
+RETIRED_SPECIES_JSON = TOOLS_DIR / "retired_species.json"
+RETIRED_IMAGE_DIR = TOOLS_DIR / "retired_species_images"
 # The API names its export after the taxonomy version, e.g.
 # BirdNET_Taxonomy_v0.5-Nov2026.json; match the prefix case-insensitively so
 # the lookup behaves the same on Linux CI and on Windows.
@@ -132,13 +138,37 @@ ALL_NAME_LOCALES = list(dict.fromkeys(NAME_LOCALES + EXTRA_NAME_LOCALES))
 # scientific names must agree as well. Sound classes are the exception: their
 # names come from sound_class_names.json, the model's own labels, which name
 # what each class was trained on (for example "Aircraft" for the taxonomy's
-# "Airplane") and are complete in every language.
+# "Airplane") and are complete in every language. The taxonomy describes sound
+# classes in English only; sound_class_descriptions.json adds the other
+# description languages.
+#
+# A species the taxonomy has dropped altogether (a split whose umbrella name
+# was retired) has no record to join. retired_species.json keeps the last
+# record an export had for it, and retired_species_images/ its picture, so
+# sessions that stored the name keep resolving.
 
 
 def load_sound_class_names() -> dict[str, dict]:
     if not SOUND_CLASS_NAMES_JSON.exists():
         return {}
     with open(SOUND_CLASS_NAMES_JSON, encoding="utf-8") as f:
+        names = json.load(f)
+    if SOUND_CLASS_DESCRIPTIONS_JSON.exists():
+        with open(SOUND_CLASS_DESCRIPTIONS_JSON, encoding="utf-8") as f:
+            for birdnet_id, descriptions in json.load(f).items():
+                if birdnet_id not in names:
+                    sys.exit(
+                        f"{SOUND_CLASS_DESCRIPTIONS_JSON.name}: {birdnet_id} "
+                        "is not a sound class of the model")
+                names[birdnet_id]["descriptions"] = descriptions
+    return names
+
+
+def load_retired_species() -> list[dict]:
+    """Taxonomy records of species no export carries any more."""
+    if not RETIRED_SPECIES_JSON.exists():
+        return []
+    with open(RETIRED_SPECIES_JSON, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -147,6 +177,7 @@ def build_bundle_entries(
     legacy_species: list[dict],
     taxonomy_by_id: dict[str, dict],
     sound_class_names: dict[str, dict],
+    retired_species: list[dict] | None = None,
 ) -> list[dict]:
     """Resolve model labels and legacy species to taxonomy records."""
     entries: list[dict] = []
@@ -183,6 +214,19 @@ def build_bundle_entries(
         seen_ids.add(legacy["birdnet_id"])
         entries.append({"key": entry["scientific_name"], "entry": entry, "in_model": False,
                         "override": None})
+
+    taxonomy_names = {e["scientific_name"] for e in taxonomy_by_id.values()}
+    for entry in retired_species or []:
+        # A retired record is a stand-in for a missing one. Once the taxonomy
+        # knows the ID or the name again, its own record must be used.
+        if (entry["birdnet_id"] in taxonomy_by_id
+                or entry["scientific_name"] in taxonomy_names):
+            problems.append(
+                f"retired species {entry['birdnet_id']} ({entry['scientific_name']}) "
+                f"is in the taxonomy again; remove it from {RETIRED_SPECIES_JSON.name}")
+            continue
+        entries.append({"key": entry["scientific_name"], "entry": entry,
+                        "in_model": False, "override": None, "retired": True})
 
     if problems:
         shown = "\n  ".join(problems[:20])
@@ -375,6 +419,16 @@ def download_and_resize_images(
     work = []
     for item in entries:
         entry = item["entry"]
+        if item.get("retired"):
+            # The image service no longer has this species; the picture is
+            # kept in the repository, already at the output size.
+            stored = RETIRED_IMAGE_DIR / f"{entry['birdnet_id']}.webp"
+            if stored.exists():
+                shutil.copyfile(stored, IMAGE_OUTPUT_DIR / stored.name)
+                results[item["key"]] = "cached"
+            else:
+                results[item["key"]] = "failed"
+            continue
         img_info = entry.get("image") or {}
         url = img_info.get("medium") or img_info.get("thumb")
         if not url:
@@ -431,7 +485,9 @@ def extract_descriptions(entries: list[dict], locales: list[str]) -> dict[str, i
     for locale in locales:
         descs: dict[str, str] = {}
         for item in entries:
-            text = (item["entry"].get("descriptions") or {}).get(locale, "")
+            override = (item["override"] or {}).get("descriptions") or {}
+            text = override.get(locale) or (
+                item["entry"].get("descriptions") or {}).get(locale, "")
             if text:
                 descs[item["key"]] = text
 
@@ -672,7 +728,8 @@ def main():
     legacy_species = load_legacy_species()
     taxonomy = load_taxonomy_json(taxonomy_json)
     entries = build_bundle_entries(
-        model_labels, legacy_species, taxonomy, load_sound_class_names()
+        model_labels, legacy_species, taxonomy, load_sound_class_names(),
+        load_retired_species(),
     )
     model_count = sum(1 for e in entries if e["in_model"])
     legacy_count = len(entries) - model_count

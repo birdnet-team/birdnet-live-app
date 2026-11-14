@@ -198,13 +198,8 @@ void main() {
       // test/fixtures/released_species_names.txt is written by the model
       // build from the label files of every tagged release. A name missing
       // here would show up in a user's old session without its translation,
-      // picture, and links.
-      //
-      // Known exception: the taxonomy split the Island Thrush and has no
-      // entry or alias for the old umbrella name. Such detections keep the
-      // name stored with them.
-      const unresolvable = {'Turdus poliocephalus'};
-
+      // picture, and links. A name the taxonomy has dropped altogether is
+      // kept through tools/retired_species.json, not excused here.
       final names = File('test/fixtures/released_species_names.txt')
           .readAsLinesSync()
           .where((line) => line.trim().isNotEmpty)
@@ -215,7 +210,7 @@ void main() {
         for (final name in names)
           if (taxonomy.lookup(name) == null) name,
       ];
-      expect(missing.toSet(), unresolvable);
+      expect(missing, isEmpty);
     });
 
     test('resolved entries carry what a detection tile needs', () {
