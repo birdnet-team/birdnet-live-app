@@ -6,7 +6,7 @@ BirdNET Live는 현장에서 신뢰할 수 있는 음향 증거가 필요한 현
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live는 현장에서 신뢰할 수 있는 음향 증거가 필요한 현
 - **탐색** - BirdNET 지리 모델을 사용하여 사용자의 위치에서 예상되는 종 둘러보기
 - **Session 목록** - 지난 Session 검토, 편집, 내보내기 및 오디오 재생
 - **내보내기** - Raven Pro, CSV, JSON, GPX 및 출처 메타데이터가 포함된 ZIP 번들 형식
-- **기기 내 추론** - 9,789종을 지원하는 BirdNET+ 모델, 인터넷 연결 불필요
+- **기기 내 추론** - 10,048종을 지원하는 BirdNET+ 모델, 인터넷 연결 불필요
 - **FLAC 녹음** - 장시간 조사를 위해 더 작은 파일로 저장되는 압축 오디오 캡처
 - **접근성** - 스크린 리더 레이블, 툴팁, 선택 가능한 감지 음성 안내
 - **반응형 레이아웃** - 휴대폰, 태블릿, 세로 및 가로 방향에 맞춰 조정되는 인터페이스

@@ -139,6 +139,14 @@ The **Ignore common species above** slider runs from **80–100%** and suppresse
 
 The filter is applied to both geo-model and audio-model probabilities immediately after sigmoid activation. Ignored scores become exactly zero before temporal pooling, so they cannot contribute to a later pooled result or become a displayed, saved, announced, or exported detection. Changes made during an active Live Mode, Point Count, Survey, or ARU Session apply to the next inference window; File Analysis uses the values selected when analysis starts.
 
+### Non-animal sounds
+
+Off by default. Besides wildlife, the model recognizes 16 non-animal sound classes: aircraft, boat, chainsaw, engine, explosion, fire, fireworks, gun, hammer, motor vehicle, music, power tool, sawing, siren, train, and vehicle horn. Turn the switch on to have them reported like any other detection in every mode, with a picture, a description, and a name in your species language.
+
+A siren has no range, so the location filters never remove sound classes and Explore does not list them. They are also left out of the **Ignore species** count. A change applies to the next inference window of a running Live Mode, Point Count, Survey, or ARU Session; File Analysis uses the value selected when analysis starts. Reported sound classes are listed with a Session's detections and are included in its species count.
+
+The switch is off by default because BirdNET Live is a wildlife identifier and a passing car does not belong in most species lists. Turn it on when the sounds themselves are of interest, for example to document chainsaws, gunshots, or traffic at a monitoring site.
+
 BirdNET Live internally smooths scores across recent inference windows to
 reduce one-off false positives. This pooling is not exposed as a user setting;
 the default uses adaptive Log-Mean-Exp pooling with five recent windows and a

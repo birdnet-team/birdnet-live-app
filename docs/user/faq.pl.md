@@ -8,7 +8,10 @@ Najczęściej zadawane pytania.
 O: Nie. Całe wnioskowanie działa na urządzeniu z użyciem modelu ONNX. Jedyne funkcje sieciowe są opcjonalne i domyślnie wyłączone: kafelki map i wyszukiwanie nazw miejsc z OpenStreetMap, dane pogodowe z Open-Meteo oraz pobieranie zdjęć i opisów gatunków z API taksonomii. Zobacz [Ustawienia → Prywatność](settings.md#prywatność).
 
 **P: Ile gatunków potrafi rozpoznać?**
-O: Model BirdNET+ V3.0 rozpoznaje 9789 gatunków na świecie — ptaki, płazy, ssaki i owady (dopasowany taksonomicznie, ograniczony przekrój klasyfikatora dźwięku i geomodelu).
+O: Model BirdNET+ V3.0 rozpoznaje 10 048 gatunków na świecie — ptaki, płazy, ssaki i owady (dopasowany taksonomicznie, ograniczony przekrój klasyfikatora dźwięku i geomodelu). Rozpoznaje też 16 dźwięków innych niż zwierzęce, takich jak silniki, syreny i muzyka; są one wyłączone, dopóki nie włączysz opcji [Dźwięki inne niż zwierzęce](settings.md#dźwięki-inne-niż-zwierzęce).
+
+**P: Gatunek w starszej Session ma nową nazwę albo nie jest już wykrywany. Czy coś przepadło?**
+O: Nie. Aktualizacja modelu może zmienić nazwy gatunków zgodnie z aktualną taksonomią i usunąć gatunki, których nowy model nie obejmuje. Zapisane Sessions nie są zmieniane: starsze wykrycie jest wyświetlane pod aktualną nazwą gatunku, ze zdjęciem, tłumaczeniem i linkami, a gatunki, których model już nie wykrywa, pozostają w twoich Sessions i eksportach dokładnie tak, jak zostały zapisane.
 
 **P: Jakie platformy są obsługiwane?**
 O: Android (8.0+), iOS (15.0+) i Windows (eksperymentalnie).

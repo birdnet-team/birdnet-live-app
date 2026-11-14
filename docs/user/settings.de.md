@@ -142,6 +142,14 @@ Detektionsclips geschnitten werden, und Detektionen bleiben ohne Audio.
 
 Der Filter setzt ignorierte Geomodell- und Audiomodell-Wahrscheinlichkeiten direkt nach der Sigmoid-Aktivierung und vor dem zeitlichen Pooling auf exakt null. Sie können daher weder spätere Pooling-Ergebnisse beeinflussen noch als Detektionen angezeigt, gespeichert, angesagt oder exportiert werden. Änderungen in einer aktiven Live Mode-, Point Count-, Survey- oder ARU-Session gelten ab dem nächsten Inferenzfenster; die Dateianalyse verwendet die beim Start ausgewählten Werte.
 
+### Nicht-tierische Geräusche
+
+Standardmäßig aus. Neben Wildtieren erkennt das Modell 16 nicht-tierische Geräuschklassen: Flugzeug, Boot, Kettensäge, Motor, Explosion, Feuer, Feuerwerk, Feuerwaffe, Hammer, Kraftfahrzeug, Musik, Elektrowerkzeug, Säge, Sirene, Zug und Hupe. Schalten Sie den Schalter ein, damit sie in jedem Modus wie jede andere Detektion gemeldet werden – mit Bild, Beschreibung und einem Namen in der Sprache Ihrer Artnamen.
+
+Eine Sirene hat kein Verbreitungsgebiet. Deshalb entfernen die Standortfilter Geräuschklassen nie, und „Erkunden“ führt sie nicht auf. Auch in der Zählung unter **Arten ignorieren** sind sie nicht enthalten. Eine Änderung gilt in einer laufenden Live Mode-, Point Count-, Survey- oder ARU-Session ab dem nächsten Inferenzfenster; die Dateianalyse verwendet den beim Start der Analyse ausgewählten Wert. Gemeldete Geräuschklassen stehen bei den Detektionen einer Session und zählen in deren Artenzahl mit.
+
+Der Schalter ist standardmäßig aus, weil BirdNET Live Wildtiere bestimmt und ein vorbeifahrendes Auto in den meisten Artenlisten nichts zu suchen hat. Schalten Sie ihn ein, wenn die Geräusche selbst von Interesse sind, zum Beispiel um Kettensägen, Schüsse oder Verkehr an einem Monitoring-Standort zu dokumentieren.
+
 BirdNET Live glättet Scores intern über die jüngsten Inferenzfenster hinweg,
 um einmalige Falschpositive zu reduzieren. Dieses Pooling ist nicht als
 Benutzereinstellung verfügbar; standardmäßig wird adaptives

@@ -143,6 +143,14 @@ Le curseur **Ignorer les espèces communes au-dessus de** va de **80–100 %** e
 
 Le filtre met exactement à zéro les probabilités ignorées des modèles géographique et audio juste après l’activation sigmoïde, avant l’agrégation temporelle. Elles ne peuvent contribuer aux résultats ultérieurs ni devenir des détections affichées, enregistrées, annoncées ou exportées. Les changements pendant une Session active de Live Mode, Point Count, Survey ou ARU s’appliquent à la fenêtre suivante ; l’analyse de fichiers utilise les valeurs choisies au démarrage.
 
+### Sons non animaux
+
+Désactivé par défaut. Outre la faune, le modèle reconnaît 16 classes de sons non animaux : avion, bateau, tronçonneuse, moteur, explosion, feu, feu d’artifice, arme à feu, marteau, véhicule à moteur, musique, outil électrique, scie, sirène, train et klaxon. Activez l’interrupteur pour qu’elles soient signalées comme toute autre détection dans tous les modes, avec une image, une description et un nom dans la langue des noms d’espèces.
+
+Une sirène n’a pas d’aire de répartition : les filtres de localisation ne retirent donc jamais les classes de sons et Explorer ne les répertorie pas. Elles sont également exclues du décompte d’**Ignorer des espèces**. Une modification s’applique à la fenêtre d’inférence suivante d’une Session en cours de Live Mode, Point Count, Survey ou ARU ; l’analyse de fichiers utilise la valeur choisie au démarrage de l’analyse. Les classes de sons signalées figurent parmi les détections de la Session et sont comptées dans son nombre d’espèces.
+
+L’interrupteur est désactivé par défaut, car BirdNET Live identifie la faune sauvage et une voiture qui passe n’a pas sa place dans la plupart des listes d’espèces. Activez-le lorsque les sons eux-mêmes vous intéressent, par exemple pour documenter des tronçonneuses, des coups de feu ou la circulation sur un site de suivi.
+
 BirdNET Live lisse en interne les scores sur les fenêtres d'inférence récentes
 afin de réduire les faux positifs isolés. Cette mise en commun n'est pas
 exposée comme paramètre utilisateur ; par défaut, une mise en commun adaptative
