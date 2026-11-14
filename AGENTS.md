@@ -46,7 +46,7 @@ This file is for coding agents working in this repository.
 - A locale is not "added" until every surface below carries it — an ARB-only pass leaves the app speaking English in half the product. The contributor-facing version with who-does-what is "Adding a New Language" in CONTRIBUTING.md; keep the two lists in sync:
   - `lib/l10n/app_<loc>.arb` (UI strings)
   - `assets/announcements/templates_<loc>.json` (spoken announcements; a missing file falls back to English silently)
-  - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `tools/build_species_bundle.py`. After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; the taxonomy JSON in `tools/data/` already carries the URLs.
+  - `assets/species_data/descriptions_<loc>.json.gz` + `SpeciesDescriptionService.availableLocales` + `DESCRIPTION_LOCALES` in `tools/build_species_bundle.py` + the 16 sound class descriptions in `tools/sound_class_descriptions.json` (the taxonomy has them in English only). After adding to `DESCRIPTION_LOCALES`, re-run the whole bundle script — it is also what writes the `wikipedia_url_<loc>` column into `assets/models/taxonomy.csv`, and a partial run leaves descriptions updated but that column absent. No taxonomy API pull is needed; the taxonomy JSON in `tools/data/` already carries the URLs.
   - the app-language dropdown in `lib/features/settings/settings_screen.dart`
   - `android/app/src/main/res/values-<loc>/strings.xml` (Quick Listen widget labels)
   - iOS: a `<loc>` entry for every key in `ios/Runner/InfoPlist.xcstrings` (permission prompts) and `ios/Runner/Localizable.xcstrings` (Shortcuts/Siri), plus `knownRegions` in `ios/Runner.xcodeproj/project.pbxproj` (Apple codes, e.g. `zh-Hans`)
@@ -96,11 +96,11 @@ This file is for coding agents working in this repository.
 
 - Follow `docs/developer/model-update.md`. The build scripts are in `dev/models/<update>/` (tracked; the model inputs next to them are not).
 - Sessions store the scientific name a species had when it was detected and are never rewritten. Do not add code that stores a label index or a BirdNET ID with a detection, and do not migrate stored names.
-- Every name a release has ever stored must keep resolving: renamed species through `scientific_name_aliases` in `taxonomy.csv`, species the model no longer detects through `tools/legacy_species.csv`. `test/shared/services/taxonomy_continuity_test.dart` enforces this; never weaken it to make a model update pass.
+- Every name a release has ever stored must keep resolving: renamed species through `scientific_name_aliases` in `taxonomy.csv`, species the model no longer detects through `tools/legacy_species.csv`, and species the taxonomy has dropped altogether through `tools/retired_species.json` (record) plus `tools/retired_species_images/` (picture). `test/shared/services/taxonomy_continuity_test.dart` enforces this without exceptions; never weaken it to make a model update pass.
 - Compare species across Sessions with `TaxonomyService.canonicalScientificName`, not with the stored string.
 - Never give two different models the same file name and version: the on-device copy is named `<file name>_v<version>`.
-- Do not carry a label correction (such as the old American/Mangrove Yellow Warbler swap) into a new model without testing it against that model with field recordings.
-- Non-animal sound classes are opt-in (`includeSoundClasses`), have no geo-model output, and must stay out of species counts, Explore, and species pickers.
+- Do not carry a label correction (such as the old American/Mangrove Yellow Warbler swap) into a new model without testing it against that model with field recordings. The same goes for score blacklist multipliers: a new model starts with every entry at 1.0.
+- Non-animal sound classes are opt-in (`includeSoundClasses`), have no geo-model output, and must stay out of the model's species count (About, taxon group counts), the **Ignore species** count, Explore, species pickers, and Survey species alerts. A sound class the user opted into and that was detected is part of that Session: it is listed with its detections and included in the Session's species count.
 
 ## Audio, Maps, and Runtime Safety
 

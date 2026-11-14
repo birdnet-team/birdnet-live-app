@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New **Non-animal sounds** switch in Settings › Inference, off by default. When on, the model's 16 sound classes (aircraft, boat, chainsaw, engine, explosion, fire, fireworks, gun, hammer, motor vehicle, music, power tool, sawing, siren, train, vehicle horn) are reported like any other detection; location filters do not apply to them and Explore does not list them.
 - Exports now carry each species' BirdNET ID: a `BirdNET ID` column after `Scientific Name` in CSV and Raven Selection Tables, a `birdnetId` field in JSON, a waypoint extension in GPX, and a label in the HTML report. Sessions recorded with earlier versions get it too, export metadata names the taxonomy version the IDs refer to, and scripts that read CSV or Raven columns by position need updating.
-
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.
 - The two models the app runs are now also packaged for use in other applications: both ONNX files, one labels file for both with common names in 36 languages, a usage guide, the Apache 2.0 model license, and the acceptable use policy.
 
@@ -22,13 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Species names follow the current taxonomy. Saved Sessions are not changed: a detection stored under an older scientific name shows the current name, picture, translation, and links, and species the new model no longer detects keep theirs.
 - The audio model is rebuilt for speed: the spectrogram step now runs multithreaded, and only the convolutions use half precision. Batch Analysis inference is about three times faster on a desktop CPU; phones were not re-measured with this model.
 - Species descriptions now cover about 99% of species in ten of the twelve description languages; some languages previously covered as little as 17%.
+- The score reductions earlier models needed for 18 over-reported species (such as Common Pheasant, Red Fox, and several owls) are switched off for the new model until field recordings show which of them it still over-reports.
 - The About screen reads the model and taxonomy names and the species count from the bundled models instead of a hand-maintained copy.
 
 ### Fixed
 
 - Model updates no longer leave old model files behind: extracted copies of models the app no longer ships are deleted from app storage, freeing about 80 MB on Android after this update.
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
-- A corrupt or mismatched label file now stops the model from loading with a clear error instead of silently pairing species with the wrong scores.
+- A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.
 
 ## [1.3.1] - 2026-11-02
 

@@ -32,7 +32,8 @@ signal with `Gather`, multiply by the window, reshape each 2048-sample frame to
 32 x 64, and apply two complex DFT stages as `MatMul` with constant matrices
 plus a twiddle `Mul`. This is a textbook Cooley-Tukey split, runs on the
 multithreaded sgemm path, and is bit-exact against the `STFT` output. Cost at
-batch 4: about 9 ms. Reference implementation: `make_fft_variant.py`.
+batch 4: about 9 ms. Reference implementation:
+`replace_stft_with_matmul_dft` in `dev/models/november2026/audio_graph_opt.py`.
 
 A separate "preprocessing" model with a spectrogram input would also work, but
 it pushes the framing problem into every platform of the app (Android, iOS,
@@ -49,8 +50,8 @@ themselves.
 Export the graph with fp32 activations and fp16 convolution weights, with an
 explicit `Cast` to fp16 on each convolution input and a `Cast` back to fp32 on
 its output. ORT then fuses the fp32 SiLU into a vectorized `QuickGelu` and keeps
-the convolutions on the fp16 kernels. Reference: `make_mixed_variant.py`,
-applied to the all-fp32 graph.
+the convolutions on the fp16 kernels. Reference: `to_mixed_precision` in
+`dev/models/november2026/audio_graph_opt.py`.
 
 Check the fp16 convolution outputs for overflow. The model-converter notes that
 some stage-5 expansion convolutions exceed the fp16 range before BatchNorm

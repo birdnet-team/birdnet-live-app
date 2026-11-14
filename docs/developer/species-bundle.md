@@ -44,7 +44,15 @@ links:
 classes in every language of the labels file. Sound class rows take their
 names from there, because the taxonomy has gaps for them and names four of
 them differently; where the scientific name differs, the taxonomy name becomes
-an alias of the row.
+an alias of the row. The taxonomy describes sound classes in English only, so
+`tools/sound_class_descriptions.json` carries their descriptions in the other
+description languages. It is maintained by hand: add a language there when it
+is added to `DESCRIPTION_LOCALES`.
+
+`tools/retired_species.json` holds the taxonomy records of species no export
+carries any more, and `tools/retired_species_images/` their pictures at the
+bundle's output size. They are bundled as legacy rows. Both are maintained by
+hand; see [Updating the Models](model-update.md#what-an-update-must-not-break).
 
 The build stops if a label's BirdNET ID is missing from the taxonomy export or
 resolves to a different scientific name. That is what happens when the export

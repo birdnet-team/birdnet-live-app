@@ -21,6 +21,7 @@ ever stored:
 | Species still in the model, same name | Resolves directly. | `TaxonomyService.lookup` |
 | Species renamed by the taxonomy (genus split, spelling, lump) | The old name is an alias of the current row, so the detection shows the current name, picture, translation, and links. | `scientific_name_aliases` column of `taxonomy.csv` |
 | Species the new model no longer detects | The row stays in `taxonomy.csv` with `in_model = 0`. It resolves for existing Sessions but is not counted and not offered in species pickers. | `tools/legacy_species.csv` |
+| Species the taxonomy has dropped altogether | The last record an export had for it, and its picture, are kept in the repository and bundled as a legacy row. | `tools/retired_species.json`, `tools/retired_species_images/` |
 | Name the taxonomy does not know at all | The detection keeps the names stored with it and the placeholder picture. Nothing is hidden or dropped. | every `lookup` call site falls back to the stored names |
 
 Species are compared across Sessions by
@@ -31,8 +32,14 @@ history behind "first ever" alerts.
 
 `test/shared/services/taxonomy_continuity_test.dart` enforces this. It reads
 `test/fixtures/released_species_names.txt`, the scientific names of every
-label file in a tagged release, and fails if one of them stops resolving. The
-single known exception is listed in the test.
+label file in a tagged release, and fails if one of them stops resolving.
+There are no exceptions. When a taxonomy version drops a name without leaving
+an alias (the Island Thrush, *Turdus poliocephalus*, was split and its
+umbrella name retired in v0.5), copy the species' record from the last export
+that had it into `tools/retired_species.json` and its bundled picture into
+`tools/retired_species_images/<birdnet_id>.webp`; the image service no longer
+serves it. The bundle build stops if a retired species reappears in the
+taxonomy, so the stand-in cannot shadow a real record.
 
 Known limits of resolving at display time:
 
@@ -92,8 +99,9 @@ November 2026 result: 10,048 species (8,984 birds, 422 amphibians, 330
 insects, 312 mammals including Human) plus 16 sound classes. Of the 9,789 species in the
 previous release, 9,552 are kept (65 of them under a new scientific name) and
 237 are not: 160 have no class in the new audio model, 76 fail the geo-model
-rule, and one is not in the taxonomy. 305 species from all earlier releases
-are carried as legacy rows.
+rule, and one is not in the taxonomy. 306 species from all earlier releases
+are carried as legacy rows: 305 from `tools/legacy_species.csv` and the one
+the taxonomy dropped from `tools/retired_species.json`.
 
 ## Graph rewrites
 
@@ -152,8 +160,11 @@ Run everything from the repository root with the Python environment active
   Do not carry a correction forward without testing it against the new model.
 - **Score blacklist.** `…_ScoreBlacklist.json` is a hand-curated map from
   English common name to a score multiplier. The build re-keys it onto the new
-  labels and fails if an entry has no class left, but the multipliers were
-  tuned for an earlier model and are worth revisiting.
+  labels and fails if an entry has no class left. The multipliers were tuned
+  for earlier models, so for the November 2026 model every entry is set to
+  1.0 (no effect): the names stay as the list of species to watch, and a
+  multiplier below 1.0 goes back in only for a species that field recordings
+  show the new model still over-reports.
 - **Geo-model score distribution.** The Explore tiers and the adaptive
   location filter are calibrated on the distribution of geo-model scores
   (`lib/features/inference/geo_abundance.dart`,

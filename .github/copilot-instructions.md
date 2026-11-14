@@ -48,8 +48,8 @@
 
 - ONNX assets in `assets/models` are Git LFS; on fresh clone run `git lfs install` and `git lfs pull`.
 - Keep model behavior JSON-driven via `assets/models/model_config.json`.
-- Model and taxonomy updates follow `docs/developer/model-update.md` (build scripts in `dev/models/<update>/`). Sessions store scientific names and are never rewritten; older names resolve through taxonomy aliases and legacy rows, guarded by `test/shared/services/taxonomy_continuity_test.dart`.
-- Non-animal sound classes are opt-in and stay out of species counts, Explore, and species pickers.
+- Model and taxonomy updates follow `docs/developer/model-update.md` (build scripts in `dev/models/<update>/`). Sessions store scientific names and are never rewritten; older names resolve through taxonomy aliases, legacy rows, and `tools/retired_species.json`, guarded by `test/shared/services/taxonomy_continuity_test.dart`.
+- Non-animal sound classes are opt-in and stay out of the model's species count, the Ignore species count, Explore, species pickers, and Survey species alerts; one that was detected is included in that Session's species count.
 - Species/taxonomy APIs:
   - `GET /api/image/{sci_name}?size=thumb|medium`
   - `GET /api/species/{sci_name}`
