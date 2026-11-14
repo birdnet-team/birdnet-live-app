@@ -43,6 +43,9 @@ import '../../shared/services/species_description_service.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../core/services/location_service.dart';
 import '../inference/geo_model.dart';
+import '../inference/label_parser.dart';
+import '../inference/model_config.dart';
+import '../inference/models/species.dart';
 import '../inference/species_ignore_filter.dart';
 import 'explore_tier.dart';
 
@@ -50,60 +53,63 @@ import 'explore_tier.dart';
 // Audio labels intersection set
 // ---------------------------------------------------------------------------
 
-/// Scientific names of every species the audio classifier model can detect.
+/// The decoded `assets/models/model_config.json`.
 ///
-/// Parsed from the labels CSV only — no ONNX loaded.  Used to intersect
-/// with the geo-model species list so that:
-///   - Explore only shows species the audio model can also detect.
-///   - Live only shows detections for species the geo-model also knows.
-final audioLabelClassesProvider = FutureProvider<Map<String, String>>((
+/// The single source for what the bundled models and taxonomy are called and
+/// how many species they cover; screens read names from here instead of
+/// carrying their own copies.
+final modelConfigJsonProvider = FutureProvider<Map<String, dynamic>>((
   ref,
 ) async {
   final configJson = await rootBundle.loadString(
     AppConstants.modelConfigAssetPath,
   );
-  final fullConfig = json.decode(configJson) as Map<String, dynamic>;
-  final labelsConfig =
-      (fullConfig['audioModel'] as Map<String, dynamic>)['labels']
-          as Map<String, dynamic>;
+  return json.decode(configJson) as Map<String, dynamic>;
+});
 
-  final file = labelsConfig['file'] as String;
-  final delimiter = labelsConfig['delimiter'] as String? ?? ';';
-  final cols = labelsConfig['columns'] as Map<String, dynamic>? ?? const {};
-  final sciNameColHeader = cols['scientificName'] as String? ?? 'sci_name';
-  final classColHeader = cols['className'] as String? ?? 'class';
+/// Class of every label the audio classifier model can detect, keyed by
+/// scientific name: a taxonomic class for species, the group for non-animal
+/// sound classes.
+///
+/// Parsed from the labels CSV only — no ONNX loaded — with the same parser
+/// and config the inference service uses, so the two can never disagree
+/// about what the file says.  Used to intersect with the geo-model species
+/// list so that:
+///   - Explore only shows species the audio model can also detect.
+///   - Live only shows detections for species the geo-model also knows.
+final audioLabelClassesProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
+  final fullConfig = await ref.watch(modelConfigJsonProvider.future);
+  final labelsConfig = LabelsConfig.fromJson(
+    (fullConfig['audioModel'] as Map<String, dynamic>)['labels']
+        as Map<String, dynamic>,
+  );
 
   final csvText = await rootBundle.loadString(
-    '${AppConstants.modelAssetsDir}/$file',
+    '${AppConstants.modelAssetsDir}/${labelsConfig.file}',
   );
-  final lines = csvText
-      .split('\n')
-      .map((l) => l.trim())
-      .where((l) => l.isNotEmpty)
-      .toList();
-  if (lines.isEmpty) return const <String, String>{};
-
-  final headers = lines.first.split(delimiter).map((h) => h.trim()).toList();
-  final sciIdx = headers.indexOf(sciNameColHeader);
-  final classIdx = headers.indexOf(classColHeader);
-  if (sciIdx < 0) return const <String, String>{};
-
-  final result = <String, String>{};
-  for (final line in lines.skip(1)) {
-    final parts = line.split(delimiter);
-    if (sciIdx >= parts.length) continue;
-    final scientificName = parts[sciIdx].trim();
-    if (scientificName.isEmpty) continue;
-    result[scientificName] = classIdx >= 0 && classIdx < parts.length
-        ? parts[classIdx].trim()
-        : '';
-  }
-  return result;
+  return {
+    for (final label in LabelParser.parse(csvText, config: labelsConfig))
+      label.scientificName: label.className,
+  };
 });
 
 final audioLabelsSetProvider = FutureProvider<Set<String>>((ref) async {
   final classes = await ref.watch(audioLabelClassesProvider.future);
   return classes.keys.toSet();
+});
+
+/// Number of animal species the current ignore settings suppress.
+///
+/// Sound classes that are merely not opted into are left out: they are in
+/// the ignore mask, but "species ignored" should count species.
+final ignoredSpeciesCountProvider = FutureProvider<int>((ref) async {
+  final classes = await ref.watch(audioLabelClassesProvider.future);
+  final ignored = await ref.watch(ignoredSpeciesNamesProvider.future);
+  return ignored
+      .where((name) => !Species.isSoundClassName(classes[name] ?? ''))
+      .length;
 });
 
 // ---------------------------------------------------------------------------
@@ -190,10 +196,7 @@ final speciesDescriptionServiceProvider = Provider<SpeciesDescriptionService>((
 /// can both watch this provider.
 final geoModelProvider = FutureProvider<GeoModel>((ref) async {
   // Load model config to get file names.
-  final configJson = await rootBundle.loadString(
-    AppConstants.modelConfigAssetPath,
-  );
-  final config = json.decode(configJson) as Map<String, dynamic>;
+  final config = await ref.watch(modelConfigJsonProvider.future);
   final geoConfig = config['geoModel'] as Map<String, dynamic>;
 
   final modelFile = geoConfig['modelFile'] as String;
@@ -216,7 +219,11 @@ final geoModelProvider = FutureProvider<GeoModel>((ref) async {
 
   final geoModel = GeoModel();
   geoModel.loadLabels(labelsText);
-  await geoModel.loadModel(onnxPath);
+  await geoModel.loadModel(
+    onnxPath,
+    inputName: geoConfig['inputName'] as String,
+    outputName: geoConfig['outputName'] as String,
+  );
 
   debugPrint(
     '[geoModelProvider] geo model ready '

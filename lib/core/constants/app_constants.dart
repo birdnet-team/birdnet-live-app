@@ -111,11 +111,6 @@ abstract final class AppConstants {
   /// is a stall that drains on its own; a run of them that keeps growing
   /// means the model is slower than the schedule.
   static const int lateWindowsBeforeInferenceDownshift = 3;
-
-  /// Default species count for display purposes.
-  ///
-  /// Overridden at runtime once the model config and labels are loaded.
-  static const int speciesCount = 9789;
 }
 
 /// SharedPreferences key constants.
@@ -161,6 +156,7 @@ abstract final class PrefKeys {
   static const String ignoreMammals = 'ignore_species_mammals';
   static const String ignoreAmphibians = 'ignore_species_amphibians';
   static const String ignoreInsects = 'ignore_species_insects';
+  static const String includeSoundClasses = 'include_sound_classes';
   static const String ignoreCommonGeoScoreCutoff =
       'ignore_common_geo_score_cutoff';
   static const String showAllDetectedSpecies = 'show_all_detected_species';

@@ -138,6 +138,14 @@ final ignoreInsectsProvider = StateNotifierProvider<BoolSettingNotifier, bool>((
   return BoolSettingNotifier(prefs, PrefKeys.ignoreInsects, false);
 });
 
+/// Whether the model's non-animal sound classes (engines, sirens, music, …)
+/// are reported alongside wildlife. Off by default.
+final includeSoundClassesProvider =
+    StateNotifierProvider<BoolSettingNotifier, bool>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return BoolSettingNotifier(prefs, PrefKeys.includeSoundClasses, false);
+    });
+
 /// Geo-model score at or above which a species is ignored as common.
 final ignoreCommonGeoScoreCutoffProvider =
     StateNotifierProvider<DoubleSettingNotifier, double>((ref) {
@@ -152,6 +160,7 @@ final speciesIgnoreSettingsProvider = Provider<SpeciesIgnoreSettings>((ref) {
     ignoreMammals: ref.watch(ignoreMammalsProvider),
     ignoreAmphibians: ref.watch(ignoreAmphibiansProvider),
     ignoreInsects: ref.watch(ignoreInsectsProvider),
+    includeSoundClasses: ref.watch(includeSoundClassesProvider),
     commonGeoScoreCutoff: ref.watch(ignoreCommonGeoScoreCutoffProvider),
   );
 });

@@ -140,6 +140,14 @@ Suwak **Ignoruj pospolite gatunki powyżej** obejmuje **80–100%** i wyklucza g
 
 Filtr ustawia ignorowane prawdopodobieństwa modelu geograficznego i dźwiękowego dokładnie na zero po aktywacji sigmoidalnej, przed łączeniem czasowym. Nie wpływają na późniejsze wyniki ani nie stają się wykryciami wyświetlanymi, zapisanymi, ogłaszanymi lub eksportowanymi. Zmiany podczas aktywnej Session Live Mode, Point Count, Survey lub ARU obowiązują od następnego okna; analiza plików używa wartości wybranych na początku.
 
+### Dźwięki inne niż zwierzęce
+
+Domyślnie wyłączone. Oprócz dzikich zwierząt model rozpoznaje 16 klas dźwięków innych niż zwierzęce: samolot, łódź, pilarka łańcuchowa, silnik, wybuch, ogień, sztuczne ognie, broń palna, młot, pojazd silnikowy, muzyka, elektronarzędzie, piła, syrena, pociąg i klakson. Włącz przełącznik, aby były zgłaszane w każdym trybie jak każde inne wykrycie, ze zdjęciem, opisem i nazwą w języku nazw gatunków.
+
+Syrena nie ma zasięgu występowania, więc filtry lokalizacji nigdy nie usuwają klas dźwięków, a sekcja Odkrywaj ich nie wyświetla. Nie są też wliczane do liczby w panelu **Ignoruj gatunki**. Zmiana obowiązuje od następnego okna wnioskowania trwającej Session Live Mode, Point Count, Survey lub ARU; analiza plików używa wartości wybranej przy rozpoczęciu analizy. Zgłoszone klasy dźwięków pojawiają się wśród wykryć danej Session i są wliczane do jej liczby gatunków.
+
+Przełącznik jest domyślnie wyłączony, ponieważ BirdNET Live służy do rozpoznawania dzikich zwierząt, a przejeżdżający samochód nie pasuje do większości list gatunków. Włącz go, gdy interesują cię same dźwięki, na przykład aby dokumentować piły łańcuchowe, strzały lub ruch drogowy na stanowisku monitoringowym.
+
 BirdNET Live wewnętrznie wygładza oceny w ostatnich oknach wnioskowania, aby
 ograniczyć jednorazowe fałszywe trafienia. Ten pooling nie jest dostępny jako
 ustawienie użytkownika; domyślnie stosowany jest adaptacyjny pooling

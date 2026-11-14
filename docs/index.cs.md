@@ -6,7 +6,7 @@ BirdNET Live je aplikace ve Flutteru určená terénním výzkumníkům, ochrán
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C048-brightgreen.svg" alt="Species: 10,048">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live je aplikace ve Flutteru určená terénním výzkumníkům, ochrán
 - **Prozkoumat** – procházení druhů očekávaných ve vaší lokalitě podle geomodelu BirdNET
 - **Knihovna Sessions** – kontrola, úprava a export minulých sessions s přehráváním zvuku
 - **Export** – formáty Raven Pro, CSV, JSON, GPX a ZIP balíček s metadaty o původu
-- **Inference v zařízení** – model BirdNET+ pokrývá 9 789 druhů, bez nutnosti internetu
+- **Inference v zařízení** – model BirdNET+ pokrývá 10 048 druhů, bez nutnosti internetu
 - **Nahrávání ve FLAC** – komprimovaný záznam s menšími soubory pro dlouhé surveye
 - **Přístupnost** – popisky pro čtečky obrazovky, nápovědy a volitelná mluvená oznámení detekcí
 - **Responzivní rozvržení** – adaptivní rozhraní pro telefon, tablet, na výšku i na šířku

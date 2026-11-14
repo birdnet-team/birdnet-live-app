@@ -8,11 +8,9 @@ import 'package:birdnet_live/features/live/live_session.dart';
 void main() {
   const species = Species(
     index: 0,
-    id: 1,
     scientificName: 'Turdus merula',
     commonName: 'Common Blackbird',
     className: 'Aves',
-    order: 'Passeriformes',
   );
   final start = DateTime.utc(2026, 8, 6, 12);
 
@@ -122,11 +120,9 @@ void main() {
   test('the record ceiling is opt-out for bounded inputs', () {
     Species speciesNamed(int i) => Species(
       index: i,
-      id: i,
       scientificName: 'Species $i',
       commonName: 'Common $i',
       className: 'Aves',
-      order: 'Passeriformes',
     );
 
     // A capped accumulator stops recording new species; File Analysis passes

@@ -28,11 +28,18 @@ Audio recordings are stored as WAV or FLAC files depending on the user's setting
 
 ## Model Cache
 
-ONNX model files are extracted from Flutter assets to the documents directory on first launch. To support model updates, the extracted files are suffixed with `_v<version>` (configured in the code):
+ONNX Runtime needs the model as a real file. Where that file lives depends on the platform (`AssetPackService.resolveModelPath`):
+
+- **iOS, Windows, macOS, Linux**: the bundled asset is used in place (`flutter_assets/assets/models/<modelFile>` inside the app bundle). Nothing is extracted.
+- **Android**: assets live inside the APK or the install-time asset pack, so each model is copied once to the app's private `filesDir`. The copy is named after the model file and version in `assets/models/model_config.json`, so a model update extracts a fresh copy:
 
 ```
-<documents>/BirdNET+_V3.0-preview3.1_Global_10K-pruned_FP16.onnx_v<version>
-<documents>/BirdNET+_Geomodel_V3.0.4_Global_10K-pruned_FP16.onnx_v<version>
+<filesDir>/<audioModel.onnx.modelFile>_v<audioModel.version>
+<filesDir>/<geoModel.modelFile>_v<geoModel.version>
 ```
 
-Subsequent launches load the cached models directly from disk.
+Subsequent launches load the extracted models directly from disk.
+
+If neither source is available, the model is extracted to `<documents>/<modelFile>_v<version>` instead. Builds up to 1.2.0 always extracted there.
+
+After each model is resolved, extracted copies (`BirdNET*.onnx_v*`, plus `.tmp` files of interrupted copies) that do not belong to a model in `model_config.json` are deleted from `filesDir` and the documents directory, so an update does not leave the previous models behind. Copies in the documents directory are also deleted once the model is read from the bundle or from `filesDir`.

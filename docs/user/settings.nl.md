@@ -141,6 +141,14 @@ Opent een paneel met binaire inferentiefilters. Vink **Vogels**, **Zoogdieren**,
 
 Het filter zet genegeerde kansen van zowel het geo- als audiomodel precies op nul na de sigmoïdeactivatie en vóór temporele pooling. Ze kunnen daardoor niet bijdragen aan latere resultaten of als detectie worden weergegeven, opgeslagen, aangekondigd of geëxporteerd. Wijzigingen tijdens een actieve Live Mode-, Point Count-, Survey- of ARU-Session gelden vanaf het volgende venster; bestandsanalyse gebruikt de waarden bij de start.
 
+### Niet-dierlijke geluiden
+
+Standaard uit. Naast dieren herkent het model 16 niet-dierlijke geluidsklassen: vliegtuig, boot, kettingzaag, motor, explosie, vuur, vuurwerk, vuurwapen, hamer, motorvoertuig, muziek, elektrisch gereedschap, zaag, sirene, trein en claxon. Zet de schakelaar aan om ze in elke modus te laten melden zoals elke andere detectie, met een afbeelding, een beschrijving en een naam in de taal van je soortnamen.
+
+Een sirene heeft geen verspreidingsgebied, dus de locatiefilters verwijderen geluidsklassen nooit en Ontdekken toont ze niet. Ze tellen ook niet mee in het aantal bij **Soorten negeren**. Een wijziging geldt vanaf het volgende inferentievenster van een lopende Live Mode-, Point Count-, Survey- of ARU-Session; bestandsanalyse gebruikt de waarde die bij de start van de analyse is gekozen. Gemelde geluidsklassen staan tussen de detecties van een Session en tellen mee in het aantal soorten.
+
+De schakelaar staat standaard uit omdat BirdNET Live wilde dieren herkent en een passerende auto in de meeste soortenlijsten niet thuishoort. Zet hem aan als de geluiden zelf interessant zijn, bijvoorbeeld om kettingzagen, schoten of verkeer op een monitoringlocatie vast te leggen.
+
 BirdNET Live effent scores intern uit over recente inferentievensters om
 eenmalige valse treffers te verminderen. Deze pooling is niet als
 gebruikersinstelling beschikbaar; standaard wordt adaptieve

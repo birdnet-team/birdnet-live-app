@@ -138,6 +138,14 @@ Posuvník **Ignorovat běžné druhy nad** má rozsah **80–100 %** a potlačuj
 
 Filtr nastavuje ignorované pravděpodobnosti geografického i zvukového modelu přesně na nulu hned po sigmoidní aktivaci a před časovým sdružováním skóre. Nemohou ovlivnit pozdější sdružený výsledek ani se zobrazit, uložit, oznámit či exportovat jako detekce. Změny během aktivní Session v Live Mode, Point Count, Survey nebo ARU platí od příštího okna inference; analýza souborů používá hodnoty zvolené při spuštění.
 
+### Jiné než zvířecí zvuky
+
+Ve výchozím nastavení vypnuto. Kromě volně žijících živočichů model rozpozná 16 tříd jiných než zvířecích zvuků: letadlo, člun, řetězová pila, motor, výbuch, oheň, ohňostroj, palná zbraň, kladivo, motorové vozidlo, hudba, elektrické nářadí, pila, siréna, vlak a klakson. Zapnete-li přepínač, hlásí se ve všech režimech jako každá jiná detekce – s obrázkem, popisem a názvem v jazyce názvů druhů.
+
+Siréna nemá areál výskytu, takže filtry podle polohy třídy zvuků nikdy neodstraní a v části Prozkoumejte se tyto třídy nezobrazují. Nezapočítávají se ani do počtu v panelu **Ignorovat druhy**. Změna během probíhající Session v Live Mode, Point Count, Survey nebo ARU platí od příštího okna inference; analýza souborů používá hodnotu zvolenou při spuštění analýzy. Hlášené třídy zvuků se zobrazují mezi detekcemi dané Session a započítávají se do jejího počtu druhů.
+
+Přepínač je ve výchozím nastavení vypnutý, protože BirdNET Live slouží k určování volně žijících živočichů a projíždějící auto do většiny seznamů druhů nepatří. Zapněte jej, pokud vás zajímají samotné zvuky, například chcete-li na monitorovací lokalitě dokumentovat motorové pily, výstřely nebo dopravu.
+
 BirdNET Live interně vyhlazuje skóre napříč nedávnými okny odvozování, aby
 omezil jednorázové falešně pozitivní nálezy. Toto sdružování není dostupné
 jako uživatelské nastavení; ve výchozím stavu se používá adaptivní sdružování
