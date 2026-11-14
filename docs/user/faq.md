@@ -30,7 +30,7 @@ A: Accuracy depends on recording quality, distance, background noise, and the sp
 ## Recording
 
 **Q: Where are recordings saved?**
-A: In the app's documents directory under `recordings/<session-id>/`, as WAV or FLAC depending on **Settings → Recording → Format**.
+A: In the app's documents directory under `recordings/<session-id>/`, as WAV or FLAC depending on **Settings → Audio & Recording → Recording format**.
 
 **Q: Can I analyze existing recordings?**
 A: Yes. Open File Analysis from the home screen, pick an audio file, set location and parameters, and tap Analyze. Supported formats include WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA, and AMR.

@@ -110,7 +110,7 @@ BirdNET Live runs entirely on-device. Prefer a small, purpose-built solution ove
 
 When you add or change a setting:
 
-1. Add or update its key in `PrefKeys` and the related provider and settings UI.
+1. Add or update its key in `PrefKeys` and the related provider and settings UI. For a tile on the Settings screen, also add its title to `_searchEntries` in `lib/features/settings/settings_screen.dart` (same section, same context conditions); a setting missing there still works but cannot be found by Settings search.
 2. Explain what it does and why someone would change it in `docs/user/settings.md`.
 3. Note the user-visible change in `CHANGELOG.md`.
 
@@ -187,7 +187,7 @@ The bucket reference, commonness bins, and full conventions are in `assets/annou
 4. Run `flutter gen-l10n` and check its output: it lists any untranslated messages per locale, and there must be none. The generated `app_localizations*.dart` files are not committed.
 5. Run `flutter analyze`.
 6. Run focused tests when the string change affects behavior (for example plural/select logic). For announcement templates, run `flutter test test/features/announcements/` — it checks bucket and commonness coverage per locale and lints for gendered determiners before `{name}`.
-7. Manually check the changed screens in at least one non-English locale and look for overflow/truncation in both portrait and landscape. For announcements, hear them via **Settings → Announcements → Preview**.
+7. Manually check the changed screens in at least one non-English locale and look for overflow/truncation in both portrait and landscape. For announcements, hear them via **Settings → Playback & Announcements → Speak a sample**.
 
 ### Pull Request Checklist for Translation Changes
 

@@ -176,7 +176,7 @@ following noun such as `소리`). Skip counters (`마리`) and the word for bird
 
     These check that every locale defines all ten buckets and all six
     commonness bins, and lint for gendered determiners before `{name}`.
-3. Hear it: **Settings → Announcements → Preview** speaks a sample using the
+3. Hear it: **Settings → Playback & Announcements → Speak a sample** speaks a sample using the
    current phrasing style and voice. Switch the app language first.
 
 Background on the design, bucket routing, and throttling lives in

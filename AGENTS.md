@@ -73,6 +73,7 @@ This file is for coding agents working in this repository.
 
 - For new/changed settings:
 - Update PrefKeys and related providers/UI.
+- Add the tile's title to `_searchEntries` in `lib/features/settings/settings_screen.dart` so Settings search finds it.
 - Document rationale in docs/user/settings.md.
 - Document user-visible behavior changes in CHANGELOG.md.
 - Prefer frequent, small documentation updates over large delayed updates.
