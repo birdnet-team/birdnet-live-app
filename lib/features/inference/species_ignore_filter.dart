@@ -11,6 +11,7 @@ class SpeciesIgnoreSettings {
     this.ignoreMammals = false,
     this.ignoreAmphibians = false,
     this.ignoreInsects = false,
+    this.includeSoundClasses = false,
     this.commonGeoScoreCutoff = 1.0,
   });
 
@@ -18,6 +19,11 @@ class SpeciesIgnoreSettings {
   final bool ignoreMammals;
   final bool ignoreAmphibians;
   final bool ignoreInsects;
+
+  /// Whether the model's non-animal sound classes (engines, sirens, music, …)
+  /// are reported. Off by default: the app identifies wildlife, and these
+  /// classes only appear for users who ask for them.
+  final bool includeSoundClasses;
 
   /// Geo-model probability above which a species is considered common.
   final double commonGeoScoreCutoff;
@@ -27,7 +33,7 @@ class SpeciesIgnoreSettings {
     'Mammalia' => ignoreMammals,
     'Amphibia' => ignoreAmphibians,
     'Insecta' => ignoreInsects,
-    _ => false,
+    _ => Species.isSoundClassName(className) && !includeSoundClasses,
   };
 }
 

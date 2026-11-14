@@ -7,12 +7,14 @@
 //   - Default (BirdNET) format with semicolons and full column set
 //   - Custom configs with different delimiters and column mappings
 //   - No-header mode with positional column indices
-//   - Error conditions (empty input, missing scientificName)
-//   - Real labels file integration test
+//   - Error conditions (empty input, missing scientificName, broken indices)
+//   - The bundled labels file and its agreement with the geo-model labels
 // =============================================================================
 
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:birdnet_live/features/inference/geo_model.dart';
 import 'package:birdnet_live/features/inference/label_parser.dart';
 import 'package:birdnet_live/features/inference/model_config.dart';
 import 'package:birdnet_live/features/inference/models/species.dart';
@@ -22,10 +24,10 @@ void main() {
   group('LabelParser — default BirdNET format', () {
     // ── Valid CSV data ──────────────────────────────────────────────────────
 
-    const validCsv = '''idx;id;sci_name;com_name;class;order
-0;3;Abeillia abeillei;Emerald-chinned Hummingbird;Aves;Apodiformes
-1;5;Abroscopus albogularis;Rufous-faced Warbler;Aves;Passeriformes
-2;6;Abroscopus schisticeps;Black-faced Warbler;Aves;Passeriformes''';
+    const validCsv = '''idx;birdnet_id;sci_name;com_name;class
+0;BN00001;Abeillia abeillei;Emerald-chinned Hummingbird;Aves
+1;BN00002;Abroscopus albogularis;Rufous-faced Warbler;Aves
+2;BN90067;Gun;Gun;Anthropogenic''';
 
     test('parses valid CSV into Species list', () {
       final species = LabelParser.parse(validCsv);
@@ -38,36 +40,37 @@ void main() {
       final species = LabelParser.parse(validCsv);
 
       expect(species[0].index, 0);
-      expect(species[0].id, 3);
+      expect(species[0].birdnetId, 'BN00001');
       expect(species[0].scientificName, 'Abeillia abeillei');
       expect(species[0].commonName, 'Emerald-chinned Hummingbird');
       expect(species[0].className, 'Aves');
-      expect(species[0].order, 'Apodiformes');
+      expect(species[0].isSoundClass, isFalse);
     });
 
-    test('last species has correct index', () {
+    test('a non-animal class is a sound class', () {
       final species = LabelParser.parse(validCsv);
 
       expect(species[2].index, 2);
-      expect(species[2].commonName, 'Black-faced Warbler');
+      expect(species[2].birdnetId, 'BN90067');
+      expect(species[2].scientificName, 'Gun');
+      expect(species[2].className, 'Anthropogenic');
+      expect(species[2].isSoundClass, isTrue);
     });
 
     test('result is sorted by index', () {
-      const unsorted = '''idx;id;sci_name;com_name;class;order
-2;6;Sp C;Common C;Aves;Order
-0;3;Sp A;Common A;Aves;Order
-1;5;Sp B;Common B;Aves;Order''';
+      const unsorted = '''idx;birdnet_id;sci_name;com_name;class
+2;BN3;Sp C;Common C;Aves
+0;BN1;Sp A;Common A;Aves
+1;BN2;Sp B;Common B;Aves''';
 
       final species = LabelParser.parse(unsorted);
 
-      expect(species[0].index, 0);
-      expect(species[1].index, 1);
-      expect(species[2].index, 2);
+      expect(species.map((s) => s.scientificName), ['Sp A', 'Sp B', 'Sp C']);
     });
 
     test('handles trailing newlines', () {
-      const withTrailing = '''idx;id;sci_name;com_name;class;order
-0;1;Sp A;Name A;Aves;Order
+      const withTrailing = '''idx;birdnet_id;sci_name;com_name;class
+0;BN1;Sp A;Name A;Aves
 
 ''';
       final species = LabelParser.parse(withTrailing);
@@ -76,12 +79,23 @@ void main() {
 
     test('handles Windows-style line endings (CRLF)', () {
       const crlf =
-          'idx;id;sci_name;com_name;class;order\r\n'
-          '0;1;Sp A;Name A;Aves;Order\r\n'
-          '1;2;Sp B;Name B;Aves;Order\r\n';
+          'idx;birdnet_id;sci_name;com_name;class\r\n'
+          '0;BN1;Sp A;Name A;Aves\r\n'
+          '1;BN2;Sp B;Name B;Aves\r\n';
 
       final species = LabelParser.parse(crlf);
       expect(species.length, 2);
+      expect(species[1].className, 'Aves');
+    });
+
+    test('handles a UTF-8 byte order mark before the header', () {
+      const bom =
+          '﻿idx;birdnet_id;sci_name;com_name;class\n'
+          '0;BN1;Sp A;Name A;Aves\n';
+
+      final species = LabelParser.parse(bom);
+      expect(species.single.index, 0);
+      expect(species.single.scientificName, 'Sp A');
     });
 
     // ── Error conditions ─────────────────────────────────────────────────
@@ -98,9 +112,47 @@ void main() {
     });
 
     test('throws FormatException on empty scientific name', () {
-      const bad = '''idx;id;sci_name;com_name;class;order
-0;3;;Hummingbird;Aves;Order''';
+      const bad = '''idx;birdnet_id;sci_name;com_name;class
+0;BN1;;Hummingbird;Aves''';
       expect(() => LabelParser.parse(bad), throwsA(isA<FormatException>()));
+    });
+
+    test('throws when the scientific-name column is not in the header', () {
+      // The file is comma-delimited but the config says semicolon, so the
+      // whole header is one unknown column.
+      const wrongDelimiter = '''idx,birdnet_id,sci_name,com_name,class
+0,BN1,Sp A,Name A,Aves''';
+      expect(
+        () => LabelParser.parse(wrongDelimiter),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('throws when an index is missing from the sequence', () {
+      const gap = '''idx;birdnet_id;sci_name;com_name;class
+0;BN1;Sp A;Name A;Aves
+2;BN3;Sp C;Name C;Aves''';
+      expect(() => LabelParser.parse(gap), throwsA(isA<FormatException>()));
+    });
+
+    test('throws when an index is repeated', () {
+      const repeated = '''idx;birdnet_id;sci_name;com_name;class
+0;BN1;Sp A;Name A;Aves
+0;BN2;Sp B;Name B;Aves''';
+      expect(
+        () => LabelParser.parse(repeated),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('throws when a scientific name is repeated', () {
+      const repeated = '''idx;birdnet_id;sci_name;com_name;class
+0;BN1;Sp A;Name A;Aves
+1;BN2;Sp A;Name B;Aves''';
+      expect(
+        () => LabelParser.parse(repeated),
+        throwsA(isA<FormatException>()),
+      );
     });
 
     // ── Species data class ───────────────────────────────────────────────
@@ -108,19 +160,15 @@ void main() {
     test('Species equality is by index', () {
       const a = Species(
         index: 0,
-        id: 3,
         scientificName: 'A',
         commonName: 'A',
         className: 'Aves',
-        order: 'X',
       );
       const b = Species(
         index: 0,
-        id: 999,
         scientificName: 'B',
         commonName: 'B',
         className: 'Insecta',
-        order: 'Y',
       );
       expect(a, equals(b)); // Same index → equal.
     });
@@ -128,29 +176,24 @@ void main() {
     test('Species toString contains common and scientific name', () {
       const sp = Species(
         index: 42,
-        id: 7,
         scientificName: 'Parus major',
         commonName: 'Great Tit',
         className: 'Aves',
-        order: 'Passeriformes',
       );
       expect(sp.toString(), contains('Great Tit'));
       expect(sp.toString(), contains('Parus major'));
     });
 
-    // ── Real labels file (integration-level) ────────────────────────────
-
-    test('parses real labels file from disk', () {
-      final content = _readLabelsFile();
-      if (content == null) return; // Skip in CI.
-
-      final species = LabelParser.parse(content);
-
-      expect(species.length, 11560);
-      expect(species.first.index, 0);
-      expect(species.last.index, 11559);
-      expect(species.first.scientificName, 'Abeillia abeillei');
-      expect(species.last.scientificName, 'Zosterornis whiteheadi');
+    test('only classes outside the four animal classes are sound classes', () {
+      for (final animal in ['Aves', 'Mammalia', 'Amphibia', 'Insecta']) {
+        expect(Species.isSoundClassName(animal), isFalse, reason: animal);
+      }
+      for (final sound in ['Anthropogenic', 'Geophony', 'Music']) {
+        expect(Species.isSoundClassName(sound), isTrue, reason: sound);
+      }
+      // A labels file without a class column must not turn every species
+      // into a sound class.
+      expect(Species.isSoundClassName(''), isFalse);
     });
   });
 
@@ -174,11 +217,10 @@ Turdus merula,Eurasian Blackbird''';
 
       expect(species.length, 2);
       expect(species[0].index, 0); // auto-generated
-      expect(species[0].id, 0); // defaults to index
+      expect(species[0].birdnetId, ''); // not in CSV
       expect(species[0].scientificName, 'Parus major');
       expect(species[0].commonName, 'Great Tit');
       expect(species[0].className, ''); // not in CSV
-      expect(species[0].order, ''); // not in CSV
     });
 
     test('parses tab-delimited file', () {
@@ -255,7 +297,7 @@ Parus major''';
       expect(species[0].scientificName, 'Parus major');
       expect(species[0].commonName, 'Parus major'); // falls back
       expect(species[0].className, '');
-      expect(species[0].order, '');
+      expect(species[0].isSoundClass, isFalse);
     });
 
     test('case-insensitive header matching', () {
@@ -277,17 +319,74 @@ Parus major,Great Tit''';
       expect(species[0].commonName, 'Great Tit');
     });
   });
-}
 
-/// Try to read the real labels CSV from the dev/models folder.
-String? _readLabelsFile() {
-  try {
-    final file = File(
-      'dev/models/BirdNET+_V3.0-preview3_Global_11K_Labels.csv',
+  // ══════════════════════════════════════════════════════════════════════════
+  // Bundled label files
+  // ══════════════════════════════════════════════════════════════════════════
+  //
+  // These read the files the app ships. They guard the contract between the
+  // model build (dev/models/…/build_*.py) and the app: counts from the model
+  // config, a BirdNET ID on every class, only known classes, and the same
+  // species in the audio and geo label files.
+
+  group('bundled model labels', () {
+    final config =
+        jsonDecode(File('assets/models/model_config.json').readAsStringSync())
+            as Map<String, dynamic>;
+    final audioConfig = config['audioModel'] as Map<String, dynamic>;
+    final geoConfig = config['geoModel'] as Map<String, dynamic>;
+    final labelsConfig = LabelsConfig.fromJson(
+      audioConfig['labels'] as Map<String, dynamic>,
     );
-    if (!file.existsSync()) return null;
-    return file.readAsStringSync();
-  } catch (_) {
-    return null;
-  }
+    final labels = LabelParser.parse(
+      File('assets/models/${labelsConfig.file}').readAsStringSync(),
+      config: labelsConfig,
+    );
+    final species = labels.where((l) => !l.isSoundClass).toList();
+    final soundClasses = labels.where((l) => l.isSoundClass).toList();
+
+    test('counts match the model config', () {
+      expect(species.length, audioConfig['speciesCount']);
+      expect(soundClasses.length, audioConfig['soundClassCount']);
+      expect(labels.length, audioConfig['classCount']);
+    });
+
+    test('every class has a unique BirdNET ID', () {
+      final ids = labels.map((l) => l.birdnetId).toSet();
+      expect(ids.length, labels.length);
+      expect(ids.every(RegExp(r'^BN\d{5}$').hasMatch), isTrue);
+    });
+
+    test('species are in the four animal classes, the rest are sounds', () {
+      expect(species.map((l) => l.className).toSet(), Species.wildlifeClasses);
+      expect(soundClasses, isNotEmpty);
+      expect(soundClasses.map((l) => l.className).toSet(), {
+        'Anthropogenic',
+        'Geophony',
+        'Music',
+      });
+    });
+
+    test('the geo-model labels are exactly the audio species', () {
+      final geoModel = GeoModel()
+        ..loadLabels(
+          File(
+            'assets/models/${geoConfig['labelsFile']}',
+          ).readAsStringSync(),
+        );
+
+      expect(geoModel.labels.length, geoConfig['speciesCount']);
+      expect(
+        geoModel.labels.map((l) => l.scientificName).toSet(),
+        species.map((l) => l.scientificName).toSet(),
+      );
+      // Same BirdNET ID and English name on both sides.
+      final audioByName = {for (final l in species) l.scientificName: l};
+      for (final geo in geoModel.labels) {
+        final audio = audioByName[geo.scientificName]!;
+        expect(geo.id, audio.birdnetId, reason: geo.scientificName);
+        expect(geo.commonName, audio.commonName, reason: geo.scientificName);
+      }
+    });
+  });
 }

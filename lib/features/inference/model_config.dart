@@ -203,11 +203,10 @@ class LabelsConfig {
     this.hasHeader = true,
     this.columns = const {
       'index': 'idx',
-      'id': 'id',
+      'birdnetId': 'birdnet_id',
       'scientificName': 'sci_name',
       'commonName': 'com_name',
       'className': 'class',
-      'order': 'order',
     },
   });
 
@@ -225,11 +224,11 @@ class LabelsConfig {
   /// Recognized keys:
   /// - `index` — zero-based output tensor position (auto-generated from row
   ///   order if omitted or if the CSV has no such column).
-  /// - `id` — sparse internal ID (defaults to index if omitted).
+  /// - `birdnetId` — BirdNET taxonomy ID (defaults to empty string).
   /// - `scientificName` — **required** — binomial name.
   /// - `commonName` — human-readable name (defaults to scientific name).
-  /// - `className` — taxonomic class (defaults to empty string).
-  /// - `order` — taxonomic order (defaults to empty string).
+  /// - `className` — taxonomic class, or the group of a non-animal sound
+  ///   class (defaults to empty string).
   final Map<String, String> columns;
 
   factory LabelsConfig.fromJson(Map<String, dynamic> json) {

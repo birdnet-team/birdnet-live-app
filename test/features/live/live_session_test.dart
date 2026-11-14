@@ -15,11 +15,9 @@ void main() {
 
   final testSpecies = Species(
     index: 0,
-    id: 1,
     scientificName: 'Turdus merula',
     commonName: 'Eurasian Blackbird',
     className: 'Aves',
-    order: 'Passeriformes',
   );
 
   final testDetection = Detection(

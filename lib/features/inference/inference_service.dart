@@ -420,6 +420,15 @@ class InferenceService {
     // probabilities to ~0.5, making every detection appear at 50 %.
     final rawProbs = output.predictions;
 
+    // Score `i` is reported as label `i`. A labels file from a different
+    // model would name the wrong species, so stop instead of guessing.
+    if (rawProbs.length != _labels.length) {
+      throw StateError(
+        'Model returned ${rawProbs.length} scores for ${_labels.length} '
+        'labels; the labels file does not belong to this model.',
+      );
+    }
+
     // Sensitivity is an x-axis offset in logit space. Apply it to raw model
     // probabilities before any pooling or filtering so downstream stages
     // operate on the adjusted curve. The rolling buffer stores raw

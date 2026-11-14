@@ -18,27 +18,21 @@ import 'package:flutter_test/flutter_test.dart';
 List<Species> _labels() => const [
   Species(
     index: 0,
-    id: 0,
     scientificName: 'Turdus merula',
     commonName: 'Common Blackbird',
     className: 'Aves',
-    order: 'Passeriformes',
   ),
   Species(
     index: 1,
-    id: 1,
     scientificName: 'Vulpes vulpes',
     commonName: 'Red Fox',
     className: 'Mammalia',
-    order: 'Carnivora',
   ),
   Species(
     index: 2,
-    id: 2,
     scientificName: 'Parus major',
     commonName: 'Great Tit',
     className: 'Aves',
-    order: 'Passeriformes',
   ),
 ];
 
@@ -96,11 +90,9 @@ void main() {
         const labels = [
           Species(
             index: 0,
-            id: 0,
             scientificName: 'Cygnus olor',
             commonName: 'Mute Swan',
             className: 'Aves',
-            order: 'Anseriformes',
           ),
         ];
         const localizedDisplayNames = {'Cygnus olor': 'Hoeckerschwan'};
