@@ -54,7 +54,7 @@ Puedes:
 El asistente muestra:
 
 - duración de la ventana
-- superposición de ventanas
+- solapamiento de ventanas
 - sensibilidad
 - umbral de confianza
 - modo de filtro de especies
@@ -62,22 +62,22 @@ El asistente muestra:
 | Control de configuración | Icono |
 |---|---|
 | Duración de la ventana | :app-timerOutlined: |
-| Superposición de ventanas | :app-swapHoriz: |
+| Solapamiento de ventanas | :app-swapHoriz: |
 | Sensibilidad | :app-hearing: |
 | Umbral de confianza | :app-verifiedRounded: |
 | Filtro de especies | :app-filterAltRounded: |
 
-Toque el botón :app-helpOutline: junto a un control de configuración para ver su explicación. Los pasos de archivo, ubicación y fecha de grabación también tienen botones de ayuda.
+Toca el botón :app-helpOutline: junto a un control de configuración para ver su explicación. Los pasos de archivo, ubicación y fecha de grabación también tienen botones de ayuda.
 
 El solapamiento controla cuánto avanza cada ventana de análisis y es
 específico del análisis de archivos: el archivo completo siempre se examina, y
 más solapamiento simplemente lo examina con mayor detalle. Los modos en
-directo usan en su lugar una frecuencia de inferencia, porque deben decidir
+directo usan en su lugar una tasa de inferencia, porque deben decidir
 con qué frecuencia ejecutarse sobre el audio entrante y no con qué detalle
 cubrir una grabación fija.
 
 Sea cual sea la forma en que el análisis de archivos llega a sus ventanas, las
-convierte en detecciones con las mismas reglas que el modo Live, Point Count y
+convierte en detecciones con las mismas reglas que Live Mode, Point Count y
 Survey: una detección comienza en su ventana de apoyo más temprana, lleva la
 puntuación respaldada más alta y termina al final de la última ventana de
 apoyo.
@@ -93,4 +93,4 @@ La pantalla de progreso muestra:
 
 ## Resultado
 
-Cuando finaliza el análisis, BirdNET Live convierte el resultado en una Session guardada y abre el [Resumen de la Session](session-review.md).
+Cuando finaliza el análisis, BirdNET Live convierte el resultado en una Session guardada y abre la [revisión de la Session](session-review.md).

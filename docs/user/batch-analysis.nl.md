@@ -10,4 +10,4 @@ Met Batchanalyse kun je straks meerdere audiobestanden in bulk verwerken en anal
 - **Toegang tot externe opslag**: Mappen rechtstreeks scannen en lezen vanaf externe SD-kaarten of USB-schijven.
 - **Bulkverwerking**: Volledige mappen met audiobestanden in één batchrun analyseren.
 - **Flexibele export**: Resultaten rechtstreeks naar externe opslag schrijven als Raven Selection Table, CSV, TSV of JSON.
-- **Steekproef per Session**: De mogelijkheid om resultaten met slimme steekproeffilters in de database van de app te importeren, zodat die niet onnodig volloopt.
+- **Selectie per Session**: De mogelijkheid om resultaten met slimme selectiefilters in de database van de app te importeren, zodat die niet onnodig volloopt.

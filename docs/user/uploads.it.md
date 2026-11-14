@@ -97,10 +97,10 @@ Toccando una destinazione nell'elenco si apre la sua schermata con l'indirizzo d
 
 - **Rinomina** (la matita nella barra dell'app) cambia il nome mostrato nell'app.
 - **Carica solo con Wi-Fi** trattiene i caricamenti mentre il telefono è su rete cellulare.
-- **Carica automaticamente tutte le Sessions** mette in coda ogni Session conclusa, in qualsiasi modalità, per questa destinazione senza chiedere, usando le impostazioni predefinite di Esportazione e sincronizzazione per Audio e Metadati. Finché è attiva, resta attiva anche **Carica automaticamente le Sessions ARU**. Se poi scarti una Session in Session Review, un caricamento non ancora iniziato viene annullato, ma ciò che è già stato inviato resta sul server.
+- **Carica automaticamente tutte le Sessions** mette in coda ogni Session conclusa, in qualsiasi modalità, per questa destinazione senza chiedere, usando le impostazioni predefinite di Esportazione e sincronizzazione per Audio e Metadati. Finché è attiva, resta attiva anche **Carica automaticamente le Sessions ARU**. Se poi scarti una Session nel Riepilogo Session, un caricamento non ancora iniziato viene annullato, ma ciò che è già stato inviato resta sul server.
 - **Carica automaticamente le Sessions ARU** mette in coda ogni Session ARU conclusa per questa destinazione senza chiedere (vedi sotto).
 - **Prova connessione** ripete la prova di connessione, per esempio dopo che chi guida il progetto ha cambiato la password.
-- **Mostra codice di accesso** visualizza un codice QR più **Copia link**, così un secondo telefono può unirsi alla stessa destinazione.
+- **Mostra codice di accesso** visualizza un codice QR più **Copia link**, così un secondo telefono può usare la stessa destinazione.
 - **Rimuovi destinazione** dimentica la destinazione e la sua credenziale e scarta i caricamenti in attesa verso di essa. Le Sessions già caricate restano sul server.
 
 La prima voce dell'elenco delle destinazioni è **Il tuo ID di caricamento**, con l'identificativo del partecipante sotto; toccala per cambiare l'identificativo. Cambiarlo non sposta nulla sul server, perché le cartelle prendono il nome dall'ID.
@@ -111,7 +111,7 @@ I caricamenti partono dalla stessa azione **Condividi** che già usi, in tre pun
 
 - il **menu a tre punti** (:app-moreVert:) di una scheda Session nella Libreria Sessions;
 - il pulsante **Condividi** dopo aver selezionato più Sessions nella Libreria Sessions;
-- l'icona **Condividi** (:app-share:) nella barra degli strumenti del Riepilogo sessione.
+- l'icona **Condividi** (:app-share:) nella barra degli strumenti del Riepilogo Session.
 
 La finestra Condividi ha due schede non appena esiste almeno una destinazione:
 
@@ -122,7 +122,7 @@ Togli la spunta a **Finestra di condivisione** e il pulsante recita **Carica**; 
 
 ### Seguire un caricamento
 
-La scheda della Session nella Libreria Sessions mostra lo stato come prima riga sotto il titolo della Session: **In coda**, **In attesa del Wi-Fi**, **In attesa di una rete**, **Caricamento in corso…**, **Caricato il** seguito dalla data, oppure un errore. Tocca la riga per l'elenco per destinazione con **Riprova ora** e **Rimuovi dalla coda**. Il Riepilogo sessione mostra lo stesso stato come icona nuvola nella barra dell'app; toccandola si apre lo stesso elenco.
+La scheda della Session nella Libreria Sessions mostra lo stato come prima riga sotto il titolo della Session: **In coda**, **In attesa del Wi-Fi**, **In attesa di una rete**, **Caricamento in corso…**, **Caricato il** seguito dalla data, oppure un errore. Tocca la riga per l'elenco per destinazione con **Riprova ora** e **Rimuovi dalla coda**. Il Riepilogo Session mostra lo stesso stato come icona nuvola nella barra dell'app; toccandola si apre lo stesso elenco.
 
 I caricamenti non riusciti vengono ritentati da soli con attese crescenti, fino a sei ore di distanza, per un massimo di trenta tentativi. **Non riuscito, verrà ritentato** significa che l'app riproverà. **Caricamento non riuscito. Controlla le impostazioni della destinazione.** significa che il server ha rifiutato e un nuovo tentativo non può aiutare: la password è cambiata, i caricamenti sono stati disattivati o la destinazione è stata rimossa. Apri la destinazione, esegui **Prova connessione** e rimuovila e aggiungila di nuovo se la credenziale è cambiata.
 
@@ -134,13 +134,13 @@ I caricamenti in coda procedono mentre l'app è aperta e ogni volta che torna in
 
 ### Caricare di nuovo una Session
 
-Caricare di nuovo la stessa Session, per esempio dopo aver corretto le rilevazioni nel Riepilogo sessione, scrive lo stesso nome di file nella stessa cartella. I server che lo consentono sostituiscono il file; un File Drop di Nextcloud conserva invece la copia precedente con un nome numerato. In entrambi i casi chi guida il progetto riceve la versione più recente e nulla viene eliminato.
+Caricare di nuovo la stessa Session, per esempio dopo aver corretto le rilevazioni nel Riepilogo Session, scrive lo stesso nome di file nella stessa cartella. I server che lo consentono sostituiscono il file; un File Drop di Nextcloud conserva invece la copia precedente con un nome numerato. In entrambi i casi chi guida il progetto riceve la versione più recente e nulla viene eliminato.
 
 ## Modalità ARU
 
 Le installazioni sul campo producono molte Sessions, spesso mentre nessuno è al telefono. Attiva **Carica automaticamente le Sessions ARU** su una destinazione, e ogni Session ARU conclusa viene messa in coda per essa senza alcuna finestra, usando le impostazioni predefinite di Esportazione e sincronizzazione per Audio e Metadati. Un'installazione che salva ogni ciclo come Session a sé carica ciclo per ciclo; la Session complessiva dell'installazione non viene caricata due volte.
 
-Lascia **Carica solo con Wi-Fi** attivo per una stazione con un piano dati cellulare, a meno che il piano non possa reggere l'audio, e valuta di registrare in modalità **Solo rilevazioni** o **Disattivata** quando l'audio sarebbe troppo grande da inviare. I caricamenti fluiscono poi ogni volta che il telefono vede una rete adatta, anche mentre l'app è in background su Android.
+Lascia **Carica solo con Wi-Fi** attivo per un'installazione con un piano dati cellulare, a meno che il piano non possa reggere l'audio, e valuta di registrare in modalità **Solo rilevazioni** o **Disattivata** quando l'audio sarebbe troppo grande da inviare. I caricamenti fluiscono poi ogni volta che il telefono vede una rete adatta, anche mentre l'app è in background su Android.
 
 ## Due esempi pratici
 
@@ -150,11 +150,11 @@ Chi guida il progetto crea una cartella `Birdathon 2027` nel Nextcloud dell'univ
 
 Domenica sera ogni volontario apre la Libreria Sessions, seleziona le Sessions del fine settimana, tocca Condividi, lascia il progetto spuntato in Invia a e tocca **Carica**. I caricamenti aspettano il Wi-Fi di casa e si completano durante la notte. Lunedì chi guida il progetto trova venti cartelle con il nome dell'ID di caricamento, ciascuna con una manciata di ZIP, e legge i nomi dei volontari dai file di registrazione nascosti o dal campo `meta.participant` nei record JSON.
 
-### Correzioni nel Riepilogo sessione, poi una stazione ARU
+### Correzioni nel Riepilogo Session, poi un'installazione ARU
 
-Un partecipante rivede una Session, rimuove due false rilevazioni, aggiunge una specie a mano e salva. L'icona nuvola nella barra dell'app del Riepilogo sessione mostra che la Session è stata caricata sabato. Tocca l'icona Condividi nella barra degli strumenti, spunta il progetto in Invia a, dove parte deselezionato e recita **Caricato** con la data, e preme **Carica**. Lo ZIP corretto sostituisce quello precedente, oppure finisce accanto a esso con un nome numerato su un File Drop.
+Un partecipante rivede una Session, rimuove due false rilevazioni, aggiunge una specie a mano e salva. L'icona nuvola nella barra dell'app del Riepilogo Session mostra che la Session è stata caricata sabato. Tocca l'icona Condividi nella barra degli strumenti, spunta il progetto in Invia a, dove parte deselezionato e recita **Caricato** con la data, e preme **Carica**. Lo ZIP corretto sostituisce quello precedente, oppure finisce accanto a esso con un nome numerato su un File Drop.
 
-Lo stesso partecipante lascia un telefono come stazione ARU presso un canneto con un hotspot Wi-Fi nel capanno. Si unisce alla destinazione del progetto su quel telefono, attiva **Carica automaticamente le Sessions ARU** e lascia attivo **Carica solo con Wi-Fi**. Ogni mattina i cicli notturni conclusi vengono messi in coda e caricati mentre la stazione è inattiva; chi guida il progetto vede comparire nuovi ZIP sotto l'ID di caricamento di quel telefono senza che nessuno lo tocchi.
+Lo stesso partecipante lascia un telefono come installazione ARU presso un canneto con un hotspot Wi-Fi nel capanno. Si unisce alla destinazione del progetto su quel telefono, attiva **Carica automaticamente le Sessions ARU** e lascia attivo **Carica solo con Wi-Fi**. Ogni mattina i cicli notturni conclusi vengono messi in coda e caricati mentre l'installazione è inattiva; chi guida il progetto vede comparire nuovi ZIP sotto l'ID di caricamento di quel telefono senza che nessuno lo tocchi.
 
 ## Privacy e responsabilità
 
@@ -178,4 +178,4 @@ Un caricamento contiene ciò che conterrebbe una condivisione: il record JSON de
 | Caricamento non riuscito. Controlla le impostazioni della destinazione. | Il server ha rifiutato per un motivo che un nuovo tentativo non può risolvere. | Apri la destinazione, esegui **Prova connessione** e rimuovila e aggiungila di nuovo se la credenziale è cambiata. |
 | La credenziale di questa destinazione manca dal portachiavi del dispositivo. | La voce del portachiavi è andata perduta, per esempio dopo un ripristino su un nuovo telefono. | Rimuovi la destinazione e aggiungila di nuovo. |
 
-Vedi anche l'impostazione [Destinazioni di caricamento](settings.md#destinazioni-di-caricamento) e le guide [Libreria Sessions](session-library.md) e [Riepilogo sessione](session-review.md).
+Vedi anche l'impostazione [Destinazioni di caricamento](settings.md#destinazioni-di-caricamento) e le guide [Libreria Sessions](session-library.md) e [Riepilogo Session](session-review.md).

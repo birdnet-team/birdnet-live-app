@@ -17,12 +17,12 @@ Deze pictogrammen hebben dezelfde vormen als in de app. Hier volgen ze de tekstk
 
 | Element | Waar je het ziet | Wat het doet |
 |---|---|---|
-| :app-tuneRounded: **Instellingen** | Voettekst startscherm, Live, Point Count, Survey, Bestandsanalyse, Session-overzicht | Opent de instellingen. In modusschermen worden de instellingen geopend die het meest relevant zijn voor die workflow. |
-| :app-searchRounded: **Verkennen** | Voettekst startscherm | Opent Verkennen. |
-| :app-libraryMusic: **Bibliotheek** | Voettekst startscherm | Opent de Session-bibliotheek. |
-| :app-helpOutlineRounded: **Help** | Voettekst startscherm, kop van Verkennen, Survey-dashboard, werkbalk Session-overzicht | Opent de help of een hulpvenster voor dat scherm. |
-| :app-infoOutline: **Info / Over** | Voettekst startscherm, infobalken, hulpvensters | Toont algemene informatie of samenvattende context. |
-| :app-arrowBackRounded: **Terug** | Live-modus | Keert terug naar het vorige scherm. |
+| :app-tuneRounded: **Instellingen** | Onderbalk startscherm, Live, Point Count, Survey, Bestandsanalyse, Session-overzicht | Opent de instellingen. In modusschermen worden de instellingen geopend die het meest relevant zijn voor die workflow. |
+| :app-searchRounded: **Ontdekken** | Onderbalk startscherm | Opent Ontdekken. |
+| :app-libraryMusic: **Sessions** | Onderbalk startscherm | Opent de Session-bibliotheek. |
+| :app-helpOutlineRounded: **Help** | Onderbalk startscherm, kop van Ontdekken, Survey-dashboard, werkbalk Session-overzicht | Opent de help of een hulpvenster voor dat scherm. |
+| :app-infoOutline: **Info / Over** | Onderbalk startscherm, infobalken, hulpvensters | Toont algemene informatie of samenvattende context. |
+| :app-arrowBackRounded: **Terug** | Live Mode | Keert terug naar het vorige scherm. |
 | :app-openInNew: **Extern openen** | Scherm Over, documentatielinks | Opent een externe pagina, zoals de online gebruikershandleiding. |
 | :app-arrowUpwardRounded: **Terug naar boven** | Helpscherm | Keert terug naar de introductie en sectiekoppelingen. Verschijnt na omlaag scrollen. |
 | :app-volunteerActivism: **Doneren** | Scherm Over | Opent de donatiepagina van BirdNET. |
@@ -45,7 +45,7 @@ Deze pictogrammen hebben dezelfde vormen als in de app. Hier volgen ze de tekstk
 | Element | Betekenis |
 |---|---|
 | :app-micRounded: **Microfoon** | Live luisteren starten. |
-| :app-stopRounded: **Stoppen** | Een lopende opname, punttelling of Survey stoppen. |
+| :app-stopRounded: **Stoppen** | Een lopende opname, Point Count of Survey stoppen. |
 | :app-playArrowRounded: **Afspelen** | Een ingesteld startproces beginnen of hervatten vanuit een gepauzeerde, gereede toestand. |
 | :app-close: **Sluiten** / :app-stop: **Annuleren** | Een lopende bestandsanalyse annuleren via de kopbalk of het voortgangsscherm. |
 | :app-timerOutlined: **Timer** | Duur of resterende tijd. |
@@ -55,7 +55,7 @@ Deze pictogrammen hebben dezelfde vormen als in de app. Hier volgen ze de tekstk
 
 | Element | Betekenis |
 |---|---|
-| :app-myLocation: **Huidige locatie** | Gebruik de huidige GPS-positie van het toestel. |
+| :app-myLocation: **Huidige locatie** | Gebruik de huidige GPS-positie van het apparaat. |
 | :app-editLocationAlt: **Handmatige coördinaten** | Coördinaten handmatig invoeren. |
 | :app-locationOff: **Geen locatie** | Locatie overslaan of aangeven dat er geen locatie beschikbaar is. |
 | :app-locationOn: **Heeft locatie** | Een locatie bevestigen, coördinaten tonen of een Session met kaart aanduiden. |
@@ -64,7 +64,7 @@ Deze pictogrammen hebben dezelfde vormen als in de app. Hier volgen ze de tekstk
 | :app-calendarToday: **Datum** | Een datum instellen of tonen. |
 | :app-clear: **Wissen** | Een gekozen datum verwijderen. |
 
-## Symbolen bij Verkennen en soorten
+## Symbolen bij Ontdekken en soorten
 
 | Element | Betekenis |
 |---|---|
@@ -80,7 +80,7 @@ Deze knoppen verschijnen op elke detectierij in de app — de soortenlijst in he
 |---|---|
 | :app-checkCircleOutline: **Bevestigen** | Vinkje met één tik dat een detectie markeert als visueel of akoestisch geverifieerd. Bevestigde detecties krijgen een klein groen vinkje op clusterrijen en kaartmarkers. |
 | :app-moreVert: **Meer** | Opent het overloopmenu per detectie met **Detectie delen**, **Soort vervangen**, **Detectie verwijderen** en **Soort verwijderen**. |
-| :app-share: **Detectie delen** | Deelt één detectie via het deelvenster van het systeem en voegt het audiofragment toe wanneer dat beschikbaar is — inclusief een stukje van de lopende opname tijdens een live Survey. |
+| :app-share: **Detectie delen** | Deelt één detectie via het deelmenu van het systeem en voegt het audiofragment toe wanneer dat beschikbaar is — inclusief een stukje van de lopende opname tijdens een live Survey. |
 | :app-swapHoriz: **Soort vervangen** | Kies een andere soort voor deze detectie. Opent ook door een rij in het overzicht naar links te vegen. |
 | :app-deleteOutline: **Detectie verwijderen** | Verwijdert de rij direct. Er verschijnt een paar seconden een SnackBar om dit ongedaan te maken. Wordt ook geactiveerd door een rij in het overzicht naar rechts te vegen. |
 | :app-deleteSweep: **Soort verwijderen** | Verwijdert in één keer elke detectie van die soort uit de Session, met dezelfde SnackBar om het ongedaan te maken. |
@@ -94,7 +94,7 @@ Deze knoppen gebruik je in het scherm Session-overzicht.
 | Element | Betekenis |
 |---|---|
 | :app-addCircleOutline: **Toevoegen** | Inhoud toevoegen, zoals een soort of annotatie. |
-| :app-undo: **Ongedaan maken** / :app-redo: **Opnieuw** | Stap terug of vooruit door de bewerkingen in het overzicht. |
+| :app-undo: **Ongedaan maken** / :app-redo: **Opnieuw uitvoeren** | Stap terug of vooruit door de bewerkingen in het overzicht. |
 | :app-contentCut: **Bijsnijden** | De bijsnijdmodus openen of tonen dat die actief is. |
 | :app-save: **Opslaan** | Wijzigingen in het overzicht opslaan. |
 | :app-share: **Delen** | De Session exporteren of delen. |
@@ -103,7 +103,7 @@ Deze knoppen gebruik je in het scherm Session-overzicht.
 
 ## Statusbalken per scherm
 
-### Live-modus
+### Live Mode
 
 De Live-infobalk gebruikt :app-infoOutline: gevolgd door compacte labels, zoals:
 
@@ -114,14 +114,14 @@ De Live-infobalk gebruikt :app-infoOutline: gevolgd door compacte labels, zoals:
 
 ### Point Count
 
-De timerbalk van de punttelling combineert :app-stopRounded: **Stoppen**, :app-timerOutlined: **Timer** en een voortgangsbalk om de resterende tijd van de Session te tonen.
+De timerbalk van Point Count combineert :app-stopRounded: **Stoppen**, :app-timerOutlined: **Timer** en een voortgangsbalk om de resterende tijd van de Session te tonen.
 
 ### Survey
 
 Het Survey-dashboard gebruikt:
 
 - :app-map: **Kaart** — tabblad met de live kaart
-- :app-graphicEq: **Spectrogram** — tabblad met het spectrogram
+- :app-graphicEq: **Audio** — tabblad met het spectrogram
 - :app-summaryChart: **Samenvatting** — tabblad met de samenvatting
 - :app-summaryChart: labels met statistieken in de samenvattingsweergave van de Survey
 

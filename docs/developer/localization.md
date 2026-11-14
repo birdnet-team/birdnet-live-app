@@ -43,7 +43,7 @@ Both surfaces are complete for all 13 locales, and both must stay complete when 
 - **Keep register consistent**: Within each locale, use either formal or informal phrasing consistently; do not mix styles.
 - **Language names untranslated**: "English", "Deutsch", "System" appear as-is in the language picker.
 - **Gain**: Translated with each locale's own audio term (for example Verstärkung, Ganancia, 增益). French, Norwegian, and Korean use "Gain" because that is their term too.
-- **Settings labels**: All setting titles, mode names, color map names, and status messages are localized.
+- **Settings labels**: All setting titles and status messages are localized. Mode names (Live Mode, Point Count, Survey) and color map names (Viridis, Plasma, …) stay in English.
 - **Help text**: Written to be taxonomically agnostic ("species" not "bird species", "animal sounds" not "birdsong").
 
 ## Adding a String

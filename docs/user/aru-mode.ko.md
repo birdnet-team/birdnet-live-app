@@ -8,13 +8,13 @@ ARU(Autonomous Recording Unit, 자동 녹음 장치) 모드는 예약된 음향 
 ## 현재 설정 과정
 
 - **운용 정보 및 분석 설정**:
-    - **메타데이터**: 운용 이름, ARU / 지점 ID, 관찰자 이름을 입력합니다.
+    - **메타데이터**: 프로젝트 이름, ARU / 지점 ID, 관찰자 이름을 입력합니다.
     - **위치**: GPS :app-myLocation:, 수동 좌표 :app-editLocationAlt:를 사용하거나 위치를 건너뜁니다 :app-locationOff:. 지도 선택기는 :app-mapSheet:를 사용합니다. 일출·일몰 기준 일정을 사용하려면 위도와 경도가 필요합니다.
     - **분석**: 마이크, 추론 빈도, 신뢰도 임계값, 민감도를 선택합니다.
     - **녹음 형식**: FLAC(무손실 압축)과 WAV(무압축) 중에서 선택합니다.
     - **녹음 모드**:
         - *전체*: 각 활성 주기의 전체 길이를 녹음합니다.
-        - *클립*: 감지된 새소리 주변의 짧은 오디오 클립을 저장합니다. 클립 여유 구간(감지 전후에 0~5초의 오디오 버퍼 추가)을 조정하고, 샘플링 방식(*전체*, *상위 N*, 또는 저장 공간 사용을 제한하는 *Smart* 샘플링)을 선택할 수 있습니다.
+        - *클립*: 감지된 소리 주변의 짧은 오디오 클립을 저장합니다. 클립 여유 구간(감지 전후에 0~5초의 오디오 버퍼 추가)을 조정하고, 샘플링 방식(*전체*, *상위 N*, 또는 저장 공간 사용을 제한하는 *Smart* 샘플링)을 선택할 수 있습니다.
         - *끔*: 주기 동안 실시간 추론을 실행하고 감지를 기록하지만 오디오 파일은 저장하지 않습니다.
 - **일정**:
     - **길이와 반복**: 각 활성 녹음 주기의 길이와 반복 간격을 선택합니다.
@@ -25,7 +25,7 @@ ARU(Autonomous Recording Unit, 자동 녹음 장치) 모드는 예약된 음향 
     - **Session 묶기**: 각 주기를 별도 Session으로 저장할지(불러오기가 빠르고 나누어 보기 좋아 권장), 모든 주기를 여러 구간으로 이루어진 하나의 Session으로 합칠지 설정합니다.
 - **준비**: 일정, 예상 오디오 저장 공간 사용량, 일주기 제한을 확인한 뒤 운용을 시작합니다.
 
-설정 항목은 다른 마법사와 같은 아이콘을 사용합니다. :app-micRounded: 마이크, :app-speedRounded: 추론 빈도, :app-verifiedRounded: 신뢰도, :app-hearing: 민감도, :app-fiberManualRecordRounded: 녹음 모드, :app-timerOutlined: 클립 여유 구간과 주기 길이, :app-filterAltRounded: 감지 샘플링, :app-formatListNumberedRounded: 종별 클립 한도입니다. 반복 간격은 :app-repeatRounded:, 저전력 항목은 :app-batteryAlert:와 :app-batteryChargingFull:, 테스트 실행과 Session 묶기는 :app-scienceRounded:와 :app-libraryBooks:를 사용합니다. 설정 항목 옆의 :app-helpOutline: 버튼을 누르면 설명을 볼 수 있습니다.
+설정 항목은 다른 마법사와 같은 아이콘을 사용합니다. :app-micRounded: 마이크, :app-speedRounded: 추론 빈도, :app-verifiedRounded: 신뢰도, :app-hearing: 민감도, :app-fiberManualRecordRounded: 녹음 모드, :app-timerOutlined: 클립 여유 구간과 주기 길이, :app-filterAltRounded: 감지 샘플링, :app-formatListNumberedRounded: 종별 상위 N입니다. 반복 간격은 :app-repeatRounded:, 저전력 항목은 :app-batteryAlert:와 :app-batteryChargingFull:, 테스트 실행과 Session 묶기는 :app-scienceRounded:와 :app-libraryBooks:를 사용합니다. 설정 항목 옆의 :app-helpOutline: 버튼을 누르면 설명을 볼 수 있습니다.
 
 운용을 시작하면 ARU 일정 메타데이터가 담긴 `SessionType.aru` Session이 즉시 저장됩니다. 녹음 주기도 감지가 없는 주기를 포함해 30초마다 체크포인트로 저장됩니다. 충돌이나 전원 차단 후에는 가장 최근의 부분 운용이 종료된 Session으로 Session 목록에 표시되며, 녹음은 자동으로 다시 시작되지 않습니다. 마지막 체크포인트 이후의 작업은 잃을 수 있습니다.
 

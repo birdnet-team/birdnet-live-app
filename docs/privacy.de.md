@@ -49,7 +49,7 @@ Die App kann auf die folgenden externen Ressourcen zugreifen. Jede Ressource ist
 | Ressource | Zweck | Schalter | Pro Anfrage gesendet |
 |----------|-------|----------|----------------------|
 | Kartenkacheln (OpenStreetMap Foundation) | Basiskarte für Standortauswahl, Survey-Live-Karte und Session-Karte | **Einstellungen → Datenschutz → Kartenkacheln erlauben** | Kachelkoordinaten `(z, x, y)`, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
-| Reverse Geocoding (Nominatim der OpenStreetMap Foundation) | Auflösung von GPS-Koordinaten in einen lesbaren Ortsnamen (z. B. „Berlin, Deutschland“) | **Einstellungen → Datenschutz → Ortsnamen-Suche erlauben** | Breiten-/Längengrad der Session, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
+| Reverse Geocoding (Nominatim der OpenStreetMap Foundation) | Auflösung von GPS-Koordinaten in einen lesbaren Ortsnamen (z. B. „Berlin, Deutschland“) | **Einstellungen → Datenschutz → Ortsnamensuche erlauben** | Breiten-/Längengrad der Session, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
 | Wetter-Snapshot (OpenMeteo GmbH) | Einmalige Aufnahme der lokalen Bedingungen (Temperatur, Niederschlag, Wind, Bewölkung, WMO-Wettercode) an Aufnahmekoordinaten und Endzeit | **Einstellungen → Datenschutz → Wetterabfrage erlauben** | Breiten-/Längengrad und Endzeit der Session, Ihre IP-Adresse als Teil der Netzwerkverbindung und der BirdNET-Live-User-Agent |
 
 Kartenkachel-Anfragen sind HTTPS-GET-Anfragen an `tile.openstreetmap.org`. Die Kachelkoordinaten identifizieren den betrachteten Kartenbereich. Wie jede direkte Internetanfrage legt die Anfrage dem Anbieter auch Ihre IP-Adresse offen.
@@ -75,14 +75,14 @@ Solange ein Link nur angezeigt wird, werden keine Daten gesendet, und kein exter
 Die App verwendet den GPS-Standort für:
 
 - **Artenfilterung** — Vorhersage, welche Arten an Ihrem Standort wahrscheinlich sind.
-- **Survey-Modus** — Aufzeichnung von GPS-Tracks und Geotagging von Detektionen entlang eines Transekts.
+- **Survey** — Aufzeichnung von GPS-Tracks und Geotagging von Detektionen entlang eines Transekts.
 - **Point-Count-Modus** — Markierung des Beobachtungsorts.
 
 GPS-Daten werden lokal gespeichert und nur dann in Exporte einbezogen, wenn Sie eine Sitzung ausdrücklich teilen oder exportieren. Der Standortzugriff erfordert Ihre Erlaubnis und kann jederzeit über die Systemeinstellungen widerrufen werden.
 
 ## Datenexport
 
-Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch, außer auf Upload-Ziele, die Sie selbst hinzugefügt haben (siehe unten).
+Sie können Sitzungsdaten in verschiedenen Formaten exportieren (Raven Selection Tables, CSV, JSON, GPX) und unter **Einstellungen → Export & Sync → Formate** beliebig viele Formate gleichzeitig anhaken; ausgewählte Formate werden in einem einzigen ZIP zusammen mit Audioclips und dem optionalen, eigenständigen HTML-Bericht gebündelt. Exporte werden lokal generiert und über das Teilen-Menü des Systems geteilt. Die App lädt keine Exportdaten auf Server hoch, außer auf Upload-Ziele, die Sie selbst hinzugefügt haben (siehe unten).
 
 ## Upload-Ziele
 

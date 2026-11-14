@@ -35,7 +35,7 @@ BirdNET-Team nie prowadzi zaplecza serwerowego aplikacji i nie otrzymuje za poś
 | Wyniki detekcji | Gatunki, pewność, znaczniki czasu | Lokalne pliki JSON sesji |
 | Współrzędne GPS | Geotagowanie detekcji, trasy Survey, przewidywania geomodelu | Lokalne pliki JSON sesji |
 | Metadane sesji | Historia sesji, przegląd, eksport | Lokalne pliki JSON sesji |
-| Migawka pogody (opcjonalnie) | Jednorazowy zapis temperatury, opadów, wiatru, zachmurzenia i kodu pogody na sesję, gdy **Zezwalaj na wyszukiwanie pogody** jest włączone | Lokalne pliki JSON sesji |
+| Migawka pogody (opcjonalnie) | Jednorazowy zapis temperatury, opadów, wiatru, zachmurzenia i kodu pogody na sesję, gdy **Zezwalaj na pobieranie pogody** jest włączone | Lokalne pliki JSON sesji |
 | Ustawienia aplikacji | Preferencje użytkownika | SharedPreferences |
 
 ### Dołączone dane offline
@@ -50,7 +50,7 @@ Aplikacja może uzyskiwać dostęp do następujących zasobów zewnętrznych. Ka
 |-------|-----|--------------------|---------------------------|
 | Kafelki mapy (OpenStreetMap Foundation) | Mapa podkładowa dla wyboru lokalizacji, mapy na żywo Survey i mapy Session | **Ustawienia → Prywatność → Zezwalaj na kafelki mapy** | Współrzędne kafelka `(z, x, y)`, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
 | Odwrotne geokodowanie (Nominatim fundacji OpenStreetMap Foundation) | Zamiana współrzędnych GPS na czytelną nazwę miejsca (np. „Berlin, Niemcy”) do wyświetlenia Session | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie nazw miejsc** | Szerokość/długość geograficzna Session, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
-| Migawka pogody (OpenMeteo GmbH) | Jednorazowy zapis lokalnych warunków (temperatura, opady, wiatr, zachmurzenie, kod WMO) we współrzędnych nagrania i czasie zakończenia | **Ustawienia → Prywatność → Zezwalaj na wyszukiwanie pogody** | Szerokość/długość geograficzna i czas zakończenia Session, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
+| Migawka pogody (OpenMeteo GmbH) | Jednorazowy zapis lokalnych warunków (temperatura, opady, wiatr, zachmurzenie, kod WMO) we współrzędnych nagrania i czasie zakończenia | **Ustawienia → Prywatność → Zezwalaj na pobieranie pogody** | Szerokość/długość geograficzna i czas zakończenia Session, Twój adres IP jako część połączenia sieciowego i user-agent BirdNET Live |
 
 Żądania kafelków mapy to żądania HTTPS GET do `tile.openstreetmap.org`. Współrzędne kafelka określają oglądany obszar mapy. Jak każde bezpośrednie żądanie internetowe ujawniają też dostawcy Twój adres IP.
 
@@ -82,7 +82,7 @@ Dane GPS są przechowywane lokalnie i dołączane do eksportów tylko wtedy, gdy
 
 ## Eksport danych
 
-Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksportuj → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer, z wyjątkiem miejsc docelowych przesyłania, które dodasz samodzielnie (zobacz poniżej).
+Dane sesji możesz eksportować w wielu formatach (Raven Selection Tables, CSV, JSON, GPX) i w **Ustawienia → Eksport i synchronizacja → Formaty** zaznaczyć dowolną kombinację formatów naraz; wybrane formaty są pakowane razem do jednego pliku ZIP obok klipów audio i opcjonalnego samodzielnego raportu HTML. Eksporty są generowane lokalnie i udostępniane przez systemowy panel udostępniania. Aplikacja nie przesyła danych eksportu na żaden serwer, z wyjątkiem miejsc docelowych przesyłania, które dodasz samodzielnie (zobacz poniżej).
 
 ## Miejsca docelowe przesyłania
 

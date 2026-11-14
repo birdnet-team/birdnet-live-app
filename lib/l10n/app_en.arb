@@ -228,10 +228,6 @@
   "@settingsSpectrogram": {
     "description": "Spectrogram settings category"
   },
-  "settingsRecording": "Recording",
-  "@settingsRecording": {
-    "description": "Recording settings category"
-  },
   "settingsSurvey": "Survey",
   "@settingsSurvey": {
     "description": "Survey mode settings category"
@@ -1006,10 +1002,6 @@
         "type": "String"
       }
     }
-  },
-  "settingsLocation": "Location",
-  "@settingsLocation": {
-    "description": "Location settings section title"
   },
   "settingsLocationSpeciesFilter": "Location & Species Filter",
   "@settingsLocationSpeciesFilter": {
@@ -2139,10 +2131,6 @@
   "@settingsSpectrogramDescription": {
     "description": "Subtitle for Spectrogram settings section"
   },
-  "settingsRecordingDescription": "Save audio to disk during live sessions. Full mode records everything; detection-only mode saves clips around identified species.",
-  "@settingsRecordingDescription": {
-    "description": "Subtitle for Recording settings section"
-  },
   "settingsAudioRecording": "Audio & Recording",
   "@settingsAudioRecording": {
     "description": "Title of the Settings section that combines Audio and Recording"
@@ -2153,7 +2141,7 @@
   },
   "settingsLocationDescription": "GPS and geographic species filtering. The geo-model uses your coordinates to predict local species and filter unlikely detections.",
   "@settingsLocationDescription": {
-    "description": "Subtitle for Location settings section"
+    "description": "Subtitle for the Location & Species Filter settings section"
   },
   "settingsExportDescription": "File format and content for session exports. Raven tables are compatible with Cornell's Raven Pro software.",
   "@settingsExportDescription": {
@@ -2971,7 +2959,7 @@
   "@surveyAlertWatchlistNone": {
     "description": "Metadata for surveyAlertWatchlistNone"
   },
-  "surveyAlertWatchlistEmpty": "No saved species lists. Create one in Settings → Species → Custom Lists.",
+  "surveyAlertWatchlistEmpty": "No saved species lists. Use \"New watchlist\" to create one.",
   "@surveyAlertWatchlistEmpty": {
     "description": "Metadata for surveyAlertWatchlistEmpty"
   },
@@ -4304,7 +4292,7 @@
   },
   "settingsGpsRefresh": "Refresh GPS now",
   "@settingsGpsRefresh": {
-    "description": "Title for the manual GPS refresh tile in the Location settings section"
+    "description": "Title for the manual GPS refresh tile in the Location & Species Filter settings section"
   },
   "settingsGpsRefreshSubtitle": "Force a fresh location fix",
   "@settingsGpsRefreshSubtitle": {

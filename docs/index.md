@@ -24,7 +24,7 @@ BirdNET Live is a Flutter app built for field researchers, conservationists, and
 - **FLAC recording** - Compressed audio capture with smaller files for long surveys
 - **Accessibility** - Screen-reader labels, tooltips, and optional spoken detection announcements
 - **Responsive layouts** - Adaptive phone, tablet, portrait, and landscape interfaces
-- **Localization** - Interface and spoken announcements in 11 languages
+- **Localization** - Interface and spoken announcements in 13 languages
 
 <p align="center">
   <img src="assets/screenshots/live-mode.png" alt="Live Mode" width="150">

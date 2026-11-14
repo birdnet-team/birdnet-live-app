@@ -16,11 +16,11 @@ Le icone, i pulsanti, i simboli e gli indicatori di stato condivisi che ricorron
 
 ### [Impostazioni](settings.md)
 
-Tutte le impostazioni attualmente disponibili nell'app, raggruppate allo stesso modo della schermata Impostazioni in-app.
+Tutte le impostazioni attualmente disponibili nell'app, raggruppate allo stesso modo della schermata Impostazioni dell'app.
 
 ## Guide alle modalità
 
-### [Modalità Live](live-mode.md)
+### [Live Mode](live-mode.md)
 
 Ascolto continuo con il microfono, rilevazioni in tempo reale, lo spettrogramma e la barra informativa della Session.
 
@@ -32,9 +32,9 @@ Specie previste per la posizione e la stagione attuali, oltre al pannello dei de
 
 Sessions salvate, ricerca, ordinamento, modalità di visualizzazione e navigazione raggruppata per specie.
 
-### [Riepilogo sessione](session-review.md)
+### [Riepilogo Session](session-review.md)
 
-Riproduzione, modifica, ritaglio, annotazioni, esportazione e barra degli strumenti di revisione.
+Riproduzione, modifica, ritaglio, annotazioni, esportazione e barra degli strumenti del Riepilogo.
 
 ### [Modalità Point Count](point-count-mode.md)
 
@@ -42,11 +42,11 @@ Il flusso di configurazione del Point Count, le opzioni di posizione e la scherm
 
 ### [Modalità Survey](survey-mode.md)
 
-Configurazione del Survey, dashboard del Survey in tempo reale e schede Mappa, Spettrogramma e Riepilogo.
+Configurazione del Survey, dashboard del Survey in tempo reale e schede Mappa, Audio e Sintesi.
 
 ### [Analisi file](file-analysis.md)
 
-La procedura guidata di Analisi file in quattro passaggi, le scelte dei parametri e come i risultati confluiscono nel Riepilogo sessione.
+La procedura guidata di Analisi file in quattro passaggi, le scelte dei parametri e come i risultati confluiscono nel Riepilogo Session.
 
 ### [Analisi in batch](batch-analysis.md)
 
@@ -54,7 +54,7 @@ Elabora e analizza più file audio in blocco. (Prossimamente)
 
 ### [Modalità ARU](aru-mode.md)
 
-Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevazione conservate, esegui l'inferenza live durante i cicli attivi e tieni traccia dei cicli di registrazione pianificati.
+Crea una Session ARU programmata, registra l'audio completo dei cicli o clip di rilevazione conservati, esegui l'inferenza live durante i cicli attivi e tieni traccia dei cicli di registrazione pianificati.
 
 ### [Caricamenti](uploads.md)
 

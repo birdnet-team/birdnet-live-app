@@ -16,7 +16,7 @@ Otevřete **Prozkoumat** v zápatí Domů tlačítkem :app-searchRounded:.
 
 V záhlaví se zobrazuje:
 
-- aktuální reverzně geokódovaný název místa, je-li k dispozici
+- název místa zjištěný podle souřadnic, je-li k dispozici
 - souřadnice pod názvem místa
 - :app-helpOutlineRounded: — otevře panel nápovědy Prozkoumat
 
@@ -47,8 +47,8 @@ Existuje šest stupňů, od nejpravděpodobnějšího po nejméně pravděpodobn
 | **Hojný** | Mezi nejsilnějšími předpověďmi zde |
 | **Běžný** | Velmi pravděpodobné |
 | **Častý** | Pravděpodobné |
-| **Neobvyklý** | Možné |
-| **Řídký** | Nepravděpodobné |
+| **Méně častý** | Možné |
+| **Nehojný** | Nepravděpodobné |
 | **Vzácný** | Mezi nejslabšími předpověďmi zde |
 
 Stupně jsou **relativní k aktuálnímu místu**. Přizpůsobují se tomu, jak silně geomodel předpovídá druhy v této oblasti, takže se hranice posouvají podle místního rozložení skóre: na místě s mnoha jistými předpověďmi potřebuje druh velmi vysoké skóre, aby byl *Hojný*, zatímco v oblasti se slabšími předpověďmi se stejného stupně dosáhne při nižším skóre. Stejné skóre tak může na různých místech spadat do různých stupňů, což udržuje smysluplnost žebříčku všude.
@@ -68,4 +68,4 @@ Překryvný panel může zobrazovat:
 
 Prozkoumat je referenční zobrazení v aplikaci zohledňující polohu. Pomáhá porovnat aktuální polohový kontext aplikace s druhy, se kterými se můžete setkat.
 
-Samo o sobě **nemění** uložená data session. Filtrování detekcí se ovládá samostatně v [Nastavení](settings.md).
+Samo o sobě **nemění** uložená data Session. Filtrování detekcí se ovládá samostatně v [Nastavení](settings.md).

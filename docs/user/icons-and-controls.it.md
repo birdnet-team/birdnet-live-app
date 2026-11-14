@@ -17,12 +17,12 @@ Queste icone hanno le stesse forme usate nell’app. Qui ereditano il colore del
 
 | Controllo | Dove lo vedi | Cosa fa |
 |---|---|---|
-| :app-tuneRounded: **Impostazioni** | Piè di pagina della Home, Live, Point Count, Survey, Analisi file, Riepilogo sessione | Apre le Impostazioni. Nelle schermate delle modalità apre le impostazioni più pertinenti a quel flusso di lavoro. |
+| :app-tuneRounded: **Impostazioni** | Piè di pagina della Home, Live, Point Count, Survey, Analisi file, Riepilogo Session | Apre le Impostazioni. Nelle schermate delle modalità apre le impostazioni più pertinenti a quel flusso di lavoro. |
 | :app-searchRounded: **Esplora** | Piè di pagina della Home | Apre Esplora. |
 | :app-libraryMusic: **Libreria** | Piè di pagina della Home | Apre la Libreria Sessions. |
-| :app-helpOutlineRounded: **Aiuto** | Piè di pagina della Home, intestazione di Esplora, dashboard del Survey, barra degli strumenti del Riepilogo sessione | Apre l'Aiuto o un pannello di aiuto specifico per la schermata. |
+| :app-helpOutlineRounded: **Aiuto** | Piè di pagina della Home, intestazione di Esplora, dashboard del Survey, barra degli strumenti del Riepilogo Session | Apre l'Aiuto o un pannello di aiuto specifico per la schermata. |
 | :app-infoOutline: **Informazioni** | Piè di pagina della Home, barre informative, pannelli di aiuto | Mostra informazioni generali o contesto di riepilogo. |
-| :app-arrowBackRounded: **Indietro** | Modalità Live | Torna alla schermata precedente. |
+| :app-arrowBackRounded: **Indietro** | Live Mode | Torna alla schermata precedente. |
 | :app-openInNew: **Apri esterno** | Schermata Informazioni, link alla documentazione | Apre una pagina esterna, come la Guida per l'utente online. |
 | :app-arrowUpwardRounded: **Torna in alto** | Schermata di aiuto | Torna all’introduzione e ai collegamenti alle sezioni. Appare dopo lo scorrimento verso il basso. |
 | :app-volunteerActivism: **Dona** | Schermata Informazioni | Apre la pagina per le donazioni a BirdNET. |
@@ -69,41 +69,41 @@ Queste icone hanno le stesse forme usate nell’app. Qui ereditano il colore del
 | Controllo | Significato |
 |---|---|
 | Miniatura della specie | Immagine inclusa per la specie, quando disponibile. |
-| Badge percentuale di confidenza o del geo-modello | Un breve riepilogo numerico dell'output del modello. Valori più alti indicano un supporto più forte nel contesto di quella schermata. |
+| Badge percentuale di confidenza o del geomodello | Un breve riepilogo numerico dell'output del modello. Valori più alti indicano un supporto più forte nel contesto di quella schermata. |
 | Etichette mensili (`Gen`, `Apr`, `Lug`, `Ott`, `Dic`) | Punti di riferimento sul grafico settimanale della frequenza prevista nel pannello della specie. |
 
 ## Azioni per ogni rilevazione
 
-Questi controlli compaiono su ogni riga di rilevazione nell'app — l'elenco delle specie nel Riepilogo sessione, il pannello del lettore dei clip, l'elenco delle rilevazioni del Survey in tempo reale e i marcatori sulla mappa del Survey. Vedi [Riepilogo sessione → Azioni per ogni rilevazione](session-review.md#azioni-per-ogni-rilevazione) per il comportamento completo.
+Questi controlli compaiono su ogni riga di rilevazione nell'app — l'elenco delle specie nel Riepilogo Session, il pannello del lettore dei clip, l'elenco delle rilevazioni del Survey in tempo reale e i marcatori sulla mappa del Survey. Vedi [Riepilogo Session → Azioni per ogni rilevazione](session-review.md#azioni-per-ogni-rilevazione) per il comportamento completo.
 
 | Controllo | Significato |
 |---|---|
 | :app-checkCircleOutline: **Conferma** | Segno di spunta con un tocco che contrassegna una rilevazione come verificata visivamente o acusticamente. Le rilevazioni confermate ottengono un piccolo segno verde sulle righe dei gruppi e sui marcatori della mappa. |
 | :app-moreVert: **Altro** | Apre il menu aggiuntivo della rilevazione con **Condividi rilevazione**, **Sostituisci specie**, **Elimina rilevazione** ed **Elimina specie**. |
-| :app-share: **Condividi rilevazione** | Condivide una rilevazione tramite il foglio di condivisione del sistema, allegando il clip audio quando disponibile — incluso uno spezzone della registrazione in corso durante un Survey in tempo reale. |
-| :app-swapHoriz: **Sostituisci specie** | Scegli una specie diversa per questa rilevazione. Si apre anche scorrendo verso sinistra una riga in revisione. |
-| :app-deleteOutline: **Elimina rilevazione** | Rimuove subito la riga. Per alcuni secondi appare una SnackBar per annullare. Si attiva anche scorrendo verso destra una riga in revisione. |
+| :app-share: **Condividi rilevazione** | Condivide una rilevazione tramite la finestra di condivisione del sistema, allegando il clip audio quando disponibile — incluso uno spezzone della registrazione in corso durante un Survey in tempo reale. |
+| :app-swapHoriz: **Sostituisci specie** | Scegli una specie diversa per questa rilevazione. Si apre anche scorrendo verso sinistra una riga nel Riepilogo Session. |
+| :app-deleteOutline: **Elimina rilevazione** | Rimuove subito la riga. Per alcuni secondi appare una SnackBar per annullare. Si attiva anche scorrendo verso destra una riga nel Riepilogo Session. |
 | :app-deleteSweep: **Elimina specie** | Rimuove in un colpo solo tutte le rilevazioni di quella specie dalla Session, con la stessa SnackBar per annullare. |
 | :app-hearing: **Sentito** | Su una rilevazione aggiunta a mano: hai sentito l'uccello. Si imposta con la casella del pannello di conferma mostrato dopo aver scelto la specie. |
 | :app-visibility: **Visto** | Su una rilevazione aggiunta a mano: hai visto l'uccello. Le due icone insieme significano sentito *e* visto. |
 
-## Barra degli strumenti del Riepilogo sessione
+## Barra degli strumenti del Riepilogo Session
 
-Questi controlli si usano nella schermata Riepilogo sessione.
+Questi controlli si usano nella schermata Riepilogo Session.
 
 | Controllo | Significato |
 |---|---|
 | :app-addCircleOutline: **Aggiungi** | Aggiunge contenuti, come una specie o un'annotazione. |
-| :app-undo: **Annulla** / :app-redo: **Ripristina** | Torna indietro o avanti tra le modifiche della revisione. |
+| :app-undo: **Annulla** / :app-redo: **Ripeti** | Torna indietro o avanti tra le modifiche apportate nel Riepilogo. |
 | :app-contentCut: **Ritaglia** | Attiva la modalità di ritaglio o indica che è attiva. |
-| :app-save: **Salva** | Salva le modifiche della revisione. |
+| :app-save: **Salva** | Salva le modifiche apportate nel Riepilogo. |
 | :app-share: **Condividi** | Esporta o condivide la Session. |
-| :app-deleteOutline: **Elimina** | Scarta la Session. |
-| :app-playArrowRounded: **Continua** | Continua un Survey non completato dal Riepilogo sessione, quando questa azione è disponibile. |
+| :app-deleteOutline: **Scarta** | Scarta la Session. |
+| :app-playArrowRounded: **Continua** | Continua un Survey non completato dal Riepilogo Session, quando questa azione è disponibile. |
 
 ## Barre di stato specifiche delle schermate
 
-### Modalità Live
+### Live Mode
 
 La barra informativa di Live usa :app-infoOutline: seguito da etichette compatte come:
 
@@ -114,17 +114,17 @@ La barra informativa di Live usa :app-infoOutline: seguito da etichette compatte
 
 ### Point Count
 
-La barra del timer del Point Count combina :app-stopRounded: **Stop**, :app-timerOutlined: **Timer** e una barra di avanzamento per mostrare la Session a tempo rimanente.
+La barra del timer del Point Count combina :app-stopRounded: **Stop**, :app-timerOutlined: **Timer** e una barra di avanzamento per mostrare quanto resta della Session a tempo.
 
 ### Survey
 
 La dashboard del Survey usa:
 
 - :app-map: **Mappa** — scheda della mappa live
-- :app-graphicEq: **Spettrogramma** — scheda dello spettrogramma
-- :app-summaryChart: **Riepilogo** — scheda del riepilogo
-- :app-summaryChart: etichette delle statistiche nella vista di riepilogo del Survey
+- :app-graphicEq: **Audio** — scheda dello spettrogramma
+- :app-summaryChart: **Sintesi** — scheda di sintesi
+- :app-summaryChart: etichette delle statistiche nella scheda Sintesi del Survey
 
 ## In caso di dubbio
 
-Se non sei sicuro di cosa faccia un controllo, apri il pannello di Aiuto più vicino nell'app oppure consulta la pagina del flusso di lavoro di quella schermata in questa guida per l'utente.
+Se hai dubbi su cosa faccia un controllo, apri il pannello di Aiuto più vicino nell'app oppure consulta la pagina del flusso di lavoro di quella schermata in questa guida per l'utente.

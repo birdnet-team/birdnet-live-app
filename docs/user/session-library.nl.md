@@ -4,7 +4,7 @@ De Session-bibliotheek is het archief van opgeslagen Sessions en verwerkte besta
 
 ## Zo open je de bibliotheek
 
-Gebruik de knop :app-libraryMusic: in de voettekst van het startscherm.
+Gebruik de knop :app-libraryMusic: in de onderbalk van het startscherm.
 
 ## Wat de bibliotheek toont
 
@@ -13,27 +13,27 @@ Elk item vat een opgeslagen resultatenset samen, met het type, de datum, de duur
 Session-typen gebruiken dezelfde pictogrammen als het startscherm:
 
 - :app-micRounded: — Live-Session
-- :app-audioFileRounded: — Session van bestandsanalyse
+- :app-audioFileRounded: — Bestandsupload
 - :app-locationOnRounded: — Point Count-Session
 - :app-routeRounded: — Survey-Session
 
 ## Bediening in de appbalk
 
-- :app-searchRounded: — zoeken op datum, Session-type, plaatsnaam, coördinaten, Nederlandse naam of wetenschappelijke naam
-- menu voor de weergavemodus — wisselen tussen **Uitgebreid**, **Compact** en **Op soort**
+- :app-searchRounded: — zoeken op datum, Session-type, plaatsnaam, coördinaten, gewone naam of wetenschappelijke naam
+- menu voor de weergavemodus — wisselen tussen **Gedetailleerd**, **Compact** en **Per soort**
 - :app-filterList: — de sorteervolgorde wijzigen
 
 ## Weergavemodi
 
-### Uitgebreid
+### Gedetailleerd
 
 Toont volledige Session-kaarten met meer metadata.
 
 ### Compact
 
-Toont krappere rijen om sneller te bladeren. Elke rij heeft rechts een knop :app-expandMore: die de rij ter plekke uitklapt tot de volledige kaartinhoud van de uitgebreide weergave — handig wanneer je snel de cijfers van één specifieke Session wilt zien zonder je scrollpositie kwijt te raken.
+Toont krappere rijen om sneller te bladeren. Elke rij heeft rechts een knop :app-expandMore: die de rij ter plekke uitklapt tot de volledige kaartinhoud van de gedetailleerde weergave — handig wanneer je snel de cijfers van één specifieke Session wilt zien zonder je scrollpositie kwijt te raken.
 
-### Op soort
+### Per soort
 
 Groepeert Sessions per soort en klapt uit naar de Sessions die die soort bevatten.
 
@@ -45,13 +45,13 @@ Wanneer Sessions per dag zijn gegroepeerd, toont elke dagkoprij eerst het kebabm
 
 ## Lokale tijd
 
-Elk tijdstempel in de Session-bibliotheek — lijstrijen, dagkoppen, badges met "gestart" / "beëindigd" — wordt weergegeven in de *huidige* lokale tijdzone van je telefoon. De onderliggende tijdstempels van de Session worden in UTC opgeslagen, dus een Session die je in Berlijn hebt gedraaid en later in New York opent, wordt simpelweg vijf (of zes) uur eerder weergegeven — de gegevens op schijf blijven ongewijzigd. Reis je tijdens een lange Survey, dan volgt de getoonde klok het toestel.
+Elk tijdstempel in de Session-bibliotheek — lijstrijen, dagkoppen, badges met "gestart" / "beëindigd" — wordt weergegeven in de *huidige* lokale tijdzone van je telefoon. De onderliggende tijdstempels van de Session worden in UTC opgeslagen, dus een Session die je in Berlijn hebt opgenomen en later in New York opent, wordt simpelweg vijf (of zes) uur eerder weergegeven — de gegevens op schijf blijven ongewijzigd. Reis je tijdens een lange Survey, dan volgt de getoonde klok het apparaat.
 
 ## Acties per rij
 
 Elke Session-rij biedt twee manieren om er iets mee te doen:
 
-- Het **menu met drie punten** (:app-moreVert:) rechts op elke kaart opent een klein menu met **Openen**, **Delen** en **Verwijderen**. Delen gebruikt je huidige voorkeuren onder Instellingen → Export (formaat en "audiobestanden meesturen") en opent direct het deelvenster van het systeem — je hoeft het Session-overzicht niet eerst te openen om een Session naar een collega te sturen.
+- Het **menu met drie punten** (:app-moreVert:) rechts op elke kaart opent een klein menu met **Openen**, **Delen** en **Verwijderen**. Delen opent een dialoogvenster waarin de vakjes **Audio** en **Metagegevens** eerst overeenkomen met Instellingen → Exporteren en synchroniseren en alleen voor die keer gelden, en daarna het deelmenu van het systeem — je hoeft het Session-overzicht niet eerst te openen om een Session naar een collega te sturen.
 - **Veeg** de rij naar links of rechts om die te verwijderen. Er verschijnt nog steeds een bevestigingsvenster voordat er iets wordt verwijderd, zodat een onbedoelde veegbeweging te herstellen is.
 
 ## Wat er daarna gebeurt

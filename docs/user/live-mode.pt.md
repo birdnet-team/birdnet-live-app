@@ -1,14 +1,14 @@
-# Modo Live
+# Live Mode
 
-O Modo Live é a forma mais rápida de escutar pelo microfone do telefone e revisar as detecções à medida que aparecem em tempo real.
+O Live Mode é a forma mais rápida de escutar pelo microfone do telefone e revisar as detecções à medida que aparecem em tempo real.
 
 ## Como abrir
 
-Na tela de Início, toque no cartão **Modo Live** com o ícone :app-micRounded:.
+Na tela de Início, toque no cartão **Live Mode** com o ícone :app-micRounded:.
 
 ## Escuta rápida
 
-A Escuta rápida começa a escutar com um único toque, sem precisar abrir o app e navegar até o modo — útil quando você ouve algo que quer identificar antes que pare de cantar. Todos os pontos de entrada abaixo abrem o Modo Live e começam a escutar imediatamente, qualquer que seja o valor da configuração **Iniciar gravação automaticamente**, e nenhum deles altera essa configuração.
+A Escuta rápida começa a escutar com um único toque, sem precisar abrir o app e navegar até o modo — útil quando você ouve algo que quer identificar antes que pare de cantar. Todos os pontos de entrada abaixo abrem o Live Mode e começam a escutar imediatamente, qualquer que seja o valor da configuração **Iniciar gravação automaticamente**, e nenhum deles altera essa configuração.
 
 ### Android: widget na tela de início
 
@@ -33,21 +33,21 @@ As frases da Siri e a entrada no seletor do botão de Ação exigem o iOS 17. A 
 
 ### O que acontece em seguida
 
-Se o Modo Live já estiver aberto, a Escuta rápida volta para essa mesma tela em vez de recriá-la. Uma Session em andamento ou pausada continua sem alterações; se estiver parada, a escuta começa na tela existente.
+Se o Live Mode já estiver aberto, a Escuta rápida volta para essa mesma tela em vez de recriá-la. Uma Session em andamento ou pausada continua sem alterações; se estiver parada, a escuta começa na tela existente.
 
-A Escuta rápida nunca substitui outro modo em execução. Se uma Session de Point Count, Survey, File Analysis ou [Modo ARU](aru-mode.md) estiver em andamento ou iniciando, o app vem para o primeiro plano e pede que você encerre primeiro essa Session. A tela e o trabalho continuam acessíveis e não são interrompidos.
+A Escuta rápida nunca substitui outro modo em execução. Se uma Session de Point Count, Survey, Análise de arquivos ou [Modo ARU](aru-mode.md) estiver em andamento ou iniciando, o app vem para o primeiro plano e pede que você encerre primeiro essa Session. A tela e o trabalho continuam acessíveis e não são interrompidos.
 
 ## Barra superior
 
 A barra superior contém três elementos:
 
-- :app-arrowBackRounded: — sai do Modo Live
+- :app-arrowBackRounded: — sai do Live Mode
 - texto de estado central — `Inicializando`, `Carregando modelo`, `Pronto`, `Identificando espécies`, `Pausado` ou `Erro`
 - :app-tuneRounded: — abre a visualização de Configurações específica do Live
 
 ## Botão de ação principal
 
-O grande botão circular na parte inferior central muda de estado:
+O botão circular grande na parte inferior central muda de estado:
 
 - :app-mic: — inicia a escuta
 - :app-stopRounded: — para a Session ativa
@@ -88,10 +88,10 @@ A gravação é controlada nas [Configurações](settings.md).
 - **Apenas detecções** grava clipes em torno das detecções.
 - **Desativado** desativa a gravação.
 
-Ao parar o Modo Live, o BirdNET Live salva a Session e abre o [Resumo da Session](session-review.md).
+Ao parar o Live Mode, o BirdNET Live salva a Session e abre o [Resumo da Session](session-review.md).
 
-O Modo Live também salva uma Session parcial no início, a cada 30 segundos e quando o aplicativo vai para segundo plano, e grava a Session concluída no disco antes de liberar o microfone. Após uma falha, uma queda de energia ou o encerramento do aplicativo pelo sistema em segundo plano, o último salvamento fica disponível na Biblioteca de Sessions, marcado como interrompido se o aplicativo terminou no meio da Session. Alterações posteriores a esse salvamento podem ser perdidas. Esses salvamentos intermediários são mantidos mesmo com o salvamento automático desativado; uma Session concluída então ainda abre no resumo como não salva e é descartada se você sair sem salvar.
+O Live Mode também salva uma Session parcial no início, a cada 30 segundos e quando o aplicativo vai para segundo plano, e grava a Session concluída no disco antes de liberar o microfone. Após uma falha, uma queda de energia ou o encerramento do aplicativo pelo sistema em segundo plano, o último salvamento fica disponível na biblioteca de sessões, marcado como interrompido se o aplicativo terminou no meio da Session. Alterações posteriores a esse salvamento podem ser perdidas. Esses salvamentos intermediários são mantidos mesmo com o salvamento automático desativado; uma Session concluída então ainda abre no resumo como não salva e é descartada se você sair sem salvar.
 
-## Escuta com a tela apagada
+## Escuta com a tela desligada
 
-Live Mode normalmente pausa ao bloquear a tela ou sair do aplicativo e retoma a mesma Session quando você volta. Na primeira vez, um diálogo oferece escuta limitada em segundo plano. Em [Configurações → Áudio e gravação](settings.md#continuar-com-a-tela-desligada), ative **Continuar com a tela desligada** e escolha um máximo de 15, 30, 60 ou 120 minutos (30 por padrão). O limite vale para cada período fora do aplicativo; atingi-lo encerra a Session. Android mostra uma notificação persistente com Abrir e Parar. No Windows, Live Mode continua escutando com a janela minimizada.
+O Live Mode normalmente pausa ao bloquear a tela ou sair do aplicativo e retoma a mesma Session quando você volta. Na primeira vez, um diálogo oferece escuta limitada em segundo plano. Em [Configurações → Áudio e gravação](settings.md#continuar-com-a-tela-desligada), ative **Continuar com a tela desligada** e escolha um máximo de 15, 30, 60 ou 120 minutos (30 por padrão). O limite vale para cada período fora do aplicativo; atingi-lo encerra a Session. O Android mostra uma notificação persistente com Abrir e Parar. No Windows, o Live Mode continua escutando com a janela minimizada.

@@ -12,7 +12,7 @@ Każdy wpis podsumowuje zapisany zestaw wyników wraz z typem, datą, czasem trw
 
 Typy Sessions używają tych samych ikon co ekran startowy:
 
-- :app-micRounded: — Session trybu Live
+- :app-micRounded: — Session Live Mode
 - :app-audioFileRounded: — Session analizy plików
 - :app-locationOnRounded: — Session trybu Point Count
 - :app-routeRounded: — Session trybu Survey
@@ -20,7 +20,7 @@ Typy Sessions używają tych samych ikon co ekran startowy:
 ## Elementy paska aplikacji
 
 - :app-searchRounded: — wyszukiwanie po dacie, typie Session, nazwie miejsca, współrzędnych, nazwie zwyczajowej lub naukowej
-- menu trybu widoku — przełączanie między **Szczegółowym**, **Zwartym** i **Według gatunków**
+- menu trybu widoku — przełączanie między **Szczegółowym**, **Kompaktowym** i **Według gatunków**
 - :app-filterList: — zmiana kolejności sortowania
 
 ## Tryby widoku
@@ -29,7 +29,7 @@ Typy Sessions używają tych samych ikon co ekran startowy:
 
 Pokazuje pełne karty Sessions z większą liczbą metadanych.
 
-### Zwarty
+### Kompaktowy
 
 Pokazuje ciaśniejsze wiersze, aby szybciej przeglądać. Każdy wiersz ma po prawej przycisk :app-expandMore:, który rozwija go w miejscu do pełnej treści karty z widoku szczegółowego — przydatne, gdy chcesz szybko podejrzeć statystyki jednej konkretnej Session bez utraty pozycji przewijania.
 
@@ -51,7 +51,7 @@ Każdy znacznik czasu w Bibliotece Sessions — wiersze listy, nagłówki grup d
 
 Na każdym wierszu Session możesz działać na dwa sposoby:
 
-- **Menu z trzema kropkami** (:app-moreVert:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie korzysta z bieżących preferencji z Ustawienia → Eksport (format i „dołącz dźwięk”) i otwiera systemowy panel udostępniania od razu — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
+- **Menu z trzema kropkami** (:app-moreVert:) po prawej stronie każdej karty otwiera małe menu z opcjami **Otwórz**, **Udostępnij** i **Usuń**. Udostępnianie otwiera okno, w którym pola **Dźwięk** i **Metadane** są na początku zgodne z ustawieniami w sekcji Ustawienia → Eksport i synchronizacja i dotyczą tylko tego udostępnienia, a potem systemowy panel udostępniania — nie trzeba najpierw otwierać Przeglądu Session, aby wysłać Session do współpracownika.
 - **Przesuń** wiersz w lewo lub w prawo, aby go usunąć. Przed usunięciem i tak pojawia się okno potwierdzenia, więc przypadkowe przesunięcie da się odwrócić.
 
 ## Co dalej

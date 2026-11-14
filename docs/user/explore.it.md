@@ -1,6 +1,6 @@
 # Esplora
 
-Esplora mostra le specie previste per la posizione e la stagione attuali usando il geo-modello BirdNET.
+Esplora mostra le specie previste per la posizione e la stagione attuali usando il geomodello BirdNET.
 
 ## Come aprirlo
 
@@ -16,7 +16,7 @@ Apri **Esplora** dal piè di pagina della Home usando il pulsante :app-searchRou
 
 L'intestazione mostra:
 
-- il nome del luogo ottenuto tramite geocoding inverso, quando disponibile
+- il nome del luogo ottenuto tramite geocodifica inversa, quando disponibile
 - le coordinate sotto il nome del luogo
 - :app-helpOutlineRounded: — apre il pannello di aiuto di Esplora
 
@@ -47,11 +47,11 @@ Ci sono sei livelli, dal più al meno probabile:
 | **Abbondante** | Tra le previsioni più forti qui |
 | **Comune** | Molto probabile |
 | **Frequente** | Probabile |
-| **Insolita** | Possibile |
+| **Poco comune** | Possibile |
 | **Scarsa** | Improbabile |
 | **Rara** | Tra le previsioni più deboli qui |
 
-I livelli sono **relativi alla posizione attuale**. Si adattano a quanto fortemente il geo-modello prevede le specie in quest'area, quindi i limiti si spostano con la distribuzione locale dei punteggi: in un luogo con molte previsioni sicure una specie ha bisogno di un punteggio molto alto per essere *Abbondante*, mentre in un'area con previsioni più deboli lo stesso livello si raggiunge con un punteggio inferiore. Lo stesso punteggio può quindi ricadere in livelli diversi in luoghi diversi, mantenendo la classifica significativa ovunque.
+I livelli sono **relativi alla posizione attuale**. Si adattano a quanto fortemente il geomodello prevede le specie in quest'area, quindi i limiti si spostano con la distribuzione locale dei punteggi: in un luogo con molte previsioni sicure una specie ha bisogno di un punteggio molto alto per essere *Abbondante*, mentre in un'area con previsioni più deboli lo stesso livello si raggiunge con un punteggio inferiore. Lo stesso punteggio può quindi ricadere in livelli diversi in luoghi diversi, mantenendo la classifica significativa ovunque.
 
 ## Pannello dei dettagli della specie
 

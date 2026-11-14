@@ -5,10 +5,10 @@ Häufig gestellte Fragen.
 ## Allgemein
 
 **F: Benötigt BirdNET Live eine Internetverbindung?**
-A: Nein. Die gesamte Inferenz läuft auf dem Gerät mithilfe des ONNX-Modells. Die einzigen Netzwerkfunktionen sind optional und standardmäßig deaktiviert: Kartenkacheln und Ortsnamen-Suche von OpenStreetMap, Wettermomentaufnahmen von Open-Meteo sowie Abfragen von Artenbildern und -beschreibungen aus der Taxonomie-API. Siehe [Einstellungen → Datenschutz](settings.md#datenschutz).
+A: Nein. Die gesamte Inferenz läuft auf dem Gerät mithilfe des ONNX-Modells. Die einzigen Netzwerkfunktionen sind optional und standardmäßig deaktiviert: Kartenkacheln und Ortsnamensuche von OpenStreetMap, Wettermomentaufnahmen von Open-Meteo sowie Abfragen von Artenbildern und -beschreibungen aus der Taxonomie-API. Siehe [Einstellungen → Datenschutz](settings.md#datenschutz).
 
-**F: Wie viele Arten können identifiziert werden?**
-A: Das BirdNET+ V3.0-Modell identifiziert 10.048 Arten weltweit – Vögel, Amphibien, Säugetiere und Insekten (die taxonomisch abgeglichene, reduzierte Schnittmenge aus Audio-Klassifikator und Geomodell). Außerdem erkennt es 16 nicht-tierische Geräusche wie Motoren, Sirenen und Musik; diese sind ausgeschaltet, solange Sie [Nicht-tierische Geräusche](settings.md#nicht-tierische-geräusche) nicht einschalten.
+**F: Wie viele Arten kann die App bestimmen?**
+A: Das BirdNET+ V3.0-Modell bestimmt 10.048 Arten weltweit – Vögel, Amphibien, Säugetiere und Insekten (die taxonomisch abgeglichene, reduzierte Schnittmenge aus Audio-Klassifikator und Geo-Modell). Außerdem erkennt es 16 nicht-tierische Geräusche wie Motoren, Sirenen und Musik; diese sind ausgeschaltet, solange Sie [Nicht-tierische Geräusche](settings.md#nicht-tierische-geräusche) nicht einschalten.
 
 **F: Eine Art in einer älteren Session hat einen neuen Namen oder wird nicht mehr erkannt. Habe ich etwas verloren?**
 A: Nein. Ein Modell-Update kann Arten umbenennen, um der aktuellen Taxonomie zu folgen, und Arten entfernen, die das neue Modell nicht abdeckt. Gespeicherte Sessions werden nicht verändert: Eine ältere Detektion wird unter dem aktuellen Namen der Art angezeigt, mit Bild, Übersetzung und Links, und Arten, die das Modell nicht mehr erkennt, bleiben genau wie aufgezeichnet in Ihren Sessions und Exporten.
@@ -33,17 +33,17 @@ A: Die Genauigkeit hängt von der Aufnahmequalität, der Entfernung, dem Hinterg
 A: Im Dokumentenverzeichnis der App unter `recordings/<session-id>/`. Je nach **Einstellungen → Audio & Aufnahme → Aufnahmeformat** als WAV oder FLAC.
 
 **F: Kann ich vorhandene Aufnahmen analysieren?**
-A: Ja. Öffnen Sie die Dateianalyse auf dem Startbildschirm, wählen Sie eine Audiodatei, legen Sie Standort und Parameter fest und tippen Sie auf „Analysieren“. Zu den unterstützten Formaten gehören WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA und AMR.
+A: Ja. Öffnen Sie die Dateianalyse auf dem Startbildschirm, wählen Sie eine Audiodatei, legen Sie Standort und Parameter fest und tippen Sie auf „Analyse starten“. Zu den unterstützten Formaten gehören WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA und AMR.
 
 ## Point Count
 
-**F: Was ist der Point-Count-Modus?**
-A: Ein zeitgesteuerter Survey-Modus für formelle Punkt-Stopp-Zählungen von Vögeln. Sie legen eine feste Dauer (3–30 Minuten) und einen Standort fest; die App läuft dann kontinuierlich und stoppt automatisch, sobald der Timer null erreicht.
+**F: Was ist Point Count?**
+A: Ein zeitgesteuerter Erfassungsmodus für standardisierte Punkt-Stopp-Zählungen von Vögeln. Sie legen eine feste Dauer (3–30 Minuten) und einen Standort fest; die App läuft dann kontinuierlich und endet automatisch, sobald der Timer null erreicht.
 
 **F: Kann ich einen Point Count pausieren?**
 A: Nein. Die Einhaltung des Protokolls erfordert eine unterbrechungsfreie Aufnahme. Sie können eine Zählung jedoch über die Stopp-Schaltfläche vorzeitig beenden.
 
-**F: Wohin gelangen die Ergebnisse eines Point Counts?**
+**F: Wohin gelangen die Ergebnisse eines Point Count?**
 A: Sie erscheinen in der Session-Bibliothek als „Point Count #1“, „#2“ usw. Sie können sie wie jede andere Session prüfen, bearbeiten und exportieren.
 
 ## Leistung

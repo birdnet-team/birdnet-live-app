@@ -62,21 +62,21 @@ Kreator udostępnia:
 | Element konfiguracji | Ikona |
 |---|---|
 | Czas trwania okna | :app-timerOutlined: |
-| Nakładanie | :app-swapHoriz: |
+| Nakładanie się okien | :app-swapHoriz: |
 | Czułość | :app-hearing: |
 | Próg pewności | :app-verifiedRounded: |
 | Filtr gatunków | :app-filterAltRounded: |
 
-Stuknij przycisk :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Kroki pliku, lokalizacji i daty nagrania także mają przyciski pomocy.
+Dotknij przycisku :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Kroki pliku, lokalizacji i daty nagrania także mają przyciski pomocy.
 
 Nakładanie określa, o ile przesuwa się każde okno analizy, i jest właściwe dla
 analizy plików: cały plik jest zawsze przeglądany, a większe nakładanie
-przegląda go po prostu drobiazgowiej. Tryby na żywo używają zamiast tego
-częstości wnioskowania, ponieważ muszą decydować, jak często uruchamiać model
+przegląda go po prostu dokładniej. Tryby na żywo używają zamiast tego
+częstotliwości analizy, ponieważ muszą decydować, jak często uruchamiać model
 na napływającym dźwięku, a nie jak drobiazgowo pokryć gotowe nagranie.
 
 Niezależnie od tego, jak analiza plików dochodzi do swoich okien, zamienia je
-na wykrycia według tych samych reguł co tryb Live, Point Count i Survey:
+na wykrycia według tych samych reguł co Live Mode, Point Count i Survey:
 wykrycie zaczyna się w najwcześniejszym oknie potwierdzającym, niesie
 najwyższą potwierdzoną ocenę i kończy się na końcu ostatniego okna
 potwierdzającego.

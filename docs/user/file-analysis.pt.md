@@ -62,7 +62,7 @@ O assistente expõe:
 | Controle de configuração | Ícone |
 |---|---|
 | Duração da janela | :app-timerOutlined: |
-| Sobreposição | :app-swapHoriz: |
+| Sobreposição de janelas | :app-swapHoriz: |
 | Sensibilidade | :app-hearing: |
 | Limiar de confiança | :app-verifiedRounded: |
 | Filtro de espécies | :app-filterAltRounded: |
@@ -76,7 +76,7 @@ inferência, porque precisam decidir com que frequência executar sobre o áudio
 que chega, e não com que detalhe cobrir uma gravação fixa.
 
 Seja como for que a análise de arquivos chegue às suas janelas, ela as
-transforma em detecções com as mesmas regras do modo Live, do Point Count e do
+transforma em detecções com as mesmas regras do Live Mode, do Point Count e do
 Survey: uma detecção começa na sua janela de apoio mais antiga, carrega a maior
 pontuação respaldada e termina no fim da última janela de apoio.
 

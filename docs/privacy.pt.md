@@ -48,8 +48,8 @@ O aplicativo pode acessar os recursos externos abaixo. Cada um é controlado por
 
 | Recurso | Propósito | Controlado por | Enviado por requisição |
 |---------|-----------|----------------|------------------------|
-| Tiles de mapa (OpenStreetMap Foundation) | Mapa base para seletor de localização, mapa ao vivo do Survey e mapa da Session | **Configurações → Privacidade → Permitir tiles de mapa** | Coordenadas do tile `(z, x, y)`, seu endereço IP como parte da conexão de rede e o user-agent BirdNET Live |
-| Geocodificação reversa (Nominatim da OpenStreetMap Foundation) | Resolver coordenadas GPS num nome de lugar legível (ex. “Lisboa, Portugal”) para exibição da Session | **Configurações → Privacidade → Permitir busca de nome de lugar** | Latitude/longitude da Session, seu endereço IP como parte da conexão de rede e o user-agent BirdNET Live |
+| Tiles de mapa (OpenStreetMap Foundation) | Mapa base para seletor de localização, mapa ao vivo do Survey e mapa da Session | **Configurações → Privacidade → Permitir blocos de mapa** | Coordenadas do tile `(z, x, y)`, seu endereço IP como parte da conexão de rede e o user-agent BirdNET Live |
+| Geocodificação reversa (Nominatim da OpenStreetMap Foundation) | Resolver coordenadas GPS num nome de lugar legível (ex. “Lisboa, Portugal”) para exibição da Session | **Configurações → Privacidade → Permitir busca de nome do local** | Latitude/longitude da Session, seu endereço IP como parte da conexão de rede e o user-agent BirdNET Live |
 | Snapshot do clima (OpenMeteo GmbH) | Captura única das condições locais (temperatura, precipitação, vento, nuvens, código WMO) nas coordenadas de gravação e hora de fim | **Configurações → Privacidade → Permitir consulta de clima** | Latitude/longitude e hora de fim da Session, seu endereço IP como parte da conexão de rede e o user-agent BirdNET Live |
 
 As requisições de tiles de mapa são requisições HTTPS GET para `tile.openstreetmap.org`. As coordenadas identificam a área do mapa visualizada. Como toda requisição direta à Internet, elas também expõem seu endereço IP ao provedor.
@@ -60,7 +60,7 @@ As requisições de clima enviam a latitude/longitude da sessão e o timestamp d
 
 **Tratamento e retenção por terceiros:** o BirdNET-Team não opera esses serviços nem recebe os dados das requisições. A OpenStreetMap Foundation pode tratar dados de acesso à rede e detalhes das requisições conforme sua [Política de Privacidade](https://osmfoundation.org/wiki/Privacy_Policy). A Open-Meteo informa que os logs da API gratuita podem conter endereços IP e coordenadas geográficas e são excluídos após 90 dias; consulte os [Termos e Privacidade](https://open-meteo.com/en/terms). Esses provedores podem tratar dados em outros países. Os valores retornados são armazenados localmente na Session e entram em uma exportação somente quando você a cria.
 
-**Revogação:** você pode desativar qualquer um dos três serviços a qualquer momento em **Configurações → Privacidade**. Os nomes de lugar e snapshots de clima já armazenados localmente permanecem anexados às sessões onde foram capturados; exclua essas sessões na Biblioteca de Sessões ou use **Configurações → Zona de Perigo → Limpar todos os dados** para remover esses dados históricos.
+**Revogação:** você pode desativar qualquer um dos três serviços a qualquer momento em **Configurações → Privacidade**. Os nomes de lugar e snapshots de clima já armazenados localmente permanecem anexados às sessões onde foram capturados; exclua essas sessões na Biblioteca de Sessões ou use **Configurações → Zona de perigo → Excluir todos os dados** para remover esses dados históricos.
 
 **Nenhuma outra requisição de rede é feita.** O app funciona totalmente offline.
 
@@ -82,7 +82,7 @@ Os dados GPS são armazenados localmente e incluídos nas exportações apenas q
 
 ## Exportação de Dados
 
-Você pode exportar os dados de sessão em vários formatos (Raven Selection Tables, CSV, JSON, GPX) e marcar qualquer combinação de formatos ao mesmo tempo em **Configurações → Exportação → Formatos**; os formatos selecionados são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML autônomo opcional. As exportações são geradas localmente e compartilhadas pela folha de compartilhamento do sistema. O app não envia dados de exportação para nenhum servidor, exceto para destinos de envio que você mesmo adicionou (veja abaixo).
+Você pode exportar os dados de sessão em vários formatos (Raven Selection Tables, CSV, JSON, GPX) e marcar qualquer combinação de formatos ao mesmo tempo em **Configurações → Exportação e sincronização → Formatos**; os formatos selecionados são agrupados em um único ZIP junto com os clipes de áudio e o relatório HTML autônomo opcional. As exportações são geradas localmente e compartilhadas pela folha de compartilhamento do sistema. O app não envia dados de exportação para nenhum servidor, exceto para destinos de envio que você mesmo adicionou (veja abaixo).
 
 ## Destinos de envio
 
@@ -94,7 +94,7 @@ Os destinos são operados por organizadores de projeto, não pelo BirdNET-Team, 
 
 ## Exclusão de Dados
 
-Sessões individuais e suas gravações podem ser excluídas na Biblioteca de Sessões. Para apagar de dentro do app as sessões locais, gravações, notas de voz, listas de espécies personalizadas, preferências e caches do BirdNET Live, use **Configurações → Zona de Perigo → Limpar todos os dados**. Você também pode limpar o armazenamento do app BirdNET Live nas configurações do seu sistema operacional ou desinstalar o app.
+Sessões individuais e suas gravações podem ser excluídas na Biblioteca de Sessões. Para apagar de dentro do app as sessões locais, gravações, notas de voz, listas de espécies personalizadas, preferências e caches do BirdNET Live, use **Configurações → Zona de perigo → Excluir todos os dados**. Você também pode limpar o armazenamento do app BirdNET Live nas configurações do seu sistema operacional ou desinstalar o app.
 
 ## Contato
 

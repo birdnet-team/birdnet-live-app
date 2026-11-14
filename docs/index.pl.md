@@ -12,19 +12,19 @@ BirdNET Live to aplikacja napisana we Flutterze, przeznaczona dla badaczy tereno
 
 ## Funkcje
 
-- **Tryb Live** - przewijany spektrogram w czasie rzeczywistym z rozpoznawaniem gatunków
+- **Live Mode** - przewijany spektrogram w czasie rzeczywistym z rozpoznawaniem gatunków
 - **Tryb Point Count** - Sessions na czas z odliczaniem i metadanymi punktu
 - **Tryb Survey** - długie liczenia transektowe ze śledzeniem GPS, monitorowaniem w tle i próbkowaniem wykryć
 - **Analiza plików** - analiza istniejących nagrań offline (WAV, FLAC, MP3, OGG i inne)
 - **Tryb ARU** - zamień urządzenie w autonomiczną jednostkę nagrywającą do wielodniowych wdrożeń
-- **Przeglądaj** - przeglądaj gatunki spodziewane w Twojej lokalizacji według geomodelu BirdNET
+- **Odkrywaj** - przeglądaj gatunki spodziewane w Twojej lokalizacji według geomodelu BirdNET
 - **Biblioteka Sessions** - przeglądaj, edytuj i eksportuj wcześniejsze Sessions wraz z odtwarzaniem dźwięku
 - **Eksport** - formaty Raven Pro, CSV, JSON, GPX i paczki ZIP z metadanymi pochodzenia
-- **Wnioskowanie na urządzeniu** - model BirdNET+ obejmuje 10 048 gatunków, bez internetu
+- **Analiza na urządzeniu** - model BirdNET+ obejmuje 10 048 gatunków, bez internetu
 - **Nagrywanie FLAC** - skompresowany dźwięk i mniejsze pliki przy długich liczeniach
-- **Dostępność** - etykiety dla czytników ekranu, podpowiedzi i opcjonalne komunikaty głosowe o wykryciach
+- **Dostępność** - etykiety dla czytników ekranu, podpowiedzi i opcjonalne zapowiedzi głosowe wykryć
 - **Układy responsywne** - interfejs dopasowany do telefonu, tabletu, orientacji pionowej i poziomej
-- **Lokalizacja** - interfejs i komunikaty głosowe w 11 językach
+- **Lokalizacja** - interfejs i zapowiedzi głosowe w 13 językach
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">

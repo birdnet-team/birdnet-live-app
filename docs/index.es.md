@@ -12,19 +12,19 @@ BirdNET Live es una app de Flutter creada para investigadores de campo, conserva
 
 ## Funciones
 
-- **Modo Live** - Espectrograma con desplazamiento en tiempo real e identificación de especies
-- **Modo Point Count** - Sesiones cronometradas con temporizador de cuenta atrás y metadatos de la estación
+- **Live Mode** - Espectrograma con desplazamiento en tiempo real e identificación de especies
+- **Modo Point Count** - Sessions cronometradas con temporizador de cuenta atrás y metadatos de la estación
 - **Modo Survey** - Recorridos de transecto de larga duración con seguimiento GPS, monitorización en segundo plano y muestreo de detecciones
 - **Modo Análisis de archivos** - Análisis sin conexión de grabaciones existentes (WAV, FLAC, MP3, OGG y más)
 - **Modo ARU** - Convierte tu dispositivo en una unidad de grabación acústica para despliegues de varios días
 - **Explorar** - Consulta las especies esperadas en tu ubicación usando el geomodelo de BirdNET
-- **Biblioteca de sesiones** - Revisa, edita y exporta sesiones anteriores con reproducción de audio
+- **Biblioteca de Sessions** - Revisa, edita y exporta Sessions anteriores con reproducción de audio
 - **Exportación** - Formatos Raven Pro, CSV, JSON, GPX y paquetes ZIP con metadatos de procedencia
 - **Inferencia en el dispositivo** - Cobertura del modelo BirdNET+ para 10 048 especies, sin necesidad de internet
 - **Grabación FLAC** - Captura de audio comprimida con archivos más pequeños para recorridos largos
 - **Accesibilidad** - Etiquetas para lectores de pantalla, descripciones emergentes y anuncios de detección hablados opcionales
 - **Diseños adaptables** - Interfaces que se ajustan a teléfono, tableta, vertical y horizontal
-- **Localización** - Interfaz y anuncios hablados en 11 idiomas
+- **Localización** - Interfaz y anuncios hablados en 13 idiomas
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -48,7 +48,7 @@ BirdNET Live es una app de Flutter creada para investigadores de campo, conserva
 
 ## Inicio rápido
 
-Consulta la [Guía del usuario](user/index.md) para tener una visión general y luego abre [Primeros pasos](user/getting-started.md) para instalar y ejecutar BirdNET Live.
+Consulta la [Guía de uso](user/index.md) para tener una visión general y luego abre [Primeros pasos](user/getting-started.md) para instalar y ejecutar BirdNET Live.
 
 ## Instalación
 
@@ -64,7 +64,7 @@ Consulta la [Guía para desarrolladores](developer/index.md) para conocer la arq
 
 ## Financiación
 
-BirdNET Live se desarrolla dentro del proyecto RangerSound, financiado por la Deutsche Bundesstiftung Umwelt (proyecto 39263/01). RangerSound es una colaboración entre la Universidad Tecnológica de Chemnitz, la Universität Würzburg y el Parque Nacional del Bosque Bávaro.
+BirdNET Live se desarrolla dentro del proyecto RangerSound, financiado por la Deutsche Bundesstiftung Umwelt (proyecto 39263/01). RangerSound es una colaboración entre la Universidad Tecnológica de Chemnitz, la Universidad de Wurzburgo y el Parque Nacional del Bosque Bávaro.
 
 ## Licencia
 

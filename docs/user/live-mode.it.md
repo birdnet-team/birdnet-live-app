@@ -1,14 +1,14 @@
-# Modalità Live
+# Live Mode
 
-La modalità Live è il modo più veloce per ascoltare tramite il microfono del telefono ed esaminare le rilevazioni man mano che appaiono in tempo reale.
+Live Mode è il modo più veloce per ascoltare tramite il microfono del telefono ed esaminare le rilevazioni man mano che appaiono in tempo reale.
 
 ## Come aprirla
 
-Dalla schermata Home, tocca la scheda **Modalità Live** con l'icona :app-micRounded:.
+Dalla schermata Home, tocca la scheda **Live Mode** con l'icona :app-micRounded:.
 
 ## Ascolto rapido
 
-Ascolto rapido avvia l'ascolto con un solo tocco, senza dover prima aprire l'app e navigare fino alla modalità — comodo quando senti qualcosa che vuoi identificare prima che smetta di cantare. Ogni punto di accesso qui sotto apre la modalità Live e fa partire subito l'ascolto, qualunque sia il valore dell'impostazione **Avvia registrazione automaticamente**, e nessuno di essi modifica quell'impostazione.
+Ascolto rapido avvia l'ascolto con un solo tocco, senza dover prima aprire l'app e navigare fino alla modalità — comodo quando senti qualcosa che vuoi identificare prima che smetta di cantare. Ogni punto di accesso qui sotto apre Live Mode e fa partire subito l'ascolto, qualunque sia il valore dell'impostazione **Avvia registrazione automaticamente**, e nessuno di essi modifica quell'impostazione.
 
 ### Android: widget nella schermata Home
 
@@ -33,15 +33,15 @@ Le frasi per Siri e la voce nel selettore del tasto Azione richiedono iOS 17. L'
 
 ### Cosa succede dopo
 
-Se la modalità Live è già aperta, Ascolto rapido torna alla stessa schermata invece di ricrearla. Una Session in corso o in pausa continua senza modifiche; se è ferma, l'ascolto parte nella schermata esistente.
+Se Live Mode è già aperta, Ascolto rapido torna alla stessa schermata invece di ricrearla. Una Session in corso o in pausa continua senza modifiche; se è ferma, l'ascolto parte nella schermata esistente.
 
-Ascolto rapido non sostituisce mai un'altra modalità in esecuzione. Se una Session Point Count, Survey, File Analysis o [modalità ARU](aru-mode.md) è in corso o si sta avviando, l'app torna in primo piano e chiede di interrompere prima quella Session. La schermata e il lavoro restano accessibili e non vengono interrotti.
+Ascolto rapido non sostituisce mai un'altra modalità in esecuzione. Se una Session Point Count, Survey, Analisi file o [modalità ARU](aru-mode.md) è in corso o si sta avviando, l'app torna in primo piano e chiede di interrompere prima quella Session. La schermata e il lavoro restano accessibili e non vengono interrotti.
 
 ## Barra superiore
 
 La barra superiore contiene tre elementi:
 
-- :app-arrowBackRounded: — esce dalla modalità Live
+- :app-arrowBackRounded: — esce da Live Mode
 - testo di stato al centro — `Inizializzazione…`, `Caricamento modello…`, `Pronto`, `Identificazione delle specie…`, `In pausa` o `Errore`
 - :app-tuneRounded: — apre la vista Impostazioni specifica di Live
 
@@ -57,7 +57,7 @@ Il grande pulsante circolare in basso al centro cambia stato:
 
 ### Spettrogramma
 
-Lo spettrogramma scorre continuamente mentre la cattura è attiva. Mostra il contenuto in frequenza nel tempo, usando la mappa colori, la dimensione FFT, l'intervallo di frequenza e la durata configurati nelle Impostazioni.
+Lo spettrogramma scorre continuamente mentre l'acquisizione è attiva. Mostra il contenuto in frequenza nel tempo, usando la mappa colori, la dimensione FFT, l'intervallo di frequenza e la durata configurati nelle Impostazioni.
 
 ### Elenco delle rilevazioni
 
@@ -88,10 +88,10 @@ La registrazione si controlla in [Impostazioni](settings.md).
 - **Solo rilevazioni** registra clip attorno alle rilevazioni.
 - **Disattivata** disabilita la registrazione.
 
-Quando interrompi la modalità Live, BirdNET Live salva la Session e apre il [Riepilogo sessione](session-review.md).
+Quando interrompi Live Mode, BirdNET Live salva la Session e apre il [Riepilogo Session](session-review.md).
 
-La modalità Live salva anche una Session parziale all'avvio, ogni 30 secondi e quando l'app passa in background, e scrive la Session conclusa su disco prima di rilasciare il microfono. Dopo un arresto anomalo, un'interruzione di corrente o la chiusura dell'app da parte del sistema in background, l'ultimo salvataggio è disponibile nella Libreria Sessions, contrassegnato come interrotto se l'app si è chiusa a metà Session. Le modifiche successive a quel salvataggio possono andare perse. Questi salvataggi intermedi vengono conservati anche con il salvataggio automatico disattivato; una Session conclusa si apre allora comunque nel riepilogo come non salvata e viene eliminata se esci senza salvare.
+Live Mode salva anche una Session parziale all'avvio, ogni 30 secondi e quando l'app passa in background, e scrive la Session conclusa su disco prima di rilasciare il microfono. Dopo un arresto anomalo, un'interruzione di corrente o la chiusura dell'app da parte del sistema in background, l'ultimo salvataggio è disponibile nella Libreria Sessions, contrassegnato come interrotto se l'app si è chiusa a metà Session. Le modifiche successive a quel salvataggio possono andare perse. Questi salvataggi intermedi vengono conservati anche con il salvataggio automatico disattivato; una Session conclusa si apre allora comunque nel Riepilogo come non salvata e viene scartata se esci senza salvare.
 
 ## Ascolto a schermo spento
 
-Live Mode normalmente si mette in pausa quando blocchi lo schermo o lasci l’app e riprende la stessa Session al ritorno. La prima volta, un dialogo propone l’ascolto limitato in background. In [Impostazioni → Audio e registrazione](settings.md#continua-a-schermo-spento), attiva **Continua a schermo spento** e scegli un massimo di 15, 30, 60 o 120 minuti (30 predefiniti). Il limite si applica a ogni periodo fuori dall’app; raggiungerlo termina la Session. Android mostra una notifica persistente con Apri e Interrompi. Su Windows, Live Mode continua ad ascoltare con la finestra ridotta a icona.
+Live Mode normalmente si mette in pausa quando blocchi lo schermo o lasci l’app e riprende la stessa Session al ritorno. La prima volta, una finestra di dialogo propone l’ascolto limitato in background. In [Impostazioni → Audio e registrazione](settings.md#continua-a-schermo-spento), attiva **Continua a schermo spento** e scegli un massimo di 15, 30, 60 o 120 minuti (30 predefiniti). Il limite si applica a ogni periodo fuori dall’app; raggiungerlo termina la Session. Android mostra una notifica persistente con Apri e Interrompi. Su Windows, Live Mode continua ad ascoltare con la finestra ridotta a icona.

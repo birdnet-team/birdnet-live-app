@@ -49,7 +49,7 @@ De app kan de volgende externe bronnen benaderen. Elke bron wordt geregeld door 
 | Bron | Doel | Geregeld door | Verzonden per verzoek |
 |------|------|---------------|-----------------------|
 | Kaarttegels (OpenStreetMap Foundation) | Basiskaart voor de locatiekiezer, de live Survey-kaart en de Session-kaart | **Instellingen → Privacy → Kaarttegels toestaan** | Tegelcoördinaten `(z, x, y)`, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
-| Reverse-geocoding (Nominatim van OpenStreetMap Foundation) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de Session | **Instellingen → Privacy → Sta het opzoeken van plaatsnamen toe** | Breedte-/lengtegraad van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
+| Reverse-geocoding (Nominatim van OpenStreetMap Foundation) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de Session | **Instellingen → Privacy → Plaatsnamen opzoeken toestaan** | Breedte-/lengtegraad van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
 | Weersnapshot (OpenMeteo GmbH) | Eenmalige opname van lokale omstandigheden (temperatuur, neerslag, wind, bewolking, WMO-weercode) op de opnamecoördinaten en eindtijd | **Instellingen → Privacy → Weer opzoeken toestaan** | Breedte-/lengtegraad en eindtijd van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
 
 Verzoeken om kaarttegels zijn HTTPS GET-verzoeken naar `tile.openstreetmap.org`. De tegelcoördinaten identificeren het bekeken kaartgebied. Zoals bij elk rechtstreeks internetverzoek wordt ook je IP-adres aan de aanbieder bekendgemaakt.
@@ -60,7 +60,7 @@ Weerverzoeken sturen de breedte-/lengtegraad van de sessie en de eindtijdstempel
 
 **Verwerking en bewaring door derden:** BirdNET-Team beheert deze diensten niet en ontvangt hun aanvraaggegevens niet. OpenStreetMap Foundation kan netwerktoegangsgegevens en aanvraagdetails verwerken volgens haar [Privacybeleid](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo stelt dat serverlogs van de gratis API IP-adressen en geografische coördinaten kunnen bevatten en na 90 dagen worden verwijderd; zie de [Voorwaarden en Privacy](https://open-meteo.com/en/terms). Deze aanbieders kunnen gegevens in andere landen verwerken. Teruggegeven waarden worden lokaal in de Session opgeslagen en komen alleen in een export terecht wanneer je die maakt.
 
-**Intrekken:** je kunt elk van de drie diensten op elk moment uitschakelen onder **Instellingen → Privacy**. Reeds lokaal opgeslagen plaatsnamen en weersnapshots blijven gekoppeld aan de sessies waarin ze zijn vastgelegd; verwijder die sessies uit de Sessiebibliotheek of gebruik **Instellingen → Gevarenzone → Wis alle gegevens** om die historische gegevens te verwijderen.
+**Intrekken:** je kunt elk van de drie diensten op elk moment uitschakelen onder **Instellingen → Privacy**. Reeds lokaal opgeslagen plaatsnamen en weersnapshots blijven gekoppeld aan de sessies waarin ze zijn vastgelegd; verwijder die sessies uit de Sessiebibliotheek of gebruik **Instellingen → Gevarenzone → Alle gegevens wissen** om die historische gegevens te verwijderen.
 
 **Er worden geen andere netwerkverzoeken gedaan.** De app werkt volledig offline.
 
@@ -82,11 +82,11 @@ GPS-gegevens worden lokaal opgeslagen en alleen in exports opgenomen wanneer je 
 
 ## Gegevens exporteren
 
-Je kunt sessiegegevens exporteren in meerdere formaten (Raven Selection Tables, CSV, JSON, GPX) en onder **Instellingen → Exporteren → Formaten** elke combinatie van formaten tegelijk aanvinken; de geselecteerde formaten worden samen in één ZIP gebundeld, naast de audioclips en het optionele zelfstandige HTML-rapport. Exports worden lokaal gegenereerd en gedeeld via het deelvenster van het systeem. De app uploadt geen exportgegevens naar een server, behalve naar uploadbestemmingen die je zelf hebt toegevoegd (zie hieronder).
+Je kunt sessiegegevens exporteren in meerdere formaten (Raven Selection Tables, CSV, JSON, GPX) en onder **Instellingen → Exporteren en synchroniseren → Formaten** elke combinatie van formaten tegelijk aanvinken; de geselecteerde formaten worden samen in één ZIP gebundeld, naast de audioclips en het optionele zelfstandige HTML-rapport. Exports worden lokaal gegenereerd en gedeeld via het deelvenster van het systeem. De app uploadt geen exportgegevens naar een server, behalve naar uploadbestemmingen die je zelf hebt toegevoegd (zie hieronder).
 
 ## Uploadbestemmingen
 
-Onder **Instellingen → Export & synchronisatie → Uploadbestemmingen** kun je de WebDAV-map van een project toevoegen, doorgaans een Nextcloud File Drop die een projectorganisator als link of QR-code met je heeft gedeeld. Er wordt niets geüpload totdat je een bestemming toevoegt en die vervolgens in het venster Delen aanvinkt, of automatische uploads voor ARU Sessions inschakelt. Uploads gaan rechtstreeks van je apparaat naar de server van de organisator via HTTPS. BirdNET-Team beheert geen tussenliggende server en ontvangt niets.
+Onder **Instellingen → Exporteren en synchroniseren → Uploadbestemmingen** kun je de WebDAV-map van een project toevoegen, doorgaans een Nextcloud File Drop die een projectorganisator als link of QR-code met je heeft gedeeld. Er wordt niets geüpload totdat je een bestemming toevoegt en die vervolgens in het venster Delen aanvinkt, of automatische uploads voor ARU Sessions inschakelt. Uploads gaan rechtstreeks van je apparaat naar de server van de organisator via HTTPS. BirdNET-Team beheert geen tussenliggende server en ontvangt niets.
 
 Een upload bevat dezelfde inhoud als een share: het JSON-record van de Session (detecties, tijden, coördinaten, en de namen van waarnemer en locatie als die zijn ingesteld), de audio, tabellen en het rapport die je eventueel hebt aangevinkt, de upload-id van je apparaat en de deelnemer-id die je hebt ingevuld, als je die hebt opgegeven. De inloggegevens van de bestemming worden opgeslagen in de sleutelhanger van het apparaat.
 
@@ -94,7 +94,7 @@ Bestemmingen worden beheerd door projectorganisatoren, niet door BirdNET-Team, o
 
 ## Gegevens verwijderen
 
-Afzonderlijke sessies en hun opnamen kunnen worden verwijderd uit de Sessiebibliotheek. Om de lokale sessies, opnamen, spraakmemo's, aangepaste soortenlijsten, voorkeuren en caches van BirdNET Live vanuit de app te wissen, gebruik je **Instellingen → Gevarenzone → Wis alle gegevens**. Je kunt de opslag van de BirdNET Live-app ook wissen via de instellingen van je besturingssysteem of de app verwijderen.
+Afzonderlijke sessies en hun opnamen kunnen worden verwijderd uit de Sessiebibliotheek. Om de lokale sessies, opnamen, spraakmemo's, aangepaste soortenlijsten, voorkeuren en caches van BirdNET Live vanuit de app te wissen, gebruik je **Instellingen → Gevarenzone → Alle gegevens wissen**. Je kunt de opslag van de BirdNET Live-app ook wissen via de instellingen van je besturingssysteem of de app verwijderen.
 
 ## Contact
 

@@ -1,6 +1,6 @@
-# Režim Live
+# Live Mode
 
-Režim Live je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a sledovat detekce v reálném čase, jak se objevují.
+Live Mode je nejrychlejší způsob, jak poslouchat přes mikrofon telefonu a sledovat detekce v reálném čase, jak se objevují.
 
 ## Jak jej otevřít
 
@@ -8,7 +8,7 @@ Na domovské obrazovce klepněte na kartu **Live** s ikonou :app-micRounded:.
 
 ## Rychlý poslech
 
-Rychlý poslech spustí poslech jediným klepnutím, aniž byste museli nejprve otevřít aplikaci a proklikat se do režimu — hodí se, když uslyšíte něco, co chcete určit dřív, než to přestane zpívat. Každý z níže uvedených vstupních bodů otevře režim Live a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spustit nahrávání**, a žádný z nich toto nastavení nemění.
+Rychlý poslech spustí poslech jediným klepnutím, aniž byste museli nejprve otevřít aplikaci a proklikat se do režimu — hodí se, když uslyšíte něco, co chcete určit dřív, než to přestane zpívat. Každý z níže uvedených vstupních bodů otevře Live Mode a okamžitě začne poslouchat, bez ohledu na nastavení **Automaticky spouštět nahrávání**, a žádný z nich toto nastavení nemění.
 
 ### Android: widget na domovské obrazovce
 
@@ -33,15 +33,15 @@ Fráze pro Siri a položka v nabídce tlačítka akce vyžadují iOS 17. Akce ve
 
 ### Co se stane dál
 
-Pokud je režim Live již otevřený, Rychlý poslech se vrátí na stejnou obrazovku, místo aby ji vytvořil znovu. Běžící nebo pozastavená Session pokračuje beze změny; pokud je zastavená, spustí se poslech na stávající obrazovce.
+Pokud je Live Mode již otevřený, Rychlý poslech se vrátí na stejnou obrazovku, místo aby ji vytvořil znovu. Běžící nebo pozastavená Session pokračuje beze změny; pokud je zastavená, spustí se poslech na stávající obrazovce.
 
-Rychlý poslech nikdy nenahrazuje jiný běžící režim. Pokud běží nebo se spouští Session Point Count, Survey, File Analysis nebo [režimu ARU](aru-mode.md), aplikace se přesune do popředí a vyzve vás, abyste tuto Session nejprve zastavili. Její obrazovka i práce zůstanou dostupné a nepřerušené.
+Rychlý poslech nikdy nenahrazuje jiný běžící režim. Pokud běží nebo se spouští Session Point Count, Survey, Analýzy souborů nebo [režimu ARU](aru-mode.md), aplikace se přesune do popředí a vyzve vás, abyste tuto Session nejprve zastavili. Její obrazovka i práce zůstanou dostupné a nepřerušené.
 
 ## Horní lišta
 
 Horní lišta obsahuje tři prvky:
 
-- :app-arrowBackRounded: — opuštění režimu Live
+- :app-arrowBackRounded: — opuštění Live Mode
 - středový text stavu — `Inicializace`, `Načítání modelu`, `Připraveno`, `Identifikace druhů`, `Pozastaveno` nebo `Chyba`
 - :app-tuneRounded: — otevření zobrazení Nastavení specifického pro Live
 
@@ -50,7 +50,7 @@ Horní lišta obsahuje tři prvky:
 Velké kruhové tlačítko dole uprostřed mění stav:
 
 - :app-mic: — spustit poslech
-- :app-stopRounded: — zastavit aktivní session
+- :app-stopRounded: — zastavit aktivní Session
 - :app-playArrowRounded: — pokračovat ze stavu pozastaveno-připraveno
 
 ## Co vidíte při poslechu
@@ -70,9 +70,9 @@ Nedávné detekce se objevují pod spektrogramem. Každý řádek může zobrazo
 
 Klepnutím na řádek druhu otevřete překryvný panel s podrobnostmi o druhu.
 
-### Informační lišta session
+### Informační lišta Session
 
-Kompaktní informační řádek pod spektrogramem shrnuje aktuální session, například:
+Kompaktní informační řádek pod spektrogramem shrnuje aktuální Session, například:
 
 - aktuálně zobrazené detekce
 - počet jedinečných druhů (`spp`)
@@ -84,13 +84,13 @@ Kompaktní informační řádek pod spektrogramem shrnuje aktuální session, na
 
 Nahrávání se ovládá v [Nastavení](settings.md).
 
-- **Úplný** zaznamená celou session.
+- **Úplný** zaznamená celou Session.
 - **Jen detekce** zaznamenává klipy kolem detekcí.
 - **Vypnuto** nahrávání zakáže.
 
-Když režim Live zastavíte, BirdNET Live session uloží a otevře [Přehled Session](session-review.md).
+Když Live Mode zastavíte, BirdNET Live Session uloží a otevře [Přehled Session](session-review.md).
 
-Režim Live navíc ukládá rozpracovanou Session při spuštění, každých 30 sekund a při přechodu aplikace do pozadí a dokončenou Session zapíše na disk ještě před uvolněním mikrofonu. Po pádu aplikace, výpadku napájení nebo když systém aplikaci na pozadí ukončí, najdete poslední uložený stav v Knihovně Sessions – s označením přerušená, pokud aplikace skončila uprostřed Session. Změny od tohoto uložení mohou být ztraceny. Tato průběžná ukládání zůstávají zachována i při vypnutém automatickém ukládání; dokončená Session se pak dál otevře v přehledu jako neuložená a při odchodu bez uložení se zahodí.
+Live Mode navíc ukládá rozpracovanou Session při spuštění, každých 30 sekund a při přechodu aplikace do pozadí a dokončenou Session zapíše na disk ještě před uvolněním mikrofonu. Po pádu aplikace, výpadku napájení nebo když systém aplikaci na pozadí ukončí, najdete poslední uložený stav v Knihovně Sessions – s označením přerušená, pokud aplikace skončila uprostřed Session. Změny od tohoto uložení mohou být ztraceny. Tato průběžná ukládání zůstávají zachována i při vypnutém automatickém ukládání; dokončená Session se pak dál otevře v přehledu jako neuložená a při odchodu bez uložení se zahodí.
 
 ## Poslech s vypnutou obrazovkou
 

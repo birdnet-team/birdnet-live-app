@@ -12,19 +12,19 @@ O BirdNET Live é um aplicativo Flutter desenvolvido para pesquisadores de campo
 
 ## Recursos
 
-- **Modo Live** - Espectrograma com rolagem em tempo real e identificação de espécies
+- **Live Mode** - Espectrograma com rolagem em tempo real e identificação de espécies
 - **Modo Point Count** - Sessões cronometradas com contagem regressiva e metadados da estação
-- **Modo Survey** - Surveys de transectos de longa duração com rastreamento GPS, monitoramento em segundo plano e amostragem de detecções
+- **Modo Survey** - Surveys de transectos de longa duração com registro do percurso GPS, monitoramento em segundo plano e amostragem de detecções
 - **Modo Análise de arquivos** - Análise offline de gravações existentes (WAV, FLAC, MP3, OGG e mais)
-- **Modo ARU** - Transforme o dispositivo em uma unidade de gravação acústica para implantações de vários dias
+- **Modo ARU** - Transforme o dispositivo em uma unidade de gravação acústica para instalações de vários dias
 - **Explorar** - Veja as espécies esperadas na sua localização usando o geomodelo do BirdNET
 - **Sessões** - Revise, edite e exporte sessões anteriores com reprodução de áudio
-- **Exportação** - Formatos Raven Pro, CSV, JSON, GPX e pacote ZIP com metadados de proveniência
+- **Exportação** - Formatos Raven Pro, CSV, JSON, GPX e pacote ZIP com metadados de procedência
 - **Inferência no dispositivo** - Cobertura do modelo BirdNET+ para 10 048 espécies, sem necessidade de Internet
 - **Gravação em FLAC** - Captura de áudio comprimido com arquivos menores para Surveys longos
 - **Acessibilidade** - Rótulos para leitores de tela, dicas de ferramenta e anúncios falados opcionais das detecções
 - **Layouts responsivos** - Interfaces adaptáveis para celular, tablet, retrato e paisagem
-- **Localização** - Interface e anúncios falados em 11 idiomas
+- **Localização** - Interface e anúncios falados em 13 idiomas
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -64,7 +64,7 @@ Consulte o [Guia do Desenvolvedor](developer/index.md) para arquitetura, compila
 
 ## Financiamento
 
-O BirdNET Live é desenvolvido no âmbito do projeto RangerSound, financiado pela Deutsche Bundesstiftung Umwelt (projeto 39263/01). RangerSound é uma colaboração entre a Universidade Técnica de Chemnitz, a Universität Würzburg e o Parque Nacional da Floresta da Baviera.
+O BirdNET Live é desenvolvido no âmbito do projeto RangerSound, financiado pela Deutsche Bundesstiftung Umwelt (projeto 39263/01). RangerSound é uma colaboração entre a Universidade Técnica de Chemnitz, a Universidade de Würzburg e o Parque Nacional da Floresta da Baviera.
 
 ## Licença
 

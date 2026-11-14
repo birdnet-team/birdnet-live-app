@@ -20,9 +20,9 @@
 
 ## 各模式指南
 
-### [Live 模式](live-mode.md)
+### [Live Mode](live-mode.md)
 
-用麦克风持续聆听、实时检测、语谱图和 Session 信息栏。
+用麦克风持续聆听、实时检测、声谱图和 Session 信息栏。
 
 ### [探索](explore.md)
 
@@ -34,7 +34,7 @@
 
 ### [Session 回顾](session-review.md)
 
-回放、编辑、裁剪、批注、导出，以及回顾界面的工具栏。
+回放、编辑、裁剪、标注、导出，以及回顾界面的工具栏。
 
 ### [Point Count 模式](point-count-mode.md)
 
@@ -42,7 +42,7 @@
 
 ### [Survey 模式](survey-mode.md)
 
-Survey 的设置、实时 Survey 面板，以及地图、语谱图和汇总三个标签页。
+Survey 的设置、实时 Survey 面板，以及地图、音频和摘要三个标签页。
 
 ### [文件分析](file-analysis.md)
 
@@ -58,7 +58,7 @@ Survey 的设置、实时 Survey 面板，以及地图、语谱图和汇总三�
 
 ### [上传](uploads.md)
 
-把已完成的 Session 发送到项目文件夹：设置 Nextcloud File Drop 或 WebDAV 目标、加入链接和 QR 码、“发送到”标签页、上传状态，以及自动上传 ARU。
+把已完成的 Session 发送到项目文件夹：设置 Nextcloud File Drop 或 WebDAV 目标、加入链接和 二维码、“发送到”标签页、上传状态，以及自动上传 ARU。
 
 ## 参考
 

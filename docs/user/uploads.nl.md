@@ -12,7 +12,7 @@ Een **bestemming** is een WebDAV-map waarin de app kan schrijven. Drie soorten w
 - elk **WebDAV-adres** met een gebruikersnaam en wachtwoord, bijvoorbeeld een map in je eigen cloudaccount of een institutionele server;
 - de **referentie-dropserver** die met BirdNET Live wordt meegeleverd, voor projectleiders die tokens per deelnemer en een kant-en-klare CSV-export willen (zie de [Developer Guide](../developer/upload-drop-server.md)).
 
-Elke upload is **één ZIP-bestand per Session**, genoemd zoals de export van Delen, bijvoorbeeld `BirdNET_Live_2026-05-14_06-30-00_#13.zip`. Het bevat altijd het JSON-record van de Session en, afhankelijk van wat je aanvinkt, de audio, de detectietabellen, het HTML-rapport en het bestand met app-metadata. De ZIP komt terecht in een map die is genoemd naar je **upload-id**, een code van acht tekens die de app afleidt uit een willekeurige identiteit die hij voor deze installatie bewaart. De map van de projectleider ziet er daardoor zo uit:
+Elke upload is **één ZIP-bestand per Session**, genoemd zoals de export van Delen, bijvoorbeeld `BirdNET_Live_2026-05-14_06-30-00_#13.zip`. Het bevat altijd het JSON-record van de Session en, afhankelijk van wat je aanvinkt, de audio, de detectietabellen, het HTML-rapport en het bestand met app-metagegevens. De ZIP komt terecht in een map die is genoemd naar je **upload-id**, een code van acht tekens die de app afleidt uit een willekeurige identiteit die hij voor deze installatie bewaart. De map van de projectleider ziet er daardoor zo uit:
 
 ```
 4ee91c8f/BirdNET_Live_2026-05-14_06-30-00_#13.zip
@@ -60,7 +60,7 @@ Een deelnamelink bevat alles wat een deelnemer nodig heeft in één geheel: de b
 
 Druk op **Build link and QR code**. Alles gebeurt in je browser; er wordt niets ergens naartoe gestuurd. Het geheim staat in het deel van de link na `#`, dat browsers nooit doorsturen naar de webserver die de pagina host.
 
-Je kunt ook eerst zelf op je eigen telefoon aan de bestemming deelnemen (zie hieronder), daarna de bestemming openen onder **Instellingen → Export & synchronisatie → Uploadbestemmingen** en op **Deelnamecode tonen** tikken. De app toont dan dezelfde soort QR-code met een knop **Link kopiëren**.
+Je kunt ook eerst zelf op je eigen telefoon aan de bestemming deelnemen (zie hieronder), daarna de bestemming openen onder **Instellingen → Exporteren en synchroniseren → Uploadbestemmingen** en op **Deelnamecode tonen** tikken. De app toont dan dezelfde soort QR-code met een knop **Link kopiëren**.
 
 ### Uitdelen
 
@@ -76,7 +76,7 @@ Eén map per apparaat, één ZIP per Session en de verborgen `.birdnet-live`-reg
 
 ### Deelnemen aan een bestemming
 
-1. Open **Instellingen → Export & synchronisatie → Uploadbestemmingen** en tik op **Bestemming toevoegen**. De QR-code van een project met je camera scannen, of op een ontvangen deelnamelink tikken, brengt je naar hetzelfde scherm met de link al ingevuld.
+1. Open **Instellingen → Exporteren en synchroniseren → Uploadbestemmingen** en tik op **Bestemming toevoegen**. De QR-code van een project met je camera scannen, of op een ontvangen deelnamelink tikken, brengt je naar hetzelfde scherm met de link al ingevuld.
 2. Plak de deelnamelink, de Nextcloud-deellink of een WebDAV-adres in **Deelnamelink of serveradres**. De knop **Plakken** haalt hem van het klembord.
 3. Vul eventueel een **Deelnemer-id, naam of e-mail (optioneel)** in. Die wordt bij elke upload opgeslagen zodat de projectleider weet van wie die komt, en verschijnt nooit in mapnamen. Onder het veld toont de app **Je upload-id**, de map waarin je uploads terechtkomen.
 4. Open bij een gewoon WebDAV-adres **Geavanceerd** en vul de **Gebruikersnaam** en het **Wachtwoord of token** in. Een Nextcloud-deellink heeft geen van beide nodig; heeft de deellink een wachtwoord, vul dat dan in als wachtwoord.
@@ -97,8 +97,8 @@ Tik je op een bestemming in de lijst, dan opent haar scherm met het serveradres,
 
 - **Naam wijzigen** (het potlood in de app-balk) wijzigt de naam die in de app wordt getoond.
 - **Alleen uploaden via wifi** houdt uploads vast zolang de telefoon op mobiele data zit.
-- **Alle Sessions automatisch uploaden** zet elke afgeronde Session uit elke modus zonder vragen voor deze bestemming in de wachtrij, met de standaardwaarden voor Audio en Metagegevens uit Export & synchronisatie. Zolang dit aanstaat, blijft ook **ARU-Sessions automatisch uploaden** aan. Verwijder je daarna een Session in Session Review, dan vervalt een upload die nog niet is begonnen, maar wat al is verzonden blijft op de server.
-- **ARU-Sessions automatisch uploaden** zet elke afgeronde ARU Session zonder vragen voor deze bestemming in de wachtrij (zie hieronder).
+- **Alle Sessions automatisch uploaden** zet elke afgeronde Session uit elke modus zonder vragen voor deze bestemming in de wachtrij, met de standaardwaarden voor Audio en Metagegevens uit Exporteren en synchroniseren. Zolang dit aanstaat, blijft ook **ARU-Sessions automatisch uploaden** aan. Verwijder je daarna een Session in het Session-overzicht, dan vervalt een upload die nog niet is begonnen, maar wat al is verzonden blijft op de server.
+- **ARU-Sessions automatisch uploaden** zet elke afgeronde ARU-Session zonder vragen voor deze bestemming in de wachtrij (zie hieronder).
 - **Verbinding testen** herhaalt de verbindingstest, bijvoorbeeld nadat de projectleider het wachtwoord heeft gewijzigd.
 - **Deelnamecode tonen** toont een QR-code plus **Link kopiëren**, zodat een tweede telefoon aan dezelfde bestemming kan deelnemen.
 - **Bestemming verwijderen** vergeet de bestemming en haar inloggegevens en laat wachtende uploads ernaar vervallen. Al geüploade Sessions blijven op de server.
@@ -115,10 +115,10 @@ Uploads beginnen vanuit dezelfde actie **Delen** die je al gebruikt, op drie ple
 
 Zodra er minstens één bestemming bestaat, heeft het venster Delen twee tabbladen:
 
-- **Inhoud** bepaalt wat de export bevat: **Audio** (de volledige opname, of de detectiefragmenten als alleen fragmenten zijn bewaard) en **Metagegevens** (de tabellen, het rapport en het bestand met app-metadata die onder Export & synchronisatie aanstaan). De vakjes volgen bij het openen je instellingen en gelden alleen voor deze share.
-- **Versturen naar** toont **Deelvenster** (andere apps, bestanden, berichten) en één vakje per bestemming. De badge op het tabblad telt de aangevinkte bestemmingen. De bestemmingen die je de vorige keer hebt aangevinkt staan al aan, behalve die waarnaar deze Session al is gestuurd: die beginnen uitgevinkt en tonen **Geüpload** met de datum en **Vink aan om opnieuw te uploaden**. Bij het openen van het venster controleert de app stilletjes elke bestemming; meldt de server dat hij de upload zou weigeren, bijvoorbeeld omdat het wachtwoord is gewijzigd of de deellink is verwijderd, dan kleurt de rij rood met de reden.
+- **Inhoud** bepaalt wat de export bevat: **Audio** (de volledige opname, of de detectiefragmenten als alleen fragmenten zijn bewaard) en **Metagegevens** (de tabellen, het rapport en het bestand met app-metagegevens die onder Exporteren en synchroniseren aanstaan). De vakjes volgen bij het openen je instellingen en gelden alleen voor deze keer delen.
+- **Versturen naar** toont **Deelmenu** (andere apps, bestanden, berichten) en één vakje per bestemming. De badge op het tabblad telt de aangevinkte bestemmingen. De bestemmingen die je de vorige keer hebt aangevinkt staan al aan, behalve die waarnaar deze Session al is gestuurd: die beginnen uitgevinkt en tonen **Geüpload** met de datum en **Vink aan om opnieuw te uploaden**. Bij het openen van het venster controleert de app stilletjes elke bestemming; meldt de server dat hij de upload zou weigeren, bijvoorbeeld omdat het wachtwoord is gewijzigd of de deellink is verwijderd, dan kleurt de rij rood met de reden.
 
-Vink **Deelvenster** uit en de knop heet **Uploaden**; staan beide aan, dan heet hij **Delen en uploaden**. Een snackbar bevestigt hoeveel Sessions in de wachtrij zijn gezet. Een Session gaat altijd eerst de wachtrij in en wordt op de achtergrond geüpload, zodat je verder kunt werken.
+Vink **Deelmenu** uit en de knop heet **Uploaden**; staan beide aan, dan heet hij **Delen en uploaden**. Een snackbar bevestigt hoeveel Sessions in de wachtrij zijn gezet. Een Session gaat altijd eerst de wachtrij in en wordt op de achtergrond geüpload, zodat je verder kunt werken.
 
 ### Een upload volgen
 
@@ -138,7 +138,7 @@ Dezelfde Session opnieuw uploaden, bijvoorbeeld na het corrigeren van detecties 
 
 ## ARU-modus
 
-Veldinzetten leveren veel Sessions op, vaak terwijl er niemand bij de telefoon is. Zet **ARU-Sessions automatisch uploaden** aan bij een bestemming, en elke afgeronde ARU Session wordt er zonder venster voor in de wachtrij gezet, met de standaardwaarden voor Audio en Metagegevens uit Export & synchronisatie. Een inzet die elke cyclus als eigen Session opslaat, uploadt cyclus voor cyclus; de gecombineerde inzet-Session wordt niet dubbel geüpload.
+Veldinzetten leveren veel Sessions op, vaak terwijl er niemand bij de telefoon is. Zet **ARU-Sessions automatisch uploaden** aan bij een bestemming, en elke afgeronde ARU-Session wordt er zonder venster voor in de wachtrij gezet, met de standaardwaarden voor Audio en Metagegevens uit Exporteren en synchroniseren. Een inzet die elke cyclus als eigen Session opslaat, uploadt cyclus voor cyclus; de gecombineerde inzet-Session wordt niet dubbel geüpload.
 
 Laat **Alleen uploaden via wifi** aanstaan voor een station op een mobiel abonnement, tenzij het abonnement de audio aankan, en overweeg op te nemen met **Alleen detecties** of **Uit** wanneer de audio te groot zou zijn om te versturen. De uploads stromen dan weg zodra de telefoon een geschikt netwerk ziet, ook terwijl de app op Android op de achtergrond staat.
 
@@ -160,7 +160,7 @@ Dezelfde deelnemer laat een telefoon als ARU-station achter bij een rietveld met
 
 Uploadbestemmingen worden beheerd door projectorganisatoren, niet door BirdNET-Team. De map, de server, wie die kan lezen en hoe lang de gegevens worden bewaard, vallen onder de eigen privacy- en beveiligingsregels van de organisator; vraag die om details voordat je deelneemt. BirdNET Live schrijft alleen wat jij hebt gekozen te versturen en bewaart de inloggegevens in de sleutelhanger van je apparaat.
 
-Een upload bevat wat een share zou bevatten: het JSON-record van de Session met detecties, tijden, coördinaten, de naam van de waarnemer en de locatienaam als die zijn ingesteld, de upload-id van het apparaat, de deelnemer-id die je hebt ingevuld en de app-versie; plus de audio, tabellen en het rapport die je hebt aangevinkt. Controleer het tabblad Inhoud voordat je verstuurt, en laat audio weg wanneer een opname stemmen kan bevatten of iets anders wat je niet aan het project zou geven. **Je bent zelf verantwoordelijk voor wat je uploadt.** Upload of deel geen gegevens die je als privé of vertrouwelijk beschouwt, en upload geen opnamen die je niet mag doorgeven.
+Een upload bevat wat je ook bij Delen zou meesturen: het JSON-record van de Session met detecties, tijden, coördinaten, de naam van de waarnemer en de locatienaam als die zijn ingesteld, de upload-id van het apparaat, de deelnemer-id die je hebt ingevuld en de app-versie; plus de audio, tabellen en het rapport die je hebt aangevinkt. Controleer het tabblad Inhoud voordat je verstuurt, en laat audio weg wanneer een opname stemmen kan bevatten of iets anders wat je niet aan het project zou geven. **Je bent zelf verantwoordelijk voor wat je uploadt.** Upload of deel geen gegevens die je als privé of vertrouwelijk beschouwt, en upload geen opnames die je niet mag doorgeven.
 
 ## Probleemoplossing
 

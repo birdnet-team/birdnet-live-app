@@ -2,7 +2,7 @@
 
 Este guia explica o BirdNET Live como uma ferramenta de fluxo de trabalho de campo: o que cada tela faz, o que significam os ícones recorrentes e como as configurações moldam o comportamento do aplicativo.
 
-Foi escrito para ecologistas e profissionais de levantamento de aves que já dominam os métodos de campo e querem apenas um mapa claro do próprio aplicativo.
+Foi escrito para ecólogos e profissionais de levantamento de aves que já dominam os métodos de campo e querem apenas um mapa claro do próprio aplicativo.
 
 ## Comece por aqui
 
@@ -20,7 +20,7 @@ Todas as configurações atualmente disponíveis no aplicativo, agrupadas da mes
 
 ## Guias de modo
 
-### [Modo Live](live-mode.md)
+### [Live Mode](live-mode.md)
 
 Escuta contínua com o microfone, detecções ao vivo, o espectrograma e a barra de informações da Session.
 
@@ -81,4 +81,4 @@ No celular, a barra lateral de navegação fica oculta atrás do botão de menu 
 
 - A [página inicial](../index.md) oferece uma visão geral da versão e dos recursos.
 - O [Guia do Desenvolvedor](../developer/index.md) cobre arquitetura, ferramentas e fluxos de compilação.
-- A [Política de Privacidade](../privacy.md) e a [Política de uso aceitável](../acceptable-use.md) ficam neste mesmo site.
+- A [Política de privacidade](../privacy.md) e a [Política de uso aceitável](../acceptable-use.md) ficam neste mesmo site.

@@ -26,11 +26,11 @@ Kontinuierliches Zuhören mit dem Mikrofon, Live-Detektionen, das Spektrogramm u
 
 ### [Erkunden](explore.md)
 
-Für den aktuellen Standort und die aktuelle Jahreszeit vorhergesagte Arten sowie die Einblendung der Artendetails.
+Für den aktuellen Standort und die aktuelle Jahreszeit vorhergesagte Arten sowie die Detailansicht zur Art.
 
 ### [Session-Bibliothek](session-library.md)
 
-Gespeicherte Sessions, Suche, Sortierung, Ansichtsmodi und die nach Arten gruppierte Ansicht.
+Gespeicherte Sessions, Suche, Sortierung, Anzeigemodi und die nach Arten gruppierte Ansicht.
 
 ### [Session-Übersicht](session-review.md)
 
@@ -42,7 +42,7 @@ Der Einrichtungsablauf für Point Counts, die Standortoptionen und der Live-Time
 
 ### [Survey-Modus](survey-mode.md)
 
-Die Survey-Einrichtung, das Live-Survey-Dashboard sowie die Tabs „Karte“, „Spektrogramm“ und „Zusammenfassung“.
+Die Survey-Einrichtung, das Live-Survey-Dashboard sowie die Tabs „Karte“, „Spektrogramm“ und „Übersicht“.
 
 ### [Dateianalyse](file-analysis.md)
 

@@ -21,25 +21,25 @@ Vyberte:
 - žádnou polohu pomocí :app-locationOff:
 - výběr na mapě pomocí :app-mapSheet:
 
-Obrazovka nastavení obnoví GPS, když se vrátíte ze systémového dialogu oprávnění nebo z nastavení aplikace, takže nově udělené oprávnění k poloze by mělo souřadnice aktualizovat bez restartu průvodce. Tatáž sekce obsahuje i kartu počasí. Pokud je přístup k počasí vypnutý, karta požádá o souhlas **Povolit vyhledání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení point countu.
+Obrazovka nastavení obnoví GPS, když se vrátíte ze systémového dialogu oprávnění nebo z nastavení aplikace, takže nově udělené oprávnění k poloze by mělo souřadnice aktualizovat bez restartu průvodce. Tatáž sekce obsahuje i kartu počasí. Pokud je přístup k počasí vypnutý, karta požádá o souhlas **Povolit načítání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení Point Count.
 
 ### 2. Parametry inference
 
-Zvolte nastavení analýzy pro tuto session, například rychlost inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento count upravit beze změny výchozích hodnot.
+Zvolte nastavení analýzy pro tuto Session, například frekvenci inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento Point Count upravit beze změny výchozích hodnot.
 
 | Ovládací prvek nastavení | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Režim nahrávání | :app-fiberManualRecordRounded: |
+| Nahrávání | :app-fiberManualRecordRounded: |
 | Kontext klipu | :app-timerOutlined: |
-| Rychlost inference | :app-speedRounded: |
+| Frekvence inference | :app-speedRounded: |
 | Práh spolehlivosti | :app-verifiedRounded: |
 | Citlivost | :app-hearing: |
 | Filtr druhů | :app-filterAltRounded: |
 
 Tlačítko :app-helpOutline: vedle každého ovládacího prvku vysvětluje jeho účinek. Ovládání délky :app-timerRounded: a výběr polohy mají v prvním kroku stejné tlačítko nápovědy.
 
-Vyberte **Úplné** pro nepřetržité nahrávání (výchozí), **Jen klipy** pro klip každého zjištěného hlasového projevu nebo **Vypnuto**, pokud nechcete ukládat zvuk. Volba je nezávislá na nahrávání v Live Mode a pamatuje se pro příští Point Count. Klipy používají stejný výběr okna s nejvyšším skóre a kontext jako Live Mode, bez omezení podle polohy. Při volbě **Jen klipy** posuvník **Kontext klipu** určuje počet sekund zachovaných před a po každém analyzovaném okně; aktualizuje také kontext klipů v Live Mode.
+Vyberte **Úplné** pro nepřetržité nahrávání (výchozí), **Jen klipy** pro klip každého detekovaného hlasového projevu nebo **Vypnuto**, pokud nechcete ukládat zvuk. Volba je nezávislá na nahrávání v Live Mode a pamatuje se pro příští Point Count. Klipy používají stejný výběr okna s nejvyšším skóre a kontext jako Live Mode, bez omezení podle polohy. Při volbě **Jen klipy** posuvník **Kontext klipu** určuje počet sekund zachovaných před a po každém analyzovaném okně; aktualizuje také kontext klipů v Live Mode.
 
 ### 3. Terénní tipy
 
@@ -51,11 +51,11 @@ Obrazovka připravenosti shrnuje dobu trvání, volbu nahrávání a chování p
 
 ## Živá obrazovka Point Count
 
-Živá obrazovka point countu se soustředí na časovaný panel.
+Živá obrazovka Point Count se soustředí na časovaný panel.
 
 ### Horní lišta
 
-- :app-stopRounded: — předčasné ukončení point countu
+- :app-stopRounded: — předčasné ukončení Point Count
 - :app-timerRounded: — zobrazení zbývajícího času
 - :app-helpOutlineRounded: — otevření nápovědy k Point Count
 - :app-tuneRounded: — otevření nastavení Point Count

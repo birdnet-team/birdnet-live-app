@@ -82,7 +82,7 @@ GPS data is stored locally and included in exports only when you explicitly shar
 
 ## Data Export
 
-You can export session data in multiple formats (Raven Selection Tables, CSV, JSON, GPX) and tick any combination of formats at once under **Settings → Export → Formats**; selected formats are bundled together inside a single ZIP next to any audio clips and the optional self-contained HTML report. Exports are generated locally and shared via the system share sheet. The app does not upload export data to any server, except to upload destinations you added yourself (see below).
+You can export session data in multiple formats (Raven Selection Tables, CSV, JSON, GPX) and tick any combination of formats at once under **Settings → Export & Sync → Formats**; selected formats are bundled together inside a single ZIP next to any audio clips and the optional self-contained HTML report. Exports are generated locally and shared via the system share sheet. The app does not upload export data to any server, except to upload destinations you added yourself (see below).
 
 ## Upload Destinations
 

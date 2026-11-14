@@ -1,14 +1,14 @@
-# Mode Point d'écoute
+# Mode Point Count
 
-Le mode Point d'écoute est le flux de travail stationnaire et minuté de BirdNET Live.
+Le mode Point Count est le mode de comptage chronométré à poste fixe de BirdNET Live.
 
 ## Comment l'ouvrir
 
-Depuis l'accueil, appuyez sur la carte **Mode Point d'écoute** avec l'icône :app-locationOnRounded:.
+Depuis l'accueil, appuyez sur la carte **Mode Point Count** avec l'icône :app-locationOnRounded:.
 
-## Flux de configuration
+## Configuration
 
-La configuration du point d'écoute comporte quatre étapes.
+La configuration du Point Count comporte quatre étapes.
 
 ### 1. Durée et localisation
 
@@ -29,27 +29,27 @@ une carte météo. Si l'accès à la météo est désactivé, la carte demande l
 consentement **Autoriser la recherche météo** ; une fois activée, elle donne un
 aperçu du site avec une icône météo, la température et le vent uniquement. Le
 même instantané Open-Meteo mis en cache est réutilisé lors de l'enregistrement
-du point d'écoute.
+du Point Count.
 
 ### 2. Paramètres d'inférence
 
-Choisissez les réglages d'analyse propres à la session, comme la fréquence d'inférence, le seuil de confiance et le mode de filtre
+Choisissez les paramètres d'analyse propres à la Session, comme la fréquence d'inférence, le seuil de confiance et le mode de filtre
 d'espèces. Ils partent de vos paramètres globaux, mais peuvent être ajustés pour
 ce comptage sans modifier vos valeurs par défaut.
 
-| Contrôle de configuration | Icône |
+| Commande de configuration | Icône |
 |---|---|
 | Microphone | :app-micRounded: |
-| Mode d'enregistrement | :app-fiberManualRecordRounded: |
-| Contexte du clip | :app-timerOutlined: |
+| Enregistrement | :app-fiberManualRecordRounded: |
+| Contexte de l'extrait | :app-timerOutlined: |
 | Fréquence d'inférence | :app-speedRounded: |
 | Seuil de confiance | :app-verifiedRounded: |
 | Sensibilité | :app-hearing: |
 | Filtre d'espèces | :app-filterAltRounded: |
 
-Le bouton :app-helpOutline: à côté de chaque contrôle explique son effet. Le contrôle de durée :app-timerRounded: et le sélecteur de localisation ont le même bouton d'aide à la première étape.
+Le bouton :app-helpOutline: à côté de chaque commande explique son effet. La commande de durée :app-timerRounded: et le sélecteur de localisation ont le même bouton d'aide à la première étape.
 
-Choisissez **Complet** pour enregistrer en continu (par défaut), **Extraits** pour garder un extrait de chaque vocalisation détectée ou **Désactivé** pour ne pas enregistrer d’audio. Ce choix est indépendant du réglage de Live Mode et mémorisé pour le prochain Point Count. Les extraits utilisent la même sélection de fenêtre au score maximal et le même contexte que Live Mode, sans réduction selon la localisation. Avec **Extraits**, le curseur **Contexte du clip** fixe les secondes conservées avant et après chaque fenêtre analysée ; il met aussi à jour le contexte de Live Mode.
+Choisissez **Complet** pour enregistrer en continu (par défaut), **Extraits** pour garder un extrait de chaque vocalisation détectée ou **Désactivé** pour ne pas enregistrer d’audio. Ce choix est indépendant du paramètre de Live Mode et mémorisé pour le prochain Point Count. Les extraits utilisent la même sélection de fenêtre au score maximal et le même contexte que Live Mode, sans réduction selon la localisation. Avec **Extraits**, le curseur **Contexte de l'extrait** fixe les secondes conservées avant et après chaque fenêtre analysée ; il met aussi à jour le contexte de Live Mode.
 
 ### 3. Conseils de terrain
 
@@ -57,23 +57,23 @@ Cet écran présente une courte liste de vérification dans l'application à par
 
 ### 4. Prêt
 
-L’écran prêt récapitule la durée, le choix d’enregistrement et le comportement avec l’écran éteint. Démarrez avec :app-playArrowRounded:.
+L’écran « Prêt » récapitule la durée, le choix d’enregistrement et le comportement avec l’écran éteint. Démarrez avec :app-playArrowRounded:.
 
-## Écran du point d'écoute en direct
+## Écran de comptage en direct
 
-L'écran du point d'écoute en direct se concentre sur un tableau de bord minuté.
+L'écran de comptage en direct s'organise autour d'un tableau de bord chronométré.
 
 ### Barre supérieure
 
-- :app-stopRounded: — arrêter le point d'écoute prématurément
+- :app-stopRounded: — terminer le comptage plus tôt
 - :app-timerRounded: — afficher le temps restant
 - :app-helpOutlineRounded: — ouvrir l'aide du Point Count
-- :app-tuneRounded: — ouvrir les paramètres du Point d'écoute
+- :app-tuneRounded: — ouvrir les paramètres de Point Count
 
 ### Principaux indicateurs
 
 - barre de progression du compte à rebours
-- barre d'informations compacte avec les détections actuelles, le nombre d'espèces uniques et le nombre total de détections
+- barre d'informations compacte avec les détections actuelles, le nombre d'espèces et le nombre total de détections
 - vue du spectrogramme
 - liste des détections
 
@@ -81,6 +81,6 @@ L'écran du point d'écoute en direct se concentre sur un tableau de bord minut�
 
 Avec **Continuer avec l’écran éteint** activé dans la configuration de Point Count, le comptage continue lorsque vous verrouillez l’écran ou changez d’application, même si l’écran reste allumé. Il s’arrête après la durée choisie ; le compte à rebours utilise le temps réellement écoulé, donc un écran suspendu ne prolonge pas le comptage. Android affiche une notification persistante avec Ouvrir et Arrêter. Désactivez le commutateur pour que ces actions terminent le comptage plus tôt. Point Count ne se met pas en pause pour reprendre ensuite, car cela interromprait le comptage chronométré. Si vous quittez pendant le démarrage, il est annulé avec un message ; configurez-le à nouveau. Sous Windows, réduire la fenêtre ne termine pas le comptage.
 
-À la fin du Point Count, BirdNET Live ouvre [Résumé de la session](session-review.md). La Session est enregistrée automatiquement si cette option est activée ; sinon, enregistrez-la depuis le résumé pour la conserver.
+À la fin du Point Count, BirdNET Live ouvre le [Résumé de la Session](session-review.md). La Session est enregistrée automatiquement si cette option est activée ; sinon, enregistrez-la depuis le Résumé pour la conserver.
 
-Lorsque l'enregistrement automatique est activé, un comptage en cours est aussi enregistré au démarrage, toutes les 30 secondes et lorsque l'application quitte le premier plan. Après un plantage ou une coupure de courant, le dernier comptage partiel est disponible dans la Bibliothèque de sessions.
+Lorsque l'enregistrement automatique est activé, un comptage en cours est aussi enregistré au démarrage, toutes les 30 secondes et lorsque l'application quitte le premier plan. Après un plantage ou une coupure de courant, le dernier comptage partiel est disponible dans la Bibliothèque de Sessions.

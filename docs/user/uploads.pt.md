@@ -40,7 +40,7 @@ Compartilhamentos do Nextcloud com permissão de **envio e edição** também fu
 
 ### Opção B: sua própria pasta WebDAV
 
-Qualquer servidor WebDAV funciona: uma pasta em uma conta de nuvem pessoal, um servidor de arquivos institucional, ownCloud ou Nextcloud com uma conta comum. Os colaboradores informam o endereço mais um nome de usuário e senha em **Avançado** ao entrar. Para uma conta do Nextcloud ou ownCloud, use uma **senha de aplicativo** das configurações de segurança da conta, nunca a senha de login; quando só um nome de host é informado, o aplicativo também tenta os locais habituais do Nextcloud e do ownCloud nesse host.
+Qualquer servidor WebDAV funciona: uma pasta em uma conta de nuvem pessoal, um servidor de arquivos institucional, ownCloud ou Nextcloud com uma conta comum. Os colaboradores informam o endereço mais um nome de usuário e senha em **Avançado** ao adicionar o destino. Para uma conta do Nextcloud ou ownCloud, use uma **senha de aplicativo** das configurações de segurança da conta, nunca a senha de login; quando só um nome de host é informado, o aplicativo também tenta os locais habituais do Nextcloud e do ownCloud nesse host.
 
 Uma credencial assim normalmente consegue ler a pasta, então o teste de conexão mostra um aviso. Prefira uma configuração somente de escrita quando os colaboradores não forem todos de uma mesma equipe.
 
@@ -60,7 +60,7 @@ Um link de acesso carrega em uma só peça tudo de que um colaborador precisa: o
 
 Pressione **Build link and QR code**. Tudo acontece no seu navegador; nada é enviado a lugar nenhum. O segredo fica na parte do link depois de `#`, que os navegadores nunca transmitem ao servidor web que hospeda a página.
 
-Como alternativa, entre primeiro no destino com o seu próprio telefone (veja abaixo), depois abra o destino em **Configurações → Exportação e sincronização → Destinos de envio** e toque em **Mostrar código de acesso**. O aplicativo mostra o mesmo tipo de código QR com um botão **Copiar link**.
+Como alternativa, adicione primeiro o destino no seu próprio telefone (veja abaixo), depois abra o destino em **Configurações → Exportação e sincronização → Destinos de envio** e toque em **Mostrar código de acesso**. O aplicativo mostra o mesmo tipo de código QR com um botão **Copiar link**.
 
 ### Distribuindo
 
@@ -74,7 +74,7 @@ Uma pasta por dispositivo, um ZIP por Session e os registros ocultos em `.birdne
 
 ## Para colaboradores
 
-### Entrando em um destino
+### Adicionando um destino
 
 1. Abra **Configurações → Exportação e sincronização → Destinos de envio** e toque em **Adicionar destino**. Escanear o código QR de um projeto com a câmera, ou tocar em um link de acesso recebido, leva à mesma tela com o link já preenchido.
 2. Cole o link de acesso, o link de compartilhamento do Nextcloud ou um endereço WebDAV em **Link de acesso ou endereço do servidor**. O botão **Colar** pega o texto da área de transferência.
@@ -89,7 +89,7 @@ Avisos que vale a pena entender:
 
 - **Esta credencial consegue listar o destino** significa que o compartilhamento ou a conta consegue ler os dados de outros colaboradores. Os envios funcionam, mas peça ao coordenador um File Drop ou um token somente de escrita se o projeto envolver pessoas de fora da sua equipe.
 - **Este compartilhamento não tem senha e pode ser listado** combina os dois riscos: qualquer pessoa com o link pode ler tudo. Peça ao coordenador que defina uma senha ou use um File Drop.
-- **Este servidor não permite pastas** é apenas informativo: os envios usam nomes de arquivo planos, como `4ee91c8f__BirdNET_Live_….zip`, em vez de uma pasta.
+- **Este servidor não permite pastas** é apenas informativo: os envios usam nomes de arquivo sem pastas, como `4ee91c8f__BirdNET_Live_….zip`.
 
 ### A tela do destino
 
@@ -97,10 +97,10 @@ Tocar em um destino na lista abre a tela dele, com o endereço do servidor, quan
 
 - **Renomear** (o lápis na barra do aplicativo) altera o nome mostrado no aplicativo.
 - **Enviar somente por Wi-Fi** retém os envios enquanto o telefone está na rede celular.
-- **Enviar todas as Sessions automaticamente** coloca na fila toda Session finalizada, em qualquer modo, para este destino sem perguntar, usando os padrões de Exportação e sincronização para Áudio e Metadados. Enquanto estiver ativado, **Enviar Sessions ARU automaticamente** também permanece ativado. Se você descartar uma Session em Session Review depois, um envio que ainda não começou é cancelado, mas o que já foi enviado permanece no servidor.
+- **Enviar todas as Sessions automaticamente** coloca na fila toda Session finalizada, em qualquer modo, para este destino sem perguntar, usando os padrões de Exportação e sincronização para Áudio e Metadados. Enquanto estiver ativado, **Enviar Sessions ARU automaticamente** também permanece ativado. Se você descartar uma Session no Resumo da Session depois, um envio que ainda não começou é cancelado, mas o que já foi enviado permanece no servidor.
 - **Enviar Sessions ARU automaticamente** coloca na fila toda ARU Session finalizada para este destino sem perguntar (veja abaixo).
 - **Testar conexão** repete o teste de conexão, por exemplo depois que o coordenador alterou a senha.
-- **Mostrar código de acesso** exibe um código QR mais **Copiar link**, para que um segundo telefone entre no mesmo destino.
+- **Mostrar código de acesso** exibe um código QR mais **Copiar link**, para que um segundo telefone adicione o mesmo destino.
 - **Remover destino** esquece o destino e sua credencial e descarta os envios pendentes para ele. As Sessions já enviadas permanecem no servidor.
 
 A primeira entrada da lista de destinos é **Seu ID de envio**, com o identificador de participante abaixo; toque nela para alterar o identificador. Alterá-lo não move nada no servidor, já que as pastas são nomeadas pelo ID.
@@ -124,7 +124,7 @@ Desmarque **Painel de compartilhamento** e o botão passa a dizer **Enviar**; co
 
 O cartão da Session em Sessões mostra o estado como primeira linha abaixo do título da Session: **Na fila**, **Aguardando Wi-Fi**, **Aguardando uma rede**, **Enviando…**, **Enviado em** seguido da data, ou uma falha. Toque na linha para ver a lista por destino com **Tentar agora** e **Remover da fila**. O Resumo da Session mostra o mesmo estado como um ícone de nuvem na barra do aplicativo; tocar nele abre a mesma lista.
 
-Os envios que falharam são repetidos sozinhos com esperas crescentes, de até seis horas entre tentativas, por até trinta tentativas. **Falhou, será tentado de novo** significa que o aplicativo tentará novamente. **O envio falhou. Verifique as configurações do destino.** significa que o servidor recusou e repetir não ajuda: a senha mudou, os envios foram desativados ou o destino foi removido. Abra o destino, execute **Testar conexão** e remova-o e adicione-o de novo se a credencial mudou.
+Os envios que falharam são tentados de novo automaticamente com esperas crescentes, de até seis horas entre tentativas, por até trinta tentativas. **Falhou; haverá nova tentativa** significa que o aplicativo tentará novamente. **O envio falhou. Verifique as configurações do destino.** significa que o servidor recusou e repetir não ajuda: a senha mudou, os envios foram desativados ou o destino foi removido. Abra o destino, execute **Testar conexão** e remova-o e adicione-o de novo se a credencial mudou.
 
 A linha e o ícone só aparecem enquanto pelo menos um destino para o qual a Session foi enviada ainda existe nas Configurações. Remova o destino e eles desaparecem, porque "enviado" deixa de ser um fato sobre qualquer destino que você tenha.
 
@@ -140,7 +140,7 @@ Enviar a mesma Session de novo, por exemplo depois de corrigir detecções no Re
 
 Instalações de campo produzem muitas Sessions, muitas vezes sem ninguém junto ao telefone. Ative **Enviar Sessions ARU automaticamente** em um destino, e toda ARU Session finalizada é colocada na fila para ele sem caixa de diálogo, usando os padrões de Exportação e sincronização para Áudio e Metadados. Uma instalação que salva cada ciclo como Session própria envia ciclo a ciclo; a Session combinada da instalação não é enviada duas vezes.
 
-Deixe **Enviar somente por Wi-Fi** ativado em uma estação com plano de dados celular, a menos que o plano aguente o áudio, e considere gravar em **Somente detecções** ou **Desativada** quando o áudio for grande demais para enviar. Os envios então saem sempre que o telefone encontra uma rede adequada, também com o aplicativo em segundo plano no Android.
+Deixe **Enviar somente por Wi-Fi** ativado em uma estação com plano de dados celular, a menos que o plano aguente o áudio, e considere gravar em **Apenas detecções** ou **Desativado** quando o áudio for grande demais para enviar. Os envios então saem sempre que o telefone encontra uma rede adequada, também com o aplicativo em segundo plano no Android.
 
 ## Dois exemplos práticos
 
@@ -154,7 +154,7 @@ No domingo à noite, cada voluntário abre Sessões, seleciona as Sessions do fi
 
 Um colaborador revisa uma Session, remove duas detecções falsas, adiciona uma espécie manualmente e salva. O ícone de nuvem na barra do aplicativo do Resumo da Session mostra que a Session foi enviada no sábado. Ele toca no ícone Compartilhar na barra de ferramentas, marca o projeto em Enviar para, onde ele começa desmarcado e diz **Enviado** com a data, e pressiona **Enviar**. O ZIP corrigido substitui o anterior, ou cai ao lado dele com um nome numerado em um File Drop.
 
-O mesmo colaborador deixa um telefone como estação ARU em um caniçal com um ponto de acesso Wi-Fi na cabana. Ele entra no destino do projeto nesse telefone, ativa **Enviar Sessions ARU automaticamente** e mantém **Enviar somente por Wi-Fi** ativado. Toda manhã, os ciclos noturnos finalizados são colocados na fila e enviados enquanto a estação está ociosa; o coordenador vê novos ZIPs aparecerem sob o ID de envio desse telefone sem que ninguém toque nele.
+O mesmo colaborador deixa um telefone como estação ARU em um caniçal com um ponto de acesso Wi-Fi na cabana. Ele adiciona o destino do projeto nesse telefone, ativa **Enviar Sessions ARU automaticamente** e mantém **Enviar somente por Wi-Fi** ativado. Toda manhã, os ciclos noturnos finalizados são colocados na fila e enviados enquanto a estação está ociosa; o coordenador vê novos ZIPs aparecerem sob o ID de envio desse telefone sem que ninguém toque nele.
 
 ## Privacidade e responsabilidade
 
@@ -174,7 +174,7 @@ Um envio contém o que um Compartilhar conteria: o registro JSON da Session com 
 | Não foi possível verificar o certificado do servidor. | TLS autoassinado ou defeituoso. | Peça ao coordenador um endereço com certificado válido. |
 | Este endereço usa HTTP sem criptografia. | Conexão não criptografada fora da sua rede local. | Use um endereço `https://`. |
 | Aguardando Wi-Fi | O destino está configurado como somente Wi-Fi e o telefone está na rede celular. | Aguarde, ou desative a chave somente Wi-Fi do destino. |
-| Falhou, será tentado de novo | Um problema temporário, como uma conexão interrompida ou um erro do servidor. | Nada; o aplicativo tenta de novo sozinho. **Tentar agora** força uma tentativa. |
+| Falhou; haverá nova tentativa | Um problema temporário, como uma conexão interrompida ou um erro do servidor. | Nada; o aplicativo tenta de novo sozinho. **Tentar agora** força uma tentativa. |
 | O envio falhou. Verifique as configurações do destino. | O servidor recusou por um motivo que repetir não resolve. | Abra o destino, execute **Testar conexão** e remova-o e adicione-o de novo se a credencial mudou. |
 | A credencial deste destino não está no chaveiro do dispositivo. | A entrada do chaveiro se perdeu, por exemplo após restaurar em um telefone novo. | Remova o destino e adicione-o de novo. |
 

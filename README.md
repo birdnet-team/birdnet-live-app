@@ -196,7 +196,7 @@ lib/
   features/       # Feature modules (live, point_count, survey, file_analysis,
                   #   aru, audio, recording, spectrogram, inference, explore,
                   #   announcements, history, settings, home, onboarding, about)
-  l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh)
+  l10n/          # Localization ARB files (en, de, cs, es, fr, it, pt, nl, nb, pl, ru, zh, ko)
   shared/         # Shared models, providers, services, widgets
                   #   (e.g. ContentWidthConstraint for tablet max-width)
 

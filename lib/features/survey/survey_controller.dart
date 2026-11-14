@@ -85,7 +85,7 @@ class SurveyController {
   final RecordingService recordingService;
   final SessionRepository _repository;
 
-  /// Reads Settings → Location → Use GPS. When off, no GPS tracker is
+  /// Reads Settings → Location & Species Filter → Use GPS. When off, no GPS tracker is
   /// created and the survey runs on the coordinates chosen in setup.
   final bool Function()? _gpsEnabled;
   bool get _useGps => _gpsEnabled?.call() ?? true;

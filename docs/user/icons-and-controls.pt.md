@@ -22,7 +22,7 @@ Estes são os mesmos formatos de ícones usados no aplicativo. Aqui eles usam a 
 | :app-libraryMusic: **Sessões** | Rodapé do Início | Abre as Sessões. |
 | :app-helpOutlineRounded: **Ajuda** | Rodapé do Início, cabeçalho do Explorar, painel do Survey, barra de ferramentas do Resumo da Session | Abre a Ajuda ou um painel de ajuda específico da tela. |
 | :app-infoOutline: **Informações / Sobre** | Rodapé do Início, barras de informações, painéis de ajuda | Mostra informações gerais ou contexto resumido. |
-| :app-arrowBackRounded: **Voltar** | Modo Live | Volta à tela anterior. |
+| :app-arrowBackRounded: **Voltar** | Live Mode | Volta à tela anterior. |
 | :app-openInNew: **Abrir externo** | Tela Sobre, links de documentação | Abre uma página externa, como o Guia do Usuário online. |
 | :app-arrowUpwardRounded: **Voltar ao topo** | Tela de ajuda | Retorna à introdução e aos atalhos das seções. Aparece ao rolar para baixo. |
 | :app-volunteerActivism: **Doar** | Tela Sobre | Abre a página de doações do BirdNET. |
@@ -31,7 +31,7 @@ Estes são os mesmos formatos de ícones usados no aplicativo. Aqui eles usam a 
 
 | Símbolo | Significado |
 |---|---|
-| :app-wbSunny: **Limpo** | Céu limpo. |
+| :app-wbSunny: **Céu limpo** | Céu limpo. |
 | :app-partlyCloudyDay: **Parcialmente nublado** | Sol e nuvem para tempo predominantemente limpo ou parcialmente nublado. |
 | :app-cloudy: **Encoberto** | Cobertura total de nuvens. |
 | :app-foggy: **Nevoeiro** | Nevoeiro ou nevoeiro congelante. |
@@ -84,7 +84,7 @@ Estes controles aparecem em todas as linhas de detecção do app — a lista de 
 | :app-swapHoriz: **Substituir espécie** | Escolhe outra espécie para esta detecção. Também abre ao deslizar uma linha de revisão para a esquerda. |
 | :app-deleteOutline: **Excluir detecção** | Remove a linha imediatamente. Uma SnackBar de desfazer aparece por alguns segundos. Também acionada ao deslizar uma linha de revisão para a direita. |
 | :app-deleteSweep: **Excluir espécie** | Remove de uma só vez todas as detecções dessa espécie da Session, com a mesma SnackBar de desfazer. |
-| :app-hearing: **Ouvida** | Em uma detecção adicionada manualmente: você ouviu a ave. Definido pela caixa da folha de confirmação exibida após escolher a espécie. |
+| :app-hearing: **Ouvida** | Em uma detecção adicionada manualmente: você ouviu a ave. Definido pela caixa do painel de confirmação exibido após escolher a espécie. |
 | :app-visibility: **Vista** | Em uma detecção adicionada manualmente: você viu a ave. Os dois ícones juntos significam ouvida *e* vista. |
 
 ## Barra de ferramentas do Resumo da Session
@@ -103,7 +103,7 @@ Estes controles são usados na tela de Resumo da Session.
 
 ## Barras de estado específicas da tela
 
-### Modo Live
+### Live Mode
 
 A barra de informações do Live usa :app-infoOutline: seguido de rótulos compactos como:
 

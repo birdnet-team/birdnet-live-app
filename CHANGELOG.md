@@ -24,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Species names follow the current taxonomy. Saved Sessions are not changed: a detection stored under an older scientific name shows the current name, picture, translation, and links, and species the new model no longer detects keep theirs.
 - The audio model is rebuilt for speed: the spectrogram step now runs multithreaded, and only the convolutions use half precision. Batch Analysis inference is about three times faster on a desktop CPU; phones were not re-measured with this model.
 - Species descriptions now cover about 99% of species in ten of the twelve description languages; some languages previously covered as little as 17%.
-- The score reductions earlier models needed for 18 over-reported species (such as Common Pheasant, Red Fox, and several owls) are switched off for the new model until field recordings show which of them it still over-reports.
 - The About screen reads the model and taxonomy names and the species count from the bundled models instead of a hand-maintained copy.
 
 ### Fixed
@@ -33,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
 - A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.
 - Survey species alerts now show the species on the Android lock screen instead of "Contents hidden", matching the ongoing Survey notification (#308).
+- Translations were revised in every language: mistranslated, untranslated, and inconsistent labels and help texts are corrected, Portuguese is Brazilian throughout, Russian counts such as "21 вид" use the right form, and the translated user guide names every setting as the app does.
+- The empty watchlist hint in Survey setup pointed to a Settings page that does not exist; it now names the **New watchlist** button.
 
 ## [1.3.1] - 2026-11-02
 

@@ -20,7 +20,7 @@ Todos los ajustes disponibles actualmente en la app, agrupados igual que en la p
 
 ## Guías de los modos
 
-### [Modo Live](live-mode.md)
+### [Live Mode](live-mode.md)
 
 Escucha continua con el micrófono, detecciones en vivo, el espectrograma y la barra de información de la Session.
 
@@ -28,11 +28,11 @@ Escucha continua con el micrófono, detecciones en vivo, el espectrograma y la b
 
 Especies previstas para la ubicación y la época del año actuales, además del panel de detalles de especies.
 
-### [Biblioteca de sesiones](session-library.md)
+### [Biblioteca de Sessions](session-library.md)
 
-Sesiones guardadas, búsqueda, ordenación, modos de vista y navegación agrupada por especie.
+Sessions guardadas, búsqueda, ordenación, modos de vista y navegación agrupada por especie.
 
-### [Resumen de la sesión](session-review.md)
+### [Revisión de la Session](session-review.md)
 
 Reproducción, edición, recorte, anotaciones, exportación y la barra de herramientas de revisión.
 
@@ -46,7 +46,7 @@ La configuración del Survey, el panel del Survey en vivo y las pestañas de map
 
 ### [Análisis de archivos](file-analysis.md)
 
-El asistente de Análisis de archivos de cuatro pasos, las opciones de parámetros y cómo los resultados pasan al Resumen de la Session.
+El asistente de Análisis de archivos de cuatro pasos, las opciones de parámetros y cómo los resultados pasan a la revisión de la Session.
 
 ### [Análisis por lotes](batch-analysis.md)
 
@@ -58,7 +58,7 @@ Crea una Session de despliegue ARU programada, graba audio completo de cada cicl
 
 ### [Subidas](uploads.md)
 
-Envía las sesiones terminadas a la carpeta de un proyecto: la configuración de un destino File Drop de Nextcloud o WebDAV, los enlaces de acceso y los códigos QR, la pestaña Enviar a, el estado de las subidas y las subidas automáticas de ARU.
+Envía las Sessions terminadas a la carpeta de un proyecto: la configuración de un destino File Drop de Nextcloud o WebDAV, los enlaces de acceso y los códigos QR, la pestaña Enviar a, el estado de las subidas y las subidas automáticas de ARU.
 
 ## Referencia
 
@@ -73,12 +73,12 @@ Respuestas rápidas sobre el uso sin conexión, el comportamiento de la grabaci�
 3. Abre la guía del modo que más utilices.
 4. Consulta [Ajustes](settings.md) cuando necesites adaptar la app a un flujo de trabajo diferente.
 
-## Consejo para móvil
+## Consejo para el teléfono
 
-En el móvil, la barra lateral de navegación queda oculta tras el botón de menú de la esquina superior izquierda. Esta página está pensada como punto de entrada en móvil para toda la guía del usuario.
+En el teléfono, la barra lateral de navegación queda oculta tras el botón de menú de la esquina superior izquierda. Esta página está pensada como punto de entrada en el teléfono para toda la guía de uso.
 
 ## Más documentación
 
 - La [página de inicio](../index.md) ofrece una visión general de la versión y las funciones.
 - La [Guía para desarrolladores](../developer/index.md) cubre la arquitectura, las herramientas y los flujos de compilación.
-- La [Política de Privacidad](../privacy.md) y la [Política de uso aceptable](../acceptable-use.md) se encuentran en este mismo sitio.
+- La [Política de privacidad](../privacy.md) y la [Política de uso aceptable](../acceptable-use.md) se encuentran en este mismo sitio.

@@ -1,24 +1,24 @@
 # Analýza souborů
 
-Analýza souborů zpracovává existující nahrávku prostřednictvím stejného kanálu BirdNET, který používají živé pracovní postupy.
+Analýza souborů zpracovává existující nahrávku stejným zpracovatelským řetězcem BirdNET, jaký používají živé režimy.
 
-## Jak to otevřít
+## Jak ji otevřít
 
-Na domovské stránce klepněte na kartu **Analýza souborů** s ikonou :app-audioFileRounded:.
+Na domovské obrazovce klepněte na kartu **Analýza souborů** s ikonou :app-audioFileRounded:.
 
 ### Z jiné aplikace
 
 Nahrávku můžete předat i odjinud. V systému Android se po sdílení zvukového souboru s aplikací **BirdNET Live** nebo volbě **Otevřít v** ihned otevře Analýza souborů. V systému iOS funguje volba **Otevřít v** také okamžitě; po použití nabídky sdílení otevřete BirdNET Live nebo se do aplikace vraťte a čekající nahrávka se vybere automaticky. Před analýzou aplikace zkopíruje nahrávku do vlastního dočasného úložiště.
 
-## Lišta aplikací
+## Horní lišta
 
-- :app-tuneRounded: — otevřete nastavení analýzy souborů
+- :app-tuneRounded: — otevření nastavení analýzy souborů
 - :app-helpOutlineRounded: — otevření nápovědy k analýze souborů
 - :app-close: — zrušení aktivního běhu analýzy
 
 ## Podporované vstupy
 
-Aktuální výběr souboru přijímá:
+Výběr souboru přijímá:
 
 - WAV / WAVE
 - FLAC
@@ -35,7 +35,7 @@ Vyberte soubor a zkontrolujte jeho kartu metadat:
 
 - název souboru
 - formát
-- trvání
+- doba trvání
 - velikost souboru
 - vzorkovací frekvence
 
@@ -44,51 +44,51 @@ Vyberte soubor a zkontrolujte jeho kartu metadat:
 Můžete:
 
 - použít aktuální GPS :app-myLocation:
-- zadejte souřadnice ručně :app-editLocationAlt:
-- přeskočit umístění :app-locationOff:
-- vyberte bod na mapě :app-mapSheet:
-- nastavit volitelné datum záznamu :app-calendarTodayRounded:
+- zadat souřadnice ručně :app-editLocationAlt:
+- přeskočit polohu :app-locationOff:
+- vybrat bod na mapě :app-mapSheet:
+- nastavit volitelné datum nahrávky :app-calendarTodayRounded:
 
 ### 3. Parametry
 
-Průvodce odhalí:
+Průvodce nabízí:
 
-- trvání okna
-- překrývání
+- délku okna
+- překryv oken
 - citlivost
 - práh spolehlivosti
-- režim filtrování druhů
+- filtr druhů
 
 | Ovládací prvek nastavení | Ikona |
 |---|---|
-| Trvání okna | :app-timerOutlined: |
-| Překrývání | :app-swapHoriz: |
+| Délka okna | :app-timerOutlined: |
+| Překryv oken | :app-swapHoriz: |
 | Citlivost | :app-hearing: |
 | Práh spolehlivosti | :app-verifiedRounded: |
 | Filtr druhů | :app-filterAltRounded: |
 
-Klepnutím na tlačítko :app-helpOutline: vedle ovládacího prvku zobrazíte jeho vysvětlení. Tlačítka nápovědy mají také kroky pro soubor, polohu a datum záznamu.
+Klepnutím na tlačítko :app-helpOutline: vedle ovládacího prvku zobrazíte jeho vysvětlení. Tlačítka nápovědy mají také kroky pro soubor, polohu a datum nahrávky.
 
 Překryv určuje, o kolik se posune každé analytické okno, a je specifický pro
 analýzu souborů: celý soubor se prochází vždy, více překryvu jej jen prochází
-jemněji. Živé režimy místo toho používají frekvenci odvozování, protože musí
+jemněji. Živé režimy místo toho používají frekvenci inference, protože musí
 rozhodovat, jak často spouštět model na přicházející zvuk, nikoli jak jemně
 pokrýt hotovou nahrávku.
 
 Ať už analýza souborů dojde ke svým oknům jakkoli, převádí je na detekce
-stejnými pravidly jako režim Live, Point Count a Survey: detekce začíná v
+stejnými pravidly jako Live Mode, Point Count a Survey: detekce začíná v
 nejstarším podpůrném okně, nese nejvyšší podložené skóre a končí na konci
 posledního podpůrného okna.
 
-### 4. Analyzujte
+### 4. Analýza
 
 Na obrazovce průběhu se zobrazí:
 
-- okna zpracována
-- nalezené detekce
-- nalezený druh
+- počet zpracovaných oken
+- počet nalezených detekcí
+- počet nalezených druhů
 - tlačítko pro zrušení
 
 ## Výsledek
 
-Po dokončení analýzy BirdNET Live převede výstup na uloženou session a otevře [Session Review](session-review.md).
+Po dokončení analýzy BirdNET Live převede výstup na uloženou Session a otevře [Přehled Session](session-review.md).

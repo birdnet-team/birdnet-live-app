@@ -19,7 +19,7 @@
 
 - `lib/core`: app constants/services/themes.
 - `lib/shared`: shared models/providers/services/widgets.
-- `lib/features/*`: feature modules (`live`, `point_count`, `survey`, `explore`, `inference`, `audio`, `file_analysis`, `history`, `settings`, `home`, `about`).
+- `lib/features/*`: feature modules (`about`, `announcements`, `aru`, `audio`, `explore`, `file_analysis`, `history`, `home`, `inference`, `live`, `onboarding`, `point_count`, `recording`, `settings`, `spectrogram`, `survey`, `upload`).
 - `lib/l10n`: localization.
 - `dev`: build/maintenance scripts.
 - `tools`: species bundle pipeline scripts.
@@ -30,7 +30,7 @@
 - Read `AGENTS.md` and `CONTRIBUTING.md`; their rules apply here too, including the full checklist for adding a new language.
 - Keep user-facing strings in all 13 locales: `en`, `de`, `cs`, `es`, `fr`, `it`, `pt`, `nl`, `nb`, `pl`, `ru`, `zh`, `ko`.
 - Use `l10n.keyName` in widgets; after ARB edits run `flutter gen-l10n` and ensure 0 untranslated messages.
-- Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Smart.
+- Keep technical terms in English across locales: Point Count, Survey, Session, Live Mode, WAV, FLAC, CSV, JSON, GPX, Raven Selection Table, Smart.
 - Add/modify settings via `PrefKeys` + settings providers/UI, and update `docs/user/settings.md` with user-facing rationale; add the tile's title to `_searchEntries` in `settings_screen.dart` so Settings search finds it.
 - Use `AppIcons` (`lib/shared/utils/app_icons.dart`) instead of raw `Symbols.*` or `Icons.*` in app code.
 - Keep Dart file header block comments (`// ===...`).

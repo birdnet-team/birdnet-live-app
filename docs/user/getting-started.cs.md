@@ -24,8 +24,8 @@ Když BirdNET Live otevřete poprvé, aplikace vás provede krátkým úvodem a 
 1. Přečtěte si úvodní obrazovky.
 2. Přečtěte si Zásady přijatelného použití a Zásady ochrany osobních údajů.
 3. Udělte oprávnění k mikrofonu, aby BirdNET Live mohl zpracovávat zvuk.
-4. Volitelně povolte oprávnění k poloze pro geotagging, Prozkoumat, Point Count a Survey.
-5. Volitelně povolte oznámení pro dlouhotrvající surveye.
+4. Volitelně povolte oprávnění k poloze pro geotagování, Prozkoumat, Point Count a Survey.
+5. Volitelně povolte oznámení pro dlouhotrvající Survey.
 
 ## První spuštění
 
@@ -40,7 +40,7 @@ Domovská obrazovka je hlavní rozcestník.
 
 ### Karty hlavních režimů
 
-- :app-micRounded: **Režim Live**
+- :app-micRounded: **Live Mode**
 - :app-locationOnRounded: **Režim Point Count**
 - :app-routeRounded: **Režim Survey**
 - :app-audioFileRounded: **Analýza souborů**
@@ -57,24 +57,24 @@ Domovská obrazovka je hlavní rozcestník.
 
 ## Co se ukládá
 
-BirdNET Live automaticky uloží každou dokončenou session a po zastavení zpracování ji otevře v Přehledu Session.
+BirdNET Live automaticky uloží každou dokončenou Session a po zastavení zpracování ji otevře v Přehledu Session.
 
-- Live sessions ukládají detekce a podle vašeho nastavení také nahrávky nebo klipy.
-- Sessions Point Count se ukládají jako časované sčítací sessions.
+- Live Sessions ukládají detekce a podle vašeho nastavení také nahrávky nebo klipy.
+- Sessions Point Count se ukládají jako časované sčítací Sessions.
 - Sessions Survey ukládají trasu, detekce a související metadata.
-- Výsledky Analýzy souborů se převedou na session, kterou lze zkontrolovat.
+- Výsledky Analýzy souborů se převedou na Session, kterou lze zkontrolovat.
 
 ## Doporučené další stránky
 
 - Přečtěte si [Ikony a ovládací prvky](icons-and-controls.md), pokud chcete rychlé vysvětlení opakujících se symbolů rozhraní.
 - Před změnou prahů, filtrů, chování nahrávání nebo zobrazení spektrogramu si přečtěte [Nastavení](settings.md).
-- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Režim Live](live-mode.md), [Režim Point Count](point-count-mode.md), [Režim Survey](survey-mode.md) nebo [Analýza souborů](file-analysis.md).
+- Otevřete průvodce pro pracovní postup, který používáte nejčastěji: [Live Mode](live-mode.md), [Režim Point Count](point-count-mode.md), [Režim Survey](survey-mode.md) nebo [Analýza souborů](file-analysis.md).
 
 ## Oprávnění
 
 | Oprávnění | Vyžadováno pro | Volitelné? |
 |------------|-------------|-----------|
 | Mikrofon | Všechny režimy nahrávání | Povinné |
-| Poloha | GPS značení, Survey/Point Count | Volitelné pro Live |
+| Poloha | Geotagování, Survey/Point Count | Volitelné pro Live |
 | Úložiště | Ukládání nahrávek, exporty | Vyžadováno pro nahrávání |
 | Oznámení | Upozornění Survey na pozadí | Volitelné |

@@ -62,7 +62,7 @@ The wizard exposes:
 | Setup control | Icon |
 |---|---|
 | Window duration | :app-timerOutlined: |
-| Overlap | :app-swapHoriz: |
+| Window overlap | :app-swapHoriz: |
 | Sensitivity | :app-hearing: |
 | Confidence threshold | :app-verifiedRounded: |
 | Species filter | :app-filterAltRounded: |
