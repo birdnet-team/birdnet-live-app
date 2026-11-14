@@ -424,7 +424,7 @@
   "settingsShowSciNames": "Wissenschaftliche Namen anzeigen",
   "settingsShowSciNamesDescription": "Wissenschaftliche Namen unter den Trivialnamen auf allen Bildschirmen anzeigen",
   "settingsPlayback": "Wiedergabe",
-  "settingsPlaybackDescription": "Wiedergabeverhalten in der Sitzungsübersicht",
+  "settingsPlaybackDescription": "Wiedergabeverhalten in der Session-Übersicht",
   "settingsPlaybackVoiceMemos": "Sprachmemos automatisch abspielen",
   "settingsPlaybackVoiceMemosDescription": "Sprachmemos abspielen, wenn der Abspielkopf ihre Zeitmarke erreicht",
   "settingsHelpPlaybackVoiceMemos": "Wenn aktiviert, wird jedes Sprachmemo einer zeitgestempelten Anmerkung automatisch während der Sitzungsübersicht abgespielt, sobald der Abspielkopf die aufgezeichnete Position überschreitet. Standardmäßig deaktiviert.",

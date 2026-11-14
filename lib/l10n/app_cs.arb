@@ -400,7 +400,7 @@
   "settingsShowSciNames": "Zobrazit vědecké názvy",
   "settingsShowSciNamesDescription": "Zobrazit vědecké názvy pod běžnými názvy na všech obrazovkách",
   "settingsPlayback": "Přehrávání",
-  "settingsPlaybackDescription": "Chování přehrávání při kontrole relace",
+  "settingsPlaybackDescription": "Chování přehrávání v Přehledu Session",
   "settingsPlaybackVoiceMemos": "Automaticky přehrávat hlasové poznámky",
   "settingsPlaybackVoiceMemosDescription": "Přehrávat připojené hlasové poznámky, když přehrávač dosáhne jejich časové značky",
   "settingsHelpPlaybackVoiceMemos": "Pokud je povoleno, jakákoli hlasová poznámka propojená s časovanou anotací se při kontrole relace přehraje automaticky, jakmile přehrávač překročí zaznamenanou pozici. Ve výchozím nastavení vypnuto.",
