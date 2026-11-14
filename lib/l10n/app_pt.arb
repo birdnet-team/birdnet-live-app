@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Resumo da Session",
   "sessionNoDetections": "Nenhuma detecção nesta Session.",
   "sessionSpeciesCount": "{count} espécies",
+  "sessionHighestConfidence": "Maior confiança: {percent}%",
   "sessionDetectionCount": "{count} detecções",
   "sessionClusterShowMore": "Mostrar mais {count}",
   "sessionDiscard": "Descartar",

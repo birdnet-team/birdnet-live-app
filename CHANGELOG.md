@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Exports now carry each species' BirdNET ID: a `BirdNET ID` column after `Scientific Name` in CSV and Raven Selection Tables, a `birdnetId` field in JSON, a waypoint extension in GPX, and a label in the HTML report. Sessions recorded with earlier versions get it too, export metadata names the taxonomy version the IDs refer to, and scripts that read CSV or Raven columns by position need updating.
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.
 - The two models the app runs are now also packaged for use in other applications: both ONNX files, one labels file for both with common names in 36 languages, a usage guide, the Apache 2.0 model license, and the acceptable use policy.
+- With **Show all detected species** on, a species that has stopped vocalizing now keeps a chip in the Live Mode and Point Count list with the highest confidence it reached in the session, in the confidence color (#307).
 
 ### Changed
 
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Model updates no longer leave old model files behind: extracted copies of models the app no longer ships are deleted from app storage, freeing about 80 MB on Android after this update.
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
 - A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.
+- Survey species alerts now show the species on the Android lock screen instead of "Contents hidden", matching the ongoing Survey notification (#308).
 
 ## [1.3.1] - 2026-11-02
 

@@ -764,6 +764,12 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     final speciesDetectionCounts = showAllDetectedSpecies
         ? buildSpeciesDetectionCounts(allDetections)
         : null;
+    final speciesMaxConfidences = showAllDetectedSpecies
+        ? buildSpeciesMaxConfidences(
+            sessionDetections: allDetections,
+            currentDetections: currentDetections,
+          )
+        : null;
 
     // Hot-apply tunable settings to the running point count: changes
     // made on the Settings screen mid-count are pushed straight to the
@@ -834,6 +840,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
             currentDetections.length,
             activeDetections,
             speciesDetectionCounts,
+            speciesMaxConfidences,
             detections,
           ),
         ),
@@ -850,6 +857,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
     int currentDetectionCount,
     Set<DetectionRecord>? activeDetections,
     Map<String, int>? speciesDetectionCounts,
+    Map<String, double>? speciesMaxConfidences,
     List<DetectionRecord> detections,
   ) {
     final isLandscape =
@@ -902,6 +910,7 @@ class _PointCountLiveScreenState extends ConsumerState<PointCountLiveScreen>
           isActive: isActive,
           activeDetections: activeDetections,
           speciesDetectionCounts: speciesDetectionCounts,
+          speciesMaxConfidences: speciesMaxConfidences,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,

@@ -1150,6 +1150,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     final speciesDetectionCounts = showAllDetectedSpecies
         ? buildSpeciesDetectionCounts(allDetections)
         : null;
+    final speciesMaxConfidences = showAllDetectedSpecies
+        ? buildSpeciesMaxConfidences(
+            sessionDetections: allDetections,
+            currentDetections: currentDetections,
+          )
+        : null;
 
     // Hot-apply tunable settings to the running session: when the user
     // tweaks the confidence threshold or pooling window count from the
@@ -1231,6 +1237,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             currentDetectionCount: currentDetections.length,
             activeDetections: activeDetections,
             speciesDetectionCounts: speciesDetectionCounts,
+            speciesMaxConfidences: speciesMaxConfidences,
             detections: detections,
           ),
         ),
@@ -1250,6 +1257,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
     required int currentDetectionCount,
     required Set<DetectionRecord>? activeDetections,
     required Map<String, int>? speciesDetectionCounts,
+    required Map<String, double>? speciesMaxConfidences,
     required List<DetectionRecord> detections,
   }) {
     final isLandscape =
@@ -1285,6 +1293,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
           showTips: true,
           activeDetections: activeDetections,
           speciesDetectionCounts: speciesDetectionCounts,
+          speciesMaxConfidences: speciesMaxConfidences,
           onDetectionTap: (detection) {
             SpeciesInfoOverlay.show(
               context,

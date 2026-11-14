@@ -257,6 +257,7 @@
   "sessionReviewTitle": "Session 回顾",
   "sessionNoDetections": "此 Session 没有检测结果。",
   "sessionSpeciesCount": "{count} 个物种",
+  "sessionHighestConfidence": "最高置信度：{percent}%",
   "sessionDetectionCount": "{count} 条检测",
   "sessionClusterShowMore": "再显示 {count} 条",
   "sessionDiscard": "放弃",
