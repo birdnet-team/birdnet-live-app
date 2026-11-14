@@ -27,7 +27,7 @@ dependencies:
   permission_handler: ^12.0.1
 
   # Audio
-  record: ^7.0.0
+  record: ^7.1.2
   # Require the native Bluetooth startup callback guard against duplicate replies.
   record_android: ^2.2.0
   fftea: ^1.2.0
