@@ -4,8 +4,8 @@
 //
 // BirdNET Live ships in two release shapes:
 //
-//   1. **Play Store (AAB)** — the two large `.onnx` model files (~152 MB
-//      audio classifier + ~6 MB geo model) live in an *install-time*
+//   1. **Play Store (AAB)** — the two large `.onnx` model files (the
+//      audio classifier and the geo model) live in an *install-time*
 //      Play Asset Delivery pack named `models_pack`. The pack is
 //      downloaded together with the app at install time. Install-time
 //      packs are **merged into the app's standard `AssetManager`
@@ -43,9 +43,16 @@
 //      whole model in the Dart heap, and it writes in chunks through a
 //      temporary file so a crash mid-copy never leaves a truncated model
 //      behind.
+//
+// Extracted copies are named `<fileName>_v<version>`, so a model update
+// (new file name or new version) extracts a fresh copy. After every
+// successful resolve, extracted copies that no longer belong to a model in
+// `model_config.json` are deleted from both extraction locations (Android
+// `filesDir` and the documents directory) — see [removeStaleExtractions].
 // =============================================================================
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -72,6 +79,34 @@ class AssetPackService {
   /// of the whole model.
   static const int _fallbackWriteChunkBytes = 4 << 20;
 
+  /// Marks an extracted model copy: `<model>.onnx_v<version>`.
+  static const String _extractedMarker = '.onnx_v';
+
+  /// Suffix of the temporary file an extraction writes before renaming it
+  /// into place.
+  static const String _tmpSuffix = '.tmp';
+
+  /// Every model file this app has shipped starts with this. Part of the
+  /// cleanup pattern because the documents directory is shared with user
+  /// data — on Windows it is the user's own Documents folder.
+  static const String _modelNamePrefix = 'BirdNET';
+
+  /// Resolves that are still running, by extracted name. Live, Survey, and
+  /// File Analysis each resolve the audio model; sharing one resolve keeps
+  /// two extractions from writing the same temporary file.
+  static final Map<String, Future<String>> _inFlight = {};
+
+  /// Extracted names requested in this process. Never deleted: a session
+  /// may have the file open.
+  static final Set<String> _requestedNames = {};
+
+  /// The subset of [_requestedNames] that went through the documents
+  /// directory fallback.
+  static final Set<String> _documentsNames = {};
+
+  /// Extracted names of the models in `model_config.json`, once read.
+  static Set<String>? _configuredNames;
+
   /// Resolve a model file living at `assets/models/<fileName>` to an
   /// absolute on-device path suitable for passing to ONNX Runtime.
   ///
@@ -82,8 +117,19 @@ class AssetPackService {
   static Future<String> resolveModelPath({
     required String fileName,
     required String version,
-  }) async {
+  }) {
     final destName = '${fileName}_v$version';
+    // The callback must not return the removed entry: `whenComplete` waits
+    // for a returned future, and that entry is this very future.
+    return _inFlight[destName] ??= _resolve(fileName, destName).whenComplete(
+      () {
+        _inFlight.remove(destName);
+      },
+    );
+  }
+
+  static Future<String> _resolve(String fileName, String destName) async {
+    _requestedNames.add(destName);
     final assetKey = '${AppConstants.modelAssetsDir}/$fileName';
 
     // Path 1 — Android AssetManager (covers Play Store install-time
@@ -101,7 +147,7 @@ class AssetPackService {
               '[AssetPackService] resolved $fileName via AssetManager '
               '($assetPath): $extracted',
             );
-            await _removeStaleBundleExtractions(fileName);
+            await _removeStaleCopies(nativeDir: File(extracted).parent);
             return extracted;
           }
         }
@@ -124,13 +170,16 @@ class AssetPackService {
       final bundled = _bundledAssetFile(assetKey);
       if (bundled != null) {
         debugPrint('[AssetPackService] using bundled $fileName at $bundled');
-        await _removeStaleBundleExtractions(fileName);
+        await _removeStaleCopies();
         return bundled;
       }
     }
 
     // Path 3 — Flutter rootBundle extraction.
-    return _extractFromBundle(fileName, version);
+    _documentsNames.add(destName);
+    final extracted = await _extractFromBundle(fileName, destName);
+    await _removeStaleCopies(documentsInUse: true);
+    return extracted;
   }
 
   /// Ask the Android side to stream [assetPath] into `filesDir/<destName>`.
@@ -232,23 +281,21 @@ class AssetPackService {
   }
 
   /// Fallback path: extract the model bytes from `rootBundle` into the
-  /// app's documents directory the first time the app runs (or after a
-  /// version bump).
+  /// app's documents directory as [destName] the first time the app runs
+  /// (or after a model update).
   ///
   /// Writes through a temporary file and renames it into place, so a crash
   /// or kill mid-copy never leaves a truncated model that would pass the
   /// existence check and then fail to load on every later launch.
   static Future<String> _extractFromBundle(
     String fileName,
-    String version,
+    String destName,
   ) async {
     final appDir = await getApplicationDocumentsDirectory();
-    final versionedName = '${fileName}_v$version';
-    final modelFile = File('${appDir.path}/$versionedName');
+    final modelFile = File('${appDir.path}/$destName');
     if (!modelFile.existsSync()) {
       debugPrint(
-        '[AssetPackService] extracting $fileName v$version to '
-        '${modelFile.path}',
+        '[AssetPackService] extracting $fileName to ${modelFile.path}',
       );
       final assetPath = '${AppConstants.modelAssetsDir}/$fileName';
       final data = await rootBundle.load(assetPath);
@@ -256,7 +303,7 @@ class AssetPackService {
         data.offsetInBytes,
         data.lengthInBytes,
       );
-      final tmpFile = File('${modelFile.path}.tmp');
+      final tmpFile = File('${modelFile.path}$_tmpSuffix');
       final raf = await tmpFile.open(mode: FileMode.write);
       try {
         for (
@@ -292,34 +339,92 @@ class AssetPackService {
     }
   }
 
-  /// Drop the copies an earlier build left in the documents directory.
+  /// Delete the extracted model copies nothing uses any more.
   ///
-  /// Builds up to 1.2.0 extracted every model there through
-  /// [_extractFromBundle] on iOS, Windows, and sideloaded Android. Once the
-  /// model is read from the bundle or from `filesDir`, those copies are never
-  /// opened again, but they are tens of megabytes each — and on iOS the
-  /// documents directory is part of the device backup.
-  static Future<void> _removeStaleBundleExtractions(String fileName) async {
+  /// A model update changes the extracted name, and builds up to 1.2.0
+  /// extracted every model into the documents directory on iOS, Windows, and
+  /// sideloaded Android. Those copies are never opened again, but they are
+  /// tens of megabytes each — and on iOS the documents directory is part of
+  /// the device backup.
+  ///
+  /// [nativeDir] — where the Android side extracted to (`filesDir`); it
+  ///   keeps the copies of every configured model.
+  /// [documentsInUse] — whether this resolve went through the documents
+  ///   directory fallback. If so the configured models are kept there too;
+  ///   otherwise only the copies this process handed out from there are.
+  ///
+  /// Best effort: never throws into the model-loading path. When the
+  /// configured names cannot be read, nothing is deleted.
+  static Future<void> _removeStaleCopies({
+    Directory? nativeDir,
+    bool documentsInUse = false,
+  }) async {
     try {
-      final appDir = await getApplicationDocumentsDirectory();
-      await removeStaleExtractions(appDir, fileName);
+      final configured = _configuredNames ??= configuredExtractionNames(
+        await rootBundle.loadString(AppConstants.modelConfigAssetPath),
+      );
+      final current = {...configured, ..._requestedNames};
+      if (nativeDir != null) await removeStaleExtractions(nativeDir, current);
+      await removeStaleExtractions(
+        await getApplicationDocumentsDirectory(),
+        documentsInUse ? current : _documentsNames,
+      );
     } catch (e) {
       debugPrint('[AssetPackService] stale copy cleanup skipped: $e');
     }
   }
 
-  /// Delete every `<fileName>_v*` file directly inside [dir]: the versioned
-  /// copies [_extractFromBundle] writes, and the temporary file of one that
-  /// was interrupted.
+  /// The extracted names (`<fileName>_v<version>`) of the audio and geo
+  /// models in the `model_config.json` text [configJson], exactly as the
+  /// model loaders pass them to [resolveModelPath].
+  ///
+  /// Both are needed at once: the models are resolved by different
+  /// controllers at different times, and cleaning up after one must not
+  /// delete the other's copy.
+  @visibleForTesting
+  static Set<String> configuredExtractionNames(String configJson) {
+    final config = json.decode(configJson) as Map<String, dynamic>;
+    final audio = config['audioModel'] as Map<String, dynamic>;
+    final audioFile =
+        (audio['onnx'] as Map<String, dynamic>)['modelFile'] as String;
+    final geo = config['geoModel'] as Map<String, dynamic>;
+    final geoFile = geo['modelFile'] as String;
+    return {
+      '${audioFile}_v${audio['version'] as String? ?? ''}',
+      '${geoFile}_v${geo['version'] as String? ?? '0'}',
+    };
+  }
+
+  /// Whether [name] is a file this service extracted: a model copy
+  /// `BirdNET*.onnx_v<version>`, or the `.tmp` file of an interrupted copy.
+  @visibleForTesting
+  static bool isExtractedModelName(String name) =>
+      name.startsWith(_modelNamePrefix) &&
+      _withoutTmpSuffix(name).contains(_extractedMarker);
+
+  static String _withoutTmpSuffix(String name) => name.endsWith(_tmpSuffix)
+      ? name.substring(0, name.length - _tmpSuffix.length)
+      : name;
+
+  /// Delete every extracted model copy directly inside [dir] whose name is
+  /// not in [keepNames], along with the temporary file an interrupted copy
+  /// of it left behind. The temporary file of a kept name stays: that copy
+  /// may be running right now, and the next extraction overwrites it.
+  ///
+  /// Only files matching [isExtractedModelName] are considered, so sessions,
+  /// recordings, and anything else stored next to the models are never
+  /// touched. A file that cannot be deleted is logged and skipped.
   @visibleForTesting
   static Future<void> removeStaleExtractions(
     Directory dir,
-    String fileName,
+    Set<String> keepNames,
   ) async {
     if (!await dir.exists()) return;
-    final prefix = '${fileName}_v';
     await for (final entity in dir.list(followLinks: false)) {
-      if (entity is! File || !p.basename(entity.path).startsWith(prefix)) {
+      if (entity is! File) continue;
+      final name = p.basename(entity.path);
+      if (!isExtractedModelName(name) ||
+          keepNames.contains(_withoutTmpSuffix(name))) {
         continue;
       }
       try {
