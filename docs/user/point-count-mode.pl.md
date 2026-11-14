@@ -39,12 +39,12 @@ liczenia bez zmiany wartości domyślnych.
 | Element konfiguracji | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Tryb nagrywania | :app-fiberManualRecordRounded: |
-| Kontekst fragmentu | :app-timerOutlined: |
-| Częstość wnioskowania | :app-speedRounded: |
-| Próg pewności | :app-verifiedRounded: |
+| Nagranie | :app-fiberManualRecordRounded: |
+| Kontekst klipu | :app-timerOutlined: |
+| Szybkość wnioskowania | :app-speedRounded: |
+| Próg ufności | :app-verifiedRounded: |
 | Czułość | :app-hearing: |
-| Filtr gatunków | :app-filterAltRounded: |
+| Filtr gatunkowy | :app-filterAltRounded: |
 
 Przycisk :app-helpOutline: obok każdego elementu wyjaśnia jego działanie. Wybór czasu trwania :app-timerRounded: i wybór lokalizacji mają w pierwszym kroku ten sam przycisk pomocy.
 

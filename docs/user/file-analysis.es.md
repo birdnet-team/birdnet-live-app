@@ -61,7 +61,7 @@ El asistente muestra:
 
 | Control de configuración | Icono |
 |---|---|
-| Duración de la ventana | :app-timerOutlined: |
+| Duración de ventana | :app-timerOutlined: |
 | Superposición de ventanas | :app-swapHoriz: |
 | Sensibilidad | :app-hearing: |
 | Umbral de confianza | :app-verifiedRounded: |

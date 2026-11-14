@@ -42,7 +42,7 @@ Tento krok obsahuje parametry specifické pro Survey, například:
 | Práh spolehlivosti | :app-verifiedRounded: |
 | GPS interval | :app-myLocation: |
 | Maximální doba trvání | :app-timerOutlined: |
-| Režim nahrávání | :app-fiberManualRecordRounded: |
+| Nahrávání | :app-fiberManualRecordRounded: |
 | Kontext klipu | :app-timerOutlined: |
 | Vzorkování detekcí | :app-filterAltRounded: |
 | Top N na druh | :app-formatListNumberedRounded: |

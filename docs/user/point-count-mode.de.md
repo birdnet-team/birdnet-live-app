@@ -41,10 +41,10 @@ Standardwerte zu ändern.
 | Einrichtungselement | Symbol |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Aufnahmemodus | :app-fiberManualRecordRounded: |
+| Aufnahme | :app-fiberManualRecordRounded: |
 | Clip-Kontext | :app-timerOutlined: |
 | Inferenzrate | :app-speedRounded: |
-| Konfidenzschwelle | :app-verifiedRounded: |
+| Konfidenzschwellenwert | :app-verifiedRounded: |
 | Empfindlichkeit | :app-hearing: |
 | Artenfilter | :app-filterAltRounded: |
 

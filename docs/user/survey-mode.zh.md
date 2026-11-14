@@ -43,12 +43,12 @@ Survey 的设置是一个五步向导。
 | 麦克风 | :app-micRounded: |
 | 推理频率 | :app-speedRounded: |
 | 置信度阈值 | :app-verifiedRounded: |
-| GPS 间隔 | :app-myLocation: |
+| GPS 采样间隔 | :app-myLocation: |
 | 最长时长 | :app-timerOutlined: |
-| 录音模式 | :app-fiberManualRecordRounded: |
-| 片段上下文 | :app-timerOutlined: |
-| 检测抽样 | :app-filterAltRounded: |
-| 每个物种 top-N | :app-formatListNumberedRounded: |
+| 录音 | :app-fiberManualRecordRounded: |
+| 片段前后余量 | :app-timerOutlined: |
+| 检测采样方式 | :app-filterAltRounded: |
+| 每个物种前 N 条 | :app-formatListNumberedRounded: |
 
 点按设置控件旁的 :app-helpOutline: 按钮可查看说明。名称、样线、观察者、位置和提醒控件也有帮助按钮。
 

@@ -62,10 +62,10 @@ Kreator udostępnia:
 | Element konfiguracji | Ikona |
 |---|---|
 | Czas trwania okna | :app-timerOutlined: |
-| Nakładanie | :app-swapHoriz: |
+| Nakładanie się okien | :app-swapHoriz: |
 | Czułość | :app-hearing: |
-| Próg pewności | :app-verifiedRounded: |
-| Filtr gatunków | :app-filterAltRounded: |
+| Próg ufności | :app-verifiedRounded: |
+| Filtr gatunkowy | :app-filterAltRounded: |
 
 Stuknij przycisk :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Kroki pliku, lokalizacji i daty nagrania także mają przyciski pomocy.
 

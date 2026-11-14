@@ -62,9 +62,9 @@ De wizard biedt:
 | Instelling | Pictogram |
 |---|---|
 | Vensterduur | :app-timerOutlined: |
-| Overlap | :app-swapHoriz: |
+| Vensteroverlap | :app-swapHoriz: |
 | Gevoeligheid | :app-hearing: |
-| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
+| Vertrouwensdrempel | :app-verifiedRounded: |
 | Soortenfilter | :app-filterAltRounded: |
 
 Tik op de knop :app-helpOutline: naast een instelling voor uitleg. Ook de stappen voor bestand, locatie en opnamedatum hebben helpknoppen.

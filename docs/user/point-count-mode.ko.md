@@ -36,7 +36,7 @@ Point Count를 저장할 때는 캐시된 동일한 Open-Meteo 스냅샷이 재�
 | 설정 컨트롤 | 아이콘 |
 |---|---|
 | 마이크 | :app-micRounded: |
-| 녹음 모드 | :app-fiberManualRecordRounded: |
+| 녹음 | :app-fiberManualRecordRounded: |
 | 클립 여유 구간 | :app-timerOutlined: |
 | 추론 빈도 | :app-speedRounded: |
 | 신뢰도 임계값 | :app-verifiedRounded: |

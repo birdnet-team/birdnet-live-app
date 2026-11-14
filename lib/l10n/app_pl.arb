@@ -645,7 +645,7 @@
   "settingsPickOnMap": "Wybierz na mapie",
   "surveyLocationSkipNote": "Żaden ślad GPS nie zostanie zarejestrowany.",
   "surveyParametersTitle": "Parametry",
-  "surveyInferenceRate": "Współczynnik wnioskowania",
+  "surveyInferenceRate": "Szybkość wnioskowania",
   "surveyGpsInterval": "Interwał GPS",
   "surveyMaxDuration": "Maksymalny czas trwania",
   "surveyHours": "godziny",

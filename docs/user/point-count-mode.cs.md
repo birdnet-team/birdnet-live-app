@@ -30,7 +30,7 @@ Zvolte nastavení analýzy pro tuto session, například rychlost inference, pr�
 | Ovládací prvek nastavení | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Režim nahrávání | :app-fiberManualRecordRounded: |
+| Nahrávání | :app-fiberManualRecordRounded: |
 | Kontext klipu | :app-timerOutlined: |
 | Rychlost inference | :app-speedRounded: |
 | Práh spolehlivosti | :app-verifiedRounded: |

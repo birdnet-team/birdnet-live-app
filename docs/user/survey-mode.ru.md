@@ -44,14 +44,14 @@
 | Элемент настройки | Значок |
 |---|---|
 | Микрофон | :app-micRounded: |
-| Частота вычислений | :app-speedRounded: |
-| Порог достоверности | :app-verifiedRounded: |
+| Частота инференса | :app-speedRounded: |
+| Порог уверенности | :app-verifiedRounded: |
 | Интервал GPS | :app-myLocation: |
-| Максимальная длительность | :app-timerOutlined: |
-| Режим записи | :app-fiberManualRecordRounded: |
-| Контекст фрагмента | :app-timerOutlined: |
-| Выборка обнаружений | :app-filterAltRounded: |
-| Top-N на вид | :app-formatListNumberedRounded: |
+| Максимальная продолжительность | :app-timerOutlined: |
+| Запись | :app-fiberManualRecordRounded: |
+| Контекст клипа | :app-timerOutlined: |
+| Выборка обнаружения | :app-filterAltRounded: |
+| Топ N по видам | :app-formatListNumberedRounded: |
 
 Нажмите кнопку :app-helpOutline: рядом с элементом настройки, чтобы увидеть пояснение. Кнопки справки есть также у названия, трансекта, наблюдателя, местоположения и оповещений.
 

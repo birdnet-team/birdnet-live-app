@@ -62,7 +62,7 @@ O assistente expõe:
 | Controle de configuração | Ícone |
 |---|---|
 | Duração da janela | :app-timerOutlined: |
-| Sobreposição | :app-swapHoriz: |
+| Sobreposição de janelas | :app-swapHoriz: |
 | Sensibilidade | :app-hearing: |
 | Limiar de confiança | :app-verifiedRounded: |
 | Filtro de espécies | :app-filterAltRounded: |

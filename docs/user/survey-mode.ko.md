@@ -45,7 +45,7 @@ Survey를 저장할 때도 캐시된 동일한 Open-Meteo 스냅숏을 다시 �
 | 신뢰도 임계값 | :app-verifiedRounded: |
 | GPS 간격 | :app-myLocation: |
 | 최대 시간 | :app-timerOutlined: |
-| 녹음 모드 | :app-fiberManualRecordRounded: |
+| 녹음 | :app-fiberManualRecordRounded: |
 | 클립 여유 구간 | :app-timerOutlined: |
 | 감지 샘플링 | :app-filterAltRounded: |
 | 종별 상위 N | :app-formatListNumberedRounded: |

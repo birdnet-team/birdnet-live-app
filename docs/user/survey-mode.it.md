@@ -49,9 +49,9 @@ Questo passaggio contiene parametri specifici del Survey, come:
 | Soglia di confidenza | :app-verifiedRounded: |
 | Intervallo GPS | :app-myLocation: |
 | Durata massima | :app-timerOutlined: |
-| Modalità di registrazione | :app-fiberManualRecordRounded: |
-| Contesto del clip | :app-timerOutlined: |
-| Campionamento delle rilevazioni | :app-filterAltRounded: |
+| Registrazione | :app-fiberManualRecordRounded: |
+| Contesto clip | :app-timerOutlined: |
+| Campionamento rilevazioni | :app-filterAltRounded: |
 | Top N per specie | :app-formatListNumberedRounded: |
 
 Tocca il pulsante :app-helpOutline: accanto a un controllo per leggerne la spiegazione. Anche nome, transetto, osservatore, posizione e avvisi hanno pulsanti di aiuto.

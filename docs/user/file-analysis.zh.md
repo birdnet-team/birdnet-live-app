@@ -62,7 +62,7 @@
 | 设置控件 | 图标 |
 |---|---|
 | 窗口时长 | :app-timerOutlined: |
-| 重叠 | :app-swapHoriz: |
+| 窗口重叠 | :app-swapHoriz: |
 | 灵敏度 | :app-hearing: |
 | 置信度阈值 | :app-verifiedRounded: |
 | 物种筛选 | :app-filterAltRounded: |

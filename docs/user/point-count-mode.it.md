@@ -39,8 +39,8 @@ questo conteggio senza modificare i valori predefiniti.
 | Controllo di configurazione | Icona |
 |---|---|
 | Microfono | :app-micRounded: |
-| Modalità di registrazione | :app-fiberManualRecordRounded: |
-| Contesto del clip | :app-timerOutlined: |
+| Registrazione | :app-fiberManualRecordRounded: |
+| Contesto clip | :app-timerOutlined: |
 | Frequenza di inferenza | :app-speedRounded: |
 | Soglia di confidenza | :app-verifiedRounded: |
 | Sensibilità | :app-hearing: |

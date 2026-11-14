@@ -49,7 +49,7 @@ Cette étape contient des paramètres propres au Relevé, tels que :
 | Seuil de confiance | :app-verifiedRounded: |
 | Intervalle GPS | :app-myLocation: |
 | Durée maximale | :app-timerOutlined: |
-| Mode d'enregistrement | :app-fiberManualRecordRounded: |
+| Enregistrement | :app-fiberManualRecordRounded: |
 | Contexte du clip | :app-timerOutlined: |
 | Échantillonnage des détections | :app-filterAltRounded: |
 | Top N par espèce | :app-formatListNumberedRounded: |

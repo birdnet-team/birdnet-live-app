@@ -62,7 +62,7 @@ L'assistant donne accès à :
 | Contrôle de configuration | Icône |
 |---|---|
 | Durée de la fenêtre | :app-timerOutlined: |
-| Chevauchement | :app-swapHoriz: |
+| Chevauchement des fenêtres | :app-swapHoriz: |
 | Sensibilité | :app-hearing: |
 | Seuil de confiance | :app-verifiedRounded: |
 | Filtre d'espèces | :app-filterAltRounded: |

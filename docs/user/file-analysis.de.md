@@ -62,9 +62,9 @@ Der Assistent zeigt:
 | Einrichtungselement | Symbol |
 |---|---|
 | Fensterdauer | :app-timerOutlined: |
-| Überlappung | :app-swapHoriz: |
+| Fensterüberlappung | :app-swapHoriz: |
 | Empfindlichkeit | :app-hearing: |
-| Konfidenzschwelle | :app-verifiedRounded: |
+| Konfidenzschwellenwert | :app-verifiedRounded: |
 | Artenfilter | :app-filterAltRounded: |
 
 Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch die Schritte für Datei, Standort und Aufnahmedatum haben Hilfeschaltflächen.

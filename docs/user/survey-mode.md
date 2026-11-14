@@ -45,14 +45,14 @@ This step contains Survey-specific parameters such as:
 | Setup control | Icon |
 |---|---|
 | Microphone | :app-micRounded: |
-| Inference rate | :app-speedRounded: |
+| Inference Rate | :app-speedRounded: |
 | Confidence threshold | :app-verifiedRounded: |
-| GPS interval | :app-myLocation: |
-| Maximum duration | :app-timerOutlined: |
-| Recording mode | :app-fiberManualRecordRounded: |
-| Clip context | :app-timerOutlined: |
-| Detection sampling | :app-filterAltRounded: |
-| Top N per species | :app-formatListNumberedRounded: |
+| GPS Interval | :app-myLocation: |
+| Max Duration | :app-timerOutlined: |
+| Recording | :app-fiberManualRecordRounded: |
+| Clip Context | :app-timerOutlined: |
+| Detection Sampling | :app-filterAltRounded: |
+| Top N per Species | :app-formatListNumberedRounded: |
 
 Tap the :app-helpOutline: button beside a setup control for an explanation.
 The name, transect, observer, location, and alert controls have help buttons

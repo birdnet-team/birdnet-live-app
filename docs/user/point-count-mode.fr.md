@@ -40,7 +40,7 @@ ce comptage sans modifier vos valeurs par défaut.
 | Contrôle de configuration | Icône |
 |---|---|
 | Microphone | :app-micRounded: |
-| Mode d'enregistrement | :app-fiberManualRecordRounded: |
+| Enregistrement | :app-fiberManualRecordRounded: |
 | Contexte du clip | :app-timerOutlined: |
 | Fréquence d'inférence | :app-speedRounded: |
 | Seuil de confiance | :app-verifiedRounded: |

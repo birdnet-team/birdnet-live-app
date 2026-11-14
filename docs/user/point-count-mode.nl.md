@@ -40,10 +40,10 @@ deze telling aanpassen zonder je standaardwaarden te wijzigen.
 | Instelling | Pictogram |
 |---|---|
 | Microfoon | :app-micRounded: |
-| Opnamemodus | :app-fiberManualRecordRounded: |
-| Fragmentcontext | :app-timerOutlined: |
+| Opname | :app-fiberManualRecordRounded: |
+| Clipcontext | :app-timerOutlined: |
 | Inferentiesnelheid | :app-speedRounded: |
-| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
+| Vertrouwensdrempel | :app-verifiedRounded: |
 | Gevoeligheid | :app-hearing: |
 | Soortenfilter | :app-filterAltRounded: |
 

@@ -35,8 +35,8 @@ Point Count 模式是 BirdNET Live 中定点计时的工作方式。
 | 设置控件 | 图标 |
 |---|---|
 | 麦克风 | :app-micRounded: |
-| 录音模式 | :app-fiberManualRecordRounded: |
-| 片段上下文 | :app-timerOutlined: |
+| 录音 | :app-fiberManualRecordRounded: |
+| 片段前后余量 | :app-timerOutlined: |
 | 推理频率 | :app-speedRounded: |
 | 置信度阈值 | :app-verifiedRounded: |
 | 灵敏度 | :app-hearing: |

@@ -46,13 +46,13 @@ Deze stap bevat parameters die specifiek voor een Survey gelden, zoals:
 |---|---|
 | Microfoon | :app-micRounded: |
 | Inferentiesnelheid | :app-speedRounded: |
-| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
+| Vertrouwensdrempel | :app-verifiedRounded: |
 | GPS-interval | :app-myLocation: |
 | Maximale duur | :app-timerOutlined: |
-| Opnamemodus | :app-fiberManualRecordRounded: |
-| Fragmentcontext | :app-timerOutlined: |
-| Steekproef van detecties | :app-filterAltRounded: |
-| Top-N per soort | :app-formatListNumberedRounded: |
+| Opname | :app-fiberManualRecordRounded: |
+| Clipcontext | :app-timerOutlined: |
+| Detectiebemonstering | :app-filterAltRounded: |
+| Top aantal per soort | :app-formatListNumberedRounded: |
 
 Tik op de knop :app-helpOutline: naast een instelling voor uitleg. Ook naam, transect, waarnemer, locatie en meldingen hebben helpknoppen.
 

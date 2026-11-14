@@ -62,7 +62,7 @@ La procedura guidata mostra:
 | Controllo di configurazione | Icona |
 |---|---|
 | Durata della finestra | :app-timerOutlined: |
-| Sovrapposizione | :app-swapHoriz: |
+| Sovrapposizione finestre | :app-swapHoriz: |
 | Sensibilità | :app-hearing: |
 | Soglia di confidenza | :app-verifiedRounded: |
 | Filtro specie | :app-filterAltRounded: |

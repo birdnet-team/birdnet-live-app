@@ -61,8 +61,8 @@ Průvodce odhalí:
 
 | Ovládací prvek nastavení | Ikona |
 |---|---|
-| Trvání okna | :app-timerOutlined: |
-| Překrývání | :app-swapHoriz: |
+| Doba okna | :app-timerOutlined: |
+| Překryv oken | :app-swapHoriz: |
 | Citlivost | :app-hearing: |
 | Práh spolehlivosti | :app-verifiedRounded: |
 | Filtr druhů | :app-filterAltRounded: |

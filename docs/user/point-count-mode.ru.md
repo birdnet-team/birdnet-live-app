@@ -40,12 +40,12 @@
 | Элемент настройки | Значок |
 |---|---|
 | Микрофон | :app-micRounded: |
-| Режим записи | :app-fiberManualRecordRounded: |
-| Контекст фрагмента | :app-timerOutlined: |
-| Частота вычислений | :app-speedRounded: |
-| Порог достоверности | :app-verifiedRounded: |
+| Запись | :app-fiberManualRecordRounded: |
+| Контекст клипа | :app-timerOutlined: |
+| Частота инференса | :app-speedRounded: |
+| Порог уверенности | :app-verifiedRounded: |
 | Чувствительность | :app-hearing: |
-| Фильтр видов | :app-filterAltRounded: |
+| Видовой фильтр | :app-filterAltRounded: |
 
 Кнопка :app-helpOutline: рядом с каждым элементом объясняет его действие. Такая же кнопка справки есть на первом шаге у выбора длительности :app-timerRounded: и выбора местоположения.
 

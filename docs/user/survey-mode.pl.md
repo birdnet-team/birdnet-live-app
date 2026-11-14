@@ -44,14 +44,14 @@ Ten krok zawiera parametry właściwe dla Survey, takie jak:
 | Element konfiguracji | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Częstość wnioskowania | :app-speedRounded: |
-| Próg pewności | :app-verifiedRounded: |
+| Szybkość wnioskowania | :app-speedRounded: |
+| Próg ufności | :app-verifiedRounded: |
 | Interwał GPS | :app-myLocation: |
 | Maksymalny czas trwania | :app-timerOutlined: |
-| Tryb nagrywania | :app-fiberManualRecordRounded: |
-| Kontekst fragmentu | :app-timerOutlined: |
-| Próbkowanie wykryć | :app-filterAltRounded: |
-| Top-N na gatunek | :app-formatListNumberedRounded: |
+| Nagranie | :app-fiberManualRecordRounded: |
+| Kontekst klipu | :app-timerOutlined: |
+| Próbkowanie detekcyjne | :app-filterAltRounded: |
+| Top N według gatunku | :app-formatListNumberedRounded: |
 
 Stuknij przycisk :app-helpOutline: obok elementu konfiguracji, aby zobaczyć wyjaśnienie. Nazwa, transekt, obserwator, lokalizacja i alerty także mają przyciski pomocy.
 

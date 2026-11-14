@@ -30,7 +30,7 @@ Escolha as configurações de análise por Session, como taxa de inferência, li
 | Controle de configuração | Ícone |
 |---|---|
 | Microfone | :app-micRounded: |
-| Modo de gravação | :app-fiberManualRecordRounded: |
+| Gravação | :app-fiberManualRecordRounded: |
 | Contexto do clipe | :app-timerOutlined: |
 | Taxa de inferência | :app-speedRounded: |
 | Limiar de confiança | :app-verifiedRounded: |

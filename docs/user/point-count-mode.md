@@ -38,8 +38,8 @@ settings but can be adjusted for this count without changing your defaults.
 | Setup control | Icon |
 |---|---|
 | Microphone | :app-micRounded: |
-| Recording mode | :app-fiberManualRecordRounded: |
-| Clip context | :app-timerOutlined: |
+| Recording | :app-fiberManualRecordRounded: |
+| Clip Context | :app-timerOutlined: |
 | Inference rate | :app-speedRounded: |
 | Confidence threshold | :app-verifiedRounded: |
 | Sensitivity | :app-hearing: |

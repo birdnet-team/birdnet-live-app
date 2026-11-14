@@ -42,7 +42,7 @@ Esta etapa contém parâmetros específicos do Survey, como:
 | Limiar de confiança | :app-verifiedRounded: |
 | Intervalo GPS | :app-myLocation: |
 | Duração máxima | :app-timerOutlined: |
-| Modo de gravação | :app-fiberManualRecordRounded: |
+| Gravação | :app-fiberManualRecordRounded: |
 | Contexto do clipe | :app-timerOutlined: |
 | Amostragem de detecções | :app-filterAltRounded: |
 | Top N por espécie | :app-formatListNumberedRounded: |

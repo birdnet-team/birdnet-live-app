@@ -30,7 +30,7 @@ Elige los ajustes de análisis para esta Session, como la tasa de inferencia, el
 | Control de configuración | Icono |
 |---|---|
 | Micrófono | :app-micRounded: |
-| Modo de grabación | :app-fiberManualRecordRounded: |
+| Grabación | :app-fiberManualRecordRounded: |
 | Contexto del clip | :app-timerOutlined: |
 | Tasa de inferencia | :app-speedRounded: |
 | Umbral de confianza | :app-verifiedRounded: |

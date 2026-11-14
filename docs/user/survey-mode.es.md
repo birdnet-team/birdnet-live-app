@@ -49,7 +49,7 @@ Este paso contiene parámetros específicos del Survey, como:
 | Umbral de confianza | :app-verifiedRounded: |
 | Intervalo GPS | :app-myLocation: |
 | Duración máxima | :app-timerOutlined: |
-| Modo de grabación | :app-fiberManualRecordRounded: |
+| Grabación | :app-fiberManualRecordRounded: |
 | Contexto del clip | :app-timerOutlined: |
 | Muestreo de detecciones | :app-filterAltRounded: |
 | Top N por especie | :app-formatListNumberedRounded: |

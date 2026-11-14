@@ -46,12 +46,12 @@ Dieser Schritt enthält Survey-spezifische Parameter wie:
 |---|---|
 | Mikrofon | :app-micRounded: |
 | Inferenzrate | :app-speedRounded: |
-| Konfidenzschwelle | :app-verifiedRounded: |
+| Konfidenzschwellenwert | :app-verifiedRounded: |
 | GPS-Intervall | :app-myLocation: |
 | Maximale Dauer | :app-timerOutlined: |
-| Aufnahmemodus | :app-fiberManualRecordRounded: |
+| Aufnahme | :app-fiberManualRecordRounded: |
 | Clip-Kontext | :app-timerOutlined: |
-| Detektions-Sampling | :app-filterAltRounded: |
+| Detektions-Stichprobe | :app-filterAltRounded: |
 | Top N pro Art | :app-formatListNumberedRounded: |
 
 Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch Name, Transekt, beobachtende Person, Standort und Alarme haben Hilfeschaltflächen.
