@@ -459,7 +459,7 @@
   "settingsIgnoreSpeciesDescription": "제외할 분류군을 선택하고, 매우 흔한 종을 무시할 지리 모델 점수 기준을 정합니다.",
   "settingsHelpIgnoreSpecies": "선택한 종은 여러 분석 구간의 점수를 합치기 전에 점수가 0으로 처리되므로, 화면에 표시되거나 감지로 저장되지 않습니다.",
   "settingsIncludeSoundClasses": "동물 외 소리",
-  "settingsIncludeSoundClassesDescription": "엔진, 사이렌, 전기톱, 음악 같은 소리도 함께 알립니다.",
+  "settingsIncludeSoundClassesDescription": "엔진, 사이렌, 체인톱, 음악 같은 소리도 함께 알립니다.",
   "settingsHelpIncludeSoundClasses": "모델은 야생동물 외에 몇 가지 동물 외 소리 분류도 인식합니다. 기본값은 꺼짐입니다. 켜면 다른 감지와 똑같이 표시됩니다. 위치 필터는 적용되지 않으며 탐색 화면에는 나타나지 않습니다.",
   "settingsIgnoreCommonSpecies": "흔한 종 무시 기준",
   "settingsIgnoreCommonSpeciesDescription": "지리 모델 점수가 이 기준보다 높은 종은 무시됩니다. 기본값은 100%이며, 이 값에서는 흔하다는 이유로 무시되는 종이 없습니다.",
