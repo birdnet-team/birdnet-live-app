@@ -24,7 +24,7 @@ Gdy otworzysz BirdNET Live po raz pierwszy, aplikacja przeprowadzi Cię przez kr
 1. Przeczytaj ekrany wprowadzenia.
 2. Zapoznaj się z Polityką dopuszczalnego użycia i Polityką prywatności.
 3. Przyznaj uprawnienie do mikrofonu, aby BirdNET Live mógł przetwarzać dźwięk.
-4. Opcjonalnie zezwól na dostęp do lokalizacji na potrzeby geotagowania, trybu Przeglądaj, Point Count i Survey.
+4. Opcjonalnie zezwól na dostęp do lokalizacji na potrzeby geotagowania, ekranu Odkrywaj oraz trybów Point Count i Survey.
 5. Opcjonalnie zezwól na powiadomienia przy długich liczeniach.
 
 ## Pierwsze uruchomienie
@@ -40,17 +40,17 @@ Ekran startowy to główny punkt wyjścia.
 
 ### Karty głównych trybów
 
-- :app-micRounded: **Tryb Live**
-- :app-locationOnRounded: **Tryb Point Count**
-- :app-routeRounded: **Tryb Survey**
+- :app-micRounded: **Live**
+- :app-locationOnRounded: **Point Count**
+- :app-routeRounded: **Survey**
 - :app-audioFileRounded: **Analiza plików**
 - :app-timerRounded: **Tryb ARU**
-- :app-sdStorage: **Analiza partii** (Już wkrótce)
+- :app-sdStorage: **Analiza wsadowa** (Już wkrótce)
 
 ### Przyciski na dole
 
 - :app-tuneRounded: **Ustawienia**
-- :app-searchRounded: **Przeglądaj**
+- :app-searchRounded: **Odkrywaj**
 - :app-libraryMusic: **Biblioteka Sessions**
 - :app-helpOutlineRounded: **Pomoc**
 - :app-infoOutline: **O aplikacji**
@@ -59,7 +59,7 @@ Ekran startowy to główny punkt wyjścia.
 
 BirdNET Live automatycznie zapisuje każdą zakończoną Session i otwiera ją w Przeglądzie Session, gdy przetwarzanie się zakończy.
 
-- Sessions trybu Live zapisują wykrycia oraz — zależnie od ustawień — nagrania lub fragmenty.
+- Sessions Live Mode zapisują wykrycia oraz — zależnie od ustawień — nagrania lub klipy.
 - Sessions trybu Point Count zapisywane są jako liczenia punktowe na czas.
 - Sessions trybu Survey zapisują trasę, wykrycia i powiązane metadane.
 - Wyniki analizy plików są zamieniane w Session gotową do przeglądu.
@@ -75,6 +75,6 @@ BirdNET Live automatycznie zapisuje każdą zakończoną Session i otwiera ją w
 | Uprawnienie | Potrzebne do | Opcjonalne? |
 |------------|-------------|-----------|
 | Mikrofon | Wszystkie tryby nagrywania | Wymagane |
-| Lokalizacja | Znaczniki GPS, Survey/Point Count | Opcjonalne w trybie Live |
+| Lokalizacja | Znaczniki GPS, Survey/Point Count | Opcjonalne w Live Mode |
 | Pamięć | Zapisywanie nagrań i eksportów | Wymagane do nagrywania |
 | Powiadomienia | Alerty przy Survey w tle | Opcjonalne |

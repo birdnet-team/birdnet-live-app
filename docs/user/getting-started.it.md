@@ -40,7 +40,7 @@ La schermata Home è l'hub principale.
 
 ### Schede delle modalità principali
 
-- :app-micRounded: **Modalità Live**
+- :app-micRounded: **Live Mode**
 - :app-locationOnRounded: **Modalità Point Count**
 - :app-routeRounded: **Modalità Survey**
 - :app-audioFileRounded: **Analisi file**
@@ -57,24 +57,24 @@ La schermata Home è l'hub principale.
 
 ## Cosa viene salvato
 
-BirdNET Live salva automaticamente ogni Session completata e la apre nel Riepilogo sessione al termine dell'elaborazione.
+BirdNET Live salva automaticamente ogni Session completata e la apre nel Riepilogo Session al termine dell'elaborazione.
 
 - Le Sessions Live salvano le rilevazioni e, a seconda delle impostazioni, le registrazioni o i clip.
-- Le Sessions Point Count vengono salvate come sessioni Point Count a tempo.
-- Le Sessions Survey salvano il percorso, le rilevazioni e i relativi metadati.
+- Le Sessions Point Count vengono salvate come Sessions Point Count a tempo.
+- Le Sessions Survey salvano la traccia, le rilevazioni e i relativi metadati.
 - I risultati dell'Analisi file vengono convertiti in una Session esaminabile.
 
 ## Pagine successive consigliate
 
 - Leggi [Icone e controlli](icons-and-controls.md) se vuoi una rapida spiegazione dei simboli ricorrenti dell'interfaccia.
 - Leggi [Impostazioni](settings.md) prima di modificare soglie, filtri, comportamento di registrazione o visualizzazione dello spettrogramma.
-- Apri la guida del flusso di lavoro che usi più spesso: [Modalità Live](live-mode.md), [Modalità Point Count](point-count-mode.md), [Modalità Survey](survey-mode.md) o [Analisi file](file-analysis.md).
+- Apri la guida del flusso di lavoro che usi più spesso: [Live Mode](live-mode.md), [Modalità Point Count](point-count-mode.md), [Modalità Survey](survey-mode.md) o [Analisi file](file-analysis.md).
 
 ## Autorizzazioni
 
 | Autorizzazione | Necessaria per | Opzionale? |
 |------------|-------------|-----------|
 | Microfono | Tutte le modalità di registrazione | Obbligatoria |
-| Posizione | Tagging GPS, Survey/Point Count | Opzionale per Live |
+| Posizione | Georeferenziazione GPS, Survey/Point Count | Opzionale per Live |
 | Archiviazione | Salvataggio di registrazioni ed esportazioni | Necessaria per la registrazione |
 | Notifiche | Avvisi dei Survey in background | Opzionale |

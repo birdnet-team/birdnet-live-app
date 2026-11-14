@@ -40,9 +40,9 @@ Der Startbildschirm ist die zentrale Anlaufstelle.
 
 ### Karten der Hauptmodi
 
-- :app-micRounded: **Live-Modus**
-- :app-locationOnRounded: **Point-Count-Modus**
-- :app-routeRounded: **Survey-Modus**
+- :app-micRounded: **Live Mode**
+- :app-locationOnRounded: **Point Count**
+- :app-routeRounded: **Survey**
 - :app-audioFileRounded: **Dateianalyse**
 - :app-timerRounded: **ARU-Modus**
 - :app-sdStorage: **Batch-Analyse** (Demnächst)
@@ -57,7 +57,7 @@ Der Startbildschirm ist die zentrale Anlaufstelle.
 
 ## Was gespeichert wird
 
-BirdNET Live speichert jede abgeschlossene Session automatisch und öffnet sie in der Session-Übersicht, sobald die Verarbeitung stoppt.
+BirdNET Live speichert jede abgeschlossene Session automatisch und öffnet sie in der Session-Übersicht, sobald die Verarbeitung endet.
 
 - Live-Sessions speichern Detektionen und – je nach Ihren Einstellungen – Aufnahmen oder Clips.
 - Point-Count-Sessions werden als zeitgesteuerte Point-Count-Sessions gespeichert.
@@ -77,4 +77,4 @@ BirdNET Live speichert jede abgeschlossene Session automatisch und öffnet sie i
 | Mikrofon | Alle Aufnahmemodi | Erforderlich |
 | Standort | GPS-Tagging, Survey/Point Count | Optional für Live |
 | Speicher | Aufnahmen speichern, Exporte | Für die Aufnahme erforderlich |
-| Benachrichtigungen | Warnungen bei Surveys im Hintergrund | Optional |
+| Benachrichtigungen | Meldungen bei Surveys im Hintergrund | Optional |

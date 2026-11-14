@@ -1,6 +1,6 @@
 # Modo Survey
 
-El Modo Survey es el flujo de trabajo basado en rutas para surveys en movimiento de larga duración.
+El Modo Survey es el flujo de trabajo basado en rutas para Surveys en movimiento de larga duración.
 
 ## Cómo abrirlo
 
@@ -24,7 +24,7 @@ de las pantallas de permisos del sistema y muestra el recordatorio de permiso
 de GPS en segundo plano cuando es necesario. En la misma área de ubicación hay
 una tarjeta de clima. Si el acceso al clima está desactivado, solicita tu
 consentimiento con **Permitir consulta del clima**; una vez activado, ofrece
-una vista previa del sitio solo con un icono del tiempo, la temperatura y el
+una vista previa del sitio solo con un icono del clima, la temperatura y el
 viento. La misma instantánea en caché de Open-Meteo se reutiliza al guardar el
 Survey.
 
@@ -54,12 +54,12 @@ Este paso contiene parámetros específicos del Survey, como:
 | Muestreo de detecciones | :app-filterAltRounded: |
 | Top N por especie | :app-formatListNumberedRounded: |
 
-Toque el botón :app-helpOutline: junto a un control de configuración para ver una explicación. Los controles de nombre, transecto, observador, ubicación y alertas también tienen botones de ayuda.
+Toca el botón :app-helpOutline: junto a un control de configuración para ver una explicación. Los controles de nombre, transecto, observador, ubicación y alertas también tienen botones de ayuda.
 
 Los nuevos ajustes de Survey usan **0,70 Hz** de inferencia de forma
 predeterminada. Así se conservan más vocalizaciones breves que con las
 opciones de menor frecuencia para ahorrar batería, y aun así el modelo se
-ejecuta menos que a 1,00 Hz. Survey y el modo Live comparten una misma
+ejecuta menos que a 1,00 Hz. Survey y Live Mode comparten una misma
 planificación de inferencia y una misma definición de detección, por lo que
 con los mismos ajustes de inferencia ambos informan de las mismas especies,
 puntuaciones y duraciones de detección para el mismo sonido. Las frecuencias
@@ -69,13 +69,13 @@ disponible cuando la autonomía es la prioridad.
 
 #### Muestreo de detecciones
 
-Un survey largo puede producir miles de detecciones, y guardar un clip de audio para cada una de ellas llena rápidamente el almacenamiento. El Muestreo de detecciones controla **qué clips se conservan en el disco**: *los registros de detección en sí siempre se conservan*, por lo que el registro completo de tu Session permanece intacto sea cual sea el modo. Los registros cuyo audio se descartó simplemente no tienen un clip reproducible en el Resumen de la Session.
+Un Survey largo puede producir miles de detecciones, y guardar un clip de audio para cada una de ellas llena rápidamente el almacenamiento. El Muestreo de detecciones controla **qué clips se conservan en el disco**: *los registros de detección en sí siempre se conservan*, por lo que el registro completo de tu Session permanece intacto sea cual sea el modo. Los registros cuyo audio se descartó simplemente no tienen un clip reproducible en la revisión de la Session.
 
 Hay tres modos disponibles:
 
 | Modo | Qué hace |
 |---|---|
-| **Todas** | Conserva todos los clips. El mayor uso de disco. Recomendado para surveys cortos o cuando quieres el audio de cada detección para analizarlo más tarde. |
+| **Todas** | Conserva todos los clips. El mayor uso de disco. Recomendado para Surveys cortos o cuando quieres el audio de cada detección para analizarlo más tarde. |
 | **Top N** | Conserva solo los **N clips de mayor confianza por especie**. Los demás clips se eliminan a medida que avanza el survey. El valor predeterminado de N es 10, configurable de 1 a 50. |
 | **Smart** | El mismo límite de N por especie que Top N, **más** distribución espacial: si una nueva detección cae en el mismo "lugar" que un clip ya conservado (a menos de ~250 m y ~2 min de diferencia entre sí), solo el de mayor confianza conserva su clip. Esto evita que un único cantor estacionario monopolice todos los espacios de N y orienta los clips conservados hacia cubrir todo el transecto. |
 
@@ -85,15 +85,15 @@ En el modo Smart, si falta el GPS en una detección, la comprobación de mismo l
 
 ### 3. Alertas de especies
 
-Notificaciones de tipo push que se activan a mitad del survey cuando se detecta algo digno de mención. Elige una de:
+Notificaciones de tipo push que se activan a mitad del Survey cuando se detecta algo digno de mención. Elige una de:
 
-- **Desactivada** — sin alertas (predeterminado).
+- **Desactivado** — sin alertas (predeterminado).
 - **Primera en la Session** — una alerta la primera vez que se escucha cada especie durante este survey.
-- **Primera vez** — alerta solo cuando la aplicación encuentra una especie por primera vez en todas tus sesiones (una alerta de "lifer"). Respaldada por un historial de especies de por vida que se completa automáticamente a partir de tus sesiones existentes en el primer inicio.
-- **Rara para este lugar** — alerta cuando la probabilidad del geomodelo para la ubicación actual está por debajo de un umbral configurable. Una lectura en vivo debajo del control deslizante explica exactamente qué activará el valor actual (por ejemplo, *"Alerta en especies con menos del 5 % de probabilidad en este lugar."*).
+- **Primera vez** — alerta solo cuando la aplicación encuentra una especie por primera vez en todas tus Sessions (una alerta de "lifer"). Respaldada por un historial de especies de por vida que se completa automáticamente a partir de tus Sessions existentes en el primer inicio.
+- **Rara para este lugar** — alerta cuando la probabilidad del geomodelo para la ubicación actual está por debajo de un umbral configurable. Una lectura en vivo debajo del control deslizante explica exactamente qué activará el valor actual (por ejemplo, *"Alerta sobre especies con menos del 5 % de probabilidad en este lugar."*).
 - **Lista de seguimiento** — alerta solo en las especies que hayas añadido a una lista personalizada guardada. El propio paso del asistente te permite crear nuevas listas de seguimiento, editar las existentes en un editor a pantalla completa dedicado con taxonomía con búsqueda e *Importar desde archivo* (cualquier `.txt`/`.csv` simple de nombres científicos), y eliminar las listas que ya no necesites.
 
-Un control deslizante de *Confianza mínima* se encuentra debajo del selector de modo y se ajusta automáticamente como mínimo al umbral de confianza de tu Session (las alertas nunca son más sensibles que las propias detecciones). Una sección **Avanzada** expone controles de limitación: una ventana de gracia al inicio, un intervalo mínimo estricto entre dos alertas cualesquiera, y un límite deslizante por minuto con combinación opcional de las alertas que superen el límite en una única notificación de resumen, todo con selectores de chip de un solo toque. La primera vez que cambias a un modo distinto de Desactivada, el asistente solicita por ti el permiso de notificaciones de Android.
+Un control deslizante de *Confianza mínima* se encuentra debajo del selector de modo y se ajusta automáticamente como mínimo al umbral de confianza de tu Session (las alertas nunca son más sensibles que las propias detecciones). Una sección **Avanzada** expone controles de limitación: una ventana de gracia al inicio, un intervalo mínimo estricto entre dos alertas cualesquiera, y un límite deslizante por minuto con combinación opcional de las alertas que superen el límite en una única notificación de resumen, todo con selectores de chip de un solo toque. La primera vez que cambias a un modo distinto de Desactivado, el asistente solicita por ti el permiso de notificaciones de Android.
 
 ### 4. Consejos de campo
 
@@ -101,7 +101,7 @@ Una breve lista de verificación previa al inicio dentro del flujo de configurac
 
 ### 5. Listo
 
-La pantalla de listo resume la configuración del survey activo antes de empezar con :app-playArrowRounded:.
+La pantalla de listo resume la configuración del Survey activo antes de empezar con :app-playArrowRounded:.
 
 ## Panel del Survey en vivo
 
@@ -109,7 +109,7 @@ La pantalla del Survey en vivo tiene tres pestañas principales más una lista d
 
 ### Barra superior
 
-- :app-stopRounded: — finalizar el survey
+- :app-stopRounded: — finalizar el Survey
 - :app-timerOutlined: — tiempo transcurrido
 - :app-helpOutlineRounded: — abre la hoja de ayuda del Survey
 - :app-tuneRounded: — abre los ajustes del Survey
@@ -122,17 +122,17 @@ La pantalla del Survey en vivo tiene tres pestañas principales más una lista d
 
 ### Estadísticas y detecciones
 
-Debajo del contenido de la pestaña, el panel del survey muestra una barra de estadísticas y una lista de detecciones recientes. Al tocar una detección se abre el panel de detalles de la especie.
+Debajo del contenido de la pestaña, el panel del Survey muestra una barra de estadísticas y una lista de detecciones recientes. Al tocar una detección se abre el panel de detalles de la especie.
 
-Cada fila de detección también ofrece las mismas acciones por detección que se usan en el [Resumen de la Session](session-review.md): una marca de verificación :app-checkCircleOutline: **Confirmar** de un toque y un menú adicional :app-moreVert: **Más** con **Compartir detección** y **Eliminar detección** (con deshacer en SnackBar), para que puedas validar, compartir o eliminar una detección ruidosa durante la captura en lugar de esperar al resumen posterior a la sesión.
+Cada fila de detección también ofrece las mismas acciones por detección que se usan en la [revisión de la Session](session-review.md): una marca de verificación :app-checkCircleOutline: **Confirmar** de un toque y un menú adicional :app-moreVert: **Más** con **Compartir detección** y **Eliminar detección** (con deshacer en SnackBar), para que puedas validar, compartir o eliminar una detección ruidosa durante la captura en lugar de esperar a la revisión posterior a la Session.
 
-Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Resumen de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-detección) para más detalles.
+Las mismas acciones están disponibles desde el **mapa de ruta en vivo**: toca el marcador de una detección para abrir la hoja del reproductor de clips con confirmar, compartir y eliminar. Compartir durante un Survey funciona incluso cuando has optado por una única grabación WAV continua en lugar de clips por detección: la ventana de audio correspondiente se recorta sobre la marcha del archivo en curso. Consulta [Revisión de la Session → Compartir una sola detección](session-review.md#compartir-una-sola-detección) para más detalles.
 
 ### Registrar una observación
 
-El botón :app-addCircleOutline: del survey en vivo abre un pequeño menú con **Agregar especie** y **Agregar nota**. **Agregar especie** abre el mismo buscador que [Session Review](session-review.md#agregar-una-especie-a-mano), elige una especie, luego marca :app-hearing: **Oída** o :app-visibility: **Vista** en la hoja de confirmación y toca **Agregar**. La entrada recibe la marca de tiempo de ese momento y la posición GPS actual, y aparece de inmediato en la lista de detecciones y en el mapa de la ruta con la insignia manual y los iconos de oído / ojo correspondientes.
+El botón :app-addCircleOutline: del Survey en vivo abre un pequeño menú con **Añadir especie** y **Añadir nota**. **Añadir especie** abre el mismo buscador que la [revisión de la Session](session-review.md#agregar-una-especie-a-mano): elige una especie, luego marca :app-hearing: **Oída** o :app-visibility: **Vista** en la hoja de confirmación y toca **Añadir**. La entrada recibe la marca de tiempo de ese momento y la posición GPS actual, y aparece de inmediato en la lista de detecciones y en el mapa de la ruta con la insignia manual y los iconos de oído / ojo correspondientes.
 
-Las notas de voz no están disponibles aquí a propósito: el micrófono está ocupado con la grabación del propio survey. Agrégalas en Session Review cuando termine.
+Las notas de voz no están disponibles aquí a propósito: el micrófono está ocupado con la grabación del propio survey. Añádelas en la revisión de la Session cuando termine.
 
 ## Funcionamiento en segundo plano
 
@@ -143,16 +143,16 @@ El Modo Survey mantiene visible una notificación persistente en primer plano du
 
 La notificación —título, detecciones recientes y pie de estadísticas— está completamente traducida al idioma seleccionado de la app y usa las mismas preferencias de idioma de especies y *Mostrar nombres científicos* que las tarjetas dentro de la app.
 
-Las alertas de especies (cuando están habilitadas) aparecen en un canal de notificaciones de Android independiente, de modo que puedes silenciar las alertas de forma separada de la notificación silenciosa de grabación en curso. El icono de alerta coincide con el icono de la notificación en primer plano (un pájaro monocromo) y los cuerpos de las alertas muestran solo el *motivo* —*"Primera detección de este survey"*, *"En tu lista de seguimiento"*, *"Detectada en este lugar con menos del 4 % de probabilidad"*—, dejando el nombre de la especie en el título en negrita de la notificación, donde Android lo muestra más grande.
+Las alertas de especies (cuando están habilitadas) aparecen en un canal de notificaciones de Android independiente, de modo que puedes silenciar las alertas de forma separada de la notificación silenciosa de grabación en curso. El icono de alerta coincide con el icono de la notificación en primer plano (un pájaro monocromo) y los cuerpos de las alertas muestran solo el *motivo* —*"Primera detección en este Survey"*, *"En tu lista de seguimiento"*, *"Detectada en este lugar con menos del 4 % de probabilidad"*—, dejando el nombre de la especie en el título en negrita de la notificación, donde Android lo muestra más grande.
 
-Cuando **reanudas** un survey sin terminar desde la Biblioteca de sesiones, el pipeline de alertas se vuelve a configurar a partir de tus preferencias de notificación *actuales*, no las que tenías configuradas el día que empezaste el survey. Desactiva las alertas (o cambia el modo, la lista de seguimiento o la limitación) antes de tocar Continuar Survey y el survey reanudado respetará la nueva configuración de inmediato.
+Cuando **reanudas** un Survey sin terminar desde la biblioteca de Sessions, el pipeline de alertas se vuelve a configurar a partir de tus preferencias de notificación *actuales*, no las que tenías configuradas el día que empezaste el survey. Desactiva las alertas (o cambia el modo, la lista de seguimiento o la limitación) antes de tocar Continuar Survey y el Survey reanudado respetará la nueva configuración de inmediato.
 
 ## Revisar en el mapa
 
-La vista del mapa del Survey a pantalla completa (el botón :app-fullscreen: en el Resumen de la Session) abre un reproductor de clips cuando tocas un marcador. La fila de transporte tiene botones de saltar al anterior y saltar al siguiente que flanquean el control de reproducción: recorren las detecciones en orden cronológico, pero **solo las que están visibles en el mapa en ese momento**, por lo que cualquier filtro activo de especie, confianza o chip de modo reduce la lista de reproducción en consecuencia. Los botones se atenúan en la primera y la última detección de la lista filtrada.
+La vista del mapa del Survey a pantalla completa (el botón :app-fullscreen: en la revisión de la Session) abre un reproductor de clips cuando tocas un marcador. La fila de controles de reproducción tiene botones de saltar al anterior y saltar al siguiente que flanquean el control de reproducción: recorren las detecciones en orden cronológico, pero **solo las que están visibles en el mapa en ese momento**, por lo que cualquier filtro activo de especie, confianza o chip de modo reduce la lista de reproducción en consecuencia. Los botones se atenúan en la primera y la última detección de la lista filtrada.
 
 ## Después de detener
 
-BirdNET Live guarda el Survey terminado y abre el [Resumen de la Session](session-review.md).
+BirdNET Live guarda el Survey terminado y abre la [revisión de la Session](session-review.md).
 
-El Survey activo se guarda al inicio, cada 30 segundos y cuando la aplicación deja el primer plano. Tras un cierre inesperado o un corte de energía, el último Survey parcial aparece en la Biblioteca de sesiones como una Session finalizada. La grabación no se reinicia. Pueden faltar las observaciones posteriores al último guardado.
+El Survey activo se guarda al inicio, cada 30 segundos y cuando la aplicación deja el primer plano. Tras un cierre inesperado o un corte de energía, el último Survey parcial aparece en la biblioteca de Sessions como una Session finalizada. La grabación no se reinicia. Pueden faltar las observaciones posteriores al último guardado.

@@ -19,9 +19,9 @@ Sie können außerdem jede gespeicherte Session aus der [Session-Bibliothek](ses
 
 Die Session-Übersicht vereint Wiedergabe, Navigation im Spektrogramm und eine Artenliste. Bei Survey-Sessions kann sie zusätzlich den Kartenkontext anzeigen.
 
-Die Kopfzeile mit der Zusammenfassung oben am Bildschirm enthält das Datum, einen Standort-Chip (Breiten-/Längengrad sowie optional einen aufgelösten Ortsnamen, wenn **Einstellungen → Datenschutz → Ortsnamen-Suche erlauben** aktiviert ist) und – sofern **Einstellungen → Datenschutz → Wetterabfrage erlauben** zum Zeitpunkt der Aufnahme aktiviert war – eine **Wetterzeile** unter dem Standort, die die am Ende der Session erfassten Bedingungen zeigt: eine kurze Zeile wie *„20,1 °C · Leichter Regen · 3,2 m/s SW“* mit vorangestelltem Wettersymbol. Tippen Sie auf die Zeile, um ein kleines Blatt mit Temperatur, Wind, Niederschlag und Bewölkung samt Open-Meteo-Quellenangabe aufzuklappen. Dieselbe Momentaufnahme erscheint auch im JSON-Export, im Metadatenblock der Session und im HTML-Report.
+Die Kopfzeile mit der Zusammenfassung oben am Bildschirm enthält das Datum, einen Standort-Chip (Breiten-/Längengrad sowie optional einen aufgelösten Ortsnamen, wenn **Einstellungen → Datenschutz → Ortsnamensuche erlauben** aktiviert ist) und – sofern **Einstellungen → Datenschutz → Wetterabfrage erlauben** zum Zeitpunkt der Aufnahme aktiviert war – eine **Wetterzeile** unter dem Standort, die die am Ende der Session erfassten Bedingungen zeigt: eine kurze Zeile wie *„20,1 °C · Leichter Regen · 3,2 m/s SW“* mit vorangestelltem Wettersymbol. Tippen Sie auf die Zeile, um ein kleines Blatt mit Temperatur, Wind, Niederschlag und Bewölkung samt Open-Meteo-Quellenangabe aufzuklappen. Dieselbe Momentaufnahme erscheint auch im JSON-Export, im Metadatenblock der Session und im HTML-Bericht.
 
-Der Spektrogrammstreifen über dem Player ist interaktiv: Tippen Sie, um zu springen, ziehen Sie mit einem Finger, um durch die Zeitleiste zu scrubben, und **zoomen Sie mit zwei Fingern (Pinch)** in ein schmales Zeitfenster hinein – nützlich, um das Timing überlappender Rufe zu untersuchen oder einen schnellen Triller zu zerlegen. Spreizen Sie wieder auf, um zur standardmäßigen 10-Sekunden-Übersicht zurückzukehren. Die Wiedergabetaste an einer Artenkopfzeile wählt stets den ersten Cluster, der tatsächlich einen aufgezeichneten Clip besitzt, sodass die Taste immer verfügbar ist, sobald irgendeine Detektion dieser Art abspielbar ist.
+Der Spektrogrammstreifen über dem Player ist interaktiv: Tippen Sie, um zu springen, ziehen Sie mit einem Finger, um durch die Zeitleiste zu scrubben, und **zoomen Sie mit zwei Fingern (Pinch)** in ein schmales Zeitfenster hinein – nützlich, um das Timing überlappender Rufe zu untersuchen oder einen schnellen Triller zu zerlegen. Spreizen Sie wieder auf, um zur standardmäßigen 10-Sekunden-Übersicht zurückzukehren. Die Wiedergabeschaltfläche an einer Artenkopfzeile wählt stets den ersten Cluster, der tatsächlich einen aufgezeichneten Clip besitzt, sodass sie immer verfügbar ist, sobald irgendeine Detektion dieser Art abspielbar ist.
 
 ### Artenliste
 
@@ -38,12 +38,12 @@ Die gewählte Sortierung bleibt über Sessions hinweg erhalten.
 
 ### Arten manuell hinzufügen
 
-Die Schaltfläche :app-addCircleOutline: in der Werkzeugleiste öffnet die Artensuche für Vögel, die BirdNET übersehen hat. Ein Tipp auf ein Suchergebnis fügt die Art nicht sofort ein — zuerst erscheint ein Bestätigungsfenster mit der gewählten Art und zwei Kontrollkästchen:
+Die Schaltfläche :app-addCircleOutline: in der Symbolleiste öffnet die Artensuche für Vögel, die BirdNET übersehen hat. Ein Tipp auf ein Suchergebnis fügt die Art nicht sofort ein – zuerst erscheint ein Bestätigungsfenster mit der gewählten Art und zwei Kontrollkästchen:
 
-- :app-hearing: **Gehört** — Sie haben den Vogel gehört.
-- :app-visibility: **Gesehen** — Sie haben den Vogel gesehen.
+- :app-hearing: **Gehört** – Sie haben den Vogel gehört.
+- :app-visibility: **Gesehen** – Sie haben den Vogel gesehen.
 
-Wählen Sie eines, beides oder keines aus und tippen Sie auf **Hinzufügen**. **Abbrechen** — oder ein Wisch nach unten — bringt Sie zurück zur Suche, ein Fehltipp kostet also nichts. **Gehört** ist standardmäßig aktiviert, und Ihre Auswahl bleibt für die nächste Art erhalten: Eine Reihe nur gesehener Vögel erfordert nur ein einziges Setzen von **Gesehen**. Bleiben beide leer, wird der Eintrag ohne Beobachtungsart gespeichert — nicht als „weder noch“.
+Wählen Sie eines, beides oder keines aus und tippen Sie auf **Hinzufügen**. **Abbrechen** – oder ein Wisch nach unten – bringt Sie zurück zur Suche, ein Fehltipp kostet also nichts. **Gehört** ist standardmäßig aktiviert, und Ihre Auswahl bleibt für die nächste Art erhalten: Eine Reihe nur gesehener Vögel erfordert nur ein einziges Setzen von **Gesehen**. Bleiben beide leer, wird der Eintrag ohne Beobachtungsart gespeichert – nicht als „weder noch“.
 
 Die Auswahl wird an der Detektion gespeichert und überall als kleines Ohr- und/oder Augensymbol neben dem Manuell-Abzeichen angezeigt: in Artenüberschriften, Cluster-Zeilen, im Clip-Player und in der Live-Survey-Liste. Sie wandert auch in die Exporte: als Spalte `Evidence` in CSV- und Raven-Tabellen, als Feld `evidence` in JSON und als Chip im HTML-Bericht. Dasselbe Fenster erscheint bei **Art ersetzen**, vorbelegt mit dem, was der Datensatz bereits trug.
 
@@ -71,27 +71,27 @@ Das Wischen einer **Artenkopfzeile** (nach links oder rechts) löscht alle Detek
 
 ### Eine einzelne Detektion teilen
 
-Der Eintrag :app-share: **Detektion teilen** verwendet dieselben Optionen wie **Einstellungen → Export & Sync**. Er exportiert nur diese Detektion in den ausgewählten Raven-, CSV-, JSON-, GPX-, HTML- und App-Metadaten-Artefakten. Ist **Audiodateien einbeziehen** aktiviert, enthält das Paket auch den Detektions-Audioinhalt; **Audio immer als WAV teilen** wird beachtet. Sind alle Begleitformate, HTML und App-Metadaten deaktiviert, erhält das Teilen-Menü den unverpackten Audioclip statt einer ZIP-Datei.
+Der Eintrag :app-share: **Detektion teilen** verwendet dieselben Optionen wie **Einstellungen → Export & Sync**. Er exportiert nur diese Detektion in den ausgewählten Raven-, CSV-, JSON-, GPX-, HTML- und App-Metadaten-Artefakten. Ist **Audiodateien einschließen** aktiviert, enthält das Paket auch den Detektions-Audioinhalt; **Audio immer als WAV teilen** wird beachtet. Sind alle Begleitformate, HTML und App-Metadaten deaktiviert, erhält das Teilen-Menü den unverpackten Audioclip statt einer ZIP-Datei.
 
 Der Audio-Anhang wird in dieser Reihenfolge ermittelt:
 
-1. **Bei Sessions, die eine durchgehende Datei aufzeichnen:** Audio vom Start- bis zum Endzeitstempel der Detektion wird direkt aus der Aufnahme geschnitten. Durchgehende WAV- und FLAC-Aufnahmen werden unterstützt; komprimierte File-Analysis-Quellen werden als WAV dekodiert.
+1. **Bei Sessions, die eine durchgehende Datei aufzeichnen:** Audio vom Start- bis zum Endzeitstempel der Detektion wird direkt aus der Aufnahme geschnitten. Durchgehende WAV- und FLAC-Aufnahmen werden unterstützt; komprimierte Quellen aus der Dateianalyse werden als WAV dekodiert.
 2. Andernfalls wird der gespeicherte eigene Clip der Detektion verwendet, wenn er auf dem Speicher liegt.
 3. Ist keine Audioquelle verfügbar und kein Export-Artefakt ausgewählt, fällt das Teilen auf einen kurzen Text mit Art, Konfidenz, UTC-Zeitstempel und Standort zurück.
 
-### Sprachmemos
+### Sprachnotizen
 
 Sie können kurze, gesprochene Kommentare an einzelne Detektionsdatensätze anhängen:
 
-- **Aufnehmen**: Tippen Sie bei einem Detektions-Cluster auf die Schaltfläche :app-moreVert: und wählen Sie **Sprachmemo aufnehmen**, um den Sprachmemo-Dialog zu öffnen. Tippen Sie auf die große Mikrofontaste, um die Aufnahme zu starten. Eine Live-Wellenform gibt Ihre Stimme in Echtzeit wieder. Tippen Sie auf die Stopptaste, wenn Sie fertig sind.
-- **Überprüfen**: Nach der Aufnahme können Sie das Memo mit dem integrierten Player anhören. Um das Memo zu ersetzen, tippen Sie auf die Schaltfläche **Erneut aufnehmen**. Um es zu speichern, tippen Sie auf die Schaltfläche **Speichern**.
-- **Löschen**: Wenn eine Detektion bereits ein Sprachmemo besitzt, können Sie es entweder über das Überlaufmenü oder über den Sprachmemo-Dialog löschen.
-- **Plattformspezifische Formate**: Auf Android und anderen Plattformen werden Sprachmemos im stark komprimierten AAC-Format (`.m4a`) mit 16 kHz aufgenommen. Auf iOS verwenden sie automatisch das WAV/PCM16-Format (`.wav`), um Kompatibilitätsprobleme von CoreAudio mit den aktiven Audio-Sessions der App zu vermeiden. Beide Formate werden vom ZIP-Export vollständig unterstützt.
-- **Exportieren**: Beim Export der Session als ZIP werden Sprachmemos im Verzeichnis `memos/` gebündelt, und ihre relativen Pfade werden in den JSON- und CSV-Metadaten festgehalten.
+- **Aufnehmen**: Tippen Sie bei einem Detektions-Cluster auf die Schaltfläche :app-moreVert: und wählen Sie **Sprachnotiz aufnehmen**, um den Dialog „Sprachnotiz“ zu öffnen. Tippen Sie auf die große Mikrofonschaltfläche, um die Aufnahme zu starten. Eine Live-Wellenform gibt Ihre Stimme in Echtzeit wieder. Tippen Sie auf die Stoppschaltfläche, wenn Sie fertig sind.
+- **Überprüfen**: Nach der Aufnahme können Sie die Sprachnotiz mit dem integrierten Player anhören. Um sie zu ersetzen, tippen Sie auf die Schaltfläche **Erneut aufnehmen**. Um sie zu speichern, tippen Sie auf die Schaltfläche **Speichern**.
+- **Löschen**: Wenn eine Detektion bereits eine Sprachnotiz besitzt, können Sie sie entweder über das Überlaufmenü oder über den Dialog „Sprachnotiz“ löschen.
+- **Plattformspezifische Formate**: Auf Android und anderen Plattformen werden Sprachnotizen im stark komprimierten AAC-Format (`.m4a`) mit 16 kHz aufgenommen. Auf iOS verwenden sie automatisch das WAV/PCM16-Format (`.wav`), um Kompatibilitätsprobleme von CoreAudio mit den aktiven Audio-Sessions der App zu vermeiden. Beide Formate werden vom ZIP-Export vollständig unterstützt.
+- **Exportieren**: Beim Export der Session als ZIP werden Sprachnotizen im Verzeichnis `memos/` gebündelt, und ihre relativen Pfade werden in den JSON- und CSV-Metadaten festgehalten.
 
 ### Survey-Track-Karte
 
-Survey-Sessions zeigen eine kleine eingebettete Karte des GPS-Tracks samt Detektionsmarkierungen. Tippen Sie auf der eingebetteten Karte auf eine Markierung, um eine Detektion zu fokussieren – die Karte zentriert sich darauf. Tippen Sie auf die Schaltfläche :app-fullscreen: **Vergrößern** (oben rechts auf der eingebetteten Karte), um die **Vollbildkarte** zu öffnen; war eine Detektion fokussiert, öffnet sich die Vollbildkarte zentriert und herangezoomt auf diese Detektion, sodass Sie Ihre Position behalten.
+Survey-Sessions zeigen eine kleine eingebettete Karte des GPS-Tracks samt Detektionsmarkierungen. Tippen Sie auf der eingebetteten Karte auf eine Markierung, um eine Detektion zu fokussieren – die Karte zentriert sich darauf. Tippen Sie auf die Schaltfläche :app-fullscreen: **Karte im Vollbild** (oben rechts auf der eingebetteten Karte), um die **Vollbildkarte** zu öffnen; war eine Detektion fokussiert, öffnet sich die Vollbildkarte zentriert und herangezoomt auf diese Detektion, sodass Sie Ihre Position behalten.
 
 #### Codierung der Markierungen
 
@@ -107,7 +107,7 @@ Die Vollbildkarte hat einen dauerhaften **Filter-Chip**, der oben rechts auf der
 
 - **Alle Detektionen** (Standard).
 - **Mit Audioclip** – nur Detektionen, deren Clip noch auf dem Speicher liegt und abspielbar ist.
-- **Manuelle Ergänzungen** – nur Detektionen, die Sie in der Session-Übersicht hinzugefügt haben (automatisch erkannte ausgenommen).
+- **Manuelle Einträge** – nur Detektionen, die Sie in der Session-Übersicht hinzugefügt haben (automatisch erkannte ausgenommen).
 
 Sie können die Detektionen zusätzlich nach Konfidenz einschränken. Der Schieberegler legt die Untergrenze der Konfidenz fest (beginnt bei 10 %).
 
@@ -119,15 +119,15 @@ Ist ein Filter aktiv, erhält der Titel der App-Leiste eine Untertitelzeile mit 
 
 Die Symbolleiste verwendet dieselben Symbolbedeutungen, die unter [Symbole und Steuerelemente](icons-and-controls.md) beschrieben sind:
 
-- :app-addCircleOutline: — Inhalt hinzufügen
-- :app-undo: / :app-redo: — durch Bearbeitungen schrittweise gehen
-- :app-contentCut: — Zuschneide-Modus
-- :app-save: — Bearbeitungen speichern
-- :app-share: — exportieren oder teilen
-- :app-deleteOutline: — Session verwerfen
-- :app-playArrowRounded: — einen Survey fortsetzen, sofern diese Aktion verfügbar ist
-- :app-helpOutlineRounded: — das Hilfeblatt zur Session-Übersicht öffnen
-- :app-tuneRounded: — Einstellungen öffnen
+- :app-addCircleOutline: – Inhalt hinzufügen
+- :app-undo: / :app-redo: – durch Bearbeitungen schrittweise gehen
+- :app-contentCut: – Zuschneide-Modus
+- :app-save: – Bearbeitungen speichern
+- :app-share: – exportieren oder teilen
+- :app-deleteOutline: – Session verwerfen
+- :app-playArrowRounded: – einen Survey fortsetzen, sofern diese Aktion verfügbar ist
+- :app-helpOutlineRounded: – das Hilfeblatt zur Session-Übersicht öffnen
+- :app-tuneRounded: – Einstellungen öffnen
 
 ## Typische Aufgaben bei der Durchsicht
 
@@ -142,7 +142,7 @@ Das Exportverhalten hängt von den in den [Einstellungen](settings.md) gewählte
 
 Jede exportierte Detektion trägt außerdem die BirdNET ID ihrer Art (zum Beispiel `BN07148`), also die Kennung dieser Art in der BirdNET-Taxonomie: als Spalte `BirdNET ID` direkt nach `Scientific Name` in CSV- und Raven-Tabellen, als Feld `birdnetId` in JSON, als Wegpunkt-Erweiterung in GPX und als Angabe auf der Artenkarte im HTML-Bericht. Die ID wird beim Export nachgeschlagen, daher erhalten sie auch Sessions, die mit älteren App-Versionen aufgenommen wurden, selbst wenn sich ein wissenschaftlicher Name seitdem geändert hat. Bei Einträgen, die die Taxonomie nicht kennt, etwa einer Art, die Sie selbst eingetippt haben, bleibt sie leer. Eine ID ist nur zusammen mit ihrer Taxonomieversion aussagekräftig; die Metadaten halten diese unter `taxonomy` fest.
 
-Liefert das Gerät bei einer GPS-Ortung eine Höhe, enthalten Exporte diese in Metern sowie die verfügbare vertikale Genauigkeit, Bezugsfläche und Ortungszeit. JSON enthält alle Angaben mit den zugehörigen Koordinaten; GPX enthält sie an Survey-Spurpunkten und Detektionswegpunkten. CSV und Raven ergänzen nur eine Spalte `Altitude (m)` neben Breiten- und Längengrad. Für manuelle oder auf der Karte gewählte Koordinaten wird keine Höhe abgeleitet. Eine bei der Survey-Übersicht zu einem Zeitpunkt hinzugefügte Detektion erhält eine zwischen den benachbarten Spurpunkten interpolierte Position, aber keine eigene Ortungszeit. Gerätehöhen können unterschiedliche Bezugsflächen verwenden; prüfen Sie vor Vergleichen das exportierte Feld `altitudeReference`. `unknown` bedeutet, dass die Plattform die Bezugsfläche nicht angegeben hat.
+Liefert das Gerät bei einer GPS-Ortung eine Höhe, enthalten Exporte diese in Metern sowie die verfügbare vertikale Genauigkeit, Bezugsfläche und Ortungszeit. JSON enthält alle Angaben mit den zugehörigen Koordinaten; GPX enthält sie an Survey-Spurpunkten und Detektionswegpunkten. CSV und Raven ergänzen nur eine Spalte `Altitude (m)` neben Breiten- und Längengrad. Für manuelle oder auf der Karte gewählte Koordinaten wird keine Höhe abgeleitet. Eine in der Session-Übersicht eines Surveys für einen bestimmten Zeitpunkt hinzugefügte Detektion erhält eine zwischen den benachbarten Spurpunkten interpolierte Position, aber keine eigene Ortungszeit. Gerätehöhen können unterschiedliche Bezugsflächen verwenden; prüfen Sie vor Vergleichen das exportierte Feld `altitudeReference`. `unknown` bedeutet, dass die Plattform die Bezugsfläche nicht angegeben hat.
 
 Der `settings`-Block des JSON-Exports hält die Werte fest, die *tatsächlich auf diese Session angewendet* wurden – Empfindlichkeit, Modus und Fensteranzahl des Score-Poolings, Mikrofonverstärkung und die Grenzfrequenz des Hochpasses – und nicht das, was gerade in den Einstellungen eingestellt ist. So können Sie ein Ergebnis Monate später reproduzieren oder zwei Surveys vergleichen, ohne sich zu merken, wie die Schieberegler beim Lauf standen.
 

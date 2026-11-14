@@ -48,7 +48,7 @@ L'app può accedere alle seguenti risorse esterne. Ciascuna è controllata da un
 
 | Risorsa | Scopo | Controllato da | Inviato per ogni richiesta |
 |---------|-------|----------------|----------------------------|
-| Tile della mappa (OpenStreetMap Foundation) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della Session | **Impostazioni → Privacy → Consenti tessere della mappa** | Coordinate del tile `(z, x, y)`, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
+| Tile della mappa (OpenStreetMap Foundation) | Mappa di base per selettore di posizione, mappa live di Survey e mappa della Session | **Impostazioni → Privacy → Consenti riquadri della mappa** | Coordinate del tile `(z, x, y)`, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 | Geocoding inverso (Nominatim di OpenStreetMap Foundation) | Risolvere coordinate GPS in un nome di luogo leggibile (es. “Roma, Italia”) per la visualizzazione della Session | **Impostazioni → Privacy → Consenti ricerca nome luogo** | Latitudine/longitudine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 | Snapshot meteo (OpenMeteo GmbH) | Cattura una tantum delle condizioni locali (temperatura, precipitazioni, vento, nuvolosità, codice WMO) alle coordinate di registrazione e all'orario di fine | **Impostazioni → Privacy → Consenti ricerca meteo** | Latitudine/longitudine e ora di fine della Session, il tuo indirizzo IP come parte della connessione di rete e lo user-agent BirdNET Live |
 

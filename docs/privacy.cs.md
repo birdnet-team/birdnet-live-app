@@ -25,7 +25,7 @@ Veškerá analýza zvuku a identifikace ptačích druhů probíhá **zcela ve va
 
 ## Nakládání s osobními údaji
 
-BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepřijímá vaše nahrávky, polohu, data Session ani jiné osobní údaje. Aplikace nemá uživatelské účty, reklamu, analytiku, sledování ani telemetrii. Zvuk a polohu zpracovává ve vašem zařízení a pouze po zapnutí volitelné síťové funkce odešle údaje popsané v části **Externí zdroje** přímo uvedenému poskytovateli třetí strany, nebo – pouze pokud nějaký cíl přidáte a rozhodnete se nahrávat – data Session popsaná v části **Cíle nahrávání** přímo na server organizátora projektu.
+BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepřijímá vaše nahrávky, polohu, data Session ani jiné osobní údaje. Aplikace nemá uživatelské účty, reklamu, analytiku, sledování ani telemetrii. Zvuk a polohu zpracovává ve vašem zařízení a pouze po zapnutí volitelné síťové funkce odešle údaje popsané v části **Externí zdroje** přímo uvedenému poskytovateli třetí strany, nebo – pouze pokud nějaký cíl přidáte a rozhodnete se nahrávat – data Session popsaná v části **Cíle odesílání** přímo na server organizátora projektu.
 
 ### Data uložená lokálně ve vašem zařízení:
 
@@ -35,7 +35,7 @@ BirdNET-Team neprovozuje backend aplikace a prostřednictvím BirdNET Live nepř
 | Výsledky detekce | Druhy, spolehlivost, časové značky | Lokální JSON soubory Sessions |
 | GPS souřadnice | Geotagging detekcí, trasy Survey, geomodel | Lokální JSON soubory Sessions |
 | Metadata Session | Historie, kontrola, export | Lokální JSON soubory Sessions |
-| Snapshot počasí (volitelný) | Jednorázový záznam teploty, srážek, větru, oblačnosti a kódu počasí na Session, když je **Povolit vyhledání počasí** zapnuto | Lokální JSON soubory Sessions |
+| Snapshot počasí (volitelný) | Jednorázový záznam teploty, srážek, větru, oblačnosti a kódu počasí na Session, když je **Povolit načítání počasí** zapnuto | Lokální JSON soubory Sessions |
 | Nastavení | Uživatelské předvolby | SharedPreferences |
 
 ### Přibalená offline data
@@ -49,8 +49,8 @@ Aplikace může přistupovat k následujícím externím zdrojům. Každý zdroj
 | Zdroj | Účel | Přepínač | Odesíláno v každé žádosti |
 |-------|------|----------|---------------------------|
 | Mapové dlaždice (OpenStreetMap Foundation) | Základní mapa pro výběr polohy, živou mapu Survey a mapu Session | **Nastavení → Soukromí → Povolit mapové dlaždice** | Souřadnice dlaždice `(z, x, y)`, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
-| Reverzní geokódování (Nominatim nadace OpenStreetMap Foundation) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledání názvu místa** | Zeměpisná šířka/délka Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
-| Snapshot počasí (OpenMeteo GmbH) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a koncovém čase | **Nastavení → Soukromí → Povolit vyhledání počasí** | Zeměpisná šířka/délka a koncový čas Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
+| Reverzní geokódování (Nominatim nadace OpenStreetMap Foundation) | Převod GPS souřadnic na název místa (např. „Berlín, Německo“) | **Nastavení → Soukromí → Povolit vyhledávání názvů míst** | Zeměpisná šířka/délka Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
+| Snapshot počasí (OpenMeteo GmbH) | Jednorázové zachycení lokálních podmínek (teplota, srážky, vítr, oblačnost, kód počasí WMO) na souřadnicích a koncovém čase | **Nastavení → Soukromí → Povolit načítání počasí** | Zeměpisná šířka/délka a koncový čas Session, vaše IP adresa jako součást síťového spojení a user-agent BirdNET Live |
 
 Požadavky na mapové dlaždice jsou HTTPS GET na `tile.openstreetmap.org`. Souřadnice dlaždic určují zobrazenou oblast mapy. Jako každý přímý internetový požadavek také zpřístupní poskytovateli vaši IP adresu.
 
@@ -86,7 +86,7 @@ Data Session lze exportovat ve více formátech (Raven Selection Tables, CSV, JS
 
 ## Cíle nahrávání
 
-V **Nastavení → Export a synchronizace → Cíle nahrávání** můžete přidat složku WebDAV projektu, obvykle Nextcloud File Drop, který s vámi organizátor projektu sdílel jako odkaz nebo QR kód. Nic se nenahraje, dokud cíl nepřidáte a poté ho nezaškrtnete v dialogu Sdílet nebo nezapnete automatické nahrávání pro ARU Sessions. Nahrání jdou přímo z vašeho zařízení na server organizátora přes HTTPS. BirdNET-Team mezi nimi neprovozuje žádný server a nic nepřijímá.
+V **Nastavení → Export a synchronizace → Cíle odesílání** můžete přidat složku WebDAV projektu, obvykle Nextcloud File Drop, který s vámi organizátor projektu sdílel jako odkaz nebo QR kód. Nic se nenahraje, dokud cíl nepřidáte a poté ho nezaškrtnete v dialogu Sdílet nebo nezapnete automatické nahrávání pro ARU Sessions. Nahrání jdou přímo z vašeho zařízení na server organizátora přes HTTPS. BirdNET-Team mezi nimi neprovozuje žádný server a nic nepřijímá.
 
 Nahrání obsahuje stejný obsah jako Sdílení: záznam JSON dané Session (detekce, časy, souřadnice a jméno pozorovatele a název místa, jsou-li nastaveny), zvuk, tabulky a zprávu, které jste zaškrtli, ID pro nahrávání vašeho zařízení a identifikátor účastníka, pokud jste nějaký zadali. Přihlašovací údaje k cíli jsou uloženy v klíčence zařízení.
 

@@ -4,7 +4,7 @@ Tryb Point Count to stacjonarny sposób pracy na czas w BirdNET Live.
 
 ## Jak go otworzyć
 
-Na ekranie startowym dotknij karty **Tryb Point Count** z ikoną :app-locationOnRounded:.
+Na ekranie startowym dotknij karty **Point Count** z ikoną :app-locationOnRounded:.
 
 ## Konfiguracja
 
@@ -25,30 +25,30 @@ Ekran konfiguracji odświeża GPS po powrocie z systemowego okna uprawnień lub
 z ustawień aplikacji, więc świeżo przyznane uprawnienie do lokalizacji
 powinno zaktualizować współrzędne bez ponownego uruchamiania kreatora. W tej
 samej sekcji znajduje się także karta pogody. Jeśli dostęp do danych
-pogodowych jest wyłączony, karta prosi o zgodę **Zezwalaj na sprawdzanie
+pogodowych jest wyłączony, karta prosi o zgodę **Zezwalaj na pobieranie
 pogody**; po włączeniu pokazuje podgląd miejsca z ikoną pogody, temperaturą i
 wiatrem. Ten sam zapisany w pamięci podręcznej odczyt z Open-Meteo zostanie
 użyty przy zapisie liczenia punktowego.
 
-### 2. Parametry wnioskowania
+### 2. Parametry analizy
 
-Wybierz ustawienia analizy dla tej Session, takie jak częstość wnioskowania, próg pewności i tryb filtra gatunków. Wychodzą one od
+Wybierz ustawienia analizy dla tej Session, takie jak częstotliwość analizy, próg pewności i tryb filtra gatunków. Wychodzą one od
 Twoich ustawień globalnych, ale możesz je dostosować na potrzeby tego
 liczenia bez zmiany wartości domyślnych.
 
 | Element konfiguracji | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |
-| Nagranie | :app-fiberManualRecordRounded: |
+| Nagrywanie | :app-fiberManualRecordRounded: |
 | Kontekst klipu | :app-timerOutlined: |
-| Szybkość wnioskowania | :app-speedRounded: |
-| Próg ufności | :app-verifiedRounded: |
+| Częstotliwość analizy | :app-speedRounded: |
+| Próg pewności | :app-verifiedRounded: |
 | Czułość | :app-hearing: |
-| Filtr gatunkowy | :app-filterAltRounded: |
+| Filtr gatunków | :app-filterAltRounded: |
 
 Przycisk :app-helpOutline: obok każdego elementu wyjaśnia jego działanie. Wybór czasu trwania :app-timerRounded: i wybór lokalizacji mają w pierwszym kroku ten sam przycisk pomocy.
 
-Wybierz **Pełny**, aby zapisywać ciągły dźwięk (domyślnie), **Klipy**, aby zapisywać fragment każdej wykrytej wokalizacji, lub **Wyłączony**, aby nie zapisywać dźwięku. Ten wybór jest niezależny od nagrywania w Live Mode i jest zapamiętywany dla kolejnego Point Count. Fragmenty używają tego samego wyboru okna z najwyższym wynikiem i kontekstu co Live Mode, bez ograniczania według lokalizacji. Przy opcji **Klipy** suwak **Kontekst klipu** ustala liczbę sekund zachowanych przed i po każdym analizowanym oknie; aktualizuje też kontekst Live Mode.
+Wybierz **Pełne**, aby zapisywać ciągły dźwięk (domyślnie), **Klipy**, aby zapisywać klip każdej wykrytej wokalizacji, lub **Wyłączone**, aby nie zapisywać dźwięku. Ten wybór jest niezależny od nagrywania w Live Mode i jest zapamiętywany dla kolejnego Point Count. Klipy używają tego samego wyboru okna z najwyższym wynikiem i kontekstu co Live Mode, bez ograniczania według lokalizacji. Przy opcji **Klipy** suwak **Kontekst klipu** ustala liczbę sekund zachowywanych przed każdym analizowanym oknem i po nim; aktualizuje też kontekst Live Mode.
 
 ### 3. Wskazówki terenowe
 

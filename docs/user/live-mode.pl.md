@@ -1,14 +1,14 @@
 # Tryb Live
 
-Tryb Live to najszybszy sposób, aby nasłuchiwać przez mikrofon telefonu i oglądać wykrycia w czasie rzeczywistym.
+Live Mode to najszybszy sposób, aby nasłuchiwać przez mikrofon telefonu i oglądać wykrycia w czasie rzeczywistym.
 
 ## Jak go otworzyć
 
-Na ekranie startowym dotknij karty **Tryb Live** z ikoną :app-micRounded:.
+Na ekranie startowym dotknij karty **Live** z ikoną :app-micRounded:.
 
 ## Quick Listen
 
-Quick Listen zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać. Każdy z poniższych punktów wejścia otwiera tryb Live i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczne rozpoczęcie nagrywania**, i żaden z nich nie zmienia tego ustawienia.
+Quick Listen zaczyna nasłuchiwać po jednym dotknięciu, bez otwierania aplikacji i przechodzenia przez menu — przydaje się, gdy usłyszysz coś, co chcesz rozpoznać, zanim przestanie się odzywać. Każdy z poniższych punktów wejścia otwiera Live Mode i od razu rozpoczyna nasłuchiwanie, niezależnie od ustawienia **Automatyczny start nagrywania**, i żaden z nich nie zmienia tego ustawienia.
 
 ### Android: widżet na ekranie głównym
 
@@ -33,7 +33,7 @@ Frazy Siri i pozycja w wyborze przycisku czynności wymagają iOS 17. Czynność
 
 ### Co dzieje się dalej
 
-Jeśli tryb Live jest już otwarty, Quick Listen wraca do tego samego ekranu, zamiast budować go od nowa. Trwająca lub wstrzymana Session jest kontynuowana bez zmian; jeśli została zatrzymana, nasłuchiwanie rusza na istniejącym ekranie.
+Jeśli Live Mode jest już otwarty, Quick Listen wraca do tego samego ekranu, zamiast budować go od nowa. Trwająca lub wstrzymana Session jest kontynuowana bez zmian; jeśli została zatrzymana, nasłuchiwanie rusza na istniejącym ekranie.
 
 Quick Listen nigdy nie zastępuje innego działającego trybu. Jeśli trwa lub właśnie się rozpoczyna Session trybu Point Count, Survey, Analizy plików albo [trybu ARU](aru-mode.md), aplikacja przechodzi na pierwszy plan i prosi o wcześniejsze zatrzymanie tamtej Session. Jej ekran i praca pozostają dostępne i nie zostają przerwane.
 
@@ -41,9 +41,9 @@ Quick Listen nigdy nie zastępuje innego działającego trybu. Jeśli trwa lub w
 
 Górny pasek zawiera trzy elementy:
 
-- :app-arrowBackRounded: — wyjście z trybu Live
+- :app-arrowBackRounded: — wyjście z Live Mode
 - tekst stanu na środku — `Inicjowanie`, `Wczytywanie modelu`, `Gotowe`, `Rozpoznawanie gatunków`, `Wstrzymano` lub `Błąd`
-- :app-tuneRounded: — otwarcie ustawień dotyczących trybu Live
+- :app-tuneRounded: — otwarcie ustawień dotyczących Live Mode
 
 ## Główny przycisk
 
@@ -57,7 +57,7 @@ Duży okrągły przycisk na dole pośrodku zmienia stan:
 
 ### Spektrogram
 
-Spektrogram przewija się nieprzerwanie, dopóki trwa rejestracja. Pokazuje zawartość częstotliwościową w czasie, używając palety kolorów, rozmiaru FFT, zakresu częstotliwości i czasu trwania skonfigurowanych w ustawieniach.
+Spektrogram przewija się nieprzerwanie, dopóki trwa rejestracja. Pokazuje zawartość częstotliwościową w czasie, używając mapy kolorów, rozmiaru FFT, zakresu częstotliwości i czasu trwania skonfigurowanych w ustawieniach.
 
 ### Lista wykryć
 
@@ -84,13 +84,13 @@ Zwięzły wiersz informacji pod spektrogramem podsumowuje bieżącą Session, na
 
 Nagrywaniem sterujesz w [Ustawieniach](settings.md).
 
-- **Pełne** nagrywa całą Session.
-- **Tylko wykrycia** nagrywa fragmenty wokół wykryć.
-- **Wyłączone** wyłącza nagrywanie.
+- **Pełny** nagrywa całą Session.
+- **Tylko wykrycia** nagrywa klipy wokół wykryć.
+- **Wyłączony** wyłącza nagrywanie.
 
-Gdy zatrzymasz tryb Live, BirdNET Live zapisuje Session i otwiera [Przegląd Session](session-review.md).
+Gdy zatrzymasz Live Mode, BirdNET Live zapisuje Session i otwiera [Przegląd Session](session-review.md).
 
-Tryb Live zapisuje też częściową Session na starcie, co 30 sekund i gdy aplikacja przechodzi w tło, a zakończoną Session zapisuje na dysku, zanim zwolni mikrofon. Po awarii, utracie zasilania lub gdy system zakończy aplikację w tle, ostatni zapisany stan jest dostępny w Bibliotece Sessions, oznaczony jako przerwany, jeśli aplikacja zakończyła się w trakcie Session. Zmiany od tego zapisu mogą zostać utracone. Te zapisy pośrednie są zachowywane także przy wyłączonym automatycznym zapisywaniu; zakończona Session nadal otwiera się wtedy w przeglądzie jako niezapisana i zostaje odrzucona, gdy wyjdziesz bez zapisania.
+Live Mode zapisuje też częściową Session na starcie, co 30 sekund i gdy aplikacja przechodzi w tło, a zakończoną Session zapisuje na dysku, zanim zwolni mikrofon. Po awarii, utracie zasilania lub gdy system zakończy aplikację w tle, ostatni zapisany stan jest dostępny w Bibliotece Sessions, oznaczony jako przerwany, jeśli aplikacja zakończyła się w trakcie Session. Zmiany od tego zapisu mogą zostać utracone. Te zapisy pośrednie są zachowywane także przy wyłączonym automatycznym zapisywaniu; zakończona Session nadal otwiera się wtedy w przeglądzie jako niezapisana i zostaje odrzucona, gdy wyjdziesz bez zapisania.
 
 ## Nasłuchiwanie przy wyłączonym ekranie
 

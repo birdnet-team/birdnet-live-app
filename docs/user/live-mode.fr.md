@@ -1,14 +1,14 @@
-# Mode En direct
+# Live Mode
 
-Le mode En direct est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent en temps réel.
+Live Mode est le moyen le plus rapide d'écouter via le microphone du téléphone et d'examiner les détections au fur et à mesure qu'elles apparaissent en temps réel.
 
 ## Comment l'ouvrir
 
-Depuis l'écran d'accueil, appuyez sur la carte **Mode En direct** avec l'icône :app-micRounded:.
+Depuis l'écran d'accueil, appuyez sur la carte **Live Mode** avec l'icône :app-micRounded:.
 
 ## Écoute rapide
 
-Écoute rapide démarre l'écoute en un seul appui, sans avoir à ouvrir l'application puis à y naviguer — pratique lorsque vous entendez quelque chose que vous voulez identifier avant qu'il ne se taise. Chacun des points d'entrée ci-dessous ouvre le mode En direct et commence à écouter immédiatement, quel que soit le réglage **Démarrer l'enregistrement automatiquement**, et aucun ne modifie ce réglage.
+Écoute rapide démarre l'écoute en un seul appui, sans avoir à ouvrir l'application puis à y naviguer — pratique lorsque vous entendez quelque chose que vous voulez identifier avant qu'il ne se taise. Chacun des points d'entrée ci-dessous ouvre Live Mode et commence à écouter immédiatement, quel que soit le paramètre **Démarrer l'enregistrement automatiquement**, et aucun ne modifie ce paramètre.
 
 ### Android : widget sur l'écran d'accueil
 
@@ -19,38 +19,38 @@ Ajoutez-le comme n'importe quel widget : appuyez longuement sur un espace libre 
 
 Les deux font la même chose.
 
-### iOS : Raccourcis, Siri, bouton Action et icône de l'app
+### iOS : Raccourcis, Siri, bouton Action et icône de l'application
 
 BirdNET Live propose au système l'action **Démarrer l'écoute**, il n'y a donc rien à construire à la main :
 
 - **Bouton Action** (iPhone 15 Pro et modèles ultérieurs) — ouvrez **Réglages → Bouton Action**, choisissez **Raccourci** et sélectionnez **Démarrer l'écoute** sous BirdNET Live. Un appui long sur le bouton démarre ensuite l'écoute.
 - **Siri** — dites « Commencer l'écoute avec BirdNET Live », « Écouter les oiseaux avec BirdNET Live » ou « Identifier un oiseau avec BirdNET Live ».
 - **App Raccourcis** — l'action **Démarrer l'écoute** figure sous BirdNET Live. Utilisez-la dans un raccourci de votre choix, ajoutez ce raccourci à l'écran d'accueil ou lancez-le via Toucher le dos, un mode Concentration ou un tag NFC.
-- **Icône de l'app** — appuyez longuement sur l'icône BirdNET Live de l'écran d'accueil et touchez **Démarrer l'écoute**.
+- **Icône de l'application** — appuyez longuement sur l'icône BirdNET Live de l'écran d'accueil et touchez **Démarrer l'écoute**.
 - **URL** — les automatisations qui ouvrent une URL peuvent utiliser `birdnetlive://listen`.
 
 Les phrases Siri et l'entrée dans le sélecteur du bouton Action nécessitent iOS 17. L'action Raccourcis, le menu de l'icône et l'URL fonctionnent aussi sous iOS 16.
 
 ### Ce qui se passe ensuite
 
-Si le mode En direct est déjà ouvert, Écoute rapide revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
+Si Live Mode est déjà ouvert, Écoute rapide revient à ce même écran au lieu de le reconstruire. Une Session en cours ou en pause continue sans changement ; si elle est arrêtée, l'écoute démarre sur l'écran existant.
 
-Écoute rapide ne remplace jamais un autre mode en cours. Si une Session Point Count, Survey, File Analysis ou [mode ARU](aru-mode.md) est en cours ou démarre, l'application revient au premier plan et vous demande d'arrêter d'abord cette Session. Son écran et son travail restent accessibles et ne sont pas interrompus.
+Écoute rapide ne remplace jamais un autre mode en cours. Si une Session Point Count, Survey, d'analyse de fichiers ou du [mode ARU](aru-mode.md) est en cours ou démarre, l'application revient au premier plan et vous demande d'arrêter d'abord cette Session. Son écran et son travail restent accessibles et ne sont pas interrompus.
 
 ## Barre supérieure
 
 La barre supérieure contient trois éléments :
 
-- :app-arrowBackRounded: — quitter le mode En direct
+- :app-arrowBackRounded: — quitter Live Mode
 - texte d'état central — « Initialisation », « Chargement du modèle », « Prêt », « Identification des espèces », « En pause » ou « Erreur »
-- :app-tuneRounded: — ouvrir la vue Paramètres propre au mode En direct
+- :app-tuneRounded: — ouvrir la vue Paramètres propre à Live Mode
 
 ## Bouton d'action principal
 
 Le grand bouton circulaire en bas au centre change d'état :
 
 - :app-mic: — démarrer l'écoute
-- :app-stopRounded: — arrêter la session active
+- :app-stopRounded: — arrêter la Session active
 - :app-playArrowRounded: — reprendre depuis un état en pause
 
 ## Ce que vous voyez pendant l'écoute
@@ -68,30 +68,30 @@ Les détections récentes apparaissent sous le spectrogramme. Chaque ligne peut 
 - le nom scientifique (facultatif)
 - la valeur de confiance
 
-Appuyez sur une ligne d'espèce pour ouvrir le panneau de détails de l'espèce.
+Touchez une ligne d'espèce pour ouvrir sa fiche détaillée.
 
-### Barre d'informations de la session
+### Barre d'informations de la Session
 
-La ligne d'information compacte sous le spectrogramme résume la session en cours, par exemple :
+La ligne d'informations compacte sous le spectrogramme résume la Session en cours, par exemple :
 
 - détections actuellement affichées
-- nombre d'espèces uniques (`spp`)
+- nombre d'espèces (`spp`)
 - nombre total de détections (`det`)
-- durée écoulée
+- temps écoulé
 - taille estimée de l'enregistrement lorsque l'enregistrement est activé
 
 ## Comportement d'enregistrement
 
-L'enregistrement est contrôlé dans les [Paramètres](settings.md).
+L'enregistrement se règle dans les [Paramètres](settings.md).
 
-- **Complet** enregistre toute la session.
-- **Détections uniquement** enregistre des clips autour des détections.
-- **Désactivé** désactive l'enregistrement.
+- **Complet** enregistre toute la Session.
+- **Détections uniquement** enregistre des extraits autour des détections.
+- **Désactivé** n'enregistre pas d'audio.
 
-Lorsque vous arrêtez le mode En direct, BirdNET Live enregistre la session et ouvre le [Résumé de la session](session-review.md).
+Lorsque vous arrêtez Live Mode, BirdNET Live enregistre la Session et ouvre le [Résumé de la Session](session-review.md).
 
-Le mode En direct enregistre aussi une session partielle au démarrage, toutes les 30 secondes et lorsque l'application passe en arrière-plan, et il écrit la session terminée sur le disque avant de libérer le microphone. Après un plantage, une coupure de courant ou l'arrêt de l'application par le système en arrière-plan, la dernière sauvegarde est disponible dans la Bibliothèque de sessions, marquée comme interrompue si l'application s'est arrêtée en cours de session. Les changements postérieurs à cette sauvegarde peuvent être perdus. Ces sauvegardes intermédiaires sont conservées même lorsque l'enregistrement automatique est désactivé ; une session terminée s'ouvre alors toujours dans le résumé comme non enregistrée et est supprimée si vous quittez sans enregistrer.
+Live Mode enregistre aussi une Session partielle au démarrage, toutes les 30 secondes et lorsque l'application passe en arrière-plan, et il écrit la Session terminée sur le disque avant de libérer le microphone. Après un plantage, une coupure de courant ou l'arrêt de l'application par le système en arrière-plan, la dernière sauvegarde est disponible dans la Bibliothèque de Sessions, marquée comme interrompue si l'application s'est arrêtée en cours de Session. Les changements postérieurs à cette sauvegarde peuvent être perdus. Ces sauvegardes intermédiaires sont conservées même lorsque l'enregistrement automatique est désactivé ; une Session terminée s'ouvre alors toujours dans le Résumé comme non enregistrée et est supprimée si vous quittez sans enregistrer.
 
 ## Écoute avec l’écran éteint
 
-Live Mode se met normalement en pause lorsque vous verrouillez l’écran ou quittez l’application, puis reprend la même Session à votre retour. La première fois, un dialogue propose une écoute limitée en arrière-plan. Dans [Paramètres → Audio et enregistrement](settings.md#continuer-avec-lécran-éteint), activez **Continuer avec l’écran éteint** et choisissez un maximum de 15, 30, 60 ou 120 minutes (30 par défaut). La limite s’applique à chaque période hors de l’application ; elle termine la Session lorsqu’elle est atteinte. Android affiche une notification persistante avec Ouvrir et Arrêter. Sous Windows, Live Mode continue avec la fenêtre réduite.
+Live Mode se met normalement en pause lorsque vous verrouillez l’écran ou quittez l’application, puis reprend la même Session à votre retour. La première fois, une boîte de dialogue propose une écoute limitée en arrière-plan. Dans [Paramètres → Audio et enregistrement](settings.md#continuer-avec-lécran-éteint), activez **Continuer avec l’écran éteint** et choisissez un maximum de 15, 30, 60 ou 120 minutes (30 par défaut). La limite s’applique à chaque période hors de l’application ; elle termine la Session lorsqu’elle est atteinte. Android affiche une notification persistante avec Ouvrir et Arrêter. Sous Windows, Live Mode continue avec la fenêtre réduite.

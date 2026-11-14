@@ -22,7 +22,7 @@ BirdNET Live está disponible para Android, iOS y Windows.
 La primera vez que abres BirdNET Live, la app te guía por una breve introducción y la configuración de permisos.
 
 1. Lee las pantallas de introducción.
-2. Revisa la Política de uso aceptable y la Política de Privacidad.
+2. Revisa la Política de uso aceptable y la Política de privacidad.
 3. Concede el permiso de micrófono para que BirdNET Live pueda procesar el audio.
 4. Opcionalmente, concede el permiso de ubicación para el geoetiquetado, Explorar, Point Count y Survey.
 5. Opcionalmente, permite las notificaciones para los Surveys de larga duración.
@@ -30,7 +30,7 @@ La primera vez que abres BirdNET Live, la app te guía por una breve introducci�
 ## Primer inicio
 
 1. **Introducción** — Presentación rápida de las funciones y los permisos
-2. **Uso aceptable y privacidad** — revisa la Política de uso aceptable y la Política de Privacidad
+2. **Uso aceptable y privacidad** — revisa la Política de uso aceptable y la Política de privacidad
 3. **Permisos** — Concede el acceso al micrófono (obligatorio para todos los modos)
 4. **Listo** — ¡Empieza a identificar aves!
 
@@ -40,7 +40,7 @@ La pantalla de inicio es el centro principal.
 
 ### Tarjetas de los modos principales
 
-- :app-micRounded: **Modo Live**
+- :app-micRounded: **Live Mode**
 - :app-locationOnRounded: **Modo Point Count**
 - :app-routeRounded: **Modo Survey**
 - :app-audioFileRounded: **Análisis de archivos**
@@ -51,13 +51,13 @@ La pantalla de inicio es el centro principal.
 
 - :app-tuneRounded: **Ajustes**
 - :app-searchRounded: **Explorar**
-- :app-libraryMusic: **Biblioteca de sesiones**
+- :app-libraryMusic: **Sessions**
 - :app-helpOutlineRounded: **Ayuda**
 - :app-infoOutline: **Acerca de**
 
 ## Qué se guarda
 
-BirdNET Live guarda automáticamente cada Session completada y la abre en el Resumen de la Session cuando se detiene el procesamiento.
+BirdNET Live guarda automáticamente cada Session completada y la abre en la revisión de la Session cuando se detiene el procesamiento.
 
 - Las Live Sessions guardan las detecciones y, según tus ajustes, las grabaciones o los clips.
 - Las Sessions de Point Count se guardan como Sessions de Point Count cronometradas.
@@ -68,7 +68,7 @@ BirdNET Live guarda automáticamente cada Session completada y la abre en el Res
 
 - Lee [Iconos y controles](icons-and-controls.md) si quieres una explicación rápida de los símbolos recurrentes de la interfaz.
 - Lee [Ajustes](settings.md) antes de cambiar umbrales, filtros, el comportamiento de la grabación o la visualización del espectrograma.
-- Abre la guía del flujo de trabajo que más utilices: [Modo Live](live-mode.md), [Modo Point Count](point-count-mode.md), [Modo Survey](survey-mode.md) o [Análisis de archivos](file-analysis.md).
+- Abre la guía del flujo de trabajo que más utilices: [Live Mode](live-mode.md), [Modo Point Count](point-count-mode.md), [Modo Survey](survey-mode.md) o [Análisis de archivos](file-analysis.md).
 
 ## Permisos
 

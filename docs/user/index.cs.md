@@ -2,7 +2,7 @@
 
 Tato příručka vysvětluje BirdNET Live jako nástroj pro terénní pracovní postupy: co dělá každá obrazovka, co znamenají opakující se ikony a jak nastavení utváří chování aplikace.
 
-Je psána pro ekology a praktiky ptačích surveyů, kteří už znají terénní metody a chtějí jen přehlednou mapu samotné aplikace.
+Je psána pro ekology a terénní pracovníky sčítající ptáky, kteří už znají terénní metody a chtějí jen přehlednou mapu samotné aplikace.
 
 ## Začněte zde
 
@@ -20,9 +20,9 @@ Každé nastavení aktuálně dostupné v aplikaci, seskupené stejně jako na o
 
 ## Průvodci režimy
 
-### [Režim Live](live-mode.md)
+### [Live Mode](live-mode.md)
 
-Nepřetržitý poslech mikrofonem, živé detekce, spektrogram a informační lišta session.
+Nepřetržitý poslech mikrofonem, živé detekce, spektrogram a informační lišta Session.
 
 ### [Prozkoumat](explore.md)
 
@@ -30,7 +30,7 @@ Druhy předpovězené pro aktuální polohu a roční období a překryvný pane
 
 ### [Knihovna Sessions](session-library.md)
 
-Uložené sessions, vyhledávání, řazení, režimy zobrazení a procházení seskupené podle druhů.
+Uložené Sessions, vyhledávání, řazení, režimy zobrazení a procházení seskupené podle druhů.
 
 ### [Přehled Session](session-review.md)
 
@@ -42,7 +42,7 @@ Postup nastavení Point Count, možnosti polohy a obrazovka živého časovače.
 
 ### [Režim Survey](survey-mode.md)
 
-Nastavení Survey, živý panel survey a karty Mapa, Spektrogram a Souhrn.
+Nastavení Survey, živý panel Survey a karty Mapa, Spektrogram a Souhrn.
 
 ### [Analýza souborů](file-analysis.md)
 
@@ -54,17 +54,17 @@ Zpracování a analýza více zvukových souborů hromadně. (Již brzy)
 
 ### [Režim ARU](aru-mode.md)
 
-Vytvoření naplánované session nasazení ARU, nahrávání plného zvuku cyklů nebo uchovaných detekčních klipů, spouštění živé inference během aktivních cyklů a sledování plánovaných nahrávacích cyklů.
+Vytvoření naplánovaného nasazení ARU, úplné nahrávání cyklů nebo ukládání klipů detekcí, živá inference během aktivních cyklů a sledování plánovaných nahrávacích cyklů.
 
-### [Nahrávání](uploads.md)
+### [Odesílání](uploads.md)
 
-Odesílání dokončených Sessions do složky projektu: nastavení cíle Nextcloud File Drop nebo WebDAV, odkazy pro připojení a QR kódy, karta Odeslat do, stav nahrávání a automatické nahrávání ARU.
+Odesílání dokončených Sessions do složky projektu: nastavení cíle Nextcloud File Drop nebo WebDAV, odkazy pro připojení a QR kódy, karta Odeslat do, stav odesílání a automatické odesílání ARU Sessions.
 
 ## Reference
 
 ### [FAQ](faq.md)
 
-Rychlé odpovědi k offline použití, chování nahrávání, point counts a výkonu.
+Rychlé odpovědi k offline použití, chování nahrávání, Point Count a výkonu.
 
 ## Pořadí čtení
 

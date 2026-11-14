@@ -21,7 +21,7 @@ Elige:
 - sin ubicación con :app-locationOff:
 - selector de mapa con :app-mapSheet:
 
-La pantalla de configuración actualiza el GPS cuando vuelves del diálogo de permisos del sistema o de los ajustes de la app, de modo que un permiso de ubicación recién concedido debería actualizar las coordenadas sin reiniciar el asistente. Esta misma sección incluye también una tarjeta de clima. Si el acceso al clima está desactivado, la tarjeta solicita el consentimiento de **Permitir consulta del clima**; una vez activado, muestra una vista previa del sitio solo con un icono del tiempo, la temperatura y el viento. La misma instantánea en caché de Open-Meteo se reutiliza al guardar el Point Count.
+La pantalla de configuración actualiza el GPS cuando vuelves del diálogo de permisos del sistema o de los ajustes de la app, de modo que un permiso de ubicación recién concedido debería actualizar las coordenadas sin reiniciar el asistente. Esta misma sección incluye también una tarjeta de clima. Si el acceso al clima está desactivado, la tarjeta solicita el consentimiento de **Permitir consulta del clima**; una vez activado, muestra una vista previa del sitio solo con un icono del clima, la temperatura y el viento. La misma instantánea en caché de Open-Meteo se reutiliza al guardar el Point Count.
 
 ### 2. Parámetros de inferencia
 
@@ -55,7 +55,7 @@ La pantalla del Point Count en vivo se centra en un panel cronometrado.
 
 ### Barra superior
 
-- :app-stopRounded: — finaliza el Point Count anticipadamente
+- :app-stopRounded: — finaliza el Point Count antes de tiempo
 - :app-timerRounded: — muestra el tiempo restante
 - :app-helpOutlineRounded: — abre la ayuda de Point Count
 - :app-tuneRounded: — abre los ajustes de Point Count
@@ -71,6 +71,6 @@ La pantalla del Point Count en vivo se centra en un panel cronometrado.
 
 Con **Continuar con la pantalla apagada** activado en la configuración de Point Count, el conteo continúa al bloquear la pantalla o cambiar de aplicación, incluso si la pantalla sigue encendida. Termina tras la duración elegida; la cuenta atrás usa el tiempo realmente transcurrido, por lo que una pantalla suspendida no alarga el conteo. Android muestra una notificación persistente con Abrir y Detener. Desactiva el interruptor para que estas acciones terminen el conteo antes. Point Count no se pausa y reanuda porque interrumpiría el conteo cronometrado. Si sales de la aplicación mientras se inicia, se cancela con un mensaje; vuelve a configurarlo. En Windows, minimizar la ventana no termina el conteo.
 
-Al terminar el Point Count, BirdNET Live abre [Resumen de la Session](session-review.md). Si el guardado automático está activado, guarda la Session automáticamente; de lo contrario, guárdala desde el resumen si quieres conservarla.
+Al terminar el Point Count, BirdNET Live abre la [revisión de la Session](session-review.md). Si el guardado automático está activado, guarda la Session automáticamente; de lo contrario, guárdala desde la revisión si quieres conservarla.
 
-Con el guardado automático activado, un conteo sin terminar también se guarda al inicio, cada 30 segundos y cuando la aplicación deja el primer plano. Tras un cierre inesperado o un corte de energía, el último conteo parcial está disponible en la Biblioteca de sesiones.
+Con el guardado automático activado, un conteo sin terminar también se guarda al inicio, cada 30 segundos y cuando la aplicación deja el primer plano. Tras un cierre inesperado o un corte de energía, el último conteo parcial está disponible en la biblioteca de Sessions.

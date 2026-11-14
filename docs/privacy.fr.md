@@ -48,7 +48,7 @@ L'application peut accéder aux ressources externes ci-dessous. Chacune est cont
 
 | Ressource | Objectif | Contrôlé par | Envoyé à chaque requête |
 |-----------|----------|--------------|--------------------------|
-| Tuiles de carte (OpenStreetMap Foundation) | Carte de base pour le sélecteur de position, la carte en direct du Survey et la carte de la Session | **Paramètres → Confidentialité → Autoriser les tuiles de carte** | Coordonnées de tuile `(z, x, y)`, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
+| Tuiles de carte (OpenStreetMap Foundation) | Carte de base pour le sélecteur de position, la carte en direct du Survey et la carte de la Session | **Paramètres → Confidentialité → Autoriser les tuiles cartographiques** | Coordonnées de tuile `(z, x, y)`, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
 | Géocodage inverse (Nominatim d'OpenStreetMap Foundation) | Résoudre les coordonnées GPS en un nom de lieu lisible (p. ex. « Paris, France ») pour l'affichage de la Session | **Paramètres → Confidentialité → Autoriser la recherche du nom du lieu** | Latitude/longitude de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
 | Instantané météo (OpenMeteo GmbH) | Capture ponctuelle des conditions locales (température, précipitations, vent, nébulosité, code WMO) aux coordonnées d'enregistrement et à l'heure de fin | **Paramètres → Confidentialité → Autoriser la recherche météo** | Latitude/longitude et heure de fin de la Session, votre adresse IP dans le cadre de la connexion réseau et le user-agent BirdNET Live |
 
@@ -75,7 +75,7 @@ Tant qu'un lien est seulement affiché, rien n'est envoyé, et aucun lien extern
 L'application utilise la localisation GPS pour :
 
 - **Filtrage des espèces** — prédire quelles espèces sont probables à votre position.
-- **Mode Relevé** — enregistrer des traces GPS et géomarquer les détections le long d'un transect.
+- **Mode Survey** — enregistrer des traces GPS et géomarquer les détections le long d'un transect.
 - **Mode Point d'écoute** — marquer le lieu de l'observation.
 
 Les données GPS sont stockées localement et incluses dans les exports uniquement lorsque vous partagez ou exportez explicitement une session. L'accès à la localisation nécessite votre autorisation et peut être révoqué à tout moment via les réglages du système.

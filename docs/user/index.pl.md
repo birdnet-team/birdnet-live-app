@@ -24,7 +24,7 @@ Wszystkie dostępne obecnie ustawienia, pogrupowane tak samo jak na ekranie usta
 
 Ciągłe nasłuchiwanie przez mikrofon, wykrycia na żywo, spektrogram i pasek informacji o Session.
 
-### [Przeglądaj](explore.md)
+### [Odkrywaj](explore.md)
 
 Gatunki przewidywane dla bieżącej lokalizacji i pory roku oraz nakładka ze szczegółami gatunku.
 
@@ -54,7 +54,7 @@ Przetwarzanie i analiza wielu plików dźwiękowych naraz. (Wkrótce)
 
 ### [Tryb ARU](aru-mode.md)
 
-Utwórz zaplanowaną Session wdrożenia ARU, nagrywaj pełne cykle lub zachowane fragmenty wykryć, prowadź wnioskowanie na żywo w trakcie aktywnych cykli i śledź zaplanowane cykle nagrywania.
+Utwórz zaplanowaną Session wdrożenia ARU, nagrywaj pełne cykle lub zachowane klipy wykryć, prowadź analizę na żywo w trakcie aktywnych cykli i śledź zaplanowane cykle nagrywania.
 
 ### [Przesyłanie](uploads.md)
 

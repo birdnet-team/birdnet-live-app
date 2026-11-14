@@ -17,13 +17,13 @@ Estas son las mismas formas de iconos que usa la aplicación. Aquí heredan el c
 
 | Control | Dónde aparece | Qué hace |
 |---|---|---|
-| :app-tuneRounded: **Ajustes** | Pie de la pantalla de inicio, Live, Point Count, Survey, Análisis de archivos, Resumen de la Session | Abre los Ajustes. En las pantallas de modo, abre los ajustes más relevantes para ese flujo de trabajo. |
+| :app-tuneRounded: **Ajustes** | Pie de la pantalla de inicio, Live, Point Count, Survey, Análisis de archivos, Revisión de la Session | Abre los Ajustes. En las pantallas de modo, abre los ajustes más relevantes para ese flujo de trabajo. |
 | :app-searchRounded: **Explorar** | Pie de la pantalla de inicio | Abre Explorar. |
-| :app-libraryMusic: **Biblioteca** | Pie de la pantalla de inicio | Abre la Biblioteca de sesiones. |
-| :app-helpOutlineRounded: **Ayuda** | Pie de la pantalla de inicio, encabezado de Explorar, panel del Survey, barra de herramientas del Resumen de la Session | Abre la Ayuda o una hoja de ayuda específica de la pantalla. |
+| :app-libraryMusic: **Sessions** | Pie de la pantalla de inicio | Abre la biblioteca de Sessions. |
+| :app-helpOutlineRounded: **Ayuda** | Pie de la pantalla de inicio, encabezado de Explorar, panel del Survey, barra de herramientas de la revisión de la Session | Abre la Ayuda o una hoja de ayuda específica de la pantalla. |
 | :app-infoOutline: **Información / Acerca de** | Pie de la pantalla de inicio, barras de información, hojas de ayuda | Muestra información general o contexto resumido. |
-| :app-arrowBackRounded: **Atrás** | Modo Live | Vuelve a la pantalla anterior. |
-| :app-openInNew: **Abrir externo** | Pantalla Acerca de, enlaces de documentación | Abre una página externa, como la Guía de Usuario en línea. |
+| :app-arrowBackRounded: **Atrás** | Live Mode | Vuelve a la pantalla anterior. |
+| :app-openInNew: **Abrir externo** | Pantalla Acerca de, enlaces de documentación | Abre una página externa, como la Guía de uso en línea. |
 | :app-arrowUpwardRounded: **Volver arriba** | Pantalla de ayuda | Vuelve a la introducción y los accesos a secciones. Aparece al desplazarse hacia abajo. |
 | :app-volunteerActivism: **Donar** | Pantalla Acerca de | Abre la página de donaciones de BirdNET. |
 
@@ -32,7 +32,7 @@ Estas son las mismas formas de iconos que usa la aplicación. Aquí heredan el c
 | Símbolo | Significado |
 |---|---|
 | :app-wbSunny: **Despejado** | Cielo despejado. |
-| :app-partlyCloudyDay: **Parcialmente nublado** | Sol y nube para tiempo mayormente despejado o parcialmente nublado. |
+| :app-partlyCloudyDay: **Parcialmente nublado** | Sol y nubes con cielo mayormente despejado o parcialmente nublado. |
 | :app-cloudy: **Cubierto** | Cobertura nubosa total. |
 | :app-foggy: **Niebla** | Niebla o niebla con escarcha. |
 | :app-rainyLight: **Llovizna** | Precipitación ligera. |
@@ -74,7 +74,7 @@ Estas son las mismas formas de iconos que usa la aplicación. Aquí heredan el c
 
 ## Acciones por detección
 
-Estos controles aparecen en cada fila de detección de toda la app: la lista de especies del Resumen de la Session, la hoja del reproductor de clips, la lista de detecciones del Survey en vivo y los marcadores del mapa del Survey. Consulta [Resumen de la Session → Acciones por detección](session-review.md#acciones-por-detección) para conocer todo su comportamiento.
+Estos controles aparecen en cada fila de detección de toda la app: la lista de especies de la revisión de la Session, la hoja del reproductor de clips, la lista de detecciones del Survey en vivo y los marcadores del mapa del Survey. Consulta [Revisión de la Session → Acciones por detección](session-review.md#acciones-por-detección) para conocer todo su comportamiento.
 
 | Control | Significado |
 |---|---|
@@ -84,33 +84,33 @@ Estos controles aparecen en cada fila de detección de toda la app: la lista de 
 | :app-swapHoriz: **Reemplazar especie** | Elige otra especie para esta detección. También se abre deslizando una fila de revisión hacia la izquierda. |
 | :app-deleteOutline: **Eliminar detección** | Quita la fila de inmediato. Aparece un SnackBar para deshacer durante unos segundos. También se activa deslizando una fila de revisión hacia la derecha. |
 | :app-deleteSweep: **Eliminar especie** | Quita de la Session todas las detecciones de esa especie de una sola vez, con el mismo SnackBar para deshacer. |
-| :app-hearing: **Oída** | En una detección agregada a mano: escuchaste el ave. Se define con la casilla de la hoja de confirmación que aparece tras elegir la especie. |
-| :app-visibility: **Vista** | En una detección agregada a mano: viste el ave. Ambos iconos juntos significan oída *y* vista. |
+| :app-hearing: **Oída** | En una detección añadida a mano: escuchaste el ave. Se define con la casilla de la hoja de confirmación que aparece tras elegir la especie. |
+| :app-visibility: **Vista** | En una detección añadida a mano: viste el ave. Ambos iconos juntos significan oída *y* vista. |
 
-## Barra de herramientas del Resumen de la Session
+## Barra de herramientas de la revisión de la Session
 
-Estos controles se usan en la pantalla del Resumen de la Session.
+Estos controles se usan en la pantalla de la revisión de la Session.
 
 | Control | Significado |
 |---|---|
-| :app-addCircleOutline: **Agregar** | Añade contenido, como una especie o una anotación. |
+| :app-addCircleOutline: **Añadir** | Añade contenido, como una especie o una anotación. |
 | :app-undo: **Deshacer** / :app-redo: **Rehacer** | Retrocede o avanza un paso por las ediciones de la revisión. |
 | :app-contentCut: **Recortar** | Entra en el modo de recorte o indica que el modo de recorte está activo. |
 | :app-save: **Guardar** | Guarda los cambios de la revisión. |
 | :app-share: **Compartir** | Exporta o comparte la Session. |
 | :app-deleteOutline: **Eliminar** | Descarta la Session. |
-| :app-playArrowRounded: **Continuar** | Continúa un Survey sin terminar desde el Resumen de la Session cuando esa acción está disponible. |
+| :app-playArrowRounded: **Continuar** | Continúa un Survey sin terminar desde la revisión de la Session cuando esa acción está disponible. |
 
 ## Barras de estado específicas de cada pantalla
 
-### Modo Live
+### Live Mode
 
 La barra de información de Live usa :app-infoOutline: seguido de etiquetas compactas como:
 
 - `now` — detecciones visibles actualmente en la lista en vivo
 - `spp` — número de especies únicas
 - `det` — detecciones totales
-- duración y tamaño estimado de la grabación cuando la grabación está activa
+- tiempo transcurrido y tamaño estimado de la grabación cuando la grabación está activa
 
 ### Point Count
 
@@ -127,4 +127,4 @@ El panel del Survey usa:
 
 ## En caso de duda
 
-Si no tienes claro qué hace un control, abre la hoja de ayuda más cercana en la app o consulta la página del flujo de trabajo de esa pantalla en esta guía del usuario.
+Si no tienes claro qué hace un control, abre la hoja de ayuda más cercana en la app o consulta la página del flujo de trabajo de esa pantalla en esta guía de uso.

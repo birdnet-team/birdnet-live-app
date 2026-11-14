@@ -7,7 +7,7 @@ In het Session-overzicht maakt BirdNET Live van ruwe detecties een bewerkbaar ve
 BirdNET Live opent het Session-overzicht automatisch na afloop van:
 
 - een Live-Session
-- een punttelling
+- een Point Count
 - een Survey
 - een run van Bestandsanalyse
 
@@ -15,23 +15,23 @@ Je kunt ook elke opgeslagen Session opnieuw openen vanuit de [Session-bibliothee
 
 ## Belangrijkste onderdelen
 
-### Samenvatting en weergave
+### Samenvatting en afspelen
 
-Het Session-overzicht combineert audioweergave, navigatie door het spectrogram en een soortenlijst. Bij Survey-Sessions kan het ook de context op de kaart tonen.
+Het Session-overzicht combineert het afspelen van audio, navigatie door het spectrogram en een soortenlijst. Bij Survey-Sessions kan het ook de context op de kaart tonen.
 
-De samenvattingskop bovenaan het scherm bevat de datum, een locatiechip (breedte- en lengtegraad plus optioneel een gevonden plaatsnaam wanneer **Instellingen → Privacy → Sta het opzoeken van plaatsnamen toe** aanstaat) en — wanneer **Instellingen → Privacy → Weer opzoeken toestaan** aanstond ten tijde van de opname — een **weerregel** onder de locatie met de omstandigheden die aan het einde van de Session zijn vastgelegd: een regel als *"20,1 °C · Lichte regen · 3,2 m/s ZW"* met een weerpictogram ervoor. Tik op de regel om een klein venster uit te klappen met de temperatuur, wind, neerslag en bewolking, met de bronvermelding van Open-Meteo. Dezelfde momentopname komt ook terug in de JSON-export, het metadatablok per Session en het HTML-rapport.
+De samenvattingskop bovenaan het scherm bevat de datum, een locatiechip (breedte- en lengtegraad plus optioneel een gevonden plaatsnaam wanneer **Instellingen → Privacy → Plaatsnamen opzoeken toestaan** aanstaat) en — wanneer **Instellingen → Privacy → Weer opzoeken toestaan** aanstond ten tijde van de opname — een **weerregel** onder de locatie met de omstandigheden die aan het einde van de Session zijn vastgelegd: een regel als *"20,1 °C · Lichte regen · 3,2 m/s ZW"* met een weerpictogram ervoor. Tik op de regel om een klein venster uit te klappen met de temperatuur, wind, neerslag en bewolking, met de bronvermelding van Open-Meteo. Dezelfde momentopname komt ook terug in de JSON-export, het metadatablok per Session en het HTML-rapport.
 
-De spectrogramstrook boven de speler is interactief: tik om te zoeken, sleep met één vinger om door de tijdlijn te schuiven, en **knijp met twee vingers om in te zoomen** op een smal tijdvenster — handig wanneer je de timing van overlappende roepen wilt bekijken of een snelle triller wilt ontleden. Spreid je vingers weer om terug te keren naar het standaardoverzicht van 10 seconden. De afspeelknop op een soortkop kiest altijd het eerste cluster dat daadwerkelijk een opgenomen fragment heeft, zodat de knop beschikbaar is zodra een van de detecties van die soort afspeelbaar is.
+De spectrogramstrook boven de speler is interactief: tik om naar een positie te springen, sleep met één vinger om door de tijdlijn te schuiven, en **knijp met twee vingers om in te zoomen** op een smal tijdvenster — handig wanneer je de timing van overlappende roepen wilt bekijken of een snelle triller wilt ontleden. Spreid je vingers weer om terug te keren naar het standaardoverzicht van 10 seconden. De afspeelknop op een soortkop kiest altijd het eerste cluster dat daadwerkelijk een opgenomen fragment heeft, zodat de knop beschikbaar is zodra een van de detecties van die soort afspeelbaar is.
 
 ### Soortenlijst
 
 Soorten zijn gegroepeerd in uitklapbare rijen. Je kunt detecties per soort bekijken en tijdens het nakijken door de opname bewegen. Clusterrijen onder een uitgeklapte soort worden ingesprongen, zodat de kaart van de bovenliggende soort visueel onderscheiden blijft van de onderliggende rijen.
 
-Een zoekveld boven de lijst filtert soorten op Nederlandse of wetenschappelijke naam, zodat één specifieke vogel vinden in een Session met 100 soorten een paar toetsaanslagen kost in plaats van lang scrollen. De knop :app-sort: ernaast wijzigt de volgorde van de soorten:
+Een zoekveld boven de lijst filtert soorten op gewone of wetenschappelijke naam, zodat één specifieke vogel vinden in een Session met 100 soorten een paar toetsaanslagen kost in plaats van lang scrollen. De knop :app-sort: ernaast wijzigt de volgorde van de soorten:
 
 - **Hoogste betrouwbaarheid** (standaard) — soorten met de hoogste betrouwbaarheid van één detectie eerst. Handig om de meest zekere determinaties als eerste te beoordelen. Klap je in deze modus een soort uit, dan verschijnen detecties met afspeelbare audiofragmenten vóór detecties zonder fragment, daarna op betrouwbaarheid.
 - **Meeste detecties** — soorten met het hoogste aantal detecties eerst. Handig om de dominante zangers te herkennen.
-- **A → Z** — alfabetisch op Nederlandse naam. Voorspelbaar, taalbewust en makkelijk te overzien zodra een Session veel soorten bevat.
+- **A → Z** — alfabetisch op gewone naam. Voorspelbaar, taalbewust en makkelijk te overzien zodra een Session veel soorten bevat.
 - **Eerst gedetecteerd** — chronologisch op het tijdstip van de eerste detectie. De historische standaard; handig bij het nakijken naast de tijdlijn van het spectrogram.
 
 De gekozen sortering blijft behouden tussen Sessions.
@@ -45,7 +45,7 @@ De werkbalkknop :app-addCircleOutline: opent de soortkiezer voor vogels die Bird
 
 Vink er één, beide of geen aan en tik dan op **Toevoegen**. **Annuleren** — of naar beneden vegen — brengt je terug naar het zoeken, dus een verkeerde tik kost niets. **Gehoord** staat standaard aangevinkt, en je keuze wordt overgenomen naar de volgende soort die je toevoegt, zodat je bij een reeks vogels die je alleen zag maar één keer **Gezien** hoeft aan te vinken. Laat je beide leeg, dan wordt de invoer zonder waarnemingstype opgeslagen, niet als "geen van beide".
 
-De keuze wordt bij de detectie bewaard en getoond als een klein oor- en/of oogsymbool naast de badge voor handmatige invoer, overal waar die detectie verschijnt — soortkoppen, clusterrijen, het venster van de fragmentspeler en de lijst tijdens een live Survey. Het gaat ook mee in exports: een kolom `Evidence` in CSV- en Raven-selectietabellen, een veld `evidence` in JSON, en een pil in het HTML-rapport. Hetzelfde venster verschijnt wanneer je **Soort vervangen** gebruikt, alvast ingevuld met wat die registratie al bevatte.
+De keuze wordt bij de detectie bewaard en getoond als een klein oor- en/of oogsymbool naast de badge voor handmatige invoer, overal waar die detectie verschijnt — soortkoppen, clusterrijen, het venster van de fragmentspeler en de lijst tijdens een live Survey. Het gaat ook mee in exports: een kolom `Evidence` in CSV- en Raven-selectietabellen, een veld `evidence` in JSON, en een label in het HTML-rapport. Hetzelfde venster verschijnt wanneer je **Soort vervangen** gebruikt, alvast ingevuld met wat die registratie al bevatte.
 
 ### Acties per detectie
 
@@ -71,27 +71,27 @@ Veeg je een rij met een **soortkop** (naar links of rechts), dan worden alle det
 
 ### Eén detectie delen
 
-Het item :app-share: **Detectie delen** gebruikt dezelfde keuzes als **Instellingen → Exporteren en synchroniseren**. Alleen deze detectie wordt geëxporteerd in de geselecteerde Raven-, CSV-, JSON-, GPX-, HTML- en app-metadata-artefacten. Wanneer **Audiobestanden opnemen** aanstaat, bevat het pakket ook de audio van de detectie; **Deel audio altijd als WAV** wordt gevolgd. Als alle begeleidende formaten, HTML en app-metadata uitstaan, ontvangt het systeemdeelvenster het onbewerkte audiofragment in plaats van een ZIP-bestand.
+Het item :app-share: **Detectie delen** gebruikt dezelfde keuzes als **Instellingen → Exporteren en synchroniseren**. Alleen deze detectie wordt geëxporteerd in de geselecteerde Raven-, CSV-, JSON-, GPX-, HTML- en app-metagegevens-artefacten. Wanneer **Audiobestanden meenemen** aanstaat, bevat het pakket ook de audio van de detectie; **Audio altijd als WAV delen** wordt gevolgd. Als alle begeleidende formaten, HTML en app-metagegevens uitstaan, ontvangt het deelmenu van het systeem het onbewerkte audiofragment in plaats van een ZIP-bestand.
 
 De audiobijlage wordt in deze volgorde bepaald:
 
-1. **Bij Sessions die één doorlopend bestand opnemen**: audio van de begin- tot de eindtijdstempel van de detectie wordt rechtstreeks uit de opname gesneden. Doorlopende WAV- en FLAC-opnamen worden ondersteund; gecomprimeerde File Analysis-bronnen worden als WAV gedecodeerd.
+1. **Bij Sessions die één doorlopend bestand opnemen**: audio van de begin- tot de eindtijdstempel van de detectie wordt rechtstreeks uit de opname gesneden. Doorlopende WAV- en FLAC-opnames worden ondersteund; gecomprimeerde bronbestanden van Bestandsanalyse worden als WAV gedecodeerd.
 2. Anders wordt het opgeslagen eigen fragment van de detectie gebruikt wanneer dit op schijf staat.
 3. Als geen audiobron beschikbaar is en geen export-artefact is geselecteerd, valt delen terug op een korte tekst met soort, betrouwbaarheid, UTC-tijdstempel en locatie.
 
-### Spraaknotities
+### Spraakmemo's
 
 Je kunt korte gesproken opmerkingen aan afzonderlijke detectieregistraties koppelen:
 
-- **Opnemen**: Tik op de knop :app-moreVert: bij een detectiecluster en kies **Spraaknotitie opnemen** om het venster voor spraaknotities te openen. Tik op de grote microfoonknop om de opname te starten. Een live golfvorm geeft je stem in realtime weer. Tik op de stopknop wanneer je klaar bent.
-- **Beluisteren**: Zodra de notitie is opgenomen, kun je die met de ingebouwde speler beluisteren. Tik op **Opnieuw opnemen** om de notitie te vervangen. Tik op **Opslaan** om die te bewaren.
-- **Verwijderen**: Heeft een detectie al een spraaknotitie, dan kun je die verwijderen via het overloopmenu of via het venster voor spraaknotities.
-- **Formaten per platform**: Op Android en andere platformen worden spraaknotities opgenomen in sterk gecomprimeerd AAC-formaat (`.m4a`) op 16 kHz. Op iOS wordt automatisch WAV/PCM16 (`.wav`) gebruikt om compatibiliteitsproblemen met CoreAudio en de actieve audiosessies van de app te voorkomen. Beide formaten worden volledig ondersteund door de ZIP-export.
-- **Exporteren**: Bij het exporteren van de Session als ZIP worden spraaknotities gebundeld in de map `memos/` en worden hun relatieve paden vastgelegd in de JSON- en CSV-metadata.
+- **Opnemen**: Tik op de knop :app-moreVert: bij een detectiecluster en kies **Spraakmemo opnemen** om het venster voor spraakmemo's te openen. Tik op de grote microfoonknop om de opname te starten. Een live golfvorm geeft je stem in realtime weer. Tik op de stopknop wanneer je klaar bent.
+- **Beluisteren**: Zodra de memo is opgenomen, kun je die met de ingebouwde speler beluisteren. Tik op **Opnieuw opnemen** om de memo te vervangen. Tik op **Opslaan** om die te bewaren.
+- **Verwijderen**: Heeft een detectie al een spraakmemo, dan kun je die verwijderen via het overloopmenu of via het venster voor spraakmemo's.
+- **Formaten per platform**: Op Android en andere platformen worden spraakmemo's opgenomen in sterk gecomprimeerd AAC-formaat (`.m4a`) op 16 kHz. Op iOS wordt automatisch WAV/PCM16 (`.wav`) gebruikt om compatibiliteitsproblemen met CoreAudio en de actieve audiosessies van de app te voorkomen. Beide formaten worden volledig ondersteund door de ZIP-export.
+- **Exporteren**: Bij het exporteren van de Session als ZIP worden spraakmemo's gebundeld in de map `memos/` en worden hun relatieve paden vastgelegd in de JSON- en CSV-metadata.
 
-### Kaart met het Survey-spoor
+### Kaart met de Survey-route
 
-Survey-Sessions tonen een kleine ingebouwde kaart met het GPS-spoor en de detectiemarkers. Tik op een marker op die kaart om een detectie te richten — de ingebouwde kaart centreert erop. Tik op de knop :app-fullscreen: **uitklappen** (rechtsboven op de ingebouwde kaart) om de **kaart op volledig scherm** te openen; was er een detectie gericht, dan opent de kaart gecentreerd en ingezoomd op die detectie, zodat je je plek behoudt.
+Survey-Sessions tonen een kleine ingebouwde kaart met het GPS-spoor en de detectiemarkers. Tik op een marker op die kaart om een detectie te selecteren — de ingebouwde kaart centreert erop. Tik op de knop :app-fullscreen: **uitklappen** (rechtsboven op de ingebouwde kaart) om de **kaart op volledig scherm** te openen; was er een detectie geselecteerd, dan opent de kaart gecentreerd en ingezoomd op die detectie, zodat je je plek behoudt.
 
 #### Betekenis van de markers
 
@@ -99,7 +99,7 @@ Survey-Sessions tonen een kleine ingebouwde kaart met het GPS-spoor en de detect
 - **Detecties met audio** tonen een gekleurde ring rond de soortfoto plus een afspeelbadge in de hoek — tik erop om hetzelfde venster van de fragmentspeler te openen als elders, met bevestigen, delen, vervangen en verwijderen.
 - **Stille detecties** (geen fragment op schijf) worden kleiner, vager en met een neutraalgrijze ring weergegeven, zodat detecties met audio altijd als de belangrijkste inhoud opvallen.
 - **Overlappende markers op dezelfde plek** worden op belang gestapeld: gemarkeerd > met audio > hogere betrouwbaarheid, zodat een stille marker met lage betrouwbaarheid nooit een sterke detectie met audio kan afdekken.
-- **Onder zoomniveau 14,5** worden de silhouetten teruggebracht tot gekleurde stippen waarvan de grootte de betrouwbaarheid weergeeft, en klappen dichte clusters samen tot een bel met een aantal (clusteren stopt bij zoomniveau 15).
+- **Onder zoomniveau 14,5** worden de silhouetten teruggebracht tot gekleurde stippen waarvan de grootte de betrouwbaarheid weergeeft, en klappen dichte clusters samen tot een bolletje met het aantal (clusteren stopt bij zoomniveau 15).
 
 #### Filteren
 
@@ -111,9 +111,9 @@ De kaart op volledig scherm heeft een vaste **filterchip** rechtsboven op de kaa
 
 Je kunt de detecties ook op betrouwbaarheid beperken. De schuifregelaar stelt de ondergrens van de betrouwbaarheid in (begint bij 10%).
 
-Onder de schuifregelaar voor betrouwbaarheid staat een kiezer **Beperken tot soort** waarmee je de kaart tot één soort kunt terugbrengen — handig voor de vraag "waar precies langs de route hoorde ik de grote lijster?". Het item *Alle soorten* heft de beperking op. De filters werken samen: bijvoorbeeld *Met audiofragment* + *Grote lijster* + *> 80%* toont alleen de afspeelbare markers van de grote lijster die boven de 80% scoorden.
+Onder de schuifregelaar voor betrouwbaarheid staat een kiezer **Beperken tot soorten** waarmee je de kaart tot één soort kunt terugbrengen — handig voor de vraag "waar precies langs de route hoorde ik de grote lijster?". Het item *Alle soorten* heft de beperking op. De filters werken samen: bijvoorbeeld *Met audiofragment* + *Grote lijster* + *> 80%* toont alleen de afspeelbare markers van de grote lijster die boven de 80% scoorden.
 
-Is er een filter actief, dan krijgt de titel in de appbalk een ondertitel met het aantal treffers (bijvoorbeeld *"7 detecties"*). *Herstellen* in het venster keert terug naar de standaard.
+Is er een filter actief, dan krijgt de titel in de appbalk een ondertitel met het aantal treffers (bijvoorbeeld *"7 detecties"*). *Resetten* in het venster keert terug naar de standaard.
 
 ## Werkbalkpictogrammen
 
@@ -131,7 +131,7 @@ De werkbalk gebruikt dezelfde betekenissen van pictogrammen als beschreven in [P
 
 ## Gebruikelijke taken bij het nakijken
 
-- detecties toetsen aan de audioweergave en de context van het spectrogram
+- detecties toetsen aan de afgespeelde audio en de context van het spectrogram
 - een soort of annotatie toevoegen
 - de opname bijsnijden tot het bruikbare deel
 - de nagekeken resultatenset exporteren
@@ -142,8 +142,8 @@ Het exportgedrag hangt af van de opties die je in [Instellingen](settings.md) he
 
 Elke geëxporteerde detectie draagt ook het BirdNET ID van de soort (bijvoorbeeld `BN07148`), de aanduiding van die soort in de BirdNET-taxonomie: een kolom `BirdNET ID` direct na `Scientific Name` in CSV- en Raven-selectietabellen, een veld `birdnetId` in JSON, een waypoint-extensie in GPX en een vermelding op de soortkaart in het HTML-rapport. Het ID wordt bij het exporteren opgezocht, dus ook Sessions die met eerdere appversies zijn opgenomen krijgen het, zelfs als een wetenschappelijke naam sindsdien is gewijzigd. Het blijft leeg bij items die de taxonomie niet kent, zoals een soort die je zelf hebt ingetypt. Een ID heeft alleen betekenis samen met de versie van de taxonomie, die de metadata onder `taxonomy` vastleggen.
 
-Als het apparaat bij een GPS-positie hoogte levert, bevatten exports de hoogte in meters, beschikbare verticale nauwkeurigheid, referentievlak en meettijd. JSON bevat alles bij de bijbehorende coördinaten; GPX bevat het bij Survey-trackpunten en detectiewaypoints. CSV en Raven voegen alleen een kolom `Altitude (m)` toe naast breedte- en lengtegraad. Handmatige of op de kaart gekozen coördinaten krijgen geen afgeleide hoogte. Een detectie die tijdens Survey-review op een tijdstip wordt toegevoegd, krijgt een positie geïnterpoleerd tussen omringende trackpunten, zonder eigen meettijd. Apparaten kunnen verschillende referentievlakken gebruiken; controleer `altitudeReference` vóór een vergelijking. `unknown` betekent dat het platform het vlak niet heeft aangegeven.
+Als het apparaat bij een GPS-positie hoogte levert, bevatten exports de hoogte in meters, beschikbare verticale nauwkeurigheid, referentievlak en meettijd. JSON bevat alles bij de bijbehorende coördinaten; GPX bevat het bij Survey-trackpunten en detectiewaypoints. CSV en Raven voegen alleen een kolom `Altitude (m)` toe naast breedte- en lengtegraad. Handmatige of op de kaart gekozen coördinaten krijgen geen afgeleide hoogte. Een detectie die in het Session-overzicht van een Survey op een tijdstip wordt toegevoegd, krijgt een positie geïnterpoleerd tussen omringende trackpunten, zonder eigen meettijd. Apparaten kunnen verschillende referentievlakken gebruiken; controleer `altitudeReference` vóór een vergelijking. `unknown` betekent dat het platform het vlak niet heeft aangegeven.
 
-Het blok `settings` in de JSON-export legt de waarden vast die *daadwerkelijk op deze Session zijn toegepast* — gevoeligheid, de modus en het aantal vensters voor score-pooling, de microfoonversterking en de grensfrequentie van het hoogdoorlaatfilter — en niet wat er nu toevallig in de instellingen staat. Zo kun je maanden later een resultaat reproduceren of twee Surveys vergelijken zonder te onthouden hoe de schuifregelaars stonden toen je ze draaide.
+Het blok `settings` in de JSON-export legt de waarden vast die *daadwerkelijk op deze Session zijn toegepast* — gevoeligheid, de modus en het aantal vensters voor score-pooling, de microfoonversterking en de grensfrequentie van het hoogdoorlaatfilter — en niet wat er nu toevallig in de instellingen staat. Zo kun je maanden later een resultaat reproduceren of twee Surveys vergelijken zonder te onthouden hoe de schuifregelaars stonden toen je ze uitvoerde.
 
-Alle tijdstempels in geëxporteerde bestandsnamen (`BirdNET_Live_<date>_<time>_…`) en binnen CSV- en JSON-ladingen worden weergegeven in de *huidige* lokale tijd van je telefoon. De onderliggende registraties worden in UTC bewaard en bij het exporteren omgerekend.
+Alle tijdstempels in geëxporteerde bestandsnamen (`BirdNET_Live_<date>_<time>_…`) en in de inhoud van CSV- en JSON-bestanden worden weergegeven in de *huidige* lokale tijd van je telefoon. De onderliggende registraties worden in UTC bewaard en bij het exporteren omgerekend.

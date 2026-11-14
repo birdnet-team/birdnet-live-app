@@ -29,14 +29,14 @@ Jede Artenkarte kann Folgendes enthalten:
 - optionaler wissenschaftlicher Name
 - Häufigkeitsstufen-Chip
 
-Tippen Sie auf eine Karte, um die Einblendung mit den Artendetails zu öffnen.
+Tippen Sie auf eine Karte, um die Detailansicht zur Art zu öffnen.
 
 ### Häufigkeitsstufen
 
 Statt eines rohen Prozentwerts zeigt jede Karte eine **Häufigkeitsstufe** für den aktuellen Ort und die Jahreszeit. Der Stufen-Chip vereint zwei Hinweise:
 
 - einen **Kreis**, der sich von ⅙ bis vollständig füllt, je wahrscheinlicher die Art ist
-- den **ersten Buchstaben** des Stufennamens (der vollständige Name wird von Screenreadern vorgelesen und in den Artendetails angezeigt)
+- den **ersten Buchstaben** des Stufennamens (der vollständige Name wird von Screenreadern vorgelesen und in der Detailansicht angezeigt)
 
 Die Farbe des Chips folgt der gemeinsamen Bewertungsskala der App und wandert von Rot (unwahrscheinlicher) zu Grün (wahrscheinlicher), je höher die Stufe.
 
@@ -47,15 +47,15 @@ Es gibt sechs Stufen, von am wahrscheinlichsten bis am wenigsten wahrscheinlich:
 | **Zahlreich** | Zu den stärksten Vorhersagen hier |
 | **Häufig** | Sehr wahrscheinlich |
 | **Verbreitet** | Wahrscheinlich |
-| **Mäßig** | Möglich |
-| **Spärlich** | Unwahrscheinlich |
-| **Rar** | Zu den schwächsten Vorhersagen hier |
+| **Mäßig häufig** | Möglich |
+| **Selten** | Unwahrscheinlich |
+| **Sehr selten** | Zu den schwächsten Vorhersagen hier |
 
 Die Stufen sind **relativ zum aktuellen Standort**. Sie passen sich daran an, wie stark das Geo-Modell Arten in diesem Gebiet vorhersagt, sodass sich die Grenzen mit der lokalen Score-Verteilung verschieben: An einem Ort mit vielen sicheren Vorhersagen braucht eine Art einen sehr hohen Score, um *Zahlreich* zu sein, während in einem Gebiet mit schwächeren Vorhersagen dieselbe Stufe bei einem niedrigeren Score erreicht wird. Derselbe Score kann also an verschiedenen Orten in verschiedene Stufen fallen, wodurch die Rangfolge überall aussagekräftig bleibt.
 
-## Einblendung der Artendetails
+## Detailansicht zur Art
 
-Die Einblendung kann Folgendes anzeigen:
+Die Detailansicht kann Folgendes anzeigen:
 
 - größeres Bild
 - Bildnachweis

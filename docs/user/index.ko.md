@@ -30,7 +30,7 @@ BirdNET Live 전반에 공통으로 쓰이는 아이콘, 버튼, 기호, 상태 
 
 ### [Session 목록](session-library.md)
 
-저장된 Session, 검색, 정렬, 보기 모드, 종별로 묶어 둘러보기.
+저장된 Session, 검색, 정렬, 보기 방식, 종별로 묶어 둘러보기.
 
 ### [Session 검토](session-review.md)
 
@@ -42,7 +42,7 @@ Point Count 설정 절차, 위치 옵션, 실시간 타이머 화면.
 
 ### [Survey 모드](survey-mode.md)
 
-Survey 설정, 실시간 Survey 대시보드, 그리고 지도, 스펙트로그램, 요약 탭.
+Survey 설정, 실시간 Survey 대시보드, 그리고 지도, 오디오, 요약 탭.
 
 ### [파일 분석](file-analysis.md)
 

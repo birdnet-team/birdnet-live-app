@@ -20,9 +20,9 @@ Diese Symbole haben dieselben Formen wie in der App. Hier übernehmen sie die Te
 | :app-tuneRounded: **Einstellungen** | Start-Fußzeile, Live, Point Count, Survey, Dateianalyse, Session-Übersicht | Öffnet die Einstellungen. In den Modus-Bildschirmen werden die für den jeweiligen Arbeitsablauf relevantesten Einstellungen geöffnet. |
 | :app-searchRounded: **Erkunden** | Start-Fußzeile | Öffnet Erkunden. |
 | :app-libraryMusic: **Bibliothek** | Start-Fußzeile | Öffnet die Session-Bibliothek. |
-| :app-helpOutlineRounded: **Hilfe** | Start-Fußzeile, Erkunden-Kopfzeile, Survey-Dashboard, Session-Übersicht-Symbolleiste | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
+| :app-helpOutlineRounded: **Hilfe** | Start-Fußzeile, Erkunden-Kopfzeile, Survey-Dashboard, Symbolleiste der Session-Übersicht | Öffnet die Hilfe oder ein bildschirmspezifisches Hilfeblatt. |
 | :app-infoOutline: **Info / Über** | Start-Fußzeile, Infoleisten, Hilfeblätter | Zeigt allgemeine Informationen oder zusammenfassenden Kontext an. |
-| :app-arrowBackRounded: **Zurück** | Live-Modus | Kehrt zum vorherigen Bildschirm zurück. |
+| :app-arrowBackRounded: **Zurück** | Live Mode | Kehrt zum vorherigen Bildschirm zurück. |
 | :app-openInNew: **Extern öffnen** | Über-Bildschirm, Dokumentationslinks | Öffnet eine externe Seite, etwa das Online-Benutzerhandbuch. |
 | :app-arrowUpwardRounded: **Nach oben** | Hilfebildschirm | Kehrt zur Einführung und den Abschnittsverknüpfungen zurück. Erscheint nach dem Herunterscrollen. |
 | :app-volunteerActivism: **Spenden** | Über-Bildschirm | Öffnet die BirdNET-Spendenseite. |
@@ -44,10 +44,10 @@ Diese Symbole haben dieselben Formen wie in der App. Hier übernehmen sie die Te
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :app-micRounded: **Mic** | Live-Hören starten. |
-| :app-stopRounded: **Stop** | Eine aktive Aufnahme, einen Point Count oder einen Survey stoppen. |
-| :app-playArrowRounded: **Play** | Einen konfigurierten Setup-Ablauf starten oder aus einem angehaltenen Bereitschaftszustand fortsetzen. |
-| :app-close: **Schließen** / :app-stop: **Abbrechen** | Eine aktive Dateianalyse über die Kopfzeile oder die Fortschrittsanzeige abbrechen. |
+| :app-micRounded: **Mikrofon** | Zuhören starten. |
+| :app-stopRounded: **Stopp** | Eine laufende Aufnahme, einen Point Count oder einen Survey beenden. |
+| :app-playArrowRounded: **Play** | Nach abgeschlossener Einrichtung starten oder eine pausierte Session fortsetzen. |
+| :app-close: **Schließen** / :app-stop: **Abbrechen** | Eine laufende Dateianalyse über die Kopfzeile oder die Fortschrittsanzeige abbrechen. |
 | :app-timerOutlined: **Timer** | Dauer oder verbleibende Zeit. |
 | :app-errorOutline: **Fehler** | Modell- oder Verarbeitungsfehler. |
 
@@ -70,20 +70,20 @@ Diese Symbole haben dieselben Formen wie in der App. Hier übernehmen sie die Te
 |---|---|
 | Arten-Miniaturansicht | Mitgeliefertes Bild der Art, sofern verfügbar. |
 | Prozent-Badge für Konfidenz oder Geo-Modell | Eine kurze numerische Zusammenfassung der Modellausgabe. Höhere Zahlen weisen auf eine stärkere Stützung im Kontext des jeweiligen Bildschirms hin. |
-| Monatsbeschriftungen (`Jan`, `Apr`, `Jul`, `Okt`, `Dez`) | Referenzpunkte im wöchentlichen Diagramm der erwarteten Häufigkeit im Arten-Overlay. |
+| Monatsbeschriftungen (`Jan`, `Apr`, `Jul`, `Okt`, `Dez`) | Referenzpunkte im wöchentlichen Diagramm der erwarteten Häufigkeit in der Detailansicht zur Art. |
 
-## Aktionen je Erkennung
+## Aktionen je Detektion
 
-Diese Steuerelemente erscheinen in jeder Erkennungszeile der App – in der Artenliste der Session-Übersicht, im Clip-Player-Blatt, in der Erkennungsliste des laufenden Survey und an den Survey-Kartenmarkierungen. Das vollständige Verhalten finden Sie unter [Session-Übersicht → Aktionen je Erkennung](session-review.md#aktionen-je-detektion).
+Diese Steuerelemente erscheinen in jeder Detektionszeile der App – in der Artenliste der Session-Übersicht, im Clip-Player-Blatt, in der Detektionsliste des laufenden Surveys und an den Survey-Kartenmarkierungen. Das vollständige Verhalten finden Sie unter [Session-Übersicht → Aktionen je Detektion](session-review.md#aktionen-je-detektion).
 
 | Steuerelement | Bedeutung |
 |---|---|
-| :app-checkCircleOutline: **Bestätigen** | Ein-Tipp-Häkchen, das eine Erkennung als visuell oder akustisch überprüft markiert. Bestätigte Erkennungen erhalten ein kleines grünes Häkchen an Cluster-Zeilen und Kartenmarkierungen. |
-| :app-moreVert: **Mehr** | Öffnet das Überlaufmenü je Erkennung mit **Erkennung teilen**, **Art ersetzen**, **Erkennung löschen** und **Art löschen**. |
-| :app-share: **Erkennung teilen** | Teilt eine einzelne Erkennung über das Teilen-Menü der Plattform und hängt nach Möglichkeit den Audioclip an – einschließlich eines Ausschnitts der laufenden Aufnahme während eines Live-Survey. |
-| :app-swapHoriz: **Art ersetzen** | Eine andere Art für diese Erkennung auswählen. Lässt sich auch durch Wischen einer Übersichtszeile nach links öffnen. |
-| :app-deleteOutline: **Erkennung löschen** | Entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen. Lässt sich auch durch Wischen einer Übersichtszeile nach rechts auslösen. |
-| :app-deleteSweep: **Art löschen** | Entfernt jede Erkennung dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. |
+| :app-checkCircleOutline: **Bestätigen** | Ein-Tipp-Häkchen, das eine Detektion als visuell oder akustisch überprüft markiert. Bestätigte Detektionen erhalten ein kleines grünes Häkchen an Cluster-Zeilen und Kartenmarkierungen. |
+| :app-moreVert: **Mehr** | Öffnet das Überlaufmenü je Detektion mit **Detektion teilen**, **Art ersetzen**, **Detektion löschen** und **Art löschen**. |
+| :app-share: **Detektion teilen** | Teilt eine einzelne Detektion über das Teilen-Menü der Plattform und hängt nach Möglichkeit den Audioclip an – einschließlich eines Ausschnitts der laufenden Aufnahme während eines laufenden Surveys. |
+| :app-swapHoriz: **Art ersetzen** | Eine andere Art für diese Detektion auswählen. Lässt sich auch durch Wischen einer Übersichtszeile nach links öffnen. |
+| :app-deleteOutline: **Detektion löschen** | Entfernt die Zeile sofort. Für einige Sekunden erscheint eine SnackBar zum Rückgängigmachen. Lässt sich auch durch Wischen einer Übersichtszeile nach rechts auslösen. |
+| :app-deleteSweep: **Art löschen** | Entfernt jede Detektion dieser Art in einem Schritt aus der Session, mit derselben SnackBar zum Rückgängigmachen. |
 | :app-hearing: **Gehört** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gehört. Wird über das Kontrollkästchen im Bestätigungsfenster nach der Artenauswahl gesetzt. |
 | :app-visibility: **Gesehen** | Bei einer manuell hinzugefügten Detektion: Sie haben den Vogel gesehen. Beide Symbole zusammen bedeuten gehört *und* gesehen. |
 
@@ -94,8 +94,8 @@ Diese Steuerelemente werden auf dem Bildschirm der Session-Übersicht verwendet.
 | Steuerelement | Bedeutung |
 |---|---|
 | :app-addCircleOutline: **Hinzufügen** | Inhalte hinzufügen, etwa eine Art oder eine Anmerkung. |
-| :app-undo: **Rückgängig** / :app-redo: **Wiederherstellen** | Durch die Bearbeitungsschritte der Übersicht zurück- oder vorgehen. |
-| :app-contentCut: **Trimmen** | In den Trimm-Modus wechseln oder anzeigen, dass der Trimm-Modus aktiv ist. |
+| :app-undo: **Rückgängig** / :app-redo: **Wiederholen** | Durch die Bearbeitungsschritte der Übersicht zurück- oder vorgehen. |
+| :app-contentCut: **Zuschneiden** | In den Zuschneide-Modus wechseln oder anzeigen, dass der Zuschneide-Modus aktiv ist. |
 | :app-save: **Speichern** | Änderungen der Übersicht speichern. |
 | :app-share: **Teilen** | Die Session exportieren oder teilen. |
 | :app-deleteOutline: **Löschen** | Die Session verwerfen. |
@@ -103,18 +103,18 @@ Diese Steuerelemente werden auf dem Bildschirm der Session-Übersicht verwendet.
 
 ## Bildschirmspezifische Statusleisten
 
-### Live-Modus
+### Live Mode
 
 Die Live-Infoleiste verwendet :app-infoOutline: gefolgt von kompakten Beschriftungen wie:
 
-- `now` – derzeit in der Live-Liste sichtbare Erkennungen
-- `spp` – Anzahl der eindeutigen Arten
-- `det` – Gesamtzahl der Erkennungen
+- `aktuell` – derzeit in der Live-Liste sichtbare Detektionen
+- `Arten` – Artenzahl
+- `Det.` – Gesamtzahl der Detektionen
 - Dauer und geschätzte Aufnahmegröße, wenn die Aufnahme aktiv ist
 
 ### Point Count
 
-Die Point-Count-Timerleiste kombiniert :app-stopRounded: **Stop**, :app-timerOutlined: **Timer** und einen Fortschrittsbalken, um die verbleibende zeitgesteuerte Session anzuzeigen.
+Die Point-Count-Timerleiste kombiniert :app-stopRounded: **Stopp**, :app-timerOutlined: **Timer** und einen Fortschrittsbalken, um die verbleibende zeitgesteuerte Session anzuzeigen.
 
 ### Survey
 
@@ -122,8 +122,8 @@ Das Survey-Dashboard verwendet:
 
 - :app-map: **Karte** – Tab „Live-Karte“
 - :app-graphicEq: **Spektrogramm** – Spektrogramm-Tab
-- :app-summaryChart: **Zusammenfassung** – Zusammenfassungs-Tab
-- :app-summaryChart: Statistikbeschriftungen in der Zusammenfassungsansicht des Survey
+- :app-summaryChart: **Übersicht** – Tab „Übersicht“
+- :app-summaryChart: Statistikbeschriftungen im Tab „Übersicht“ des Surveys
 
 ## Im Zweifelsfall
 

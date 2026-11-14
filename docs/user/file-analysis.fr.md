@@ -1,6 +1,6 @@
 # Analyse de fichiers
 
-L'Analyse de fichiers traite un enregistrement existant via le même pipeline BirdNET que les flux de travail en direct.
+L'analyse de fichiers traite un enregistrement existant via le même pipeline BirdNET que les modes en direct.
 
 ## Comment l'ouvrir
 
@@ -8,12 +8,12 @@ Depuis l'accueil, appuyez sur la carte **Analyse de fichiers** avec l'icône :ap
 
 ### Depuis une autre application
 
-Vous pouvez aussi transmettre un enregistrement depuis une autre application. Sur Android, partager un fichier audio avec **BirdNET Live** ou choisir **Ouvrir avec** ouvre immédiatement l'Analyse de fichiers. Sur iOS, **Ouvrir avec** est également immédiat ; après avoir utilisé la feuille de partage, ouvrez BirdNET Live ou revenez-y pour que l'enregistrement en attente soit sélectionné automatiquement. Avant l'analyse, l'application copie l'enregistrement dans son propre stockage temporaire.
+Vous pouvez aussi transmettre un enregistrement depuis une autre application. Sur Android, partager un fichier audio avec **BirdNET Live** ou choisir **Ouvrir avec** ouvre immédiatement l'analyse de fichiers. Sur iOS, **Ouvrir avec** est également immédiat ; après avoir utilisé la feuille de partage, ouvrez BirdNET Live ou revenez-y pour que l'enregistrement en attente soit sélectionné automatiquement. Avant l'analyse, l'application copie l'enregistrement dans son propre stockage temporaire.
 
 ## Barre supérieure
 
-- :app-tuneRounded: — ouvrir les paramètres de l'Analyse de fichiers
-- :app-helpOutlineRounded: — ouvrir l'aide de l'Analyse de fichiers
+- :app-tuneRounded: — ouvrir les paramètres de l'analyse de fichiers
+- :app-helpOutlineRounded: — ouvrir l'aide de l'analyse de fichiers
 - :app-close: — annuler une analyse en cours
 
 ## Formats pris en charge
@@ -45,7 +45,7 @@ Vous pouvez :
 
 - utiliser le GPS actuel :app-myLocation:
 - saisir les coordonnées manuellement :app-editLocationAlt:
-- ignorer la localisation :app-locationOff:
+- n'indiquer aucun lieu :app-locationOff:
 - choisir un point sur la carte :app-mapSheet:
 - définir une date d'enregistrement facultative :app-calendarTodayRounded:
 
@@ -59,7 +59,7 @@ L'assistant donne accès à :
 - le seuil de confiance
 - le mode de filtre d'espèces
 
-| Contrôle de configuration | Icône |
+| Commande de configuration | Icône |
 |---|---|
 | Durée de la fenêtre | :app-timerOutlined: |
 | Chevauchement des fenêtres | :app-swapHoriz: |
@@ -67,7 +67,7 @@ L'assistant donne accès à :
 | Seuil de confiance | :app-verifiedRounded: |
 | Filtre d'espèces | :app-filterAltRounded: |
 
-Touchez le bouton :app-helpOutline: à côté d'un contrôle de configuration pour afficher son explication. Les étapes du fichier, de la localisation et de la date d'enregistrement ont aussi des boutons d'aide.
+Touchez le bouton :app-helpOutline: à côté d'une commande de configuration pour afficher son explication. Les étapes du fichier, du lieu et de la date d'enregistrement ont aussi des boutons d'aide.
 
 Le chevauchement détermine de combien avance chaque fenêtre d'analyse ; il est
 propre à l'analyse de fichiers : le fichier entier est toujours examiné, et
@@ -77,7 +77,7 @@ quelle fréquence s'exécuter sur l'audio entrant, et non avec quelle finesse
 couvrir un enregistrement figé.
 
 Quelle que soit la façon dont l'analyse de fichiers obtient ses fenêtres, elle
-les transforme en détections avec les mêmes règles que le mode Live, Point
+les transforme en détections avec les mêmes règles que Live Mode, Point
 Count et Survey : une détection commence à sa première fenêtre de soutien,
 porte le score étayé le plus fort et se termine à la fin de la dernière
 fenêtre de soutien.
@@ -93,4 +93,4 @@ L'écran de progression affiche :
 
 ## Résultat
 
-Une fois l'analyse terminée, BirdNET Live convertit le résultat en une session enregistrée et ouvre le [Résumé de la session](session-review.md).
+Une fois l'analyse terminée, BirdNET Live convertit le résultat en une Session enregistrée et ouvre le [Résumé de la Session](session-review.md).

@@ -1,21 +1,21 @@
 # Live-Modus
 
-Der Live-Modus ist die schnellste Möglichkeit, über das Smartphone-Mikrofon zuzuhören und Detektionen in Echtzeit zu prüfen, sobald sie erscheinen.
+Live Mode ist die schnellste Möglichkeit, über das Smartphone-Mikrofon zuzuhören und Detektionen in Echtzeit zu prüfen, sobald sie erscheinen.
 
 ## So öffnen Sie ihn
 
-Tippen Sie auf dem Startbildschirm auf die Karte **Live-Modus** mit dem Symbol :app-micRounded:.
+Tippen Sie auf dem Startbildschirm auf die Karte **Live Mode** mit dem Symbol :app-micRounded:.
 
 ## Schnell lauschen
 
-Schnell lauschen beginnt mit einem einzigen Tippen zuzuhören, ohne dass Sie zuerst die App öffnen und dorthin navigieren müssen — praktisch, wenn Sie etwas hören, das Sie bestimmen möchten, bevor es verstummt. Jeder der folgenden Einstiegspunkte öffnet den Live-Modus und beginnt sofort zuzuhören, unabhängig davon, wie die Einstellung **Aufnahme automatisch starten** gesetzt ist; keiner von ihnen ändert diese Einstellung.
+Schnell lauschen beginnt mit einem einzigen Tippen zuzuhören, ohne dass Sie zuerst die App öffnen und dorthin navigieren müssen – praktisch, wenn Sie etwas hören, das Sie bestimmen möchten, bevor es verstummt. Jeder der folgenden Einstiegspunkte öffnet Live Mode und beginnt sofort zuzuhören, unabhängig davon, wie die Einstellung **Aufnahme automatisch starten** gesetzt ist; keiner von ihnen ändert diese Einstellung.
 
 ### Android: Widget auf dem Startbildschirm
 
 Fügen Sie es wie jedes andere Widget hinzu: Halten Sie eine freie Stelle auf dem Startbildschirm gedrückt, tippen Sie auf **Widgets**, suchen Sie **BirdNET Live** und ziehen Sie eine der beiden Kacheln heraus.
 
-- **Schnell lauschen** (2×1) — Symbol mit der Beschriftung **Zuhören starten**
-- **Schnell lauschen (kompakt)** (1×1) — nur Symbol
+- **Schnell lauschen** (2×1) – Symbol mit der Beschriftung **Zuhören starten**
+- **Schnell lauschen (kompakt)** (1×1) – nur Symbol
 
 Beide tun dasselbe.
 
@@ -23,26 +23,26 @@ Beide tun dasselbe.
 
 BirdNET Live stellt dem System die Aktion **Zuhören starten** bereit, Sie müssen also nichts selbst zusammenbauen:
 
-- **Aktionstaste** (iPhone 15 Pro und neuer) — öffnen Sie **Einstellungen → Aktionstaste**, wählen Sie **Kurzbefehl** und dann **Zuhören starten** unter BirdNET Live. Gedrückthalten der Taste startet danach das Zuhören.
-- **Siri** — sagen Sie „Lauschen mit BirdNET Live starten“, „Mit BirdNET Live nach Vögeln lauschen“ oder „Einen Vogel mit BirdNET Live bestimmen“.
-- **App Kurzbefehle** — die Aktion **Zuhören starten** steht unter BirdNET Live. Verwenden Sie sie in einem eigenen Kurzbefehl, legen Sie diesen auf den Startbildschirm oder lösen Sie ihn über „Auf Rückseite tippen“, einen Fokus oder einen NFC-Tag aus.
-- **App-Symbol** — halten Sie das BirdNET-Live-Symbol auf dem Startbildschirm gedrückt und tippen Sie auf **Zuhören starten**.
-- **URL** — Automationen, die eine URL öffnen, können `birdnetlive://listen` verwenden.
+- **Aktionstaste** (iPhone 15 Pro und neuer) – öffnen Sie **Einstellungen → Aktionstaste**, wählen Sie **Kurzbefehl** und dann **Zuhören starten** unter BirdNET Live. Gedrückthalten der Taste startet danach das Zuhören.
+- **Siri** – sagen Sie „Lauschen mit BirdNET Live starten“, „Mit BirdNET Live nach Vögeln lauschen“ oder „Einen Vogel mit BirdNET Live bestimmen“.
+- **App „Kurzbefehle“** – die Aktion **Zuhören starten** steht unter BirdNET Live. Verwenden Sie sie in einem eigenen Kurzbefehl, legen Sie diesen auf den Startbildschirm oder lösen Sie ihn über „Auf Rückseite tippen“, einen Fokus oder einen NFC-Tag aus.
+- **App-Symbol** – halten Sie das BirdNET-Live-Symbol auf dem Startbildschirm gedrückt und tippen Sie auf **Zuhören starten**.
+- **URL** – Automationen, die eine URL öffnen, können `birdnetlive://listen` verwenden.
 
 Siri-Sätze und der Eintrag in der Aktionstasten-Auswahl benötigen iOS 17. Die Kurzbefehl-Aktion, das App-Symbol-Menü und die URL funktionieren auch unter iOS 16.
 
 ### Was dann passiert
 
-Ist der Live-Modus bereits geöffnet, kehrt Schnell lauschen zu genau diesem Bildschirm zurück, statt ihn neu aufzubauen. Eine laufende oder pausierte Session bleibt unverändert; ist sie gestoppt, beginnt das Zuhören auf dem vorhandenen Bildschirm.
+Ist Live Mode bereits geöffnet, kehrt Schnell lauschen zu genau diesem Bildschirm zurück, statt ihn neu aufzubauen. Eine laufende oder pausierte Session bleibt unverändert; ist sie beendet, beginnt das Zuhören auf dem vorhandenen Bildschirm.
 
-Quick Listen ersetzt niemals einen anderen laufenden Modus. Wenn eine Point Count-, Survey-, File Analysis- oder [ARU-Modus](aru-mode.md)-Session läuft oder gestartet wird, holt die App sich in den Vordergrund und fordert Sie auf, diese Session zuerst zu beenden. Bildschirm und Arbeit bleiben erreichbar und werden nicht unterbrochen.
+Schnell lauschen ersetzt niemals einen anderen laufenden Modus. Wenn eine Session in Point Count, Survey, der Dateianalyse oder im [ARU-Modus](aru-mode.md) läuft oder gerade startet, kommt die App in den Vordergrund und fordert Sie auf, diese Session zuerst zu beenden. Bildschirm und Arbeit bleiben erreichbar und werden nicht unterbrochen.
 
 ## Obere Leiste
 
 Die obere Leiste enthält drei Elemente:
 
-- :app-arrowBackRounded: – Live-Modus verlassen
-- mittlerer Statustext – `Initialisierung`, `Modell wird geladen`, `Bereit`, `Arten werden identifiziert`, `Pausiert` oder `Fehler`
+- :app-arrowBackRounded: – Live Mode verlassen
+- mittlerer Statustext – `Initialisierung`, `Modell wird geladen`, `Bereit`, `Arten werden bestimmt`, `Pausiert` oder `Fehler`
 - :app-tuneRounded: – die Live-spezifische Einstellungsansicht öffnen
 
 ## Hauptaktionsschaltfläche
@@ -50,14 +50,14 @@ Die obere Leiste enthält drei Elemente:
 Die große runde Schaltfläche unten in der Mitte wechselt ihren Zustand:
 
 - :app-mic: – Zuhören starten
-- :app-stopRounded: – die aktive Session stoppen
-- :app-playArrowRounded: – aus einem pausierten Bereitschaftszustand fortsetzen
+- :app-stopRounded: – die laufende Session beenden
+- :app-playArrowRounded: – eine pausierte Session fortsetzen
 
 ## Was Sie beim Zuhören sehen
 
 ### Spektrogramm
 
-Das Spektrogramm scrollt kontinuierlich, solange die Erfassung aktiv ist. Es zeigt den Frequenzinhalt im Zeitverlauf und nutzt die Farbkarte, die FFT-Größe, den Frequenzbereich und die Dauer, die in den Einstellungen konfiguriert sind.
+Das Spektrogramm läuft kontinuierlich mit, solange die App zuhört. Es zeigt den Frequenzinhalt im Zeitverlauf und nutzt die Farbpalette, die FFT-Größe, den Frequenzbereich und die Dauer, die in den Einstellungen konfiguriert sind.
 
 ### Detektionsliste
 
@@ -68,15 +68,15 @@ Aktuelle Detektionen erscheinen unterhalb des Spektrogramms. Jede Zeile kann Fol
 - optionaler wissenschaftlicher Name
 - Konfidenzwert
 
-Tippen Sie auf eine Artenzeile, um die Einblendung mit den Artendetails zu öffnen.
+Tippen Sie auf eine Artenzeile, um die Detailansicht zur Art zu öffnen.
 
 ### Session-Infoleiste
 
 Die kompakte Infozeile unter dem Spektrogramm fasst die aktuelle Session zusammen, zum Beispiel:
 
 - derzeit angezeigte Detektionen
-- Anzahl der eindeutigen Arten (`spp`)
-- Gesamtzahl der Detektionen (`det`)
+- Artenzahl (`Arten`)
+- Gesamtzahl der Detektionen (`Det.`)
 - verstrichene Dauer
 - geschätzte Aufnahmegröße, wenn die Aufnahme aktiviert ist
 
@@ -88,9 +88,9 @@ Die Aufnahme wird in den [Einstellungen](settings.md) gesteuert.
 - **Nur Detektionen** zeichnet Clips rund um Detektionen auf.
 - **Aus** deaktiviert die Aufnahme.
 
-Wenn Sie den Live-Modus beenden, speichert BirdNET Live die Session und öffnet die [Session-Übersicht](session-review.md).
+Wenn Sie die Session beenden, speichert BirdNET Live die Session und öffnet die [Session-Übersicht](session-review.md).
 
-Der Live-Modus sichert außerdem beim Start, alle 30 Sekunden und beim Wechsel der App in den Hintergrund eine Teil-Session und schreibt die fertige Session auf den Speicher, bevor das Mikrofon freigegeben wird. Nach einem Absturz, einem Stromausfall oder wenn das System die App im Hintergrund beendet, steht der zuletzt gesicherte Stand in der Session-Bibliothek bereit – als unterbrochen markiert, wenn die App mitten in der Session beendet wurde. Änderungen seit dieser Sicherung können verloren gehen. Diese Zwischenstände bleiben auch bei ausgeschaltetem automatischem Speichern erhalten; eine beendete Session öffnet sich dann weiterhin als nicht gespeichert in der Übersicht und wird verworfen, wenn Sie sie ohne Speichern verlassen.
+Live Mode sichert außerdem beim Start, alle 30 Sekunden und beim Wechsel der App in den Hintergrund eine Teil-Session und schreibt die fertige Session auf den Speicher, bevor das Mikrofon freigegeben wird. Nach einem Absturz, einem Stromausfall oder wenn das System die App im Hintergrund beendet, steht der zuletzt gesicherte Stand in der Session-Bibliothek bereit – als unterbrochen markiert, wenn die App mitten in der Session beendet wurde. Änderungen seit dieser Sicherung können verloren gehen. Diese Zwischenstände bleiben auch bei ausgeschaltetem automatischem Speichern erhalten; eine beendete Session öffnet sich dann weiterhin als nicht gespeichert in der Übersicht und wird verworfen, wenn Sie sie ohne Speichern verlassen.
 
 ## Zuhören bei ausgeschaltetem Bildschirm
 

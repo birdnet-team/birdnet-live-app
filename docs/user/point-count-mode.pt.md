@@ -15,7 +15,7 @@ A configuração do Point Count usa quatro etapas.
 Escolha:
 
 - uma das durações disponíveis: 3, 5, 10, 15, 20, 25 ou 30 minutos
-- se a contagem continua com a tela apagada (ativado por padrão)
+- se a contagem continua com a tela desligada (ativado por padrão)
 - GPS atual com :app-myLocation:
 - coordenadas manuais com :app-editLocationAlt:
 - nenhuma localização com :app-locationOff:
@@ -39,7 +39,7 @@ Escolha as configurações de análise por Session, como taxa de inferência, li
 
 O botão :app-helpOutline: ao lado de cada controle explica seu efeito. O controle de duração :app-timerRounded: e o seletor de localização têm o mesmo botão de ajuda na primeira etapa.
 
-Escolha **Completa** para salvar áudio contínuo (padrão), **Apenas clipes** para salvar um trecho de cada vocalização detectada ou **Desativada** para não salvar áudio. Essa escolha é independente da gravação do Live Mode e é lembrada para o próximo Point Count. Os trechos usam a mesma seleção da janela com maior pontuação e o mesmo contexto do Live Mode, sem redução baseada na localização. Com **Apenas clipes**, o controle **Contexto do clipe** define os segundos preservados antes e depois de cada janela analisada; também atualiza o contexto do Live Mode.
+Escolha **Completa** para salvar áudio contínuo (padrão), **Clipes** para salvar um trecho de cada vocalização detectada ou **Desativada** para não salvar áudio. Essa escolha é independente da gravação do Live Mode e é lembrada para o próximo Point Count. Os trechos usam a mesma seleção da janela com maior pontuação e o mesmo contexto do Live Mode, sem redução baseada na localização. Com **Clipes**, o controle **Contexto do clipe** define os segundos preservados antes e depois de cada janela analisada; também atualiza o contexto do Live Mode.
 
 ### 3. Dicas de campo
 
@@ -47,7 +47,7 @@ Esta tela apresenta uma breve lista de verificação no aplicativo para percorre
 
 ### 4. Pronto
 
-A tela de pronto resume a duração, a opção de gravação e o comportamento com a tela apagada. Inicie com :app-playArrowRounded:.
+A etapa Pronto resume a duração, a opção de gravação e o comportamento com a tela desligada. Inicie com :app-playArrowRounded:.
 
 ## Tela do Point Count ao vivo
 
@@ -69,8 +69,8 @@ A tela do Point Count ao vivo concentra-se em um painel cronometrado.
 
 ## Após a contagem
 
-Com **Continuar com a tela desligada** ativado na configuração de Point Count, a contagem continua ao bloquear a tela ou mudar para outro aplicativo, mesmo com a tela acesa. Termina após a duração escolhida; o cronômetro usa o tempo realmente decorrido, então uma tela suspensa não prolonga a contagem. Android mostra uma notificação persistente com Abrir e Parar. Desative o controle para que essas ações encerrem a contagem antes. Point Count não pausa e retoma porque isso interromperia a contagem cronometrada. Se sair durante a inicialização, ela será cancelada com uma mensagem; configure-a novamente. No Windows, minimizar a janela não encerra a contagem.
+Com **Continuar com a tela desligada** ativado na configuração de Point Count, a contagem continua ao bloquear a tela ou mudar para outro aplicativo, mesmo com a tela acesa. Termina após a duração escolhida; o cronômetro usa o tempo realmente decorrido, então uma tela suspensa não prolonga a contagem. O Android mostra uma notificação persistente com Abrir e Parar. Desative o controle para que essas ações encerrem a contagem antes. O Point Count não pausa nem retoma, porque isso interromperia a contagem cronometrada. Se sair durante a inicialização, ela será cancelada com uma mensagem; configure-a novamente. No Windows, minimizar a janela não encerra a contagem.
 
-Ao terminar o Point Count, o BirdNET Live abre [Resumo da Session](session-review.md). Com o salvamento automático ativado, salva a Session automaticamente; caso contrário, salve-a pelo resumo se quiser mantê-la.
+Ao terminar o Point Count, o BirdNET Live abre o [Resumo da Session](session-review.md). Com o salvamento automático ativado, salva a Session automaticamente; caso contrário, salve-a pelo resumo se quiser mantê-la.
 
-Com o salvamento automático ativado, uma contagem não concluída também é salva no início, a cada 30 segundos e quando o aplicativo sai do primeiro plano. Após uma falha ou queda de energia, a última contagem parcial fica disponível na Biblioteca de Sessions.
+Com o salvamento automático ativado, uma contagem não concluída também é salva no início, a cada 30 segundos e quando o aplicativo sai do primeiro plano. Após uma falha ou queda de energia, a última contagem parcial fica disponível na biblioteca de sessões.

@@ -32,7 +32,7 @@ BirdNET Live 支持 Android、iOS 和 Windows。
 1. **引导** — 简要介绍功能和权限
 2. **使用规范与隐私** — 查看使用规范和隐私政策
 3. **权限** — 授予麦克风访问权限（所有模式都需要）
-4. **准备就绪** — 开始识别鸟类！
+4. **准备就绪** — 开始识别物种！
 
 ## 主界面概览
 
@@ -40,12 +40,12 @@ BirdNET Live 支持 Android、iOS 和 Windows。
 
 ### 主要模式卡片
 
-- :app-micRounded: **Live 模式**
+- :app-micRounded: **Live Mode**
 - :app-locationOnRounded: **Point Count 模式**
 - :app-routeRounded: **Survey 模式**
 - :app-audioFileRounded: **文件分析**
 - :app-timerRounded: **ARU 模式**
-- :app-sdStorage: **批量分析** (敬请期待)
+- :app-sdStorage: **批量分析**（敬请期待）
 
 ### 底部按钮
 
@@ -59,7 +59,7 @@ BirdNET Live 支持 Android、iOS 和 Windows。
 
 BirdNET Live 会自动保存每个已完成的 Session，并在处理结束后在 Session 回顾中打开它。
 
-- Live 模式的 Session 保存检测结果，并根据您的设置保存完整录音或片段。
+- Live Mode 的 Session 保存检测结果，并根据您的设置保存完整录音或片段。
 - Point Count 模式的 Session 保存为计时样点计数。
 - Survey 模式的 Session 保存路线、检测结果和相关元数据。
 - 文件分析的结果会转换成可回顾的 Session。
@@ -68,13 +68,13 @@ BirdNET Live 会自动保存每个已完成的 Session，并在处理结束后�
 
 - 如果想快速了解界面上反复出现的符号，请阅读[图标与控件](icons-and-controls.md)。
 - 在更改阈值、筛选、录音行为或声谱图显示之前，请阅读[设置](settings.md)。
-- 打开您最常用工作方式的指南：[Live 模式](live-mode.md)、[Point Count 模式](point-count-mode.md)、[Survey 模式](survey-mode.md) 或[文件分析](file-analysis.md)。
+- 打开您最常用工作方式的指南：[Live Mode](live-mode.md)、[Point Count 模式](point-count-mode.md)、[Survey 模式](survey-mode.md) 或[文件分析](file-analysis.md)。
 
 ## 权限
 
 | 权限 | 用途 | 是否可选？ |
 |------------|-------------|-----------|
 | 麦克风 | 所有录音模式 | 必需 |
-| 位置 | GPS 标记、Survey/Point Count | Live 模式下可选 |
+| 位置 | GPS 标记、Survey/Point Count | Live Mode 下可选 |
 | 存储 | 保存录音和导出文件 | 录音时必需 |
 | 通知 | 后台 Survey 提醒 | 可选 |

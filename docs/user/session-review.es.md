@@ -1,27 +1,27 @@
-# Resumen de la Session
+# Revisión de la Session
 
-El Resumen de la Session es donde BirdNET Live convierte las detecciones en un registro editable.
+La revisión de la Session es donde BirdNET Live convierte las detecciones en un registro editable.
 
 ## Cómo llegar aquí
 
-BirdNET Live abre el Resumen de la Session automáticamente al terminar:
+BirdNET Live abre la revisión de la Session automáticamente al terminar:
 
 - una Live Session
 - un Point Count
 - un Survey
-- un análisis de Análisis de archivos
+- un Análisis de archivos
 
-También puedes reabrir cualquier Session guardada desde la [Biblioteca de sesiones](session-library.md).
+También puedes reabrir cualquier Session guardada desde la [biblioteca de Sessions](session-library.md).
 
 ## Áreas principales
 
 ### Resumen y reproducción
 
-El Resumen de la Session combina la reproducción, la navegación por el espectrograma y una lista de especies. En las Sessions de Survey también puede mostrar el contexto cartográfico.
+La revisión de la Session combina la reproducción, la navegación por el espectrograma y una lista de especies. En las Sessions de Survey también puede mostrar el contexto cartográfico.
 
-El encabezado de resumen en la parte superior de la pantalla incluye la fecha, el chip de ubicación (lat/lon más un nombre de lugar opcional cuando **Ajustes → Privacidad → Permitir búsqueda de nombre del lugar** está activado) y —cuando **Ajustes → Privacidad → Permitir consulta del clima** estaba activado en el momento de la grabación— una **fila de clima** debajo de la ubicación que muestra las condiciones registradas al final de la Session: una línea como *"20,1 °C · Llovizna · 3,2 m/s SO"* precedida por un icono del tiempo. Toca la fila para desplegar una pequeña hoja con la temperatura, el viento, la precipitación y la nubosidad, junto con la atribución a Open-Meteo. La misma instantánea se refleja en la exportación JSON, en el bloque de metadatos por Session y en el informe HTML.
+El encabezado de resumen en la parte superior de la pantalla incluye la fecha, el chip de ubicación (lat/lon más un nombre de lugar opcional cuando **Ajustes → Privacidad → Permitir búsqueda de nombre del lugar** está activado) y —cuando **Ajustes → Privacidad → Permitir consulta del clima** estaba activado en el momento de la grabación— una **fila de clima** debajo de la ubicación que muestra las condiciones registradas al final de la Session: una línea como *"20,1 °C · Llovizna · 3,2 m/s SO"* precedida por un icono del clima. Toca la fila para desplegar una pequeña hoja con la temperatura, el viento, la precipitación y la nubosidad, junto con la atribución a Open-Meteo. La misma instantánea se refleja en la exportación JSON, en el bloque de metadatos por Session y en el informe HTML.
 
-La franja del espectrograma sobre el reproductor es interactiva: toca para saltar a un punto, arrastra con un dedo para recorrer la línea de tiempo y **pellizca con dos dedos para ampliar** una ventana de tiempo estrecha, útil cuando quieres examinar el momento de cantos superpuestos o separar un trino rápido. Separa los dedos de nuevo para volver a la vista general predeterminada de 10 segundos. El botón de reproducción en el encabezado de una especie elige siempre el primer grupo que realmente tiene un clip grabado, de modo que el botón está disponible siempre que alguna de las detecciones de esa especie se pueda reproducir.
+La franja del espectrograma sobre el reproductor es interactiva: toca para saltar a un punto, arrastra con un dedo para recorrer la línea de tiempo y **pellizca con dos dedos para ampliar** una ventana de tiempo estrecha, útil cuando quieres examinar el momento de vocalizaciones superpuestas o separar un trino rápido. Separa los dedos de nuevo para volver a la vista general predeterminada de 10 segundos. El botón de reproducción en el encabezado de una especie elige siempre el primer grupo que realmente tiene un clip grabado, de modo que el botón está disponible siempre que alguna de las detecciones de esa especie se pueda reproducir.
 
 ### Lista de especies
 
@@ -43,9 +43,9 @@ El botón :app-addCircleOutline: de la barra de herramientas abre el buscador de
 - :app-hearing: **Oída** — escuchaste el ave.
 - :app-visibility: **Vista** — viste el ave.
 
-Marca una, ambas o ninguna y luego toca **Agregar**. **Cancelar** —o deslizar hacia abajo— te devuelve a la búsqueda, así que un toque equivocado no cuesta nada. **Oída** viene marcada y tu elección se mantiene para la siguiente especie, de modo que registrar una serie de aves que solo viste requiere marcar **Vista** una sola vez. Si dejas ambas sin marcar, la entrada se guarda sin tipo de observación, no como "ninguna de las dos".
+Marca una, ambas o ninguna y luego toca **Añadir**. **Cancelar** —o deslizar hacia abajo— te devuelve a la búsqueda, así que un toque equivocado no cuesta nada. **Oída** viene marcada y tu elección se mantiene para la siguiente especie, de modo que registrar una serie de aves que solo viste requiere marcar **Vista** una sola vez. Si dejas ambas sin marcar, la entrada se guarda sin tipo de observación, no como "ninguna de las dos".
 
-La elección se guarda en la detección y aparece como un pequeño icono de oído u ojo junto a la insignia de entrada manual en todos los lugares donde se muestra esa detección: encabezados de especie, filas de grupo, el reproductor de clips y la lista del survey en vivo. También llega a las exportaciones: una columna `Evidence` en CSV y en las tablas de Raven, un campo `evidence` en JSON y una etiqueta en el informe HTML. La misma hoja aparece al usar **Reemplazar especie**, precargada con lo que ya tenía ese registro.
+La elección se guarda en la detección y aparece como un pequeño icono de oído u ojo junto a la insignia de entrada manual en todos los lugares donde se muestra esa detección: encabezados de especie, filas de grupo, el reproductor de clips y la lista del Survey en vivo. También llega a las exportaciones: una columna `Evidence` en CSV y en las tablas de Raven, un campo `evidence` en JSON y una etiqueta en el informe HTML. La misma hoja aparece al usar **Reemplazar especie**, precargada con lo que ya tenía ese registro.
 
 ### Acciones por detección
 
@@ -75,7 +75,7 @@ La opción :app-share: **Compartir detección** usa las mismas opciones que **Aj
 
 El audio adjunto se resuelve en este orden:
 
-1. **En Sessions que graban un único archivo continuo**: se extrae de la grabación el audio desde la marca de inicio hasta la de fin de la detección. Se admiten grabaciones continuas WAV y FLAC; las fuentes comprimidas de File Analysis se decodifican como WAV.
+1. **En Sessions que graban un único archivo continuo**: se extrae de la grabación el audio desde la marca de inicio hasta la de fin de la detección. Se admiten grabaciones continuas WAV y FLAC; las fuentes comprimidas de Análisis de archivos se decodifican como WAV.
 2. De lo contrario, se usa el clip propio guardado de la detección cuando está disponible en disco.
 3. Si no hay ninguna fuente de audio y no se seleccionó ningún artefacto de exportación, se comparte un texto breve con la especie, la confianza, la marca de tiempo UTC y la ubicación.
 
@@ -107,7 +107,7 @@ El mapa a pantalla completa tiene un **chip de filtro** fijo anclado arriba a la
 
 - **Todas las detecciones** (predeterminado).
 - **Con clip de audio** — solo las detecciones cuyo clip sigue en disco y se puede reproducir.
-- **Añadidas manualmente** — solo las detecciones que añadiste en el Resumen de la Session (excluye las detectadas automáticamente).
+- **Añadidas manualmente** — solo las detecciones que añadiste en la revisión de la Session (excluye las detectadas automáticamente).
 
 También puedes restringir las detecciones por nivel de confianza. El control deslizante fija el mínimo de confianza (empieza en el 10 %).
 
@@ -126,7 +126,7 @@ La barra de herramientas usa los mismos significados de iconos descritos en [Ico
 - :app-share: — exportar o compartir
 - :app-deleteOutline: — descartar la Session
 - :app-playArrowRounded: — continuar un Survey cuando esa acción está disponible
-- :app-helpOutlineRounded: — abrir la hoja de ayuda del Resumen de la Session
+- :app-helpOutlineRounded: — abrir la hoja de ayuda de la revisión de la Session
 - :app-tuneRounded: — abrir los Ajustes
 
 ## Tareas habituales de revisión
@@ -142,8 +142,8 @@ El comportamiento de la exportación depende de las opciones seleccionadas en [A
 
 Cada detección exportada lleva además el BirdNET ID de su especie (por ejemplo, `BN07148`), el identificador de esa especie en la taxonomía de BirdNET: una columna `BirdNET ID` justo después de `Scientific Name` en CSV y en las tablas de Raven, un campo `birdnetId` en JSON, una extensión del punto en GPX y una indicación en la tarjeta de la especie en el informe HTML. El ID se consulta al exportar, así que también lo reciben las Sessions grabadas con versiones anteriores de la app, incluso si un nombre científico ha cambiado desde entonces. Queda vacío en las entradas que la taxonomía no conoce, como una especie que hayas escrito tú. Un ID solo tiene sentido junto con la versión de su taxonomía, que los metadatos registran en `taxonomy`.
 
-Si el dispositivo proporciona altitud con una posición GPS, las exportaciones incluyen la altura en metros, la precisión vertical disponible, la superficie de referencia y la hora de la medición. JSON incluye todo junto a las coordenadas; GPX lo incluye en puntos de ruta de Survey y puntos de detección. CSV y Raven solo añaden una columna `Altitude (m)` junto a latitud y longitud. No se infiere altitud para coordenadas manuales o elegidas en el mapa. Una detección añadida a una hora en el resumen de Survey recibe una posición interpolada entre los puntos de ruta cercanos, sin hora de medición propia. Los dispositivos pueden usar distintas superficies de referencia; comprueba `altitudeReference` antes de comparar alturas. `unknown` indica que la plataforma no identificó la superficie.
+Si el dispositivo proporciona altitud con una posición GPS, las exportaciones incluyen la altura en metros, la precisión vertical disponible, la superficie de referencia y la hora de la medición. JSON incluye todo junto a las coordenadas; GPX lo incluye en puntos de ruta de Survey y puntos de detección. CSV y Raven solo añaden una columna `Altitude (m)` junto a latitud y longitud. No se infiere altitud para coordenadas manuales o elegidas en el mapa. Una detección añadida a una hora en la revisión de un Survey recibe una posición interpolada entre los puntos de ruta cercanos, sin hora de medición propia. Los dispositivos pueden usar distintas superficies de referencia; comprueba `altitudeReference` antes de comparar alturas. `unknown` indica que la plataforma no identificó la superficie.
 
-El bloque `settings` de la exportación JSON registra los valores que se *aplicaron realmente a esta Session* —sensibilidad, modo de Score Pooling y número de ventanas, ganancia del micrófono y el corte del filtro de paso alto—, no los que estén configurados ahora en Ajustes. Esto significa que puedes reproducir un resultado meses después, o comparar dos Surveys, sin tener que recordar dónde estaba cada control cuando los ejecutaste.
+El bloque `settings` de la exportación JSON registra los valores que se *aplicaron realmente a esta Session* —sensibilidad, modo de agrupación de puntuaciones y número de ventanas, ganancia del micrófono y el corte del filtro de paso alto—, no los que estén configurados ahora en Ajustes. Esto significa que puedes reproducir un resultado meses después, o comparar dos Surveys, sin tener que recordar dónde estaba cada control cuando los ejecutaste.
 
 Todas las marcas de tiempo en los nombres de archivo exportados (`BirdNET_Live_<date>_<time>_…`) y dentro de los datos CSV / JSON se formatean en la hora local *actual* de tu teléfono. Los registros subyacentes se almacenan en UTC y se convierten al exportar.

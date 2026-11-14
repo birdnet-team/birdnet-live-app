@@ -110,7 +110,7 @@ plugins:
       name: Čeština
       build: true
       nav_translations:
-        Uploads: Nahrávání
+        Uploads: Odesílání
         API Integration: Integrace API
         API Reference: Reference API
         Architecture: Architektura
@@ -127,7 +127,7 @@ plugins:
         Home: Domů
         Icons & Controls: Ikony a ovládací prvky
         Inference Engine: Inference Engine
-        Live Mode: Režim Live
+        Live Mode: Live Mode
         Localization: Lokalizace
         Model Export Checklist: Kontrolní seznam exportu modelu
         Updating the Models: Aktualizace modelů
@@ -135,7 +135,7 @@ plugins:
         Point Count Mode: Režim Point Count
         Privacy Policy: Zásady ochrany osobních údajů
         Releasing: Vydávání
-        Session Library: Knihovna sessions
+        Session Library: Knihovna Sessions
         Session Review: Přehled session
         Settings: Nastavení
         Species Bundle: Svazek druhů
@@ -168,7 +168,7 @@ plugins:
         Home: Inicio
         Icons & Controls: Iconos y controles
         Inference Engine: Motor de inferencia
-        Live Mode: Modo Live
+        Live Mode: Live Mode
         Localization: Localización
         Model Export Checklist: Lista de verificación de exportación del modelo
         Updating the Models: Actualización de los modelos
@@ -176,7 +176,7 @@ plugins:
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidad
         Releasing: Publicación
-        Session Library: Biblioteca de sesiones
+        Session Library: Biblioteca de Sessions
         Session Review: Resumen de la sesión
         Settings: Ajustes
         Species Bundle: Paquete de especies
@@ -209,22 +209,22 @@ plugins:
         Home: Accueil
         Icons & Controls: Icônes et commandes
         Inference Engine: Moteur d'inférence
-        Live Mode: Mode En direct
+        Live Mode: Live Mode
         Localization: Localisation
         Model Export Checklist: Liste de contrôle d'export du modèle
         Updating the Models: Mise à jour des modèles
         Overview: Aperçu
-        Point Count Mode: Mode Point d'écoute
+        Point Count Mode: Mode Point Count
         Privacy Policy: Politique de confidentialité
         Releasing: Publication
-        Session Library: Bibliothèque de sessions
+        Session Library: Bibliothèque de Sessions
         Session Review: Résumé de la session
         Settings: Paramètres
         Species Bundle: Ensemble d'espèces
         Spectrogram: Spectrogramme
         State Management: Gestion d'état
         Storage: Stockage
-        Survey Mode: Mode Relevé
+        Survey Mode: Mode Survey
         Taxonomy & Sync API: API de taxonomie et de synchronisation
         Acceptable Use Policy: Politique d'utilisation acceptable
         Testing: Essai
@@ -250,7 +250,7 @@ plugins:
         Home: Home
         Icons & Controls: Icone e controlli
         Inference Engine: Motore di inferenza
-        Live Mode: Modalità Live
+        Live Mode: Live Mode
         Localization: Localizzazione
         Model Export Checklist: Checklist per l'esportazione del modello
         Updating the Models: Aggiornamento dei modelli
@@ -258,7 +258,7 @@ plugins:
         Point Count Mode: Modalità Point Count
         Privacy Policy: Informativa sulla privacy
         Releasing: Pubblicazione
-        Session Library: Libreria delle sessioni
+        Session Library: Libreria Sessions
         Session Review: Riepilogo sessione
         Settings: Impostazioni
         Species Bundle: Pacchetto specie
@@ -292,7 +292,7 @@ plugins:
         Home: Início
         Icons & Controls: Ícones e controles
         Inference Engine: Motor de inferência
-        Live Mode: Modo Live
+        Live Mode: Live Mode
         Localization: Localização
         Model Export Checklist: Lista de verificação de exportação do modelo
         Updating the Models: Atualização dos modelos
@@ -300,7 +300,7 @@ plugins:
         Point Count Mode: Modo Point Count
         Privacy Policy: Política de privacidade
         Releasing: Publicação
-        Session Library: Biblioteca de sessões
+        Session Library: Sessões
         Session Review: Resumo da sessão
         Settings: Configurações
         Species Bundle: Pacote de espécies
@@ -324,7 +324,7 @@ plugins:
         Building: Bouwen
         Code Style: Codestijl
         Developer Guide: Developer Guide
-        Explore: Verkennen
+        Explore: Ontdekken
         FAQ: Veelgestelde vragen
         Batch Analysis: Batchanalyse
         ARU Mode: ARU-modus
@@ -365,7 +365,7 @@ plugins:
         Building: Budowanie
         Code Style: Styl kodu
         Developer Guide: Developer Guide
-        Explore: Przeglądaj
+        Explore: Odkrywaj
         FAQ: Najczęstsze pytania
         Batch Analysis: Analiza wsadowa
         ARU Mode: Tryb ARU
@@ -497,7 +497,7 @@ plugins:
         Home: 主页
         Icons & Controls: 图标与控件
         Inference Engine: 推理引擎
-        Live Mode: Live 模式
+        Live Mode: Live Mode
         Localization: 本地化
         Model Export Checklist: 模型导出检查清单
         Updating the Models: 更新模型

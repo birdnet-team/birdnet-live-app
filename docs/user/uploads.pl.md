@@ -60,7 +60,7 @@ Link dołączenia zawiera w jednym kawałku wszystko, czego potrzebuje uczestnik
 
 Naciśnij **Build link and QR code**. Wszystko dzieje się w Twojej przeglądarce; nic nie jest nigdzie wysyłane. Sekret znajduje się w części linku po `#`, której przeglądarki nigdy nie przesyłają do serwera WWW hostującego stronę.
 
-Możesz też najpierw dołączyć do miejsca docelowego na własnym telefonie (zobacz poniżej), a następnie otworzyć miejsce docelowe w **Ustawienia → Eksportuj i synchronizuj → Miejsca docelowe przesyłania** i dotknąć **Pokaż kod dołączenia**. Aplikacja pokazuje ten sam rodzaj kodu QR z przyciskiem **Kopiuj link**.
+Możesz też najpierw dołączyć do miejsca docelowego na własnym telefonie (zobacz poniżej), a następnie otworzyć miejsce docelowe w **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** i dotknąć **Pokaż kod dołączenia**. Aplikacja pokazuje ten sam rodzaj kodu QR z przyciskiem **Kopiuj link**.
 
 ### Rozdawanie
 
@@ -76,7 +76,7 @@ Jeden folder na urządzenie, jeden ZIP na Session i ukryte rejestracje `.birdnet
 
 ### Dołączanie do miejsca docelowego
 
-1. Otwórz **Ustawienia → Eksportuj i synchronizuj → Miejsca docelowe przesyłania** i dotknij **Dodaj miejsce docelowe**. Zeskanowanie kodu QR projektu aparatem lub dotknięcie otrzymanego linku dołączenia prowadzi do tego samego ekranu z już wypełnionym linkiem.
+1. Otwórz **Ustawienia → Eksport i synchronizacja → Miejsca docelowe przesyłania** i dotknij **Dodaj miejsce docelowe**. Zeskanowanie kodu QR projektu aparatem lub dotknięcie otrzymanego linku dołączenia prowadzi do tego samego ekranu z już wypełnionym linkiem.
 2. Wklej link dołączenia, link udostępnienia Nextcloud lub adres WebDAV w pole **Link dołączenia lub adres serwera**. Przycisk **Wklej** pobiera go ze schowka.
 3. Opcjonalnie wprowadź **Identyfikator uczestnika, imię lub e-mail**. Jest zapisywany z każdym przesłaniem, aby osoba prowadząca projekt wiedziała, kto je wysłał, i nigdy nie pojawia się w nazwach folderów. Pod polem aplikacja pokazuje **Twój identyfikator przesyłania**, czyli folder, do którego trafią Twoje przesłania.
 4. W przypadku zwykłego adresu WebDAV otwórz **Zaawansowane** i wprowadź **Nazwa użytkownika** oraz **Hasło lub token**. Link udostępnienia Nextcloud nie potrzebuje żadnego z nich; jeśli udostępnienie ma hasło, wpisz je jako hasło.
@@ -97,8 +97,8 @@ Dotknięcie miejsca docelowego na liście otwiera jego ekran z adresem serwera, 
 
 - **Zmień nazwę** (ołówek na pasku aplikacji) zmienia nazwę pokazywaną w aplikacji.
 - **Przesyłaj tylko przez Wi-Fi** wstrzymuje przesyłanie, gdy telefon korzysta z sieci komórkowej.
-- **Przesyłaj wszystkie Sessions automatycznie** dodaje każdą zakończoną Session z dowolnego trybu do kolejki tego miejsca docelowego bez pytania, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportu i synchronizacji. Gdy ta opcja jest włączona, włączona pozostaje też **Przesyłaj Sessions ARU automatycznie**. Odrzucenie Session później w Session Review anuluje przesyłanie, które się jeszcze nie rozpoczęło, ale to, co już wysłano, pozostaje na serwerze.
-- **Przesyłaj Sessions ARU automatycznie** dodaje każdą zakończoną ARU Session do kolejki tego miejsca docelowego bez pytania (zobacz poniżej).
+- **Przesyłaj wszystkie Sessions automatycznie** dodaje każdą zakończoną Session z dowolnego trybu do kolejki tego miejsca docelowego bez pytania, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportu i synchronizacji. Gdy ta opcja jest włączona, włączona pozostaje też **Przesyłaj Sessions ARU automatycznie**. Odrzucenie Session później w Przeglądzie Session anuluje przesyłanie, które się jeszcze nie rozpoczęło, ale to, co już wysłano, pozostaje na serwerze.
+- **Przesyłaj Sessions ARU automatycznie** dodaje każdą zakończoną Session ARU do kolejki tego miejsca docelowego bez pytania (zobacz poniżej).
 - **Testuj połączenie** powtarza test połączenia, na przykład po tym, jak osoba prowadząca zmieniła hasło.
 - **Pokaż kod dołączenia** wyświetla kod QR oraz **Kopiuj link**, aby drugi telefon mógł dołączyć do tego samego miejsca docelowego.
 - **Usuń miejsce docelowe** zapomina miejsce docelowe i jego dane logowania oraz porzuca oczekujące przesłania do niego. Już przesłane Sessions pozostają na serwerze.
@@ -115,7 +115,7 @@ Przesyłanie zaczyna się od tej samej akcji **Udostępnij**, której już używ
 
 Gdy istnieje co najmniej jedno miejsce docelowe, okno dialogowe Udostępnij ma dwie karty:
 
-- **Zawartość** określa, co zawiera eksport: **Dźwięk** (pełne nagranie lub fragmenty wykryć, gdy zachowano tylko fragmenty) i **Metadane** (tabele, raport i plik metadanych aplikacji włączone w Eksportuj i synchronizuj). Pola na początku odpowiadają Twoim ustawieniom i dotyczą tylko tego udostępnienia.
+- **Zawartość** określa, co zawiera eksport: **Dźwięk** (pełne nagranie lub klipy wykryć, gdy zachowano tylko klipy) i **Metadane** (tabele, raport i plik metadanych aplikacji włączone w sekcji Eksport i synchronizacja). Pola na początku odpowiadają Twoim ustawieniom i dotyczą tylko tego udostępnienia.
 - **Wyślij do** wyświetla **Arkusz udostępniania** (inne aplikacje, pliki, wiadomości) i jedno pole na każde miejsce docelowe. Plakietka na karcie zlicza zaznaczone miejsca docelowe. Miejsca docelowe zaznaczone ostatnio są zaznaczone z góry, z wyjątkiem tych, do których ta Session już trafiła: zaczynają odznaczone i pokazują **Przesłano** z datą oraz **Zaznacz, aby przesłać ponownie**. Po otwarciu okna aplikacja po cichu sprawdza każde miejsce docelowe; jeśli serwer oświadcza, że odrzuciłby przesłanie, na przykład z powodu zmiany hasła lub usunięcia udostępnienia, wiersz zmienia kolor na czerwony i pokazuje powód.
 
 Odznacz **Arkusz udostępniania**, a przycisk będzie brzmieć **Prześlij**; gdy zaznaczone są oba, brzmi **Udostępnij i prześlij**. Pasek powiadomienia potwierdza, ile Sessions dodano do kolejki. Session zawsze trafia najpierw do kolejki i jest przesyłana w tle, więc możesz dalej pracować.
@@ -130,7 +130,7 @@ Wiersz i ikona pojawiają się tylko wtedy, gdy co najmniej jedno miejsce docelo
 
 ### Co działa w tle
 
-Przesłania z kolejki są realizowane, gdy aplikacja jest otwarta i za każdym razem, gdy wraca na pierwszy plan. Na Androidzie działają także przy zamkniętej aplikacji: system uruchamia je, gdy tylko dostępna jest odpowiednia sieć, Wi-Fi, jeśli miejsce docelowe tego wymaga, i ponawia próby, aż kolejka będzie pusta. Na iOS przesłania są przygotowywane, gdy aplikacja jest otwarta, a następnie przekazywane systemowi, który kończy je, gdy aplikacja działa w tle lub jest zamknięta, i sam ponawia próby. Cele dostępne przez nieszyfrowane http pozostają w aplikacji i przesyłają, gdy jest otwarta.
+Przesłania z kolejki są realizowane, gdy aplikacja jest otwarta i za każdym razem, gdy wraca na pierwszy plan. Na Androidzie działają także przy zamkniętej aplikacji: system uruchamia je, gdy tylko dostępna jest odpowiednia sieć, Wi-Fi, jeśli miejsce docelowe tego wymaga, i ponawia próby, aż kolejka będzie pusta. Na iOS przesłania są przygotowywane, gdy aplikacja jest otwarta, a następnie przekazywane systemowi, który kończy je, gdy aplikacja działa w tle lub jest zamknięta, i sam ponawia próby. Przesłania do miejsc docelowych dostępnych przez nieszyfrowany HTTP pozostają w aplikacji i są wysyłane, gdy jest otwarta.
 
 ### Ponowne przesyłanie Session
 
@@ -138,9 +138,9 @@ Ponowne przesłanie tej samej Session, na przykład po poprawieniu wykryć w Prz
 
 ## Tryb ARU
 
-Wdrożenia terenowe tworzą wiele Sessions, często gdy nikogo nie ma przy telefonie. Włącz **Przesyłaj Sessions ARU automatycznie** w miejscu docelowym, a każda zakończona ARU Session zostanie dodana do jego kolejki bez okna dialogowego, z domyślnymi ustawieniami Dźwięku i Metadanych z Eksportuj i synchronizuj. Wdrożenie, które zapisuje każdy cykl jako osobną Session, przesyła cykl po cyklu; połączona Session wdrożenia nie jest przesyłana drugi raz.
+Wdrożenia terenowe tworzą wiele Sessions, często gdy nikogo nie ma przy telefonie. Włącz **Przesyłaj Sessions ARU automatycznie** w miejscu docelowym, a każda zakończona Session ARU zostanie dodana do jego kolejki bez okna dialogowego, z domyślnymi ustawieniami Dźwięku i Metadanych z sekcji Eksport i synchronizacja. Wdrożenie, które zapisuje każdy cykl jako osobną Session, przesyła cykl po cyklu; połączona Session wdrożenia nie jest przesyłana drugi raz.
 
-Zostaw włączone **Przesyłaj tylko przez Wi-Fi** dla stacji na planie komórkowym, chyba że plan udźwignie dźwięk, i rozważ nagrywanie w trybie **Tylko wykrycia** lub **Wyłączony**, gdy dźwięk byłby zbyt duży do wysłania. Przesłania wypływają wtedy, gdy tylko telefon zobaczy odpowiednią sieć, także gdy aplikacja jest w tle na Androidzie.
+Zostaw włączone **Przesyłaj tylko przez Wi-Fi** dla stacji korzystających z sieci komórkowej, chyba że pakiet danych pomieści dźwięk, i rozważ nagrywanie w trybie **Klipy** lub **Wyłączone**, gdy dźwięk byłby zbyt duży do wysłania. Przesłania są wtedy wysyłane, gdy tylko telefon znajdzie odpowiednią sieć, także gdy aplikacja jest w tle na Androidzie.
 
 ## Dwa przykłady z praktyki
 
@@ -170,9 +170,9 @@ Przesłanie zawiera to, co zawierałoby Udostępnienie: rekord JSON Session z wy
 | Serwer odrzucił dane logowania. | Błędne lub brakujące hasło albo usunięte udostępnienie. Nextcloud odpowiada tak również w przypadku usuniętych udostępnień. | Użyj hasła udostępnienia lub hasła aplikacji; zapytaj osobę prowadzącą, czy udostępnienie nadal istnieje. |
 | Ten adres nie jest punktem końcowym WebDAV. | Wklejony tekst to strona internetowa folderu, a nie link udostępnienia lub adres WebDAV. | Wklej link udostępnienia (`…/s/…`) lub adres WebDAV. |
 | Przesyłanie nie jest tutaj dozwolone. | Udostępnienie jest tylko do odczytu. | Poproś osobę prowadzącą o File Drop lub uprawnienie do przesyłania. |
-| Folder nie istnieje na serwerze. | Adres wskazuje na nic albo folder został usunięty. | Sprawdź adres z osobą prowadzącą. |
+| Folder nie istnieje na serwerze. | Adres nie wskazuje żadnego folderu albo folder został usunięty. | Sprawdź adres z osobą prowadzącą. |
 | Nie udało się zweryfikować certyfikatu serwera. | Certyfikat z podpisem własnym lub uszkodzony TLS. | Poproś osobę prowadzącą o adres z ważnym certyfikatem. |
-| Ten adres używa nieszyfrowanego HTTP. | Nieszyfrowane połączenie poza Twoją sieścią lokalną. | Użyj adresu `https://`. |
+| Ten adres używa nieszyfrowanego HTTP. | Nieszyfrowane połączenie poza Twoją siecią lokalną. | Użyj adresu `https://`. |
 | Oczekiwanie na Wi-Fi | Miejsce docelowe jest ustawione na tylko Wi-Fi, a telefon korzysta z sieci komórkowej. | Poczekaj lub wyłącz przełącznik tylko Wi-Fi w miejscu docelowym. |
 | Nie powiodło się, ponowna próba później | Tymczasowy problem, taki jak zerwane połączenie lub błąd serwera. | Nic; aplikacja ponawia próbę samoczynnie. **Ponów teraz** wymusza próbę. |
 | Przesyłanie nie powiodło się. Sprawdź ustawienia miejsca docelowego. | Serwer odmówił z powodu, którego ponowna próba nie naprawi. | Otwórz miejsce docelowe, uruchom **Testuj połączenie**, a jeśli zmieniły się dane logowania, usuń je i dodaj ponownie. |

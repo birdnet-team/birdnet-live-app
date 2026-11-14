@@ -1,6 +1,6 @@
 # BirdNET Live
 
-**Bioacoustique professionnelle dans votre poche.**
+**La bioacoustique professionnelle dans votre poche.**
 
 BirdNET Live est une application Flutter conçue pour les chercheurs de terrain, les naturalistes et les ornithologues amateurs qui ont besoin de preuves acoustiques fiables sur le terrain. Elle exécute le classifieur audio BirdNET+ et le géo-modèle directement sur votre appareil : l'identification des espèces fonctionne donc entièrement hors ligne une fois l'application installée.
 
@@ -12,19 +12,19 @@ BirdNET Live est une application Flutter conçue pour les chercheurs de terrain,
 
 ## Fonctionnalités
 
-- **Mode En direct** - Spectrogramme défilant en temps réel avec identification des espèces
-- **Mode Point d'écoute** - Sessions minutées avec compte à rebours et métadonnées de la station
-- **Mode Relevé** - Relevés de transects de longue durée avec suivi GPS, surveillance en arrière-plan et échantillonnage des détections
+- **Live Mode** - Spectrogramme défilant en temps réel avec identification des espèces
+- **Mode Point Count** - Sessions chronométrées avec compte à rebours et métadonnées de la station
+- **Mode Survey** - Relevés de transects de longue durée avec suivi GPS, surveillance en arrière-plan et échantillonnage des détections
 - **Mode Analyse de fichiers** - Analyse hors ligne d'enregistrements existants (WAV, FLAC, MP3, OGG et plus)
 - **Mode ARU** - Transformez votre appareil en unité d'enregistrement acoustique pour des déploiements de plusieurs jours
 - **Explorer** - Parcourez les espèces attendues à votre position grâce au géo-modèle BirdNET
-- **Bibliothèque de sessions** - Consultez, modifiez et exportez vos sessions passées avec lecture audio
-- **Export** - Formats Raven Pro, CSV, JSON, GPX et paquet ZIP avec métadonnées de provenance
+- **Bibliothèque de Sessions** - Consultez, modifiez et exportez vos Sessions passées avec lecture audio
+- **Export** - Formats Raven Pro, CSV, JSON, GPX et archive ZIP avec métadonnées de provenance
 - **Inférence sur l'appareil** - Le modèle BirdNET+ couvre 10 048 espèces, sans connexion Internet
 - **Enregistrement FLAC** - Capture audio compressée avec des fichiers plus légers pour les longs relevés
 - **Accessibilité** - Étiquettes pour lecteurs d'écran, infobulles et annonces vocales des détections en option
 - **Mises en page adaptatives** - Interfaces adaptées au téléphone, à la tablette, en mode portrait et paysage
-- **Localisation** - Interface et annonces vocales en 11 langues
+- **Localisation** - Interface et annonces vocales en 13 langues
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -64,7 +64,7 @@ Consultez le [Guide du développeur](developer/index.md) pour l'architecture, la
 
 ## Financement
 
-BirdNET Live est développé dans le cadre du projet RangerSound, financé par la Deutsche Bundesstiftung Umwelt (projet 39263/01). RangerSound est une collaboration entre l'Université de technologie de Chemnitz, l'Universität Würzburg et le parc national de la Forêt bavaroise.
+BirdNET Live est développé dans le cadre du projet RangerSound, financé par la Deutsche Bundesstiftung Umwelt (projet 39263/01). RangerSound est une collaboration entre l'Université de technologie de Chemnitz, l'Université de Wurtzbourg et le parc national de la Forêt bavaroise.
 
 ## Licence
 

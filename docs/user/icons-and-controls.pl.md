@@ -4,25 +4,25 @@ Ta strona wyjaśnia powtarzające się elementy sterujące i symbole używane w 
 
 ## Ikony trybów
 
-Te ikony mają takie same kształty jak w aplikacji. Tutaj przyjmują kolor tekstu; kolory aplikacji zależą od motywu, dynamicznych kolorów i wysokiego kontrastu.
+Te ikony mają takie same kształty jak w aplikacji. Tutaj przyjmują kolor tekstu; kolory aplikacji zależą od motywu, kolorów dynamicznych i wysokiego kontrastu.
 
 - :app-micRounded: **Live**
 - :app-locationOnRounded: **Point Count**
 - :app-routeRounded: **Survey**
 - :app-timerRounded: **Tryb ARU**
 - :app-audioFileRounded: **Analiza plików**
-- :app-sdStorage: **Analiza partii** (Już wkrótce)
+- :app-sdStorage: **Analiza wsadowa** (Już wkrótce)
 
 ## Wspólne elementy nawigacji
 
 | Element | Gdzie się pojawia | Co robi |
 |---|---|---|
 | :app-tuneRounded: **Ustawienia** | Stopka ekranu startowego, Live, Point Count, Survey, Analiza plików, Przegląd Session | Otwiera ustawienia. Na ekranach trybów otwiera ustawienia najbardziej związane z danym sposobem pracy. |
-| :app-searchRounded: **Przeglądaj** | Stopka ekranu startowego | Otwiera tryb Przeglądaj. |
+| :app-searchRounded: **Odkrywaj** | Stopka ekranu startowego | Otwiera ekran Odkrywaj. |
 | :app-libraryMusic: **Biblioteka** | Stopka ekranu startowego | Otwiera Bibliotekę Sessions. |
-| :app-helpOutlineRounded: **Pomoc** | Stopka ekranu startowego, nagłówek trybu Przeglądaj, panel Survey, pasek narzędzi Przeglądu Session | Otwiera pomoc lub panel pomocy dla danego ekranu. |
+| :app-helpOutlineRounded: **Pomoc** | Stopka ekranu startowego, nagłówek ekranu Odkrywaj, panel Survey, pasek narzędzi Przeglądu Session | Otwiera pomoc lub panel pomocy dla danego ekranu. |
 | :app-infoOutline: **Informacje / O aplikacji** | Stopka ekranu startowego, paski informacji, panele pomocy | Pokazuje informacje ogólne lub kontekst podsumowania. |
-| :app-arrowBackRounded: **Wstecz** | Tryb Live | Wraca do poprzedniego ekranu. |
+| :app-arrowBackRounded: **Wstecz** | Live Mode | Wraca do poprzedniego ekranu. |
 | :app-openInNew: **Otwórz zewnętrznie** | Ekran O aplikacji, odnośniki do dokumentacji | Otwiera stronę zewnętrzną, na przykład podręcznik użytkownika online. |
 | :app-arrowUpwardRounded: **Wróć na górę** | Ekran pomocy | Wraca do wprowadzenia i skrótów sekcji. Pojawia się po przewinięciu w dół. |
 | :app-volunteerActivism: **Wesprzyj** | Ekran O aplikacji | Otwiera stronę wsparcia BirdNET. |
@@ -56,15 +56,15 @@ Te ikony mają takie same kształty jak w aplikacji. Tutaj przyjmują kolor teks
 | Element | Znaczenie |
 |---|---|
 | :app-myLocation: **Bieżąca lokalizacja** | Użyj bieżącej pozycji GPS urządzenia. |
-| :app-editLocationAlt: **Ręczne współrzędne** | Wprowadź współrzędne ręcznie. |
+| :app-editLocationAlt: **Współrzędne ręczne** | Wprowadź współrzędne ręcznie. |
 | :app-locationOff: **Brak lokalizacji** | Pomiń lokalizację lub oznacz, że jest niedostępna. |
 | :app-locationOn: **Lokalizacja ustawiona** | Potwierdź lokalizację, pokaż współrzędne lub oznacz Session z mapą. |
 | :app-refresh: **Odśwież** | Odczytaj ponownie bieżącą lokalizację lub odśwież listę przewidywań. |
 | :app-mapSheet: **Wybór na mapie** | Wskaż współrzędne na mapie. |
 | :app-calendarToday: **Data** | Ustaw lub pokaż datę. |
-| :app-clear: **Wyczyść** | Usuń wybraną datę. |
+| :app-clear: **Resetuj** | Usuń wybraną datę. |
 
-## Symbole trybu Przeglądaj i gatunków
+## Symbole ekranu Odkrywaj i gatunków
 
 | Element | Znaczenie |
 |---|---|
@@ -74,13 +74,13 @@ Te ikony mają takie same kształty jak w aplikacji. Tutaj przyjmują kolor teks
 
 ## Działania na pojedynczym wykryciu
 
-Te elementy pojawiają się w każdym wierszu wykrycia w aplikacji — na liście gatunków w Przeglądzie Session, w panelu odtwarzacza fragmentów, na liście wykryć podczas Survey na żywo i na znacznikach mapy Survey. Pełny opis działania znajdziesz w [Przeglądzie Session → Działania na pojedynczym wykryciu](session-review.md#działania-na-pojedynczym-wykryciu).
+Te elementy pojawiają się w każdym wierszu wykrycia w aplikacji — na liście gatunków w Przeglądzie Session, w panelu odtwarzacza klipów, na liście wykryć podczas Survey na żywo i na znacznikach mapy Survey. Pełny opis działania znajdziesz w [Przeglądzie Session → Działania na pojedynczym wykryciu](session-review.md#działania-na-pojedynczym-wykryciu).
 
 | Element | Znaczenie |
 |---|---|
 | :app-checkCircleOutline: **Potwierdź** | Znacznik dodawany jednym dotknięciem, który oznacza wykrycie jako zweryfikowane wzrokowo lub słuchowo. Potwierdzone wykrycia otrzymują mały zielony znacznik na wierszach klastrów i na znacznikach mapy. |
 | :app-moreVert: **Więcej** | Otwiera menu wykrycia z opcjami **Udostępnij wykrycie**, **Zamień gatunek**, **Usuń wykrycie** i **Usuń gatunek**. |
-| :app-share: **Udostępnij wykrycie** | Udostępnia jedno wykrycie przez systemowy panel udostępniania i dołącza fragment dźwiękowy, jeśli jest dostępny — również wycinek trwającego nagrania podczas Survey na żywo. |
+| :app-share: **Udostępnij wykrycie** | Udostępnia jedno wykrycie przez systemowy panel udostępniania i dołącza klip dźwiękowy, jeśli jest dostępny — również wycinek trwającego nagrania podczas Survey na żywo. |
 | :app-swapHoriz: **Zamień gatunek** | Wybierz inny gatunek dla tego wykrycia. Otwiera się także po przesunięciu wiersza przeglądu w lewo. |
 | :app-deleteOutline: **Usuń wykrycie** | Natychmiast usuwa wiersz. Na kilka sekund pojawia się pasek SnackBar z opcją cofnięcia. Wywoływane także przesunięciem wiersza przeglądu w prawo. |
 | :app-deleteSweep: **Usuń gatunek** | Usuwa z Session wszystkie wykrycia danego gatunku naraz, z tą samą możliwością cofnięcia. |
@@ -103,9 +103,9 @@ Tych elementów używa się na ekranie Przeglądu Session.
 
 ## Paski stanu poszczególnych ekranów
 
-### Tryb Live
+### Live Mode
 
-Pasek informacji trybu Live używa ikony :app-infoOutline:, po której następują zwięzłe etykiety, takie jak:
+Pasek informacji Live Mode używa ikony :app-infoOutline:, po której następują zwięzłe etykiety, takie jak:
 
 - `now` — wykrycia widoczne obecnie na liście na żywo
 - `spp` — liczba unikalnych gatunków
@@ -121,7 +121,7 @@ Pasek czasu liczenia punktowego łączy :app-stopRounded: **Stop**, :app-timerOu
 Panel Survey używa:
 
 - :app-map: **Mapa** — zakładka mapy na żywo
-- :app-graphicEq: **Spektrogram** — zakładka spektrogramu
+- :app-graphicEq: **Audio** — zakładka ze spektrogramem
 - :app-summaryChart: **Podsumowanie** — zakładka podsumowania
 - :app-summaryChart: etykiety statystyk w widoku podsumowania Survey
 

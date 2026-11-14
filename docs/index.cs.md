@@ -2,7 +2,7 @@
 
 **Profesionální bioakustika ve vaší kapse.**
 
-BirdNET Live je aplikace ve Flutteru určená terénním výzkumníkům, ochráncům přírody a pozorovatelům ptáků, kteří v terénu potřebují spolehlivé akustické důkazy. Audio klasifikátor BirdNET+ i geomodel běží přímo ve vašem zařízení, takže identifikace druhů funguje po instalaci zcela offline.
+BirdNET Live je aplikace ve Flutteru určená terénním výzkumníkům, ochráncům přírody a pozorovatelům ptáků, kteří v terénu potřebují spolehlivé akustické důkazy. Zvukový klasifikátor BirdNET+ i geomodel běží přímo ve vašem zařízení, takže identifikace druhů funguje po instalaci zcela offline.
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
@@ -12,19 +12,19 @@ BirdNET Live je aplikace ve Flutteru určená terénním výzkumníkům, ochrán
 
 ## Funkce
 
-- **Režim Live** – spektrogram posouvající se v reálném čase s identifikací druhů
-- **Režim Point Count** – časované sčítací sessions s odpočtem a metadaty stanoviště
-- **Režim Survey** – dlouhé transektové surveye s GPS sledováním, monitoringem na pozadí a vzorkováním detekcí
+- **Live Mode** – spektrogram posouvající se v reálném čase s identifikací druhů
+- **Režim Point Count** – časované sčítací Sessions s odpočtem a metadaty stanoviště
+- **Režim Survey** – dlouhé transektové Survey se záznamem trasy GPS, monitoringem na pozadí a vzorkováním detekcí
 - **Analýza souborů** – offline analýza existujících nahrávek (WAV, FLAC, MP3, OGG a další)
 - **Režim ARU** – proměňte zařízení v akustickou nahrávací jednotku pro vícedenní nasazení
 - **Prozkoumat** – procházení druhů očekávaných ve vaší lokalitě podle geomodelu BirdNET
-- **Knihovna Sessions** – kontrola, úprava a export minulých sessions s přehráváním zvuku
+- **Knihovna Sessions** – přehled, úprava a export minulých Sessions s přehráváním zvuku
 - **Export** – formáty Raven Pro, CSV, JSON, GPX a ZIP balíček s metadaty o původu
 - **Inference v zařízení** – model BirdNET+ pokrývá 10 048 druhů, bez nutnosti internetu
-- **Nahrávání ve FLAC** – komprimovaný záznam s menšími soubory pro dlouhé surveye
+- **Nahrávání ve FLAC** – komprimovaný záznam s menšími soubory pro dlouhé Survey
 - **Přístupnost** – popisky pro čtečky obrazovky, nápovědy a volitelná mluvená oznámení detekcí
 - **Responzivní rozvržení** – adaptivní rozhraní pro telefon, tablet, na výšku i na šířku
-- **Lokalizace** – rozhraní a mluvená oznámení v 11 jazycích
+- **Lokalizace** – rozhraní a mluvená oznámení v 13 jazycích
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">

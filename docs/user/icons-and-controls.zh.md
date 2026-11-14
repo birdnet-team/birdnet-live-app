@@ -4,14 +4,14 @@
 
 ## 模式图标
 
-这些图标与应用中的形状相同。此处图标采用文字颜色；应用颜色会随主题、动态颜色和高对比度而变化。
+这些图标与应用中的形状相同。此处图标采用文字颜色；应用颜色会随主题、动态取色和高对比度而变化。
 
 - :app-micRounded: **Live**
 - :app-locationOnRounded: **Point Count**
 - :app-routeRounded: **Survey**
 - :app-timerRounded: **ARU 模式**
 - :app-audioFileRounded: **文件分析**
-- :app-sdStorage: **批量分析** (敬请期待)
+- :app-sdStorage: **批量分析**（敬请期待）
 
 ## 通用导航控件
 
@@ -19,10 +19,10 @@
 |---|---|---|
 | :app-tuneRounded: **设置** | 主界面底栏、Live、Point Count、Survey、文件分析、Session 回顾 | 打开设置。在模式界面中，打开与该工作方式最相关的设置。 |
 | :app-searchRounded: **探索** | 主界面底栏 | 打开探索。 |
-| :app-libraryMusic: **库** | 主界面底栏 | 打开 Session 列表。 |
+| :app-libraryMusic: **Session 列表** | 主界面底栏 | 打开 Session 列表。 |
 | :app-helpOutlineRounded: **帮助** | 主界面底栏、探索页头、Survey 面板、Session 回顾工具栏 | 打开帮助或该界面专属的帮助面板。 |
 | :app-infoOutline: **信息 / 关于** | 主界面底栏、信息栏、帮助面板 | 显示概况信息或汇总说明。 |
-| :app-arrowBackRounded: **返回** | Live 模式 | 返回上一界面。 |
+| :app-arrowBackRounded: **返回** | Live Mode | 返回上一界面。 |
 | :app-openInNew: **打开外部链接** | 关于界面、文档链接 | 打开外部页面，例如在线用户指南。 |
 | :app-arrowUpwardRounded: **返回顶部** | 帮助页面 | 返回简介和章节快捷入口。向下滚动后出现。 |
 | :app-volunteerActivism: **捐助** | 关于界面 | 打开 BirdNET 捐助页面。 |
@@ -82,10 +82,10 @@
 | :app-moreVert: **更多** | 打开该条检测的菜单，包含**分享检测**、**替换物种**、**删除检测**和**删除物种**。 |
 | :app-share: **分享检测** | 通过系统分享面板分享一条检测，并在有音频片段时一并附上——包括实时 Survey 期间从正在录制的文件中截取的片段。 |
 | :app-swapHoriz: **替换物种** | 为这条检测选择另一个物种。也可以把回顾列表中的某行向左滑动打开。 |
-| :app-deleteOutline: **删除检测** | 立即移除该行。会出现几秒钟的 SnackBar 可撤销。也可以把回顾列表中的某行向右滑动触发。 |
-| :app-deleteSweep: **删除物种** | 一次性从 Session 中移除该物种的全部检测，同样可通过 SnackBar 撤销。 |
-| :app-hearing: **听到** | 用于手动添加的检测：您听到了这只鸟。在选择物种后出现的确认面板中通过复选框设置。 |
-| :app-visibility: **看到** | 用于手动添加的检测：您看到了这只鸟。两个符号同时出现表示既听到*又*看到。 |
+| :app-deleteOutline: **删除检测** | 立即移除该行。几秒钟内可通过提示条撤销。也可以把回顾列表中的某行向右滑动触发。 |
+| :app-deleteSweep: **删除物种** | 一次性从 Session 中移除该物种的全部检测，同样可通过 提示条 撤销。 |
+| :app-hearing: **听到** | 用于手动添加的检测：您听到了这只动物。在选择物种后出现的确认面板中通过复选框设置。 |
+| :app-visibility: **看到** | 用于手动添加的检测：您看到了这只动物。两个符号同时出现表示既听到*又*看到。 |
 
 ## Session 回顾工具栏
 
@@ -93,7 +93,7 @@
 
 | 控件 | 含义 |
 |---|---|
-| :app-addCircleOutline: **添加** | 添加内容，例如物种或批注。 |
+| :app-addCircleOutline: **添加** | 添加内容，例如物种或标注。 |
 | :app-undo: **撤销** / :app-redo: **重做** | 在回顾的编辑记录中前后移动。 |
 | :app-contentCut: **裁剪** | 进入裁剪模式，或表示裁剪模式已启用。 |
 | :app-save: **保存** | 保存回顾中的修改。 |
@@ -103,13 +103,13 @@
 
 ## 各界面的状态栏
 
-### Live 模式
+### Live Mode
 
 Live 信息栏使用 :app-infoOutline:，后面跟着紧凑的标签，例如：
 
-- `now` — 当前在实时列表中可见的检测
-- `spp` — 独立物种数
-- `det` — 检测总数
+- `当前` — 当前在实时列表中可见的检测
+- `种` — 独立物种数
+- `条` — 检测总数
 - 正在录音时的时长和预计录音大小
 
 ### Point Count
@@ -121,9 +121,9 @@ Live 信息栏使用 :app-infoOutline:，后面跟着紧凑的标签，例如：
 Survey 面板使用：
 
 - :app-map: **地图** — 实时地图标签页
-- :app-graphicEq: **声谱图** — 声谱图标签页
-- :app-summaryChart: **汇总** — 汇总标签页
-- :app-summaryChart: Survey 汇总视图中的统计标签
+- :app-graphicEq: **音频** — 声谱图标签页
+- :app-summaryChart: **摘要** — 摘要标签页
+- :app-summaryChart: Survey 摘要视图中的统计标签
 
 ## 如有疑问
 

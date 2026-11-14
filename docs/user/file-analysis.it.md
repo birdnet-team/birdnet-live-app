@@ -8,7 +8,7 @@ Dalla Home, tocca la scheda **Analisi file** con l'icona :app-audioFileRounded:.
 
 ### Da un'altra app
 
-Puoi anche inviare una registrazione da un'altra app. Su Android, condividere un file audio con **BirdNET Live** o scegliere **Apri con** apre subito l'Analisi file. Su iOS, anche **Apri con** è immediato; dopo aver usato il menu di condivisione, apri BirdNET Live o torna all'app e la registrazione in attesa verrà selezionata automaticamente. Prima dell'analisi, l'app copia la registrazione nel proprio spazio di archiviazione temporaneo.
+Puoi anche inviare una registrazione da un'altra app. Su Android, condividere un file audio con **BirdNET Live** o scegliere **Apri con** apre subito l'Analisi file. Su iOS, anche **Apri con** è immediato; dopo aver usato la finestra di condivisione, apri BirdNET Live o torna all'app e la registrazione in attesa verrà selezionata automaticamente. Prima dell'analisi, l'app copia la registrazione nel proprio spazio di archiviazione temporaneo.
 
 ## Barra dell'app
 
@@ -77,7 +77,7 @@ quanto eseguire il modello sull'audio in arrivo e non quanto finemente coprire
 una registrazione già fissata.
 
 In qualunque modo l'analisi file arrivi alle sue finestre, le trasforma in
-rilevazioni con le stesse regole della modalità Live, di Point Count e di
+rilevazioni con le stesse regole di Live Mode, di Point Count e di
 Survey: una rilevazione inizia alla sua prima finestra di supporto, porta il
 punteggio supportato più alto e termina alla fine dell'ultima finestra di
 supporto.
@@ -93,4 +93,4 @@ La schermata di avanzamento mostra:
 
 ## Risultato
 
-Al termine dell'analisi, BirdNET Live converte l'output in una Session salvata e apre il [Riepilogo sessione](session-review.md).
+Al termine dell'analisi, BirdNET Live converte l'output in una Session salvata e apre il [Riepilogo Session](session-review.md).

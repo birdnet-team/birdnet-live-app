@@ -12,9 +12,9 @@ BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可�
 
 ## 功能
 
-- **Live 模式** - 实时滚动声谱图与物种识别
+- **Live Mode** - 实时滚动声谱图与物种识别
 - **Point Count 模式** - 带倒计时和样点元数据的计时 Session
-- **Survey 模式** - 长时间样线调查，支持 GPS 轨迹、后台监测和检测抽样
+- **Survey 模式** - 长时间样线调查，支持 GPS 轨迹、后台监测和检测采样
 - **文件分析** - 离线分析已有录音（WAV、FLAC、MP3、OGG 等）
 - **ARU 模式** - 把设备变成自主录音单元，用于多日部署
 - **探索** - 使用 BirdNET 地理模型浏览您所在位置可能出现的物种
@@ -24,7 +24,7 @@ BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可�
 - **FLAC 录音** - 压缩音频，长时间调查时文件更小
 - **无障碍** - 屏幕阅读器标签、提示文本，以及可选的检测语音播报
 - **自适应布局** - 界面适配手机、平板以及竖屏和横屏
-- **本地化** - 界面和语音播报支持 11 种语言
+- **本地化** - 界面和语音播报支持 13 种语言
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">
@@ -64,7 +64,7 @@ BirdNET Live 已上架 [Google Play](https://play.google.com/store/apps/details?
 
 ## 资助
 
-BirdNET Live 在 RangerSound 项目框架内开发，该项目由 Deutsche Bundesstiftung Umwelt 资助（项目编号 39263/01）。 RangerSound 是开姆尼茨工业大学、Universität Würzburg 与巴伐利亚森林国家公园的合作项目。
+BirdNET Live 在 RangerSound 项目框架内开发，该项目由德国联邦环境基金会（Deutsche Bundesstiftung Umwelt）资助（项目编号 39263/01）。RangerSound 是开姆尼茨工业大学、维尔茨堡大学 与巴伐利亚森林国家公园的合作项目。
 
 ## 许可
 

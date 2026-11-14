@@ -32,13 +32,13 @@ BirdNET-Team driver ingen serverløsning for appen og mottar ikke opptakene dine
 | Datatype | Formål | Lagring |
 |----------|--------|---------|
 | Lydopptak | Artsidentifisering, avspilling, eksport | Lokale filer |
-| Deteksjonsresultater | Art, konfidens, tidsstempler | Lokale JSON-filer for Session |
+| Deteksjonsresultater | Art, sikkerhet, tidspunkter | Lokale JSON-filer for Session |
 | GPS-koordinater | Geotagging av deteksjoner, Survey-spor, geomodellprediksjoner | Lokale JSON-filer for Session |
 | Session-metadata | Session-historikk, gjennomgang, eksport | Lokale JSON-filer for Session |
 | Værøyeblikksbilde (valgfritt) | Engangsregistrering av temperatur, nedbør, vind, skydekke og værkode per Session når **Tillat væroppslag** er på | Lokale JSON-filer for Session |
 | Appinnstillinger | Brukerinnstillinger | SharedPreferences |
 
-### Medfølgende frakoblede data
+### Data som følger med appen
 
 Artsbilder, beskrivelser og taksonomidata er **inkludert i appen** og lastes fra lokale ressurser. Det gjøres ingen nettverksforespørsler for artsinformasjon.
 
@@ -48,21 +48,21 @@ Appen kan bruke følgende eksterne ressurser. Hver ressurs styres av en egen bry
 
 | Ressurs | Formål | Styres av | Sendes ved hver forespørsel |
 |---------|--------|-----------|-----------------------------|
-| Kartfliser (OpenStreetMap Foundation) | Grunnkart for posisjonsvelgeren, det direkte Survey-kartet og Session-kartet | **Innstillinger → Personvern → Tillat kart** | Fliskoordinater `(z, x, y)`, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
+| Kartfliser (OpenStreetMap Foundation) | Grunnkart for posisjonsvelgeren, Survey-kartet i sanntid og Session-kartet | **Innstillinger → Personvern → Tillat kart** | Fliskoordinater `(z, x, y)`, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 | Omvendt geokoding (OpenStreetMap Foundations Nominatim) | Gjør GPS-koordinater om til et lesbart stedsnavn for visning i en Session | **Innstillinger → Personvern → Tillat oppslag av stedsnavn** | Session-ens bredde- og lengdegrad, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 | Værøyeblikksbilde (OpenMeteo GmbH) | Engangsregistrering av lokale forhold ved opptakskoordinatene og sluttidspunktet | **Innstillinger → Personvern → Tillat væroppslag** | Session-ens bredde- og lengdegrad og sluttidspunkt, IP-adressen din som del av nettverkstilkoblingen og BirdNET Live-user-agent-strengen |
 
 Kartflisforespørsler er HTTPS GET-forespørsler til `tile.openstreetmap.org`. Fliskoordinatene identifiserer kartområdet som vises. Som alle direkte Internett-forespørsler gjør forespørselen også IP-adressen din synlig for tjenesteleverandøren.
 
-Forespørsler om omvendt geokoding sender Session-ens bredde- og lengdegrad til `nominatim.openstreetmap.org` over HTTPS, sammen med BirdNET Live-user-agent-strengen som kreves av [retningslinjene for bruk av Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Det returnerte stedsnavnet lagres lokalt i Session-en, slik at hver Session bare geokodes én gang. Ingen forespørsel gjøres hvis Session-en mangler GPS-koordinater eller enheten er frakoblet.
+Forespørsler om omvendt geokoding sender Session-ens bredde- og lengdegrad til `nominatim.openstreetmap.org` over HTTPS, sammen med BirdNET Live-user-agent-strengen som kreves av [retningslinjene for bruk av Nominatim](https://operations.osmfoundation.org/policies/nominatim/). Det returnerte stedsnavnet lagres lokalt i Session-en, slik at hver Session bare geokodes én gang. Ingen forespørsel gjøres hvis Session-en mangler GPS-koordinater eller enheten er uten nett.
 
 Værforespørsler sender Session-ens bredde- og lengdegrad og sluttidspunkt til `api.open-meteo.com` over HTTPS, sammen med BirdNET Live-user-agent-strengen. [Open-Meteo](https://open-meteo.com/) er en gratis tjeneste og krever verken konto eller API-nøkkel. Det returnerte værøyeblikksbildet lagres lokalt i Session-en og skrives også til JSON-eksporten, Session-ens `metadata.json`-blokk og HTML-rapporten.
 
 **Tredjepartsbehandling og lagring:** BirdNET-Team driver ikke disse tjenestene og mottar ikke forespørselsdataene deres. OpenStreetMap Foundation kan behandle nettverkstilgangsdata og forespørselsdetaljer i henhold til sin [personvernerklæring](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo opplyser at webserverlogger for det gratis API-et kan inneholde IP-adresser og geografiske koordinater, og at loggene slettes etter 90 dager. Se deres [vilkår og personverninformasjon](https://open-meteo.com/en/terms). Leverandørene kan behandle data i andre land enn ditt. Returnerte stedsnavn og værdata lagres lokalt i Session-en og blir bare med i en eksport når du oppretter den.
 
-**Tilbaketrekking:** Du kan deaktivere hver av de tre tjenestene når som helst under **Innstillinger → Personvern**. Stedsnavn og værdata som allerede er lagret lokalt, forblir knyttet til Session-ene der de ble hentet. Slett disse Session-ene fra Session-biblioteket, eller bruk **Innstillinger → Faresone → Slett all data** for å fjerne historiske data.
+**Tilbaketrekking:** Du kan deaktivere hver av de tre tjenestene når som helst under **Innstillinger → Personvern**. Stedsnavn og værdata som allerede er lagret lokalt, forblir knyttet til Session-ene der de ble hentet. Slett disse Session-ene fra Session-biblioteket, eller bruk **Innstillinger → Faresone → Slett alle data** for å fjerne historiske data.
 
-**Appen starter ingen andre nettverksforespørsler selv.** Appen fungerer fullt ut frakoblet. Innhold du bevisst åpner i nettleseren, blant annet eksterne lenker og eksporterte HTML-rapporter, kan gjøre nettleserforespørsler som beskrevet nedenfor.
+**Appen starter ingen andre nettverksforespørsler selv.** Appen fungerer fullt ut uten nett. Innhold du bevisst åpner i nettleseren, blant annet eksterne lenker og eksporterte HTML-rapporter, kan gjøre nettleserforespørsler som beskrevet nedenfor.
 
 ## Eksterne lenker
 
@@ -75,8 +75,8 @@ Ingenting sendes mens en lenke bare vises, og ingen ekstern lenke åpnes automat
 Appen bruker GPS-posisjon til:
 
 - **Artsfiltrering** — å forutsi hvilke arter som sannsynligvis finnes på stedet.
-- **Survey-modus** — å registrere GPS-spor og geotagge deteksjoner langs en transekt.
-- **Point Count-modus** — å merke observasjonsstedet.
+- **Survey** — å registrere GPS-spor og geotagge deteksjoner langs en transekt.
+- **Point Count** — å merke observasjonsstedet.
 
 GPS-data lagres lokalt og tas bare med i eksporter når du uttrykkelig deler eller eksporterer en Session. Posisjonstilgang krever tillatelse fra deg og kan når som helst trekkes tilbake i systeminnstillingene.
 
@@ -86,7 +86,7 @@ Du kan eksportere Session-data i flere formater (Raven Selection Tables, CSV, JS
 
 ## Opplastingsmål
 
-Under **Innstillinger → Eksport og synk → Opplastingsmål** kan du legge til et prosjekts WebDAV-mappe, vanligvis en Nextcloud File Drop som en prosjektleder har delt med deg som lenke eller QR-kode. Ingenting lastes opp før du legger til et opplastingsmål og deretter huker det av i Del-dialogen, eller slår på automatisk opplasting for ARU-Sessions. Opplastinger går direkte fra enheten din til prosjektlederens server over HTTPS. BirdNET-Team driver ingen server imellom og mottar ingenting.
+Under **Innstillinger → Eksport og synk → Opplastingsmål** kan du legge til et prosjekts WebDAV-mappe, vanligvis en Nextcloud File Drop som en prosjektleder har delt med deg som lenke eller QR-kode. Ingenting lastes opp før du legger til et opplastingsmål og deretter huker av for det i delingsdialogen, eller slår på automatisk opplasting for ARU Sessions. Opplastinger går direkte fra enheten din til prosjektlederens server over HTTPS. BirdNET-Team driver ingen server imellom og mottar ingenting.
 
 En opplasting inneholder det samme som en deling via **Del**: Session-ens JSON-oppføring (deteksjoner, tidspunkter, koordinater samt observatør- og stedsnavn hvis de er angitt), eventuell lyd, tabeller og rapport du har huket av, enhetens opplastings-ID og deltakeridentifikatoren du har oppgitt, hvis noen. Påloggingsinformasjonen for opplastingsmålet lagres i enhetens nøkkelring.
 
@@ -94,7 +94,7 @@ Opplastingsmål drives av prosjektledere, ikke av BirdNET-Team, etter deres egne
 
 ## Sletting av data
 
-Individuelle Sessions og tilhørende opptak kan slettes fra Session-biblioteket. For å slette BirdNET Lives lokale Sessions, opptak, talememoer, egendefinerte artslister, innstillinger og hurtigbuffere fra appen bruker du **Innstillinger → Faresone → Slett all data**. Du kan også tømme BirdNET Lives applagring i operativsystemets innstillinger eller avinstallere appen.
+Enkeltstående Sessions og tilhørende opptak kan slettes fra Session-biblioteket. For å slette BirdNET Lives lokale Sessions, opptak, talenotater, egendefinerte artslister, innstillinger og hurtigbuffere fra appen bruker du **Innstillinger → Faresone → Slett alle data**. Du kan også tømme BirdNET Lives applagring i operativsystemets innstillinger eller avinstallere appen.
 
 ## Kontakt
 

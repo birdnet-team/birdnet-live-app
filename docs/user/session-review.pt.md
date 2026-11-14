@@ -32,20 +32,20 @@ Um campo de pesquisa acima da lista filtra as espécies por nome comum ou cient�
 - **Maior confiança** (padrão) — espécies com a maior confiança em uma única detecção primeiro. Bom para triar as identificações mais certas. Ao expandir uma espécie neste modo, as detecções com clipes de áudio reproduzíveis aparecem antes das detecções sem clipe e, em seguida, por confiança.
 - **Mais detecções** — espécies com a maior contagem de detecções primeiro. Bom para identificar os cantores dominantes.
 - **A → Z** — em ordem alfabética por nome comum. Previsível, sensível ao idioma e fácil de percorrer quando uma Session tem muitas espécies.
-- **Detetadas primeiro** — em ordem cronológica pelo horário da primeira detecção. O padrão histórico; útil ao revisar junto com a linha do tempo do espectrograma.
+- **Detectadas primeiro** — em ordem cronológica pelo horário da primeira detecção. O padrão histórico; útil ao revisar junto com a linha do tempo do espectrograma.
 
 A ordenação escolhida persiste entre as Sessions.
 
 ### Adicionar uma espécie manualmente
 
-O botão :app-addCircleOutline: da barra de ferramentas abre o seletor de espécies para aves que o BirdNET não detectou. Tocar em um resultado não o insere de imediato: primeiro sobe uma folha de confirmação com a espécie escolhida e duas caixas de seleção:
+O botão :app-addCircleOutline: da barra de ferramentas abre o seletor de espécies para aves que o BirdNET não detectou. Tocar em um resultado não o insere de imediato: primeiro abre um painel de confirmação com a espécie escolhida e duas caixas de seleção:
 
 - :app-hearing: **Ouvida** — você ouviu a ave.
 - :app-visibility: **Vista** — você viu a ave.
 
 Marque uma, ambas ou nenhuma e toque em **Adicionar**. **Cancelar** — ou deslizar para baixo — devolve você à busca, então um toque errado não custa nada. **Ouvida** vem marcada, e sua escolha permanece para a próxima espécie: registrar uma sequência de aves que você só viu exige marcar **Vista** uma única vez. Deixando as duas em branco, o registro é salvo sem tipo de observação — não como "nenhuma das duas".
 
-A escolha fica armazenada na detecção e aparece como um pequeno ícone de orelha e/ou olho ao lado do selo de entrada manual em todos os lugares onde a detecção é exibida: cabeçalhos de espécie, linhas de agrupamento, o reprodutor de clipes e a lista do survey ao vivo. Ela também vai para as exportações: uma coluna `Evidence` em CSV e nas tabelas do Raven, um campo `evidence` em JSON e uma etiqueta no relatório HTML. A mesma folha aparece ao usar **Substituir espécie**, pré-preenchida com o que o registro já tinha.
+A escolha fica armazenada na detecção e aparece como um pequeno ícone de orelha e/ou olho ao lado do selo de entrada manual em todos os lugares onde a detecção é exibida: cabeçalhos de espécie, linhas de agrupamento, o reprodutor de clipes e a lista do Survey ao vivo. Ela também vai para as exportações: uma coluna `Evidence` em CSV e nas tabelas do Raven, um campo `evidence` em JSON e uma etiqueta no relatório HTML. O mesmo painel aparece ao usar **Substituir espécie**, pré-preenchida com o que o registro já tinha.
 
 ### Ações por detecção
 
@@ -75,15 +75,15 @@ A opção :app-share: **Compartilhar detecção** usa as mesmas opções de **Co
 
 O anexo de áudio é resolvido nesta ordem:
 
-1. **Para Sessions que gravam um único arquivo contínuo**: o áudio entre os carimbos de início e fim da detecção é recortado diretamente da gravação. Há suporte para gravações contínuas WAV e FLAC; fontes comprimidas de File Analysis são decodificadas como WAV.
+1. **Para Sessions que gravam um único arquivo contínuo**: o áudio entre os horários de início e fim da detecção é recortado diretamente da gravação. Há suporte para gravações contínuas WAV e FLAC; fontes comprimidas da Análise de arquivos são decodificadas como WAV.
 2. Caso contrário, é usado o clipe próprio salvo da detecção quando ele existe no disco.
-3. Sem fonte de áudio e sem artefato de exportação selecionado, o compartilhamento volta a um texto curto com espécie, confiança, carimbo UTC e localização.
+3. Sem fonte de áudio e sem artefato de exportação selecionado, o compartilhamento volta a um texto curto com espécie, confiança, horário em UTC e localização.
 
 ### Memos de voz
 
 Você pode anexar comentários falados curtos a registros de detecção individuais:
 
-- **Gravar**: toque no botão :app-moreVert: em um agrupamento de detecção e selecione **Gravar memo de voz** para abrir a caixa de diálogo de memo de voz. Toque no grande botão do microfone para iniciar a gravação. Uma forma de onda ao vivo reflete sua voz em tempo real. Toque no botão de parada ao terminar.
+- **Gravar**: toque no botão :app-moreVert: em um agrupamento de detecção e selecione **Gravar memo de voz** para abrir a caixa de diálogo de memo de voz. Toque no botão grande do microfone para iniciar a gravação. Uma forma de onda ao vivo reflete sua voz em tempo real. Toque no botão de parada ao terminar.
 - **Revisar**: depois de gravado, você pode ouvir o memo usando o reprodutor embutido. Para substituí-lo, toque no botão **Gravar novamente**. Para salvá-lo, toque no botão **Salvar**.
 - **Excluir**: se uma detecção já tiver um memo de voz anexado, você pode excluí-lo pelo menu adicional ou pela caixa de diálogo de memo de voz.
 - **Formatos específicos da plataforma**: no Android e em outras plataformas, os memos de voz são gravados no formato AAC (`.m4a`) altamente compactado a 16 kHz. No iOS, eles usam automaticamente o formato WAV/PCM16 (`.wav`) para evitar problemas de compatibilidade do CoreAudio com as sessões de áudio ativas do aplicativo. Ambos os formatos têm suporte total no empacotamento ZIP de exportação.
@@ -109,11 +109,11 @@ O mapa em tela cheia tem um **chip de filtro** persistente fixado no canto super
 - **Com clipe de áudio** — apenas detecções cujo clipe ainda está no disco e pode ser reproduzido.
 - **Adições manuais** — apenas detecções que você adicionou no Resumo da Session (exclui as detectadas automaticamente).
 
-Você também pode restringir as detecções por nível de confiança. O controle deslizante define o piso de confiança (começa em 10%).
+Você também pode restringir as detecções por nível de confiança. O controle deslizante define a confiança mínima (começa em 10%).
 
 Abaixo do controle deslizante de confiança há um seletor **Limitar a uma espécie** que permite reduzir o mapa a uma única espécie — útil para perguntar "onde exatamente ao longo do percurso eu ouvi o sabiá-da-mata?". Uma entrada *Todas as espécies* remove a restrição. Os filtros se combinam: por exemplo, *Com clipe de áudio* + *Sabiá-da-mata* + *> 80%* mostra apenas os marcadores reproduzíveis de sabiá-da-mata que pontuaram acima de 80%.
 
-Quando um filtro está ativo, o título da barra de aplicativo ganha um subtítulo com a contagem de correspondências (por exemplo, *"7 detecções"*). *Repor* no painel volta ao padrão.
+Quando um filtro está ativo, o título da barra de aplicativo ganha um subtítulo com a contagem de correspondências (por exemplo, *"7 detecções"*). *Redefinir* no painel volta ao padrão.
 
 ## Ícones da barra de ferramentas
 
@@ -138,12 +138,12 @@ A barra de ferramentas usa os mesmos significados de ícone descritos em [Ícone
 
 ## Exportação
 
-O comportamento de exportação depende das opções selecionadas nas [Configurações](settings.md). O app pode empacotar as detecções e, opcionalmente, o áudio no formato de exportação escolhido. Cada exportação inclui metadados de proveniência — a versão do app, o nome e a versão do modelo, a versão da taxonomia, o idioma das espécies, o carimbo de data/hora da exportação, as configurações mantidas com a Session e as opções de exportação relevantes — gravados em um arquivo lateral `<prefix>.metadata.json` (ZIP) ou em um bloco `meta` de nível superior (JSON), para que as exportações sejam autodescritivas e reproduzíveis.
+O comportamento de exportação depende das opções selecionadas nas [Configurações](settings.md). O app pode empacotar as detecções e, opcionalmente, o áudio no formato de exportação escolhido. Cada exportação inclui metadados de procedência — a versão do app, o nome e a versão do modelo, a versão da taxonomia, o idioma das espécies, a data e a hora da exportação, as configurações mantidas com a Session e as opções de exportação relevantes — gravados em um arquivo auxiliar `<prefix>.metadata.json` (ZIP) ou em um bloco `meta` de nível superior (JSON), para que as exportações sejam autodescritivas e reproduzíveis.
 
 Cada detecção exportada também traz o BirdNET ID da sua espécie (por exemplo, `BN07148`), o identificador dessa espécie na taxonomia do BirdNET: uma coluna `BirdNET ID` logo depois de `Scientific Name` em CSV e nas tabelas do Raven, um campo `birdnetId` em JSON, uma extensão do ponto em GPX e uma indicação no cartão da espécie no relatório HTML. O ID é consultado na hora da exportação, então as Sessions gravadas com versões anteriores do app também o recebem, mesmo quando um nome científico mudou desde então. Ele fica vazio nas entradas que a taxonomia não conhece, como uma espécie que você mesmo digitou. Um ID só faz sentido junto com a versão da sua taxonomia, que os metadados registram em `taxonomy`.
 
-Quando o dispositivo fornece altitude com uma posição GPS, as exportações incluem altura em metros, precisão vertical disponível, superfície de referência e horário da medição. JSON inclui tudo com as coordenadas relacionadas; GPX inclui esses dados nos pontos da rota Survey e nos pontos de detecção. CSV e Raven adicionam apenas uma coluna `Altitude (m)` ao lado de latitude e longitude. Coordenadas manuais ou escolhidas no mapa não têm altitude inferida. Uma detecção adicionada em um horário no resumo de Survey recebe uma posição interpolada entre os pontos de rota vizinhos, sem horário próprio de medição. Os dispositivos podem usar superfícies de referência diferentes; confira `altitudeReference` antes de comparar alturas. `unknown` significa que a plataforma não identificou a superfície.
+Quando o dispositivo fornece altitude com uma posição GPS, as exportações incluem altura em metros, precisão vertical disponível, superfície de referência e horário da medição. JSON inclui tudo com as coordenadas relacionadas; GPX inclui esses dados nos pontos da rota do Survey e nos pontos de detecção. CSV e Raven adicionam apenas uma coluna `Altitude (m)` ao lado de latitude e longitude. Coordenadas manuais ou escolhidas no mapa não têm altitude inferida. Uma detecção adicionada em um horário no resumo de Survey recebe uma posição interpolada entre os pontos de rota vizinhos, sem horário próprio de medição. Os dispositivos podem usar superfícies de referência diferentes; confira `altitudeReference` antes de comparar alturas. `unknown` significa que a plataforma não identificou a superfície.
 
-O bloco `settings` da exportação JSON registra os valores que foram *efetivamente aplicados a esta Session* — sensibilidade, modo de Score Pooling e número de janelas, ganho do microfone e o corte do filtro passa-alta — e não o que estiver definido nas Configurações agora. Isso significa que você pode reproduzir um resultado meses depois, ou comparar dois Surveys, sem precisar lembrar em que posição estavam os controles quando você os executou.
+O bloco `settings` da exportação JSON registra os valores que foram *efetivamente aplicados a esta Session* — sensibilidade, modo de agregação de pontuações e número de janelas, ganho do microfone e o corte do filtro passa-alta — e não o que estiver definido nas Configurações agora. Isso significa que você pode reproduzir um resultado meses depois, ou comparar dois Surveys, sem precisar lembrar em que posição estavam os controles quando você os executou.
 
-Todos os carimbos de data/hora nos nomes de arquivo exportados (`BirdNET_Live_<date>_<time>_…`) e dentro dos conteúdos CSV / JSON são formatados no horário local *atual* do telefone. Os registros subjacentes são armazenados em UTC e convertidos na saída.
+Todas as datas e horas nos nomes de arquivo exportados (`BirdNET_Live_<date>_<time>_…`) e dentro dos conteúdos CSV / JSON são formatadas no horário local *atual* do telefone. Os registros subjacentes são armazenados em UTC e convertidos na saída.

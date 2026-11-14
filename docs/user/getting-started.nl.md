@@ -24,7 +24,7 @@ Wanneer je BirdNET Live voor het eerst opent, loopt de app met je door een korte
 1. Lees de introductieschermen.
 2. Neem het Beleid voor aanvaardbaar gebruik en het Privacybeleid door.
 3. Geef toestemming voor de microfoon zodat BirdNET Live audio kan verwerken.
-4. Geef eventueel toestemming voor locatie voor geotagging, Verkennen, Point Count en Survey.
+4. Geef eventueel toestemming voor locatie voor geotagging, Ontdekken, Point Count en Survey.
 5. Sta eventueel meldingen toe voor langlopende Surveys.
 
 ## Eerste start
@@ -40,9 +40,9 @@ Het startscherm is het centrale punt.
 
 ### Kaarten voor de hoofdmodi
 
-- :app-micRounded: **Live-modus**
-- :app-locationOnRounded: **Point Count-modus**
-- :app-routeRounded: **Survey-modus**
+- :app-micRounded: **Live**
+- :app-locationOnRounded: **Point Count**
+- :app-routeRounded: **Survey**
 - :app-audioFileRounded: **Bestandsanalyse**
 - :app-timerRounded: **ARU-modus**
 - :app-sdStorage: **Batchanalyse** (Binnenkort beschikbaar)
@@ -50,8 +50,8 @@ Het startscherm is het centrale punt.
 ### Knoppen onderaan
 
 - :app-tuneRounded: **Instellingen**
-- :app-searchRounded: **Verkennen**
-- :app-libraryMusic: **Session-bibliotheek**
+- :app-searchRounded: **Ontdekken**
+- :app-libraryMusic: **Sessions**
 - :app-helpOutlineRounded: **Help**
 - :app-infoOutline: **Over**
 
@@ -59,8 +59,8 @@ Het startscherm is het centrale punt.
 
 BirdNET Live slaat elke afgeronde Session automatisch op en opent die in het Session-overzicht zodra de verwerking stopt.
 
-- Live-Sessions bewaren detecties en, afhankelijk van je instellingen, opnamen of fragmenten.
-- Point Count-Sessions worden opgeslagen als punttellingen op tijd.
+- Live-Sessions bewaren detecties en, afhankelijk van je instellingen, opnames of fragmenten.
+- Point Count-Sessions worden opgeslagen als tellingen op tijd.
 - Survey-Sessions bewaren de route, de detecties en bijbehorende metadata.
 - Resultaten van bestandsanalyse worden omgezet in een Session die je kunt nakijken.
 
@@ -77,4 +77,4 @@ BirdNET Live slaat elke afgeronde Session automatisch op en opent die in het Ses
 | Microfoon | Alle opnamemodi | Vereist |
 | Locatie | GPS-tagging, Survey/Point Count | Optioneel voor Live |
 | Opslag | Opnamen en exports bewaren | Vereist voor opnemen |
-| Meldingen | Waarschuwingen bij Survey op de achtergrond | Optioneel |
+| Meldingen | Survey-meldingen op de achtergrond | Optioneel |

@@ -50,7 +50,7 @@ Il pulsante :app-helpOutline: accanto a ogni controllo ne spiega l'effetto. Il c
 
 Scegli **Completa** per salvare audio continuo (predefinito), **Solo clip** per salvare uno spezzone per ogni vocalizzazione rilevata o **Disattivata** per non salvare audio. Questa scelta è indipendente dalla registrazione di Live Mode e viene ricordata per il prossimo Point Count. Gli spezzoni usano la stessa selezione della finestra con il punteggio massimo e lo stesso contesto di Live Mode, senza riduzione basata sulla posizione. Con **Solo clip**, il cursore **Contesto clip** imposta i secondi conservati prima e dopo ogni finestra analizzata; aggiorna anche il contesto di Live Mode.
 
-### 3. Consigli sul campo
+### 3. Consigli per il campo
 
 Questa schermata presenta una breve lista di controllo in-app da seguire prima di iniziare.
 
@@ -80,6 +80,6 @@ La schermata del Point Count in tempo reale è incentrata su una dashboard a tem
 
 Con **Continua a schermo spento** attivo nella configurazione di Point Count, il conteggio continua quando blocchi lo schermo o passi a un’altra app, anche con lo schermo acceso. Termina alla durata scelta; il conto alla rovescia usa il tempo realmente trascorso, quindi una schermata sospesa non prolunga il conteggio. Android mostra una notifica persistente con Apri e Interrompi. Disattiva l’interruttore per terminare prima con queste azioni. Point Count non si mette in pausa per poi riprendere, perché interromperebbe il conteggio a tempo. Se esci durante l’avvio, viene annullato con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non termina il conteggio.
 
-Al termine del Point Count, BirdNET Live apre [Riepilogo sessione](session-review.md). Se il salvataggio automatico è attivo, salva la Session automaticamente; altrimenti salvala dal riepilogo per conservarla.
+Al termine del Point Count, BirdNET Live apre il [Riepilogo Session](session-review.md). Se il salvataggio automatico è attivo, salva la Session automaticamente; altrimenti salvala dal Riepilogo per conservarla.
 
 Con il salvataggio automatico attivo, un conteggio non concluso viene salvato anche all'avvio, ogni 30 secondi e quando l'app lascia il primo piano. Dopo un arresto anomalo o un'interruzione di corrente, l'ultimo conteggio parziale è disponibile nella Libreria Sessions.

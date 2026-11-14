@@ -24,7 +24,7 @@ Alle instellingen die de app momenteel biedt, gegroepeerd zoals in het instellin
 
 Doorlopend luisteren met de microfoon, live detecties, het spectrogram en de Session-infobalk.
 
-### [Verkennen](explore.md)
+### [Ontdekken](explore.md)
 
 Soorten die voor de huidige locatie en het huidige seizoen worden voorspeld, plus de overlay met soortdetails.
 
@@ -34,11 +34,11 @@ Opgeslagen Sessions, zoeken, sorteren, weergavemodi en bladeren gegroepeerd op s
 
 ### [Session-overzicht](session-review.md)
 
-Weergave, bewerken, bijsnijden, annotaties, export en de werkbalk van het overzicht.
+Afspelen, bewerken, bijsnijden, annotaties, export en de werkbalk van het overzicht.
 
 ### [Point Count-modus](point-count-mode.md)
 
-De workflow voor het opzetten van een punttelling, de locatieopties en het scherm met de lopende klok.
+De workflow voor het opzetten van een Point Count, de locatieopties en het scherm met de lopende klok.
 
 ### [Survey-modus](survey-mode.md)
 
@@ -64,7 +64,7 @@ Afgeronde Sessions naar de map van een project sturen: een Nextcloud File Drop- 
 
 ### [Veelgestelde vragen](faq.md)
 
-Korte antwoorden over offline gebruik, opnamegedrag, punttellingen en prestaties.
+Korte antwoorden over offline gebruik, opnamegedrag, Point Count en prestaties.
 
 ## Leesvolgorde
 

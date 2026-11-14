@@ -8,13 +8,13 @@ Tippen Sie auf der Startseite auf die Karte **Dateianalyse** mit dem Symbol :app
 
 ### Aus einer anderen App
 
-Sie können eine Aufnahme auch aus einer anderen App übergeben. Unter Android öffnet das Teilen einer Audiodatei mit **BirdNET Live** oder **Öffnen mit** sofort die Dateianalyse. Unter iOS funktioniert **Öffnen mit** ebenfalls sofort; öffnen Sie BirdNET Live nach dem Teilen-Menü oder kehren Sie dorthin zurück, damit die wartende Aufnahme automatisch ausgewählt wird. Vor der Analyse kopiert die App die Aufnahme in ihren eigenen temporären Speicher.
+Sie können eine Aufnahme auch aus einer anderen App übergeben. Unter Android öffnet das Teilen einer Audiodatei mit **BirdNET Live** oder **Öffnen mit** sofort die Dateianalyse. Unter iOS funktioniert **Öffnen mit** ebenfalls sofort; öffnen Sie nach dem Teilen BirdNET Live oder kehren Sie zur App zurück, damit die wartende Aufnahme automatisch ausgewählt wird. Vor der Analyse kopiert die App die Aufnahme in ihren eigenen temporären Speicher.
 
 ## App-Leiste
 
-- :app-tuneRounded: — Dateianalyse-Einstellungen öffnen
-- :app-helpOutlineRounded: — Dateianalyse-Hilfe öffnen
-- :app-close: — einen laufenden Analyselauf abbrechen
+- :app-tuneRounded: – Dateianalyse-Einstellungen öffnen
+- :app-helpOutlineRounded: – Dateianalyse-Hilfe öffnen
+- :app-close: – eine laufende Analyse abbrechen
 
 ## Unterstützte Eingaben
 
@@ -54,10 +54,10 @@ Sie können:
 Der Assistent zeigt:
 
 - Fensterdauer
-- Überlappung
+- Fensterüberlappung
 - Empfindlichkeit
-- Konfidenzschwelle
-- Modus des Artenfilters
+- Konfidenzschwellenwert
+- Artenfilter
 
 | Einrichtungselement | Symbol |
 |---|---|
@@ -77,7 +77,7 @@ eingehendes Audio laufen, und nicht, wie fein sie eine feststehende Aufnahme
 abdecken.
 
 Wie die Dateianalyse auch immer zu ihren Fenstern kommt: Sie macht daraus
-Detektionen nach denselben Regeln wie Live-Modus, Point Count und Survey. Eine
+Detektionen nach denselben Regeln wie Live Mode, Point Count und Survey. Eine
 Detektion beginnt bei ihrem frühesten stützenden Fenster, trägt den stärksten
 gestützten Score und endet am Ende des letzten stützenden Fensters.
 

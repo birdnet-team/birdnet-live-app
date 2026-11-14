@@ -4,7 +4,7 @@ De Survey-modus is de routegebaseerde workflow voor langlopende tellingen waarbi
 
 ## Zo open je de modus
 
-Tik op het startscherm op de kaart **Survey-modus** met het pictogram :app-routeRounded:.
+Tik op het startscherm op de kaart **Survey** met het pictogram :app-routeRounded:.
 
 ## Opzetproces
 
@@ -33,41 +33,41 @@ Open-Meteo wordt hergebruikt wanneer de Survey wordt opgeslagen.
 Deze stap bevat parameters die specifiek voor een Survey gelden, zoals:
 
 - keuze van de microfoon
-- inferentiesnelheid
+- inferentiefrequentie
 - betrouwbaarheidsdrempel
 - GPS-interval
 - maximale duur
 - opnamemodus
 - fragmentcontext bij opnemen van alleen detecties
-- steekproefmodus voor detecties
-- limiet van top-N per soort wanneer de steekproef beperkt is
+- detectieselectie
+- Top N per soort wanneer de selectie beperkt is
 
 | Instelling | Pictogram |
 |---|---|
 | Microfoon | :app-micRounded: |
-| Inferentiesnelheid | :app-speedRounded: |
-| Vertrouwensdrempel | :app-verifiedRounded: |
+| Inferentiefrequentie | :app-speedRounded: |
+| Betrouwbaarheidsdrempel | :app-verifiedRounded: |
 | GPS-interval | :app-myLocation: |
 | Maximale duur | :app-timerOutlined: |
 | Opname | :app-fiberManualRecordRounded: |
-| Clipcontext | :app-timerOutlined: |
-| Detectiebemonstering | :app-filterAltRounded: |
-| Top aantal per soort | :app-formatListNumberedRounded: |
+| Fragmentcontext | :app-timerOutlined: |
+| Detectieselectie | :app-filterAltRounded: |
+| Top N per soort | :app-formatListNumberedRounded: |
 
 Tik op de knop :app-helpOutline: naast een instelling voor uitleg. Ook naam, transect, waarnemer, locatie en meldingen hebben helpknoppen.
 
 Nieuwe Survey-instellingen gebruiken standaard **0,70 Hz** inferentie. Dat
-behoudt meer korte geluiden dan de zuinigere keuzes met een lagere snelheid,
-terwijl het model nog steeds minder vaak draait dan bij 1,00 Hz. Survey en de
-Live-modus delen één inferentieplanning en één definitie van een detectie, dus
+behoudt meer korte geluiden dan de zuinigere keuzes met een lagere frequentie,
+terwijl het model nog steeds minder vaak draait dan bij 1,00 Hz. Survey en
+Live Mode delen één inferentieplanning en één definitie van een detectie, dus
 met dezelfde inferentie-instellingen melden beide dezelfde soorten, scores en
-detectieduren voor hetzelfde geluid. Lagere snelheden laten met opzet grotere
+detectieduren voor hetzelfde geluid. Lagere frequenties laten met opzet grotere
 gaten tussen de overlappende analysevensters en kunnen daardoor korte geluiden
 missen; 0,30 Hz blijft beschikbaar wanneer batterijduur voorop staat.
 
-#### Steekproef van detecties
+#### Detectieselectie
 
-Een lange Survey kan duizenden detecties opleveren, en voor elk daarvan een audiofragment bewaren vult de opslag snel. De steekproef van detecties bepaalt **welke fragmenten op schijf worden bewaard** — *de detectieregistraties zelf blijven altijd behouden*, dus je volledige Session-log blijft ongeacht de modus intact. Registraties waarvan de audio is weggelaten, hebben in het Session-overzicht simpelweg geen afspeelbaar fragment.
+Een lange Survey kan duizenden detecties opleveren, en voor elk daarvan een audiofragment bewaren vult de opslag snel. De detectieselectie bepaalt **welke fragmenten op schijf worden bewaard** — *de detectieregistraties zelf blijven altijd behouden*, dus je volledige Session-log blijft ongeacht de modus intact. Registraties waarvan de audio is weggelaten, hebben in het Session-overzicht simpelweg geen afspeelbaar fragment.
 
 Er zijn drie modi beschikbaar:
 
@@ -87,19 +87,19 @@ Meldingen in pushstijl die tijdens de Survey afgaan wanneer er iets opmerkelijks
 
 - **Uit** — geen meldingen (standaard).
 - **Eerste in Session** — één melding de eerste keer dat elke soort tijdens deze Survey wordt gehoord.
-- **Allereerste keer** — alleen een melding wanneer de app een soort voor het allereerst tegenkomt over al je Sessions heen (een "lifer"-melding). Gebaseerd op een levenslange soortenhistorie die bij de eerste start automatisch uit je bestaande Sessions wordt gevuld.
-- **Zeldzaam voor deze locatie** — een melding wanneer de kans volgens het geomodel voor de huidige locatie onder een instelbare drempel ligt. Een live uitlezing onder de schuifregelaar legt precies uit waarop de huidige waarde afgaat (bijvoorbeeld *"Meldingen bij soorten met minder dan 5 % kans op deze locatie."*).
-- **Waarnemingslijst** — alleen meldingen bij soorten die je aan een opgeslagen eigen lijst hebt toegevoegd. In deze wizardstap kun je nieuwe waarnemingslijsten aanmaken, bestaande lijsten bewerken in een speciale volledig scherm-editor met doorzoekbare taxonomie en *Importeren uit bestand* (elk gewoon `.txt`- of `.csv`-bestand met wetenschappelijke namen), en lijsten verwijderen die je niet meer nodig hebt.
+- **Eerste ooit** — alleen een melding wanneer de app een soort voor het allereerst tegenkomt over al je Sessions heen (een "lifer"-melding). Gebaseerd op een levenslange soortenhistorie die bij de eerste start automatisch uit je bestaande Sessions wordt gevuld.
+- **Zeldzaam voor deze locatie** — een melding wanneer de kans volgens het geomodel voor de huidige locatie onder een instelbare drempel ligt. Een live uitlezing onder de schuifregelaar legt precies uit waarop de huidige waarde afgaat (bijvoorbeeld *"Meldt soorten met minder dan 5% waarschijnlijkheid op deze locatie."*).
+- **Volglijst** — alleen meldingen bij soorten die je aan een opgeslagen eigen lijst hebt toegevoegd. In deze wizardstap kun je nieuwe volglijsten aanmaken, bestaande lijsten bewerken in een aparte editor op volledig scherm met doorzoekbare taxonomie en *Importeren uit bestand* (elk gewoon `.txt`- of `.csv`-bestand met wetenschappelijke namen), en lijsten verwijderen die je niet meer nodig hebt.
 
-Onder de moduskiezer staat een schuifregelaar voor de *Minimale betrouwbaarheid*, die automatisch niet lager gaat dan de betrouwbaarheidsdrempel van je Session (meldingen zijn nooit gevoeliger dan de detecties zelf). Een sectie **Geavanceerd** biedt bediening voor het afremmen — een aanloopvenster bij de start, een harde minimale tussentijd tussen twee meldingen, en een schuivende limiet per minuut met de optie om meldingen boven die limiet te bundelen in één samenvattende melding — allemaal met chipkiezers die je met één tik bedient. De eerste keer dat je naar een andere modus dan Uit overschakelt, vraagt de wizard de Android-machtiging voor meldingen voor je aan.
+Onder de moduskiezer staat een schuifregelaar voor de *Minimale betrouwbaarheid*, die automatisch niet lager gaat dan de betrouwbaarheidsdrempel van je Session (meldingen zijn nooit gevoeliger dan de detecties zelf). Een sectie **Meldingsfrequentie** biedt bediening voor het afremmen — een opstartpauze, een vast minimaal interval tussen twee meldingen, en een schuivende limiet per minuut met de optie om meldingen boven die limiet te bundelen in één samenvattende melding — allemaal met chipkiezers die je met één tik bedient. De eerste keer dat je naar een andere modus dan Uit overschakelt, vraagt de wizard de Android-machtiging voor meldingen voor je aan.
 
 ### 4. Veldtips
 
 Een korte checklist vóór de start, binnen het opzetproces.
 
-### 5. Gereed
+### 5. Klaar
 
-Het gereedscherm vat de actieve Survey-configuratie samen voordat je start met :app-playArrowRounded:.
+De stap Klaar vat de actieve Survey-configuratie samen voordat je start met :app-playArrowRounded:.
 
 ## Live Survey-dashboard
 
@@ -130,7 +130,7 @@ Dezelfde acties zijn beschikbaar vanaf de **live routekaart**: tik op een detect
 
 De knop :app-addCircleOutline: op de lopende Survey opent een klein menu met **Soort toevoegen** en **Notitie toevoegen**. **Soort toevoegen** opent dezelfde kiezer als in het [Session-overzicht](session-review.md#een-soort-handmatig-toevoegen): kies een soort, vink dan :app-hearing: **Gehoord** en/of :app-visibility: **Gezien** aan op het bevestigingsvenster en tik op **Toevoegen**. De invoer krijgt een tijdstempel van dat moment, wordt aan de huidige GPS-positie gekoppeld en verschijnt meteen in de detectielijst en op de routekaart, met de badge voor handmatige invoer en de bijbehorende oor- en oogsymbolen.
 
-Spraaknotities ontbreken hier bewust: de microfoon is bezet met de opname van de Survey zelf. Voeg ze na afloop toe in het Session-overzicht.
+Spraakmemo's ontbreken hier bewust: de microfoon is bezet met de opname van de Survey zelf. Voeg ze na afloop toe in het Session-overzicht.
 
 ## Werking op de achtergrond
 
@@ -139,11 +139,11 @@ De Survey-modus houdt tijdens het opnemen een blijvende voorgrondmelding zichtba
 - de verstreken tijd, het aantal detecties, het aantal soorten en de afgelegde afstand, en
 - de **drie meest recente unieke soorten** met hun betrouwbaarheid en een relatief tijdstempel (`zojuist`, `42s geleden`, `5m geleden`, `2u geleden`).
 
-De melding — titel, recente detecties en de statistiekregel onderaan — is volledig vertaald naar de gekozen taal van de app en gebruikt dezelfde voorkeuren voor de taal van soortnamen en *Toon wetenschappelijke namen* als de kaarten in de app.
+De melding — titel, recente detecties en de statistiekregel onderaan — is volledig vertaald naar de gekozen taal van de app en gebruikt dezelfde voorkeuren voor de taal van soortnamen en *Wetenschappelijke namen tonen* als de kaarten in de app.
 
-Soortmeldingen verschijnen (indien ingeschakeld) op een apart Android-meldingskanaal, zodat je meldingen los kunt dempen van de stille, doorlopende opnamemelding. Het meldingspictogram komt overeen met dat van de voorgrondmelding (een monochrome vogel), en de tekst van de melding toont alleen de *reden* — *"Eerste detectie van deze Survey"*, *"Staat op je waarnemingslijst"*, *"Op deze locatie gedetecteerd met minder dan 4% kans"* — terwijl de soortnaam in de vetgedrukte meldingstitel blijft staan, waar Android die het grootst weergeeft.
+Soortmeldingen verschijnen (indien ingeschakeld) op een apart Android-meldingskanaal, zodat je meldingen los kunt dempen van de stille, doorlopende opnamemelding. Het meldingspictogram komt overeen met dat van de voorgrondmelding (een monochrome vogel), en de tekst van de melding toont alleen de *reden* — *"Eerste detectie in deze Survey"*, *"Op je volglijst"*, *"Zeldzaam hier (kans 4%)"* — terwijl de soortnaam in de vetgedrukte meldingstitel blijft staan, waar Android die het grootst weergeeft.
 
-Wanneer je een onafgeronde Survey vanuit de Session-bibliotheek **hervat**, wordt de meldingspijplijn opnieuw ingesteld op je *huidige* meldingsvoorkeuren — niet op wat je had ingesteld op de dag dat je de Survey begon. Zet meldingen uit (of wijzig de modus, de waarnemingslijst of het afremmen) voordat je op Hervatten tikt, en de hervatte Survey volgt de nieuwe instellingen meteen.
+Wanneer je een onafgeronde Survey vanuit de Session-bibliotheek **hervat**, wordt de meldingspijplijn opnieuw ingesteld op je *huidige* meldingsvoorkeuren — niet op wat je had ingesteld op de dag dat je de Survey begon. Zet meldingen uit (of wijzig de modus, de volglijst of het afremmen) voordat je op Hervatten tikt, en de hervatte Survey volgt de nieuwe instellingen meteen.
 
 ## Nakijken op de kaart
 

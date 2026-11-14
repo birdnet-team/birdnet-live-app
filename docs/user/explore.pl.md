@@ -1,10 +1,10 @@
-# Przeglądaj
+# Odkrywaj
 
-Tryb Przeglądaj pokazuje gatunki przewidywane dla bieżącej lokalizacji i pory roku na podstawie geomodelu BirdNET.
+Ekran Odkrywaj pokazuje gatunki przewidywane dla bieżącej lokalizacji i pory roku na podstawie geomodelu BirdNET.
 
 ## Jak go otworzyć
 
-Otwórz **Przeglądaj** ze stopki ekranu startowego przyciskiem :app-searchRounded:.
+Otwórz **Odkrywaj** ze stopki ekranu startowego przyciskiem :app-searchRounded:.
 
 ## Pasek aplikacji i nagłówek
 
@@ -18,7 +18,7 @@ Nagłówek pokazuje:
 
 - bieżącą nazwę miejsca uzyskaną z geokodowania odwrotnego, jeśli jest dostępna
 - współrzędne pod nazwą miejsca
-- :app-helpOutlineRounded: — otwarcie panelu pomocy trybu Przeglądaj
+- :app-helpOutlineRounded: — otwarcie panelu pomocy ekranu Odkrywaj
 
 ## Lista gatunków
 
@@ -44,14 +44,14 @@ Jest sześć klas, od najbardziej do najmniej prawdopodobnej:
 
 | Klasa | Znaczenie |
 | --- | --- |
-| **Bardzo liczny** | Jedno z najsilniejszych przewidywań w tym miejscu |
-| **Liczny** | Bardzo prawdopodobny |
+| **Liczny** | Jedno z najsilniejszych przewidywań w tym miejscu |
+| **Pospolity** | Bardzo prawdopodobny |
 | **Częsty** | Prawdopodobny |
 | **Nieliczny** | Możliwy |
-| **Skąpy** | Mało prawdopodobny |
+| **Bardzo nieliczny** | Mało prawdopodobny |
 | **Rzadki** | Jedno z najsłabszych przewidywań w tym miejscu |
 
-Klasy są **względne wobec bieżącej lokalizacji**. Dostosowują się do tego, jak silnie geomodel przewiduje gatunki na danym obszarze, więc granice przesuwają się wraz z lokalnym rozkładem ocen: w miejscu z wieloma pewnymi przewidywaniami gatunek potrzebuje bardzo wysokiej oceny, aby trafić do klasy **Bardzo liczny**, natomiast na obszarze ze słabszymi przewidywaniami ta sama klasa jest osiągana przy niższej ocenie. Ta sama ocena może więc w różnych miejscach należeć do różnych klas, dzięki czemu ranking wszędzie pozostaje sensowny.
+Klasy są **względne wobec bieżącej lokalizacji**. Dostosowują się do tego, jak silnie geomodel przewiduje gatunki na danym obszarze, więc granice przesuwają się wraz z lokalnym rozkładem ocen: w miejscu z wieloma pewnymi przewidywaniami gatunek potrzebuje bardzo wysokiej oceny, aby trafić do klasy **Liczny**, natomiast na obszarze ze słabszymi przewidywaniami ta sama klasa jest osiągana przy niższej ocenie. Ta sama ocena może więc w różnych miejscach należeć do różnych klas, dzięki czemu ranking wszędzie pozostaje sensowny.
 
 ## Nakładka ze szczegółami gatunku
 
@@ -64,8 +64,8 @@ Nakładka może pokazywać:
 - wykres spodziewanej częstości tygodniowej
 - odnośniki zewnętrzne, na przykład do eBird, iNaturalist lub Wikipedii, jeśli są dostępne dla danego gatunku
 
-## Do czego służy tryb Przeglądaj
+## Do czego służy ekran Odkrywaj
 
-Przeglądaj to widok informacyjny w aplikacji, uwzględniający lokalizację. Pomaga porównać bieżący kontekst lokalizacji z gatunkami, które możesz napotkać.
+Odkrywaj to widok informacyjny w aplikacji, uwzględniający lokalizację. Pomaga porównać bieżący kontekst lokalizacji z gatunkami, które możesz napotkać.
 
 Sam z siebie **nie** zmienia zapisanych danych Session. Filtrowaniem wykryć sterujesz osobno w [Ustawieniach](settings.md).

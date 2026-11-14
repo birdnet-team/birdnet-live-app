@@ -12,19 +12,19 @@ BirdNET Live ist eine Flutter-App für Feldforschende, im Naturschutz Tätige un
 
 ## Features
 
-- **Live-Modus** - Echtzeit-Spektrogramm mit fortlaufendem Bildlauf und Artbestimmung
-- **Point-Count-Modus** - Zeitlich begrenzte Sessions mit Countdown-Timer und Stationsmetadaten
-- **Survey-Modus** - Langlaufende Transekt-Surveys mit GPS-Tracking, Hintergrundüberwachung und Detektions-Sampling
+- **Live Mode** - Echtzeit-Spektrogramm mit fortlaufendem Bildlauf und Artbestimmung
+- **Point Count** - Zeitlich begrenzte Sessions mit Countdown-Timer und Stationsmetadaten
+- **Survey** - Langlaufende Transekt-Surveys mit GPS-Tracking, Hintergrundüberwachung und Detektionsauswahl
 - **Dateianalyse** - Offline-Analyse vorhandener Aufnahmen (WAV, FLAC, MP3, OGG und mehr)
 - **ARU-Modus** - Verwandeln Sie Ihr Gerät in eine akustische Aufnahmeeinheit für mehrtägige Einsätze
 - **Erkunden** - Durchsuchen Sie die für Ihren Standort erwarteten Arten mithilfe des BirdNET-Geo-Modells
 - **Session-Bibliothek** - Vergangene Sessions ansehen, bearbeiten und mit Audiowiedergabe exportieren
-- **Export** - Formate Raven Pro, CSV, JSON, GPX und ZIP-Bundle mit Herkunftsmetadaten
+- **Export** - Formate Raven Pro, CSV, JSON, GPX und ZIP-Paket mit Herkunftsmetadaten
 - **On-Device-Inferenz** - BirdNET+ Modellabdeckung für 10.048 Arten, kein Internet erforderlich
 - **FLAC-Aufnahme** - Komprimierte Audioaufnahme mit kleineren Dateien für lange Surveys
 - **Barrierefreiheit** - Screenreader-Beschriftungen, Tooltips und optionale gesprochene Ansagen von Detektionen
 - **Responsive Layouts** - Anpassbare Oberflächen für Smartphone, Tablet, Hoch- und Querformat
-- **Lokalisierung** - Oberfläche und gesprochene Ansagen in 11 Sprachen
+- **Lokalisierung** - Oberfläche und gesprochene Ansagen in 13 Sprachen
 
 <p align="center">
   <img src="../assets/screenshots/live-mode.png" alt="Live Mode" width="150">

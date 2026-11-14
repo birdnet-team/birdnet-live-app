@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
 - A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.
 - Survey species alerts now show the species on the Android lock screen instead of "Contents hidden", matching the ongoing Survey notification (#308).
-- Translation fixes: the Russian **Gain** label read as "growth", several Dutch, Polish, and Russian settings labels were mistranslated or left in English, and Portuguese mixed European and Brazilian wording; it is now Brazilian throughout.
+- Translations were revised in every language: mistranslated, untranslated, and inconsistent labels and help texts are corrected, Portuguese is Brazilian throughout, Russian counts such as "21 вид" use the right form, and the translated user guide names every setting as the app does.
 - The empty watchlist hint in Survey setup pointed to a Settings page that does not exist; it now names the **New watchlist** button.
 
 ## [1.3.1] - 2026-11-02

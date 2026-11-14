@@ -2,10 +2,10 @@
 
 Často kladené otázky.
 
-## Generál
+## Obecné
 
 **Otázka: Vyžaduje BirdNET Live připojení k internetu?**
-Odpověď: Ne. Veškeré odvození běží na zařízení pomocí modelu ONNX. Jediné síťové funkce jsou volitelné a ve výchozím nastavení vypnuté: mapové dlaždice a vyhledávání názvů míst z OpenStreetMap, snímky počasí z Open-Meteo a načítání obrázků a popisů druhů z API taxonomie. Viz [Nastavení → Soukromí](settings.md#soukromí).
+Odpověď: Ne. Veškerá inference běží v zařízení pomocí modelu ONNX. Jediné síťové funkce jsou volitelné a ve výchozím nastavení vypnuté: mapové dlaždice a vyhledávání názvů míst z OpenStreetMap, snímky počasí z Open-Meteo a načítání obrázků a popisů druhů z API taxonomie. Viz [Nastavení → Soukromí](settings.md#soukromí).
 
 **Otázka: Kolik druhů dokáže identifikovat?**
 Odpověď: Model BirdNET+ V3.0 identifikuje 10 048 druhů po celém světě – ptáky, obojživelníky, savce a hmyz (ořezaný průnik zvukového klasifikátoru a geomodelu). Rozpozná také 16 jiných než zvířecích zvuků, například motory, sirény a hudbu; ty jsou vypnuté, dokud nezapnete volbu [Jiné než zvířecí zvuky](settings.md#jiné-než-zvířecí-zvuky).
@@ -18,38 +18,38 @@ Odpověď: Android (8.0+), iOS (15.0+) a Windows (experimentální).
 
 ## Přesnost
 
-**Otázka: Proč můj práh spolehlivosti ukazuje nízké skóre?**
-Odpověď: Snižte práh spolehlivosti v Nastavení, abyste viděli více detekcí. Šum na pozadí, vítr a vzdálenost ovlivňují přesnost.
+**Otázka: Proč se zobrazuje málo detekcí nebo jen nízká skóre?**
+Odpověď: Snižte práh spolehlivosti v Nastavení, abyste viděli více detekcí. Hluk na pozadí, vítr a vzdálenost ovlivňují přesnost.
 
-**Otázka: Co dělá druhový filtr?**
-Odpověď: Geografický model předpovídá, které druhy se pravděpodobně vyskytují ve vaší poloze GPS a ročním období. Zapněte **Filtr podle polohy**, chcete-li skrýt nepravděpodobné druhy, **Adaptivní filtr podle polohy**, chcete-li z nich skrýt jen ty, u kterých si není jistý ani zvukový model, nebo **Vážení podle polohy**, chcete-li vážit výsledky zeměpisnou pravděpodobností.
+**Otázka: Co dělá filtr druhů?**
+Odpověď: Geomodel předpovídá, které druhy se pravděpodobně vyskytují ve vaší poloze GPS a ročním období. Zapněte **Geografický filtr**, chcete-li skrýt nepravděpodobné druhy, **Adaptivní geografický filtr**, chcete-li z nich skrýt jen ty, u kterých si není jistý ani zvukový model, nebo **Geografické vážení**, chcete-li výsledky vážit geografickou pravděpodobností.
 
 **Otázka: Jak přesná je identifikace?**
-Odpověď: Přesnost závisí na kvalitě záznamu, vzdálenosti, šumu v pozadí a druhu. Detekce s vysokou spolehlivostí (>70 %) jsou obecně spolehlivé. Vzácné druhy vždy ověřujte vizuálně.
+Odpověď: Přesnost závisí na kvalitě nahrávky, vzdálenosti, hluku na pozadí a druhu. Detekce s vysokou spolehlivostí (>70 %) jsou obecně spolehlivé. Vzácné druhy vždy ověřujte vizuálně.
 
 ## Nahrávání
 
 **Otázka: Kde se ukládají nahrávky?**
-Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Zvuk a nahrávání → Formát nahrávání**.
+Odpověď: V adresáři dokumentů aplikace pod `recordings/<session-id>/`. Ukládají se jako WAV nebo FLAC podle **Nastavení → Zvuk a nahrávání → Formát nahrávek**.
 
 **Otázka: Mohu analyzovat existující nahrávky?**
-A: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soubor, nastavte umístění a parametry a klepněte na Analyzovat. Mezi podporované formáty patří WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA a AMR.
+Odpověď: Ano. Otevřete Analýzu souborů z domovské obrazovky, vyberte zvukový soubor, nastavte místo a parametry a spusťte analýzu. Mezi podporované formáty patří WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA a AMR.
 
-## Počet bodů
+## Point Count
 
-**Otázka: Co je režim počítání bodů?**
-A: Časovaný režim pro formální bodové sčítání ptáků (point count). Nastavíte pevnou dobu trvání (3–30 minut) a umístění, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
+**Otázka: Co je režim Point Count?**
+Odpověď: Časovaný režim pro standardizované bodové sčítání ptáků. Nastavíte pevnou dobu trvání (3–30 minut) a polohu, poté aplikace běží nepřetržitě a automaticky se zastaví, když časovač dosáhne nuly.
 
-**Otázka: Mohu pozastavit počítání bodů?**
-Odpověď: Ne. Soulad s protokolem vyžaduje nepřerušované nahrávání. Předčasně můžete ukončit pomocí tlačítka stop.
+**Otázka: Mohu Point Count pozastavit?**
+Odpověď: Ne. Soulad s protokolem vyžaduje nepřerušované nahrávání. Sčítání ale můžete předčasně ukončit tlačítkem Stop.
 
-**Otázka: Kam jdou výsledky počítání bodů?**
-Odpověď: Zobrazují se v knihovně relací jako "Počet bodů #1", "#2" atd. Můžete je kontrolovat, upravovat a exportovat jako kteroukoli jinou relaci.
+**Otázka: Kde najdu výsledky Point Count?**
+Odpověď: Zobrazují se v knihovně Sessions jako „Point Count #1“, „#2“ atd. Můžete je procházet, upravovat a exportovat jako kteroukoli jinou Session.
 
 ## Výkon
 
-**Otázka: Proč je aplikace teplá / používá baterii?**
-Odpověď: Odvozování modelu ONNX je výpočetně náročné. Obrazovka také zůstane zapnutá během živých relací. To je normální pro zpracování neuronové sítě v reálném čase.
+**Otázka: Proč se telefon zahřívá a aplikace vybíjí baterii?**
+Odpověď: Inference modelu ONNX je výpočetně náročná a během živých Sessions navíc zůstává zapnutá obrazovka. Při zpracování neuronovou sítí v reálném čase je to normální.
 
-**Otázka: Spektrogram vypadá zmrazený.**
-Odpověď: Ujistěte se, že je uděleno oprávnění k mikrofonu a že je aktivní nahrávání zvuku. Zkontrolujte, zda mikrofon nepoužívá žádná jiná aplikace.
+**Otázka: Spektrogram vypadá jako zamrzlý.**
+Odpověď: Ujistěte se, že je uděleno oprávnění k mikrofonu a že je aktivní snímání zvuku. Zkontrolujte, zda mikrofon nepoužívá žádná jiná aplikace.

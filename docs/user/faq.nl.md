@@ -5,7 +5,7 @@ Veelgestelde vragen.
 ## Algemeen
 
 **V: Heeft BirdNET Live een internetverbinding nodig?**
-A: Nee. Alle inferentie draait op het toestel zelf met het ONNX-model. De enige netwerkfuncties zijn optioneel en staan standaard uit: kaarttegels en het opzoeken van plaatsnamen via OpenStreetMap, weermomentopnamen via Open-Meteo, en het ophalen van soortafbeeldingen en -beschrijvingen via de taxonomie-API. Zie [Instellingen → Privacy](settings.md#privacy).
+A: Nee. Alle inferentie draait op het apparaat zelf met het ONNX-model. De enige netwerkfuncties zijn optioneel en staan standaard uit: kaarttegels en het opzoeken van plaatsnamen via OpenStreetMap, weermomentopnames via Open-Meteo, en het ophalen van soortafbeeldingen en -beschrijvingen via de taxonomie-API. Zie [Instellingen → Privacy](settings.md#privacy).
 
 **V: Hoeveel soorten kan de app herkennen?**
 A: Het BirdNET+ V3.0-model herkent 10.048 soorten wereldwijd — vogels, amfibieën, zoogdieren en insecten (de taxonomisch afgestemde, gesnoeide doorsnede van de audioclassifier en het geomodel). Het herkent ook 16 niet-dierlijke geluiden, zoals motoren, sirenes en muziek; die staan uit tenzij je [Niet-dierlijke geluiden](settings.md#niet-dierlijke-geluiden) aanzet.
@@ -29,10 +29,10 @@ A: De nauwkeurigheid hangt af van de opnamekwaliteit, de afstand, het achtergron
 
 ## Opnemen
 
-**V: Waar worden opnamen bewaard?**
+**V: Waar worden opnames bewaard?**
 A: In de documentenmap van de app onder `recordings/<session-id>/`, als WAV of FLAC afhankelijk van **Instellingen → Audio en opname → Opnameformaat**.
 
-**V: Kan ik bestaande opnamen analyseren?**
+**V: Kan ik bestaande opnames analyseren?**
 A: Ja. Open Bestandsanalyse vanaf het startscherm, kies een audiobestand, stel de locatie en parameters in en tik op Analyseren. Ondersteunde formaten zijn onder meer WAV, FLAC, MP3, OGG, Opus, M4A, AAC, WMA en AMR.
 
 ## Point Count
@@ -40,16 +40,16 @@ A: Ja. Open Bestandsanalyse vanaf het startscherm, kies een audiobestand, stel d
 **V: Wat is de Point Count-modus?**
 A: Een telmodus op tijd voor formele punttellingen van vogels. Je stelt een vaste duur in (3–30 minuten) en een locatie; de app draait dan doorlopend en stopt automatisch wanneer de klok op nul staat.
 
-**V: Kan ik een punttelling pauzeren?**
+**V: Kan ik een Point Count pauzeren?**
 A: Nee. Om aan het protocol te voldoen moet er ononderbroken worden opgenomen. Je kunt een telling wel vroegtijdig beëindigen met de stopknop.
 
-**V: Waar komen de resultaten van een punttelling terecht?**
+**V: Waar komen de resultaten van een Point Count terecht?**
 A: Ze verschijnen in de Session-bibliotheek als "Point Count #1", "#2", enzovoort. Je kunt ze net als elke andere Session bekijken, bewerken en exporteren.
 
 ## Prestaties
 
 **V: Waarom wordt de app warm / verbruikt die batterij?**
-A: Inferentie met het ONNX-model is rekenintensief, en het scherm blijft tijdens live Sessions aan. Dat is normaal voor het in realtime verwerken van een neuraal netwerk.
+A: Inferentie met het ONNX-model is rekenintensief, en het scherm blijft tijdens Live-Sessions aan. Dat is normaal voor het in realtime verwerken van een neuraal netwerk.
 
 **V: Het spectrogram lijkt vast te lopen.**
 A: Controleer of de machtiging voor de microfoon is verleend en of het opnemen van audio actief is. Ga na dat geen andere app de microfoon gebruikt.

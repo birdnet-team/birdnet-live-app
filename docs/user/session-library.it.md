@@ -39,7 +39,7 @@ Raggruppa le Sessions per specie e si espande nelle Sessions che contengono quel
 
 ## Ordinamento
 
-Ordina le Sessions per **data** (dalle più recenti o dalle più vecchie), **nome** (A–Z o Z–A) o **durata** (dalle più lunghe o dalle più corte). L'ordinamento per durata è utile quando vuoi trovare il Survey più lungo della settimana o il test da 30 secondi più corto che hai salvato per errore.
+Ordina le Sessions per **data** (dalle più recenti o dalle meno recenti), **nome** (A–Z o Z–A) o **durata** (dalle più lunghe o dalle più brevi). L'ordinamento per durata è utile quando vuoi trovare il Survey più lungo della settimana o il test da 30 secondi più corto che hai salvato per errore.
 
 Quando le Sessions sono raggruppate per giorno, ogni riga di intestazione del giorno mostra prima il menu (:app-moreVert:) per le azioni sull'intero giorno, con il chevron di espansione/compressione all'estremità finale della riga. Il chevron è l'*ultimo* elemento — stessa convenzione di ogni altro elenco espandibile nell'app — così un tocco vicino al bordo destro alterna sempre il gruppo.
 
@@ -51,9 +51,9 @@ Ogni orario mostrato nella Libreria Sessions — righe dell'elenco, intestazioni
 
 Ogni riga di Session offre due modi per agire su di essa:
 
-- **Menu a tre punti** (:app-moreVert:) sulla destra di ogni scheda apre un piccolo menu con **Apri**, **Condividi** ed **Elimina**. La condivisione apre una finestra di dialogo le cui caselle **Audio** e **Metadati** partono dalle scelte di Impostazioni → Esportazione e sincronizzazione e valgono solo per quella condivisione, poi apre il foglio di condivisione del sistema — senza bisogno di aprire prima il Riepilogo sessione solo per inviare una Session a un collega.
+- **Menu a tre punti** (:app-moreVert:) sulla destra di ogni scheda apre un piccolo menu con **Apri**, **Condividi** ed **Elimina**. La condivisione apre una finestra di dialogo le cui caselle **Audio** e **Metadati** partono dalle scelte di Impostazioni → Esportazione e sincronizzazione e valgono solo per quella condivisione, poi apre la finestra di condivisione del sistema — senza bisogno di aprire prima il Riepilogo Session solo per inviare una Session a un collega.
 - **Scorri** la riga verso sinistra o verso destra per eliminarla. Prima di rimuovere qualcosa appare comunque una finestra di conferma, così uno scorrimento accidentale è recuperabile.
 
 ## Cosa succede dopo
 
-Tocca una Session qualsiasi per aprire il [Riepilogo sessione](session-review.md).
+Tocca una Session qualsiasi per aprire il [Riepilogo Session](session-review.md).

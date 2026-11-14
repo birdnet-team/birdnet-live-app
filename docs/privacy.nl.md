@@ -49,7 +49,7 @@ De app kan de volgende externe bronnen benaderen. Elke bron wordt geregeld door 
 | Bron | Doel | Geregeld door | Verzonden per verzoek |
 |------|------|---------------|-----------------------|
 | Kaarttegels (OpenStreetMap Foundation) | Basiskaart voor de locatiekiezer, de live Survey-kaart en de Session-kaart | **Instellingen → Privacy → Kaarttegels toestaan** | Tegelcoördinaten `(z, x, y)`, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
-| Reverse-geocoding (Nominatim van OpenStreetMap Foundation) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de Session | **Instellingen → Privacy → Sta het opzoeken van plaatsnamen toe** | Breedte-/lengtegraad van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
+| Reverse-geocoding (Nominatim van OpenStreetMap Foundation) | GPS-coördinaten omzetten naar een leesbare plaatsnaam (bijv. “Berlijn, Duitsland”) voor weergave bij de Session | **Instellingen → Privacy → Plaatsnamen opzoeken toestaan** | Breedte-/lengtegraad van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
 | Weersnapshot (OpenMeteo GmbH) | Eenmalige opname van lokale omstandigheden (temperatuur, neerslag, wind, bewolking, WMO-weercode) op de opnamecoördinaten en eindtijd | **Instellingen → Privacy → Weer opzoeken toestaan** | Breedte-/lengtegraad en eindtijd van de Session, je IP-adres als onderdeel van de netwerkverbinding en de BirdNET Live user-agent |
 
 Verzoeken om kaarttegels zijn HTTPS GET-verzoeken naar `tile.openstreetmap.org`. De tegelcoördinaten identificeren het bekeken kaartgebied. Zoals bij elk rechtstreeks internetverzoek wordt ook je IP-adres aan de aanbieder bekendgemaakt.
@@ -60,7 +60,7 @@ Weerverzoeken sturen de breedte-/lengtegraad van de sessie en de eindtijdstempel
 
 **Verwerking en bewaring door derden:** BirdNET-Team beheert deze diensten niet en ontvangt hun aanvraaggegevens niet. OpenStreetMap Foundation kan netwerktoegangsgegevens en aanvraagdetails verwerken volgens haar [Privacybeleid](https://osmfoundation.org/wiki/Privacy_Policy). Open-Meteo stelt dat serverlogs van de gratis API IP-adressen en geografische coördinaten kunnen bevatten en na 90 dagen worden verwijderd; zie de [Voorwaarden en Privacy](https://open-meteo.com/en/terms). Deze aanbieders kunnen gegevens in andere landen verwerken. Teruggegeven waarden worden lokaal in de Session opgeslagen en komen alleen in een export terecht wanneer je die maakt.
 
-**Intrekken:** je kunt elk van de drie diensten op elk moment uitschakelen onder **Instellingen → Privacy**. Reeds lokaal opgeslagen plaatsnamen en weersnapshots blijven gekoppeld aan de sessies waarin ze zijn vastgelegd; verwijder die sessies uit de Sessiebibliotheek of gebruik **Instellingen → Gevarenzone → Wis alle gegevens** om die historische gegevens te verwijderen.
+**Intrekken:** je kunt elk van de drie diensten op elk moment uitschakelen onder **Instellingen → Privacy**. Reeds lokaal opgeslagen plaatsnamen en weersnapshots blijven gekoppeld aan de sessies waarin ze zijn vastgelegd; verwijder die sessies uit de Sessiebibliotheek of gebruik **Instellingen → Gevarenzone → Alle gegevens wissen** om die historische gegevens te verwijderen.
 
 **Er worden geen andere netwerkverzoeken gedaan.** De app werkt volledig offline.
 
@@ -94,7 +94,7 @@ Bestemmingen worden beheerd door projectorganisatoren, niet door BirdNET-Team, o
 
 ## Gegevens verwijderen
 
-Afzonderlijke sessies en hun opnamen kunnen worden verwijderd uit de Sessiebibliotheek. Om de lokale sessies, opnamen, spraakmemo's, aangepaste soortenlijsten, voorkeuren en caches van BirdNET Live vanuit de app te wissen, gebruik je **Instellingen → Gevarenzone → Wis alle gegevens**. Je kunt de opslag van de BirdNET Live-app ook wissen via de instellingen van je besturingssysteem of de app verwijderen.
+Afzonderlijke sessies en hun opnamen kunnen worden verwijderd uit de Sessiebibliotheek. Om de lokale sessies, opnamen, spraakmemo's, aangepaste soortenlijsten, voorkeuren en caches van BirdNET Live vanuit de app te wissen, gebruik je **Instellingen → Gevarenzone → Alle gegevens wissen**. Je kunt de opslag van de BirdNET Live-app ook wissen via de instellingen van je besturingssysteem of de app verwijderen.
 
 ## Contact
 

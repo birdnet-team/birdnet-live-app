@@ -10,4 +10,4 @@ Dávková analýza umožní hromadně zpracovávat a analyzovat více zvukových
 - **Přístup k externímu úložišti**: Skenujte a čtěte složky přímo z externích SD karet nebo USB disků.
 - **Hromadné zpracování**: Analyzujte celé adresáře zvukových souborů v jednom dávkovém spuštění.
 - **Flexibilní export**: Ukládejte výsledky přímo na externí úložiště ve formátech Raven Selection Table, CSV, TSV nebo JSON.
-- **Vzorkování relací**: Možnost importovat výsledky do databáze aplikace pomocí inteligentních filtrů vzorkování, aby se zabránilo přeplnění databáze.
+- **Vzorkování Sessions**: Možnost importovat výsledky do databáze aplikace pomocí inteligentních filtrů vzorkování, aby se zabránilo přeplnění databáze.

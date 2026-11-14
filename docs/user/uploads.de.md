@@ -58,7 +58,7 @@ Ein Beitrittslink enthält alles, was eine beitragende Person braucht, in einem 
 - **Project name shown in the app**: was Beitragende als Namen des Ziels sehen werden. Sie können es umbenennen, aber dies ist die Voreinstellung.
 - **Suggest including audio** und **Suggest Wi-Fi only**: die Voreinstellungen für die Schalter des Ziels.
 
-Drücken Sie **Build link and QR code**. Alles geschieht in Ihrem Browser; nichts wird irgendwohin gesendet. Das Geheimnis steckt im Teil des Links nach dem `#`, den Browser nie an den Webserver übertragen, der die Seite ausliefert.
+Klicken Sie auf **Build link and QR code**. Alles geschieht in Ihrem Browser; nichts wird irgendwohin gesendet. Das Geheimnis steckt im Teil des Links nach dem `#`, den Browser nie an den Webserver übertragen, der die Seite ausliefert.
 
 Alternativ treten Sie dem Ziel zuerst auf Ihrem eigenen Telefon bei (siehe unten), öffnen dann das Ziel unter **Einstellungen → Export & Sync → Upload-Ziele** und tippen auf **Beitrittscode anzeigen**. Die App zeigt dieselbe Art von QR-Code mit einer Schaltfläche **Link kopieren**.
 
@@ -97,7 +97,7 @@ Das Antippen eines Ziels in der Liste öffnet dessen Bildschirm mit der Serverad
 
 - **Umbenennen** (der Stift in der App-Leiste) ändert den in der App angezeigten Namen.
 - **Nur über WLAN hochladen** hält Uploads zurück, solange das Telefon im Mobilfunknetz ist.
-- **Alle Sessions automatisch hochladen** reiht jede abgeschlossene Session aus jedem Modus ohne Rückfrage für dieses Ziel ein, mit den Export-&-Sync-Voreinstellungen für Audio und Metadaten. Solange dies aktiv ist, bleibt auch **ARU-Sessions automatisch hochladen** aktiv. Wenn Sie eine Session danach in Session Review verwerfen, entfällt ein noch nicht gestarteter Upload, aber bereits Gesendetes bleibt auf dem Server.
+- **Alle Sessions automatisch hochladen** reiht jede abgeschlossene Session aus jedem Modus ohne Rückfrage für dieses Ziel ein, mit den Export-&-Sync-Voreinstellungen für Audio und Metadaten. Solange dies aktiv ist, bleibt auch **ARU-Sessions automatisch hochladen** aktiv. Wenn Sie eine Session danach in der Session-Übersicht verwerfen, entfällt ein noch nicht gestarteter Upload, aber bereits Gesendetes bleibt auf dem Server.
 - **ARU-Sessions automatisch hochladen** reiht jede abgeschlossene ARU-Session ohne Rückfrage für dieses Ziel ein (siehe unten).
 - **Verbindung testen** wiederholt den Verbindungstest, zum Beispiel nachdem die Projektleitung das Passwort geändert hat.
 - **Beitrittscode anzeigen** zeigt einen QR-Code plus **Link kopieren**, damit ein zweites Telefon demselben Ziel beitreten kann.
@@ -116,9 +116,9 @@ Uploads starten aus derselben Aktion **Teilen**, die Sie bereits verwenden, an d
 Sobald mindestens ein Ziel existiert, hat der Dialog „Teilen“ zwei Reiter:
 
 - **Inhalt** wählt, was der Export enthält: **Audio** (die vollständige Aufnahme oder die Detektionsclips, wenn nur Clips behalten wurden) und **Metadaten** (die Tabellen, der Bericht und die App-Metadatendatei, die unter Export & Sync aktiviert sind). Die Kästchen entsprechen anfangs Ihren Einstellungen und gelten nur für dieses Teilen.
-- **Senden an** listet **Teilen-Dialog** (andere Apps, Dateien, Nachrichten) und ein Kästchen pro Ziel. Die Markierung am Reiter zählt die angehakten Ziele. Beim letzten Mal angehakte Ziele sind vorausgewählt, außer denen, an die diese Session bereits gesendet wurde: Sie beginnen abgewählt und zeigen **Hochgeladen** mit dem Datum sowie **Ankreuzen, um erneut hochzuladen**. Beim Öffnen des Dialogs prüft die App im Stillen jedes Ziel; meldet der Server, dass er den Upload ablehnen würde, zum Beispiel weil das Passwort geändert oder die Freigabe entfernt wurde, wird die Zeile rot und nennt den Grund.
+- **Senden an** listet **Teilen-Menü** (andere Apps, Dateien, Nachrichten) und ein Kästchen pro Ziel. Die Markierung am Reiter zählt die angehakten Ziele. Beim letzten Mal angehakte Ziele sind vorausgewählt, außer denen, an die diese Session bereits gesendet wurde: Sie beginnen abgewählt und zeigen **Hochgeladen** mit dem Datum sowie **Anhaken, um erneut hochzuladen**. Beim Öffnen des Dialogs prüft die App im Stillen jedes Ziel; meldet der Server, dass er den Upload ablehnen würde, zum Beispiel weil das Passwort geändert oder die Freigabe entfernt wurde, wird die Zeile rot und nennt den Grund.
 
-Wählen Sie **Teilen-Dialog** ab, und die Schaltfläche heißt **Hochladen**; sind beide angehakt, heißt sie **Teilen und hochladen**. Eine Snackbar bestätigt, wie viele Sessions eingereiht wurden. Eine Session kommt immer zuerst in die Warteschlange und wird im Hintergrund hochgeladen, sodass Sie weiterarbeiten können.
+Wählen Sie **Teilen-Menü** ab, und die Schaltfläche heißt **Hochladen**; sind beide angehakt, heißt sie **Teilen und hochladen**. Eine Snackbar bestätigt, wie viele Sessions eingereiht wurden. Eine Session kommt immer zuerst in die Warteschlange und wird im Hintergrund hochgeladen, sodass Sie weiterarbeiten können.
 
 ### Einen Upload verfolgen
 
@@ -152,7 +152,7 @@ Am Sonntagabend öffnet jede freiwillige Person die Session-Bibliothek, wählt d
 
 ### Korrekturen in der Session-Übersicht, dann eine ARU-Station
 
-Eine beitragende Person überprüft eine Session, entfernt zwei falsche Detektionen, fügt eine Art von Hand hinzu und speichert. Das Wolkensymbol in der App-Leiste der Session-Übersicht zeigt, dass die Session am Samstag hochgeladen wurde. Sie tippt auf das Teilen-Symbol in der Symbolleiste, hakt das Projekt unter Senden an an, wo es abgewählt beginnt und **Hochgeladen** mit dem Datum anzeigt, und drückt **Hochladen**. Die korrigierte ZIP-Datei ersetzt die frühere oder landet auf einem File Drop mit nummeriertem Namen daneben.
+Eine beitragende Person überprüft eine Session, entfernt zwei falsche Detektionen, fügt eine Art von Hand hinzu und speichert. Das Wolkensymbol in der App-Leiste der Session-Übersicht zeigt, dass die Session am Samstag hochgeladen wurde. Sie tippt auf das Teilen-Symbol in der Symbolleiste, hakt das Projekt unter Senden an an, wo es abgewählt beginnt und **Hochgeladen** mit dem Datum anzeigt, und tippt auf **Hochladen**. Die korrigierte ZIP-Datei ersetzt die frühere oder landet auf einem File Drop mit nummeriertem Namen daneben.
 
 Dieselbe Person lässt ein Telefon als ARU-Station an einem Röhricht mit einem WLAN-Hotspot in der Hütte zurück. Sie tritt dem Projektziel auf diesem Telefon bei, schaltet **ARU-Sessions automatisch hochladen** ein und lässt **Nur über WLAN hochladen** eingeschaltet. Jeden Morgen werden die abgeschlossenen Nachtzyklen eingereiht und hochgeladen, während die Station ruht; die Projektleitung sieht neue ZIP-Dateien unter der Upload-ID dieses Telefons erscheinen, ohne dass jemand es anfasst.
 

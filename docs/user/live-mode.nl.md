@@ -1,14 +1,14 @@
 # Live-modus
 
-De Live-modus is de snelste manier om via de telefoonmicrofoon mee te luisteren en detecties in realtime te bekijken.
+Live Mode is de snelste manier om via de telefoonmicrofoon mee te luisteren en detecties in realtime te bekijken.
 
 ## Zo open je de modus
 
-Tik op het startscherm op de kaart **Live-modus** met het pictogram :app-micRounded:.
+Tik op het startscherm op de kaart **Live** met het pictogram :app-micRounded:.
 
 ## Quick Listen
 
-Quick Listen begint met één tik te luisteren, zonder dat je de app hoeft te openen en erin te navigeren — handig wanneer je iets hoort dat je wilt laten herkennen voordat het stopt met roepen. Elk van de onderstaande ingangen opent de Live-modus en begint meteen te luisteren, ongeacht hoe de instelling **Opname automatisch starten** staat, en geen van ze wijzigt die instelling.
+Quick Listen begint met één tik te luisteren, zonder dat je de app hoeft te openen en erin te navigeren — handig wanneer je iets hoort dat je wilt laten herkennen voordat het stopt met roepen. Elk van de onderstaande ingangen opent Live Mode en begint meteen te luisteren, ongeacht hoe de instelling **Opname automatisch starten** staat, en geen ervan wijzigt die instelling.
 
 ### Android: widget op het startscherm
 
@@ -33,7 +33,7 @@ Siri-zinnen en de vermelding in de actieknopkiezer vereisen iOS 17. De Opdrachte
 
 ### Wat er daarna gebeurt
 
-Als de Live-modus al open is, keert Quick Listen terug naar datzelfde scherm in plaats van het opnieuw op te bouwen. Een lopende of gepauzeerde Session gaat ongewijzigd verder; is die gestopt, dan start het luisteren op het bestaande scherm.
+Als Live Mode al open is, keert Quick Listen terug naar datzelfde scherm in plaats van het opnieuw op te bouwen. Een lopende of gepauzeerde Session gaat ongewijzigd verder; is die gestopt, dan start het luisteren op het bestaande scherm.
 
 Quick Listen vervangt nooit een andere lopende modus. Loopt of start er een Session van Point Count, Survey, Bestandsanalyse of de [ARU-modus](aru-mode.md), dan komt de app naar de voorgrond en vraagt of je die Session eerst wilt stoppen. Het bijbehorende scherm en het werk blijven bereikbaar en worden niet onderbroken.
 
@@ -41,8 +41,8 @@ Quick Listen vervangt nooit een andere lopende modus. Loopt of start er een Sess
 
 De bovenbalk bevat drie elementen:
 
-- :app-arrowBackRounded: — de Live-modus verlaten
-- statustekst in het midden — `Initialiseren`, `Model laden`, `Gereed`, `Soorten herkennen`, `Gepauzeerd` of `Fout`
+- :app-arrowBackRounded: — Live Mode verlaten
+- statustekst in het midden — `Initialiseren`, `Model laden`, `Klaar`, `Soorten identificeren`, `Gepauzeerd` of `Fout`
 - :app-tuneRounded: — de instellingen openen die specifiek voor Live gelden
 
 ## Hoofdknop
@@ -57,14 +57,14 @@ De grote ronde knop onderaan in het midden wisselt van toestand:
 
 ### Spectrogram
 
-Het spectrogram loopt doorlopend mee zolang er opgenomen wordt. Het toont de frequentie-inhoud in de tijd, met de kleurenschaal, FFT-grootte, het frequentiebereik en de duur die in de instellingen zijn geconfigureerd.
+Het spectrogram loopt doorlopend mee zolang er opgenomen wordt. Het toont de frequentie-inhoud in de tijd, met het kleurenschema, de FFT-grootte, het frequentiebereik en de duur die in de instellingen zijn geconfigureerd.
 
 ### Detectielijst
 
 Recente detecties verschijnen onder het spectrogram. Elke rij kan het volgende tonen:
 
 - afbeelding van de soort
-- Nederlandse naam
+- gewone naam
 - optioneel de wetenschappelijke naam
 - betrouwbaarheidswaarde
 
@@ -88,9 +88,9 @@ Opnemen regel je in [Instellingen](settings.md).
 - **Alleen detecties** neemt fragmenten rond detecties op.
 - **Uit** schakelt opnemen uit.
 
-Wanneer je de Live-modus stopt, slaat BirdNET Live de Session op en opent het [Session-overzicht](session-review.md).
+Wanneer je Live Mode stopt, slaat BirdNET Live de Session op en opent het [Session-overzicht](session-review.md).
 
-De Live-modus slaat ook een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app naar de achtergrond gaat, en schrijft de afgeronde Session naar de opslag voordat de microfoon wordt vrijgegeven. Na een crash, stroomuitval of wanneer het systeem de app op de achtergrond beëindigt, staat de laatst opgeslagen stand in de Session-bibliotheek, gemarkeerd als onderbroken als de app midden in de Session is gestopt. Wijzigingen sinds die opslag kunnen verloren gaan. Deze tussentijdse opslagmomenten blijven ook bewaard als automatisch opslaan uitstaat; een afgeronde Session opent dan nog steeds in het overzicht als niet opgeslagen en wordt weggegooid als je zonder opslaan weggaat.
+Live Mode slaat ook een gedeeltelijke Session op bij de start, elke 30 seconden en wanneer de app naar de achtergrond gaat, en schrijft de afgeronde Session naar de opslag voordat de microfoon wordt vrijgegeven. Na een crash, stroomuitval of wanneer het systeem de app op de achtergrond beëindigt, staat de laatst opgeslagen stand in de Session-bibliotheek, gemarkeerd als onderbroken als de app midden in de Session is gestopt. Wijzigingen sinds die opslag kunnen verloren gaan. Deze tussentijdse opslagmomenten blijven ook bewaard als automatisch opslaan uitstaat; een afgeronde Session opent dan nog steeds in het overzicht als niet opgeslagen en wordt weggegooid als je zonder opslaan weggaat.
 
 ## Luisteren met het scherm uit
 

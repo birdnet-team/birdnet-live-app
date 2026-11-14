@@ -1,6 +1,6 @@
 # Survey-Modus
 
-Der Survey-Modus ist der routenbasierte Arbeitsablauf für lange Surveys in Bewegung.
+Survey ist der routenbasierte Arbeitsablauf für lange Erfassungen in Bewegung.
 
 ## So öffnen Sie ihn
 
@@ -16,8 +16,8 @@ Sie können Folgendes eingeben:
 
 - Survey-Name
 - Transekt-ID
-- Name der beobachtenden Person
-- GPS :app-myLocation:, manuelle Koordinaten :app-editLocationAlt: oder kein Startort :app-locationOff:. Die Kartenauswahl verwendet :app-mapSheet:.
+- Beobachtername
+- GPS :app-myLocation:, manuelle Koordinaten :app-editLocationAlt: oder kein Standort :app-locationOff:. Die Kartenauswahl verwendet :app-mapSheet:.
 
 In diesem Schritt erscheinen außerdem die Kartenauswahl, eine Aktualisierung des
 GPS-Signals nach der Rückkehr von den System-Berechtigungsdialogen sowie bei
@@ -34,13 +34,13 @@ Dieser Schritt enthält Survey-spezifische Parameter wie:
 
 - Mikrofonauswahl
 - Inferenzrate
-- Konfidenzschwelle
+- Konfidenzschwellenwert
 - GPS-Intervall
 - maximale Dauer
 - Aufnahmemodus
-- Clip-Kontext für die reine Detektionsaufzeichnung
-- Detektions-Sampling-Modus
-- Top-N-Grenze pro Art bei begrenztem Sampling
+- Clip-Kontext, wenn nur Clips gespeichert werden
+- Detektionsauswahl
+- Top N pro Art bei begrenzter Auswahl
 
 | Einrichtungselement | Symbol |
 |---|---|
@@ -51,25 +51,25 @@ Dieser Schritt enthält Survey-spezifische Parameter wie:
 | Maximale Dauer | :app-timerOutlined: |
 | Aufnahme | :app-fiberManualRecordRounded: |
 | Clip-Kontext | :app-timerOutlined: |
-| Detektions-Stichprobe | :app-filterAltRounded: |
+| Detektionsauswahl | :app-filterAltRounded: |
 | Top N pro Art | :app-formatListNumberedRounded: |
 
-Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch Name, Transekt, beobachtende Person, Standort und Alarme haben Hilfeschaltflächen.
+Tippen Sie auf die Schaltfläche :app-helpOutline: neben einem Einrichtungselement, um eine Erklärung zu erhalten. Auch Name, Transekt, Beobachtername, Standort und Artenmeldungen haben Hilfeschaltflächen.
 
 Neue Survey-Einstellungen verwenden standardmäßig **0,70 Hz** Inferenz. Das
 bewahrt mehr kurze Lautäußerungen als die sparsameren Optionen und lässt das
-Modell dennoch seltener laufen als bei 1,00 Hz. Survey und der Live-Modus
+Modell dennoch seltener laufen als bei 1,00 Hz. Survey und Live Mode
 teilen sich einen Inferenzplan und eine Definition einer Detektion: Bei
 gleichen Inferenzeinstellungen melden beide für denselben Laut dieselben
 Arten, Scores und Detektionsspannen. Niedrigere Raten lassen bewusst größere
 Lücken zwischen den überlappenden Analysefenstern und können daher kurze
-Geräusche übersehen; 0,30 Hz bleibt verfügbar, wenn die Akkulaufzeit Vorrang
+Laute übersehen; 0,30 Hz bleibt verfügbar, wenn die Akkulaufzeit Vorrang
 hat.
 
-#### Detektions-Sampling
+#### Detektionsauswahl
 
 Ein langer Survey kann Tausende von Detektionen erzeugen, und einen Audioclip für
-jede einzelne zu speichern füllt den Speicher schnell. Das Detektions-Sampling
+jede einzelne zu speichern füllt den Speicher schnell. Die Detektionsauswahl
 steuert, **welche Clips auf dem Gerät behalten werden** – *die Detektionseinträge
 selbst bleiben immer erhalten*, sodass Ihr vollständiges Session-Protokoll
 unabhängig vom Modus intakt bleibt. Einträge, deren Audio verworfen wurde, haben
@@ -87,8 +87,8 @@ Die Grenze N gilt **pro Art, nicht global** – wenn Sie 10 Rotkehlchen und
 10 Buchfinken erfassen, behalten Sie 20 Clips. Es gibt keine Gesamtobergrenze für
 die Anzahl der Clips, die ein Survey erzeugen kann.
 
-Fehlt im Smart-Modus das GPS-Signal einer Detektion, greift die Same-Spot-Prüfung
-auf ein reines Zeitfenster (~2 Minuten) zurück. Mit verfügbarem GPS müssen sich
+Fehlt im Smart-Modus das GPS-Signal einer Detektion, greift die Prüfung auf dieselbe
+Stelle auf ein reines Zeitfenster (~2 Minuten) zurück. Mit verfügbarem GPS müssen sich
 sowohl Entfernung als auch Zeit überschneiden, damit zwei Detektionen als dieselbe
 Stelle gelten.
 
@@ -98,17 +98,17 @@ Push-Benachrichtigungen, die während eines Surveys ausgelöst werden, sobald et
 Bemerkenswertes erkannt wird. Wählen Sie eine der folgenden Optionen:
 
 - **Aus** – keine Meldungen (Standard).
-- **Erste in Session** – eine Meldung, wenn eine Art während dieses Surveys zum
+- **Erstmals in der Session** – eine Meldung, wenn eine Art während dieses Surveys zum
   ersten Mal gehört wird.
-- **Erste überhaupt** – eine Meldung nur dann, wenn die App eine Art über alle Ihre
+- **Erstmals überhaupt** – eine Meldung nur dann, wenn die App eine Art über alle Ihre
   Sessions hinweg zum allerersten Mal antrifft (eine „Lifer“-Meldung). Grundlage ist
   eine lebenslange Artenhistorie, die beim ersten Start automatisch aus Ihren
   vorhandenen Sessions befüllt wird.
 - **Selten an diesem Ort** – eine Meldung, wenn die Wahrscheinlichkeit des
   Geo-Modells für den aktuellen Standort unter einem einstellbaren Schwellenwert
   liegt. Eine Live-Anzeige unter dem Schieberegler erklärt genau, worauf der aktuelle
-  Wert reagiert (z. B. *„Meldungen bei Arten mit unter 5 % Wahrscheinlichkeit an
-  diesem Standort.“*).
+  Wert reagiert (z. B. *„Meldet Arten mit weniger als 5 % Wahrscheinlichkeit an
+  diesem Ort.“*).
 - **Beobachtungsliste** – eine Meldung nur bei Arten, die Sie einer gespeicherten
   eigenen Liste hinzugefügt haben. Im Assistentenschritt selbst können Sie neue
   Beobachtungslisten anlegen, bestehende Listen in einem eigenen Vollbild-Editor mit
@@ -117,10 +117,10 @@ Bemerkenswertes erkannt wird. Wählen Sie eine der folgenden Optionen:
   benötigte Listen löschen.
 
 Unter der Modusauswahl liegt ein Schieberegler *Mindestkonfidenz*, dessen Untergrenze
-automatisch auf die Konfidenzschwelle Ihrer Session gesetzt wird (Meldungen sind nie
-empfindlicher als die Detektionen selbst). Ein Abschnitt **Erweitert** stellt
-Drosselungsoptionen bereit – ein Kulanzfenster nach dem Start, ein festes
-Mindestintervall zwischen zwei Meldungen sowie eine gleitende Obergrenze pro Minute
+automatisch auf den Konfidenzschwellenwert Ihrer Session gesetzt wird (Meldungen sind nie
+empfindlicher als die Detektionen selbst). Ein Abschnitt **Häufigkeitssteuerung** stellt
+Drosselungsoptionen bereit – eine Startverzögerung, einen festen
+Mindestabstand zwischen zwei Meldungen sowie eine gleitende Obergrenze pro Minute
 mit optionaler Zusammenfassung darüber hinausgehender Meldungen zu einer einzigen
 Sammelbenachrichtigung – alle mit Chip-Auswahl per Fingertipp. Wenn Sie zum ersten
 Mal in einen anderen Modus als *Aus* wechseln, fordert der Assistent für Sie die
@@ -132,7 +132,7 @@ Eine kurze Checkliste vor dem Start, direkt im Einrichtungsablauf.
 
 ### 5. Fertig
 
-Der Bereitschaftsbildschirm fasst die aktive Survey-Konfiguration zusammen, bevor Sie
+Der letzte Schritt fasst die aktuelle Survey-Konfiguration zusammen, bevor Sie
 mit :app-playArrowRounded: starten.
 
 ## Live-Dashboard des Surveys
@@ -142,16 +142,16 @@ Detektionen.
 
 ### Obere Leiste
 
-- :app-stopRounded: — Survey beenden
-- :app-timerOutlined: — verstrichene Zeit
-- :app-helpOutlineRounded: — Hilfeblatt zum Survey öffnen
-- :app-tuneRounded: — Survey-Einstellungen öffnen
+- :app-stopRounded: – Survey beenden
+- :app-timerOutlined: – verstrichene Zeit
+- :app-helpOutlineRounded: – Hilfeblatt zum Survey öffnen
+- :app-tuneRounded: – Survey-Einstellungen öffnen
 
 ### Tabs
 
-- :app-map: — Routenkarte und verortete Detektionen
-- :app-graphicEq: — Spektrogramm
-- Diagrammsymbol — zusammenfassende Statistiken und Artenaufschlüsselung
+- :app-map: – Routenkarte und verortete Detektionen
+- :app-graphicEq: – Spektrogramm
+- Diagrammsymbol – zusammenfassende Statistiken und Artenaufschlüsselung
 
 ### Statistiken und Detektionen
 
@@ -161,13 +161,13 @@ Art.
 
 Jede Detektionszeile bietet außerdem dieselben Aktionen pro Detektion wie die
 [Session-Übersicht](session-review.md): ein :app-checkCircleOutline: **Bestätigen** mit
-einem Tipp sowie ein :app-moreVert: **Mehr**-Menü mit **Erkennung teilen**
+einem Tipp sowie ein :app-moreVert: **Mehr**-Menü mit **Detektion teilen**
 und **Detektion löschen** (mit Rückgängig-Option in der SnackBar) – so können Sie
 einen verrauschten Treffer schon während der Aufnahme prüfen, teilen oder entfernen,
 statt auf die spätere Durchsicht zu warten.
 
 Dieselben Aktionen stehen auf der **Live-Routenkarte** zur Verfügung: Tippen Sie auf
-einen Detektionsmarker, um den Clip-Player mit Bestätigen, Teilen und Löschen zu
+eine Detektionsmarkierung, um den Clip-Player mit Bestätigen, Teilen und Löschen zu
 öffnen. Das Teilen während eines Surveys funktioniert auch dann, wenn Sie statt
 einzelner Clips eine durchgehende WAV-Aufnahme gewählt haben – das passende
 Audiofenster wird dabei direkt aus der laufenden Aufnahme herausgeschnitten. Weitere
@@ -176,13 +176,13 @@ Details finden Sie unter
 
 ### Eine Beobachtung erfassen
 
-Die Schaltfläche :app-addCircleOutline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie [Session Review](session-review.md#arten-manuell-hinzufügen) — Wählen Sie eine Art, setzen Sie im Bestätigungsfenster :app-hearing: **Gehört** und/oder :app-visibility: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte — mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
+Die Schaltfläche :app-addCircleOutline: im laufenden Survey öffnet ein kleines Menü mit **Art hinzufügen** und **Notiz hinzufügen**. **Art hinzufügen** öffnet dieselbe Artensuche wie die [Session-Übersicht](session-review.md#arten-manuell-hinzufügen) – wählen Sie eine Art, setzen Sie im Bestätigungsfenster :app-hearing: **Gehört** und/oder :app-visibility: **Gesehen** und tippen Sie auf **Hinzufügen**. Der Eintrag erhält den Zeitstempel dieses Moments und die aktuelle GPS-Position und erscheint sofort in der Detektionsliste und auf der Routenkarte – mit Manuell-Abzeichen und den passenden Ohr-/Augensymbolen.
 
-Sprachmemos fehlen hier bewusst: Das Mikrofon ist mit der Aufnahme des Surveys belegt. Hängen Sie sie nach dem Ende des Surveys in Session Review an.
+Sprachnotizen fehlen hier bewusst: Das Mikrofon ist mit der Aufnahme des Surveys belegt. Hängen Sie sie nach dem Ende des Surveys in der Session-Übersicht an.
 
 ## Hintergrundbetrieb
 
-Im Survey-Modus bleibt während der Aufnahme eine dauerhafte
+Während eines Surveys bleibt eine dauerhafte
 Vordergrundbenachrichtigung sichtbar, damit Android die Audio-Pipeline nicht anhält.
 Aufgeklappt zeigt die Benachrichtigung:
 
@@ -200,12 +200,12 @@ Artenmeldungen (sofern aktiviert) erscheinen auf einem eigenen
 Android-Benachrichtigungskanal, sodass Sie Meldungen unabhängig von der stillen,
 laufenden Aufnahmebenachrichtigung stummschalten können. Das Meldungssymbol entspricht
 dem Symbol der Vordergrundbenachrichtigung (ein einfarbiger Vogel), und der
-Meldungstext zeigt nur den *Grund* – *„Erste Detektion dieses Surveys“*, *„Auf Ihrer
-Beobachtungsliste“*, *„An diesem Ort mit unter 4 % Wahrscheinlichkeit erkannt“* –
+Meldungstext zeigt nur den *Grund* – *„Erste Detektion in diesem Survey“*, *„Auf Ihrer
+Beobachtungsliste“*, *„Selten hier (4 % laut Geo-Modell)“* –
 während der Artname im fett dargestellten Benachrichtigungstitel steht, wo Android ihn
 am größten anzeigt.
 
-Wenn Sie einen unbeendeten Survey aus der Session-Bibliothek **fortsetzen**, wird die
+Wenn Sie einen nicht abgeschlossenen Survey aus der Session-Bibliothek **fortsetzen**, wird die
 Meldungslogik aus Ihren *aktuellen* Benachrichtigungseinstellungen neu aufgesetzt –
 nicht aus der Konfiguration vom Tag des Starts. Schalten Sie Meldungen vor dem Tippen
 auf *Fortsetzen* aus (oder ändern Sie Modus, Beobachtungsliste oder Drosselung), und
@@ -214,8 +214,8 @@ der fortgesetzte Survey übernimmt die neuen Einstellungen sofort.
 ## Auf der Karte überprüfen
 
 Die Vollbild-Kartenansicht des Surveys (die Schaltfläche :app-fullscreen: in der
-Session-Übersicht) öffnet beim Tippen auf einen Marker einen Clip-Player. Die
-Steuerleiste hat neben der Wiedergabetaste Schaltflächen für „Vorherige“ und
+Session-Übersicht) öffnet beim Tippen auf eine Markierung einen Clip-Player. Die
+Steuerleiste hat neben der Wiedergabeschaltfläche Schaltflächen für „Vorherige“ und
 „Nächste“ – sie blättern in chronologischer Reihenfolge durch die Detektionen, jedoch
 **nur durch die aktuell auf der Karte sichtbaren**. Jeder aktive Filter nach Art,
 Konfidenz oder Modus-Chip schränkt die Wiedergabeliste entsprechend ein. Bei der
