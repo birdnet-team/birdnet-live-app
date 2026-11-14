@@ -6,7 +6,7 @@ BirdNET Live is een Flutter-app voor veldonderzoekers, natuurbeschermers en voge
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C047-brightgreen.svg" alt="Species: 10,047">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live is een Flutter-app voor veldonderzoekers, natuurbeschermers en voge
 - **Verkennen** - Blader door de soorten die op jouw locatie te verwachten zijn met het BirdNET-geomodel
 - **Session-bibliotheek** - Bekijk, bewerk en exporteer eerdere Sessions met audioweergave
 - **Export** - Raven Pro, CSV, JSON, GPX en ZIP-bundels met herkomstmetadata
-- **Inferentie op het toestel** - Het BirdNET+-model dekt 9.789 soorten, zonder internet
+- **Inferentie op het toestel** - Het BirdNET+-model dekt 10.047 soorten, zonder internet
 - **FLAC-opname** - Gecomprimeerde audio met kleinere bestanden voor lange tellingen
 - **Toegankelijkheid** - Labels voor schermlezers, tooltips en optionele gesproken meldingen van detecties
 - **Responsieve indelingen** - Interfaces die zich aanpassen aan telefoon, tablet, staand en liggend

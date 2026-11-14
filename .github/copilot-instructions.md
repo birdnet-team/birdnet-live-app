@@ -48,8 +48,8 @@
 
 - ONNX assets in `assets/models` are Git LFS; on fresh clone run `git lfs install` and `git lfs pull`.
 - Keep model behavior JSON-driven via `assets/models/model_config.json`.
-- Model rebuild pipeline: `python dev/build_models.py` (prune -> fix audio model -> fix geo model). See `dev/MODELS.md`.
-- ARM64 precision rule: audio model weights stay FP16 on disk, but sensitive compute must cast to FP32 for stable mobile output.
+- Model and taxonomy updates follow `docs/developer/model-update.md` (build scripts in `dev/models/<update>/`). Sessions store scientific names and are never rewritten; older names resolve through taxonomy aliases and legacy rows, guarded by `test/shared/services/taxonomy_continuity_test.dart`.
+- Non-animal sound classes are opt-in and stay out of species counts, Explore, and species pickers.
 - Species/taxonomy APIs:
   - `GET /api/image/{sci_name}?size=thumb|medium`
   - `GET /api/species/{sci_name}`

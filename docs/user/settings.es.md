@@ -143,6 +143,14 @@ Abre un panel con filtros binarios de inferencia. Marca **Aves**, **Mamíferos**
 
 El filtro pone exactamente a cero las probabilidades ignoradas de los modelos geográfico y de audio inmediatamente después de la activación sigmoide y antes de la agrupación temporal. No pueden contribuir a resultados posteriores ni convertirse en detecciones mostradas, guardadas, anunciadas o exportadas. Los cambios durante una Session activa de Live Mode, Point Count, Survey o ARU se aplican a la siguiente ventana; el análisis de archivos usa los valores elegidos al iniciar.
 
+### Sonidos no animales
+
+Desactivado de forma predeterminada. Además de fauna, el modelo reconoce 16 clases de sonidos no animales: aeronave, bote, motosierra, motor, explosión, fuego, fuegos artificiales, arma de fuego, martillo, vehículo de motor, música, herramienta eléctrica, sierra, sirena, tren y bocina. Activa el interruptor para que se notifiquen como cualquier otra detección en todos los modos, con una imagen, una descripción y un nombre en el idioma de los nombres de especies.
+
+Una sirena no tiene área de distribución, así que los filtros de ubicación nunca eliminan las clases de sonido y Explorar no las muestra. Tampoco se incluyen en el recuento de **Ignorar especies**. Un cambio se aplica a la siguiente ventana de inferencia de una Session en curso de Live Mode, Point Count, Survey o ARU; el análisis de archivos usa el valor elegido al iniciar el análisis. Las clases de sonido notificadas aparecen entre las detecciones de la Session y se incluyen en su recuento de especies.
+
+El interruptor está desactivado de forma predeterminada porque BirdNET Live es un identificador de fauna y un coche que pasa no tiene cabida en la mayoría de las listas de especies. Actívalo cuando te interesen los sonidos en sí, por ejemplo para documentar motosierras, disparos o tráfico en un punto de seguimiento.
+
 BirdNET Live suaviza internamente las puntuaciones a lo largo de las ventanas
 de inferencia recientes para reducir falsos positivos puntuales. Esta
 agrupación no se expone como ajuste de usuario; de forma predeterminada usa

@@ -6,7 +6,7 @@ BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可�
 
 <p align="center">
   <img src="https://img.shields.io/badge/latest-v1.3.1-orange.svg" alt="Latest release: v1.3.1">
-  <img src="https://img.shields.io/badge/species-9%2C789-brightgreen.svg" alt="Species: 9,789">
+  <img src="https://img.shields.io/badge/species-10%2C047-brightgreen.svg" alt="Species: 10,047">
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Windows-green.svg" alt="Platforms">
 </p>
 
@@ -20,7 +20,7 @@ BirdNET Live 是一款基于 Flutter 的应用，面向需要在野外获得可�
 - **探索** - 使用 BirdNET 地理模型浏览您所在位置可能出现的物种
 - **Session 列表** - 查看、编辑和导出过往 Session，并可回放音频
 - **导出** - Raven Pro、CSV、JSON、GPX 和带来源元数据的 ZIP 包
-- **设备端推理** - BirdNET+ 模型覆盖 9,789 个物种，无需联网
+- **设备端推理** - BirdNET+ 模型覆盖 10,047 个物种，无需联网
 - **FLAC 录音** - 压缩音频，长时间调查时文件更小
 - **无障碍** - 屏幕阅读器标签、提示文本，以及可选的检测语音播报
 - **自适应布局** - 界面适配手机、平板以及竖屏和横屏

@@ -8,7 +8,10 @@ Perguntas frequentes.
 R: Não. Todas as inferências são executadas no dispositivo usando o modelo ONNX. Os únicos recursos de rede são opcionais e ficam desativados por padrão: blocos de mapa e busca de nomes de lugares do OpenStreetMap, instantâneos de clima do Open-Meteo e a consulta de imagens e descrições de espécies pela API de taxonomia. Consulte [Configurações → Privacidade](settings.md#privacidade).
 
 **P: Quantas espécies ele consegue identificar?**
-R: O modelo BirdNET+ V3.0 identifica 9789 espécies em todo o mundo: aves, anfíbios, mamíferos e insetos (a interseção podada do classificador de áudio e do geomodelo).
+R: O modelo BirdNET+ V3.0 identifica 10 047 espécies em todo o mundo: aves, anfíbios, mamíferos e insetos (a interseção podada do classificador de áudio e do geomodelo). Ele também reconhece 16 sons não animais, como motores, sirenes e música; eles ficam desativados, a menos que você ative [Sons não animais](settings.md#sons-não-animais).
+
+**P: Uma espécie em uma Session mais antiga tem um novo nome ou não é mais detectada. Perdi alguma coisa?**
+R: Não. Uma atualização do modelo pode renomear espécies para seguir a taxonomia atual e remover espécies que o novo modelo não cobre. As Sessions salvas não são alteradas: uma detecção mais antiga aparece com o nome atual da espécie, com imagem, tradução e links, e as espécies que o modelo não detecta mais permanecem nas suas Sessions e exportações exatamente como foram registradas.
 
 **P: Quais plataformas são compatíveis?**
 R: Android (8.0+), iOS (15.0+) e Windows (experimental).
