@@ -183,16 +183,13 @@ void main() {
         fractions: fractions,
       );
 
-      const expectedEntries = {
-        'Common Hoopoe': 0.5,
-        'Eurasian Golden Oriole': 0.5,
-        'Great Cormorant': 0.5,
-        'Mute Swan': 0.5,
-        'Red Fox': 0.5,
-      };
-      for (final entry in expectedEntries.entries) {
-        expect(fractions[entry.key], entry.value);
-      }
+      // The entries were tuned for earlier models. For the current model
+      // they are all 1.0 (no effect) until field recordings show which
+      // species it still over-reports; see docs/developer/model-update.md.
+      expect(fractions, isNotEmpty);
+      expect(fractions.values, everyElement(1.0));
+      final commonNames = {for (final label in labels) label.commonName};
+      expect(commonNames, containsAll(fractions.keys));
       expect(
         multipliers.where((value) => value != 1.0),
         hasLength(fractions.values.where((value) => value != 1.0).length),
