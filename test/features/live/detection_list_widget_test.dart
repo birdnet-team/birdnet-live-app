@@ -221,6 +221,37 @@ void main() {
     expect(find.byTooltip('Highest confidence: 87%'), findsOneWidget);
   });
 
+  testWidgets('labels the highest confidence chip in the readable color', (
+    tester,
+  ) async {
+    // Light-theme score buckets and the label color with the higher contrast.
+    // 0.30 and 0.70 are mid-tone fills where white would be hard to read.
+    final expected = <double, Color>{
+      0.10: Colors.black,
+      0.30: Colors.black,
+      0.50: Colors.black,
+      0.70: Colors.black,
+      0.90: Colors.white,
+    };
+
+    for (final entry in expected.entries) {
+      await tester.pumpWidget(
+        buildSubject(
+          showTips: false,
+          isActive: true,
+          detections: [record('A')],
+          activeDetections: Set<DetectionRecord>.identity(),
+          speciesMaxConfidences: {'A': entry.key},
+        ),
+      );
+
+      final label = tester.widget<Text>(
+        find.text('${(entry.key * 100).round()}%'),
+      );
+      expect(label.style?.color, entry.value, reason: 'score ${entry.key}');
+    }
+  });
+
   testWidgets('hides the highest confidence chip while the species is active', (
     tester,
   ) async {

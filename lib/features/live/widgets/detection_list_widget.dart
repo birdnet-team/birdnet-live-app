@@ -590,9 +590,14 @@ class _MaxConfidenceChip extends StatelessWidget {
     final theme = Theme.of(context);
     final background = ScoreColors.of(context).forScore(confidence);
     // The score ramp spans pale to deep tones in both themes, so pick the
-    // label color per bucket instead of per theme.
-    final foreground =
-        ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+    // label color per bucket instead of per theme: whichever of white and
+    // black has the higher WCAG contrast ratio against the fill. Material's
+    // brightness estimate picks white on the mid-tone reds and greens, where
+    // black is far more readable.
+    final luminance = background.computeLuminance();
+    final whiteContrast = 1.05 / (luminance + 0.05);
+    final blackContrast = (luminance + 0.05) / 0.05;
+    final foreground = whiteContrast > blackContrast
         ? Colors.white
         : Colors.black;
 
