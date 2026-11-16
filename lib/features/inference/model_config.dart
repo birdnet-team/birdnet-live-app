@@ -11,6 +11,7 @@
 // |------------|--------------------------------------------------------|
 // | `audio`    | Sample rate, channels expected by the model             |
 // | `onnx`     | File name, input/output tensor names                    |
+// | `litert`   | Optional: experimental LiteRT build (frontend + classifier) |
 // | `labels`   | File name, delimiter, column mapping for the labels CSV |
 // | `inference`| Window sizes, post-processing defaults                  |
 // | `scoreBlacklistFile` | Optional common-name score multiplier JSON     |
@@ -41,6 +42,7 @@ class ModelConfig {
     required this.labels,
     required this.inference,
     this.scoreBlacklistFile,
+    this.litert,
   });
 
   // ---------------------------------------------------------------------------
@@ -75,6 +77,10 @@ class ModelConfig {
   /// `{ "Red Fox": 0.5 }`.
   final String? scoreBlacklistFile;
 
+  /// Optional LiteRT build of the same classifier for the experimental
+  /// accelerator backend (Edge TPU / GPU). `null` when the model ships ONNX only.
+  final LiteRtConfig? litert;
+
   // ---------------------------------------------------------------------------
   // JSON
   // ---------------------------------------------------------------------------
@@ -95,6 +101,9 @@ class ModelConfig {
         json['inference'] as Map<String, dynamic>,
       ),
       scoreBlacklistFile: json['scoreBlacklistFile'] as String?,
+      litert: json['litert'] is Map<String, dynamic>
+          ? LiteRtConfig.fromJson(json['litert'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -108,6 +117,7 @@ class ModelConfig {
     'labels': labels.toJson(),
     'inference': inference.toJson(),
     if (scoreBlacklistFile != null) 'scoreBlacklistFile': scoreBlacklistFile,
+    if (litert != null) 'litert': litert!.toJson(),
   };
 }
 
@@ -188,6 +198,43 @@ class OnnxConfig {
     'modelFile': modelFile,
     'inputName': inputName,
     'outputNames': outputNames,
+  };
+}
+
+// =============================================================================
+// LiteRT Config
+// =============================================================================
+
+/// LiteRT (TFLite) build of the audio classifier, split into two graphs:
+///
+/// - [frontendFile]: audio `[1, samples]` -> spectrogram, always on the CPU.
+/// - [classifierFile]: spectrogram -> predictions + embeddings, on the Edge
+///   TPU, GPU or CPU. Its GeM pooling head is rewritten to be fp16-safe; the
+///   original head underflows on fp16 accelerators.
+///
+/// Both graphs have fixed shapes, so only [windowSeconds] is supported; other
+/// window lengths fall back to the ONNX model.
+class LiteRtConfig {
+  const LiteRtConfig({
+    required this.frontendFile,
+    required this.classifierFile,
+    this.windowSeconds = 3,
+  });
+
+  final String frontendFile;
+  final String classifierFile;
+  final int windowSeconds;
+
+  factory LiteRtConfig.fromJson(Map<String, dynamic> json) => LiteRtConfig(
+    frontendFile: json['frontendFile'] as String,
+    classifierFile: json['classifierFile'] as String,
+    windowSeconds: (json['windowSeconds'] as num?)?.toInt() ?? 3,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'frontendFile': frontendFile,
+    'classifierFile': classifierFile,
+    'windowSeconds': windowSeconds,
   };
 }
 

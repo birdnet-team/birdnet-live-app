@@ -37,7 +37,7 @@ assetPack {
 // pack at build time. `assets/models/` remains the single source of truth.
 tasks.register('syncOnnxModels', Sync) {
     from file("${rootDir}/../assets/models")
-    include "*.onnx"
+    include "*.onnx", "*.tflite"
     into file("${projectDir}/src/main/assets/models")
 }
 

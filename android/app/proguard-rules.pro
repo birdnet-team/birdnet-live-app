@@ -30,3 +30,8 @@
 # the 1.3.0 release build (#297, #298). Debug builds are not shrunk and never
 # showed it.
 -keep class * extends androidx.room.RoomDatabase { <init>(); }
+
+# LiteRT (experimental backend, LiteRtChannel.kt): the native library calls
+# back into these classes via JNI, so R8 must not rename or strip them.
+-keep class org.tensorflow.lite.** { *; }
+-dontwarn org.tensorflow.lite.**

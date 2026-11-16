@@ -65,6 +65,16 @@ final confidenceThresholdProvider =
     });
 
 /// Inference rate in Hz (0.1–1.0 in 0.1 Hz steps — default 1.0).
+/// Experimental classifier backend (`onnx`, `auto`, `tpu`, `gpu`, `cpu`).
+///
+/// Read when a mode loads the model, so a change applies after the app is
+/// restarted. See lib/features/inference/inference_backend.dart.
+final inferenceBackendProvider =
+    StateNotifierProvider<StringSettingNotifier, String>((ref) {
+      final prefs = ref.watch(sharedPreferencesProvider);
+      return StringSettingNotifier(prefs, PrefKeys.inferenceBackend, 'onnx');
+    });
+
 final inferenceRateProvider =
     StateNotifierProvider<InferenceRateSettingNotifier, double>((ref) {
       final prefs = ref.watch(sharedPreferencesProvider);

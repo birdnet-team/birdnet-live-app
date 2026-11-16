@@ -65,6 +65,7 @@ class MainActivity: FlutterActivity() {
     private var secureStoreChannel: SecureStoreChannel? = null
     private var connectivityChannel: ConnectivityChannel? = null
     private var uploadWorkChannel: UploadWorkChannel? = null
+    private var liteRtChannel: LiteRtChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -110,6 +111,10 @@ class MainActivity: FlutterActivity() {
         // Background upload scheduling; see UploadWorker.kt.
         uploadWorkChannel?.dispose()
         uploadWorkChannel = UploadWorkChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Experimental LiteRT backend (Edge TPU / GPU / CPU); see LiteRtChannel.kt.
+        liteRtChannel?.dispose()
+        liteRtChannel = LiteRtChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
@@ -468,6 +473,8 @@ class MainActivity: FlutterActivity() {
     override fun onDestroy() {
         ttsChannel?.dispose()
         ttsChannel = null
+        liteRtChannel?.dispose()
+        liteRtChannel = null
         aruNotificationIntentChannel = null
         quickActionIntentChannel = null
         sharedMediaChannel = null

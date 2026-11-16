@@ -81,6 +81,8 @@ final liveControllerProvider = Provider<LiveController>((ref) {
   // callback feeds the spoken-detection pipeline. The sink itself is
   // lazy — no TTS plugin is touched until the user enables the
   // feature, so this hook is free for users who never opt in.
+  controller.inferenceBackend = () => ref.read(inferenceBackendProvider);
+
   final announcementsSink = ref.read(announcementsAlertSinkProvider);
   controller.onFreshDetections = announcementsSink.submit;
   controller.onSessionStarted = announcementsSink.resetSession;

@@ -33,10 +33,10 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    // Store ONNX models uncompressed in the APK so rootBundle.load() can
-    // memory-map them instead of decompressing ~259 MB into RAM.
+    // Store ONNX and LiteRT models uncompressed in the APK so rootBundle.load()
+    // can memory-map them instead of decompressing ~259 MB into RAM.
     aaptOptions {
-        noCompress 'onnx'
+        noCompress 'onnx', 'tflite'
     }
 
     // ── 16 KB memory page size support ────────────────────────────────
@@ -164,6 +164,12 @@ dependencies {
     implementation 'com.google.android.play:asset-delivery:2.2.2'
     // Background upload runs (UploadWorker.kt, #284).
     implementation 'androidx.work:work-runtime-ktx:2.10.0'
+    // Experimental LiteRT backend (LiteRtChannel.kt). Pinned to the 1.x line:
+    // 2.x dropped NnApiDelegate, which is the only route to the Edge TPU on
+    // Tensor G4 (Pixel 9); the Tensor SDK/AOT path only supports G5/G6.
+    implementation 'com.google.ai.edge.litert:litert:1.4.2'
+    implementation 'com.google.ai.edge.litert:litert-gpu:1.4.2'
+    implementation 'com.google.ai.edge.litert:litert-gpu-api:1.4.2'
 }
 
 // ── Strip *.onnx from base module assets when building the App Bundle ──
@@ -201,13 +207,13 @@ afterEvaluate {
             }
             def removed = 0
             def freedBytes = 0L
-            fileTree(dir: root, include: '**/*.onnx').each { f ->
+            fileTree(dir: root, includes: ['**/*.onnx', '**/*.tflite']).each { f ->
                 freedBytes += f.length()
                 if (f.delete()) removed++
             }
             def freedMb = (freedBytes / 1024.0 / 1024.0).round(1)
             logger.lifecycle(
-                "[asset-pack] stripped ${removed} .onnx file(s) (${freedMb} MB) " +
+                "[asset-pack] stripped ${removed} model file(s) (${freedMb} MB) " +
                 "from base module — shipped via models_pack instead")
         }
     }

@@ -48,6 +48,7 @@ import '../announcements/announcements_controller.dart'
 import '../inference/advanced_pooling_params.dart';
 import '../inference/detection_accumulator.dart';
 import '../inference/detection_clip_writer.dart';
+import '../inference/inference_backend.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/inference_window_driver.dart';
 import '../inference/model_config.dart';
@@ -107,6 +108,10 @@ class LiveController {
   // ── Internal state ────────────────────────────────────────────────────
 
   final InferenceIsolate _isolate = InferenceIsolate();
+
+  /// Reads the experimental backend setting when the model loads; wired up by
+  /// the provider. See inference_backend.dart.
+  String Function() inferenceBackend = () => InferenceBackends.onnx;
   final AudioPlayer _player = AudioPlayer();
   ModelConfig? _config;
   LiveSession? _session;
@@ -364,6 +369,10 @@ class LiveController {
         labelsCsv: labelsCsv,
         config: _config!,
         scoreBlacklistJson: scoreBlacklistJson,
+        liteRtAccelerator: InferenceBackends.liteRtAccelerator(
+          inferenceBackend(),
+          InferenceWorkload.realtime,
+        ),
       );
 
       debugPrint('[LiveController] isolate ready');

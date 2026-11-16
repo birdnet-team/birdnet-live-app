@@ -41,6 +41,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
+import 'audio_classifier.dart';
 import 'ort_session_options.dart';
 
 /// Low-level wrapper around an ONNX classification model.
@@ -48,7 +49,7 @@ import 'ort_session_options.dart';
 /// Handles session creation, input tensor construction, inference, and
 /// resource cleanup.  Not intended for direct UI consumption — use
 /// [InferenceService] instead.
-class ClassifierModel {
+class ClassifierModel implements AudioClassifier {
   /// Creates a new model instance.  Call [loadModelFromFile] to initialize.
   ClassifierModel();
 
@@ -70,6 +71,7 @@ class ClassifierModel {
   String? _embeddingsName = 'embeddings';
 
   /// Whether a model is currently loaded and ready for inference.
+  @override
   bool get isLoaded => _session != null;
 
   // ---------------------------------------------------------------------------
@@ -137,6 +139,7 @@ class ClassifierModel {
   /// shorter it is zero-padded; if longer it is truncated.
   ///
   /// Returns a [ModelOutput] with model predictions and embeddings.
+  @override
   Future<ModelOutput> predict(
     Float32List audioSamples, {
     required int windowSamples,
@@ -153,6 +156,7 @@ class ClassifierModel {
   ///
   /// Windows remain independent along the model's batch dimension. Short
   /// inputs are padded and long inputs are truncated exactly like [predict].
+  @override
   Future<List<ModelOutput>> predictBatch(
     List<Float32List> audioWindows, {
     required int windowSamples,
@@ -244,6 +248,7 @@ class ClassifierModel {
   // ---------------------------------------------------------------------------
 
   /// Release all native resources held by the ONNX session.
+  @override
   Future<void> dispose() async {
     final s = _session;
     _session = null;
