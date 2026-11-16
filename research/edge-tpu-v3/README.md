@@ -17,9 +17,8 @@ Follow-up to #76.
    `x ** 6.6` underflows in fp16. The backbone is fp16-safe.
 2. **An fp32-identical rewrite of the head fixes it** (section 1); Edge TPU and GPU then match
    ONNX on field recordings (section 2).
-3. **The Edge TPU is 3× faster than ONNX in the app** (section 3). It is the most energy-efficient
-   option for batch analysis, but not at one window per second (section 4). The app's *Auto*
-   setting follows this split.
+3. **The Edge TPU is 3× faster than ONNX in the app** (section 3). Power readings are
+   preliminary (section 4).
 4. **#76 most likely never ran on the TPU:** without `allow_fp16`, NNAPI rejects the model and
    ONNX Runtime fell back to the CPU.
 
@@ -103,18 +102,30 @@ The first TPU load compiles the model (≈ 6–8 s in the app). The backend cach
 program in `codeCacheDir` (cleared on app updates); with that cache `benchmark_model` loads in
 ≈ 0.5 s. The cache hit inside the app is not verified yet, because `flutter test` reinstalls the app.
 
-## 4. Power
+## 4. Preliminary: power
 
-Classifier only, battery current × voltage via sysfs (`scripts/power.sh`, no root), screen on,
-idle ≈ 820–920 mW.
+> ⚠️ **Not a reliable result yet.** `scripts/power.sh` reads the battery fuel gauge
+> (`current_now` × `voltage_now` in sysfs, no root), samples every 0.2 s and averages over 30 s.
+> This measures the whole device including the screen, and the gauge smooths the current
+> internally. The script did not check whether a charger was connected; a connected charger makes
+> the readings too low or negative. Idle readings before and after, and the repeated runs, were
+> consistent, so a charger was most likely not connected, but that is not recorded. A re-run
+> should check the charging state before each sample, or use per-rail power from Perfetto (ODPM)
+> as in #76.
+
+Classifier only, screen on, idle ≈ 820–920 mW. Logs in `results/power/`.
 
 ![energy batch](results/fig_energy_batch.png)
 ![power live](results/fig_power_live.png)
 
 | | CPU fp32 4T | CPU fp16 4T | GPU fp16 | Edge TPU | TPU `low_power` |
 |---|---|---|---|---|---|
-| continuous load: energy / window | 595 mJ | 275 mJ | 85 mJ | **33 mJ** | **27 mJ** |
-| 1 window / s: total power | 1,594 mW | 1,045–1,154 mW | **961–1,013 mW** | 1,667–1,869 mW | 1,148–1,365 mW |
+| continuous load: energy / window | 595 mJ | 275 mJ | 85 mJ | 33 mJ | 27 mJ |
+| 1 window / s: total power | 1,594 mW | 1,045–1,154 mW | 961–1,013 mW | 1,667–1,869 mW | 1,148–1,365 mW |
+
+If confirmed: the TPU is the most energy-efficient under continuous load, while at one window per
+second its per-call power-up costs more than it saves. The app's *Auto* setting (TPU for File
+Analysis, GPU for live modes) currently relies on these preliminary numbers for the live case.
 
 ## 5. Platform notes
 

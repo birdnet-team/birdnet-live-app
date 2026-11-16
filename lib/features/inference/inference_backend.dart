@@ -13,11 +13,11 @@
 // | gpu     | LiteRT: GPU delegate (fp16)                                      |
 // | cpu     | LiteRT: XNNPACK, 4 threads                                       |
 //
-// Why `auto` splits by mode (Pixel 9 Pro measurements, see
-// research/edge-tpu-v3/README.md): under continuous load the Edge TPU needs
-// ~30 mJ per 3-s window vs ~85 mJ on the GPU and ~275 mJ on CPU fp16, so file
-// analysis should use it. At one window per second the TPU's per-call
-// power-up costs more than it saves: ~1.7 W total vs ~1.0 W on the GPU.
+// Why `auto` splits by mode: File Analysis wants throughput, where the Edge TPU
+// is fastest (about 3x ONNX). Live modes run one window per second, where
+// preliminary power readings on a Pixel 9 Pro favoured the GPU, because the
+// TPU powers up for every call. Those readings still need a reliable re-run;
+// see "Preliminary: power" in research/edge-tpu-v3/README.md.
 //
 // Every LiteRT choice falls back (tpu -> gpu -> cpu natively, then to ONNX in
 // Dart) when the device lacks the accelerator or the model has no LiteRT build.

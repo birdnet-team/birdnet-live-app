@@ -2744,9 +2744,8 @@ class _InferenceBackendTile extends ConsumerWidget {
       helpBody:
           'Runs the classifier with LiteRT on a hardware accelerator instead '
           'of ONNX Runtime on the CPU.\n\n'
-          'Auto — Edge TPU for file analysis (fastest and most '
-          'energy-efficient for long recordings), GPU for live modes (lowest '
-          'power at one window per second).\n\n'
+          'Auto — Edge TPU for file analysis (fastest for long '
+          'recordings), GPU for live modes.\n\n'
           'Edge TPU — Google Tensor NPU via NNAPI (Pixel 9 and similar).\n\n'
           'Falls back to GPU, CPU and finally ONNX if the device cannot run '
           'the selected option. Only 3-second windows use LiteRT; other '

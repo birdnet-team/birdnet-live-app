@@ -54,7 +54,7 @@ def bench():
     fig, ax = plt.subplots(figsize=(7.5, 3.0))
     hbars(ax, [e[0] for e in E], [e[1] for e in E], [e[3] for e in E], [f"{e[1]} mJ  ({e[2]:,} mW)" for e in E])
     ax.set_xlabel("energy per 3-s window, continuous batch load (mJ, lower is better)")
-    ax.set_title("File / SD-card analysis: TPU is 8–20× more efficient")
+    ax.set_title("Energy per window under continuous load (preliminary)")
     fig.tight_layout(); fig.savefig("results/fig_energy_batch.png", dpi=200); plt.close(fig)
 
     # live mode, 1 window per second: total device power (ranges over repeats)
@@ -67,7 +67,7 @@ def bench():
           [f"{a:,}–{b:,} mW" if a != b else f"{a:,} mW" for _, a, b, _ in P], err=err)
     ax.axvspan(820, 920, color=GRID, alpha=0.8, zorder=0)
     ax.set_xlabel("total device power, screen on (mW, lower is better); grey band = idle 820–920 mW")
-    ax.set_title("Live mode (1 window/s): GPU or CPU fp16 beat the TPU")
+    ax.set_title("Total device power at 1 window per second (preliminary)")
     fig.tight_layout(); fig.savefig("results/fig_power_live.png", dpi=200); plt.close(fig)
 
 
