@@ -109,9 +109,10 @@ program in `codeCacheDir` (cleared on app updates); with that cache `benchmark_m
 > This measures the whole device including the screen, and the gauge smooths the current
 > internally. The script did not check whether a charger was connected; a connected charger makes
 > the readings too low or negative. Idle readings before and after, and the repeated runs, were
-> consistent, so a charger was most likely not connected, but that is not recorded. A re-run
-> should check the charging state before each sample, or use per-rail power from Perfetto (ODPM)
-> as in #76.
+> consistent, so a charger was most likely not connected, but that is not recorded. The scripts
+> now abort when a charger is connected or the battery is not discharging, and log charge level
+> and temperature with every result; a re-run with them (or per-rail power from Perfetto/ODPM as
+> in #76) is still to do.
 
 Classifier only, screen on, idle ≈ 820–920 mW. Logs in `results/power/`.
 
