@@ -1,0 +1,20 @@
+Objevujte ptačí zpěv a zvuky přírody a poznávejte ptáky i další druhy podle jejich hlasů.
+
+BirdNET Live spouští náš nejvyspělejší model pro akustickou identifikaci přímo ve vašem zařízení – zcela bez nutnosti připojení k internetu. Sledujte živě se posouvající spektrogram, prohlížejte si detekce druhů v reálném čase a spravujte svou rostoucí knihovnu zvířecích zvuků přímo ze svého telefonu.
+
+BirdNET Live podporuje bioakustický výzkum a strukturované akustické průzkumy v několika pracovních postupech:
+
+- Live – Detekce druhů v reálném čase s živým spektrogramem
+- Point Count – Strukturovaná časovaná sezení s živými detekcemi
+- Survey – Záznam delších transektů se sledováním detekcí podél vaší trasy
+- Analýza souborů – Analýza zvukových souborů z místního úložiště
+- Batch Analysis – Hromadné zpracování více zvukových souborů
+- ARU Mode – Plánování delších nasazení akustických záznamových jednotek
+
+BirdNET Live je navržen pro výzkumníky i občanské vědce a nabízí rozsáhlé možnosti konfigurace a kontroly detekcí.
+
+Tato aplikace je výsledkem společného úsilí Cornell K. Lisa Yang Center for Conservation Bioacoustics a Technické univerzity v Chemnitz, ve spolupráci s Přírodovědným muzeem v Berlíně.
+
+Vývoj této aplikace podporuje Deutsche Bundesstiftung Umwelt.
+
+Další informace naleznete v naší online uživatelské příručce: https://birdnet-team.github.io/birdnet-live-app/user/

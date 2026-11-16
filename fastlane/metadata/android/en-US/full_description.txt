@@ -1,0 +1,22 @@
+Discover bird songs and the sounds of nature, and identify birds and other species by the sounds they make.
+
+BirdNET Live runs our most sophisticated sound ID model directly on your device — no internet connection required.
+
+Watch a live scrolling spectrogram, view species detections in real time, and manage your growing library of animal sounds right from your phone.
+
+BirdNET Live supports bioacoustic research and structured acoustic surveys across multiple workflows:
+
+- Live Mode — Real-time species detections with a live spectrogram
+- Point Counts — Structured timed sessions with live detections
+- Surveys — Record longer transects while tracking detections along your route
+- File Analysis — Analyze audio files from local storage
+- Batch Analysis — Process multiple audio files in bulk
+- ARU Mode — Schedule longer acoustic recording deployments
+
+BirdNET Live is designed for researchers and citizen scientists alike and offers extensive configuration and detection review options.
+
+This app is a joint effort by the Cornell K. Lisa Yang Center for Conservation Bioacoustics and Chemnitz University of Technology, in partnership with the Museum für Naturkunde Berlin.
+
+Development of this app is supported by the Deutsche Bundesstiftung Umwelt.
+
+For more information, consult our online user guide: https://birdnet-team.github.io/birdnet-live-app/user/

@@ -11,7 +11,6 @@ import android.provider.OpenableColumns
 import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
-import com.google.android.play.core.assetpacks.AssetPackManagerFactory
 import com.pravera.flutter_foreground_task.service.ForegroundService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -348,9 +347,7 @@ class MainActivity: FlutterActivity() {
                         return@setMethodCallHandler
                     }
                     try {
-                        val mgr = AssetPackManagerFactory.getInstance(applicationContext)
-                        val location = mgr.getPackLocation(packName)
-                        result.success(location?.assetsPath())
+                        result.success(AssetPackLocator.packAssetsPath(applicationContext, packName))
                     } catch (e: Throwable) {
                         // Sideload APK without Play Asset Delivery support,
                         // pack not installed, or any other failure: report

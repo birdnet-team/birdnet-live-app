@@ -1,0 +1,22 @@
+Oppdag fuglesang og naturens lyder, og identifiser fugler og andre arter etter lydene de lager.
+
+BirdNET Live kjører vår mest avanserte modell for lydgjenkjenning direkte på enheten din — helt uten internettforbindelse.
+
+Følg et rullende spektrogram i sanntid, se artsdeteksjoner med en gang og administrer det voksende biblioteket ditt med dyrelyder direkte fra telefonen.
+
+BirdNET Live støtter bioakustisk forskning og strukturerte akustiske undersøkelser på tvers av flere arbeidsflyter:
+
+- Live Mode — Artsdeteksjoner i sanntid med et levende spektrogram
+- Point Count — Strukturerte, tidsbestemte økter med live-detekteringer
+- Survey — Ta opp lengre transekter mens du følger deteksjoner langs ruten
+- File Analysis — Analyser lydfiler fra lokal lagring
+- Batch Analysis — Behandle flere lydfiler i bulk
+- ARU Mode — Planlegg lengre utplasseringer av akustiske opptakere
+
+BirdNET Live er laget for både forskere og folkeforskere og tilbyr omfattende innstillinger og muligheter for å gjennomgå deteksjoner.
+
+Denne appen er et samarbeid mellom Cornell K. Lisa Yang Center for Conservation Bioacoustics og Chemnitz tekniske universitet, i partnerskap med Museum für Naturkunde Berlin.
+
+Utviklingen av denne appen støttes av Deutsche Bundesstiftung Umwelt.
+
+Mer informasjon finner du i vår nettbaserte brukerveiledning: https://birdnet-team.github.io/birdnet-live-app/user/
