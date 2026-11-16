@@ -1,0 +1,31 @@
+INFO: STARTING!
+INFO: Log parameter values verbosely: [0]
+INFO: Min num runs: [48]
+INFO: Min runs duration (seconds): [0]
+INFO: Inter-run delay (seconds): [1]
+INFO: Min warmup runs: [2]
+INFO: Graph: [trunk_fp32.tflite]
+INFO: Signature to run: []
+INFO: Use NNAPI: [1]
+INFO: NNAPI execution preference: [low_power]
+INFO: NNAPI accelerator name: [google-edgetpu]
+INFO: NNAPI accelerators available: [google-edgetpu,nnapi-reference]
+INFO: Allow fp16 in NNAPI: [1]
+INFO: Loaded model trunk_fp32.tflite
+INFO: Initialized TensorFlow Lite runtime.
+INFO: Created TensorFlow Lite delegate for NNAPI.
+INFO: NNAPI delegate created.
+WARNING: NNAPI SL driver did not implement SL_ANeuralNetworksDiagnostic_registerCallbacks!
+VERBOSE: Replacing 499 out of 499 node(s) with delegate (TfLiteNnapiDelegate) node, yielding 1 partitions for subgraph 0.
+INFO: Explicitly applied NNAPI delegate, and the model graph will be completely executed by the delegate.
+INFO: The input model file size (MB): 80.5143
+INFO: Initialized session in 4115.16ms.
+INFO: Running benchmark for at least 2 iterations and at least 0.5 seconds but terminate if exceeding 150 seconds.
+INFO: count=2 first=21225 curr=13957 min=13957 max=21225 avg=17591 std=3634 p5=13957 median=21225 p95=21225
+
+INFO: Running benchmark for at least 48 iterations and at least 0 seconds but terminate if exceeding 150 seconds.
+INFO: count=48 first=14616 curr=15574 min=7796 max=17282 avg=14706.5 std=1538 p5=13280 median=14477 p95=16933
+
+INFO: Inference timings in us: Init: 4115161, First inference: 21225, Warmup (avg): 17591, Inference (avg): 14706.5
+INFO: Note: as the benchmark tool itself affects memory footprint, the following is only APPROXIMATE to the actual memory footprint of the model at runtime. Take the information at your discretion.
+INFO: Memory footprint delta from the start of the tool (MB): init=159.922 overall=161.91

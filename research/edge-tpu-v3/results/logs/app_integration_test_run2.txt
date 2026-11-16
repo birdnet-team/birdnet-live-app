@@ -1,0 +1,13 @@
+loaded 64 real windows from /storage/emulated/0/Android/data/de.tu_chemnitz.mi.kahst.birdnet_live.litert/files/litert_windows.f32
+[ClassifierModel] loaded — inputs: [input] outputs: [predictions, embeddings_out] intra-op threads: auto
+| Backend | mean ms | p95 ms | batch-16 ms/window | × real-time | frontend / classifier / channel ms | top-1 vs ONNX | max |Δ| | det ≥0.35 (ONNX → this, both) |
+|---|---|---|---|---|---|---|---|---|
+| ONNX CPU | 88.3 | 125.0 | 61.0 | 49 | – | – | – | – |
+| LiteRT tpu (ran on tpu, load 6882 ms) | 30.3 | 40.5 | 26.3 | 114 | 17.7 / 5.5 / 4.1 | 100.0 % | 0.051 | 55 → 53, 53 |
+| LiteRT gpu (ran on gpu, load 1800 ms) | 58.8 | 69.3 | 52.3 | 57 | 17.9 / 30.9 / 4.5 | 100.0 % | 0.020 | 55 → 54, 54 |
+| LiteRT cpu (ran on cpu, load 246 ms) | 161.8 | 183.4 | 145.8 | 21 | 7.2 / 133.1 / 4.7 | 100.0 % | 0.017 | 55 → 55, 55 |
+LITERT_BENCH {"label":"ONNX CPU","n":64,"meanMs":88.32714062499998,"p50Ms":84.698,"p95Ms":125.05,"batchMsPerWindow":60.954140625,"realTimeX":49.217329113972724}
+LITERT_BENCH {"frontendMs":17.6931875,"classifierMs":5.4545625,"overheadMs":4.112937499999999,"label":"LiteRT tpu (ran on tpu, load 6882 ms)","n":64,"meanMs":30.260359374999997,"p50Ms":29.199,"p95Ms":40.49,"batchMsPerWindow":26.27628125,"realTimeX":114.17140696041226,"top1Agree":1.0,"maxAbsDiff":0.05081138014793396,"detRef":55,"detCand":53,"detBoth":53}
+LITERT_BENCH {"frontendMs":17.8754375,"classifierMs":30.889125,"overheadMs":4.481812499999997,"label":"LiteRT gpu (ran on gpu, load 1800 ms)","n":64,"meanMs":58.81732812499999,"p50Ms":58.281,"p95Ms":69.345,"batchMsPerWindow":52.278125,"realTimeX":57.38537868372288,"top1Agree":1.0,"maxAbsDiff":0.01951497793197632,"detRef":55,"detCand":54,"detBoth":54}
+LITERT_BENCH {"frontendMs":7.2338125,"classifierMs":133.112,"overheadMs":4.707812500000017,"label":"LiteRT cpu (ran on cpu, load 246 ms)","n":64,"meanMs":161.786109375,"p50Ms":158.761,"p95Ms":183.403,"batchMsPerWindow":145.8366875,"realTimeX":20.570955439453463,"top1Agree":1.0,"maxAbsDiff":0.01702629029750824,"detRef":55,"detCand":55,"detBoth":55}
+00:55 +1: All tests passed!

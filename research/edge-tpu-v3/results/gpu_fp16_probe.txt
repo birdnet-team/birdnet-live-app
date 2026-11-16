@@ -1,0 +1,15 @@
+fused original head, gpu16             top1 0.85  max|d| 0.796  nan 0  det ref 18 cand 117
+fused original head, gpu32             top1 1.00  max|d| 0.000  nan 0  det ref 18 cand 18
+fused original head, tpu               top1 0.00  max|d| 0.946  nan 0  det ref 18 cand 17257
+fused head v1, gpu16                   top1 0.50  max|d| 0.831  nan 0  det ref 18 cand 6
+fused head v1, gpu32                   top1 1.00  max|d| 0.000  nan 0  det ref 18 cand 18
+fused head v1, tpu                     top1 1.00  max|d| 0.047  nan 0  det ref 18 cand 16
+fused head v2, gpu16                   top1 1.00  max|d| 0.015  nan 0  det ref 18 cand 17
+fused head v2, gpu32                   top1 1.00  max|d| 0.000  nan 0  det ref 18 cand 18
+fused head v2, tpu                     top1 1.00  max|d| 0.047  nan 0  det ref 18 cand 16
+GPU16 trunk + host fp32 head v1        top1 1.00  max|d| 0.015  nan 0  det ref 18 cand 17
+host trunk + GPU16 head v1             top1 1.00  max|d| 0.001  nan 0  det ref 18 cand 18
+TPU trunk + host fp32 head v1          top1 1.00  max|d| 0.047  nan 0  det ref 18 cand 16
+chain GPU16 trunk -> GPU16 head v1     top1 1.00  max|d| 0.015  nan 0  det ref 18 cand 17
+trunk features GPU16: rel. error median 0.0316, max 0.2611
+trunk features TPU: rel. error median 0.0589, max 0.1097
