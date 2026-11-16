@@ -13,24 +13,15 @@ Follow-up to #76.
 
 ## TL;DR
 
-1. **The unmodified model returns garbage on every fp16 path**: Edge TPU, GPU fp16 and
-   even XNNPACK fp16 on the CPU. The cause is the **GeM pooling head**
-   (`mean(clamp(x, 1e-6, 3.5) ** 6.6) ** (1/6.6)`): `x ** 6.6` lands between 1e-3 and 1e-40
-   and underflows in fp16 (smallest normal ≈ 6e-5). The backbone itself is fp16-safe (largest
-   activation ≈ 2,046, far below 65,504).
-2. **A rewrite of the head that is identical in fp32 fixes this on all paths** (see below).
-   On 720 annotated field windows the Edge TPU and the GPU then match the shipped ONNX model:
-   cmAP 0.644 vs 0.643, top-1 agreement 99 %.
-3. **Speed:** the Edge TPU computes the classifier in about 5 ms per 3-s window. In the app
-   the whole chain (spectrogram + classifier + platform channel) takes **20 ms per window
-   (147× real time)** vs 62 ms (49×) for ONNX Runtime today. That clears the 60× target for
-   SD card / ARU batch analysis from #76.
-4. **Energy:** for batch analysis the TPU needs ~30 mJ per window, 8–20× less than the CPU.
-   At one window per second (live) the TPU's per-call power-up costs more than it saves; the
-   GPU or CPU fp16 is cheaper there. The app's *Auto* setting follows this split.
-5. **Why #76 showed no gain:** without `allow_fp16` the TPU rejects the model and ONNX
-   Runtime's NNAPI EP silently ran on the CPU (146 vs 154 ms, unchanged power). With fp16
-   enabled the GeM head would have broken the results. The 381 cast nodes were not the issue.
+1. **The GeM pooling head breaks every fp16 path** (Edge TPU, GPU fp16, XNNPACK fp16):
+   `x ** 6.6` underflows in fp16. The backbone is fp16-safe.
+2. **An fp32-identical rewrite of the head fixes it** (section 1); Edge TPU and GPU then match
+   ONNX on field recordings (section 2).
+3. **The Edge TPU is 3× faster than ONNX in the app** (section 3). It is the most energy-efficient
+   option for batch analysis, but not at one window per second (section 4). The app's *Auto*
+   setting follows this split.
+4. **#76 most likely never ran on the TPU:** without `allow_fp16`, NNAPI rejects the model and
+   ONNX Runtime fell back to the CPU.
 
 ## 1. The fp16-safe GeM head
 
@@ -55,8 +46,8 @@ g  = m · mean_hw(exp(p · log r)) ^ (1/p)   # = GeM(x): the max term contribute
   chain of two graphs (`scripts/gpu_fp16_probe.py`, output in `results/gpu_fp16_probe.txt`).
 
 fp32 difference to the original head: max 3e-4 on the scores, cmAP unchanged (0.643).
-This rewrite would be worth doing in the export itself, so any fp16 build of the model
-(ONNX fp16, LiteRT, Core ML) gets a working head.
+The rewrite only touches the pooling head, so it applies to any fp16 build of the model
+(ONNX fp16, LiteRT, Core ML), not just to LiteRT.
 
 ## 2. Accuracy on field recordings
 
@@ -104,9 +95,9 @@ In the app (`integration_test/litert_backend_test.dart`, 64 real windows, debug 
 
 With the TPU, the classifier is no longer the bottleneck. The spectrogram frontend runs on one
 CPU thread (4 threads are 5× slower: 12 tiny partitions, sync overhead dominates); neither the
-GPU nor the TPU delegate accepts it. Next steps: overlap frontend and classifier in batch mode,
-measure a release build, and drop the FFT from the model as discussed in #76. LiteRT on the CPU
-is slower than ONNX Runtime and is only a fallback.
+GPU nor the TPU delegate accepts it. Not tried yet: overlapping frontend and classifier in batch
+mode, and a release build (all in-app numbers are from a debug build). LiteRT on the CPU is
+slower than ONNX Runtime and is only a fallback.
 
 The first TPU load compiles the model (≈ 6–8 s in the app). The backend caches the compiled
 program in `codeCacheDir` (cleared on app updates); with that cache `benchmark_model` loads in
@@ -134,8 +125,8 @@ idle ≈ 820–920 mW.
 - `flutter_litert` cannot select an NNAPI accelerator or allow fp16, so the backend talks to
   LiteRT's Java API through a method channel instead.
 - **Model size:** the classifier `.tflite` is 132 MB (fp32 weights). A variant with fp16
-  weights (66 MB) runs on the GPU but the NNAPI/TPU compilation rejects it. Open question for
-  the export: an fp16-weight graph the TPU accepts, or download-on-demand.
+  weights (66 MB) runs on the GPU but the NNAPI/TPU compilation rejects it. No smaller
+  TPU-compatible graph was found.
 - Fixed shapes: the LiteRT graphs take 3-s windows only; 5 and 10 s stay on ONNX.
 - `onnx2tf` cannot convert the ONNX frontend (Gather/Resize); `scripts/build_frontend_tf.py`
   rebuilds it in TensorFlow (max |Δ| 4e-5).
