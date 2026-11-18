@@ -2,9 +2,10 @@
 
 How to replace the audio classifier, the geo-model, and the taxonomy, and what
 the app guarantees to users across such an update. The steps below were used
-for the November 2026 update (BirdNET+ V3.0 audio model, the November 2026
-V3.0.4 geo-model, taxonomy v0.5-Nov2026); the scripts are in
-`dev/models/november2026/`. The resulting files carry the tag `BNL` (BirdNET
+for the November 2026 update (BirdNET+ V3.0 audio model, the V3.0.5
+geo-model, taxonomy v0.5-Nov2026); the scripts are in
+`dev/models/november2026/` and the model inputs in its `fp16-fix/` folder.
+The resulting files carry the tag `BNL` (BirdNET
 Live build) and are also published as a
 [standalone release](#standalone-release).
 
@@ -67,25 +68,24 @@ export time, so Sessions of any age get the ID of the current taxonomy.
 
 `build_november2026.py` decides which classes ship:
 
-1. Audio classes join the taxonomy by `birdnet_id`. Geo-model labels have no
-   stable ID and are resolved by scientific name, then by the taxonomy's
-   aliases.
+1. Audio classes and geo-model classes both join the taxonomy by
+   `birdnet_id`. (Geo-model labels up to V3.0.4 had no BirdNET ID and were
+   resolved by scientific name and alias. That gave the Eastern Barn Owl,
+   *Tyto javanica*, the range of the Sulawesi Masked Owl; the V3.0.5
+   geo-model has no class for it, so it is not in the app.)
 2. A species is kept when the geo-model predicts it at 0.03 or more in at
    least one cell of a global scan (every integer latitude and longitude, all
    48 weeks; `scan_geomodel_global.py`). A species the geo-model can never
    place anywhere would be filtered out for every user anyway.
-3. Where the taxonomy lumps several geo-model labels into one species (six
-   swamphens under *Porphyrio porphyrio*, for example), the pruned geo-model
-   keeps all of those rows and outputs their maximum as the species score.
-4. Non-animal sound classes (taxonomy `record_type` = `sound_class`) have no
+3. Non-animal sound classes (taxonomy `record_type` = `sound_class`) have no
    range. They stay in the audio model only, the location filters leave them
    alone, and the app reports them only when the user turns on
    **Non-animal sounds**.
-5. *Homo sapiens* ("Human") is kept like any other species the geo-model
+4. *Homo sapiens* ("Human") is kept like any other species the geo-model
    knows. Its purpose is to flag recordings that contain human voices. The
    app currently treats it as an ordinary mammal; the geo-model gives it a
    flat score of about 0.56 everywhere, so it is on every location's list.
-6. Every kept species must be in one of the four classes the app has an
+5. Every kept species must be in one of the four classes the app has an
    ignore toggle for (Aves, Mammalia, Amphibia, Insecta). The build stops
    otherwise, because the app treats any other class as a sound class.
 
@@ -95,32 +95,34 @@ says `Airplane`) and its translations, recorded in
 `tools/sound_class_names.json`, because the taxonomy's names for them are
 incomplete.
 
-November 2026 result: 10,048 species (8,984 birds, 422 amphibians, 330
-insects, 312 mammals including Human) plus 16 sound classes. Of the 9,789 species in the
-previous release, 9,552 are kept (65 of them under a new scientific name) and
-237 are not: 160 have no class in the new audio model, 76 fail the geo-model
-rule, and one is not in the taxonomy. 306 species from all earlier releases
-are carried as legacy rows: 305 from `tools/legacy_species.csv` and the one
-the taxonomy dropped from `tools/retired_species.json`.
+November 2026 result: 10,048 species (8,984 birds, 422 amphibians, 329
+insects, 313 mammals including Human) plus 16 sound classes. Of the 9,789 species in the
+previous release, 9,551 are kept (64 of them under a new scientific name) and
+238 are not: 160 have no class in the new audio model, 77 fail the geo-model
+rule (19 of them have no geo-model class), and one is not in the taxonomy.
+308 species are carried as legacy rows: 307 from `tools/legacy_species.csv`
+and the one the taxonomy dropped from `tools/retired_species.json`.
 
-## Graph rewrites
+## What the export must bring
 
-The build applies two rewrites to the audio model (`audio_graph_opt.py`).
-Both come from the #76 inference-speed work and are described in the
-[Model Export Checklist](model-export-checklist.md):
+The build only prunes the two heads. It relies on the export for the
+properties the #76 inference-speed work asked for, described in the
+[Model Export Checklist](model-export-checklist.md), and stops if one is
+missing:
 
-- The `STFT` node becomes a `MatMul`-based DFT.
-- Activations run in fp32 and only the large convolutions run in fp16.
+- The spectrogram is a `MatMul`-based DFT, not an `STFT` node.
+- Activations run in fp32 and only convolutions run in fp16, each behind a
+  cast.
+- The GeM pooling before the head is the fp16-safe form (no `Pow`).
 
-Weights that fp32 operators read are still stored as fp16 behind a constant
-`Cast`, which ONNX Runtime folds when it creates the session; the build checks
-that no such cast survives folding. This keeps the file at 67 MB instead of
-110 MB.
+Weights that fp32 operators read are stored as fp16 behind a constant `Cast`,
+which ONNX Runtime folds when it creates the session; the build checks that no
+such cast survives folding, for both models.
 
-On desktop x86-64 the rewritten model matches an all-fp32 build of the same
-weights exactly, while the delivered all-fp16 graph differs from fp32 by up to
-0.07 on individual scores. The rewrite is therefore also the more faithful
-graph. The geo-model is pruned only.
+On desktop x86-64 the audio model matches an all-fp32 build of the same
+weights to 4e-6 on real and synthetic input. The first November 2026 export
+was all-fp16, including constants such as the log-mel floor, and differs from
+this one by up to 0.03 on individual scores.
 
 ## Procedure
 
@@ -130,7 +132,7 @@ Run everything from the repository root with the Python environment active
 1. Put the new model files and label files into a new folder under
    `dev/models/`, download the matching taxonomy CSV into it and the taxonomy
    JSON into `tools/data/` (`python tools/download_taxonomy_json.py`), and
-   copy the three scripts from the previous folder. Update the file names and
+   copy the two scripts from the previous folder. Update the file names and
    versions at the top of the build script. The model inputs are not tracked
    in git; the scripts are.
 2. Scan the geo-model: `python dev/models/<folder>/scan_geomodel_global.py`.
@@ -174,9 +176,10 @@ Run everything from the repository root with the Python environment active
   same tier floors, and a 0.99 correlation on shared species.
 - **A file name or version change.** The extracted model copy on the device is
   named `<file name>_v<version>`. Two different models must never share that
-  name. The model team released two different geo-models as V3.0.4; they are
-  told apart by file name (`…_10K-pruned_FP16.onnx` in June,
-  `…_10K_FP16_BNL.onnx` in November).
+  name. The one exception so far: the audio model was re-exported before the
+  first build named `BirdNET+_V3.0_Global_10K_FP16_BNL.onnx` was released, and
+  kept that name and version. Android replaces an extracted copy whose size
+  differs from the bundled file, so development installs picked it up.
 
 ## Standalone release
 
@@ -186,7 +189,7 @@ The build also packages the models for use outside the app, in
 | File | Content |
 | ---- | ------- |
 | `BirdNET+_V3.0_Global_10K_FP16_BNL.onnx` | The audio model, byte for byte the app's asset |
-| `BirdNET+_Geomodel_V3.0.4_Global_10K_FP16_BNL.onnx` | The geo-model, byte for byte the app's asset |
+| `BirdNET+_Geomodel_V3.0.5_Global_10K_FP16_BNL.onnx` | The geo-model, byte for byte the app's asset |
 | `BirdNET+_V3.0_Global_10K_Labels.csv` | One labels file for both models |
 | `README.md` | Model card, written from `RELEASE_README.md` next to the build script |
 | `MODEL_LICENSE.md` | Apache License 2.0 for the models and the labels |
@@ -212,11 +215,11 @@ integration tests of the app are also the tests of the release. Publishing
 ## What the build verifies
 
 - The pruned audio model against the source on random input for 3, 5, and 10
-  second windows (scores within 0.1, embedding cosine above 0.999).
+  second windows (scores and embeddings within 1e-5).
 - The pruned geo-model against the source at 512 random locations and weeks,
-  batched and one at a time. Each species score must equal the maximum over
-  its source rows to within one float32 ulp.
-- That ONNX Runtime folds every constant cast the build added.
+  batched and one at a time (within 1e-5).
+- That ONNX Runtime folds every constant cast of both models.
+- That the geo-model scan was made with the labels file the build reads.
 - That no label field contains the label delimiter, and that every score
   blacklist entry still names a class.
 

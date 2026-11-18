@@ -115,6 +115,7 @@ BN22334,Galago senegalensis,Northern Lesser Galago
 BN04014,Gallicolumba keayi,Negros Bleeding-heart
 BN22394,Geocrinia leai,Ticking Frog
 BN04177,Geotrygon leucometopia,White-fronted Quail-Dove
+BN04250,Gliciphila notabilis,White-bellied Honeyeater
 BN04259,Gorsachius goisagi,Japanese Night Heron
 BN22494,Gryllus lineaticeps,Variable Field Cricket
 BN04451,Halobaena caerulea,Blue Petrel
@@ -181,6 +182,7 @@ BN06743,Oenanthe dubia,Sombre Rock Chat
 BN06760,Oenanthe monacha,Hooded Wheatear
 BN24459,Oligoglena tibialis,Oligoglena tibialis
 BN06774,Onychognathus albirostris,White-billed Starling
+BN24525,Orchelimum erythrocephalum,Red-headed Meadow Katydid
 BN06811,Oreostruthus fuliginosus,Mountain Firetail
 BN24601,Otolemur garnettii,Small-eared Greater Galago
 BN06972,Oxyura leucocephala,White-headed Duck
@@ -218,7 +220,6 @@ BN25280,Prionacris erosa,Prionacris erosa
 BN08187,Procellaria cinerea,Grey Petrel
 BN25407,Propithecus verreauxi,Verreaux's Sifaka
 BN08209,Prosobonia parvirostris,Tuamotu Sandpiper
-BN08211,Prosopeia splendens,Crimson Shining Parrot
 BN25460,Pseudis platensis,Paraguayan Swimming Frog
 BN08347,Psittacella picta,Painted Tiger Parrot
 BN08350,Psittacula caniceps,Nicobar Parakeet
@@ -292,6 +293,7 @@ BN26672,Tympanistalna gastrica,Red-bellied Cicada
 BN10564,Tympanuchus pallidicinctus,Lesser Prairie Chicken
 BN10590,Tyto furcata,American Barn Owl
 BN10592,Tyto inexspectata,Minahasa Masked Owl
+BN10593,Tyto javanica,Eastern Barn Owl
 BN26720,Uromenus rugosicollis,Rough Saddle Bush-cricket
 BN10707,Vidua wilsoni,Wilson's Indigobird
 BN10711,Vini kuhlii,Kuhl's Lorikeet

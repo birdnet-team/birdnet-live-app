@@ -211,8 +211,8 @@ test/             # Tests mirroring lib/ structure
 
 BirdNET Live runs fully on-device, so the model assets are part of the checkout/build rather than downloaded by the app at runtime. The large `.onnx` files in `assets/models/` are tracked with Git LFS:
 
-- `BirdNET+_V3.0_Global_10K_FP16_BNL.onnx` — audio classifier (~67 MB)
-- `BirdNET+_Geomodel_V3.0.4_Global_10K_FP16_BNL.onnx` — location-based species model (~8 MB)
+- `BirdNET+_V3.0_Global_10K_FP16_BNL.onnx` — audio classifier (~68 MB)
+- `BirdNET+_Geomodel_V3.0.5_Global_10K_FP16_BNL.onnx` — location-based species model (~7 MB)
 
 "BNL" marks the BirdNET Live build of the BirdNET+ V3.0 models: pruned to the species both models share and rewritten for on-device speed. How these files are built is documented in [docs/developer/model-update.md](docs/developer/model-update.md).
 

@@ -28,11 +28,13 @@ V{GEO_VERSION} geo-model. BNL marks the BirdNET Live build:
 - **Human.** *Homo sapiens* ("Human") is a regular class of both models. Its
   purpose is to flag recordings that contain human voices, for example so an
   application can discard or blank that audio.
-- **Rewritten for on-device speed.** The audio graph computes its spectrogram
+- **Exported for on-device speed.** The audio graph computes its spectrogram
   with `MatMul` instead of the `STFT` operator and runs the convolutions in
-  half precision with full-precision activations. On x86-64, where ONNX
-  Runtime runs those convolutions in full precision, scores match a
-  full-precision build of the same weights; on arm64 they differ slightly.
+  half precision with full-precision activations; the pooling before the
+  classifier head is written so that it is also safe in half precision. On
+  x86-64, where ONNX Runtime runs those convolutions in full precision, scores
+  match a full-precision build of the same weights; on arm64 they differ
+  slightly.
 
 Names follow BirdNET+ Taxonomy v{TAXONOMY_VERSION}.
 
@@ -60,7 +62,7 @@ class.
   samples); 5 and 10 seconds also work.
 - Output `predictions`: float32, shape `[batch, {CLASSES}]`. These are
   probabilities; the sigmoid is part of the graph.
-- Output `embeddings_out`: float32, shape `[batch, 1280]`.
+- Output `embeddings`: float32, shape `[batch, 1280]`.
 
 ## Geo-model
 

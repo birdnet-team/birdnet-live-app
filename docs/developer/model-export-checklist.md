@@ -10,16 +10,22 @@ The preview model those measurements used
 about 53x real-time on that phone. Two graph-level changes, applied with
 scripts to that file, reached 84x with identical top-1 results.
 
-Since the November 2026 model update the app's own model build applies both
-changes (sections 1 and 2) to the delivered file:
-`dev/models/november2026/audio_graph_opt.py`, called from the build described
-in [Updating the Models](model-update.md). The rewrite refuses a graph whose
-front end differs from the one it knows, so a changed export fails the build
-instead of being rewritten wrongly. Baking both changes into the exporter is
-still the better place for them, and the rewrite can be dropped once an export
-arrives without an `STFT` node and with fp32 activations. The V3.0 model has
-the same architecture as the preview model, but the 84x figure has not been
-re-measured on a phone with it.
+The model-converter applies both changes (sections 1 and 2) since its
+November 2026 export fixes (model-converter #13, fixed in #15), together with
+an fp16-safe GeM pooling (model-converter #14). The app's model build, described
+in [Updating the Models](model-update.md), therefore only prunes the head; it
+stops if an export arrives with an `STFT` node or with fp16 arithmetic outside
+the convolutions. The first November 2026 export predated those fixes and was
+rewritten by the app's build instead (`audio_graph_opt.py`, in the git history
+of `dev/models/november2026/`). The exported V3.0 model, pruned to the app's
+species, runs at 81x real time on
+a Pixel 10 Pro with 5 threads and batch 4 (87x with 6 threads), the same as
+the app's own rewrite of the first export. What is left outside the
+convolutions is the SiLU activations (13%), layout transposes (9%), and
+casts (8%). Moving the depthwise convolutions to fp32, replacing the
+stride-2 `Pad` nodes with `auto_pad`, and disabling ONNX Runtime's QuickGelu
+fusion were each within measurement noise, so no further graph change is
+pending.
 
 ## 1. No `STFT` node
 
@@ -32,8 +38,7 @@ signal with `Gather`, multiply by the window, reshape each 2048-sample frame to
 32 x 64, and apply two complex DFT stages as `MatMul` with constant matrices
 plus a twiddle `Mul`. This is a textbook Cooley-Tukey split, runs on the
 multithreaded sgemm path, and is bit-exact against the `STFT` output. Cost at
-batch 4: about 9 ms. Reference implementation:
-`replace_stft_with_matmul_dft` in `dev/models/november2026/audio_graph_opt.py`.
+batch 4: about 9 ms.
 
 A separate "preprocessing" model with a spectrogram input would also work, but
 it pushes the framing problem into every platform of the app (Android, iOS,
@@ -50,8 +55,7 @@ themselves.
 Export the graph with fp32 activations and fp16 convolution weights, with an
 explicit `Cast` to fp16 on each convolution input and a `Cast` back to fp32 on
 its output. ORT then fuses the fp32 SiLU into a vectorized `QuickGelu` and keeps
-the convolutions on the fp16 kernels. Reference: `to_mixed_precision` in
-`dev/models/november2026/audio_graph_opt.py`.
+the convolutions on the fp16 kernels.
 
 Check the fp16 convolution outputs for overflow. The model-converter notes that
 some stage-5 expansion convolutions exceed the fp16 range before BatchNorm
@@ -72,4 +76,4 @@ repository.
 
 1. `python dev/optimize/inference_speed/compare_models.py <reference.onnx> <audio.wav> <candidate.onnx>` (on the `inference-speed` branch) reports top-1 agreement and score deltas on 100 windows.
 2. The standalone bench app in `dev/optimize/inference_speed/bench_app/` sweeps threads, batch sizes and execution providers on a device and can dump ORT profiles.
-3. Six intra-op threads and batch 4 were the best settings for the mixed-precision graph; the shipped model prefers 5 threads.
+3. Six intra-op threads and batch 4 are the fastest settings for the mixed-precision graph (87x against 81x with five on a Pixel 10 Pro); the app uses five threads for file analysis on Android.

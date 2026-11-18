@@ -13,7 +13,7 @@
       "inputName": "input",
       "outputNames": {
         "predictions": "predictions",
-        "embeddings": "embeddings_out"
+        "embeddings": "embeddings"
       }
     },
     "labels": {
@@ -54,11 +54,11 @@
     "classCount": 10064
   },
   "geoModel": {
-    "name": "BirdNET+ Geomodel V3.0.4 Global 10K FP16 BNL",
-    "version": "3.0.4",
+    "name": "BirdNET+ Geomodel V3.0.5 Global 10K FP16 BNL",
+    "version": "3.0.5",
     "description": "Location-based species prediction model pruned to the 10,048 species shared with the audio model.",
-    "modelFile": "BirdNET+_Geomodel_V3.0.4_Global_10K_FP16_BNL.onnx",
-    "labelsFile": "BirdNET+_Geomodel_V3.0.4_Global_10K_FP16_BNL_Labels.txt",
+    "modelFile": "BirdNET+_Geomodel_V3.0.5_Global_10K_FP16_BNL.onnx",
+    "labelsFile": "BirdNET+_Geomodel_V3.0.5_Global_10K_FP16_BNL_Labels.txt",
     "inputName": "input",
     "outputName": "probabilities",
     "speciesCount": 10048,
