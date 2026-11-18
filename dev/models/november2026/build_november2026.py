@@ -2,33 +2,33 @@
 """
 Build the app-ready November 2026 model set.
 
-Inputs (this folder):
-  BirdNET+_V3.0_Global_12K_FP16_pruned.onnx      audio classifier, 11,725 classes
-  BirdNET+_V3.0_Global_12K_Labels.csv            ix,birdnet_id,scientific_name,...
-  BirdNET+_Geomodel_V3.0.4_Global_14K_FP16.onnx  geo model, 14,082 species
-  BirdNET+_Geomodel_V3.0.4_Global_14K_Labels.txt id<TAB>scientific_name<TAB>common_name
-  BirdNET+_Geomodel_V3.0.4_Global_14K_species_above_3pct.tsv
-                                                 output of scan_geomodel_global.py
-  birdnet_taxonomy_0.5-Nov2026.csv               taxonomy export (naming authority)
+Inputs:
+  fp16-fix/BirdNET+_V3.0_Global_12K_FP16_pruned.onnx      audio classifier, 11,725 classes
+  fp16-fix/BirdNET+_V3.0_Global_12K_Labels.csv            ix,birdnet_id,scientific_name,...
+  fp16-fix/BirdNET+_Geomodel_V3.0.5_Global_14K_FP16.onnx  geo model, 14,057 species
+  fp16-fix/BirdNET+_Geomodel_V3.0.5_Global_14K_Labels.csv ix,birdnet_id,scientific_name,...
+  fp16-fix/BirdNET+_Geomodel_V3.0.5_Global_14K_species_above_3pct.tsv
+                                                          output of scan_geomodel_global.py
+  birdnet_taxonomy_0.5-Nov2026.csv                        taxonomy export (naming authority)
+
+`fp16-fix/` holds the re-export of the November 2026 models: the audio model
+with the fp16-safe GeM pooling, the MatMul DFT front end and mixed precision
+(model-converter #13 and #14, fixed in #15), and the V3.0.5 geo model. The first export of
+these models is in this folder and no longer used.
 
 Species selection:
-  1. Audio classes join the taxonomy by `birdnet_id` (stable between the audio
-     model and the taxonomy). Geo labels have no stable id and are resolved by
-     scientific name, then by the taxonomy's `scientific_name_aliases`.
+  1. Audio classes and geo classes both join the taxonomy by `birdnet_id`.
   2. A species is kept when the geo model predicts it at >= GEO_CUTOFF in at
      least one cell of the global 1-degree x 48-week scan.
-  3. Where the taxonomy lumps several geo labels into one species (for example
-     six swamphens under Porphyrio porphyrio), the geo model keeps all of those
-     rows and the species score is their maximum.
-  4. Non-animal sound classes (taxonomy `record_type == sound_class`) have no
+  3. Non-animal sound classes (taxonomy `record_type == sound_class`) have no
      range, so the geo model does not know them. They stay in the audio model
      and the app shows them only when the user opts in.
-  5. Homo sapiens ("Human") is kept like any other species the geo model
+  4. Homo sapiens ("Human") is kept like any other species the geo model
      knows. Its purpose is to flag recordings that contain human voices.
 
 Outputs:
-  assets/models/   pruned + speed-rewritten audio model, pruned geo model,
-                   label files, score blacklist, model_config.json
+  assets/models/   pruned audio model, pruned geo model, label files, score
+                   blacklist, model_config.json
   tools/           legacy_species.csv (species earlier releases could detect
                    that this model cannot) and sound_class_names.json (the
                    model's names of its sound classes), both consumed by
@@ -65,15 +65,13 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
 import numpy as np
 import onnx
-from onnx import TensorProto, helper, numpy_helper
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audio_graph_opt import optimize_audio_graph  # noqa: E402
+from onnx import TensorProto, numpy_helper
 
 for _stream in (sys.stdout, sys.stderr):
     _stream.reconfigure(encoding="utf-8", errors="replace")
@@ -84,20 +82,19 @@ SRC = Path(__file__).resolve().parent
 ASSETS = REPO / "assets" / "models"
 TOOLS = REPO / "tools"
 
-AUDIO_SRC = SRC / "BirdNET+_V3.0_Global_12K_FP16_pruned.onnx"
-AUDIO_LABELS_SRC = SRC / "BirdNET+_V3.0_Global_12K_Labels.csv"
-GEO_SRC = SRC / "BirdNET+_Geomodel_V3.0.4_Global_14K_FP16.onnx"
-GEO_LABELS_SRC = SRC / "BirdNET+_Geomodel_V3.0.4_Global_14K_Labels.txt"
-GEO_SCAN_SRC = SRC / "BirdNET+_Geomodel_V3.0.4_Global_14K_species_above_3pct.tsv"
+# The model inputs of the current build (the "fp16-fix" re-export).
+INPUTS = SRC / "fp16-fix"
+AUDIO_SRC = INPUTS / "BirdNET+_V3.0_Global_12K_FP16_pruned.onnx"
+AUDIO_LABELS_SRC = INPUTS / "BirdNET+_V3.0_Global_12K_Labels.csv"
+GEO_SRC = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_FP16.onnx"
+GEO_LABELS_SRC = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_Labels.csv"
+GEO_SCAN_SRC = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_species_above_3pct.tsv"
 TAX_SRC = SRC / "birdnet_taxonomy_0.5-Nov2026.csv"
 
 AUDIO_VERSION = "3.0"
-# The model team released two different geo models as V3.0.4 (June and
-# November 2026). They are told apart by the file name: the June build was
-# "..._10K-pruned_FP16.onnx", this one carries the BNL tag below.
-GEO_VERSION = "3.0.4"
+GEO_VERSION = "3.0.5"
 # Marks the model set as the BirdNET Live build: pruned to the species both
-# models share and rewritten for on-device speed.
+# models share.
 BUILD_TAG = "BNL"
 TAXONOMY_VERSION = "0.5-Nov2026"
 GEO_CUTOFF = 0.03
@@ -111,8 +108,11 @@ RELEASE_README_SRC = SRC / "RELEASE_README.md"
 MODEL_LICENSE_SRC = REPO / "MODEL_LICENSE"
 ACCEPTABLE_USE_SRC = REPO / "ACCEPTABLE_USE.md"
 
-AUDIO_HEAD_INITS = ["head.weight", "head.bias"]
-GEO_HEAD_INITS = ["model.species_head.head.3.weight", "model.species_head.head.3.bias"]
+# The classification heads. Both exports store the weight as fp16 behind a
+# constant Cast and the bias as fp32.
+AUDIO_HEAD_INITS = ["head.weight_stored_fp16", "head.bias"]
+GEO_HEAD_INITS = ["model.species_head.head.3.weight_fp16", "model.species_head.head.3.bias"]
+AUDIO_OUTPUTS = {"predictions": "predictions", "embeddings": "embeddings"}
 
 # Taxonomic classes the app has a per-class toggle for. A kept species must
 # belong to one of them; everything else that survives is a sound class.
@@ -149,24 +149,15 @@ def split_aliases(value: str | None) -> list[str]:
     return [p.strip() for p in (value or "").replace(";", "|").split("|") if p.strip()]
 
 
-def load_audio_labels() -> list[dict]:
-    with AUDIO_LABELS_SRC.open(encoding="utf-8-sig", newline="") as f:
+def load_labels(path: Path) -> list[dict]:
+    """A model team labels file: one row per class in output order."""
+    with path.open(encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
     if [int(r["ix"]) for r in rows] != list(range(len(rows))):
-        raise AssertionError("audio label ix column is not 0..N-1 in file order")
+        raise AssertionError(f"{path.name}: ix column is not 0..N-1 in file order")
+    if len({r["birdnet_id"] for r in rows}) != len(rows):
+        raise AssertionError(f"{path.name}: duplicate BirdNET IDs")
     return rows
-
-
-def load_geo_labels() -> list[dict]:
-    labels = []
-    with GEO_LABELS_SRC.open(encoding="utf-8") as f:
-        for idx, line in enumerate(f):
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) != 3:
-                raise AssertionError(f"geo label line {idx + 1} is not 3 tab fields")
-            labels.append({"idx": idx, "id": parts[0].strip(),
-                           "sci_name": parts[1].strip(), "com_name": parts[2].strip()})
-    return labels
 
 
 def load_geo_scan() -> dict[int, float]:
@@ -181,16 +172,16 @@ def load_geo_scan() -> dict[int, float]:
 # Species selection
 # ---------------------------------------------------------------------------
 
-def select_species(audio, geo, by_id, by_name, scan):
-    # Geo rows grouped by the taxon they resolve to.
-    geo_rows_by_taxon: dict[str, list[dict]] = {}
-    geo_unresolved = []
-    for g in geo:
-        taxon = by_name.get(g["sci_name"])
-        if taxon is None:
-            geo_unresolved.append(g["sci_name"])
-            continue
-        geo_rows_by_taxon.setdefault(taxon["birdnet_id"], []).append(g)
+def select_species(audio, geo, by_id, scan):
+    geo_by_id = {g["birdnet_id"]: g for g in geo}
+    geo_unresolved = sorted(i for i in geo_by_id if i not in by_id)
+    # The scan output names each row; it must be a scan of this labels file.
+    with GEO_SCAN_SRC.open(encoding="utf-8", newline="") as f:
+        for r in csv.DictReader(f, delimiter="\t"):
+            if geo[int(r["index"])]["birdnet_id"] != r["id"]:
+                raise AssertionError(
+                    f"{GEO_SCAN_SRC.name} row {r['index']} is {r['id']}, the labels say "
+                    f"{geo[int(r['index'])]['birdnet_id']}: rerun scan_geomodel_global.py")
 
     kept = []
     stats = {"sound_class": 0, "no_geo": 0, "below_cutoff": 0, "other_class": 0}
@@ -200,13 +191,13 @@ def select_species(audio, geo, by_id, by_name, scan):
             raise AssertionError(f"audio class {a['birdnet_id']} missing from taxonomy")
         if taxon["record_type"] == "sound_class":
             stats["sound_class"] += 1
-            kept.append({"audio": a, "taxon": taxon, "geo_rows": [], "sound_class": True})
+            kept.append({"audio": a, "taxon": taxon, "geo_ix": None, "sound_class": True})
             continue
-        rows = geo_rows_by_taxon.get(taxon["birdnet_id"])
-        if not rows:
+        g = geo_by_id.get(taxon["birdnet_id"])
+        if g is None:
             stats["no_geo"] += 1
             continue
-        if not any(r["idx"] in scan for r in rows):
+        if int(g["ix"]) not in scan:
             stats["below_cutoff"] += 1
             continue
         if taxon["taxon_group"] not in WILDLIFE_CLASSES:
@@ -214,27 +205,20 @@ def select_species(audio, geo, by_id, by_name, scan):
             raise AssertionError(
                 f"{taxon['scientific_name']} is in class {taxon['taxon_group']}, "
                 "which the app has no toggle for")
-        # The row carrying the canonical name leads; alias rows follow.
-        rows = sorted(rows, key=lambda r: (r["sci_name"] != taxon["scientific_name"], r["idx"]))
-        kept.append({"audio": a, "taxon": taxon, "geo_rows": rows, "sound_class": False})
+        kept.append({"audio": a, "taxon": taxon, "geo_ix": int(g["ix"]), "sound_class": False})
 
     kept.sort(key=lambda k: int(k["audio"]["ix"]))
     species = [k for k in kept if not k["sound_class"]]
     sounds = [k for k in kept if k["sound_class"]]
-    lumped = [k for k in species if len(k["geo_rows"]) > 1]
 
     print(f"  audio source classes           : {len(audio):,}")
     print(f"  geo source labels              : {len(geo):,}")
-    print(f"  geo labels not in taxonomy     : {len(geo_unresolved):,} {sorted(geo_unresolved)}")
+    print(f"  geo labels not in taxonomy     : {len(geo_unresolved):,} {geo_unresolved}")
     print(f"  geo rows >= {GEO_CUTOFF} globally      : {len(scan):,}")
     print(f"  audio: no geo counterpart      : {stats['no_geo']:,}")
     print(f"  audio: geo never >= cutoff     : {stats['below_cutoff']:,}")
     print(f"  kept species (audio and geo)   : {len(species):,}")
     print(f"  kept sound classes (audio only): {len(sounds):,}")
-    print(f"  species with lumped geo rows   : {len(lumped):,}")
-    for k in lumped:
-        print(f"      {k['taxon']['scientific_name']}: "
-              + ", ".join(r["sci_name"] for r in k["geo_rows"]))
 
     names = [k["taxon"]["scientific_name"] for k in kept]
     if len(set(names)) != len(names):
@@ -269,95 +253,73 @@ def update_dims(model, old_count: int, new_count: int) -> None:
                 np.where(arr == old_count, new_count, arr), name=init.name))
 
 
-def store_large_fp32_weights_as_fp16(model, min_elements: int = 1024) -> int:
-    """Keep large fp32 weights as fp16 on disk behind a constant Cast.
-
-    The source model ships every weight as fp16, so widening them to fp32 in
-    the file adds bytes without adding information. ONNX Runtime folds a Cast
-    of an initializer when the session is created, so there is no per-inference
-    cost; `verify` checks that the folded graph has no such Cast left.
-    """
+def check_export(model, outputs: list[str]) -> None:
+    """The properties of the export this build relies on instead of rewriting
+    the graph itself (see docs/developer/model-export-checklist.md)."""
     g = model.graph
-    count = 0
-    new_nodes = []
-    for init in list(g.initializer):
-        if init.data_type != TensorProto.FLOAT or init.name.startswith("fft_"):
+    if [o.name for o in g.output] != outputs:
+        raise AssertionError(f"unexpected outputs: {[o.name for o in g.output]}")
+    old_ops = {n.op_type for n in g.node} & {"STFT", "DFT", "Pow"}
+    if old_ops:
+        raise AssertionError(
+            f"the export still uses {sorted(old_ops)}: it predates the MatMul DFT "
+            "front end or the fp16-safe GeM pooling")
+    # Mixed precision: fp16 only inside convolutions, each between a Cast to
+    # fp16 and Casts back to fp32. The geo model has no convolutions and
+    # computes in fp32 throughout.
+    inits = {t.name: t.data_type for t in g.initializer}
+    producers = {o: n for n in g.node for o in n.output}
+    consumers: dict[str, list] = {}
+    for n in g.node:
+        for i in n.input:
+            consumers.setdefault(i, []).append(n)
+
+    def cast_to(n) -> int | None:
+        if n is None or n.op_type != "Cast":
+            return None
+        return next(a.i for a in n.attribute if a.name == "to")
+
+    fp16_convs = 0
+    for n in g.node:
+        if n.op_type == "Cast" or not any(inits.get(i) == TensorProto.FLOAT16 for i in n.input):
             continue
-        arr = numpy_helper.to_array(init)
-        if arr.size < min_elements:
-            continue
-        half = arr.astype(np.float16)
-        if not np.array_equal(half.astype(np.float32), arr):
-            raise AssertionError(f"{init.name} is not exactly representable in fp16")
-        stored = f"{init.name}_fp16"
-        for n in g.node:
-            for i, name in enumerate(n.input):
-                if name == init.name:
-                    n.input[i] = f"{init.name}_fp32"
-        new_nodes.append(helper.make_node(
-            "Cast", [stored], [f"{init.name}_fp32"], to=TensorProto.FLOAT,
-            name=f"{init.name}_to_fp32"))
-        init.CopyFrom(numpy_helper.from_array(half, stored))
-        count += 1
-    nodes = new_nodes + list(g.node)
-    del g.node[:]
-    g.node.extend(nodes)
-    return count
+        users = consumers.get(n.output[0], [])
+        if (n.op_type != "Conv"
+                or cast_to(producers.get(n.input[0])) != TensorProto.FLOAT16
+                or not users
+                or any(cast_to(u) != TensorProto.FLOAT for u in users)):
+            raise AssertionError(f"{n.op_type} '{n.name}' computes in fp16 outside a cast pair")
+        fp16_convs += 1
+    if any(n.op_type == "Conv" for n in g.node) and fp16_convs == 0:
+        raise AssertionError("no convolution runs in fp16: the export is not mixed precision")
 
 
 def build_audio_model(out_path: Path, indices: np.ndarray, old_count: int) -> None:
     model = onnx.load(str(AUDIO_SRC))
+    check_export(model, list(AUDIO_OUTPUTS.values()))
     for name in AUDIO_HEAD_INITS:
         prune_init(model, name, indices)
     update_dims(model, old_count, len(indices))
-    fp16_convs = optimize_audio_graph(model)
-    stored = store_large_fp32_weights_as_fp16(model)
     onnx.checker.check_model(model)
     onnx.save(model, str(out_path))
+    fp16 = {t.name for t in model.graph.initializer if t.data_type == TensorProto.FLOAT16}
+    fp16_convs = sum(1 for n in model.graph.node if n.op_type == "Conv" and n.input[1] in fp16)
     print(f"    {out_path.name}: {old_count:,} -> {len(indices):,} classes, "
-          f"{fp16_convs} fp16 convolutions, {stored} fp16-stored weights, "
-          f"{out_path.stat().st_size / 1e6:.1f} MB")
+          f"{fp16_convs} fp16 convolutions, {out_path.stat().st_size / 1e6:.1f} MB")
 
 
 def build_geo_model(out_path: Path, species: list[dict], old_count: int) -> None:
-    """Prune the geo head and fold lumped rows into one output per species."""
-    source_rows = sorted({r["idx"] for k in species for r in k["geo_rows"]})
-    position = {idx: pos for pos, idx in enumerate(source_rows)}
+    """Prune the geo head to the kept species, in audio label order."""
     model = onnx.load(str(GEO_SRC))
-    g = model.graph
+    check_export(model, ["probabilities"])
+    rows = np.asarray([k["geo_ix"] for k in species], dtype=np.int64)
     for name in GEO_HEAD_INITS:
-        prune_init(model, name, np.asarray(source_rows, dtype=np.int64))
-    update_dims(model, old_count, len(source_rows))
-
-    out = g.output[0]
-    out_name = out.name
-    rows_name = f"{out_name}_rows"
-    producer = next(n for n in g.node if out_name in n.output)
-    producer.output[list(producer.output).index(out_name)] = rows_name
-
-    width = max(len(k["geo_rows"]) for k in species)
-    gathered = []
-    for level in range(width):
-        idx = np.asarray(
-            [position[k["geo_rows"][min(level, len(k["geo_rows"]) - 1)]["idx"]] for k in species],
-            dtype=np.int64)
-        g.initializer.append(numpy_helper.from_array(idx, f"species_rows_{level}"))
-        name = f"{out_name}_level_{level}"
-        g.node.append(helper.make_node(
-            "Gather", [rows_name, f"species_rows_{level}"], [name], axis=1,
-            name=f"species_gather_{level}"))
-        gathered.append(name)
-    if width == 1:
-        g.node.append(helper.make_node("Identity", gathered, [out_name], name="species_max"))
-    else:
-        g.node.append(helper.make_node("Max", gathered, [out_name], name="species_max"))
-    for dim in out.type.tensor_type.shape.dim:
-        if dim.dim_value == len(source_rows):
-            dim.dim_value = len(species)
+        prune_init(model, name, rows)
+    update_dims(model, old_count, len(species))
     onnx.checker.check_model(model)
     onnx.save(model, str(out_path))
-    print(f"    {out_path.name}: {old_count:,} -> {len(species):,} species "
-          f"from {len(source_rows):,} rows, {out_path.stat().st_size / 1e6:.1f} MB")
+    print(f"    {out_path.name}: {old_count:,} -> {len(species):,} species, "
+          f"{out_path.stat().st_size / 1e6:.1f} MB")
 
 
 # ---------------------------------------------------------------------------
@@ -693,7 +655,7 @@ def write_config(old_cfg: dict, names: dict, n_species: int, n_sounds: int) -> N
     audio["onnx"] = {
         "modelFile": names["audio"],
         "inputName": "input",
-        "outputNames": {"predictions": "predictions", "embeddings": "embeddings_out"},
+        "outputNames": dict(AUDIO_OUTPUTS),
     }
     audio["labels"] = {
         "file": names["audio_labels"],
@@ -731,73 +693,84 @@ def write_config(old_cfg: dict, names: dict, n_species: int, n_sounds: int) -> N
 # Verification
 # ---------------------------------------------------------------------------
 
+def unfolded_constant_casts(path: Path) -> list[str]:
+    """The model's casts of an initializer that ONNX Runtime leaves in the
+    graph it runs.
+
+    Both models store weights as fp16 behind a constant Cast to fp32. That is
+    free only if the runtime folds the cast when it creates the session.
+    """
+    import onnxruntime as ort
+
+    graph = onnx.load(str(path)).graph
+    inits = {t.name for t in graph.initializer}
+    constant_casts = {n.name for n in graph.node if n.op_type == "Cast" and n.input[0] in inits}
+    if not constant_casts:
+        raise AssertionError(f"{path.name} has no fp16-stored weights")
+    with tempfile.TemporaryDirectory() as tmp:
+        so = ort.SessionOptions()
+        so.log_severity_level = 3
+        so.optimized_model_filepath = str(Path(tmp) / "optimized.onnx")
+        ort.InferenceSession(str(path), so, providers=["CPUExecutionProvider"])
+        optimized = onnx.load(so.optimized_model_filepath)
+    # (On x86 ORT adds casts of its own around fp16 convolutions, which it has
+    # no kernel for there; only the casts the model came with count.)
+    return [n.name for n in optimized.graph.node
+            if n.op_type == "Cast" and n.name in constant_casts]
+
+
 def verify(audio_out: Path, geo_out: Path, kept: list[dict], species: list[dict]) -> None:
     import onnxruntime as ort
 
     print("\nVerifying against the source models")
     rng = np.random.default_rng(0)
+    outputs = list(AUDIO_OUTPUTS.values())
 
-    # Audio: the rewritten graph computes in fp32 where the source computes in
-    # fp16, so scores differ slightly. Real audio parity is checked separately
-    # (dev/run_onnx_reference.py); here random input must stay within 0.1.
+    # Pruning the head changes how the Gemm kernel blocks its rows, which
+    # moves the odd logit by one float32 ulp; anything larger is a bug.
+    tolerance = 1e-5
+
     src = ort.InferenceSession(str(AUDIO_SRC), providers=["CPUExecutionProvider"])
     new = ort.InferenceSession(str(audio_out), providers=["CPUExecutionProvider"])
     old_idx = np.asarray([int(k["audio"]["ix"]) for k in kept])
     for samples in (96000, 160000, 320000):
         x = (rng.standard_normal((2, samples)) * 0.05).astype(np.float32)
-        ps, es = src.run(["predictions", "embeddings_out"], {"input": x})
-        pn, en = new.run(["predictions", "embeddings_out"], {"input": x})
+        ps, es = src.run(outputs, {"input": x})
+        pn, en = new.run(outputs, {"input": x})
         diff = float(np.abs(ps[:, old_idx] - pn).max())
-        cos = float(min(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) for a, b in zip(es, en)))
+        emb = float(np.abs(es - en).max())
         print(f"  audio {samples // 32000:>2}s: {ps.shape} -> {pn.shape}, "
-              f"max|diff|={diff:.2e}, min embedding cosine={cos:.6f}")
-        if pn.shape != (2, len(kept)) or diff > 0.1 or cos < 0.999:
+              f"max|diff|={diff:.2e}, embeddings max|diff|={emb:.2e}")
+        if pn.shape != (2, len(kept)) or diff > tolerance or emb > tolerance:
             raise AssertionError("audio verification failed")
 
-    # Constant casts must be folded away when the session is created.
-    import tempfile
-    with tempfile.TemporaryDirectory() as tmp:
-        so = ort.SessionOptions()
-        so.optimized_model_filepath = str(Path(tmp) / "optimized.onnx")
-        ort.InferenceSession(str(audio_out), so, providers=["CPUExecutionProvider"])
-        optimized = onnx.load(so.optimized_model_filepath)
-        # (On x86 ORT adds casts of its own around fp16 convolutions, which it
-        # has no kernel for there; only the casts this script added count.)
-        leftover = [n.name for n in optimized.graph.node
-                    if n.op_type == "Cast" and n.name.endswith("_to_fp32")]
-        print(f"  audio: constant casts left after ORT folding: {len(leftover)}")
+    for path in (audio_out, geo_out):
+        leftover = unfolded_constant_casts(path)
+        print(f"  {path.name}: constant casts left after ORT folding: {len(leftover)}")
         if leftover:
             raise AssertionError(f"ORT did not fold constant casts: {leftover[:5]}")
 
-    # Geo: each species output is the max over its source rows. Pruning the
-    # head changes how the Gemm kernel blocks its rows, which moves the odd
-    # output by one float32 ulp (<= 1.2e-7 measured); anything larger is a bug.
-    geo_tolerance = 1e-6
     src = ort.InferenceSession(str(GEO_SRC), providers=["CPUExecutionProvider"])
     new = ort.InferenceSession(str(geo_out), providers=["CPUExecutionProvider"])
+    rows = [k["geo_ix"] for k in species]
     lat = rng.uniform(-90, 90, 512)
     lon = rng.uniform(-180, 180, 512)
     week = rng.integers(1, 49, 512)
     x = np.stack([lat, lon, week], axis=1).astype(np.float32)
     ps = src.run(["probabilities"], {"input": x})[0]
     pn = new.run(["probabilities"], {"input": x})[0]
-    want = np.stack([ps[:, [r["idx"] for r in k["geo_rows"]]].max(axis=1) for k in species], axis=1)
-    diff = float(np.abs(want - pn).max())
+    diff = float(np.abs(ps[:, rows] - pn).max())
     print(f"  geo: {ps.shape} -> {pn.shape}, max|diff|={diff:.2e}")
-    if pn.shape != (512, len(species)) or diff > geo_tolerance:
+    if pn.shape != (512, len(species)) or diff > tolerance:
         raise AssertionError("geo verification failed")
-    # The app runs the geo model one location at a time. (Batched and single
-    # runs of the source model already differ by ~2e-5, so each is compared
-    # against the source at the same batch size.)
+    # The app runs the geo model one location at a time.
     worst = 0.0
     for i in range(64):
         single_src = src.run(["probabilities"], {"input": x[i:i + 1]})[0]
         single_new = new.run(["probabilities"], {"input": x[i:i + 1]})[0]
-        want = np.stack(
-            [single_src[:, [r["idx"] for r in k["geo_rows"]]].max(axis=1) for k in species], axis=1)
-        worst = max(worst, float(np.abs(want - single_new).max()))
+        worst = max(worst, float(np.abs(single_src[:, rows] - single_new).max()))
     print(f"  geo: batch-1, 64 locations, max|diff|={worst:.2e}")
-    if worst > geo_tolerance:
+    if worst > tolerance:
         raise AssertionError("geo batch-1 verification failed")
 
 
@@ -812,12 +785,12 @@ def main() -> None:
 
     print("November 2026 model build")
     _, by_id, by_name = load_taxonomy()
-    audio = load_audio_labels()
-    geo = load_geo_labels()
+    audio = load_labels(AUDIO_LABELS_SRC)
+    geo = load_labels(GEO_LABELS_SRC)
     scan = load_geo_scan()
 
     print("\nSpecies selection")
-    species, sounds = select_species(audio, geo, by_id, by_name, scan)
+    species, sounds = select_species(audio, geo, by_id, scan)
     kept = sorted(species + sounds, key=lambda k: int(k["audio"]["ix"]))
 
     size = f"{round(len(species) / 1000)}K"
@@ -848,8 +821,6 @@ def main() -> None:
         old_cfg["geoModel"]["modelFile"],
         old_cfg["geoModel"]["labelsFile"],
     } - set(names.values())
-    # The old blacklist is read before anything is written; keep its text in
-    # case the new one takes the same name.
 
     print("\nScore blacklist")
     carry_blacklist(old_cfg, kept, by_name, ASSETS / names["blacklist"])

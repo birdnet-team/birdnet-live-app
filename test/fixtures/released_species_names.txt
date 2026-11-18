@@ -5293,6 +5293,7 @@ Luscinia luscinia
 Luscinia megarhynchos
 Luscinia phaenicuroides
 Luscinia svecica
+Lutra cinerea
 Lutra lutra
 Lutra perspicillata
 Lybius chaplini
@@ -9703,6 +9704,7 @@ Tinamotis ingoufi
 Tinamotis pentlandii
 Tinamus guttatus
 Tinamus major
+Tinamus osgoodi
 Tinamus solitarius
 Tinamus tao
 Tityra cayana

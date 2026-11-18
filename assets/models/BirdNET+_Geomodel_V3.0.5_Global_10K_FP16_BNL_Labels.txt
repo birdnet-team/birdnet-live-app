@@ -359,6 +359,7 @@ BN00369	Amazona vinacea	Vinaceous-breasted Amazon
 BN00370	Amazona viridigenalis	Red-crowned Amazon
 BN00372	Amazona xantholora	Yucatan Amazon
 BN00373	Amazonetta brasiliensis	Brazilian Teal
+BN23530	Lutra cinerea	Asian Small-clawed Otter
 BN00374	Amblycercus holosericeus	Yellow-billed Cacique
 BN20225	Amblycorypha oblongifolia	Oblong-winged Katydid
 BN20228	Amblycorypha rotundifolia	Rattler Round-winged Katydid
@@ -4079,7 +4080,6 @@ BN04248	Glaucis hirsutus	Rufous-breasted Hermit
 BN22408	Glaucomys sabrinus	Northern Flying Squirrel
 BN22409	Glaucomys volans	Southern Flying Squirrel
 BN04249	Gliciphila melanops	Tawny-crowned Honeyeater
-BN04250	Gliciphila notabilis	White-bellied Honeyeater
 BN04251	Gliciphila undulata	Barred Honeyeater
 BN22413	Glis glis	European Fat Dormouse
 BN22416	Globicephala melas	Long-finned Pilot Whale
@@ -6441,7 +6441,6 @@ BN06793	Opisthocomus hoazin	Hoatzin
 BN06794	Opisthoprora euryptera	Mountain Avocetbill
 BN06795	Oporornis agilis	Connecticut Warbler
 BN24518	Orchelimum agile	Agile Meadow Katydid
-BN24525	Orchelimum erythrocephalum	Red-headed Meadow Katydid
 BN24529	Orchelimum minor	Lesser Pine Katydid
 BN24530	Orchelimum nigripes	Black-legged Meadow Katydid
 BN24531	Orchelimum pulchellum	Handsome Meadow Katydid
@@ -7720,6 +7719,7 @@ BN08207	Promerops cafer	Cape Sugarbird
 BN08208	Promerops gurneyi	Gurney's Sugarbird
 BN25403	Propithecus coquereli	Coquerel's Sifaka
 BN08210	Prosopeia personata	Masked Shining Parrot
+BN08211	Prosopeia splendens	Crimson Shining Parrot
 BN08212	Prosopeia tabuensis	Maroon Shining Parrot
 BN08213	Prosthemadera novaeseelandiae	Tui
 BN08214	Protonotaria citrea	Prothonotary Warbler
@@ -9381,6 +9381,7 @@ BN10152	Tinamotis ingoufi	Patagonian Tinamou
 BN10153	Tinamotis pentlandii	Puna Tinamou
 BN10154	Tinamus guttatus	White-throated Tinamou
 BN10155	Tinamus major	Great Tinamou
+BN10156	Tinamus osgoodi	Black Tinamou
 BN10157	Tinamus solitarius	Solitary Tinamou
 BN10158	Tinamus tao	Grey Tinamou
 BN10159	Tityra cayana	Black-tailed Tityra
@@ -9723,7 +9724,6 @@ BN10585	Tyrannus vociferans	Cassin's Kingbird
 BN10586	Tyto alba	Western Barn Owl
 BN10589	Tyto deroepstorffi	Andaman Masked Owl
 BN10591	Tyto glaucops	Ashy-faced Owl
-BN10593	Tyto javanica	Eastern Barn Owl
 BN10594	Tyto longimembris	Eastern Grass Owl
 BN10595	Tyto novaehollandiae	Australasian Masked Owl
 BN10598	Tyto tenebricosa	Sooty Owl

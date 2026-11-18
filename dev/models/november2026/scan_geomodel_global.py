@@ -14,7 +14,7 @@ Run from the repo root (about 10 minutes on a desktop CPU):
 
     python dev/models/november2026/scan_geomodel_global.py
 
-Default inputs are the November 2026 geomodel source files in this folder.
+Default inputs are the November 2026 geomodel source files in `fp16-fix/`.
 """
 
 from __future__ import annotations
@@ -28,30 +28,34 @@ import numpy as np
 import onnxruntime as ort
 
 
-HERE = Path(__file__).resolve().parent
-DEFAULT_MODEL = HERE / "BirdNET+_Geomodel_V3.0.4_Global_14K_FP16.onnx"
-DEFAULT_LABELS = HERE / "BirdNET+_Geomodel_V3.0.4_Global_14K_Labels.txt"
-DEFAULT_OUT = HERE / "BirdNET+_Geomodel_V3.0.4_Global_14K_species_above_3pct.tsv"
-DEFAULT_SPECIES_OUT = HERE / "BirdNET+_Geomodel_V3.0.4_Global_14K_species_above_3pct_species.txt"
+# The model inputs of the current build (the "fp16-fix" re-export).
+INPUTS = Path(__file__).resolve().parent / "fp16-fix"
+DEFAULT_MODEL = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_FP16.onnx"
+DEFAULT_LABELS = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_Labels.csv"
+DEFAULT_OUT = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_species_above_3pct.tsv"
+DEFAULT_SPECIES_OUT = INPUTS / "BirdNET+_Geomodel_V3.0.5_Global_14K_species_above_3pct_species.txt"
+
+csv.field_size_limit(10**9)
 
 
 def load_geo_labels(path: Path) -> list[dict[str, str]]:
-    labels: list[dict[str, str]] = []
-    with path.open(encoding="utf-8") as f:
-        for idx, line in enumerate(f):
-            line = line.rstrip("\n")
-            if not line.strip():
-                continue
-            parts = line.split("\t")
-            labels.append(
-                {
-                    "index": str(idx),
-                    "id": parts[0].strip(),
-                    "scientific_name": parts[1].strip(),
-                    "common_name": parts[2].strip() if len(parts) > 2 else parts[1].strip(),
-                }
-            )
-    return labels
+    """Read the geo-model labels CSV (`ix,birdnet_id,scientific_name,...`).
+
+    `id` in the output is the BirdNET ID, which the build joins on.
+    """
+    with path.open(encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f))
+    if [int(r["ix"]) for r in rows] != list(range(len(rows))):
+        raise ValueError("geo label ix column is not 0..N-1 in file order")
+    return [
+        {
+            "index": r["ix"],
+            "id": r["birdnet_id"],
+            "scientific_name": r["scientific_name"],
+            "common_name": r["common_name"] or r["scientific_name"],
+        }
+        for r in rows
+    ]
 
 
 def iter_grid_batches(
