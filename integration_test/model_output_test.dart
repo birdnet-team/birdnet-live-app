@@ -9,7 +9,8 @@
 // from test fixtures, runs each window through the real ONNX model on device,
 // and compares the output against the Python ground truth.
 //
-// Run:
+// Run (emulator or desktop only; `flutter test` uninstalls the app afterwards,
+// see "Device Testing" in AGENTS.md for phones that carry real sessions):
 //   flutter test integration_test/model_output_test.dart -d <device_id>
 // =============================================================================
 
@@ -17,6 +18,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -129,6 +131,8 @@ void main() {
     const confidenceTolerance = 0.05;
 
     final failures = <String>[];
+    var comparedDetections = 0;
+    var maxConfidenceDiff = 0.0;
 
     for (final window in fixtureWindows) {
       final fixtureIndex = window['fixtureIndex'] as int;
@@ -191,6 +195,8 @@ void main() {
 
         // Check confidence within tolerance.
         final confDiff = (actual.confidence - expectedConf).abs();
+        comparedDetections++;
+        if (confDiff > maxConfidenceDiff) maxConfidenceDiff = confDiff;
         if (confDiff > confidenceTolerance) {
           failures.add(
             'Window $windowIndex, det $i ($expectedName): '
@@ -202,6 +208,13 @@ void main() {
         }
       }
     }
+
+    // How far this device is from the desktop reference; on arm64 the
+    // convolutions really run in half precision.
+    debugPrint(
+      '[model_output_test] $comparedDetections detections compared, largest '
+      'confidence difference ${maxConfidenceDiff.toStringAsFixed(5)}',
+    );
 
     if (failures.isNotEmpty) {
       fail('Model output validation failed:\n\n${failures.join('\n\n')}');
