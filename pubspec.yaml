@@ -50,7 +50,7 @@ dependencies:
   # as a backstop; before that, a missing sharePositionOrigin made the
   # native share sheet refuse to present at all. See issue #203.
   share_plus: ^13.3.0
-  package_info_plus: ^10.1.0
+  package_info_plus: ^10.2.2
 
   # Export
   archive: ^4.0.2
