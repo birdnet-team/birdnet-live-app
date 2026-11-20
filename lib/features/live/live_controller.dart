@@ -459,6 +459,7 @@ class LiveController {
         confidenceThreshold: confidenceThreshold,
         inferenceRate: inferenceRate,
         speciesFilterMode: speciesFilterMode,
+        geoThreshold: geoThreshold,
         sensitivity: sensitivity,
         ignoreBirds: ignoreSettings.ignoreBirds,
         ignoreMammals: ignoreSettings.ignoreMammals,
@@ -484,7 +485,7 @@ class LiveController {
             : 0,
         recordingFormat: recordingFormat,
         targetDurationSeconds: targetDurationSeconds,
-      ),
+      ).withGeoScoresAvailable(geoScores != null),
     );
     final startingSession = _session!;
     _fixedLocationForDetections = fixedLocationForDetections;
@@ -752,6 +753,11 @@ class LiveController {
   }) {
     _isolate.setIgnoredSpeciesNames(scientificNames);
     _geoScores = geoScores;
+    // Scores that arrive mid-session switch the location filter on.
+    final session = _session;
+    if (session != null && geoScores != null) {
+      session.settings = session.settings.withGeoScoresAvailable(true);
+    }
   }
 
   /// Update the score-pooling window count and forward to the inference

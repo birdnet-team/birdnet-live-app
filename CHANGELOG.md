@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Export metadata no longer reports a location filter that never ran: without a location or geo-model scores, `speciesFilterMode` is `off` and the selected mode is kept as `requestedSpeciesFilterMode`.
+- Export metadata now includes the location filter threshold and the **Ignore species** and sound class choices of the session, lists the export options of that share or upload instead of the saved defaults, and leaves out the clip context for sessions without detection clips.
+- A resumed Survey keeps the species filter it was started with instead of switching to the current setting, so its metadata describes the whole Survey.
 - Model updates no longer leave old model files behind: extracted copies of models the app no longer ships are deleted from app storage, freeing about 80 MB on Android after this update.
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
 - A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.

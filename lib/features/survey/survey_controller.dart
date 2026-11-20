@@ -455,42 +455,46 @@ class SurveyController {
         startTime: DateTime.now(),
         type: SessionType.survey,
         settings:
-            settingsSnapshot ??
-            SessionSettings(
-              windowDuration: windowDuration,
-              confidenceThreshold: confidenceThreshold,
-              inferenceRate: inferenceRate,
-              speciesFilterMode: speciesFilterMode,
-              clipContextSeconds: clipContextSeconds,
-              sensitivity: sensitivity,
-              ignoreBirds: ignoreSettings.ignoreBirds,
-              ignoreMammals: ignoreSettings.ignoreMammals,
-              ignoreAmphibians: ignoreSettings.ignoreAmphibians,
-              ignoreInsects: ignoreSettings.ignoreInsects,
-              includeSoundClasses: ignoreSettings.includeSoundClasses,
-              ignoreCommonGeoScoreCutoff: ignoreSettings.commonGeoScoreCutoff,
-              poolingMode: poolingMode,
-              poolingWindows: poolingWindows,
-              poolingMaxAgeSeconds: poolingMaxAgeSeconds,
-              poolingAlpha: advancedPooling.alpha,
-              poolingMinSupportWindows: advancedPooling.minSupportWindows,
-              poolingSupportThresholdFraction:
-                  advancedPooling.supportThresholdFraction,
-              poolingSupportThresholdFloor:
-                  advancedPooling.supportThresholdFloor,
-              poolingVeryHighImmediateThreshold:
-                  advancedPooling.veryHighImmediateThreshold,
-              gainLinear: gainLinear,
-              highPassHz: highPassHz,
-              recordingMode: recordingMode.name,
-              recordingFormat: recordingFormat,
-              detectionSamplingMode: samplingMode.name,
-              topNPerSpecies: topNPerSpecies,
-              gpsIntervalSeconds: gpsIntervalSeconds,
-              maxDurationHours: maxDurationHours,
-              autoStopBatteryPercent: autoStopBattery,
-              backgroundGps: backgroundGps,
-            ),
+            (settingsSnapshot ??
+                    SessionSettings(
+                      windowDuration: windowDuration,
+                      confidenceThreshold: confidenceThreshold,
+                      inferenceRate: inferenceRate,
+                      speciesFilterMode: speciesFilterMode,
+                      geoThreshold: geoThreshold,
+                      clipContextSeconds: clipContextSeconds,
+                      sensitivity: sensitivity,
+                      ignoreBirds: ignoreSettings.ignoreBirds,
+                      ignoreMammals: ignoreSettings.ignoreMammals,
+                      ignoreAmphibians: ignoreSettings.ignoreAmphibians,
+                      ignoreInsects: ignoreSettings.ignoreInsects,
+                      includeSoundClasses: ignoreSettings.includeSoundClasses,
+                      ignoreCommonGeoScoreCutoff:
+                          ignoreSettings.commonGeoScoreCutoff,
+                      poolingMode: poolingMode,
+                      poolingWindows: poolingWindows,
+                      poolingMaxAgeSeconds: poolingMaxAgeSeconds,
+                      poolingAlpha: advancedPooling.alpha,
+                      poolingMinSupportWindows:
+                          advancedPooling.minSupportWindows,
+                      poolingSupportThresholdFraction:
+                          advancedPooling.supportThresholdFraction,
+                      poolingSupportThresholdFloor:
+                          advancedPooling.supportThresholdFloor,
+                      poolingVeryHighImmediateThreshold:
+                          advancedPooling.veryHighImmediateThreshold,
+                      gainLinear: gainLinear,
+                      highPassHz: highPassHz,
+                      recordingMode: recordingMode.name,
+                      recordingFormat: recordingFormat,
+                      detectionSamplingMode: samplingMode.name,
+                      topNPerSpecies: topNPerSpecies,
+                      gpsIntervalSeconds: gpsIntervalSeconds,
+                      maxDurationHours: maxDurationHours,
+                      autoStopBatteryPercent: autoStopBattery,
+                      backgroundGps: backgroundGps,
+                    ))
+                .withGeoScoresAvailable(geoScores != null),
         transectId: transectId,
         observerName: observerName,
         customName: customName,
@@ -653,7 +657,6 @@ class SurveyController {
     required int windowDuration,
     required double inferenceRate,
     required int confidenceThreshold,
-    required String speciesFilterMode,
     required RecordingMode recordingMode,
     String recordingFormat = 'flac',
     Map<String, double>? geoScores,
@@ -688,8 +691,17 @@ class SurveyController {
       }
       if (await _cancelStartIfRequested()) return;
 
-      // Restore the existing session.
+      // Restore the existing session. It keeps the filter it was started
+      // with, like its recording mode, so one snapshot describes all of it;
+      // geo scores that are available now switch a location filter on that
+      // could not run before.
       _session = existingSession;
+      final resumed = existingSession.settings;
+      final resumedFilterMode =
+          resumed.requestedSpeciesFilterMode ?? resumed.speciesFilterMode;
+      if (geoScores != null) {
+        existingSession.settings = resumed.withGeoScoresAvailable(true);
+      }
 
       // Restore in-memory detection list (newest first).
       _sessionDetections.clear();
@@ -719,9 +731,9 @@ class SurveyController {
       }
 
       _geoScores = geoScores;
-      _geoThreshold = geoThreshold;
+      _geoThreshold = resumed.geoThreshold ?? geoThreshold;
       _geoModelSpeciesNames = geoModelSpeciesNames;
-      _filterMode = switch (speciesFilterMode) {
+      _filterMode = switch (resumedFilterMode) {
         'geoExclude' => SpeciesFilterMode.geoExclude,
         'geoAdaptive' => SpeciesFilterMode.geoAdaptive,
         'geoMerge' => SpeciesFilterMode.geoMerge,
@@ -1165,6 +1177,11 @@ class SurveyController {
   }) {
     _isolate.setIgnoredSpeciesNames(scientificNames);
     _geoScores = geoScores;
+    // Scores that arrive mid-session switch the location filter on.
+    final session = _session;
+    if (session != null && geoScores != null) {
+      session.settings = session.settings.withGeoScoresAvailable(true);
+    }
   }
 
   /// Update the score-pooling window count and forward to the inference

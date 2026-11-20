@@ -31,6 +31,8 @@ class SessionSettings {
     required this.confidenceThreshold,
     required this.inferenceRate,
     required this.speciesFilterMode,
+    this.requestedSpeciesFilterMode,
+    this.geoThreshold,
     this.clipContextSeconds = 0,
     this.alertMode = 0,
     this.alertRareThreshold = 0.05,
@@ -77,9 +79,26 @@ class SessionSettings {
   /// Inference rate in Hz.
   final double inferenceRate;
 
-  /// Species filter mode ('off', 'geoExclude', 'geoAdaptive', 'geoMerge',
-  /// 'customList').
+  /// Species filter mode that actually ran ('off', 'geoExclude',
+  /// 'geoAdaptive', 'geoMerge', 'customList').
+  ///
+  /// A location filter needs geo-model scores. Without them (no location, or
+  /// the geo-model failed to load) nothing is filtered, and this is 'off'
+  /// whatever the setting was; see [withGeoScoresAvailable].
   final String speciesFilterMode;
+
+  /// The filter mode the user had selected, when it could not run and
+  /// [speciesFilterMode] is therefore 'off'. `null` when the selected mode ran
+  /// as is, and for sessions saved before this field existed.
+  final String? requestedSpeciesFilterMode;
+
+  /// Minimum geo-model score the 'geoExclude' filter was set to. `null` for
+  /// sessions saved before this field existed.
+  final double? geoThreshold;
+
+  /// Whether [mode] is one of the filters that need geo-model scores.
+  static bool isGeoFilterMode(String mode) =>
+      mode == 'geoExclude' || mode == 'geoAdaptive' || mode == 'geoMerge';
 
   /// Seconds of audio captured before AND after each detection window when
   /// per-detection clips are recorded (survey mode and similar). The clip
@@ -218,6 +237,8 @@ class SessionSettings {
       confidenceThreshold: json['confidenceThreshold'] as int? ?? 25,
       inferenceRate: (json['inferenceRate'] as num?)?.toDouble() ?? 1.0,
       speciesFilterMode: json['speciesFilterMode'] as String? ?? 'off',
+      requestedSpeciesFilterMode: json['requestedSpeciesFilterMode'] as String?,
+      geoThreshold: (json['geoThreshold'] as num?)?.toDouble(),
       clipContextSeconds: json['clipContextSeconds'] as int? ?? 0,
       alertMode: json['alertMode'] as int? ?? 0,
       alertRareThreshold:
@@ -269,6 +290,9 @@ class SessionSettings {
     'confidenceThreshold': confidenceThreshold,
     'inferenceRate': inferenceRate,
     'speciesFilterMode': speciesFilterMode,
+    if (requestedSpeciesFilterMode != null)
+      'requestedSpeciesFilterMode': requestedSpeciesFilterMode,
+    if (geoThreshold != null) 'geoThreshold': geoThreshold,
     'clipContextSeconds': clipContextSeconds,
     'alertMode': alertMode,
     'alertRareThreshold': alertRareThreshold,
@@ -323,6 +347,29 @@ class SessionSettings {
   /// over without a hand-maintained copy constructor.
   SessionSettings withInferenceRate(double inferenceRate) =>
       SessionSettings.fromJson({...toJson(), 'inferenceRate': inferenceRate});
+
+  /// This snapshot with the species filter recorded as it could actually run.
+  ///
+  /// Pass whether geo-model scores were [available] to the session. Without
+  /// them a location filter passes every detection through, so the snapshot
+  /// says 'off' and keeps the selected mode in [requestedSpeciesFilterMode].
+  /// Calling it again with `true` restores the selected mode.
+  SessionSettings withGeoScoresAvailable(bool available) {
+    final requested = requestedSpeciesFilterMode ?? speciesFilterMode;
+    final blocked = !available && isGeoFilterMode(requested);
+    final applied = blocked ? 'off' : requested;
+    final recordedRequest = blocked ? requested : null;
+    if (applied == speciesFilterMode &&
+        recordedRequest == requestedSpeciesFilterMode) {
+      return this;
+    }
+    final json = toJson()..remove('requestedSpeciesFilterMode');
+    return SessionSettings.fromJson({
+      ...json,
+      'speciesFilterMode': applied,
+      'requestedSpeciesFilterMode': ?recordedRequest,
+    });
+  }
 }
 
 /// The type of session (maps to one of the four app modes).

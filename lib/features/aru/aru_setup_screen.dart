@@ -332,6 +332,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       confidenceThreshold: ref.read(confidenceThresholdProvider),
       inferenceRate: _inferenceRate,
       speciesFilterMode: ref.read(speciesFilterModeProvider),
+      geoThreshold: ref.read(geoThresholdProvider),
       clipContextSeconds: ref.read(clipContextProvider),
       sensitivity: ref.read(sensitivityProvider),
       ignoreBirds: ref.read(ignoreBirdsProvider),
@@ -362,7 +363,9 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
           ? finalSamplingMode.name
           : SamplingMode.all.name,
       topNPerSpecies: _topNPerSpecies,
-    );
+      // Whether a location filter can run is only known once a cycle has geo
+      // scores; until the runner sees them it is recorded as not running.
+    ).withGeoScoresAvailable(false);
 
     final repo = ref.read(sessionRepositoryProvider);
     final sessionNumber = await repo.nextSessionNumber(SessionType.aru);

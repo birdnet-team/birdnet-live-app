@@ -55,6 +55,7 @@ import 'audio_export_normalizer.dart';
 import 'audio_share_extension.dart';
 import 'detection_audio_window.dart';
 import 'session_audio_trim.dart';
+import 'share_export_config.dart';
 import 'share_file_params.dart';
 
 /// Share a single [detection] using the platform share sheet.
@@ -155,6 +156,13 @@ Future<ShareResult> shareDetection(
     final metadata = await buildSessionExportMetadata(
       exportSession,
       speciesLocale: speciesLocale,
+      exportConfig: ShareExportConfig(
+        formats: formats,
+        includeAudio: includeAudio,
+        shareAudioAsWav: shareAudioAsWav,
+        includeHtmlReport: includeHtmlReport,
+        includeAppMetadata: includeAppMetadata,
+      ),
     );
     final exportPath = await buildSessionExport(
       exportSession,

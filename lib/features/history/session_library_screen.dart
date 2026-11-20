@@ -923,6 +923,7 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
     final metadata = await buildSessionExportMetadata(
       session,
       speciesLocale: speciesLocale,
+      exportConfig: config,
     );
     final exportPath = await buildSessionExport(
       session,
@@ -1053,8 +1054,11 @@ class _SessionLibraryScreenState extends ConsumerState<SessionLibraryScreen> {
         shareAudioAsWav: shareAudioAsWav,
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
-        metadataProvider: (session) =>
-            buildSessionExportMetadata(session, speciesLocale: speciesLocale),
+        metadataProvider: (session) => buildSessionExportMetadata(
+          session,
+          speciesLocale: speciesLocale,
+          exportConfig: config,
+        ),
         useAbsoluteSurveyTime: useAbsoluteSurveyTime,
         includeHtmlReport: includeHtmlReport,
         includeAppMetadata: includeAppMetadata,

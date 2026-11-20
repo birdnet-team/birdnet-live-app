@@ -765,7 +765,6 @@ class _SurveyLiveScreenState extends ConsumerState<SurveyLiveScreen>
           windowDuration: windowDuration,
           inferenceRate: inferenceRate,
           confidenceThreshold: confidenceThreshold,
-          speciesFilterMode: filterMode,
           recordingMode: recordingMode,
           recordingFormat: recordingFormat,
           geoScores: geoScores,

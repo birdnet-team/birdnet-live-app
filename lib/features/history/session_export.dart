@@ -522,7 +522,9 @@ String buildCsvExport(
 ///
 /// `prefs` should be a flat map of relevant SharedPreferences key/value pairs
 /// that are not already persisted on the session itself. The export module has
-/// no Riverpod / SharedPrefs dependency on purpose. `audioModel` typically
+/// no Riverpod / SharedPrefs dependency on purpose. The caller is responsible
+/// for the export options in it describing this export, not just the saved
+/// defaults; see `buildSessionExportMetadata`. `audioModel` typically
 /// contains `name`, `version`, `description`, `speciesCount`, `sampleRate` from
 /// `model_config.json`. `taxonomy` is its `taxonomy` block (`name`, `version`):
 /// the `birdnetId` values in an export are only meaningful together with the
@@ -599,7 +601,14 @@ Map<String, dynamic> _settingsExportMetadata(
       'windowDurationSeconds': s.windowDuration,
       'confidenceThresholdPercent': s.confidenceThreshold,
       'inferenceRateHz': s.inferenceRate,
+      // The filter that ran. A location filter without geo-model scores is
+      // recorded as off, with the selected mode next to it.
       'speciesFilterMode': s.speciesFilterMode,
+      if (s.requestedSpeciesFilterMode != null)
+        'requestedSpeciesFilterMode': s.requestedSpeciesFilterMode,
+      // Only the exclude filter reads the threshold.
+      if (s.geoThreshold != null && s.speciesFilterMode == 'geoExclude')
+        'geoThreshold': s.geoThreshold,
       if (s.sensitivity != null) 'sensitivity': s.sensitivity,
       if (s.poolingMode != null) 'poolingMode': s.poolingMode,
       if (s.poolingWindows != null) 'poolingWindows': s.poolingWindows,
@@ -617,10 +626,25 @@ Map<String, dynamic> _settingsExportMetadata(
             s.poolingVeryHighImmediateThreshold,
     };
 
+    final species = <String, dynamic>{
+      'ignoreBirds': ?s.ignoreBirds,
+      'ignoreMammals': ?s.ignoreMammals,
+      'ignoreAmphibians': ?s.ignoreAmphibians,
+      'ignoreInsects': ?s.ignoreInsects,
+      'includeSoundClasses': ?s.includeSoundClasses,
+      'ignoreCommonGeoScoreCutoff': ?s.ignoreCommonGeoScoreCutoff,
+    };
+    if (species.isNotEmpty) settings['species'] = species;
+
+    // Clip context describes detection clips. Sessions without a recording
+    // snapshot predate it and may still hold clips; File Analysis never does.
+    final recordsClips =
+        s.recordingMode == 'detectionsOnly' ||
+        (s.recordingMode == null && session.type != SessionType.fileUpload);
     final audio = <String, dynamic>{
       if (s.gainLinear != null) 'gainLinear': s.gainLinear,
       if (s.highPassHz != null) 'highPassHz': s.highPassHz,
-      'clipContextSeconds': s.clipContextSeconds,
+      if (recordsClips) 'clipContextSeconds': s.clipContextSeconds,
     };
     if (audio.isNotEmpty) settings['audio'] = audio;
 
