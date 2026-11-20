@@ -78,6 +78,8 @@ final surveyControllerProvider = Provider<SurveyController>((ref) {
   controller.onFreshDetections = announcementsSink.submit;
   controller.onSessionStarted = announcementsSink.resetSession;
 
+  controller.inferenceBackend = () => ref.read(inferenceBackendProvider);
+
   // A survey can remain active while the user visits Settings. Stop an
   // existing stream immediately when "Use GPS" is switched off; controller
   // lifecycle methods also guard against restarting it while disabled.

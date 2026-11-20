@@ -146,6 +146,10 @@ abstract final class PrefKeys {
   static const String confidenceThreshold = 'confidence_threshold';
   static const String inferenceRate = 'inference_rate';
 
+  /// Experimental classifier backend: `onnx` (default), `auto`, `tpu`, `gpu`,
+  /// `cpu`. See lib/features/inference/inference_backend.dart.
+  static const String inferenceBackend = 'inference_backend';
+
   /// Highest inference rate this device is known to sustain: the rate a live
   /// mode last had to lower to because the device fell behind. Absent until
   /// that has happened, raised when a session measures headroom, and removed

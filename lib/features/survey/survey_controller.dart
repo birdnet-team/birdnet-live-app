@@ -46,6 +46,7 @@ import '../history/session_repository.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/detection_accumulator.dart';
 import '../inference/detection_clip_writer.dart';
+import '../inference/inference_backend.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/inference_window_driver.dart';
 import '../inference/model_config.dart';
@@ -98,6 +99,10 @@ class SurveyController {
   // ── Internal state ──────────────────────────────────────────────────────
 
   final InferenceIsolate _isolate = InferenceIsolate();
+
+  /// Reads the experimental backend setting when the model loads; wired up by
+  /// the provider. See inference_backend.dart.
+  String Function() inferenceBackend = () => InferenceBackends.onnx;
   ModelConfig? _config;
   LiveSession? _session;
   late final InferenceWindowDriver _windowDriver = InferenceWindowDriver(
@@ -383,6 +388,10 @@ class SurveyController {
         labelsCsv: labelsCsv,
         config: _config!,
         scoreBlacklistJson: scoreBlacklistJson,
+        liteRtAccelerator: InferenceBackends.liteRtAccelerator(
+          inferenceBackend(),
+          InferenceWorkload.realtime,
+        ),
       );
 
       _state = SurveyState.idle;

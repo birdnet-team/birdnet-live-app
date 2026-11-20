@@ -19,6 +19,7 @@ import '../announcements/announcements_providers.dart';
 import '../announcements/widgets/announcements_settings_section.dart';
 import '../audio/widgets/audio_source_tile.dart';
 import '../explore/explore_providers.dart';
+import '../inference/inference_backend.dart';
 import '../spectrogram/color_maps.dart';
 import '../spectrogram/spectrogram_size.dart';
 import '../upload/upload_destinations_screen.dart';
@@ -1133,6 +1134,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     .read(includeSoundClassesProvider.notifier)
                                     .set(v),
                               ),
+                              if (InferenceBackends.liteRtSupported)
+                                const _InferenceBackendTile(),
                               if (_showAdvancedInferenceSettings)
                                 const _AdvancedInferenceTuning(),
                             ],
@@ -2720,6 +2723,44 @@ class _ChoiceTile<T> extends StatelessWidget {
           if (v != null) onChanged(v);
         },
       ),
+    );
+  }
+}
+
+/// Experimental hardware-acceleration choice (LiteRT on Edge TPU / GPU / CPU).
+///
+/// Hardcoded English like [_AdvancedInferenceTuning]: an experimental,
+/// developer-facing switch. Applies the next time a mode loads the model,
+/// i.e. after an app restart.
+class _InferenceBackendTile extends ConsumerWidget {
+  const _InferenceBackendTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final value = ref.watch(inferenceBackendProvider);
+    return _ChoiceTile<String>(
+      title: 'Hardware acceleration (experimental)',
+      subtitle: 'Applies after restarting the app',
+      helpBody:
+          'Runs the classifier with LiteRT on a hardware accelerator instead '
+          'of ONNX Runtime on the CPU.\n\n'
+          'Auto — Edge TPU for file analysis (fastest for long '
+          'recordings), GPU for live modes.\n\n'
+          'Edge TPU — Google Tensor NPU via NNAPI (Pixel 9 and similar).\n\n'
+          'Falls back to GPU, CPU and finally ONNX if the device cannot run '
+          'the selected option. Only 3-second windows use LiteRT; other '
+          'window lengths always run on ONNX.',
+      value: InferenceBackends.all.contains(value)
+          ? value
+          : InferenceBackends.onnx,
+      options: const {
+        InferenceBackends.onnx: 'Off (ONNX, CPU)',
+        InferenceBackends.auto: 'Auto',
+        InferenceBackends.tpu: 'Edge TPU',
+        InferenceBackends.gpu: 'GPU',
+        InferenceBackends.cpu: 'CPU (LiteRT)',
+      },
+      onChanged: (v) => ref.read(inferenceBackendProvider.notifier).set(v),
     );
   }
 }

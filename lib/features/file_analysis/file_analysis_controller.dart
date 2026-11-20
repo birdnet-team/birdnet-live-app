@@ -41,6 +41,7 @@ import '../../core/services/asset_pack_service.dart';
 import '../../core/services/location_service.dart';
 import '../inference/advanced_pooling_params.dart';
 import '../inference/detection_accumulator.dart';
+import '../inference/inference_backend.dart';
 import '../inference/inference_isolate.dart';
 import '../inference/model_config.dart';
 import '../inference/models/detection.dart';
@@ -238,6 +239,10 @@ class FileAnalysisController {
   // ── Internal state ────────────────────────────────────────────────────
 
   final InferenceIsolate _isolate = InferenceIsolate();
+
+  /// Reads the experimental backend setting when the model loads; wired up by
+  /// the provider. See inference_backend.dart.
+  String Function() inferenceBackend = () => InferenceBackends.onnx;
   ModelConfig? _config;
   FileAnalysisState _state = FileAnalysisState.idle;
   String? _errorMessage;
@@ -302,6 +307,10 @@ class FileAnalysisController {
         config: _config!,
         scoreBlacklistJson: scoreBlacklistJson,
         intraOpNumThreads: _offlineInferenceThreads,
+        liteRtAccelerator: InferenceBackends.liteRtAccelerator(
+          inferenceBackend(),
+          InferenceWorkload.batch,
+        ),
       );
 
       _state = FileAnalysisState.ready;

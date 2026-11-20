@@ -32,11 +32,13 @@
 // ```
 // =============================================================================
 
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 import 'advanced_pooling_params.dart';
+import 'audio_classifier.dart';
 import 'classifier_model.dart';
 import 'label_parser.dart';
+import 'litert_classifier_model.dart';
 import 'model_config.dart';
 import 'models/detection.dart';
 import 'models/species.dart';
@@ -59,7 +61,15 @@ class InferenceService {
   // State
   // ---------------------------------------------------------------------------
 
-  final ClassifierModel _model = ClassifierModel();
+  final ClassifierModel _onnx = ClassifierModel();
+
+  /// Experimental LiteRT backend; `null` when ONNX is used for everything.
+  LiteRtClassifierModel? _litert;
+
+  /// Deferred ONNX load: with LiteRT active, ONNX is only needed for window
+  /// lengths the fixed-shape LiteRT graphs cannot take.
+  Future<void> Function()? _loadOnnx;
+  Future<void>? _onnxLoading;
   List<Species> _labels = const [];
   List<double> _scoreMultipliers = const [];
   ModelConfig? _config;
@@ -72,7 +82,20 @@ class InferenceService {
   final Set<int> _confirmedDetectionIndexes = {};
 
   /// Whether the service has been successfully initialized.
-  bool get isReady => _model.isLoaded && _labels.isNotEmpty && _config != null;
+  bool get isReady =>
+      (_onnx.isLoaded || (_litert?.isLoaded ?? false)) &&
+      _labels.isNotEmpty &&
+      _config != null;
+
+  /// Human-readable backend in use, e.g. `LiteRT tpu` or `ONNX`. For logs and
+  /// benchmark metadata.
+  String get activeBackend {
+    final info = _litert?.info;
+    return info == null ? 'ONNX' : 'LiteRT ${info.accelerator}';
+  }
+
+  /// LiteRT load details, or `null` when ONNX is in use.
+  LiteRtLoadInfo? get liteRtInfo => _litert?.info;
 
   /// The full list of species labels, available after [initialize].
   List<Species> get labels => _labels;
@@ -255,6 +278,9 @@ class InferenceService {
     required ModelConfig config,
     String? scoreBlacklistJson,
     int? intraOpNumThreads,
+    String? liteRtAccelerator,
+    String? liteRtFrontendPath,
+    String? liteRtClassifierPath,
   }) async {
     _config = config;
     _labels = LabelParser.parse(labelsCsv, config: config.labels);
@@ -265,18 +291,55 @@ class InferenceService {
       labels: _labels,
       fractions: blacklist,
     );
-    await _model.loadModelFromFile(
+    _loadOnnx = () => _onnx.loadModelFromFile(
       modelFilePath,
       inputName: config.onnx.inputName,
       predictionsName: config.onnx.predictionsName,
       embeddingsName: config.onnx.embeddingsName,
       intraOpNumThreads: intraOpNumThreads,
     );
+
+    if (liteRtAccelerator != null &&
+        liteRtFrontendPath != null &&
+        liteRtClassifierPath != null) {
+      final litert = LiteRtClassifierModel();
+      try {
+        await litert.load(
+          frontendPath: liteRtFrontendPath,
+          classifierPath: liteRtClassifierPath,
+          accelerator: liteRtAccelerator,
+        );
+        _litert = litert;
+        return; // ONNX loads lazily if a non-LiteRT window length is requested.
+      } catch (e) {
+        debugPrint('[InferenceService] LiteRT unavailable, using ONNX: $e');
+        await litert.dispose();
+      }
+    }
+    await _ensureOnnx();
+  }
+
+  Future<void> _ensureOnnx() {
+    if (_onnx.isLoaded) return Future.value();
+    final load = _loadOnnx;
+    if (load == null) throw StateError('InferenceService not initialized');
+    return _onnxLoading ??= load().whenComplete(() => _onnxLoading = null);
+  }
+
+  /// LiteRT when it can take [windowSamples], otherwise ONNX.
+  Future<AudioClassifier> _modelFor(int windowSamples) async {
+    final litert = _litert;
+    if (litert != null && litert.windowSamples == windowSamples) return litert;
+    await _ensureOnnx();
+    return _onnx;
   }
 
   /// Release all resources (ONNX session, native memory).
   Future<void> dispose() async {
-    await _model.dispose();
+    await _onnx.dispose();
+    await _litert?.dispose();
+    _litert = null;
+    _loadOnnx = null;
     _labels = const [];
     _scoreMultipliers = const [];
     _config = null;
@@ -334,10 +397,8 @@ class InferenceService {
     final now = timestamp ?? DateTime.now().subtract(Duration(seconds: ws));
 
     // Run model.
-    final output = await _model.predict(
-      audioSamples,
-      windowSamples: windowSamples,
-    );
+    final output = await (await _modelFor(windowSamples))
+        .predict(audioSamples, windowSamples: windowSamples);
 
     return _postProcessOutput(
       output,
@@ -382,10 +443,9 @@ class InferenceService {
     final thresh =
         confidenceThreshold ?? cfg.inference.defaultConfidenceThreshold;
     final k = topK ?? cfg.inference.defaultTopK;
-    final outputs = await _model.predictBatch(
-      audioWindows,
-      windowSamples: sampleRate * ws,
-    );
+    final windowSamples = sampleRate * ws;
+    final outputs = await (await _modelFor(windowSamples))
+        .predictBatch(audioWindows, windowSamples: windowSamples);
 
     return [
       for (var index = 0; index < outputs.length; index++)

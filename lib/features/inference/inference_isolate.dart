@@ -24,8 +24,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/services/asset_pack_service.dart';
 import 'advanced_pooling_params.dart';
 import 'inference_service.dart';
+import 'litert_classifier_model.dart';
 import 'model_config.dart';
 import 'models/detection.dart';
 
@@ -40,6 +42,12 @@ class InferenceIsolate {
   /// Whether the underlying inference service is initialized and ready.
   bool get isRunning => _service != null;
 
+  /// Backend in use (`ONNX` or `LiteRT <accelerator>`), or `null` when stopped.
+  String? get activeBackend => _service?.activeBackend;
+
+  /// LiteRT load details, or `null` when ONNX is in use.
+  LiteRtLoadInfo? get liteRtInfo => _service?.liteRtInfo;
+
   // ---------------------------------------------------------------------------
   // Lifecycle
   // ---------------------------------------------------------------------------
@@ -50,18 +58,40 @@ class InferenceIsolate {
   /// [labelsCsv] — full content of the labels file.
   /// [config] — model configuration (tensor names, label format, defaults).
   /// [scoreBlacklistJson] — optional JSON score multiplier map.
+  /// [liteRtAccelerator] — `tpu`, `gpu` or `cpu` to try the experimental
+  ///   LiteRT build from [ModelConfig.litert] first (see inference_backend.dart);
+  ///   `null` for ONNX only. Falls back to ONNX if LiteRT cannot load.
   Future<void> start({
     required String modelFilePath,
     required String labelsCsv,
     required ModelConfig config,
     String? scoreBlacklistJson,
     int? intraOpNumThreads,
+    String? liteRtAccelerator,
   }) async {
     if (isRunning) return;
 
     debugPrint('[InferenceIsolate] loading model from file: $modelFilePath');
     if (!File(modelFilePath).existsSync()) {
       throw FileSystemException('Model file not found', modelFilePath);
+    }
+
+    String? frontendPath;
+    String? classifierPath;
+    final litert = config.litert;
+    if (liteRtAccelerator != null && litert != null) {
+      try {
+        frontendPath = await AssetPackService.resolveModelPath(
+          fileName: litert.frontendFile,
+          version: config.version,
+        );
+        classifierPath = await AssetPackService.resolveModelPath(
+          fileName: litert.classifierFile,
+          version: config.version,
+        );
+      } catch (e) {
+        debugPrint('[InferenceIsolate] LiteRT model files unavailable: $e');
+      }
     }
 
     final svc = InferenceService();
@@ -71,9 +101,12 @@ class InferenceIsolate {
       config: config,
       scoreBlacklistJson: scoreBlacklistJson,
       intraOpNumThreads: intraOpNumThreads,
+      liteRtAccelerator: classifierPath == null ? null : liteRtAccelerator,
+      liteRtFrontendPath: frontendPath,
+      liteRtClassifierPath: classifierPath,
     );
     _service = svc;
-    debugPrint('[InferenceIsolate] model ready');
+    debugPrint('[InferenceIsolate] model ready (${svc.activeBackend})');
   }
 
   /// Release the inference service and free native resources.

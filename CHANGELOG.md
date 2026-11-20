@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Hardware acceleration (experimental, Android)** in Settings › Inference, off by default: runs the audio model with LiteRT on the Google Tensor Edge TPU, the GPU, or the CPU instead of ONNX Runtime. *Auto* uses the Edge TPU for File Analysis and the GPU for live modes. On a Pixel 9 Pro the Edge TPU analyses a 3-second window in about 10 ms (≈ 300× real time) with the same results as ONNX. Falls back to ONNX for other window lengths and on devices without the accelerator. Details and measurements: `research/edge-tpu-v3/`.
 - New **Non-animal sounds** switch in Settings › Inference, off by default. When on, the model's 16 sound classes (aircraft, boat, chainsaw, engine, explosion, fire, fireworks, gun, hammer, motor vehicle, music, power tool, sawing, siren, train, vehicle horn) are reported like any other detection; location filters do not apply to them and Explore does not list them.
 - Exports now carry each species' BirdNET ID: a `BirdNET ID` column after `Scientific Name` in CSV and Raven Selection Tables, a `birdnetId` field in JSON, a waypoint extension in GPX, and a label in the HTML report. Sessions recorded with earlier versions get it too, export metadata names the taxonomy version the IDs refer to, and scripts that read CSV or Raven columns by position need updating.
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.

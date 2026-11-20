@@ -16,6 +16,11 @@
         "embeddings": "embeddings"
       }
     },
+    "litert": {
+      "frontendFile": "BirdNET+_V3.0_Global_10K_LiteRT_Frontend_3s.tflite",
+      "classifierFile": "BirdNET+_V3.0_Global_10K_LiteRT_Classifier_3s.tflite",
+      "windowSeconds": 3
+    },
     "labels": {
       "file": "BirdNET+_V3.0_Global_10K_FP16_BNL_Labels.csv",
       "delimiter": ";",

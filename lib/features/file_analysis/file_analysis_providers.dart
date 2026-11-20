@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import 'file_analysis_controller.dart';
+import '../../shared/providers/settings_providers.dart';
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -28,6 +29,7 @@ import 'file_analysis_controller.dart';
 /// loaded once and reused across multiple file analyses.
 final fileAnalysisControllerProvider = Provider<FileAnalysisController>((ref) {
   final controller = FileAnalysisController();
+  controller.inferenceBackend = () => ref.read(inferenceBackendProvider);
   ref.onDispose(() => controller.dispose());
   return controller;
 });
