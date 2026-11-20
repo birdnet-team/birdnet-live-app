@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:birdnet_live/core/constants/app_constants.dart';
 import 'package:birdnet_live/features/history/export_metadata_helper.dart';
+import 'package:birdnet_live/features/history/services/share_export_config.dart';
 import 'package:birdnet_live/features/live/live_session.dart';
 import 'package:birdnet_live/shared/models/gps_point.dart';
 
@@ -128,6 +129,109 @@ void main() {
       expect(metadata.containsKey('appliedSettings'), isFalse);
     },
   );
+
+  test('records the filter that ran and the species selection', () async {
+    LiveSession sessionWith(SessionSettings settings) => LiveSession(
+      id: 'session-2',
+      startTime: DateTime(2026, 1, 1, 10),
+      endTime: DateTime(2026, 1, 1, 11),
+      settings: settings,
+    );
+    const selected = SessionSettings(
+      windowDuration: 3,
+      confidenceThreshold: 30,
+      inferenceRate: 1,
+      speciesFilterMode: 'geoExclude',
+      geoThreshold: 0.05,
+      recordingMode: 'full',
+      clipContextSeconds: 2,
+      ignoreBirds: false,
+      ignoreInsects: true,
+      includeSoundClasses: true,
+      ignoreCommonGeoScoreCutoff: 0.8,
+    );
+
+    Future<Map<String, dynamic>> settingsOf(SessionSettings s) async {
+      final metadata = await buildSessionExportMetadata(
+        sessionWith(s),
+        speciesLocale: 'en',
+      );
+      return metadata['settings'] as Map<String, dynamic>;
+    }
+
+    final ran = await settingsOf(selected.withGeoScoresAvailable(true));
+    final ranAnalysis = ran['analysis'] as Map<String, dynamic>;
+    expect(ranAnalysis['speciesFilterMode'], 'geoExclude');
+    expect(ranAnalysis['geoThreshold'], 0.05);
+    expect(ranAnalysis.containsKey('requestedSpeciesFilterMode'), isFalse);
+    expect(ran['species'], {
+      'ignoreBirds': false,
+      'ignoreInsects': true,
+      'includeSoundClasses': true,
+      'ignoreCommonGeoScoreCutoff': 0.8,
+    });
+    // A continuous recording has no clips for the context to describe.
+    expect(
+      (ran['audio'] as Map<String, dynamic>?)?.containsKey(
+        'clipContextSeconds',
+      ),
+      isNot(isTrue),
+    );
+
+    final skipped = await settingsOf(selected.withGeoScoresAvailable(false));
+    final skippedAnalysis = skipped['analysis'] as Map<String, dynamic>;
+    expect(skippedAnalysis['speciesFilterMode'], 'off');
+    expect(skippedAnalysis['requestedSpeciesFilterMode'], 'geoExclude');
+    expect(skippedAnalysis.containsKey('geoThreshold'), isFalse);
+  });
+
+  test('File Analysis metadata has no clip context', () async {
+    final metadata = await buildSessionExportMetadata(
+      LiveSession(
+        id: 'file-1',
+        type: SessionType.fileUpload,
+        startTime: DateTime(2026, 1, 1, 10),
+        settings: const SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 30,
+          inferenceRate: 0,
+          speciesFilterMode: 'off',
+          gainLinear: 1,
+        ),
+      ),
+      speciesLocale: 'en',
+    );
+
+    final settings = metadata['settings'] as Map<String, dynamic>;
+    final audio = settings['audio'] as Map<String, dynamic>;
+    expect(audio.containsKey('clipContextSeconds'), isFalse);
+  });
+
+  test('export options describe this export, not the saved ones', () async {
+    SharedPreferences.setMockInitialValues({
+      PrefKeys.exportSelection: 'raven,json',
+      PrefKeys.includeAudio: true,
+      PrefKeys.exportHtmlReport: true,
+      PrefKeys.timestampDisplayMode: 'absolute',
+    });
+
+    final metadata = await buildSessionExportMetadata(
+      makeSession(),
+      speciesLocale: 'en',
+      exportConfig: const ShareExportConfig(
+        formats: {'json', 'csv'},
+        includeAudio: false,
+        includeAppMetadata: true,
+      ),
+    );
+
+    final settings = metadata['settings'] as Map<String, dynamic>;
+    final export = settings['exportPreferences'] as Map<String, dynamic>;
+    expect(export[PrefKeys.exportSelection], 'csv,json');
+    expect(export[PrefKeys.includeAudio], isFalse);
+    expect(export[PrefKeys.exportHtmlReport], isFalse);
+    expect(export[PrefKeys.timestampDisplayMode], 'absolute');
+  });
 
   test(
     'still returns base metadata when package info is unavailable',

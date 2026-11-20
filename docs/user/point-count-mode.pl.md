@@ -36,6 +36,8 @@ Wybierz ustawienia analizy dla tej Session, takie jak częstotliwość analizy, 
 Twoich ustawień globalnych, ale możesz je dostosować na potrzeby tego
 liczenia bez zmiany wartości domyślnych.
 
+Kreator zapamiętuje ustawienia i wybór lokalizacji ostatnio uruchomionego Point Count, więc kilka liczeń z rzędu nie wymaga ponownego wprowadzania. Nazwa i współrzędne są za każdym razem puste.
+
 | Element konfiguracji | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |

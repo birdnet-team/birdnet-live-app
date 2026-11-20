@@ -105,6 +105,51 @@ void main() {
       expect(settings.speciesFilterMode, 'off');
     });
 
+    test('a location filter without geo scores is recorded as off', () {
+      const selected = SessionSettings(
+        windowDuration: 3,
+        confidenceThreshold: 25,
+        inferenceRate: 1,
+        speciesFilterMode: 'geoExclude',
+        geoThreshold: 0.05,
+        sensitivity: 1.2,
+      );
+
+      final withoutScores = selected.withGeoScoresAvailable(false);
+      expect(withoutScores.speciesFilterMode, 'off');
+      expect(withoutScores.requestedSpeciesFilterMode, 'geoExclude');
+      expect(withoutScores.geoThreshold, 0.05);
+      expect(withoutScores.sensitivity, 1.2);
+
+      final roundTripped = SessionSettings.fromJson(withoutScores.toJson());
+      expect(roundTripped.speciesFilterMode, 'off');
+      expect(roundTripped.requestedSpeciesFilterMode, 'geoExclude');
+
+      // Scores arriving later switch the selected filter back on.
+      final restored = roundTripped.withGeoScoresAvailable(true);
+      expect(restored.speciesFilterMode, 'geoExclude');
+      expect(restored.requestedSpeciesFilterMode, isNull);
+      expect(
+        restored.toJson().containsKey('requestedSpeciesFilterMode'),
+        false,
+      );
+
+      expect(selected.withGeoScoresAvailable(true), same(selected));
+    });
+
+    test('filters that need no geo scores are recorded as selected', () {
+      for (final mode in ['off', 'customList']) {
+        final settings = SessionSettings(
+          windowDuration: 3,
+          confidenceThreshold: 25,
+          inferenceRate: 1,
+          speciesFilterMode: mode,
+        ).withGeoScoresAvailable(false);
+        expect(settings.speciesFilterMode, mode);
+        expect(settings.requestedSpeciesFilterMode, isNull);
+      }
+    });
+
     test('toJson round-trip', () {
       final settings = SessionSettings(
         windowDuration: 10,

@@ -27,6 +27,8 @@ La pantalla de configuración actualiza el GPS cuando vuelves del diálogo de pe
 
 Elige los ajustes de análisis para esta Session, como la tasa de inferencia, el umbral de confianza y el modo del filtro de especies. Parten de tus ajustes globales, pero puedes adaptarlos a este conteo sin cambiar tus valores predeterminados.
 
+El asistente recuerda los ajustes y la opción de ubicación del último Point Count iniciado, así que varios conteos seguidos no requieren volver a introducirlos. El nombre y las coordenadas empiezan de cero cada vez.
+
 | Control de configuración | Icono |
 |---|---|
 | Micrófono | :app-micRounded: |

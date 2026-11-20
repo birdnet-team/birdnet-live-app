@@ -59,6 +59,8 @@ De wizard biedt:
 - betrouwbaarheidsdrempel
 - modus van het soortenfilter
 
+De wizard onthoudt de parameters en de locatiekeuze van de laatst gestarte analyse. Het bestand, de coördinaten en de opnamedatum beginnen elke keer leeg.
+
 | Instelling | Pictogram |
 |---|---|
 | Vensterduur | :app-timerOutlined: |

@@ -39,6 +39,8 @@ Starting a deployment immediately saves a `SessionType.aru` session with ARU sch
 
 JSON and ZIP exports include ARU deployment metadata. ZIP exports bundle saved per-cycle recording files under `aru_cycles/`.
 
+The setup remembers the recording and schedule choices of the last deployment you started. The deployment name, the coordinates, and an end date start fresh each time.
+
 ## Active Deployment Screen
 
 The active ARU screen shows whether the deployment is waiting, recording, or complete. Its layout uses four tabs:

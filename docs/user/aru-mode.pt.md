@@ -31,6 +31,8 @@ Ao iniciar uma instalação, salva-se imediatamente uma Session `SessionType.aru
 
 As exportações JSON e ZIP incluem os metadados da instalação ARU. As exportações ZIP agrupam os arquivos de gravação salvos por ciclo sob `aru_cycles/`.
 
+A configuração lembra as opções de gravação e de agendamento da última instalação iniciada. O nome da instalação, as coordenadas e a data de término começam do zero a cada vez.
+
 ## Tela de instalação ativa
 
 A tela ARU ativa mostra se a instalação está aguardando, gravando ou concluída. Seu layout usa quatro abas:

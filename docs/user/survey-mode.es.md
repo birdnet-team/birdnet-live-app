@@ -28,6 +28,8 @@ una vista previa del sitio solo con un icono del clima, la temperatura y el
 viento. La misma instantánea en caché de Open-Meteo se reutiliza al guardar el
 Survey.
 
+El asistente recuerda la opción de ubicación del último Survey iniciado. El nombre y las coordenadas empiezan de cero cada vez.
+
 ### 2. Parámetros
 
 Este paso contiene parámetros específicos del Survey, como:

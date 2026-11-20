@@ -36,6 +36,8 @@ Scegli impostazioni di analisi specifiche per la Session, come frequenza di infe
 specie. Partono dalle tue impostazioni globali, ma possono essere regolate per
 questo conteggio senza modificare i valori predefiniti.
 
+La procedura guidata ricorda le impostazioni e la scelta della posizione dell'ultimo Point Count avviato, così più conteggi di seguito non richiedono di reinserirle. Il nome e le coordinate ripartono da zero ogni volta.
+
 | Controllo di configurazione | Icona |
 |---|---|
 | Microfono | :app-micRounded: |

@@ -2627,6 +2627,7 @@ class _SessionReviewScreenState extends ConsumerState<SessionReviewScreen> {
       metadata: await buildSessionExportMetadata(
         widget.session,
         speciesLocale: speciesLocale,
+        exportConfig: config,
       ),
       useAbsoluteSurveyTime:
           ref.read(timestampDisplayModeProvider) == 'absolute',

@@ -356,15 +356,30 @@ class AruRunner {
       );
       final geoScores = geoInputs.geoScores;
       final ignoredSpeciesNames = geoInputs.ignoredSpeciesNames;
-      final geoThreshold = _ref.read(geoThresholdProvider);
+      final double geoThreshold =
+          session.settings.geoThreshold ?? _ref.read(geoThresholdProvider);
       final geoModelSpeciesNames = geoInputs.geoModelSpeciesNames;
       if (!_running) return;
+
+      // The snapshot was taken at setup, before it was known whether the
+      // location filter can run, and says it did not. A cycle with geo
+      // scores records that it does. Cycles saved as Sessions of their own
+      // copy the snapshot, so there it follows each cycle.
+      final filterMode =
+          session.settings.requestedSpeciesFilterMode ??
+          session.settings.speciesFilterMode;
+      if (geoScores != null ||
+          (session.aruMetadata?.eachCycleIsSession ?? false)) {
+        session.settings = session.settings.withGeoScoresAvailable(
+          geoScores != null,
+        );
+      }
 
       await controller.startSession(
         windowDuration: session.settings.windowDuration,
         inferenceRate: session.settings.inferenceRate,
         confidenceThreshold: session.settings.confidenceThreshold,
-        speciesFilterMode: session.settings.speciesFilterMode,
+        speciesFilterMode: filterMode,
         recordingMode: RecordingMode.off,
         geoScores: geoScores,
         geoThreshold: geoThreshold,

@@ -35,6 +35,8 @@ Choose per-session analysis settings such as inference rate,
 confidence threshold, and species-filter mode. These start from your global
 settings but can be adjusted for this count without changing your defaults.
 
+The wizard remembers the settings and the location choice of the last Point Count you started, so several counts in a row need no re-entry. The name and the coordinates start fresh each time.
+
 | Setup control | Icon |
 |---|---|
 | Microphone | :app-micRounded: |

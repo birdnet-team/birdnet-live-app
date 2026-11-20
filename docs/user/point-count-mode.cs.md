@@ -27,6 +27,8 @@ Obrazovka nastavení obnoví GPS, když se vrátíte ze systémového dialogu op
 
 Zvolte nastavení analýzy pro tuto Session, například frekvenci inference, práh spolehlivosti a režim filtru druhů. Vycházejí z vašich globálních nastavení, ale lze je pro tento Point Count upravit beze změny výchozích hodnot.
 
+Průvodce si pamatuje nastavení a volbu polohy posledního spuštěného Point Count, takže několik sčítání po sobě nevyžaduje nové zadávání. Název a souřadnice se pokaždé zadávají znovu.
+
 | Ovládací prvek nastavení | Ikona |
 |---|---|
 | Mikrofon | :app-micRounded: |

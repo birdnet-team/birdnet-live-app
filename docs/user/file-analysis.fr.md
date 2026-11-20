@@ -59,6 +59,8 @@ L'assistant donne accès à :
 - le seuil de confiance
 - le mode de filtre d'espèces
 
+L'assistant mémorise les paramètres et le choix de localisation de la dernière analyse lancée. Le fichier, ses coordonnées et la date d'enregistrement repartent de zéro à chaque fois.
+
 | Commande de configuration | Icône |
 |---|---|
 | Durée de la fenêtre | :app-timerOutlined: |

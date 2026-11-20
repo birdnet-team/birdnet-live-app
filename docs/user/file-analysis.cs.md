@@ -59,6 +59,8 @@ Průvodce nabízí:
 - práh spolehlivosti
 - filtr druhů
 
+Průvodce si pamatuje parametry a volbu polohy poslední spuštěné analýzy. Soubor, jeho souřadnice a datum nahrávky se pokaždé zadávají znovu.
+
 | Ovládací prvek nastavení | Ikona |
 |---|---|
 | Délka okna | :app-timerOutlined: |

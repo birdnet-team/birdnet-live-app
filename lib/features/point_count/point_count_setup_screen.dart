@@ -27,6 +27,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../shared/providers/settings_providers.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/providers/app_providers.dart';
+import '../../shared/services/setup_memory.dart';
 import '../../core/services/location_service.dart';
 import '../../shared/services/audio_background_notification.dart';
 import '../../shared/utils/locale_time_format.dart';
@@ -98,26 +101,106 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     WidgetsBinding.instance.addObserver(this);
     // Pre-fill observer with the last value used.
     _observerController.text = ref.read(lastObserverProvider);
-    // Seed parameter state from the global app defaults.
+    // Seed parameter state from what the last Point Count was started with,
+    // and from the global app defaults for anything it left at the default.
+    final memory = SetupMemory.load(
+      ref.read(sharedPreferencesProvider),
+      PrefKeys.pointCountSetupMemory,
+    );
     _windowDuration = ref.read(windowDurationProvider);
-    _inferenceRate = ref.read(inferenceRateProvider);
-    _confidenceThreshold = ref.read(confidenceThresholdProvider);
-    _sensitivity = ref.read(sensitivityProvider);
-    _speciesFilterMode = ref.read(speciesFilterModeProvider);
+    final rememberedRate = memory.doubleValue(
+      _memoryInferenceRate,
+      min: inferenceRateHzValues.first,
+      max: inferenceRateHzValues.last,
+    );
+    _inferenceRate = _withinDeviceLimit(
+      rememberedRate ?? ref.read(inferenceRateProvider),
+    );
+    if (rememberedRate != null && _inferenceRate < rememberedRate) {
+      _rateBeforeLimit = rememberedRate;
+    }
+    _confidenceThreshold =
+        memory.intValue(_memoryConfidenceThreshold, min: 1, max: 99) ??
+        ref.read(confidenceThresholdProvider);
+    _sensitivity =
+        memory.doubleValue(_memorySensitivity, min: 0.5, max: 1.5) ??
+        ref.read(sensitivityProvider);
+    _speciesFilterMode =
+        memory.stringValue(
+          _memorySpeciesFilterMode,
+          allowed: _speciesFilterModes,
+        ) ??
+        ref.read(speciesFilterModeProvider);
+    final rememberedLocation = memory.enumValue(
+      _memoryLocationChoice,
+      _LocationChoice.values,
+    );
     if (ref.read(useGpsProvider)) {
+      // The choice is remembered, the coordinates are not: the next point is
+      // somewhere else.
+      _locationChoice = rememberedLocation ?? _LocationChoice.gps;
       // Start fetching GPS location immediately. Reuse a recent fix if one
       // is still warm — closing and reopening the wizard within a couple of
       // minutes shouldn't burn another 10s waiting on the same fix.
-      _fetchGpsLocation();
+      if (_locationChoice == _LocationChoice.gps) _fetchGpsLocation();
     } else {
       // GPS is off app-wide: start on the manual tab seeded with the
       // coordinates from Settings rather than presenting them as a fix.
-      _locationChoice = _LocationChoice.manual;
+      _locationChoice = rememberedLocation == _LocationChoice.skip
+          ? _LocationChoice.skip
+          : _LocationChoice.manual;
       _latitude = ref.read(manualLatitudeProvider);
       _longitude = ref.read(manualLongitudeProvider);
       _latController.text = _latitude!.toStringAsFixed(5);
       _lonController.text = _longitude!.toStringAsFixed(5);
     }
+  }
+
+  static const _memoryLocationChoice = 'locationChoice';
+  static const _memoryInferenceRate = 'inferenceRate';
+  static const _memoryConfidenceThreshold = 'confidenceThreshold';
+  static const _memorySensitivity = 'sensitivity';
+  static const _memorySpeciesFilterMode = 'speciesFilterMode';
+  static const _speciesFilterModes = [
+    'off',
+    'geoExclude',
+    'geoAdaptive',
+    'geoMerge',
+  ];
+
+  /// A remembered rate never goes above what this device was found to
+  /// sustain; the note under the slider says why.
+  double _withinDeviceLimit(double rate) {
+    final limit = ref.read(inferenceRateDeviceLimitProvider);
+    return limit != null && rate > limit ? limit : rate;
+  }
+
+  /// The remembered rate while the device limit holds it down. Stored again
+  /// as it was unless the user moves the slider, so the choice comes back
+  /// once the device is found to sustain it.
+  double? _rateBeforeLimit;
+
+  /// Remember what this Point Count is started with. A parameter left at the
+  /// app-wide setting is not stored, so it keeps following Settings.
+  void _rememberSetup() {
+    final inferenceRate = _rateBeforeLimit ?? _inferenceRate;
+    unawaited(
+      SetupMemory.save(
+        ref.read(sharedPreferencesProvider),
+        PrefKeys.pointCountSetupMemory,
+        {
+          _memoryLocationChoice: _locationChoice.name,
+          if (inferenceRate != ref.read(inferenceRateProvider))
+            _memoryInferenceRate: inferenceRate,
+          if (_confidenceThreshold != ref.read(confidenceThresholdProvider))
+            _memoryConfidenceThreshold: _confidenceThreshold,
+          if (_sensitivity != ref.read(sensitivityProvider))
+            _memorySensitivity: _sensitivity,
+          if (_speciesFilterMode != ref.read(speciesFilterModeProvider))
+            _memorySpeciesFilterMode: _speciesFilterMode,
+        },
+      ),
+    );
   }
 
   @override
@@ -261,6 +344,7 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
     if (observer.isNotEmpty) {
       ref.read(lastObserverProvider.notifier).set(observer);
     }
+    _rememberSetup();
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
@@ -386,7 +470,11 @@ class _PointCountSetupScreenState extends ConsumerState<PointCountSetupScreen>
             confidenceThreshold: _confidenceThreshold,
             sensitivity: _sensitivity,
             speciesFilterMode: _speciesFilterMode,
-            onInferenceRateChanged: (v) => setState(() => _inferenceRate = v),
+            onInferenceRateChanged: (v) => setState(() {
+              // The slider's steps are not exact tenths; the settings are.
+              _inferenceRate = (v * 10).round() / 10;
+              _rateBeforeLimit = null;
+            }),
             onConfidenceChanged: (v) =>
                 setState(() => _confidenceThreshold = v),
             onSensitivityChanged: (v) => setState(() => _sensitivity = v),

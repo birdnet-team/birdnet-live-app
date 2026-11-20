@@ -31,6 +31,8 @@ All'avvio viene salvata subito una Session `SessionType.aru` con metadati del pr
 
 Le esportazioni JSON e ZIP includono i metadati dell'installazione ARU. Le esportazioni ZIP raggruppano i file di registrazione salvati per ciclo sotto `aru_cycles/`.
 
+La configurazione ricorda le scelte di registrazione e di pianificazione dell'ultima installazione avviata. Il nome dell'installazione, le coordinate e la data di fine ripartono da zero ogni volta.
+
 ## Schermata dell'installazione attiva
 
 La schermata ARU attiva mostra se l'installazione è in attesa, in registrazione o completata. Il layout usa quattro schede:

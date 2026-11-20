@@ -500,6 +500,7 @@ class FileAnalysisController {
           confidenceThreshold: confidenceThreshold,
           inferenceRate: 0, // Not applicable for file analysis.
           speciesFilterMode: speciesFilterMode,
+          geoThreshold: geoThreshold,
           sensitivity: sensitivity,
           ignoreBirds: ignoreSettings.ignoreBirds,
           ignoreMammals: ignoreSettings.ignoreMammals,
@@ -517,7 +518,7 @@ class FileAnalysisController {
           poolingSupportThresholdFloor: advancedPooling.supportThresholdFloor,
           poolingVeryHighImmediateThreshold:
               advancedPooling.veryHighImmediateThreshold,
-        ),
+        ).withGeoScoresAvailable(geoScores != null),
         latitude: latitude,
         longitude: longitude,
         altitude: fix?.altitude,

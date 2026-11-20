@@ -203,10 +203,14 @@ ShareExportConfig defaultUploadConfig(
 final uploadServiceProvider = Provider<UploadService>((ref) {
   // Uploads carry who sent them in the record's metadata: the device code
   // (the folder name) and the participant identifier, if one was entered.
-  Future<Map<String, dynamic>> metadataFor(LiveSession session) async {
+  Future<Map<String, dynamic>> metadataFor(
+    LiveSession session,
+    ShareExportConfig config,
+  ) async {
     final meta = await buildSessionExportMetadata(
       session,
       speciesLocale: ref.read(effectiveSpeciesLocaleProvider),
+      exportConfig: config,
     );
     final participant = ref.read(uploadParticipantProvider);
     return {
@@ -253,7 +257,7 @@ final uploadServiceProvider = Provider<UploadService>((ref) {
         taxonomy: taxonomy,
         speciesLocale: speciesLocale,
         clipContextSecondsOverride: clipContextOverride,
-        metadata: await metadataFor(session),
+        metadata: await metadataFor(session, config),
         useAbsoluteSurveyTime:
             ref.read(timestampDisplayModeProvider) == 'absolute',
         includeHtmlReport: config.includeHtmlReport,

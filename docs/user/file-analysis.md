@@ -59,6 +59,8 @@ The wizard exposes:
 - confidence threshold
 - species filter mode
 
+The wizard remembers the parameters and the location choice of the last analysis you started. The file, its coordinates, and the recording date start fresh each time.
+
 | Setup control | Icon |
 |---|---|
 | Window duration | :app-timerOutlined: |

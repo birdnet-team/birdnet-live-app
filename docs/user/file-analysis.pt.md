@@ -59,6 +59,8 @@ O assistente expõe:
 - limiar de confiança
 - modo do filtro de espécies
 
+O assistente lembra os parâmetros e a opção de localização da última análise iniciada. O arquivo, suas coordenadas e a data da gravação começam do zero a cada vez.
+
 | Controle de configuração | Ícone |
 |---|---|
 | Duração da janela | :app-timerOutlined: |

@@ -31,6 +31,8 @@ Beim Start wird sofort eine `SessionType.aru`-Session mit ARU-Zeitplanmetadaten 
 
 JSON- und ZIP-Exporte enthalten die Metadaten des ARU-Einsatzes. ZIP-Exporte bündeln gespeicherte Aufnahmedateien pro Zyklus unter `aru_cycles/`.
 
+Die Einrichtung merkt sich die Aufnahme- und Zeitplaneinstellungen des zuletzt gestarteten Einsatzes. Einsatzname, Koordinaten und ein Enddatum werden jedes Mal neu festgelegt.
+
 ## Aktiver Einsatz
 
 Der aktive ARU-Bildschirm zeigt, ob der Einsatz wartet, aufnimmt oder abgeschlossen ist. Das Layout verwendet vier Tabs:

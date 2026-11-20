@@ -280,6 +280,11 @@ class _AruActiveScreenState extends ConsumerState<AruActiveScreen>
             scientificNames: geoInputs.ignoredSpeciesNames,
             geoScores: geoInputs.geoScores,
           );
+      // The deployment's own snapshot, not the live controller's.
+      final aruSession = ref.read(aruSessionProvider);
+      if (aruSession != null && geoInputs.geoScores != null) {
+        aruSession.settings = aruSession.settings.withGeoScoresAvailable(true);
+      }
     });
     ref.listen<double>(audioGainProvider, (_, next) {
       ref.read(audioCaptureServiceProvider).setGain(next);

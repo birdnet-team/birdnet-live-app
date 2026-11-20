@@ -31,6 +31,8 @@ Rozpoczęcie wdrożenia od razu zapisuje Session typu `SessionType.aru` z metada
 
 Eksporty JSON i ZIP zawierają metadane wdrożenia ARU. Eksporty ZIP grupują zapisane pliki nagrań poszczególnych cykli w katalogu `aru_cycles/`.
 
+Konfiguracja zapamiętuje ustawienia nagrywania i harmonogramu ostatnio uruchomionego wdrożenia. Nazwa wdrożenia, współrzędne i data zakończenia są za każdym razem puste.
+
 ## Ekran aktywnego wdrożenia
 
 Ekran aktywnego wdrożenia ARU pokazuje, czy wdrożenie czeka, nagrywa czy zostało ukończone. Układ opiera się na czterech zakładkach:

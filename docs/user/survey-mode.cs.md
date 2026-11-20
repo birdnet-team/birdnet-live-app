@@ -21,6 +21,8 @@ Můžete zadat:
 
 Tento krok také zpřístupní výběr na mapě, obnoví GPS, když se vrátíte ze systémových obrazovek oprávnění, a v případě potřeby zobrazí připomenutí oprávnění ke GPS na pozadí. Ve stejné sekci polohy je k dispozici karta počasí. Pokud je přístup k počasí vypnutý, požádá o souhlas **Povolit načítání počasí**; po zapnutí zobrazí náhled místa s ikonou počasí, teplotou a pouze větrem. Stejný uložený snímek z Open-Meteo se znovu použije při uložení Survey.
 
+Průvodce si pamatuje volbu polohy posledního spuštěného Survey. Název a souřadnice se pokaždé zadávají znovu.
+
 ### 2. Parametry
 
 Tento krok obsahuje parametry specifické pro Survey, například:

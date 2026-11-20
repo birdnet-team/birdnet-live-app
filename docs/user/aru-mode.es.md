@@ -31,6 +31,8 @@ Al iniciar, se guarda inmediatamente una Session `SessionType.aru` con metadatos
 
 Las exportaciones JSON y ZIP incluyen metadatos del despliegue ARU. Las exportaciones ZIP agrupan los archivos de grabación por ciclo guardados en `aru_cycles/`.
 
+La configuración recuerda las opciones de grabación y de programación del último despliegue iniciado. El nombre del despliegue, las coordenadas y la fecha de fin empiezan de cero cada vez.
+
 ## Pantalla de despliegue activo
 
 La pantalla ARU activa muestra si el despliegue está esperando, grabando o completado. Su diseño usa cuatro pestañas:

@@ -28,6 +28,8 @@ fois activée, elle donne un aperçu du site avec une icône météo, la tempér
 et le vent uniquement. Le même instantané Open-Meteo mis en cache est réutilisé
 lors de l'enregistrement du relevé.
 
+L'assistant mémorise le choix de localisation du dernier Survey lancé. Le nom et les coordonnées repartent de zéro à chaque fois.
+
 ### 2. Paramètres
 
 Cette étape contient des paramètres propres à Survey, tels que :

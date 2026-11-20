@@ -31,6 +31,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/app_constants.dart';
 import '../live/live_session.dart';
 import 'export_device_info.dart';
+import 'services/share_export_config.dart';
 import 'session_export.dart';
 
 /// Builds the standard export metadata map for [session].
@@ -38,9 +39,14 @@ import 'session_export.dart';
 /// [speciesLocale] is the user's effective species locale at export time
 /// (e.g. `en`, `de`) and is recorded in the metadata so consumers know
 /// which language the `commonName` fields use.
+///
+/// [exportConfig] is what this export actually includes. The Share dialog
+/// and queued uploads can differ from the saved export preferences, so pass
+/// it whenever one is in play; without it the saved preferences are recorded.
 Future<Map<String, dynamic>> buildSessionExportMetadata(
   LiveSession session, {
   required String speciesLocale,
+  ShareExportConfig? exportConfig,
 }) async {
   String? appVersion;
   String? appBuildNumber;
@@ -76,6 +82,17 @@ Future<Map<String, dynamic>> buildSessionExportMetadata(
     prefsMap = _relevantExportPreferences(prefs);
   } catch (_) {
     /* non-fatal */
+  }
+  if (exportConfig != null) {
+    prefsMap = {
+      ...?prefsMap,
+      PrefKeys.exportSelection: [
+        for (final format in shareExportFormatOrder)
+          if (exportConfig.formats.contains(format)) format,
+      ].join(','),
+      PrefKeys.includeAudio: exportConfig.includeAudio,
+      PrefKeys.exportHtmlReport: exportConfig.includeHtmlReport,
+    };
   }
 
   final deviceInfo = await exportDeviceInfo();

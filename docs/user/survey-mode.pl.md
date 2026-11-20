@@ -27,6 +27,8 @@ pogody. Jeśli dostęp do danych pogodowych jest wyłączony, karta prosi o zgod
 ikoną pogody, temperaturą i wiatrem. Ten sam zapisany w pamięci podręcznej
 odczyt z Open-Meteo zostanie użyty przy zapisie Survey.
 
+Kreator zapamiętuje wybór lokalizacji ostatnio uruchomionego Survey. Nazwa i współrzędne są za każdym razem puste.
+
 ### 2. Parametry
 
 Ten krok zawiera parametry właściwe dla Survey, takie jak:

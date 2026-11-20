@@ -28,6 +28,8 @@ mostra un'anteprima del sito con un'icona meteo, solo temperatura e vento. Lo
 stesso snapshot di Open-Meteo memorizzato nella cache viene riutilizzato quando
 il Survey viene salvato.
 
+La procedura guidata ricorda la scelta della posizione dell'ultimo Survey avviato. Il nome e le coordinate ripartono da zero ogni volta.
+
 ### 2. Parametri
 
 Questo passaggio contiene parametri specifici del Survey, come:

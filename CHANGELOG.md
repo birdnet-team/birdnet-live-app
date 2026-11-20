@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The Point Count, Survey, ARU, and File Analysis setup wizards remember what the last session was started with, including the location choice, so several Point Counts in a row need no re-entry. Names, coordinates, the ARU end date, and the file's recording date start fresh each time.
 - New **Non-animal sounds** switch in Settings › Inference, off by default. When on, the model's 16 sound classes (aircraft, boat, chainsaw, engine, explosion, fire, fireworks, gun, hammer, motor vehicle, music, power tool, sawing, siren, train, vehicle horn) are reported like any other detection; location filters do not apply to them and Explore does not list them.
 - Exports now carry each species' BirdNET ID: a `BirdNET ID` column after `Scientific Name` in CSV and Raven Selection Tables, a `birdnetId` field in JSON, a waypoint extension in GPX, and a label in the HTML report. Sessions recorded with earlier versions get it too, export metadata names the taxonomy version the IDs refer to, and scripts that read CSV or Raven columns by position need updating.
 - The models can now detect **Human** voices. Human is reported like any other mammal for now, so **Ignore species › Mammals** also hides it.
@@ -29,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Export metadata no longer reports a location filter that never ran: without a location or geo-model scores, `speciesFilterMode` is `off` and the selected mode is kept as `requestedSpeciesFilterMode`.
+- Export metadata now includes the location filter threshold and the **Ignore species** and sound class choices of the session, lists the export options of that share or upload instead of the saved defaults, and leaves out the clip context for sessions without detection clips.
+- A resumed Survey keeps the species filter it was started with instead of switching to the current setting, so its metadata describes the whole Survey.
 - Model updates no longer leave old model files behind: extracted copies of models the app no longer ships are deleted from app storage, freeing about 80 MB on Android after this update.
 - A species renamed by a taxonomy update is no longer treated as two species in the Session Library's species view, the Explore "detected" badges, Survey watchlists, and "first ever" alerts.
 - A corrupt label file now stops the model from loading, and a label file that does not match the model stops inference, each with a clear error instead of silently pairing species with the wrong scores.
