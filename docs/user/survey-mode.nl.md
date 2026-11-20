@@ -28,6 +28,8 @@ aanstaat, toont die een voorbeeld van de locatie met alleen een weerpictogram,
 de temperatuur en de wind. Dezelfde in de cache opgeslagen momentopname van
 Open-Meteo wordt hergebruikt wanneer de Survey wordt opgeslagen.
 
+De wizard onthoudt de locatiekeuze van de laatst gestarte Survey. De naam en de coördinaten beginnen elke keer leeg.
+
 ### 2. Parameters
 
 Deze stap bevat parameters die specifiek voor een Survey gelden, zoals:

@@ -59,6 +59,8 @@ Kreator udostępnia:
 - próg pewności
 - tryb filtra gatunków
 
+Kreator zapamiętuje parametry i wybór lokalizacji ostatnio uruchomionej analizy. Plik, jego współrzędne i data nagrania są za każdym razem puste.
+
 | Element konfiguracji | Ikona |
 |---|---|
 | Czas trwania okna | :app-timerOutlined: |

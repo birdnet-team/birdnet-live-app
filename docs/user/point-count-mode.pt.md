@@ -27,6 +27,8 @@ A tela de configuração atualiza o GPS quando você volta da caixa de diálogo 
 
 Escolha as configurações de análise por Session, como taxa de inferência, limiar de confiança e o modo do filtro de espécies. Elas partem das suas configurações globais, mas podem ser ajustadas para esta contagem sem alterar seus padrões.
 
+O assistente lembra as configurações e a opção de localização do último Point Count iniciado, de modo que várias contagens seguidas não exigem digitar tudo de novo. O nome e as coordenadas começam do zero a cada vez.
+
 | Controle de configuração | Ícone |
 |---|---|
 | Microfone | :app-micRounded: |

@@ -59,6 +59,8 @@ La procedura guidata mostra:
 - soglia di confidenza
 - modalità del filtro specie
 
+La procedura guidata ricorda i parametri e la scelta della posizione dell'ultima analisi avviata. Il file, le sue coordinate e la data di registrazione ripartono da zero ogni volta.
+
 | Controllo di configurazione | Icona |
 |---|---|
 | Durata della finestra | :app-timerOutlined: |

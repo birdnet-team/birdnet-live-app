@@ -30,6 +30,9 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../core/services/location_service.dart';
 import '../../shared/models/taxonomy_species.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/providers/app_providers.dart';
+import '../../shared/services/setup_memory.dart';
 import '../../shared/services/taxonomy_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
 import '../../shared/widgets/inference_rate_limit_note.dart';
@@ -88,21 +91,32 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
 
+  static const _memoryLocationChoice = 'locationChoice';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _observerController.text = ref.read(lastObserverProvider);
     _transectController.text = ref.read(surveyLastTransectIdProvider);
+    // The Survey parameters each have a preference of their own; only the
+    // location choice lives in this wizard. Its coordinates are not kept.
+    final rememberedLocation = SetupMemory.load(
+      ref.read(sharedPreferencesProvider),
+      PrefKeys.surveySetupMemory,
+    ).enumValue(_memoryLocationChoice, _LocationChoice.values);
     if (ref.read(useGpsProvider)) {
+      _locationChoice = rememberedLocation ?? _LocationChoice.gps;
       // Reuse a recent fix if one is still warm — closing and reopening the
       // wizard within a couple of minutes shouldn't burn another 10s on the
       // same fix.
-      _fetchGpsLocation();
+      if (_locationChoice == _LocationChoice.gps) _fetchGpsLocation();
     } else {
       // GPS is off app-wide: start on the manual tab seeded with the
       // coordinates from Settings rather than presenting them as a fix.
-      _locationChoice = _LocationChoice.manual;
+      _locationChoice = rememberedLocation == _LocationChoice.skip
+          ? _LocationChoice.skip
+          : _LocationChoice.manual;
       _latitude = ref.read(manualLatitudeProvider);
       _longitude = ref.read(manualLongitudeProvider);
       _latController.text = _latitude!.toStringAsFixed(5);
@@ -312,6 +326,13 @@ class _SurveySetupScreenState extends ConsumerState<SurveySetupScreen>
     if (transect.isNotEmpty) {
       ref.read(surveyLastTransectIdProvider.notifier).set(transect);
     }
+    unawaited(
+      SetupMemory.save(
+        ref.read(sharedPreferencesProvider),
+        PrefKeys.surveySetupMemory,
+        {_memoryLocationChoice: _locationChoice.name},
+      ),
+    );
 
     final lat = _locationChoice == _LocationChoice.skip ? null : _latitude;
     final lon = _locationChoice == _LocationChoice.skip ? null : _longitude;

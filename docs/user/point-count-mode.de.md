@@ -38,6 +38,8 @@ Konfidenzschwellenwert und Artenfilter. Diese gehen von Ihren globalen
 Einstellungen aus, lassen sich aber für diese Zählung anpassen, ohne Ihre
 Standardwerte zu ändern.
 
+Der Assistent merkt sich die Einstellungen und die Standortwahl des zuletzt gestarteten Point Count, sodass mehrere Zählungen hintereinander ohne erneute Eingabe möglich sind. Name und Koordinaten werden jedes Mal neu erfasst.
+
 | Einrichtungselement | Symbol |
 |---|---|
 | Mikrofon | :app-micRounded: |

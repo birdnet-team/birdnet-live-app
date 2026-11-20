@@ -59,6 +59,8 @@ Der Assistent zeigt:
 - Konfidenzschwellenwert
 - Artenfilter
 
+Der Assistent merkt sich die Parameter und die Standortwahl der zuletzt gestarteten Analyse. Datei, Koordinaten und Aufnahmedatum werden jedes Mal neu gewählt.
+
 | Einrichtungselement | Symbol |
 |---|---|
 | Fensterdauer | :app-timerOutlined: |

@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:birdnet_live/l10n/app_localizations.dart';
 import 'package:birdnet_live/shared/providers/settings_providers.dart';
+import 'package:birdnet_live/core/constants/app_constants.dart';
+import 'package:birdnet_live/shared/providers/app_providers.dart';
+import 'package:birdnet_live/shared/services/setup_memory.dart';
 import 'package:birdnet_live/shared/utils/app_icons.dart';
 import 'package:birdnet_live/shared/widgets/app_help_bottom_sheet.dart';
 import 'package:birdnet_live/shared/widgets/inference_rate_limit_note.dart';
@@ -87,12 +90,16 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
     _stationController.text = ref.read(aruLastStationIdProvider);
     _inferenceRate = ref.read(aruInferenceRateProvider);
     _scheduleEnd = _defaultScheduleEnd();
+    final rememberedLocation = _restoreSetup();
     if (ref.read(useGpsProvider)) {
-      _fetchGpsLocation();
+      _locationChoice = rememberedLocation ?? _LocationChoice.gps;
+      if (_locationChoice == _LocationChoice.gps) _fetchGpsLocation();
     } else {
       // GPS is off app-wide: start on the manual tab seeded with the
       // coordinates from Settings rather than presenting them as a fix.
-      _locationChoice = _LocationChoice.manual;
+      _locationChoice = rememberedLocation == _LocationChoice.skip
+          ? _LocationChoice.skip
+          : _LocationChoice.manual;
       _latitude = ref.read(manualLatitudeProvider);
       _longitude = ref.read(manualLongitudeProvider);
       _latController.text = _latitude!.toStringAsFixed(6);
@@ -251,6 +258,97 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       ? _effectiveLowBatteryResume(_lowBatteryResume, _lowBatteryStop)
       : null;
 
+  /// Restore what the last deployment was started with and return its
+  /// location choice. The end date and the coordinates belong to that
+  /// deployment and are not kept; the inference rate has its own preference.
+  _LocationChoice? _restoreSetup() {
+    final memory = SetupMemory.load(
+      ref.read(sharedPreferencesProvider),
+      PrefKeys.aruSetupMemory,
+    );
+    Duration? option(String name, List<Duration> options) {
+      final seconds = memory.intValue(name);
+      for (final candidate in options) {
+        if (candidate.inSeconds == seconds) return candidate;
+      }
+      return null;
+    }
+
+    _cycleDuration =
+        option(_memoryCycleDuration, AruDefaults.cycleDurationOptions) ??
+        _cycleDuration;
+    _repeatInterval =
+        option(_memoryRepeatInterval, AruDefaults.repeatIntervalOptions) ??
+        _repeatInterval;
+    if (_repeatInterval < _cycleDuration) {
+      _repeatInterval = _nearestRepeatInterval(_cycleDuration);
+    }
+    _scheduleEndMode =
+        memory.enumValue(_memoryScheduleEndMode, _ScheduleEndMode.values) ??
+        _scheduleEndMode;
+    _maxCycles =
+        memory.intValue(_memoryMaxCycles, min: 1, max: 72) ?? _maxCycles;
+    _lowBatteryStop =
+        memory.intValue(_memoryLowBatteryStop, min: 0, max: 50) ??
+        _lowBatteryStop;
+    _lowBatteryResume = _effectiveLowBatteryResume(
+      memory.intValue(_memoryLowBatteryResume) ?? _lowBatteryResume,
+      _lowBatteryStop,
+    );
+    _dielPattern =
+        memory.enumValue(_memoryDielPattern, AruDielPattern.values) ??
+        _dielPattern;
+    _recordingMode =
+        memory.enumValue(_memoryRecordingMode, RecordingMode.values) ??
+        _recordingMode;
+    _samplingMode =
+        memory.enumValue(_memorySamplingMode, SamplingMode.values) ??
+        _samplingMode;
+    _topNPerSpecies =
+        memory.intValue(_memoryTopNPerSpecies, min: 1, max: 50) ??
+        _topNPerSpecies;
+    _testCycleEnabled = memory.boolValue(_memoryTestCycle) ?? _testCycleEnabled;
+    _eachCycleIsSession =
+        memory.boolValue(_memoryEachCycleIsSession) ?? _eachCycleIsSession;
+    return memory.enumValue(_memoryLocationChoice, _LocationChoice.values);
+  }
+
+  Future<void> _rememberSetup() {
+    return SetupMemory.save(
+      ref.read(sharedPreferencesProvider),
+      PrefKeys.aruSetupMemory,
+      {
+        _memoryLocationChoice: _locationChoice.name,
+        _memoryCycleDuration: _cycleDuration.inSeconds,
+        _memoryRepeatInterval: _repeatInterval.inSeconds,
+        _memoryScheduleEndMode: _scheduleEndMode.name,
+        _memoryMaxCycles: _maxCycles,
+        _memoryLowBatteryStop: _lowBatteryStop,
+        _memoryLowBatteryResume: _lowBatteryResume,
+        _memoryDielPattern: _dielPattern.name,
+        _memoryRecordingMode: _recordingMode.name,
+        _memorySamplingMode: _samplingMode.name,
+        _memoryTopNPerSpecies: _topNPerSpecies,
+        _memoryTestCycle: _testCycleEnabled,
+        _memoryEachCycleIsSession: _eachCycleIsSession,
+      },
+    );
+  }
+
+  static const _memoryLocationChoice = 'locationChoice';
+  static const _memoryCycleDuration = 'cycleDurationSeconds';
+  static const _memoryRepeatInterval = 'repeatIntervalSeconds';
+  static const _memoryScheduleEndMode = 'scheduleEndMode';
+  static const _memoryMaxCycles = 'maxCycles';
+  static const _memoryLowBatteryStop = 'lowBatteryStopPercent';
+  static const _memoryLowBatteryResume = 'lowBatteryResumePercent';
+  static const _memoryDielPattern = 'dielPattern';
+  static const _memoryRecordingMode = 'recordingMode';
+  static const _memorySamplingMode = 'samplingMode';
+  static const _memoryTopNPerSpecies = 'topNPerSpecies';
+  static const _memoryTestCycle = 'testCycleEnabled';
+  static const _memoryEachCycleIsSession = 'eachCycleIsSession';
+
   void _showActiveDeployment() {
     final inMemorySession = ref.read(aruSessionProvider);
     final inMemoryState = ref.read(aruStateProvider);
@@ -387,6 +485,7 @@ class _AruSetupScreenState extends ConsumerState<AruSetupScreen> {
       );
       ref.read(aruStateProvider.notifier).state = controller.state;
       ref.read(aruSessionProvider.notifier).state = controller.session;
+      await _rememberSetup();
 
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

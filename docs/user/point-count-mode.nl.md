@@ -37,6 +37,8 @@ Kies analyse-instellingen voor deze Session, zoals de inferentiefrequentie, de b
 soortenfilter. Ze beginnen bij je globale instellingen, maar je kunt ze voor
 deze telling aanpassen zonder je standaardwaarden te wijzigen.
 
+De wizard onthoudt de instellingen en de locatiekeuze van de laatst gestarte Point Count, zodat je bij meerdere tellingen achter elkaar niets opnieuw hoeft in te voeren. De naam en de coördinaten beginnen elke keer leeg.
+
 | Instelling | Pictogram |
 |---|---|
 | Microfoon | :app-micRounded: |

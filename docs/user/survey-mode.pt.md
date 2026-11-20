@@ -21,6 +21,8 @@ Você pode inserir:
 
 Esta etapa também disponibiliza o seletor de mapa, atualiza o GPS quando você volta das telas de permissão do sistema e mostra o lembrete de permissão de GPS em segundo plano quando necessário. Um cartão de clima está disponível na mesma área de localização. Se o acesso ao clima estiver desativado, ele solicita o consentimento de **Permitir consulta de clima**; uma vez ativado, ele apresenta uma prévia do local apenas com um ícone de clima, a temperatura e o vento. O mesmo instantâneo em cache do Open-Meteo é reutilizado quando o Survey é salvo.
 
+O assistente lembra a opção de localização do último Survey iniciado. O nome e as coordenadas começam do zero a cada vez.
+
 ### 2. Parâmetros
 
 Esta etapa contém parâmetros específicos do Survey, como:

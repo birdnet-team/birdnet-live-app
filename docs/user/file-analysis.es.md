@@ -59,6 +59,8 @@ El asistente muestra:
 - umbral de confianza
 - modo de filtro de especies
 
+El asistente recuerda los parámetros y la opción de ubicación del último análisis iniciado. El archivo, sus coordenadas y la fecha de grabación empiezan de cero cada vez.
+
 | Control de configuración | Icono |
 |---|---|
 | Duración de la ventana | :app-timerOutlined: |

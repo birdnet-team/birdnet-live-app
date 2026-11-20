@@ -39,6 +39,9 @@ import 'package:latlong2/latlong.dart';
 import '../../core/services/reverse_geocoding_service.dart';
 import '../../core/services/location_service.dart';
 import '../../shared/providers/settings_providers.dart';
+import '../../core/constants/app_constants.dart';
+import '../../shared/providers/app_providers.dart';
+import '../../shared/services/setup_memory.dart';
 import '../../shared/services/quick_action_service.dart';
 import '../../shared/services/shared_media_service.dart';
 import '../../shared/widgets/app_help_bottom_sheet.dart';
@@ -163,14 +166,34 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
   void initState() {
     super.initState();
     _analysisController = ref.read(fileAnalysisControllerProvider);
-    // Initialize parameters from global settings.
+    // Initialize parameters from what the last analysis was started with,
+    // and from global settings for anything it left at the default. The
+    // file, its coordinates and its date belong to one analysis only.
+    final memory = SetupMemory.load(
+      ref.read(sharedPreferencesProvider),
+      PrefKeys.fileAnalysisSetupMemory,
+    );
+    _locationChoice =
+        memory.enumValue(_memoryLocationChoice, _LocationChoice.values) ??
+        _locationChoice;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _windowDuration = ref.read(windowDurationProvider);
-      _sensitivity = ref.read(sensitivityProvider);
-      _confidenceThreshold = ref.read(confidenceThresholdProvider);
-      _speciesFilterMode = ref.read(speciesFilterModeProvider);
-      _overlap = 0.0;
+      _windowDuration =
+          memory.intValue(_memoryWindowDuration, min: 1, max: 15) ??
+          ref.read(windowDurationProvider);
+      _sensitivity =
+          memory.doubleValue(_memorySensitivity, min: 0.5, max: 1.5) ??
+          ref.read(sensitivityProvider);
+      _confidenceThreshold =
+          memory.intValue(_memoryConfidenceThreshold, min: 1, max: 99) ??
+          ref.read(confidenceThresholdProvider);
+      _speciesFilterMode =
+          memory.stringValue(
+            _memorySpeciesFilterMode,
+            allowed: _speciesFilterModes,
+          ) ??
+          ref.read(speciesFilterModeProvider);
+      _overlap = memory.doubleValue(_memoryOverlap, min: 0, max: 0.75) ?? 0.0;
       setState(() {});
     });
 
@@ -188,6 +211,42 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
         if (mounted) unawaited(_loadSharedFile(sharedFile));
       });
     }
+  }
+
+  static const _memoryLocationChoice = 'locationChoice';
+  static const _memoryWindowDuration = 'windowDuration';
+  static const _memoryOverlap = 'overlap';
+  static const _memorySensitivity = 'sensitivity';
+  static const _memoryConfidenceThreshold = 'confidenceThreshold';
+  static const _memorySpeciesFilterMode = 'speciesFilterMode';
+  static const _speciesFilterModes = [
+    'off',
+    'geoExclude',
+    'geoAdaptive',
+    'geoMerge',
+  ];
+
+  /// Remember what this analysis is started with. A parameter left at the
+  /// app-wide setting is not stored, so it keeps following Settings.
+  void _rememberSetup() {
+    unawaited(
+      SetupMemory.save(
+        ref.read(sharedPreferencesProvider),
+        PrefKeys.fileAnalysisSetupMemory,
+        {
+          _memoryLocationChoice: _locationChoice.name,
+          _memoryOverlap: _overlap,
+          if (_windowDuration != ref.read(windowDurationProvider))
+            _memoryWindowDuration: _windowDuration,
+          if (_sensitivity != ref.read(sensitivityProvider))
+            _memorySensitivity: _sensitivity,
+          if (_confidenceThreshold != ref.read(confidenceThresholdProvider))
+            _memoryConfidenceThreshold: _confidenceThreshold,
+          if (_speciesFilterMode != ref.read(speciesFilterModeProvider))
+            _memorySpeciesFilterMode: _speciesFilterMode,
+        },
+      ),
+    );
   }
 
   @override
@@ -529,6 +588,7 @@ class _FileAnalysisScreenState extends ConsumerState<FileAnalysisScreen> {
     );
 
     if (session != null && mounted) {
+      _rememberSetup();
       // Save session and navigate to review.
       final repo = ref.read(sessionRepositoryProvider);
       final container = ProviderScope.containerOf(context, listen: false);

@@ -31,6 +31,8 @@ Zodra je een inzet start, wordt meteen een Session van het type `SessionType.aru
 
 JSON- en ZIP-exports bevatten de metadata van de ARU-inzet. ZIP-exports bundelen de opgeslagen opnamebestanden per cyclus onder `aru_cycles/`.
 
+De configuratie onthoudt de opname- en planningskeuzes van de laatst gestarte inzet. De naam van de inzet, de coördinaten en een einddatum beginnen elke keer leeg.
+
 ## Scherm van de actieve inzet
 
 Het scherm van de actieve ARU-inzet toont of die wacht, opneemt of voltooid is. De indeling gebruikt vier tabbladen:

@@ -321,6 +321,12 @@ abstract final class PrefKeys {
   static const String pointCountBackgroundEnabled =
       'point_count_background_enabled';
 
+  /// What each setup wizard was last started with; see `SetupMemory`.
+  static const String pointCountSetupMemory = 'point_count_setup_memory';
+  static const String surveySetupMemory = 'survey_setup_memory';
+  static const String aruSetupMemory = 'aru_setup_memory';
+  static const String fileAnalysisSetupMemory = 'file_analysis_setup_memory';
+
   // Shared field-session identity settings
   static const String lastObserver = 'last_observer';
   static const String aruLastStationId = 'aru_last_station_id';

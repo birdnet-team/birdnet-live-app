@@ -28,6 +28,8 @@ Karte eine Vorschau des Standorts mit Wettersymbol, Temperatur und Wind. Beim
 Speichern des Surveys wird dieselbe zwischengespeicherte Open-Meteo-Momentaufnahme
 wiederverwendet.
 
+Der Assistent merkt sich die Standortwahl des zuletzt gestarteten Survey. Name und Koordinaten werden jedes Mal neu erfasst.
+
 ### 2. Parameter
 
 Dieser Schritt enthält Survey-spezifische Parameter wie:

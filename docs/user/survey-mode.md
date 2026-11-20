@@ -28,6 +28,8 @@ access is off, it asks for **Allow weather lookup** consent; once enabled, it
 previews the site with a weather icon, temperature, and wind only. The same
 cached Open-Meteo snapshot is reused when the survey is saved.
 
+The wizard remembers the location choice of the last Survey you started. The name and the coordinates start fresh each time.
+
 ### 2. Parameters
 
 This step contains Survey-specific parameters such as:

@@ -31,6 +31,8 @@ Au démarrage, une Session `SessionType.aru` est immédiatement enregistrée ave
 
 Les exports JSON et ZIP incluent les métadonnées du déploiement ARU. Les exports ZIP regroupent les fichiers d'enregistrement par cycle enregistrés sous `aru_cycles/`.
 
+La configuration mémorise les choix d'enregistrement et de planification du dernier déploiement lancé. Le nom du déploiement, les coordonnées et la date de fin repartent de zéro à chaque fois.
+
 ## Écran de déploiement actif
 
 L'écran ARU actif indique si le déploiement est en attente, en enregistrement ou terminé. Sa mise en page utilise quatre onglets :

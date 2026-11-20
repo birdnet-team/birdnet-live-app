@@ -31,6 +31,8 @@ Při spuštění se okamžitě uloží `SessionType.aru` Session s metadaty plá
 
 Exporty JSON a ZIP obsahují metadata nasazení ARU. Exporty ZIP přibalí uložené nahrávky jednotlivých cyklů pod `aru_cycles/`.
 
+Nastavení si pamatuje volby nahrávání a plánu posledního spuštěného nasazení. Název nasazení, souřadnice a datum ukončení se pokaždé zadávají znovu.
+
 ## Aktivní nasazení
 
 Aktivní obrazovka ARU ukazuje, zda nasazení čeká, nahrává nebo je dokončeno. Rozložení používá čtyři karty:

@@ -37,6 +37,8 @@ Choisissez les paramètres d'analyse propres à la Session, comme la fréquence 
 d'espèces. Ils partent de vos paramètres globaux, mais peuvent être ajustés pour
 ce comptage sans modifier vos valeurs par défaut.
 
+L'assistant mémorise les paramètres et le choix de localisation du dernier Point Count lancé, de sorte que plusieurs comptages à la suite ne demandent aucune nouvelle saisie. Le nom et les coordonnées repartent de zéro à chaque fois.
+
 | Commande de configuration | Icône |
 |---|---|
 | Microphone | :app-micRounded: |
