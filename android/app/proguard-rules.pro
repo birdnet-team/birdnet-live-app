@@ -5,7 +5,8 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 
-# Suppress warnings for Play Core deferred components (not used)
+# Flutter's embedding references Play Core for deferred components, which the
+# app does not use and does not ship.
 -dontwarn com.google.android.play.core.**
 
 # play-services-location is excluded in build.gradle (see the comment there),
@@ -17,8 +18,8 @@
 # shrinking need a rule — but that set is an artefact of which FusedLocationClient
 # methods survive, so a geolocator upgrade or an R8 change can silently add a
 # new one and break the release build only. Suppress the whole tree instead;
-# the app calls no GMS API of its own, and Play Asset Delivery lives under
-# com.google.android.play, so this hides nothing we care about.
+# the app calls no GMS API of its own and ships no GMS library, so this hides
+# nothing we care about.
 -dontwarn com.google.android.gms.**
 
 # Room instantiates its generated database classes reflectively through the
