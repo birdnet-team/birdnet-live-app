@@ -134,7 +134,7 @@ Deze instelling regelt het openen van Live Mode binnen de app. [Quick Listen](li
 
 **Point Count** gaat standaard door bij vergrendelen of wisselen van app met het scherm aan en eindigt na de gekozen duur. **Doorgaan met uitgeschakeld scherm** staat alleen in de eerste wizardstap. Zet het uit om bij deze acties eerder te stoppen. Het vraagteken verklaart het gedrag. Pauzeren en hervatten zou een gat in het getimede protocol maken. De stap Klaar vat de keuze samen en het Session-overzicht toont de reden bij vroegtijdig stoppen.
 
-Android toont tijdens achtergrondgebruik een blijvende melding met Openen en Stoppen; het scherm mag normaal uitgaan. Kan achtergrondgebruik niet starten, houd de app dan open: op de achtergrond pauzeert Live Mode en eindigt Point Count. De app verlaten tijdens het starten van een Point Count annuleert die met een melding; stel de telling opnieuw in. In Windows pauzeert minimaliseren nooit Live Mode en beëindigt het nooit Point Count, ongeacht deze schakelaars.
+Android toont tijdens achtergrondgebruik een blijvende melding met Openen en Stoppen. Tijdens een Point Count mag het scherm normaal uitgaan; Live Mode houdt het aan tot je de telefoon vergrendelt of de app verlaat. Kan achtergrondgebruik niet starten, houd de app dan open: op de achtergrond pauzeert Live Mode en eindigt Point Count. De app verlaten tijdens het starten van een Point Count annuleert die met een melding; stel de telling opnieuw in. In Windows pauzeert minimaliseren nooit Live Mode en beëindigt het nooit Point Count, ongeacht deze schakelaars.
 
 ## Inferentie
 

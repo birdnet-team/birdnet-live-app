@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Live Mode keeps the screen on with **Continue with screen off** enabled too. The display used to time out on its own; it now turns off only when you lock the phone.
 - Export metadata no longer reports a location filter that never ran: without a location or geo-model scores, `speciesFilterMode` is `off` and the selected mode is kept as `requestedSpeciesFilterMode`.
 - Export metadata now includes the location filter threshold and the **Ignore species** and sound class choices of the session, lists the export options of that share or upload instead of the saved defaults, and leaves out the clip context for sessions without detection clips.
 - A resumed Survey keeps the species filter it was started with instead of switching to the current setting, so its metadata describes the whole Survey.

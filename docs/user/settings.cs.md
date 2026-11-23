@@ -134,7 +134,7 @@ Toto nastavení se týká otevírání Live Mode uvnitř aplikace. [Rychlý posl
 
 **Point Count** ve výchozím nastavení pokračuje při zamknutí i přepnutí do jiné aplikace se zapnutou obrazovkou a končí po zvolené době. Přepínač **Pokračovat při vypnuté obrazovce** je pouze v prvním kroku nastavení. Vypněte jej, pokud mají tyto akce sčítání předčasně ukončit. Otazník vysvětluje chování. Pozastavení a obnovení by vytvořilo mezeru v časovaném protokolu. Obrazovka připravenosti shrnuje volbu a přehled Session ukazuje důvod předčasného konce.
 
-Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit; obrazovka se může normálně vypnout. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
+Android při povoleném provozu na pozadí zobrazuje trvalé oznámení s akcemi Otevřít a Zastavit. Během Point Count se obrazovka může normálně vypnout; Live Mode ji nechává zapnutou, dokud telefon nezamknete nebo aplikaci neopustíte. Pokud provoz na pozadí nelze spustit, ponechte aplikaci otevřenou: na pozadí se Live Mode pozastaví a Point Count skončí. Opuštění aplikace během spouštění Point Count jej zruší se zprávou; nastavte jej znovu. Ve Windows minimalizace nikdy nepozastaví Live Mode ani neukončí Point Count bez ohledu na přepínače.
 
 ## Inference
 

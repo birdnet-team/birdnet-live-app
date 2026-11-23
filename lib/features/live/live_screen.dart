@@ -668,7 +668,9 @@ class _LiveScreenState extends ConsumerState<LiveScreen>
             await WakelockService.enable();
           } else if (_backgroundReady) {
             await _backgroundService.update(l10n, minutes);
-            await WakelockService.disable();
+            // Background listening covers a deliberate lock or app switch; it
+            // must not let the display time out while Live Mode is in view.
+            await WakelockService.enable();
           } else {
             await WakelockService.enable();
             if (!mounted) return;

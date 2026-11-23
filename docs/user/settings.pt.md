@@ -134,7 +134,7 @@ Esta configuração vale para abrir o Live Mode de dentro do aplicativo. A [Escu
 
 **Point Count** continua por padrão ao bloquear a tela ou mudar de aplicativo com a tela acesa e termina após a duração escolhida. Seu controle **Continuar com a tela desligada** aparece apenas na primeira etapa da configuração. Desative-o para encerrar antes nessas situações. O ponto de interrogação explica o comportamento. Pausar e retomar deixaria uma lacuna no protocolo cronometrado. A etapa Pronto resume a escolha e o resumo da Session mostra o motivo de um término antecipado.
 
-O Android mostra uma notificação persistente com Abrir e Parar durante o funcionamento em segundo plano; a tela pode apagar normalmente. Se não for possível iniciar esse funcionamento, mantenha o aplicativo aberto: em segundo plano o Live Mode pausa e o Point Count termina. Sair durante a inicialização de um Point Count o cancela com uma mensagem; configure-o novamente. No Windows, minimizar nunca pausa o Live Mode nem encerra o Point Count, independentemente desses controles.
+O Android mostra uma notificação persistente com Abrir e Parar durante o funcionamento em segundo plano. Durante um Point Count a tela pode apagar normalmente; o Live Mode a mantém ligada até você bloquear o telefone ou sair do aplicativo. Se não for possível iniciar esse funcionamento, mantenha o aplicativo aberto: em segundo plano o Live Mode pausa e o Point Count termina. Sair durante a inicialização de um Point Count o cancela com uma mensagem; configure-o novamente. No Windows, minimizar nunca pausa o Live Mode nem encerra o Point Count, independentemente desses controles.
 
 ## Inferência
 

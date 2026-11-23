@@ -134,7 +134,7 @@ Questa impostazione riguarda l'apertura di Live Mode dall'interno dell'app. [Asc
 
 **Point Count** continua per impostazione predefinita quando blocchi lo schermo o cambi app a schermo acceso e termina alla durata scelta. L’interruttore **Continua a schermo spento** appare solo nel primo passaggio di configurazione. Disattivalo per terminare prima in questi casi. Il punto interrogativo spiega il comportamento. Una pausa seguita dalla ripresa creerebbe un’interruzione nel protocollo a tempo. La schermata di pronto riassume la scelta e il Riepilogo Session mostra il motivo di una fine anticipata.
 
-Android mostra una notifica persistente con Apri e Interrompi durante il funzionamento in background; lo schermo può spegnersi normalmente. Se il funzionamento non può iniziare, tieni l’app aperta: in background Live Mode si sospende e Point Count termina. Uscire durante l’avvio di un Point Count lo annulla con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non sospende mai Live Mode né termina Point Count, indipendentemente dagli interruttori.
+Android mostra una notifica persistente con Apri e Interrompi durante il funzionamento in background. Durante un Point Count lo schermo può spegnersi normalmente; Live Mode lo tiene acceso finché non blocchi il telefono o esci dall’app. Se il funzionamento non può iniziare, tieni l’app aperta: in background Live Mode si sospende e Point Count termina. Uscire durante l’avvio di un Point Count lo annulla con un messaggio; configuralo di nuovo. Su Windows, ridurre a icona non sospende mai Live Mode né termina Point Count, indipendentemente dagli interruttori.
 
 ## Inferenza
 
