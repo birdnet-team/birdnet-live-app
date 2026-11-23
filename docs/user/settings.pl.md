@@ -134,7 +134,7 @@ To ustawienie dotyczy otwierania Live Mode wewnątrz aplikacji. [Quick Listen](l
 
 **Point Count** domyślnie trwa po zablokowaniu ekranu lub zmianie aplikacji przy włączonym ekranie i kończy się po wybranym czasie. Przełącznik **Kontynuuj przy wyłączonym ekranie** jest tylko w pierwszym kroku konfiguracji. Wyłącz go, aby te działania kończyły liczenie wcześniej. Znak zapytania wyjaśnia zachowanie. Wstrzymanie i wznowienie tworzyłoby lukę w protokole czasowym. Ekran gotowości podsumowuje wybór, a Przegląd Session pokazuje powód wcześniejszego zakończenia.
 
-Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle; ekran może normalnie zgasnąć. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
+Android pokazuje stałe powiadomienie z Otwórz i Zatrzymaj podczas pracy w tle. W trakcie Point Count ekran może normalnie zgasnąć; Live Mode utrzymuje go włączony, dopóki nie zablokujesz telefonu lub nie opuścisz aplikacji. Jeśli pracy w tle nie da się rozpocząć, pozostaw aplikację otwartą: w tle Live Mode się wstrzyma, a Point Count zakończy. Wyjście podczas uruchamiania Point Count anuluje go z komunikatem; skonfiguruj go ponownie. W Windows minimalizacja nigdy nie wstrzymuje Live Mode ani nie kończy Point Count, niezależnie od przełączników.
 
 ## Analiza
 

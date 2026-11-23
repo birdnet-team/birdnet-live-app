@@ -134,7 +134,7 @@ Este ajuste rige la apertura de Live Mode desde dentro de la aplicación. [Escuc
 
 **Point Count** continúa de forma predeterminada al bloquear la pantalla o cambiar de aplicación con la pantalla encendida y termina tras la duración elegida. Su interruptor **Continuar con la pantalla apagada** solo aparece en el primer paso de configuración. Desactívalo para terminar antes al realizar esas acciones. El signo de interrogación explica el comportamiento. Pausar y reanudar dejaría un hueco en el protocolo cronometrado. La pantalla de listo resume la elección y la revisión de la Session muestra el motivo de un final anticipado.
 
-Android muestra una notificación persistente con Abrir y Detener durante el funcionamiento en segundo plano; la pantalla puede apagarse normalmente. Si no puede iniciarse, mantén la aplicación abierta: en segundo plano Live Mode se pausa y Point Count termina. Salir durante el inicio de un Point Count lo cancela con un mensaje; configúralo de nuevo. En Windows, minimizar nunca pausa Live Mode ni termina Point Count, independientemente de estos interruptores.
+Android muestra una notificación persistente con Abrir y Detener durante el funcionamiento en segundo plano. Durante un Point Count la pantalla puede apagarse normalmente; Live Mode la mantiene encendida hasta que bloqueas el teléfono o sales de la aplicación. Si no puede iniciarse, mantén la aplicación abierta: en segundo plano Live Mode se pausa y Point Count termina. Salir durante el inicio de un Point Count lo cancela con un mensaje; configúralo de nuevo. En Windows, minimizar nunca pausa Live Mode ni termina Point Count, independientemente de estos interruptores.
 
 ## Inferencia
 
