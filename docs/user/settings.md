@@ -292,7 +292,10 @@ A disclosure that exposes a handful of audio-routing toggles plus the trigger-mo
 
 Use device GPS instead of manual coordinates. On Android, fixes come from the
 platform location provider rather than Google Play Services, so the app does
-not trigger Google's location-accuracy resolution dialog. With this off, the
+not trigger Google's location-accuracy resolution dialog. Survey tracks read
+the GPS receiver directly, whatever Google Location Accuracy is set to; if only
+approximate location is granted, detections are still tagged but no track is
+drawn. With this off, the
 app never reads the GPS or asks for location permission on its own: the
 Survey, Point Count and ARU setup wizards open on manual entry with your saved
 coordinates, survey GPS tracking does not run, and offline map preparation

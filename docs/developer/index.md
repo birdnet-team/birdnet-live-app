@@ -9,7 +9,7 @@ A guide for contributing to BirdNET Live.
 | **Framework** | Flutter 3.47+ / Dart 3.13+ |
 | **State Management** | flutter_riverpod 3.4.2+ |
 | **Inference** | flutter_onnxruntime 1.7.1, pinned (on-device ONNX) — see [ONNX Runtime Pin](onnxruntime-pin.md) |
-| **Location** | geolocator 14.0.2 |
+| **Location** | geolocator; Survey tracks on Android read the `gps` provider through an in-house `com.birdnet/gps` platform channel |
 | **Audio** | record, just_audio, fftea; spoken announcements use an in-house `com.birdnet/tts` platform channel |
 | **Persistence** | shared_preferences, JSON session files |
 | **Maps & Context** | flutter_map, OpenStreetMap tiles, Nominatim, Open-Meteo |
