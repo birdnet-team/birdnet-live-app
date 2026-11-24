@@ -329,13 +329,13 @@ Compare quando è attivo **Filtro geografico** o **Ponderazione geografica**. Il
 
 ### Come decide il filtro adattivo
 
-Gradua la richiesta in base a quanto è comune una specie nella tua posizione, usando gli stessi livelli di abbondanza che vedi nella schermata **Esplora**. Le specie del livello *Abbondante* non vengono mai filtrate; sotto di esso il punteggio di rilevazione necessario sale progressivamente, e le specie che non figurano affatto nell'elenco locale richiedono circa 0,92 o più. Tutto ciò che raggiunge 0,99 viene mantenuto, qualunque cosa dica il geomodello.
+Gradua la richiesta in base a quanto è comune una specie nella tua posizione, usando gli stessi livelli di abbondanza che vedi nella schermata **Esplora**. Le specie del livello *Abbondante* non vengono mai filtrate; sotto di esso il punteggio di rilevazione necessario sale progressivamente, e le specie che non figurano affatto nell'elenco locale richiedono circa 0,92 o più. Tutto ciò che raggiunge 0,99 viene mantenuto, qualunque cosa dica il geomodello. Nemmeno le specie a cui il geomodello assegna 0,9 o più vengono filtrate. Questo filtro è l'impostazione predefinita.
 
 | Livello nella tua posizione | Punteggio di rilevazione necessario |
 |---|---|
 | Abbondante | qualsiasi |
-| Comune | ~0,55–0,70 |
-| Frequente | ~0,70–0,82 |
+| Comune | ≤ 0,70 |
+| Frequente | ~0,55–0,82 |
 | Poco comune | ~0,78–0,89 |
 | Scarsa / Rara | ~0,83–0,92 |
 | Fuori dall'elenco locale | ~0,92–0,97 |

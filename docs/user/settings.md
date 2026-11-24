@@ -326,13 +326,13 @@ Appears when **Location filter** or **Location weighting** is active. The adapti
 
 ### How the adaptive filter decides
 
-It scales the bar with how common a species is at your location, using the same abundance tiers you see on the **Explore** screen. Species in the *Abundant* tier are never filtered; below that the required detection score climbs steadily, and species that are not on the local list at all need around 0.92 or more. Anything scoring 0.99 or higher is kept whatever the location model says.
+It scales the bar with how common a species is at your location, using the same abundance tiers you see on the **Explore** screen. Species in the *Abundant* tier are never filtered; below that the required detection score climbs steadily, and species that are not on the local list at all need around 0.92 or more. Anything scoring 0.99 or higher is kept whatever the location model says. Species the location model scores 0.9 or higher are never filtered either. This filter is the default.
 
 | Tier at your location | Detection score needed |
 |---|---|
 | Abundant | any |
-| Common | ~0.55–0.70 |
-| Frequent | ~0.70–0.82 |
+| Common | ≤ 0.70 |
+| Frequent | ~0.55–0.82 |
 | Uncommon | ~0.78–0.89 |
 | Scarce / Rare | ~0.83–0.92 |
 | Not on the local list | ~0.92–0.97 |

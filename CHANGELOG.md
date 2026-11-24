@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The **Adaptive location filter** is now the default species filter, so unlikely species need a higher score to be shown. It no longer filters out species the location model rates 0.9 or higher.
 - The note that a device is too slow for higher inference rates is no longer permanent: sessions measure how long inference takes, raise the rates that were lowered automatically back toward their earlier values, and remove the note once the device sustains 1.00 Hz. A rate you set yourself is never raised.
 - Settings sections are regrouped: **Appearance** (Theme, Dynamic Color, High Contrast Theme) is split from General, Audio and Recording are merged into **Audio & Recording**, Playback and Announcements into **Playback & Announcements**, and Location is now **Location & Species Filter**. The recording **Mode** and **Format** settings are now **Recording mode** and **Recording format**.
 - New models: the BirdNET+ V3.0 audio model replaces V3.0-preview3.1, with the V3.0.5 geo-model and BirdNET+ Taxonomy v0.5. The app now identifies 10,048 species (8,984 birds, 422 amphibians, 329 insects, 313 mammals): about 500 are new, and 238 species of the previous model are no longer detected because the new models do not cover them.

@@ -320,13 +320,13 @@ Objeví se, když je aktivní **Geografický filtr** nebo **Geografické vážen
 
 ### Jak se adaptivní filtr rozhoduje
 
-Náročnost odstupňuje podle toho, jak hojný je druh ve vaší lokalitě, a používá stejné stupně hojnosti, jaké vidíte na obrazovce **Prozkoumat**. Druhy stupně *Hojný* se nefiltrují nikdy; níže potřebné skóre detekce plynule roste a druhy, které na místním seznamu vůbec nejsou, potřebují zhruba 0,92 a více. Cokoli se skóre 0,99 a výš zůstane bez ohledu na geomodel.
+Náročnost odstupňuje podle toho, jak hojný je druh ve vaší lokalitě, a používá stejné stupně hojnosti, jaké vidíte na obrazovce **Prozkoumat**. Druhy stupně *Hojný* se nefiltrují nikdy; níže potřebné skóre detekce plynule roste a druhy, které na místním seznamu vůbec nejsou, potřebují zhruba 0,92 a více. Cokoli se skóre 0,99 a výš zůstane bez ohledu na geomodel. Nefiltrují se ani druhy, kterým geomodel dává 0,9 a více. Tento filtr je výchozí.
 
 | Stupeň ve vaší lokalitě | Potřebné skóre detekce |
 |---|---|
 | Hojný | jakékoli |
-| Běžný | ~0,55–0,70 |
-| Častý | ~0,70–0,82 |
+| Běžný | ≤ 0,70 |
+| Častý | ~0,55–0,82 |
 | Méně častý | ~0,78–0,89 |
 | Nehojný / Vzácný | ~0,83–0,92 |
 | Není na místním seznamu | ~0,92–0,97 |

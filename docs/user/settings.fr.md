@@ -330,13 +330,13 @@ Apparaît lorsque **Filtre géographique** ou **Pondération géographique** est
 
 ### Comment le filtre adaptatif décide
 
-Il module l'exigence selon la fréquence de l'espèce à votre position, en s'appuyant sur les mêmes niveaux d'abondance que l'écran **Explorer**. Les espèces du niveau *Abondante* ne sont jamais filtrées ; en dessous, le score de détection requis augmente régulièrement, et les espèces absentes de la liste locale demandent environ 0,92 ou plus. Tout ce qui atteint 0,99 est conservé, quoi qu'en dise le géo-modèle.
+Il module l'exigence selon la fréquence de l'espèce à votre position, en s'appuyant sur les mêmes niveaux d'abondance que l'écran **Explorer**. Les espèces du niveau *Abondante* ne sont jamais filtrées ; en dessous, le score de détection requis augmente régulièrement, et les espèces absentes de la liste locale demandent environ 0,92 ou plus. Tout ce qui atteint 0,99 est conservé, quoi qu'en dise le géo-modèle. Les espèces auxquelles le géo-modèle attribue 0,9 ou plus ne sont jamais filtrées non plus. Ce filtre est le réglage par défaut.
 
 | Niveau à votre position | Score de détection requis |
 |---|---|
 | Abondante | quelconque |
-| Commune | ~0,55–0,70 |
-| Fréquente | ~0,70–0,82 |
+| Commune | ≤ 0,70 |
+| Fréquente | ~0,55–0,82 |
 | Peu commune | ~0,78–0,89 |
 | Sporadique / Rare | ~0,83–0,92 |
 | Absente de la liste locale | ~0,92–0,97 |

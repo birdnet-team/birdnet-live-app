@@ -243,6 +243,35 @@ void main() {
       expect(run(poorArea), isNotEmpty);
     });
 
+    test('a saturated location does not penalise expected species', () {
+      // Where the geo-model saturates, the abundant-tier floor sits at 0.99+
+      // and a resident scoring 0.99 or 0.95 would be penalised against it.
+      // The neutral point is limited to 0.90, so both are kept at the
+      // threshold while a species at 0.45 still needs a high score.
+      final saturated = {
+        for (var i = 0; i < 60; i++) 'Top $i': 0.996,
+        for (var i = 0; i < 140; i++) 'Rest $i': 0.10,
+      };
+      expect(
+        ExploreTierScale.fromGeoScores(
+          saturated,
+        ).minRawFor(ExploreTier.abundant),
+        greaterThan(0.99),
+      );
+      bool kept(double confidence, double geoScore) => SpeciesFilter.apply(
+        detections: [_det(_sp(0, 'Subject'), confidence)],
+        mode: SpeciesFilterMode.geoAdaptive,
+        geoScores: {...saturated, 'Subject': geoScore},
+        confidenceThreshold: 0.35,
+      ).isNotEmpty;
+
+      expect(kept(0.36, 0.99), isTrue);
+      expect(kept(0.36, 0.95), isTrue);
+      expect(kept(0.36, 0.90), isTrue);
+      expect(kept(0.60, 0.45), isFalse);
+      expect(kept(0.80, 0.45), isTrue);
+    });
+
     test('preserves original confidence scores and order', () {
       final result = SpeciesFilter.apply(
         detections: detections,

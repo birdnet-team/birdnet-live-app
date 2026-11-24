@@ -327,13 +327,13 @@ Erscheint, wenn **Standortfilter** oder **Standortgewichtung** aktiv ist. Der ad
 
 ### Wie der adaptive Filter entscheidet
 
-Er staffelt die Anforderung danach, wie häufig eine Art an Ihrem Standort ist, und nutzt dieselben Häufigkeitsstufen wie der Bildschirm **Erkunden**. Arten der Stufe *Zahlreich* werden nie gefiltert; darunter steigt der nötige Detektions-Score stetig an, und Arten, die gar nicht auf der örtlichen Liste stehen, brauchen etwa 0,92 oder mehr. Alles ab 0,99 bleibt erhalten, ganz gleich, was das Geo-Modell sagt.
+Er staffelt die Anforderung danach, wie häufig eine Art an Ihrem Standort ist, und nutzt dieselben Häufigkeitsstufen wie der Bildschirm **Erkunden**. Arten der Stufe *Zahlreich* werden nie gefiltert; darunter steigt der nötige Detektions-Score stetig an, und Arten, die gar nicht auf der örtlichen Liste stehen, brauchen etwa 0,92 oder mehr. Alles ab 0,99 bleibt erhalten, ganz gleich, was das Geo-Modell sagt. Auch Arten, die das Geo-Modell mit 0,9 oder höher bewertet, werden nie gefiltert. Dieser Filter ist die Standardeinstellung.
 
 | Stufe an Ihrem Standort | Nötiger Detektions-Score |
 |---|---|
 | Zahlreich | beliebig |
-| Häufig | ~0,55–0,70 |
-| Verbreitet | ~0,70–0,82 |
+| Häufig | ≤ 0,70 |
+| Verbreitet | ~0,55–0,82 |
 | Mäßig häufig | ~0,78–0,89 |
 | Selten / Sehr selten | ~0,83–0,92 |
 | Nicht auf der örtlichen Liste | ~0,92–0,97 |
