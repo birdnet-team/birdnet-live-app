@@ -7,8 +7,15 @@
 //   - Appends [GpsPoint] entries to the session's GPS track.
 //   - Computes cumulative distance walked (Haversine via [latlong2]).
 //   - Operates in two modes:
-//       * **Background GPS** — continuous stream via getPositionStream().
+//       * **Continuous** — a stream of fixes. On Android these come from the
+//         platform `gps` provider (see gps_fix_stream.dart), with geolocator
+//         as the fallback when precise satellite fixes are not available. On
+//         iOS and Windows they come from geolocator at best accuracy.
 //       * **Manual GPS** — single fixes on demand when the app is foregrounded.
+//   - Every fix passes the same filter on every platform ([addFix]): an
+//     accuracy gate that degrades instead of failing, the GPS interval, a
+//     movement threshold that scales with the reported accuracy, and removal
+//     of out-and-back spikes.
 //   - Track simplification (Douglas-Peucker) runs at finalization time.
 //
 // All position handling is done in WGS84 (EPSG:4326).
@@ -21,18 +28,24 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/services/gps_fix_stream.dart';
 import '../../core/services/location_service.dart';
 import '../../shared/models/gps_point.dart';
 
 /// Tracks GPS position during a survey and maintains the track + distance.
 class SurveyGpsTracker {
-  SurveyGpsTracker({this.intervalSeconds = 10, this.distanceFilterMeters = 5});
+  SurveyGpsTracker({this.intervalSeconds = 10});
 
   /// Minimum interval between position updates (seconds).
+  ///
+  /// Android applies it at the provider, so the receiver can sleep between
+  /// fixes. iOS has no such request; [addFix] enforces it for every platform.
+  ///
+  /// No distance filter is requested from any provider: [addFix] applies the
+  /// movement threshold itself, and it needs the fixes of a stationary
+  /// observer to confirm a held point and to tell "standing still" from
+  /// "no good fix anymore".
   final int intervalSeconds;
-
-  /// Minimum distance change to register a new point (meters).
-  final int distanceFilterMeters;
 
   /// Accumulated GPS track.
   final List<GpsPoint> track = [];
@@ -43,14 +56,15 @@ class SurveyGpsTracker {
   /// Latest accepted fix (for tagging detections).
   ///
   /// Includes fixes too close to [track]'s last point to be recorded, so a
-  /// stationary observer still gets the freshest height; speed outliers are
-  /// excluded. Not age-gated: with a distance filter, standing still emits no
-  /// new fixes, and the exported fix time lets consumers judge staleness.
+  /// stationary observer still gets the freshest height, and fixes too coarse
+  /// for a track when nothing better is available; speed outliers are
+  /// excluded. Not age-gated: the exported fix time lets consumers judge
+  /// staleness.
   GpsPoint? get lastPoint => _latestFix;
 
   GpsPoint? _latestFix;
 
-  StreamSubscription<Position>? _positionSub;
+  StreamSubscription<Object?>? _positionSub;
 
   /// Whether the tracker is actively listening to GPS.
   bool get isTracking => _positionSub != null;
@@ -66,6 +80,10 @@ class SurveyGpsTracker {
       ..clear()
       ..addAll(existingTrack);
     _latestFix = track.where((point) => point.measured).lastOrNull;
+    _pending = null;
+    _lastAcceptedTime = null;
+    _lastTrackQualityTime = null;
+    _speedOutliers = 0;
     distanceMeters = 0;
     for (var i = 1; i < track.length; i++) {
       distanceMeters += const Distance().as(
@@ -84,15 +102,43 @@ class SurveyGpsTracker {
   Future<void> startTracking() async {
     if (_positionSub != null) return;
 
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      late final StreamSubscription<GpsPoint> sub;
+      sub = androidGpsFixes(interval: Duration(seconds: intervalSeconds))
+          .listen(
+            addFix,
+            onError: (Object error, StackTrace stackTrace) {
+              // Precise location not granted, or the provider is missing or
+              // off. Geolocator still delivers whatever the device can.
+              debugPrint('[SurveyGpsTracker] gps provider unavailable: $error');
+              if (!identical(_positionSub, sub)) return;
+              _positionSub = null;
+              _startGeolocatorStream();
+            },
+            cancelOnError: true,
+          );
+      _positionSub = sub;
+    } else {
+      _startGeolocatorStream();
+    }
+
+    debugPrint(
+      '[SurveyGpsTracker] tracking started (interval=${intervalSeconds}s)',
+    );
+  }
+
+  void _startGeolocatorStream() {
     _positionSub =
         Geolocator.getPositionStream(
           locationSettings: buildLocationSettings(
-            distanceFilter: distanceFilterMeters,
+            // `high` is only "nearest ten meters" on iOS, which lets Core
+            // Location answer from Wi-Fi and cell positions.
+            accuracy: LocationAccuracy.best,
             intervalDuration: Duration(seconds: intervalSeconds),
             background: true,
           ),
         ).listen(
-          _onPosition,
+          (position) => addFix(_positionToGpsPoint(position, measured: true)),
           onError: (Object error, StackTrace stackTrace) {
             debugPrint('[SurveyGpsTracker] position stream error: $error');
             _positionSub = null;
@@ -103,11 +149,6 @@ class SurveyGpsTracker {
           },
           cancelOnError: true,
         );
-
-    debugPrint(
-      '[SurveyGpsTracker] tracking started '
-      '(interval=${intervalSeconds}s, filter=${distanceFilterMeters}m)',
-    );
   }
 
   /// Record a single GPS fix (for manual GPS mode).
@@ -119,7 +160,7 @@ class SurveyGpsTracker {
         ),
       );
       final point = _positionToGpsPoint(position, measured: true);
-      _addPoint(point);
+      _addSingleFix(point);
       return point;
     } catch (e) {
       debugPrint('[SurveyGpsTracker] captureOnce failed: $e');
@@ -140,6 +181,8 @@ class SurveyGpsTracker {
         debugPrint('[SurveyGpsTracker] position stream stop failed: $error');
       }
     }
+    // No later fix will confirm the held point; keep it.
+    _commitPending();
     debugPrint(
       '[SurveyGpsTracker] tracking stopped '
       '(${track.length} points, ${distanceMeters.toStringAsFixed(0)} m)',
@@ -210,64 +253,201 @@ class SurveyGpsTracker {
 
   // ── Private ─────────────────────────────────────────────────────────────
 
-  void _onPosition(Position position) {
-    // Reject fixes with very poor horizontal accuracy — these are typically
-    // indoor or heavily obstructed readings that introduce large jitter.
-    if (position.accuracy > _maxAccuracyMeters) {
-      debugPrint(
-        '[SurveyGpsTracker] skipping low-accuracy fix '
-        '(${position.accuracy.toStringAsFixed(0)} m)',
-      );
-      return;
-    }
-    final point = _positionToGpsPoint(position, measured: true);
-    _addPoint(point);
-  }
+  /// Fixes at least this accurate make a track on their own.
+  static const double _trackAccuracyMeters = 20.0;
 
-  /// Reject GPS fixes with horizontal accuracy worse than this (meters).
-  static const double _maxAccuracyMeters = 30.0;
+  /// Fixes worse than this never enter the track (approximate location,
+  /// cell-only positions); they only tag detections.
+  static const double _coarseAccuracyMeters = 100.0;
 
-  /// Minimum distance (meters) a new point must be from the last recorded
-  /// point to be added to the track.  Eliminates GPS jitter when standing.
-  static const double _jitterThresholdMeters = 5.0;
+  /// How long a track-quality fix keeps worse ones out. After that the
+  /// track continues with what the device still delivers, so a walk under
+  /// dense canopy or with imprecise location is sparse instead of empty.
+  static const Duration _degradeAfter = Duration(seconds: 60);
+
+  /// Minimum distance (meters) a new point must be from the last one to be
+  /// added to the track. A fix's own accuracy raises it, so standing still
+  /// with a noisy signal does not draw a scribble.
+  static const double _minMoveMeters = 5.0;
 
   /// Maximum plausible speed in meters per second.
   /// Points implying faster movement are treated as GPS jumps and discarded.
   /// 30 km/h ≈ 8.3 m/s — generous for walking/birding surveys.
   static const double _maxSpeedMps = 8.3;
 
-  void _addPoint(GpsPoint point) {
-    if (track.isNotEmpty) {
-      final prev = track.last;
-      final d = const Distance().as(
-        LengthUnit.Meter,
-        LatLng(prev.latitude, prev.longitude),
-        LatLng(point.latitude, point.longitude),
+  /// This many speed outliers in a row mean the point they are measured
+  /// from is the wrong one, not the fixes.
+  static const int _maxSpeedOutliers = 3;
+
+  /// A fix that moved, held until the next one shows it was not a spike.
+  GpsPoint? _pending;
+
+  DateTime? _lastAcceptedTime;
+
+  /// Time of the last track-quality fix, or of the first fix of any quality
+  /// while none has arrived yet, so a receiver that is still acquiring gets
+  /// the same wait before a worse fix may start the track.
+  DateTime? _lastTrackQualityTime;
+
+  int _speedOutliers = 0;
+
+  /// Run one fix of the continuous stream through the track filter.
+  ///
+  /// A fix that moved is held back until the next fix arrives, so [track]
+  /// trails the stream by one fix; [lastPoint] does not.
+  @visibleForTesting
+  void addFix(GpsPoint fix) {
+    // Accuracy gate. A fix without a reported accuracy is taken as is.
+    final accuracy = fix.accuracy;
+    if (accuracy != null && accuracy > _trackAccuracyMeters) {
+      final since = fix.timestamp.difference(
+        _lastTrackQualityTime ??= fix.timestamp,
       );
-      // Skip points that are within jitter distance.
-      if (d < _jitterThresholdMeters) {
-        _latestFix = point;
+      if (since.isNegative) {
+        // The earlier fix carried a time from the future (receiver date
+        // glitch); start the wait over rather than block until then.
+        _lastTrackQualityTime = fix.timestamp;
+      }
+      if (since < _degradeAfter) {
+        // Better than no position at all for tagging detections.
+        _latestFix ??= fix;
         return;
       }
-
-      // Speed gate: reject implausible jumps.
-      final dtSeconds =
-          point.timestamp.difference(prev.timestamp).inMilliseconds / 1000.0;
-      if (dtSeconds > 0 && d / dtSeconds > _maxSpeedMps) {
-        debugPrint(
-          '[SurveyGpsTracker] skipping speed outlier '
-          '(${(d / dtSeconds).toStringAsFixed(1)} m/s over '
-          '${d.toStringAsFixed(0)} m)',
-        );
+      if (accuracy > _coarseAccuracyMeters) {
+        if (_coarseFixReplaces(_latestFix, fix)) _latestFix = fix;
         return;
       }
-
-      distanceMeters += d;
+    } else {
+      _lastTrackQualityTime = fix.timestamp;
     }
-    _latestFix = point;
+
+    // GPS interval. Providers deliver slightly early, hence the tolerance.
+    // A fix older than the last accepted one means that one was stamped in
+    // the future; it must not hold back everything after it.
+    final lastAccepted = _lastAcceptedTime;
+    if (lastAccepted != null) {
+      final elapsedMs = fix.timestamp.difference(lastAccepted).inMilliseconds;
+      final toleranceMs = math.min(1500, intervalSeconds * 200);
+      if (elapsedMs >= 0 && elapsedMs < intervalSeconds * 1000 - toleranceMs) {
+        return;
+      }
+    }
+    _lastAcceptedTime = fix.timestamp;
+
+    _consider(fix);
+  }
+
+  void _consider(GpsPoint fix) {
+    final anchor = _pending ?? track.lastOrNull;
+    if (anchor == null) {
+      // Nothing to compare the first fix against; show it right away.
+      _latestFix = fix;
+      _commit(fix);
+      return;
+    }
+
+    final d = _distance(anchor, fix);
+    if (d < math.max(_minMoveMeters, fix.accuracy ?? 0)) {
+      // A second fix in the same place confirms a held point.
+      _latestFix = fix;
+      _speedOutliers = 0;
+      _commitPending();
+      return;
+    }
+    if (_isSpeedOutlier(anchor, fix, d)) {
+      // A lone jump is skipped. A run of them is where the device really is.
+      if (++_speedOutliers < _maxSpeedOutliers) return;
+    }
+    _speedOutliers = 0;
+
+    final pending = _pending;
+    if (pending != null) {
+      if (_isSpike(track.last, pending, fix)) {
+        debugPrint(
+          '[SurveyGpsTracker] dropping spike '
+          '(${_distance(track.last, pending).toStringAsFixed(0)} m out and back)',
+        );
+        _pending = null;
+        _consider(fix);
+        return;
+      }
+      _commitPending();
+    }
+    _latestFix = fix;
+    _pending = fix;
+  }
+
+  /// A manual fix has no following fix to confirm it; record it directly.
+  void _addSingleFix(GpsPoint fix) {
+    _commitPending();
+    final last = track.lastOrNull;
+    if (last != null) {
+      final d = _distance(last, fix);
+      if (d < math.max(_minMoveMeters, fix.accuracy ?? 0)) {
+        _latestFix = fix;
+        return;
+      }
+      if (_isSpeedOutlier(last, fix, d)) return;
+    }
+    _latestFix = fix;
+    if ((fix.accuracy ?? 0) > _coarseAccuracyMeters) return;
+    _commit(fix);
+  }
+
+  /// Whether a fix too coarse for the track should still become the
+  /// position detections are tagged with. It replaces a more accurate one
+  /// only when that one lies outside the coarse fix's own uncertainty, which
+  /// is evidence of having moved rather than of a worse signal.
+  static bool _coarseFixReplaces(GpsPoint? current, GpsPoint coarse) {
+    if (current == null) return true;
+    final currentAccuracy = current.accuracy;
+    final coarseAccuracy = coarse.accuracy ?? 0;
+    if (currentAccuracy != null && currentAccuracy >= coarseAccuracy) {
+      return true;
+    }
+    return _distance(current, coarse) > coarseAccuracy;
+  }
+
+  /// Whether [b] left the path only to come straight back: [c] ends up much
+  /// closer to [a] than [b] ever was to either. A real about-turn within one
+  /// GPS interval looks the same and loses its tip, which costs less than
+  /// keeping every position jump.
+  static bool _isSpike(GpsPoint a, GpsPoint b, GpsPoint c) {
+    final out = _distance(a, b);
+    final back = _distance(b, c);
+    return _distance(a, c) < 0.5 * math.min(out, back);
+  }
+
+  bool _isSpeedOutlier(GpsPoint from, GpsPoint to, double meters) {
+    final seconds =
+        to.timestamp.difference(from.timestamp).inMilliseconds / 1000.0;
+    if (seconds <= 0 || meters / seconds <= _maxSpeedMps) return false;
+    debugPrint(
+      '[SurveyGpsTracker] skipping speed outlier '
+      '(${(meters / seconds).toStringAsFixed(1)} m/s over '
+      '${meters.toStringAsFixed(0)} m)',
+    );
+    return true;
+  }
+
+  void _commitPending() {
+    final pending = _pending;
+    if (pending == null) return;
+    _pending = null;
+    _commit(pending);
+  }
+
+  void _commit(GpsPoint point) {
+    if (track.isNotEmpty) distanceMeters += _distance(track.last, point);
     track.add(point);
     onPoint?.call(point);
   }
+
+  static double _distance(GpsPoint a, GpsPoint b) => const Distance().as(
+    LengthUnit.Meter,
+    LatLng(a.latitude, a.longitude),
+    LatLng(b.latitude, b.longitude),
+  );
 
   GpsPoint _positionToGpsPoint(Position position, {required bool measured}) {
     final location = AppLocation.fromPosition(position);

@@ -188,7 +188,10 @@ Future<void> main(List<String> args) async {
   }
 
   stdout.writeln('\nDone. Artifacts in ${outDir.path}');
-  stdout.writeln('Next: see docs/developer/releasing.md for the upload steps.');
+  stdout.writeln(
+    'Next: run the start-up check in docs/developer/releasing.md on the '
+    'bundle and the APK, then follow the upload steps there.',
+  );
 }
 
 const String _usage = '''

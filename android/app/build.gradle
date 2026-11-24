@@ -106,9 +106,9 @@ android {
     // `flutter_assets` and remains fully self-contained — no asset pack,
     // no online download, no Play services required.
     //
-    // The Dart-side `AssetPackService` resolves models from the pack when
-    // available, and falls back to extracting them from `rootBundle` on
-    // sideload installs. Both paths run fully offline at runtime.
+    // The Dart-side `AssetPackService` copies the models out of the Android
+    // AssetManager in both cases: from the pack on Play installs, from
+    // `flutter_assets` on sideload installs. Both run fully offline.
     assetPacks = [":models_pack"]
 
     signingConfigs {
@@ -147,8 +147,10 @@ flutter {
 // geolocator normally packages Play Services Location and prefers its fused
 // provider. BirdNET Live deliberately uses Android's LocationManager instead:
 // the fused provider can repeatedly show Google's location-accuracy resolution
-// dialog when Google Location Accuracy is off. Keep the Play libraries needed
-// by Asset Delivery; exclude only the location module.
+// dialog when Google Location Accuracy is off. With this exclusion the app
+// ships no Google Play Services library at all; check
+// `gradlew app:dependencies --configuration releaseRuntimeClasspath` for
+// `com.google.android.gms` before adding a dependency.
 configurations.configureEach {
     exclude group: 'com.google.android.gms', module: 'play-services-location'
 }
@@ -156,12 +158,10 @@ configurations.configureEach {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 
-    // Play Asset Delivery — used at runtime to resolve the install-time
-    // `models_pack` asset pack's on-device path. The library degrades
-    // gracefully on sideload APKs (no Play Store install): the API simply
-    // returns null for any pack lookup, and we fall back to extracting
-    // models from `rootBundle`.
-    implementation 'com.google.android.play:asset-delivery:2.2.2'
+    // No Play Asset Delivery library: the `models_pack` asset pack is
+    // install-time, and the platform merges such packs into the app's
+    // AssetManager. The library is only needed for fast-follow and on-demand
+    // packs, and it pulls in play-services-basement and play-services-tasks.
     // Background upload runs (UploadWorker.kt, #284).
     implementation 'androidx.work:work-runtime-ktx:2.10.0'
 }

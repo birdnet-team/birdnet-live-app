@@ -292,7 +292,10 @@ A disclosure that exposes a handful of audio-routing toggles plus the trigger-mo
 
 Use device GPS instead of manual coordinates. On Android, fixes come from the
 platform location provider rather than Google Play Services, so the app does
-not trigger Google's location-accuracy resolution dialog. With this off, the
+not trigger Google's location-accuracy resolution dialog. Survey tracks read
+the GPS receiver directly, whatever Google Location Accuracy is set to; if only
+approximate location is granted, detections are still tagged but no track is
+drawn. With this off, the
 app never reads the GPS or asks for location permission on its own: the
 Survey, Point Count and ARU setup wizards open on manual entry with your saved
 coordinates, survey GPS tracking does not run, and offline map preparation
@@ -323,13 +326,13 @@ Appears when **Location filter** or **Location weighting** is active. The adapti
 
 ### How the adaptive filter decides
 
-It scales the bar with how common a species is at your location, using the same abundance tiers you see on the **Explore** screen. Species in the *Abundant* tier are never filtered; below that the required detection score climbs steadily, and species that are not on the local list at all need around 0.92 or more. Anything scoring 0.99 or higher is kept whatever the location model says.
+It scales the bar with how common a species is at your location, using the same abundance tiers you see on the **Explore** screen. Species in the *Abundant* tier are never filtered; below that the required detection score climbs steadily, and species that are not on the local list at all need around 0.92 or more. Anything scoring 0.99 or higher is kept whatever the location model says. Species the location model scores 0.9 or higher are never filtered either. This filter is the default.
 
 | Tier at your location | Detection score needed |
 |---|---|
 | Abundant | any |
-| Common | ~0.55–0.70 |
-| Frequent | ~0.70–0.82 |
+| Common | ≤ 0.70 |
+| Frequent | ~0.55–0.82 |
 | Uncommon | ~0.78–0.89 |
 | Scarce / Rare | ~0.83–0.92 |
 | Not on the local list | ~0.92–0.97 |

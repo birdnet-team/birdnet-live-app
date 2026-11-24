@@ -328,13 +328,13 @@ Aparece cuando está activo **Filtro geográfico** o **Ponderación geográfica*
 
 ### Cómo decide el filtro adaptativo
 
-Gradúa la exigencia según lo común que sea una especie en tu ubicación, con los mismos niveles de abundancia que ves en la pantalla **Explorar**. Las especies del nivel *Abundante* no se filtran nunca; por debajo, la puntuación de detección necesaria sube de forma continua, y las especies que ni siquiera están en la lista local necesitan alrededor de 0,92 o más. Todo lo que puntúe 0,99 o más se conserva, diga lo que diga el geomodelo.
+Gradúa la exigencia según lo común que sea una especie en tu ubicación, con los mismos niveles de abundancia que ves en la pantalla **Explorar**. Las especies del nivel *Abundante* no se filtran nunca; por debajo, la puntuación de detección necesaria sube de forma continua, y las especies que ni siquiera están en la lista local necesitan alrededor de 0,92 o más. Todo lo que puntúe 0,99 o más se conserva, diga lo que diga el geomodelo. Tampoco se filtran las especies a las que el geomodelo da 0,9 o más. Este filtro es el predeterminado.
 
 | Nivel en tu ubicación | Puntuación de detección necesaria |
 |---|---|
 | Abundante | cualquiera |
-| Común | ~0,55–0,70 |
-| Frecuente | ~0,70–0,82 |
+| Común | ≤ 0,70 |
+| Frecuente | ~0,55–0,82 |
 | Infrecuente | ~0,78–0,89 |
 | Escasa / Rara | ~0,83–0,92 |
 | Fuera de la lista local | ~0,92–0,97 |

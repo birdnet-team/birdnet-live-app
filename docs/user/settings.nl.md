@@ -327,13 +327,13 @@ Verschijnt wanneer **Locatiefilter** of **Locatieweging** actief is. Het adaptie
 
 ### Hoe het adaptieve filter beslist
 
-Het schaalt de eis met hoe algemeen een soort op jouw locatie is, met dezelfde talrijkheidsniveaus als op het scherm **Ontdekken**. Soorten in het niveau *Talrijk* worden nooit gefilterd; daaronder loopt de vereiste detectiescore gestaag op, en soorten die helemaal niet op de plaatselijke lijst staan hebben ongeveer 0,92 of meer nodig. Alles vanaf 0,99 blijft staan, wat het locatiemodel er ook van vindt.
+Het schaalt de eis met hoe algemeen een soort op jouw locatie is, met dezelfde talrijkheidsniveaus als op het scherm **Ontdekken**. Soorten in het niveau *Talrijk* worden nooit gefilterd; daaronder loopt de vereiste detectiescore gestaag op, en soorten die helemaal niet op de plaatselijke lijst staan hebben ongeveer 0,92 of meer nodig. Alles vanaf 0,99 blijft staan, wat het locatiemodel er ook van vindt. Ook soorten die het locatiemodel 0,9 of hoger geeft, worden nooit gefilterd. Dit filter is de standaardinstelling.
 
 | Niveau op jouw locatie | Vereiste detectiescore |
 |---|---|
 | Talrijk | elke |
-| Algemeen | ~0,55–0,70 |
-| Vrij algemeen | ~0,70–0,82 |
+| Algemeen | ≤ 0,70 |
+| Vrij algemeen | ~0,55–0,82 |
 | Vrij schaars | ~0,78–0,89 |
 | Schaars / Zeldzaam | ~0,83–0,92 |
 | Niet op de plaatselijke lijst | ~0,92–0,97 |

@@ -325,13 +325,13 @@ Pojawia się, gdy aktywny jest **Filtr lokalizacji** lub **Ważenie według loka
 
 ### Jak decyduje filtr adaptacyjny
 
-Stopniuje wymagania według tego, jak pospolity jest gatunek w Twojej lokalizacji, korzystając z tych samych poziomów liczebności, które widzisz na ekranie **Odkrywaj**. Gatunki z poziomu *Liczny* nie są filtrowane nigdy; poniżej wymagany wynik wykrycia stale rośnie, a gatunki, których w ogóle nie ma na miejscowej liście, potrzebują około 0,92 lub więcej. Wszystko od 0,99 wzwyż zostaje niezależnie od tego, co mówi geomodel.
+Stopniuje wymagania według tego, jak pospolity jest gatunek w Twojej lokalizacji, korzystając z tych samych poziomów liczebności, które widzisz na ekranie **Odkrywaj**. Gatunki z poziomu *Liczny* nie są filtrowane nigdy; poniżej wymagany wynik wykrycia stale rośnie, a gatunki, których w ogóle nie ma na miejscowej liście, potrzebują około 0,92 lub więcej. Wszystko od 0,99 wzwyż zostaje niezależnie od tego, co mówi geomodel. Nie są też filtrowane gatunki, którym geomodel przyznaje 0,9 lub więcej. Ten filtr jest ustawieniem domyślnym.
 
 | Poziom w Twojej lokalizacji | Wymagany wynik wykrycia |
 |---|---|
 | Liczny | dowolny |
-| Pospolity | ~0,55–0,70 |
-| Częsty | ~0,70–0,82 |
+| Pospolity | ≤ 0,70 |
+| Częsty | ~0,55–0,82 |
 | Nieliczny | ~0,78–0,89 |
 | Bardzo nieliczny / Rzadki | ~0,83–0,92 |
 | Spoza miejscowej listy | ~0,92–0,97 |

@@ -11,7 +11,6 @@ import android.provider.OpenableColumns
 import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
-import com.google.android.play.core.assetpacks.AssetPackManagerFactory
 import com.pravera.flutter_foreground_task.service.ForegroundService
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -65,6 +64,7 @@ class MainActivity: FlutterActivity() {
     private var secureStoreChannel: SecureStoreChannel? = null
     private var connectivityChannel: ConnectivityChannel? = null
     private var uploadWorkChannel: UploadWorkChannel? = null
+    private var gpsChannel: GpsChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clear audio ACTION_VIEW data before FlutterActivity derives its
@@ -110,6 +110,10 @@ class MainActivity: FlutterActivity() {
         // Background upload scheduling; see UploadWorker.kt.
         uploadWorkChannel?.dispose()
         uploadWorkChannel = UploadWorkChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
+
+        // Satellite fixes for Survey tracks; see GpsChannel.kt.
+        gpsChannel?.dispose()
+        gpsChannel = GpsChannel(applicationContext, flutterEngine.dartExecutor.binaryMessenger)
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, DEVICE_DESCRIPTION_CHANNEL).setMethodCallHandler { call, result ->
             if (call.method == "getInfo") {
@@ -333,31 +337,13 @@ class MainActivity: FlutterActivity() {
             }
         }
 
-        // Asset pack channel — resolves the on-device path of an
-        // install-time Play Asset Delivery pack. Used to locate the ONNX
-        // model files in App Bundle (AAB) installs from the Play Store.
-        // On sideload APK installs there is no asset pack, so the call
-        // returns null and the Dart side falls back to extracting the
-        // models from `rootBundle`.
+        // Asset pack channel — copies the ONNX model files out of the
+        // AssetManager. An install-time asset pack (Play Store installs) is
+        // merged into the app's own assets by the platform, so no Play
+        // library is needed to read it; sideload APKs carry the models in
+        // `flutter_assets`.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ASSET_PACK_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getPackPath" -> {
-                    val packName = call.argument<String>("packName")
-                    if (packName.isNullOrBlank()) {
-                        result.error("INVALID_ARG", "Missing 'packName'", null)
-                        return@setMethodCallHandler
-                    }
-                    try {
-                        val mgr = AssetPackManagerFactory.getInstance(applicationContext)
-                        val location = mgr.getPackLocation(packName)
-                        result.success(location?.assetsPath())
-                    } catch (e: Throwable) {
-                        // Sideload APK without Play Asset Delivery support,
-                        // pack not installed, or any other failure: report
-                        // null so the Dart side falls back to rootBundle.
-                        result.success(null)
-                    }
-                }
                 // Extract a file from the APK's AssetManager (which includes
                 // install-time asset packs merged into the app namespace) to
                 // a real on-disk path. ONNX Runtime needs a file path /
@@ -468,6 +454,8 @@ class MainActivity: FlutterActivity() {
     override fun onDestroy() {
         ttsChannel?.dispose()
         ttsChannel = null
+        gpsChannel?.dispose()
+        gpsChannel = null
         aruNotificationIntentChannel = null
         quickActionIntentChannel = null
         sharedMediaChannel = null

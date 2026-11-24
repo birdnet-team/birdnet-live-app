@@ -50,7 +50,7 @@
 //
 // `g0` is **the floor of the abundant tier** at this location, taken from the
 // same [ExploreTierScale] the Explore screen and the spoken commonness hints
-// use.  That makes the behaviour rank-relative rather than absolute, so it
+// use, and limited to 0.90 ([_adaptiveNeutralCap]).  That makes the behaviour rank-relative rather than absolute, so it
 // travels between a species-rich tropical site and an Arctic one unchanged,
 // and it means the tier a user sees on an Explore card predicts how the filter
 // will treat that bird:
@@ -58,11 +58,14 @@
 // | Tier at this location | Roughly needs |
 // |-----------------------|---------------|
 // | abundant              | any score     |
-// | common                | ~0.55–0.70    |
-// | frequent              | ~0.70–0.82    |
+// | common                | up to 0.70    |
+// | frequent              | ~0.55–0.82    |
 // | uncommon              | ~0.78–0.89    |
 // | scarce / rare         | ~0.83–0.92    |
 // | not on the local list | ~0.92–0.97    |
+//
+// The lower ends apply where the geo-model saturates and the limit on `g0`
+// takes effect (most of Europe and North America).
 //
 // The mode is therefore stricter than `geoExclude` for weak detections and far
 // more permissive for confident ones — the point being to cut false positives
@@ -223,6 +226,14 @@ abstract final class SpeciesFilter {
   /// vote further up the confidence range (stricter).  The single tuning knob.
   static const double _adaptiveShape = 1.1;
 
+  /// Upper limit for the neutral occurrence.  In well-surveyed temperate
+  /// regions the geo-model saturates: a fifth to a third of the local list
+  /// scores above 0.9 and the abundant-tier floor lands at 0.96–0.996, where a
+  /// difference of 0.005 is a large step in log-odds.  Without the limit a
+  /// resident at 0.99 is penalised against a floor of 0.994.  Scores above
+  /// the limit all mean "expected here" and are never filtered.
+  static const double _adaptiveNeutralCap = 0.90;
+
   /// Clamp floor for logit inputs.  About 60% of geo-model outputs are exactly
   /// zero and the smallest non-zero value is ~7e-9 (fp16 subnormal floor), so
   /// this keeps exact zeros just below any real score instead of `-infinity`.
@@ -238,7 +249,8 @@ abstract final class SpeciesFilter {
   /// [confidenceThreshold], leaving the reported confidence untouched.
   ///
   /// The neutral occurrence — the geo score that neither helps nor hurts — is
-  /// the abundant-tier floor for this location, so species above it are
+  /// the abundant-tier floor for this location, limited to
+  /// [_adaptiveNeutralCap], so species above it are
   /// boosted, species below it are penalised, and the penalty shrinks to
   /// nothing as confidence approaches [_adaptiveImmunity].
   static List<Detection> _adaptiveGeoFilter(
@@ -250,8 +262,10 @@ abstract final class SpeciesFilter {
     // ranks among the ones actually expected here, using the same scale the
     // Explore screen shows.  Only a few hundred of ~10,000 scores clear the inclusion
     // threshold, so this is cheap enough to redo each inference cycle.
-    final neutralOccurrence = ExploreTierScale.fromGeoScores(geoScores)
-        .minRawFor(ExploreTier.abundant);
+    final neutralOccurrence = math.min(
+      ExploreTierScale.fromGeoScores(geoScores).minRawFor(ExploreTier.abundant),
+      _adaptiveNeutralCap,
+    );
 
     // The threshold is the pivot: at p == threshold a species needs exactly
     // `neutralOccurrence` to survive.  Clamping keeps it below the immunity

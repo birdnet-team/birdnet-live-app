@@ -144,6 +144,7 @@ This file is for coding agents working in this repository.
 - Run dart dev/sync_version.dart to sync README/docs version badges.
 - If strings changed, run flutter gen-l10n and verify locale completeness.
 - Run flutter analyze (and flutter test when relevant) before committing.
+- Before a release is uploaded or published, run the start-up check in `docs/developer/releasing.md` on both artifacts: the App Bundle installed as split APKs through bundletool (asset pack included) and the release APK, each cold-started on an emulator with no crash and both models loaded. Run it also after any change to Android dependencies, R8/ProGuard rules, the asset pack, or model loading. A release that has not passed it does not ship.
 - Keep release commits focused and use a conventional commit message.
 
 ## Search for All Affected Call Sites Before Implementing

@@ -113,6 +113,47 @@ the field.
 The helper also creates a square 512 x 512 PNG from the launcher artwork for
 Huawei AppGallery.
 
+### Start-up check (required)
+
+Do not upload a bundle or publish an APK that has not been cold-started. Both
+artifacts are checked, because they differ: the APK carries the models in
+`flutter_assets`, the bundle delivers them in the `models_pack` asset pack, and
+only release builds are shrunk by R8.
+
+1. **Bundle, installed the way Play installs it.** Use
+   [bundletool](https://github.com/google/bundletool/releases) to build and
+   install the split APKs, including the asset-pack split:
+
+   ```pwsh
+   java -jar bundletool-all.jar build-apks `
+     --bundle=build/app/outputs/bundle/release/app-release.aab `
+     --output=build/app.apks --connected-device --overwrite
+   java -jar bundletool-all.jar install-apks --apks=build/app.apks
+   ```
+
+   Without `--ks`, bundletool signs with the local debug keystore, so use an
+   emulator or device that has no copy of the app signed with another key.
+   `adb shell pm path de.tu_chemnitz.mi.kahst.birdnet_live` must list
+   `split_models_pack.apk`.
+2. **APK.** `adb install -r build/app/outputs/flutter-apk/app-release.apk` on
+   an emulator or device whose installed copy has the same signing key. The
+   universal APK runs on the x86_64 emulator. The APK is release-signed and
+   the split install from step 1 is debug-signed, so the two cannot share one
+   emulator: keep one for each.
+3. **For each install**, force-stop the app, clear logcat, launch it, and read
+   `adb logcat -s flutter:V AndroidRuntime:E`. The models load when the home
+   screen opens, so on a fresh install finish onboarding first. It passes
+   when:
+   - there is no `FATAL EXCEPTION` and the process is still running;
+   - `[AssetPackService] resolved ... via AssetManager` appears for both
+     models (`models/...` for the bundle, `flutter_assets/...` for the APK);
+   - `[InferenceIsolate] model ready` and `[geoModelProvider] geo model ready`
+     appear.
+
+Never run this on a phone that carries real sessions unless the build is
+signed with the key of the copy installed there; see Device Testing in
+`AGENTS.md`.
+
 ## 5. Stage the release artifacts
 
 `dev/build_release.dart` does this for you. The result lives in a versioned

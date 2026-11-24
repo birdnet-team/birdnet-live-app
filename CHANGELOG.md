@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The **Adaptive location filter** is now the default species filter, so unlikely species need a higher score to be shown. It no longer filters out species the location model rates 0.9 or higher.
 - The note that a device is too slow for higher inference rates is no longer permanent: sessions measure how long inference takes, raise the rates that were lowered automatically back toward their earlier values, and remove the note once the device sustains 1.00 Hz. A rate you set yourself is never raised.
 - Settings sections are regrouped: **Appearance** (Theme, Dynamic Color, High Contrast Theme) is split from General, Audio and Recording are merged into **Audio & Recording**, Playback and Announcements into **Playback & Announcements**, and Location is now **Location & Species Filter**. The recording **Mode** and **Format** settings are now **Recording mode** and **Recording format**.
 - New models: the BirdNET+ V3.0 audio model replaces V3.0-preview3.1, with the V3.0.5 geo-model and BirdNET+ Taxonomy v0.5. The app now identifies 10,048 species (8,984 birds, 422 amphibians, 329 insects, 313 mammals): about 500 are new, and 238 species of the previous model are no longer detected because the new models do not cover them.
@@ -27,10 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The audio model is rebuilt for speed: the spectrogram step now runs multithreaded, and only the convolutions use half precision. Batch Analysis inference is about three times faster on a desktop CPU and reaches about 80 times real time on a Pixel 10 Pro.
 - Species descriptions now cover about 99% of species in ten of the twelve description languages; some languages previously covered as little as 17%.
 - The About screen reads the model and taxonomy names and the species count from the bundled models instead of a hand-maintained copy.
+- The Android app no longer contains any Google Play Services library. The Play Asset Delivery library that brought them in was not needed to read the models.
 
 ### Fixed
 
 - Live Mode keeps the screen on with **Continue with screen off** enabled too. The display used to time out on its own; it now turns off only when you lock the phone.
+- Survey GPS tracks no longer zigzag: Android reads the GPS receiver directly instead of the system's blended location (no Google Play Services involved), iOS requests best accuracy, and position jumps and standstill jitter are filtered out. With approximate location only, detections are still tagged but no track is drawn.
 - Export metadata no longer reports a location filter that never ran: without a location or geo-model scores, `speciesFilterMode` is `off` and the selected mode is kept as `requestedSpeciesFilterMode`.
 - Export metadata now includes the location filter threshold and the **Ignore species** and sound class choices of the session, lists the export options of that share or upload instead of the saved defaults, and leaves out the clip context for sessions without detection clips.
 - A resumed Survey keeps the species filter it was started with instead of switching to the current setting, so its metadata describes the whole Survey.
