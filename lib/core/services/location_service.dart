@@ -90,8 +90,8 @@ LocationSettings buildLocationSettings({
 ///
 /// Always use this instead of `Geolocator.isLocationServiceEnabled()`, which
 /// is the one geolocator call that does not honour `forceLocationManager` —
-/// it hardcodes the fused client, and `play-services-location` is excluded
-/// from our Android build (see `android/app/build.gradle`).
+/// it asks for the fused client first, and no Play Services library is in
+/// our Android build (see `android/app/build.gradle`).
 Future<bool> isPlatformLocationServiceEnabled() {
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     return Permission.locationWhenInUse.serviceStatus.then(

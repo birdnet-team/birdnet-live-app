@@ -208,9 +208,9 @@ final geoModelProvider = FutureProvider<GeoModel>((ref) async {
   );
 
   // Resolve the geo-model ONNX file via the install-time asset pack
-  // (Play Store AAB) or fall back to extracting from rootBundle (sideload
-  // APK). Use modelVersion from config to detect when the asset has been
-  // updated so a fresh extraction kicks in.
+  // (Play Store AAB) or the APK's flutter_assets (sideload APK). Use
+  // modelVersion from config to detect when the asset has been updated so
+  // a fresh extraction kicks in.
   final modelVersion = geoConfig['version'] as String? ?? '0';
   final onnxPath = await AssetPackService.resolveModelPath(
     fileName: modelFile,

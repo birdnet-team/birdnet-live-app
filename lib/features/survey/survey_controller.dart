@@ -360,8 +360,8 @@ class SurveyController {
         fullConfig['audioModel'] as Map<String, dynamic>,
       );
 
-      // Resolve via install-time asset pack (Play Store AAB) or fall
-      // back to extracting from rootBundle (sideload APK).
+      // Resolve via install-time asset pack (Play Store AAB) or the
+      // APK's flutter_assets (sideload APK).
       final modelFilePath = await AssetPackService.resolveModelPath(
         fileName: _config!.onnx.modelFile,
         version: _config!.version,

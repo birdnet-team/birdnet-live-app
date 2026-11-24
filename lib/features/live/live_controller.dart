@@ -338,7 +338,7 @@ class LiveController {
       debugPrint('[LiveController] config loaded: ${_config!.onnx.modelFile}');
 
       // Resolve the model path: install-time asset pack (Play Store AAB)
-      // or fallback to extracting from rootBundle (sideload APK).
+      // or the APK's flutter_assets (sideload APK).
       final modelFilePath = await AssetPackService.resolveModelPath(
         fileName: _config!.onnx.modelFile,
         version: _config!.version,

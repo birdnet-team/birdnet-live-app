@@ -127,7 +127,7 @@ only release builds are shrunk by R8.
    ```pwsh
    java -jar bundletool-all.jar build-apks `
      --bundle=build/app/outputs/bundle/release/app-release.aab `
-     --output=build/app.apks --connected-device
+     --output=build/app.apks --connected-device --overwrite
    java -jar bundletool-all.jar install-apks --apks=build/app.apks
    ```
 
@@ -137,9 +137,13 @@ only release builds are shrunk by R8.
    `split_models_pack.apk`.
 2. **APK.** `adb install -r build/app/outputs/flutter-apk/app-release.apk` on
    an emulator or device whose installed copy has the same signing key. The
-   universal APK runs on the x86_64 emulator.
+   universal APK runs on the x86_64 emulator. The APK is release-signed and
+   the split install from step 1 is debug-signed, so the two cannot share one
+   emulator: keep one for each.
 3. **For each install**, force-stop the app, clear logcat, launch it, and read
-   `adb logcat -s flutter:V AndroidRuntime:E`. It passes when:
+   `adb logcat -s flutter:V AndroidRuntime:E`. The models load when the home
+   screen opens, so on a fresh install finish onboarding first. It passes
+   when:
    - there is no `FATAL EXCEPTION` and the process is still running;
    - `[AssetPackService] resolved ... via AssetManager` appears for both
      models (`models/...` for the bundle, `flutter_assets/...` for the APK);

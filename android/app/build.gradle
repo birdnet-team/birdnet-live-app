@@ -106,9 +106,9 @@ android {
     // `flutter_assets` and remains fully self-contained — no asset pack,
     // no online download, no Play services required.
     //
-    // The Dart-side `AssetPackService` resolves models from the pack when
-    // available, and falls back to extracting them from `rootBundle` on
-    // sideload installs. Both paths run fully offline at runtime.
+    // The Dart-side `AssetPackService` copies the models out of the Android
+    // AssetManager in both cases: from the pack on Play installs, from
+    // `flutter_assets` on sideload installs. Both run fully offline.
     assetPacks = [":models_pack"]
 
     signingConfigs {
