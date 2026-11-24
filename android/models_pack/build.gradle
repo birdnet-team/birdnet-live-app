@@ -7,9 +7,9 @@
 // compressed base download stays under Google Play's 200 MB limit.
 //
 // Delivery type is "install-time": the pack is downloaded together with
-// the app at install time and unpacked to a directory on the device.
-// The app reads the model files directly from that directory at runtime
-// via AssetPackManager — no network access is required.
+// the app at install time and merged into the app's AssetManager. The app
+// copies the model files out of it at runtime (`extractAsset` in
+// MainActivity) — no Play library and no network access is required.
 //
 // Asset packs are only included in App Bundle (`bundle*`) builds. APK
 // builds (`assemble*`) ignore the pack entirely; the standalone APK we

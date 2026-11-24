@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The audio model is rebuilt for speed: the spectrogram step now runs multithreaded, and only the convolutions use half precision. Batch Analysis inference is about three times faster on a desktop CPU and reaches about 80 times real time on a Pixel 10 Pro.
 - Species descriptions now cover about 99% of species in ten of the twelve description languages; some languages previously covered as little as 17%.
 - The About screen reads the model and taxonomy names and the species count from the bundled models instead of a hand-maintained copy.
+- The Android app no longer contains any Google Play Services library. The Play Asset Delivery library that brought them in was not needed to read the models.
 
 ### Fixed
 

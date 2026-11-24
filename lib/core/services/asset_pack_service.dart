@@ -10,11 +10,11 @@
 //      downloaded together with the app at install time. Install-time
 //      packs are **merged into the app's standard `AssetManager`
 //      namespace** (`<packName>/assets/<path>` becomes `<path>` in
-//      `Context.getAssets()`), and `AssetPackManager.getPackLocation()`
-//      returns `null` for them by design — that API only resolves
-//      fast-follow / on-demand packs. We therefore extract the model
-//      bytes via the platform `AssetManager` and write them to
-//      `filesDir` so ONNX Runtime can mmap a real file path.
+//      `Context.getAssets()`), so the app needs no Play Asset Delivery
+//      library — that is only for fast-follow / on-demand packs, and it
+//      would bring Google Play Services libraries into the build. We
+//      extract the model bytes via the platform `AssetManager` and write
+//      them to `filesDir` so ONNX Runtime can mmap a real file path.
 //
 //   2. **Sideload APK (GitHub release)** — there is no asset pack. The
 //      `.onnx` files are bundled inside `flutter_assets` exactly as
